@@ -1,0 +1,22 @@
+{
+  "name": "@repo/fonts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./iran-sans-x": "./src/iran-sans-x.ts",
+    "./files/*": "./files/*"
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "next": ">=15"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "*",
+    "next": "16.2.12",
+    "typescript": "5.9.2"
+  }
+}

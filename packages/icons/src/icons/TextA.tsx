@@ -1,0 +1,12 @@
+"use client";
+
+import { createIcon } from "../create-icon";
+
+export const TextA = createIcon(
+  "TextA",
+  "0 0 24 24",
+  <>
+    <path d="M18 10V18.5C18 19.3284 17.3284 20 16.5 20H7.5C6.67157 20 6 19.3284 6 18.5V10C6 6.68629 8.68629 4 12 4C15.3137 4 18 6.68629 18 10Z" fill="currentColor" fillOpacity="0.2"/>
+    <path fillRule="evenodd" clipRule="evenodd" d="M12 3.25C15.7279 3.25 18.75 6.27208 18.75 10V20H17.25V13.75H6.75V20H5.25V10C5.25 6.27208 8.27208 3.25 12 3.25ZM12 4.75C9.10051 4.75 6.75 7.10051 6.75 10V12.25H17.25V10C17.25 7.10051 14.8995 4.75 12 4.75Z" fill="currentColor"/>
+  </>,
+);

@@ -1,0 +1,12 @@
+"use client";
+
+import { createIcon } from "../create-icon";
+
+export const GridNine = createIcon(
+  "GridNine",
+  "0 0 24 24",
+  <>
+    <rect x="3" y="3" width="18" height="18" fill="currentColor" fillOpacity="0.2"/>
+    <path fillRule="evenodd" clipRule="evenodd" d="M21.75 21.75H2.25V2.25H21.75V21.75ZM3.75 15.75V20.25H8.25V15.75H3.75ZM9.75 15.75V20.25H14.25V15.75H9.75ZM15.75 15.75V20.25H20.25V15.75H15.75ZM3.75 14.25H8.25V9.75H3.75V14.25ZM9.75 14.25H14.25V9.75H9.75V14.25ZM15.75 14.25H20.25V9.75H15.75V14.25ZM3.75 8.25H8.25V3.75H3.75V8.25ZM9.75 8.25H14.25V3.75H9.75V8.25ZM15.75 8.25H20.25V3.75H15.75V8.25Z" fill="currentColor"/>
+  </>,
+);

@@ -1,0 +1,12 @@
+"use client";
+
+import { createIcon } from "../create-icon";
+
+export const ShapeRectangle2 = createIcon(
+  "ShapeRectangle2",
+  "0 0 24 24",
+  <>
+    <path d="M5 5C5 3.89543 5.89543 3 7 3H17C18.1046 3 19 3.89543 19 5V19C19 20.1046 18.1046 21 17 21H7C5.89543 21 5 20.1046 5 19V5Z" fill="currentColor" fillOpacity="0.2"/>
+    <path fillRule="evenodd" clipRule="evenodd" d="M17 2.25C18.5188 2.25 19.75 3.48122 19.75 5V19C19.75 20.5188 18.5188 21.75 17 21.75H7C5.48122 21.75 4.25 20.5188 4.25 19V5C4.25 3.48122 5.48122 2.25 7 2.25H17ZM7 3.75C6.30964 3.75 5.75 4.30964 5.75 5V19C5.75 19.6904 6.30964 20.25 7 20.25H17C17.6904 20.25 18.25 19.6904 18.25 19V5C18.25 4.30964 17.6904 3.75 17 3.75H7Z" fill="currentColor"/>
+  </>,
+);

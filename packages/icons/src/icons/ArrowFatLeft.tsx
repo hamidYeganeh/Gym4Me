@@ -1,0 +1,12 @@
+"use client";
+
+import { createIcon } from "../create-icon";
+
+export const ArrowFatLeft = createIcon(
+  "ArrowFatLeft",
+  "0 0 24 24",
+  <>
+    <path d="M11 16.5L11 21C6.02943 21 2 16.9706 2 12C2 7.02943 6.02944 3 11 3L11 8L21 8L21 16.5L11 16.5Z" fill="currentColor" fillOpacity="0.2"/>
+    <path fillRule="evenodd" clipRule="evenodd" d="M11.75 2.25V7.25H21.75V17.25H11.75V21.75H11C5.61522 21.75 1.25 17.3848 1.25 12C1.25 6.61522 5.61522 2.25 11 2.25H11.75ZM10.25 3.78516C6.04519 4.16414 2.75 7.69652 2.75 12C2.75 16.3035 6.04523 19.8348 10.25 20.2139V15.75H20.25V8.75H10.25V3.78516Z" fill="currentColor"/>
+  </>,
+);

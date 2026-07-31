@@ -1,0 +1,12 @@
+"use client";
+
+import { createIcon } from "../create-icon";
+
+export const ArrowFatUp = createIcon(
+  "ArrowFatUp",
+  "0 0 24 24",
+  <>
+    <path d="M7.5 11H3C3 6.02944 7.02944 2 12 2C16.9706 2 21 6.02944 21 11H16V21H7.5L7.5 11Z" fill="currentColor" fillOpacity="0.2"/>
+    <path fillRule="evenodd" clipRule="evenodd" d="M12 1.25C17.3848 1.25 21.75 5.61522 21.75 11V11.75H16.75V21.75H6.75V11.75H2.25V11C2.25 5.61522 6.61522 1.25 12 1.25ZM12 2.75C7.69654 2.75 4.16516 6.04523 3.78613 10.25H8.25V20.25H15.25V10.25H20.2148C19.8359 6.04519 16.3035 2.75 12 2.75Z" fill="currentColor"/>
+  </>,
+);

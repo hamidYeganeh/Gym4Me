@@ -1,0 +1,17 @@
+"use client";
+
+import { createIcon } from "../create-icon";
+
+export const ListThreeSquare = createIcon(
+  "ListThreeSquare",
+  "0 0 24 24",
+  <>
+    <rect x="10" y="6" width="11" height="12" fill="currentColor" fillOpacity="0.2"/>
+    <path fillRule="evenodd" clipRule="evenodd" d="M7.75 20.25H3.25V15.75H7.75V20.25ZM4.75 18.75H6.25V17.25H4.75V18.75Z" fill="currentColor"/>
+    <path d="M21 18.75H10V17.25H21V18.75Z" fill="currentColor"/>
+    <path fillRule="evenodd" clipRule="evenodd" d="M7.75 14.25H3.25V9.75H7.75V14.25ZM4.75 12.75H6.25V11.25H4.75V12.75Z" fill="currentColor"/>
+    <path d="M21 12.75H10V11.25H21V12.75Z" fill="currentColor"/>
+    <path fillRule="evenodd" clipRule="evenodd" d="M7.75 8.25H3.25V3.75H7.75V8.25ZM4.75 6.75H6.25V5.25H4.75V6.75Z" fill="currentColor"/>
+    <path d="M21 6.75H10V5.25H21V6.75Z" fill="currentColor"/>
+  </>,
+);

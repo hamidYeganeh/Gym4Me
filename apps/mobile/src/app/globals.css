@@ -1,0 +1,19 @@
+@import "tailwindcss";
+@import "@heroui/styles";
+@import "@repo/theme/heroui.css";
+
+@theme inline {
+  --font-sans: var(--font-iran-sans-x), Tahoma, ui-sans-serif, system-ui,
+    sans-serif;
+}
+
+html {
+  /* IRANSansX variable axis — max sharpness (0–8) */
+  font-variation-settings: "DOTS" 8;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}

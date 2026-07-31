@@ -1,0 +1,12 @@
+"use client";
+
+import { createIcon } from "../create-icon";
+
+export const WaveSaw = createIcon(
+  "WaveSaw",
+  "0 0 24 24",
+  <>
+    <rect x="2" y="2" width="20" height="20" fill="currentColor" fillOpacity="0.2"/>
+    <path d="M12.75 19.3154L21.498 11.4424L22.502 12.5576L11.25 22.6836V4.68359L2.50195 12.5576L1.49805 11.4424L12.75 1.31641V19.3154Z" fill="currentColor"/>
+  </>,
+);

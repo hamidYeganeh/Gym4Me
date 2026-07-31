@@ -1,0 +1,24 @@
+{
+  "Metadata": {
+    "description": "Gym4Me — پلتفرم باشگاه و تناسب اندام"
+  },
+  "HomePage": {
+    "brand": "Gym4Me",
+    "title": "تم و رابط کاربری HeroUI",
+    "description": "پکیج تم مشترک مونوریپو با پشتیبانی از حالت روشن و تاریک.",
+    "primaryAction": "شروع کنید",
+    "secondaryAction": "بیشتر بدانید",
+    "variantsLabel": "انواع دکمه",
+    "surfacesLabel": "سطوح",
+    "chipsLabel": "چیپ‌ها",
+    "iconsLabel": "آیکون‌ها",
+    "themeLight": "روشن",
+    "themeDark": "تاریک",
+    "chipNew": "جدید",
+    "chipSuccess": "موفق",
+    "chipWarning": "هشدار",
+    "surfacePrimary": "سطح اصلی",
+    "surfaceSecondary": "سطح ثانویه",
+    "surfaceTertiary": "سطح سوم"
+  }
+}

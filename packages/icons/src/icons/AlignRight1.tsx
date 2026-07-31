@@ -1,0 +1,12 @@
+"use client";
+
+import { createIcon } from "../create-icon";
+
+export const AlignRight1 = createIcon(
+  "AlignRight1",
+  "0 0 24 24",
+  <>
+    <path d="M21.75 3V21H20.25V3H21.75Z" fill="currentColor"/>
+    <path d="M14 8.25C16.0711 8.25 17.75 9.92893 17.75 12C17.75 14.0711 16.0711 15.75 14 15.75H6C3.92893 15.75 2.25 14.0711 2.25 12C2.25 9.92893 3.92893 8.25 6 8.25H14Z" fill="currentColor"/>
+  </>,
+);

@@ -1,0 +1,12 @@
+"use client";
+
+import { createIcon } from "../create-icon";
+
+export const LetterE = createIcon(
+  "LetterE",
+  "0 0 24 24",
+  <>
+    <path d="M7 12C7 7.02944 11.0294 3 16 3H17V21H16C11.0294 21 7 16.9706 7 12Z" fill="currentColor" fillOpacity="0.2"/>
+    <path d="M17 3.75H16C11.6965 3.75 8.16516 7.04523 7.78613 11.25H15V12.75H7.78613C8.16516 16.9548 11.6965 20.25 16 20.25H17V21.75H16C10.6152 21.75 6.25 17.3848 6.25 12C6.25 6.61522 10.6152 2.25 16 2.25H17V3.75Z" fill="currentColor"/>
+  </>,
+);

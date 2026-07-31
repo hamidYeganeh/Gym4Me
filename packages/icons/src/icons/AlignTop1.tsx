@@ -1,0 +1,13 @@
+"use client";
+
+import { createIcon } from "../create-icon";
+
+export const AlignTop1 = createIcon(
+  "AlignTop1",
+  "0 0 24 24",
+  <>
+    <path d="M15 18C15 19.6569 13.6569 21 12 21C10.3431 21 9 19.6569 9 18L9 10C9 8.34315 10.3431 7 12 7C13.6569 7 15 8.34315 15 10L15 18Z" fill="currentColor" fillOpacity="0.2"/>
+    <path fillRule="evenodd" clipRule="evenodd" d="M12 6.25C14.0711 6.25 15.75 7.92893 15.75 10V18C15.75 20.0711 14.0711 21.75 12 21.75C9.92893 21.75 8.25 20.0711 8.25 18V10C8.25 7.92893 9.92893 6.25 12 6.25ZM12 7.75C10.7574 7.75 9.75 8.75736 9.75 10V18C9.75 19.2426 10.7574 20.25 12 20.25C13.2426 20.25 14.25 19.2426 14.25 18V10C14.25 8.75736 13.2426 7.75 12 7.75Z" fill="currentColor"/>
+    <path d="M21 3.75H3V2.25H21V3.75Z" fill="currentColor"/>
+  </>,
+);

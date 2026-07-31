@@ -3,7 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
-    "./*": "./src/*.tsx"
+    "./logo": "./src/logo.tsx",
+    "./logo-mark": "./src/logo-mark.tsx",
+    "./*": "./src/*.tsx",
+    "./assets/*": "./assets/*"
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",

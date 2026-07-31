@@ -1,0 +1,73 @@
+import type { Metadata, Viewport } from "next";
+import { iranSansX } from "@repo/fonts/iran-sans-x";
+import { ThemeProvider } from "@repo/theme";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getTranslations } from "next-intl/server";
+import { CapacitorProvider } from "@/components/capacitor-provider";
+import "./globals.css";
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f7f7f7" },
+    { media: "(prefers-color-scheme: dark)", color: "#1f1f1f" },
+  ],
+  colorScheme: "light dark",
+};
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Metadata");
+
+  return {
+    title: {
+      default: "Gym4Me",
+      template: "%s | Gym4Me",
+    },
+    description: t("description"),
+    applicationName: "Gym4Me",
+    authors: [{ name: "Gym4Me" }],
+    creator: "Gym4Me",
+    publisher: "Gym4Me",
+    keywords: ["Gym4Me", "gym", "fitness", "باشگاه"],
+    openGraph: {
+      type: "website",
+      siteName: "Gym4Me",
+      title: "Gym4Me",
+      description: t("description"),
+      locale: "fa_IR",
+    },
+    twitter: {
+      card: "summary",
+      title: "Gym4Me",
+      description: t("description"),
+    },
+    appleWebApp: {
+      title: "Gym4Me",
+      capable: true,
+      statusBarStyle: "default",
+    },
+  };
+}
+
+export default async function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  const locale = await getLocale();
+
+  return (
+    <html
+      lang={locale}
+      dir="rtl"
+      className={`${iranSansX.variable} h-full`}
+      suppressHydrationWarning
+    >
+      <body className={`${iranSansX.className} min-h-full bg-background text-foreground antialiased`}>
+        <ThemeProvider>
+          <CapacitorProvider />
+          <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+}
