@@ -10,6 +10,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
     "mobile:cap:sync": "npm run cap:sync --workspace=mobile",
+    "mobile:cap:assets": "npm run cap:assets --workspace=mobile",
     "mobile:android:apk": "npm run android:apk --workspace=mobile",
     "mobile:android:aab": "npm run android:aab --workspace=mobile",
     "mobile:ios:sim": "npm run ios:sim --workspace=mobile",

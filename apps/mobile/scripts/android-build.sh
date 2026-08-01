@@ -73,6 +73,31 @@ export PATH="${JAVA_HOME}/bin:${PATH}"
 mkdir -p "${ARTIFACTS_DIR}"
 cd "${ANDROID_DIR}"
 
+# Ensure Gradle distribution is present (wrapper default timeout is easy to hit on slow networks)
+WRAPPER_PROPS="${ANDROID_DIR}/gradle/wrapper/gradle-wrapper.properties"
+DIST_URL="$(sed -n 's/^distributionUrl=//p' "${WRAPPER_PROPS}" | sed 's#\\:#:#g')"
+DIST_NAME="$(basename "${DIST_URL}")"
+DIST_DIR="${HOME}/.gradle/wrapper/dists/${DIST_NAME%.zip}"
+if ! find "${DIST_DIR}" -type f -name "${DIST_NAME}" 2>/dev/null | grep -q .; then
+  echo "Gradle distribution missing/incomplete — downloading ${DIST_NAME}..."
+  # Clear failed partial downloads so the wrapper can retry cleanly
+  find "${DIST_DIR}" -name "*.part" -delete 2>/dev/null || true
+  TMP_ZIP="$(mktemp "/tmp/${DIST_NAME}.XXXXXX")"
+  if curl -L --connect-timeout 30 --max-time 600 -o "${TMP_ZIP}" "${DIST_URL}"; then
+    HASH_DIR="$(find "${DIST_DIR}" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | head -n 1)"
+    if [[ -n "${HASH_DIR}" ]]; then
+      mv "${TMP_ZIP}" "${HASH_DIR}/${DIST_NAME}"
+    else
+      mkdir -p "${DIST_DIR}/manual"
+      mv "${TMP_ZIP}" "${DIST_DIR}/manual/${DIST_NAME}"
+    fi
+    echo "Gradle distribution ready."
+  else
+    rm -f "${TMP_ZIP}"
+    echo "Warning: pre-download failed; falling back to Gradle wrapper download." >&2
+  fi
+fi
+
 case "${TARGET}" in
   apk:debug)
     ./gradlew assembleDebug

@@ -111,7 +111,12 @@ export const ${componentName} = createIcon(
 }
 
 const indexLines = [
-  'export { createIcon, type IconProps } from "./create-icon";',
+  'export {',
+  "  createIcon,",
+  "  isRtlMirrorIcon,",
+  "  type CreateIconOptions,",
+  "  type IconProps,",
+  '} from "./create-icon";',
   ...exportsList.map(
     (componentName) =>
       `export { ${componentName} } from "./icons/${componentName}";`,

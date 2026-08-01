@@ -3,9 +3,14 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
-    "./logo": "./src/logo.tsx",
-    "./logo-mark": "./src/logo-mark.tsx",
-    "./*": "./src/*.tsx",
+    "./cards": "./src/cards/index.ts",
+    "./cards/*": "./src/cards/*/index.ts",
+    "./common": "./src/common/index.ts",
+    "./common/*": "./src/common/*/index.ts",
+    "./layout": "./src/layout/index.ts",
+    "./layout/*": "./src/layout/*/index.ts",
+    "./kit": "./src/kit/index.ts",
+    "./kit/*": "./src/kit/*/index.ts",
     "./assets/*": "./assets/*"
   },
   "scripts": {
@@ -13,17 +18,30 @@
     "generate:component": "turbo gen react-component",
     "check-types": "tsc --noEmit"
   },
+  "peerDependencies": {
+    "next": ">=15"
+  },
   "devDependencies": {
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*",
+    "@types/leaflet": "^1.9.22",
     "@types/node": "^22.15.3",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
     "eslint": "^9.39.1",
+    "next": "16.2.12",
     "typescript": "5.9.2"
   },
   "dependencies": {
+    "@heroui/react": "^3.0.0",
+    "@repo/icons": "*",
+    "@repo/theme": "*",
+    "html-to-image": "^1.11.13",
+    "leaflet": "^1.9.4",
+    "motion": "^12.43.0",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "recharts": "^3.10.1",
+    "tailwind-variants": "^3.3.0"
   }
 }

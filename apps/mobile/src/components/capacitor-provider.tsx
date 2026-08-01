@@ -22,7 +22,10 @@ export function CapacitorProvider() {
       ]);
 
       await Promise.all([
-        StatusBar.setStyle({ style: Style.Default }).catch(() => undefined),
+        StatusBar.setStyle({ style: Style.Light }).catch(() => undefined),
+        StatusBar.setBackgroundColor({ color: "#1f1f1f" }).catch(
+          () => undefined,
+        ),
         SplashScreen.hide().catch(() => undefined),
       ]);
     }

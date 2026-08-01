@@ -1,4 +1,9 @@
-export { createIcon, type IconProps } from "./create-icon";
+export {
+  createIcon,
+  isRtlMirrorIcon,
+  type CreateIconOptions,
+  type IconProps,
+} from "./create-icon";
 export { AcademicCap } from "./icons/AcademicCap";
 export { Acorn } from "./icons/Acorn";
 export { Acupuncture } from "./icons/Acupuncture";
@@ -654,6 +659,9 @@ export { Lock1 } from "./icons/Lock1";
 export { Lock2 } from "./icons/Lock2";
 export { LockUnlocked1 } from "./icons/LockUnlocked1";
 export { LockUnlocked2 } from "./icons/LockUnlocked2";
+export { LogoFacebook } from "./icons/LogoFacebook";
+export { LogoInstagram } from "./icons/LogoInstagram";
+export { LogoLinkedin } from "./icons/LogoLinkedin";
 export { Lung } from "./icons/Lung";
 export { Magnet } from "./icons/Magnet";
 export { MagnifyingGlassMinus } from "./icons/MagnifyingGlassMinus";

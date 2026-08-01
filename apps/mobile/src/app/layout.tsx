@@ -28,6 +28,14 @@ export async function generateMetadata(): Promise<Metadata> {
     creator: "Gym4Me",
     publisher: "Gym4Me",
     keywords: ["Gym4Me", "gym", "fitness", "باشگاه"],
+    icons: {
+      icon: [
+        { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+        { url: "/logo.svg", type: "image/svg+xml" },
+      ],
+      apple: [{ url: "/apple-icon", sizes: "180x180", type: "image/png" }],
+    },
+    manifest: "/manifest.webmanifest",
     openGraph: {
       type: "website",
       siteName: "Gym4Me",
@@ -43,7 +51,7 @@ export async function generateMetadata(): Promise<Metadata> {
     appleWebApp: {
       title: "Gym4Me",
       capable: true,
-      statusBarStyle: "default",
+      statusBarStyle: "black-translucent",
     },
   };
 }
@@ -62,7 +70,9 @@ export default async function RootLayout({
       className={`${iranSansX.variable} h-full`}
       suppressHydrationWarning
     >
-      <body className={`${iranSansX.className} min-h-full bg-background text-foreground antialiased`}>
+      <body
+        className={`${iranSansX.className} mx-auto min-h-full w-full max-w-xl bg-background text-foreground antialiased`}
+      >
         <ThemeProvider>
           <CapacitorProvider />
           <NextIntlClientProvider>{children}</NextIntlClientProvider>

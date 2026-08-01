@@ -1,0 +1,67 @@
+---
+description: Use @repo/icons for icons and @heroui/react for UI primitives
+globs: "**/*.{tsx,jsx}"
+alwaysApply: true
+---
+
+# UI Sources: Icons + HeroUI
+
+## Icons — `@repo/icons` only
+
+All icons must come from the monorepo icons package. Do not use Lucide, react-icons, Heroicons, Iconify, Gravity UI icons, emoji-as-icons, or ad-hoc inline SVG icons in app/UI code.
+
+```tsx
+// ❌ BAD
+import { Plus } from "lucide-react";
+<svg viewBox="0 0 24 24"><path d="M12 5v14..." /></svg>
+
+// ✅ GOOD
+import { Plus } from "@repo/icons";
+// or: import { Plus } from "@repo/icons/Plus";
+
+<Plus size={20} />
+```
+
+Directional icons (`ArrowRight`, `ChevronLeft`, `ArrowForward*`, etc.) auto-flip in RTL via `data-rtl-mirror` on `@repo/icons` + theme CSS. Override with `rtlMirror={false}` when the glyph must stay absolute (e.g. a compass “east” arrow).
+
+**Exceptions:** SVG assets that are brand marks or illustrations (e.g. `@repo/ui` logo), and icon definitions inside `packages/icons` itself.
+
+If an icon is missing, add it to `@repo/icons` (or run its generate script) — do not inline a one-off icon elsewhere.
+
+## Components — `@heroui/react` only
+
+For UI primitives use HeroUI v3 (`@heroui/react`). Do not roll custom buttons, cards, inputs, typography, chips, modals, etc. when HeroUI provides them.
+
+Prefer HeroUI for: Button, Card, Typography, Surface, Chip, Input / TextField, Modal, Tabs, Avatar, Link, Spinner, Separator, and other listed v3 components.
+
+```tsx
+// ❌ BAD
+<button className="rounded-full bg-warning ...">...</button>
+<h3 className="text-2xl font-bold">Title</h3>
+
+// ✅ GOOD
+import { Button, Card, Typography } from "@heroui/react";
+
+<Button isIconOnly size="lg" variant="primary" onPress={onAction}>
+  <Plus size={20} />
+</Button>
+<Card>
+  <Card.Header>
+    <Card.Title>Title</Card.Title>
+  </Card.Header>
+</Card>
+```
+
+### HeroUI v3 conventions
+
+- **No provider** — do not wrap the app in `HeroUIProvider` (v2 pattern)
+- **Compound components** — `Card.Header`, `Card.Title`, etc.
+- **`onPress` over `onClick`** for HeroUI pressable components
+- **Icon-only buttons always `size="lg"`** — every `isIconOnly` Button must use `size="lg"` (not `sm` / `md`)
+- **Semantic variants** — `primary` / `secondary` / `tertiary` / `outline` / `danger`, not raw color names
+- **Theme tokens** — use CSS variables / Tailwind theme classes (`bg-accent`, `text-warning`, …), not hardcoded hex
+- Fetch v3 docs via the `heroui-react` skill / MCP before implementing unfamiliar components
+
+### Shared product components
+
+Domain composites (e.g. `@repo/ui/cards/CallToActionCard`, `@repo/ui/layout/BottomNav`) live in `@repo/ui` under category folders (`cards/`, `common/`, `layout/`, `kit/`) as PascalCase component folders (`Component.tsx` / `Component.styles.ts` / `Component.types.ts` / `index.ts`). They must be built from `@heroui/react` + `@repo/icons` — not parallel primitive systems. See `ui-package-structure`.

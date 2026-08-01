@@ -1,7 +1,11 @@
-import { LogoMark, resolveLogoSize } from "@repo/ui/logo-mark";
+import { LogoMark, resolveLogoSize } from "@repo/ui/common/LogoMark";
 import { ImageResponse } from "next/og";
 
 export const dynamic = "force-static";
+
+/** Theme `--accent` / `--accent-foreground` (oklch → sRGB). */
+const ACCENT = "#1fff6f";
+const ACCENT_FOREGROUND = "#030f05";
 
 export const size = {
   width: resolveLogoSize("5xl"),
@@ -20,13 +24,15 @@ export default function AppleIcon() {
           height: "100%",
           alignItems: "center",
           justifyContent: "center",
-          background: "#1f1f1f",
+          background: ACCENT,
         }}
       >
         <LogoMark
-          size={size.width}
+          size={Math.round(size.width * 0.62)}
+          color={ACCENT_FOREGROUND}
           instanceId="apple-icon"
           shadow={false}
+          gradient={false}
           title=""
         />
       </div>

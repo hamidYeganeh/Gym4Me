@@ -1,0 +1,37 @@
+---
+description: Mobile app feature modules (screens + sections) folder structure
+globs: apps/mobile/src/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Mobile `@/modules` Structure
+
+Feature UI lives under **`apps/mobile/src/modules/<domain>/`**. Next.js `app/` routes stay thin and only wire data → screen.
+
+| Folder | Purpose | Example |
+| --- | --- | --- |
+| `screens/` | Full page compositions used by route files | `DiscoveryClubsDetailScreen` |
+| `sections/` | Page sections composed by screens (split large sections into sibling folders) | `DiscoveryClubsDetailHeroSection`, `…HeroSectionLightbox`, `…PullToView`, `…Header` |
+| `lib/` | Domain helpers / demo data for that module | `club-detail-data.ts` |
+
+## Per-component folder shape
+
+Screens and sections use a **PascalCase folder** with:
+
+```
+packages path example:
+modules/discovery/screens/DiscoveryClubsDetailScreen/
+  DiscoveryClubsDetailScreen.tsx
+  DiscoveryClubsDetailScreen.styles.ts
+  DiscoveryClubsDetailScreen.types.ts
+  index.ts
+```
+
+## Rules
+
+1. **Route files stay thin** — `app/**/page.tsx` loads data and renders a module screen; no large UI inline.
+2. **One screen/section per folder** — folder name matches the component name.
+3. **Naming** — `<Domain><Feature><Screen|…Section>` (e.g. `DiscoveryClubsDetailScreen`, `DiscoveryClubsDetailHeroSection`).
+4. **Import path** — `@/modules/<domain>/screens/<Name>` or `@/modules/<domain>/sections/<Name>`.
+5. **Primitives** — build with `@heroui/react` + `@repo/icons`; shared composites from `@repo/ui`.
+6. **Images** — use `next/image` (or `@repo/ui` `MediaImage`); never raw `<img>`.

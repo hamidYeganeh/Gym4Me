@@ -30,6 +30,18 @@ npm run mobile:cap:sync
 npm run cap:sync
 ```
 
+## Icons & splash
+
+Regenerate native icons/splash from the Gym4Me logo (`assets/logo-mark.svg`):
+
+```bash
+npm run mobile:cap:assets
+# or: npm run cap:assets --workspace=mobile
+```
+
+Icon: `bg-accent` (`#1fff6f`) with logo in `accent-foreground` (`#030f05`).
+Splash: `bg-accent` (`#1fff6f`) with logo in `text-background` — light `#f7f7f7`, dark `#1f1f1f`.
+
 ## Build artifacts
 
 Outputs go to `apps/mobile/artifacts/`.

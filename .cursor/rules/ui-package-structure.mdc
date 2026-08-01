@@ -1,0 +1,64 @@
+---
+description: @repo/ui component folder layout with tailwind-variants
+globs: packages/ui/**/*.{ts,tsx}
+alwaysApply: true
+---
+
+# `@repo/ui` Component Structure
+
+Components live under **category folders** in `packages/ui/src/`:
+
+| Category | Purpose | Example import |
+|----------|---------|----------------|
+| `cards/` | Card-style composites | `@repo/ui/cards/CallToActionCard` |
+| `common/` | Brand / shared primitives | `@repo/ui/common/Logo` |
+| `layout/` | Page shell & navigation | `@repo/ui/layout/AppLayout` |
+| `kit/` | Interactive UI widgets | `@repo/ui/kit/AdaptiveSlider` |
+
+Each category has an `index.ts` barrel (`@repo/ui/cards`, `@repo/ui/common`, etc.). Individual components are also reachable via `@repo/ui/<category>/<ComponentName>`.
+
+## Per-component folder shape
+
+Every component lives in a **PascalCase folder** with exactly four files:
+
+```
+packages/ui/src/cards/CallToActionCard/
+  CallToActionCard.tsx          # component implementation
+  CallToActionCard.styles.ts    # all styles via tailwind-variants (`tv`)
+  CallToActionCard.types.ts     # props and related types
+  index.ts                      # public exports
+```
+
+## Rules
+
+1. **One component per folder** — folder name matches the component name.
+2. **Styles only in `*.styles.ts`** — use `tailwind-variants` (`tv`) with `slots` + `variants`. Do not scatter `className` strings for layout/variants in the TSX beyond composing slot results / consumer overrides.
+3. **Types only in `*.types.ts`** — props and related types live here; re-export from `index.ts`.
+4. **`index.ts` is the public API** — export the component, variants helper (if useful), and types.
+5. **Import path** — consumers use `@repo/ui/<category>/<ComponentName>` or the category barrel `@repo/ui/<category>`.
+6. **Primitives** — build with `@heroui/react` + `@repo/icons` (see `ui-icons-heroui` rule). Brand assets like `Logo` / `LogoMark` live in `common/`.
+
+## Example
+
+```ts
+// CallToActionCard.styles.ts
+import { tv } from "tailwind-variants";
+
+export const callToActionCardVariants = tv({
+  slots: { root: "...", action: "..." },
+  variants: {
+    variant: {
+      primary: { root: "bg-warning ..." },
+      outlined: { root: "border-2 border-warning ..." },
+    },
+  },
+  defaultVariants: { variant: "primary" },
+});
+```
+
+```ts
+// index.ts
+export { CallToActionCard } from "./CallToActionCard";
+export { callToActionCardVariants } from "./CallToActionCard.styles";
+export type { CallToActionCardProps } from "./CallToActionCard.types";
+```

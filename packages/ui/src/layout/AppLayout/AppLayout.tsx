@@ -1,0 +1,19 @@
+import { appLayoutVariants } from "./AppLayout.styles";
+import type { AppLayoutProps } from "./AppLayout.types";
+
+export function AppLayout({
+  header,
+  footer,
+  children,
+  className,
+}: AppLayoutProps) {
+  const slots = appLayoutVariants();
+
+  return (
+    <div className={slots.root({ className })}>
+      {header ? <div className={slots.header()}>{header}</div> : null}
+      <main className={slots.main()}>{children}</main>
+      {footer ? <div className={slots.footer()}>{footer}</div> : null}
+    </div>
+  );
+}

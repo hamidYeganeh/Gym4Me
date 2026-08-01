@@ -1,0 +1,13 @@
+"use client";
+
+import { createIcon } from "../create-icon";
+
+export const LogoLinkedin = createIcon(
+  "LogoLinkedin",
+  "0 0 24 24",
+  <>
+    <path d="M6.75 9.25H4.25V19.75H6.75V9.25Z" fill="currentColor"/>
+    <path fillRule="evenodd" clipRule="evenodd" d="M5.5 7.75C6.4665 7.75 7.25 6.9665 7.25 6C7.25 5.0335 6.4665 4.25 5.5 4.25C4.5335 4.25 3.75 5.0335 3.75 6C3.75 6.9665 4.5335 7.75 5.5 7.75Z" fill="currentColor"/>
+    <path d="M9.25 9.25H11.65V10.7C12.05 9.9 13.05 9 14.75 9C18.15 9 18.75 11.15 18.75 13.7V19.75H16.25V14.35C16.25 12.85 15.95 11.6 14.25 11.6C12.55 11.6 12.05 12.9 12.05 14.3V19.75H9.25V9.25Z" fill="currentColor"/>
+  </>,
+);

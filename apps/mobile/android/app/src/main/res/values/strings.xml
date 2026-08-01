@@ -4,4 +4,5 @@
     <string name="title_activity_main">Gym4Me</string>
     <string name="package_name">com.gym4me.app</string>
     <string name="custom_url_scheme">com.gym4me.app</string>
+    <string name="app_description">Gym4Me — پلتفرم باشگاه و تناسب اندام</string>
 </resources>
