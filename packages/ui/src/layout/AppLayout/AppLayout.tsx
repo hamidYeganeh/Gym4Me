@@ -7,7 +7,9 @@ export function AppLayout({
   children,
   className,
 }: AppLayoutProps) {
-  const slots = appLayoutVariants();
+  const hasHeader = Boolean(header);
+  const hasFooter = Boolean(footer);
+  const slots = appLayoutVariants({ hasHeader, hasFooter });
 
   return (
     <div className={slots.root({ className })}>

@@ -99,7 +99,7 @@ export function WeightDetailScreen({
     <AppLayout
       className="bg-background"
       footer={
-        <div className="flex flex-col gap-3 border-t border-border bg-background px-screen py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <div className="flex flex-col gap-3 border-t border-border bg-background px-screen py-4">
           <Button
             className="h-12 w-full border-stats-orange bg-transparent text-stats-orange"
             onPress={() => undefined}

@@ -12,6 +12,8 @@ export const viewport: Viewport = {
     { media: "(prefers-color-scheme: dark)", color: "#1f1f1f" },
   ],
   colorScheme: "light dark",
+  /** Required for `env(safe-area-inset-*)` on iOS Capacitor / PWA */
+  viewportFit: "cover",
 };
 
 export async function generateMetadata(): Promise<Metadata> {

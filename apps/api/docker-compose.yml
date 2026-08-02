@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: gym4me-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: gym4me
+      POSTGRES_PASSWORD: gym4me
+      POSTGRES_DB: gym4me
+    ports:
+      - "5433:5432"
+    volumes:
+      - gym4me_pgdata:/var/lib/postgresql/data
+
+volumes:
+  gym4me_pgdata:

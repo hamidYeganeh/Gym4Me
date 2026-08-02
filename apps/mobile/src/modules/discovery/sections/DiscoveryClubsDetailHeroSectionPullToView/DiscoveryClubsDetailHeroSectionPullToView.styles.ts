@@ -1,6 +1,10 @@
 export const discoveryClubsDetailHeroSectionPullToViewStyles = {
-  banner:
-    "pointer-events-none fixed inset-x-0 top-0 z-20 flex h-20 items-center justify-center gap-2 bg-accent text-accent-foreground shadow-sm",
+  banner: [
+    "pointer-events-none fixed inset-x-0 top-0 z-20",
+    "flex items-center justify-center gap-2",
+    "bg-accent pt-[env(safe-area-inset-top)] text-accent-foreground shadow-sm",
+    "h-[calc(5rem+env(safe-area-inset-top))]",
+  ].join(" "),
   icon: "transition-transform duration-fast ease-app",
   iconReady: "text-accent",
   iconIdle: "text-muted",

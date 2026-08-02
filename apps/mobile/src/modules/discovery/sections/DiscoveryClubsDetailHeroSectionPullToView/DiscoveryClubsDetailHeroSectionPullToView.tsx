@@ -125,7 +125,8 @@ export function DiscoveryClubsDetailHeroSectionPullToView({
         aria-hidden={pullY < 8}
         className={styles.banner}
         style={{
-          transform: `translateY(${pullY - PULL_MAX_PX}px)`,
+          // Percent-based hide so banner height can include safe-area inset
+          transform: `translateY(calc(${(pullY / PULL_MAX_PX) * 100}% - 100%))`,
           transition: pullTransition,
         }}
       >

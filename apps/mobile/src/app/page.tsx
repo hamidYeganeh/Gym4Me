@@ -6,7 +6,7 @@ export default async function Home() {
   const t = await getTranslations("HomePage");
 
   return (
-    <main className="mx-auto flex min-h-full w-full max-w-3xl flex-col gap-10 px-screen py-16">
+    <main className="mx-auto flex min-h-full w-full max-w-3xl flex-col gap-10 px-screen pt-[max(4rem,env(safe-area-inset-top))] pb-[max(4rem,env(safe-area-inset-bottom))]">
       <header className="flex flex-col gap-3">
         <div className="flex items-center gap-3">
           <Logo size="lg" gradient={false} />

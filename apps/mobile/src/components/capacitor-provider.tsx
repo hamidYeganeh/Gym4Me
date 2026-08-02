@@ -28,6 +28,8 @@ export function CapacitorProvider() {
       const isDark = resolvedTheme !== "light";
 
       await Promise.all([
+        // Draw under the status bar so CSS `env(safe-area-inset-*)` is meaningful
+        StatusBar.setOverlaysWebView({ overlay: true }).catch(() => undefined),
         // Style.Light = light icons (dark chrome); Style.Dark = dark icons (light chrome)
         StatusBar.setStyle({
           style: isDark ? Style.Light : Style.Dark,

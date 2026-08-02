@@ -27,6 +27,8 @@ const config: CapacitorConfig = {
       splashImmersive: true,
     },
     StatusBar: {
+      // Overlay so CSS `env(safe-area-inset-*)` owns notch / status bar spacing
+      overlaysWebView: true,
       // Light icons/text for dark brand background
       style: "LIGHT",
       backgroundColor: "#1f1f1f",
