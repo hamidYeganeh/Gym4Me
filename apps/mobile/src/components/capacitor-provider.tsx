@@ -1,12 +1,16 @@
 "use client";
 
+import { useTheme } from "@repo/theme";
 import { useEffect } from "react";
 
 /**
  * Initializes Capacitor native plugins once the WebView is ready.
+ * Keeps the status bar in sync with the active light/dark theme.
  * No-ops when running in a regular browser.
  */
 export function CapacitorProvider() {
+  const { resolvedTheme } = useTheme();
+
   useEffect(() => {
     let cancelled = false;
 
@@ -21,11 +25,16 @@ export function CapacitorProvider() {
         import("@capacitor/splash-screen"),
       ]);
 
+      const isDark = resolvedTheme !== "light";
+
       await Promise.all([
-        StatusBar.setStyle({ style: Style.Light }).catch(() => undefined),
-        StatusBar.setBackgroundColor({ color: "#1f1f1f" }).catch(
-          () => undefined,
-        ),
+        // Style.Light = light icons (dark chrome); Style.Dark = dark icons (light chrome)
+        StatusBar.setStyle({
+          style: isDark ? Style.Light : Style.Dark,
+        }).catch(() => undefined),
+        StatusBar.setBackgroundColor({
+          color: isDark ? "#1f1f1f" : "#f7f7f7",
+        }).catch(() => undefined),
         SplashScreen.hide().catch(() => undefined),
       ]);
     }
@@ -35,7 +44,7 @@ export function CapacitorProvider() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [resolvedTheme]);
 
   return null;
 }

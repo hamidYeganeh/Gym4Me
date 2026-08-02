@@ -6,16 +6,14 @@ import type { SwipeButtonColor } from "@repo/ui/kit/SwipeButton";
 export type SwipeButtonDemoLabels = {
   finish: string;
   confirm: string;
-  continue: string;
   save: string;
   delete: string;
 };
 
 const VARIANTS: { color: SwipeButtonColor; key: keyof SwipeButtonDemoLabels }[] =
   [
-    { color: "warning", key: "finish" },
+    { color: "accent", key: "finish" },
     { color: "orange", key: "confirm" },
-    { color: "accent", key: "continue" },
     { color: "success", key: "save" },
     { color: "danger", key: "delete" },
   ];

@@ -5,7 +5,7 @@ export const cityCardVariants = tv({
   slots: {
     root: [
       "relative flex flex-col overflow-hidden",
-      "bg-surface-tertiary text-stats-foreground",
+      "bg-surface-tertiary text-foreground",
     ].join(" "),
     media: "absolute inset-0 overflow-hidden",
     image:
@@ -15,15 +15,15 @@ export const cityCardVariants = tv({
       "bg-linear-to-b from-background to-transparent",
     ].join(" "),
     body: "relative z-10 flex h-full min-h-0 flex-col",
-    city: "leading-tight tracking-tight text-stats-foreground",
+    city: "leading-tight tracking-tight text-foreground",
     footer: "mt-auto flex flex-col",
     discount: [
       "max-w-full self-end border-0",
-      "[--chip-bg:var(--warning)]",
-      "[--chip-fg:var(--stats-foreground)]",
+      "[--chip-bg:var(--accent)]",
+      "[--chip-fg:var(--accent-foreground)]",
       "[&_.chip__label]:font-semibold",
     ].join(" "),
-    title: "leading-tight tracking-tight text-stats-foreground",
+    title: "leading-tight tracking-tight text-foreground",
     action: [
       "w-full rounded-full",
       "font-medium leading-tight whitespace-normal",

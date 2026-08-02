@@ -19,37 +19,33 @@ export const swipeButtonVariants = tv({
       "rounded-[18px] shadow-sm outline-none",
       "transition-[box-shadow] duration-fast ease-app",
       "data-[dragging=true]:shadow-md",
-      "focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2",
+      "focus-visible:ring-2 focus-visible:ring-background/70 focus-visible:ring-offset-2",
       "focus-visible:ring-offset-transparent",
     ].join(" "),
     icon: "size-6 shrink-0",
   },
   variants: {
     color: {
-      warning: {
-        root: "bg-warning text-white",
-        thumb: "bg-white text-foreground",
-      },
       accent: {
         root: "bg-accent text-accent-foreground",
         thumb: "bg-accent-foreground text-accent",
       },
       danger: {
         root: "bg-danger text-danger-foreground",
-        thumb: "bg-white text-danger",
+        thumb: "bg-danger-foreground text-danger",
       },
       success: {
         root: "bg-success text-success-foreground",
-        thumb: "bg-white text-success",
+        thumb: "bg-success-foreground text-success",
       },
       orange: {
         root: "bg-stats-orange text-stats-foreground",
-        thumb: "bg-white text-foreground",
+        thumb: "bg-stats-foreground text-stats-orange",
       },
     },
   },
   defaultVariants: {
-    color: "warning",
+    color: "accent",
   },
 });
 

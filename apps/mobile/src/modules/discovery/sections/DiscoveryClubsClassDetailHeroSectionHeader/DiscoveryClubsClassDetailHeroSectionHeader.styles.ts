@@ -5,9 +5,9 @@ export const discoveryClubsClassDetailHeroSectionHeaderStyles = {
     "pt-[max(0.875rem,env(safe-area-inset-top))]",
   ].join(" "),
   title:
-    "min-w-0 flex-1 truncate text-center text-base font-semibold text-white drop-shadow-sm",
+    "min-w-0 flex-1 truncate text-center text-base font-semibold text-stats-foreground drop-shadow-sm",
   iconButton: [
-    "border-0 bg-black/25 text-white shadow-none backdrop-blur-md",
-    "hover:bg-black/35 pressed:bg-black/40",
+    "border-0 bg-overlay/70 text-overlay-foreground shadow-none backdrop-blur-md",
+    "hover:bg-overlay/85 pressed:bg-overlay",
   ].join(" "),
 } as const;

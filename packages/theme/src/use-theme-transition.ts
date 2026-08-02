@@ -1,6 +1,6 @@
 "use client";
 
-import { useTheme as useNextTheme } from "next-themes";
+import { useTheme as useNextTheme } from "@teispace/next-themes";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export type ResolvedColorTheme = "light" | "dark";

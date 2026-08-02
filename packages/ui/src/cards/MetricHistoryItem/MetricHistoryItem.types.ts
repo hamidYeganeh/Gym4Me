@@ -5,7 +5,7 @@ export type MetricHistoryItemProps = {
   time: ReactNode;
   /** Secondary line under the value (e.g. steps / goal status). */
   subtitle?: ReactNode;
-  /** Optional warning / alert line under the subtitle. */
+  /** Optional alert line under the subtitle. */
   alert?: ReactNode;
   icon?: ReactNode;
   onPress?: () => void;

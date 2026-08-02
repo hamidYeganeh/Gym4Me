@@ -13,9 +13,9 @@ export const coachExpertCardVariants = tv({
     avatar: "size-[88px]",
     badge: [
       "border-2 border-background",
-      "[--badge-bg:var(--success)] [--badge-fg:white]",
+      "[--badge-bg:var(--success)] [--badge-fg:var(--success-foreground)]",
     ].join(" "),
-    badgeIcon: "size-3 text-white",
+    badgeIcon: "size-3 text-success-foreground",
     title:
       "max-w-full text-center text-sm font-medium leading-snug tracking-tight text-foreground",
   },

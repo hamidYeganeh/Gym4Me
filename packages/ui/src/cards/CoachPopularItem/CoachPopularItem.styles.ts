@@ -20,7 +20,7 @@ export const coachPopularItemVariants = tv({
     title: "truncate tracking-tight text-foreground",
     meta: "flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 text-sm text-muted",
     rating: "inline-flex items-center gap-1 text-foreground",
-    star: "size-3.5 shrink-0 text-warning",
+    star: "size-3.5 shrink-0 text-accent",
     chevron: "size-4 shrink-0 text-muted",
   },
 });

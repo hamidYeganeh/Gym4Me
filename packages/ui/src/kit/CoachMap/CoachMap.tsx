@@ -106,7 +106,7 @@ function pinHtml(options: {
     ? `<span style="display:block;margin:2px auto 0;width:8px;height:8px;border-radius:9999px;background:${fill};box-shadow:0 0 0 3px color-mix(in oklab,${fill} 35%,transparent)"></span>`
     : "";
 
-  return `<div style="transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;pointer-events:auto;cursor:pointer;user-select:none;filter:drop-shadow(0 4px 10px rgba(0,0,0,0.18))">
+  return `<div style="transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;pointer-events:auto;cursor:pointer;user-select:none;filter:drop-shadow(0 4px 10px color-mix(in oklab, ${surface} 35%, transparent))">
     <svg width="${size}" height="${height}" viewBox="0 0 ${size} ${height}" aria-hidden="true">
       <path d="${path}" fill="${fill}"/>
       <circle cx="${size / 2}" cy="${cy}" r="${r}" fill="${surface}"/>

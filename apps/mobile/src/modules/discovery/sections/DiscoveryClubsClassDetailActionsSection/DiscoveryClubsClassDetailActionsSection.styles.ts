@@ -7,7 +7,7 @@ export const discoveryClubsClassDetailActionsSectionStyles = {
   stack: "mx-auto flex w-full max-w-lg flex-col gap-2.5",
   primary: [
     "h-12 w-full gap-2 rounded-2xl border-0 font-semibold",
-    "bg-stats-orange text-white",
+    "bg-stats-orange text-stats-foreground",
     "hover:bg-stats-orange/90 pressed:bg-stats-orange/85",
   ].join(" "),
   secondary: [

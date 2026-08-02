@@ -3,14 +3,16 @@
 import { Button, Typography } from "@heroui/react";
 import { ArrowRight } from "@repo/icons/ArrowRight";
 import { PersonKarate } from "@repo/icons/PersonKarate";
+import { statsColors } from "@repo/theme";
 import type { CSSProperties } from "react";
 import { MediaImage } from "../../common/MediaImage";
 import { sportCardVariants } from "./SportCard.styles";
 import type { SportCardProps, SportCardSize } from "./SportCard.types";
 
-const DEFAULT_COLOR = "#2563EB";
-const DEFAULT_FOREGROUND = "#FFFFFF";
-const DEFAULT_ACTION = "#000000";
+const DEFAULT_COLOR = statsColors.blue;
+const DEFAULT_FOREGROUND = statsColors.foreground;
+/** High-contrast affordance on saturated stats fills (theme eclipse). */
+const DEFAULT_ACTION = "var(--eclipse)";
 const DEFAULT_OVERLAY_OPACITY = 0.55;
 
 const ICON_SIZE: Record<SportCardSize, number> = {

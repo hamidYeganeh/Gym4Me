@@ -31,7 +31,7 @@ function clamp(value: number, min: number, max: number) {
 export function SwipeButton({
   label,
   onComplete,
-  color = "warning",
+  color = "accent",
   trackColor,
   labelColor,
   thumbColor,

@@ -10,9 +10,10 @@ import { MediaImage } from "../../common/MediaImage";
 import { clubClassCardVariants } from "./ClubClassCard.styles";
 import type { ClubClassCardProps, ClubClassCardSize } from "./ClubClassCard.types";
 
-const DEFAULT_COLOR = "#121212";
-const DEFAULT_FOREGROUND = "#FFFFFF";
-const DEFAULT_ACCENT = "#2A2A2A";
+/** Intentional dark card surface — uses theme eclipse so light/dark stay consistent. */
+const DEFAULT_COLOR = "var(--eclipse)";
+const DEFAULT_FOREGROUND = "var(--stats-foreground)";
+const DEFAULT_ACCENT = "color-mix(in oklch, var(--eclipse) 88%, var(--snow))";
 const DEFAULT_OVERLAY_OPACITY = 0.72;
 
 const TITLE_TYPE: Record<ClubClassCardSize, "h4" | "h3" | "h2"> = {

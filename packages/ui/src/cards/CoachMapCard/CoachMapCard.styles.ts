@@ -17,7 +17,7 @@ export const coachMapCardVariants = tv({
     specialtyIcon: "size-3.5 shrink-0 text-danger",
     metaDot: "size-1 shrink-0 rounded-full bg-muted",
     rating: "inline-flex items-center gap-1",
-    star: "size-3.5 shrink-0 text-warning",
+    star: "size-3.5 shrink-0 text-accent",
     ratingText: "text-muted",
     address: "text-sm leading-snug text-muted",
     directions: [

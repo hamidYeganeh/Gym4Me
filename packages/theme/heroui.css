@@ -43,8 +43,9 @@
   --surface-secondary-foreground: oklch(21.03% 0.0000 148.26);
   --surface-tertiary: oklch(93.73% 0.0000 148.26);
   --surface-tertiary-foreground: oklch(21.03% 0.0000 148.26);
-  --warning: oklch(78.19% 0.1585 59.66);
-  --warning-foreground: oklch(21.03% 0.0059 59.66);
+  /* Brand uses accent; keep HeroUI `warning` API aliased to accent */
+  --warning: var(--accent);
+  --warning-foreground: var(--accent-foreground);
 
   /*
    * Stats / chart palette (exact hex from design)
@@ -125,8 +126,9 @@
   --surface-secondary-foreground: oklch(99.11% 0.0000 148.26);
   --surface-tertiary: oklch(27.21% 0.0000 148.26);
   --surface-tertiary-foreground: oklch(99.11% 0.0000 148.26);
-  --warning: oklch(82.03% 0.1388 63.67);
-  --warning-foreground: oklch(21.03% 0.0059 63.67);
+  /* Brand uses accent; keep HeroUI `warning` API aliased to accent */
+  --warning: var(--accent);
+  --warning-foreground: var(--accent-foreground);
 
   /* Stats / chart palette (same in dark — saturated cards stay vivid) */
   --stats-red: #dc2626;

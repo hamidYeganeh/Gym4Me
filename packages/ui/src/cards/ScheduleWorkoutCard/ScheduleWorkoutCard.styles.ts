@@ -26,7 +26,7 @@ export const scheduleWorkoutCardVariants = tv({
   variants: {
     intensity: {
       intense: {
-        intensity: "text-warning",
+        intensity: "text-stats-orange",
       },
       normal: {
         intensity: "text-accent",

@@ -10,8 +10,9 @@ import type { StatsCardProps } from "./StatsCard.types";
 const DEFAULT_FOREGROUND = "var(--stats-foreground)";
 const LINE_COLOR = "var(--stats-blue)";
 const BAR_COLOR = "var(--stats-orange)";
-/** Warm off-white used for the emphasized bar in the Score mock. */
-const BAR_HIGHLIGHT_FILL = "#FFF4E8";
+/** Soft highlight that tracks surface + accent in both themes. */
+const BAR_HIGHLIGHT_FILL =
+  "color-mix(in oklch, var(--accent) 28%, var(--surface))";
 const CHART_WIDTH = 118;
 const CHART_HEIGHT = 72;
 const CHART_PAD = 2;

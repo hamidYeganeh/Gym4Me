@@ -5,7 +5,7 @@ export const clubEquipmentCardVariants = tv({
   slots: {
     root: [
       "flex h-[148px] w-[144px] flex-col justify-between",
-      "rounded-[24px] border-0 bg-surface p-3 shadow-none",
+      "rounded-[24px] border-0 bg-surface-secondary p-3 shadow-none",
       "text-surface-foreground",
     ].join(" "),
     iconBadge: [

@@ -5,9 +5,9 @@ export const clubLocationCardVariants = tv({
   slots: {
     root: [
       "relative flex w-full max-w-md flex-col overflow-hidden rounded-[28px] p-0",
-      "bg-surface text-surface-foreground shadow-sm",
+      "border border-border/70 bg-default text-default-foreground shadow-sm",
     ].join(" "),
-    mapShell: "relative w-full overflow-hidden bg-surface-secondary p-0",
+    mapShell: "relative w-full overflow-hidden bg-surface-tertiary p-0",
     mapCanvas: [
       "absolute inset-0 z-0 size-full",
       "[&_.leaflet-control-attribution]:!bg-transparent [&_.leaflet-control-attribution]:!text-[9px]",
@@ -25,7 +25,7 @@ export const clubLocationCardVariants = tv({
       "shadow-sm",
     ].join(" "),
     footer:
-      "relative z-10 flex items-end justify-between gap-4 bg-surface px-5 pb-5 pt-4",
+      "relative z-10 flex items-end justify-between gap-4 bg-default px-5 pb-5 pt-4",
     footerText: "flex min-w-0 flex-1 flex-col gap-2",
     header: "gap-0 p-0",
     title: "text-xl font-semibold tracking-tight text-foreground",
@@ -35,9 +35,9 @@ export const clubLocationCardVariants = tv({
     metaDot: "size-1 shrink-0 rounded-full bg-muted",
     action: [
       "size-14 min-w-14 shrink-0 rounded-[18px]",
-      "[--button-bg:var(--warning)] [--button-fg:var(--warning-foreground)]",
-      "[--button-bg-hover:var(--warning)] [--button-bg-pressed:var(--warning)]",
-      "bg-warning text-warning-foreground",
+      "[--button-bg:var(--accent)] [--button-fg:var(--accent-foreground)]",
+      "[--button-bg-hover:var(--accent)] [--button-bg-pressed:var(--accent)]",
+      "bg-accent text-accent-foreground",
       "hover:opacity-90 data-[hovered=true]:opacity-90",
       "data-[pressed=true]:scale-[0.97]",
     ].join(" "),

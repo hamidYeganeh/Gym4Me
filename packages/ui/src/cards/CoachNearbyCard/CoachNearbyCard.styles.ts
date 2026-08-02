@@ -20,7 +20,7 @@ export const coachNearbyCardVariants = tv({
     tagIcon: "size-3.5 shrink-0 text-muted",
     ratingRow: "flex items-center gap-1.5",
     stars: "flex items-center gap-0.5",
-    star: "shrink-0 text-warning",
+    star: "shrink-0 text-accent",
     starEmpty: "shrink-0 text-muted/40",
     ratingText: "text-sm text-foreground",
     ratingCount: "text-muted",

@@ -29,15 +29,15 @@ export const adaptiveSliderVariants = tv({
     tone: {
       low: {
         value: "text-success",
-        fill: "bg-linear-to-r from-warning to-accent",
+        fill: "bg-linear-to-r from-success to-accent",
       },
       mid: {
-        value: "text-warning",
-        fill: "bg-linear-to-r from-warning/35 to-warning",
+        value: "text-accent",
+        fill: "bg-linear-to-r from-accent/35 to-accent",
       },
       high: {
         value: "text-danger",
-        fill: "bg-linear-to-r from-warning to-danger",
+        fill: "bg-linear-to-r from-accent to-danger",
       },
     },
   },

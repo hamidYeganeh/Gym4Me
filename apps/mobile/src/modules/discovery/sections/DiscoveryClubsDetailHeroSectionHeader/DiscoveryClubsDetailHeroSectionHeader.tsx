@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@heroui/react";
+import { Bookmark } from "@repo/icons/Bookmark";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { Heart } from "@repo/icons/Heart";
 import { useTranslations } from "next-intl";
@@ -11,12 +12,15 @@ import type { DiscoveryClubsDetailHeroSectionHeaderProps } from "./DiscoveryClub
 
 export function DiscoveryClubsDetailHeroSectionHeader({
   isFavorite: initialFavorite = false,
+  isSaved: initialSaved = false,
   onBack,
   onFavoriteChange,
+  onSavedChange,
 }: DiscoveryClubsDetailHeroSectionHeaderProps) {
   const t = useTranslations("ClubDetail");
   const router = useRouter();
   const [isFavorite, setIsFavorite] = useState(Boolean(initialFavorite));
+  const [isSaved, setIsSaved] = useState(Boolean(initialSaved));
 
   const handleBack = () => {
     if (onBack) {
@@ -30,6 +34,14 @@ export function DiscoveryClubsDetailHeroSectionHeader({
     setIsFavorite((value) => {
       const next = !value;
       onFavoriteChange?.(next);
+      return next;
+    });
+  };
+
+  const handleSave = () => {
+    setIsSaved((value) => {
+      const next = !value;
+      onSavedChange?.(next);
       return next;
     });
   };
@@ -48,16 +60,30 @@ export function DiscoveryClubsDetailHeroSectionHeader({
       >
         <ChevronLeft size={20} />
       </Button>
-      <Button
-        aria-label={t("favorite")}
-        aria-pressed={isFavorite}
-        isIconOnly
-        onPress={handleFavorite}
-        size="lg"
-        variant={isFavorite ? "danger" : "danger-soft"}
-      >
-        <Heart size={20} />
-      </Button>
+
+      <div className={styles.actions}>
+        <Button
+          aria-label={t("save")}
+          aria-pressed={isSaved}
+          className={isSaved ? "text-accent" : undefined}
+          isIconOnly
+          onPress={handleSave}
+          size="lg"
+          variant="secondary"
+        >
+          <Bookmark size={20} />
+        </Button>
+        <Button
+          aria-label={t("favorite")}
+          aria-pressed={isFavorite}
+          isIconOnly
+          onPress={handleFavorite}
+          size="lg"
+          variant={isFavorite ? "danger" : "danger-soft"}
+        >
+          <Heart size={20} />
+        </Button>
+      </div>
     </div>
   );
 }

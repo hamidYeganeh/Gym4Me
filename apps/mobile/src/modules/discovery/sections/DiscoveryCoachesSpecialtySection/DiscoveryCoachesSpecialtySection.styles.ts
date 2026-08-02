@@ -3,7 +3,7 @@ export const discoveryCoachesSpecialtySectionStyles = {
   header: "flex items-center justify-between gap-3 px-screen",
   title: "text-foreground",
   seeAll:
-    "cursor-pointer text-sm font-semibold text-warning no-underline shadow-none",
+    "cursor-pointer text-sm font-semibold text-accent no-underline shadow-none",
   scroller:
     "flex gap-2.5 overflow-x-auto px-screen pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
   chip: [

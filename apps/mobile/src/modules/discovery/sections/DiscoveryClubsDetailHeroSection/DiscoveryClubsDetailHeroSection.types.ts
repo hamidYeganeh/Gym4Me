@@ -5,5 +5,6 @@ export type DiscoveryClubsDetailHeroSectionProps = {
   location: string;
   images: string[];
   isFavorite?: boolean;
+  isSaved?: boolean;
   children?: ReactNode;
 };

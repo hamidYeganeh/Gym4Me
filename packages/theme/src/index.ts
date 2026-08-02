@@ -1,5 +1,5 @@
 export { ThemeProvider } from "./theme-provider";
-export { useTheme } from "next-themes";
+export { useTheme } from "@teispace/next-themes";
 export { useThemeTransition } from "./use-theme-transition";
 export { statsColorHex, statsColors } from "./stats-colors";
 export { screen } from "./screen";
@@ -11,4 +11,4 @@ export type {
   ResolvedColorTheme,
   ThemeTransitionOrigin,
 } from "./use-theme-transition";
-export type { ThemeProviderProps } from "next-themes";
+export type { ThemeProviderProps } from "@teispace/next-themes";

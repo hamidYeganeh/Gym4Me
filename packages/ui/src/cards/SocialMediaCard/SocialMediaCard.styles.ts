@@ -5,7 +5,7 @@ export const socialMediaCardVariants = tv({
   slots: {
     root: [
       "w-full gap-4 overflow-hidden rounded-[32px] p-6",
-      "bg-surface text-surface-foreground",
+      "bg-surface-secondary text-surface-foreground",
     ].join(" "),
     header: "flex flex-row items-center justify-between gap-3 p-0",
     title: "tracking-wide uppercase text-surface-foreground",
@@ -14,8 +14,8 @@ export const socialMediaCardVariants = tv({
     item: [
       // Override HeroUI Button defaults (h-10, inline-flex, ghost fill)
       "relative !flex !h-16 w-full min-w-0 shrink-0 items-center justify-center",
-      "rounded-[24px] border-0",
-      "bg-surface-secondary text-surface-secondary-foreground",
+      "rounded-[24px] border-0 bg-surface",
+      "bg-surface text-surface-secondary-foreground",
       "transition-transform duration-fast ease-app outline-none data-[pressed=true]:scale-[0.99]",
       "hover:bg-surface-tertiary data-[hovered=true]:bg-surface-tertiary",
     ].join(" "),

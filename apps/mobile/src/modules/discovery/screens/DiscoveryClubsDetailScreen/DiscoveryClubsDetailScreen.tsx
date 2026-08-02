@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import { DiscoveryClubsDetailActionsSection } from "../../sections/DiscoveryClubsDetailActionsSection";
+import { DiscoveryClubsDetailBodySection } from "../../sections/DiscoveryClubsDetailBodySection";
 import { DiscoveryClubsDetailHeroSection } from "../../sections/DiscoveryClubsDetailHeroSection";
 import { discoveryClubsDetailScreenStyles as styles } from "./DiscoveryClubsDetailScreen.styles";
 import type { DiscoveryClubsDetailScreenProps } from "./DiscoveryClubsDetailScreen.types";
@@ -7,13 +10,38 @@ import type { DiscoveryClubsDetailScreenProps } from "./DiscoveryClubsDetailScre
 export function DiscoveryClubsDetailScreen({
   club,
 }: DiscoveryClubsDetailScreenProps) {
+  const defaultPlanId =
+    club.subscriptions.find((plan) => plan.price > 0)?.id ??
+    club.subscriptions[0]?.id ??
+    "";
+  const [selectedSubscriptionId, setSelectedSubscriptionId] =
+    useState(defaultPlanId);
+
+  const selectedPlan =
+    club.subscriptions.find((plan) => plan.id === selectedSubscriptionId) ??
+    club.subscriptions[0];
+
   return (
     <div className={styles.root}>
-      <DiscoveryClubsDetailHeroSection
-        images={club.images}
-        isFavorite={club.isFavorite}
-        location={club.location}
-        title={club.title}
+      <div className={styles.scroll}>
+        <DiscoveryClubsDetailHeroSection
+          images={club.images}
+          isFavorite={club.isFavorite}
+          isSaved={club.isSaved}
+          location={club.location}
+          title={club.title}
+        >
+          <DiscoveryClubsDetailBodySection
+            club={club}
+            onSubscriptionChange={setSelectedSubscriptionId}
+            selectedSubscriptionId={selectedSubscriptionId}
+          />
+        </DiscoveryClubsDetailHeroSection>
+      </div>
+      <DiscoveryClubsDetailActionsSection
+        price={selectedPlan?.price ?? 0}
+        pricePrefix={club.pricePrefix}
+        priceSuffix={club.priceSuffix}
       />
     </div>
   );

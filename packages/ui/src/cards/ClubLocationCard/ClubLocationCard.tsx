@@ -42,8 +42,8 @@ const TILE_ATTR =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
 type MapThemeColors = {
-  warning: string;
-  warningForeground: string;
+  accent: string;
+  accentForeground: string;
   overlay: string;
   overlayForeground: string;
   muted: string;
@@ -73,8 +73,8 @@ function resolveCssColor(variable: string, fallback: string) {
 
 function resolveMapThemeColors(): MapThemeColors {
   return {
-    warning: resolveCssColor("--accent", "oklch(87.43% 0.2460 148.26)"),
-    warningForeground: resolveCssColor(
+    accent: resolveCssColor("--accent", "oklch(87.43% 0.2460 148.26)"),
+    accentForeground: resolveCssColor(
       "--accent-foreground",
       "oklch(15% 0.0300 148.26)",
     ),
@@ -161,9 +161,9 @@ function distanceIcon(
     className: "club-location-tip",
     html: tipHtml({
       label,
-      background: colors.warning,
-      color: colors.warningForeground,
-      shadowColor: `color-mix(in oklab, ${colors.warning} 45%, transparent)`,
+      background: colors.accent,
+      color: colors.accentForeground,
+      shadowColor: `color-mix(in oklab, ${colors.accent} 45%, transparent)`,
     }),
     iconSize: [0, 0],
     iconAnchor: [0, 0],
@@ -293,7 +293,7 @@ export function ClubLocationCard({
 
       const latlngs = toLatLngs(route);
       const glow = L.polyline(latlngs, {
-        color: colors.warning,
+        color: colors.accent,
         weight: 10,
         opacity: 0.28,
         lineCap: "round",
@@ -302,7 +302,7 @@ export function ClubLocationCard({
       }).addTo(map);
 
       const line = L.polyline(latlngs, {
-        color: colors.warning,
+        color: colors.accent,
         weight: 5,
         opacity: 1,
         lineCap: "round",
@@ -398,8 +398,8 @@ export function ClubLocationCard({
       if (tileRef.current) {
         tileRef.current.setUrl(url);
       }
-      lineRef.current?.setStyle({ color: colors.warning });
-      glowRef.current?.setStyle({ color: colors.warning });
+      lineRef.current?.setStyle({ color: colors.accent });
+      glowRef.current?.setStyle({ color: colors.accent });
       startMarkerRef.current?.setIcon(waypointIcon(L, startLabel, colors));
       endMarkerRef.current?.setIcon(waypointIcon(L, endLabel, colors));
       if (distanceMarkerRef.current && distanceLabel != null) {

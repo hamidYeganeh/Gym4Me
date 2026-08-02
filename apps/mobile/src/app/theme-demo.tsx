@@ -15,20 +15,39 @@ import {
   WifiFull,
 } from "@repo/icons";
 import { statsColors } from "@repo/theme";
+import {
+  AchievementCard,
+  type AchievementCardColor,
+} from "@repo/ui/cards/AchievementCard";
 import { CallToActionCard } from "@repo/ui/cards/CallToActionCard";
 import { CityCard } from "@repo/ui/cards/CityCard";
 import { ClubAmenityCard } from "@repo/ui/cards/ClubAmenityCard";
 import { ClubBranchCard } from "@repo/ui/cards/ClubBranchCard";
+import { ClubCancellationPolicy } from "@repo/ui/cards/ClubCancellationPolicy";
 import { ClubCard } from "@repo/ui/cards/ClubCard";
 import { ClubClassCard } from "@repo/ui/cards/ClubClassCard";
 import { ClubEquipmentCard } from "@repo/ui/cards/ClubEquipmentCard";
+import { ClubSubscriptionCard } from "@repo/ui/cards/ClubSubscriptionCard";
+import { CoachAiCard } from "@repo/ui/cards/CoachAiCard";
+import { CoachExpertCard } from "@repo/ui/cards/CoachExpertCard";
+import { CoachFeatureCard } from "@repo/ui/cards/CoachFeatureCard";
+import { CoachMapCard } from "@repo/ui/cards/CoachMapCard";
+import { CoachNearbyCard } from "@repo/ui/cards/CoachNearbyCard";
+import { CoachPopularItem } from "@repo/ui/cards/CoachPopularItem";
+import { IbanCard } from "@repo/ui/cards/IbanCard";
 import { MetricGoalCard } from "@repo/ui/cards/MetricGoalCard";
 import { MetricHistoryItem } from "@repo/ui/cards/MetricHistoryItem";
 import { MetricInsightCard } from "@repo/ui/cards/MetricInsightCard";
+import { MetricPromoCard } from "@repo/ui/cards/MetricPromoCard";
+import { MetricReorderItem } from "@repo/ui/cards/MetricReorderItem";
+import { MuscleCard } from "@repo/ui/cards/MuscleCard";
+import { ReviewCard } from "@repo/ui/cards/ReviewCard";
+import { ScheduleWorkoutCard } from "@repo/ui/cards/ScheduleWorkoutCard";
 import { SocialMediaCard } from "@repo/ui/cards/SocialMediaCard";
 import { SportCard } from "@repo/ui/cards/SportCard";
 import { SportCategoryCard } from "@repo/ui/cards/SportCategoryCard";
 import { StatsCard } from "@repo/ui/cards/StatsCard";
+import { TicketCard } from "@repo/ui/cards/TicketCard";
 import { WorkoutCard } from "@repo/ui/cards/WorkoutCard";
 import { LogoMark, PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { AreaLineChart } from "@repo/ui/kit/AreaLineChart";
@@ -43,7 +62,20 @@ import { InputOTPDemo } from "@/components/ui/input-otp-demo";
 import { KnobSliderDemo } from "@/components/ui/knob-slider-demo";
 import { MetricCardDemo } from "@/components/ui/metric-card-demo";
 import { SwipeButtonDemo } from "@/components/ui/swipe-button-demo";
+import { UploaderDemo } from "@/components/ui/uploader-demo";
 import { WeightSliderDemo } from "@/components/ui/weight-slider-demo";
+
+const ACHIEVEMENT_COLORS: AchievementCardColor[] = [
+  "accent",
+  "danger",
+  "success",
+  "warning",
+  "red",
+  "orange",
+  "blue",
+  "yellow",
+  "purple",
+];
 
 const AREA_CHART_DATA = [
   { label: "ش", value: 68.1 },
@@ -72,7 +104,7 @@ type ThemeDemoLabels = {
   themeLabel: string;
   chipNew: string;
   chipSuccess: string;
-  chipWarning: string;
+  chipDanger: string;
   surfacePrimary: string;
   surfaceSecondary: string;
   surfaceTertiary: string;
@@ -88,6 +120,71 @@ type ThemeDemoLabels = {
   socialMediaCardFacebook: string;
   socialMediaCardInstagram: string;
   socialMediaCardLinkedIn: string;
+  ibanCardLabel: string;
+  ibanCardHolder: string;
+  ibanCardExpiry: string;
+  ibanCardNumber: string;
+  ticketCardLabel: string;
+  ticketCardTitle: string;
+  ticketCardSubtitle: string;
+  clubSubscriptionCardLabel: string;
+  clubSubscriptionPlanName: string;
+  clubSubscriptionPrice: string;
+  clubSubscriptionPriceSuffix: string;
+  clubSubscriptionDescription: string;
+  clubSubscriptionBadge: string;
+  clubSubscriptionAction: string;
+  clubCancellationPolicyLabel: string;
+  clubCancellationStep1Title: string;
+  clubCancellationStep1Description: string;
+  clubCancellationStep2Title: string;
+  clubCancellationStep2Description: string;
+  clubCancellationStep3Title: string;
+  clubCancellationStep3Description: string;
+  clubCancellationStep4Title: string;
+  clubCancellationStep4Description: string;
+  coachName: string;
+  coachSpecialty: string;
+  coachCertified: string;
+  coachYears: string;
+  coachAiCardLabel: string;
+  coachAiCardTitle: string;
+  coachAiCardAction: string;
+  coachExpertCardLabel: string;
+  coachFeatureCardLabel: string;
+  coachFeatureNew: string;
+  coachFeatureClose: string;
+  coachMapCardLabel: string;
+  coachMapAddress: string;
+  coachMapGetDirections: string;
+  coachMapViewDetails: string;
+  coachNearbyCardLabel: string;
+  coachNearbyPrice: string;
+  coachNearbyDistance: string;
+  coachNearbyRemote: string;
+  coachPopularItemLabel: string;
+  coachVerified: string;
+  metricPromoCardLabel: string;
+  metricPromoTitle: string;
+  metricPromoAction: string;
+  metricPromoImageAlt: string;
+  metricReorderItemLabel: string;
+  metricReorderTitle: string;
+  metricReorderRemove: string;
+  metricReorderDrag: string;
+  muscleCardLabel: string;
+  muscleCardAbs: string;
+  muscleCardLowerLeg: string;
+  reviewCardLabel: string;
+  reviewCardTitle: string;
+  reviewCardContent: string;
+  reviewCardDate: string;
+  reviewCardVerified: string;
+  reviewCardLike: string;
+  reviewCardDislike: string;
+  reviewCardReport: string;
+  scheduleWorkoutCardLabel: string;
+  scheduleWorkoutIntensity: string;
   sportCardLabel: string;
   sportCardSubtitle: string;
   sportCardTitle: string;
@@ -121,6 +218,8 @@ type ThemeDemoLabels = {
   clubEquipmentCardTitle: string;
   clubEquipmentCardSubtitle: string;
   clubEquipmentCardMeta: string;
+  achievementCardLabel: string;
+  achievementCardAria: string;
   clubAmenityCardLabel: string;
   clubAmenityCardTitle: string;
   clubAmenityCardSubtitle: string;
@@ -157,6 +256,15 @@ type ThemeDemoLabels = {
   swipeButtonContinue: string;
   swipeButtonSave: string;
   swipeButtonDelete: string;
+  uploaderDemoLabel: string;
+  uploaderLabel: string;
+  fileItemLabel: string;
+  fileItemTypeLabel: string;
+  uploaderDemoFileName: string;
+  uploaderDemoFileSize: string;
+  uploaderDemoSuccess: string;
+  uploaderDemoError: string;
+  uploaderDemoRetry: string;
   statsCardLabel: string;
   statsCardHydrationTitle: string;
   statsCardHydrationUnit: string;
@@ -269,6 +377,24 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
         <AnimatedThemeToggler aria-label={labels.themeLabel} />
         <p className="text-sm text-muted">{labels.themeLabel}</p>
       </div>
+
+      <section className="flex w-full flex-col gap-3">
+        <h2 className="text-lg font-medium text-foreground">
+          {labels.uploaderDemoLabel}
+        </h2>
+        <UploaderDemo
+          labels={{
+            uploaderLabel: labels.uploaderLabel,
+            fileItemLabel: labels.fileItemLabel,
+            fileItemTypeLabel: labels.fileItemTypeLabel,
+            fileName: labels.uploaderDemoFileName,
+            fileSize: labels.uploaderDemoFileSize,
+            successMessage: labels.uploaderDemoSuccess,
+            errorMessage: labels.uploaderDemoError,
+            retryLabel: labels.uploaderDemoRetry,
+          }}
+        />
+      </section>
 
       <section className="flex w-full flex-col gap-3">
         <h2 className="text-lg font-medium text-foreground">
@@ -401,7 +527,10 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
           {labels.statsCardLabel}
         </h2>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="size-6 rounded-full bg-stats-red" title="stats-red" />
+          <span
+            className="size-6 rounded-full bg-stats-red"
+            title="stats-red"
+          />
           <span
             className="size-6 rounded-full bg-stats-blue"
             title="stats-blue"
@@ -576,7 +705,6 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
             labels={{
               finish: labels.swipeButtonAction,
               confirm: labels.swipeButtonConfirm,
-              continue: labels.swipeButtonContinue,
               save: labels.swipeButtonSave,
               delete: labels.swipeButtonDelete,
             }}
@@ -718,6 +846,22 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-medium text-foreground">
+          {labels.achievementCardLabel}
+        </h2>
+        <div className="flex flex-wrap items-end gap-4 pb-2">
+          {ACHIEVEMENT_COLORS.map((color) => (
+            <AchievementCard
+              key={color}
+              aria-label={`${labels.achievementCardAria} (${color})`}
+              color={color}
+              variant="polygon"
+            />
+          ))}
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-medium text-foreground">
           {labels.clubCardLabel}
         </h2>
         <div className="flex flex-wrap items-end gap-4">
@@ -839,7 +983,7 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
           />
           <SportCard
             actionLabel={labels.sportCardAction}
-            color="#DC2626"
+            color={statsColors.red}
             sport={{
               subtitle: labels.sportCardSubtitle,
               title: labels.sportCardTitle,
@@ -847,7 +991,10 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
           />
           <SportCard
             actionLabel={labels.sportCardAction}
-            color="#0F172A"
+            color="var(--foreground)"
+            foregroundColor="var(--background)"
+            actionColor="var(--background)"
+            actionForegroundColor="var(--foreground)"
             overlayOpacity={0.45}
             size="lg"
             sport={{
@@ -881,7 +1028,10 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
           />
           <SportCategoryCard
             actionLabel={labels.sportCategoryCardAction}
-            color="#0F172A"
+            color="var(--foreground)"
+            foregroundColor="var(--background)"
+            actionColor="var(--background)"
+            actionForegroundColor="var(--foreground)"
             overlayOpacity={0.45}
             size="lg"
             category={{
@@ -939,6 +1089,253 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-medium text-foreground">
+          {labels.ibanCardLabel}
+        </h2>
+        <IbanCard
+          expiry={labels.ibanCardExpiry}
+          holderName={labels.ibanCardHolder}
+          number={labels.ibanCardNumber}
+        />
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-medium text-foreground">
+          {labels.ticketCardLabel}
+        </h2>
+        <div className="flex flex-wrap gap-4">
+          <TicketCard
+            subtitle={labels.ticketCardSubtitle}
+            title={labels.ticketCardTitle}
+          />
+          <TicketCard />
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-medium text-foreground">
+          {labels.clubSubscriptionCardLabel}
+        </h2>
+        <div className="flex flex-col gap-4">
+          <ClubSubscriptionCard
+            actionLabel={labels.clubSubscriptionAction}
+            badge={labels.clubSubscriptionBadge}
+            description={labels.clubSubscriptionDescription}
+            planName={labels.clubSubscriptionPlanName}
+            price={labels.clubSubscriptionPrice}
+            priceSuffix={labels.clubSubscriptionPriceSuffix}
+            selected
+          />
+          <ClubSubscriptionCard
+            actionLabel={labels.clubSubscriptionAction}
+            description={labels.clubSubscriptionDescription}
+            planName={labels.clubSubscriptionPlanName}
+            price={labels.clubSubscriptionPrice}
+            priceSuffix={labels.clubSubscriptionPriceSuffix}
+          />
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-medium text-foreground">
+          {labels.clubCancellationPolicyLabel}
+        </h2>
+        <ClubCancellationPolicy
+          activeIndex={2}
+          steps={[
+            {
+              title: labels.clubCancellationStep1Title,
+              description: labels.clubCancellationStep1Description,
+            },
+            {
+              title: labels.clubCancellationStep2Title,
+              description: labels.clubCancellationStep2Description,
+            },
+            {
+              title: labels.clubCancellationStep3Title,
+              description: labels.clubCancellationStep3Description,
+            },
+            {
+              title: labels.clubCancellationStep4Title,
+              description: labels.clubCancellationStep4Description,
+            },
+          ]}
+          title={labels.clubCancellationPolicyLabel}
+        />
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-medium text-foreground">
+          {labels.coachAiCardLabel}
+        </h2>
+        <CoachAiCard
+          actionLabel={labels.coachAiCardAction}
+          title={labels.coachAiCardTitle}
+        />
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-medium text-foreground">
+          {labels.coachExpertCardLabel}
+        </h2>
+        <div className="flex flex-wrap gap-4">
+          <CoachExpertCard
+            image={PLACEHOLDER_IMAGE}
+            isVerified
+            title={labels.coachName}
+            verifiedLabel={labels.coachVerified}
+          />
+          <CoachExpertCard image={PLACEHOLDER_IMAGE} title={labels.coachName} />
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-medium text-foreground">
+          {labels.coachFeatureCardLabel}
+        </h2>
+        <CoachFeatureCard
+          certifiedLabel={labels.coachCertified}
+          closeLabel={labels.coachFeatureClose}
+          experienceLabel={labels.coachYears}
+          image={PLACEHOLDER_IMAGE}
+          isNew
+          newLabel={labels.coachFeatureNew}
+          rating={4.5}
+          ratingCount={128}
+          specialty={labels.coachSpecialty}
+          title={labels.coachName}
+        />
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-medium text-foreground">
+          {labels.coachMapCardLabel}
+        </h2>
+        <CoachMapCard
+          address={labels.coachMapAddress}
+          getDirectionsLabel={labels.coachMapGetDirections}
+          image={PLACEHOLDER_IMAGE}
+          rating={4.8}
+          ratingCount={96}
+          specialtyLabel={labels.coachSpecialty}
+          title={labels.coachName}
+          viewDetailsLabel={labels.coachMapViewDetails}
+        />
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-medium text-foreground">
+          {labels.coachNearbyCardLabel}
+        </h2>
+        <CoachNearbyCard
+          availability="remote"
+          distanceLabel={labels.coachNearbyDistance}
+          image={PLACEHOLDER_IMAGE}
+          priceLabel={labels.coachNearbyPrice}
+          rating={4.6}
+          ratingCount={54}
+          remoteLabel={labels.coachNearbyRemote}
+          specialtyLabel={labels.coachSpecialty}
+          title={labels.coachName}
+        />
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-medium text-foreground">
+          {labels.coachPopularItemLabel}
+        </h2>
+        <div className="flex flex-col gap-2">
+          <CoachPopularItem
+            experienceLabel={labels.coachYears}
+            image={PLACEHOLDER_IMAGE}
+            rank={1}
+            rating={4.9}
+            ratingCount={210}
+            title={labels.coachName}
+          />
+          <CoachPopularItem
+            experienceLabel={labels.coachYears}
+            image={PLACEHOLDER_IMAGE}
+            rank={2}
+            rating={4.7}
+            ratingCount={180}
+            title={labels.coachName}
+          />
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-medium text-foreground">
+          {labels.metricPromoCardLabel}
+        </h2>
+        <MetricPromoCard
+          actionLabel={labels.metricPromoAction}
+          image={PLACEHOLDER_IMAGE}
+          imageAlt={labels.metricPromoImageAlt}
+          title={labels.metricPromoTitle}
+        />
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-medium text-foreground">
+          {labels.metricReorderItemLabel}
+        </h2>
+        <MetricReorderItem
+          dragLabel={labels.metricReorderDrag}
+          icon={<Heart size={20} />}
+          removeLabel={labels.metricReorderRemove}
+          title={labels.metricReorderTitle}
+        />
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-medium text-foreground">
+          {labels.muscleCardLabel}
+        </h2>
+        <div className="flex flex-wrap gap-4">
+          <MuscleCard actionLabel={labels.muscleCardAbs} bodyArea="abs" />
+          <MuscleCard
+            actionLabel={labels.muscleCardLowerLeg}
+            bodyArea="lower-leg"
+          />
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-medium text-foreground">
+          {labels.reviewCardLabel}
+        </h2>
+        <ReviewCard
+          avatar={PLACEHOLDER_IMAGE}
+          avatarFallback="AR"
+          content={labels.reviewCardContent}
+          date={labels.reviewCardDate}
+          dislikeLabel={labels.reviewCardDislike}
+          isVerified
+          likeLabel={labels.reviewCardLike}
+          rating={4.5}
+          reportLabel={labels.reviewCardReport}
+          title={labels.reviewCardTitle}
+          verifiedLabel={labels.reviewCardVerified}
+        />
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-medium text-foreground">
+          {labels.scheduleWorkoutCardLabel}
+        </h2>
+        <ScheduleWorkoutCard
+          category={labels.workoutCardCategory}
+          duration={labels.workoutCardDuration}
+          image={PLACEHOLDER_IMAGE}
+          intensity="intense"
+          intensityLabel={labels.scheduleWorkoutIntensity}
+          title={labels.workoutCardTitle}
+          trailing="chevron"
+        />
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-medium text-foreground">
           {labels.iconsLabel}
         </h2>
         <div className="flex flex-wrap items-center gap-4 text-foreground">
@@ -978,8 +1375,8 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
           <Chip color="success" variant="soft">
             <Chip.Label>{labels.chipSuccess}</Chip.Label>
           </Chip>
-          <Chip color="warning" variant="soft">
-            <Chip.Label>{labels.chipWarning}</Chip.Label>
+          <Chip color="danger" variant="soft">
+            <Chip.Label>{labels.chipDanger}</Chip.Label>
           </Chip>
         </div>
       </section>

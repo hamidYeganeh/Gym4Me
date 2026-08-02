@@ -3,7 +3,7 @@
 import {
   ThemeProvider as NextThemesProvider,
   type ThemeProviderProps,
-} from "next-themes";
+} from "@teispace/next-themes";
 
 export function ThemeProvider({
   children,
@@ -15,6 +15,8 @@ export function ThemeProvider({
       defaultTheme="dark"
       enableSystem
       disableTransitionOnChange
+      // Match previous next-themes localStorage-only behavior.
+      storage="local"
       {...props}
     >
       {children}

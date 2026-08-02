@@ -5,7 +5,7 @@ export const clubBranchCardVariants = tv({
   slots: {
     root: [
       "relative flex flex-col justify-end overflow-hidden",
-      "bg-surface-tertiary text-stats-foreground",
+      "bg-surface-tertiary text-foreground",
     ].join(" "),
     media: "absolute inset-0 overflow-hidden",
     image:
@@ -19,19 +19,19 @@ export const clubBranchCardVariants = tv({
       "flex max-w-none items-end gap-1.5",
       "[writing-mode:vertical-rl]",
       "rotate-180",
-      "text-stats-foreground",
+      "text-foreground",
     ].join(" "),
-    title: "leading-none tracking-tight text-stats-foreground",
-    subtitle: "leading-none tracking-tight text-stats-foreground/90",
+    title: "leading-none tracking-tight text-foreground",
+    subtitle: "leading-none tracking-tight text-foreground/90",
     action: [
-      "shrink-0 rounded-full border border-stats-foreground",
-      "bg-transparent text-stats-foreground",
-      "hover:bg-stats-foreground/10 data-[hovered=true]:bg-stats-foreground/10",
-      "pressed:bg-stats-foreground/15 data-[pressed=true]:bg-stats-foreground/15",
+      "shrink-0 rounded-full border border-foreground",
+      "bg-transparent text-foreground",
+      "hover:bg-foreground/10 data-[hovered=true]:bg-foreground/10",
+      "pressed:bg-foreground/15 data-[pressed=true]:bg-foreground/15",
       "[--button-bg:transparent]",
-      "[--button-bg-hover:color-mix(in_oklch,var(--stats-foreground)_10%,transparent)]",
-      "[--button-bg-pressed:color-mix(in_oklch,var(--stats-foreground)_15%,transparent)]",
-      "[--button-fg:var(--stats-foreground)]",
+      "[--button-bg-hover:color-mix(in_oklch,var(--foreground)_10%,transparent)]",
+      "[--button-bg-pressed:color-mix(in_oklch,var(--foreground)_15%,transparent)]",
+      "[--button-fg:var(--foreground)]",
     ].join(" "),
   },
   variants: {

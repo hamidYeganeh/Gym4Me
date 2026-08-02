@@ -9,7 +9,7 @@ export interface SwipeButtonProps {
   /** Called once the thumb reaches the end of the track. */
   onComplete?: () => void;
   /**
-   * Semantic track color. Defaults to `warning` (orange, matching the design).
+   * Semantic track color. Defaults to `accent`.
    * Overridden when `trackColor` is set.
    */
   color?: SwipeButtonColor;

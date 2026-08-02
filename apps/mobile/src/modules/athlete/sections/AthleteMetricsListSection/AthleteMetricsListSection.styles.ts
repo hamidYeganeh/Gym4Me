@@ -4,7 +4,7 @@ export const athleteMetricsListSectionStyles = {
   title: "text-foreground",
   viewButton: [
     "inline-flex h-auto min-h-0 items-center gap-1.5 rounded-md !px-0 !py-0",
-    "text-sm font-semibold text-warning shadow-none",
+    "text-sm font-semibold text-accent shadow-none",
     "hover:bg-transparent hover:opacity-90",
     "pressed:bg-transparent data-[pressed=true]:bg-transparent",
   ].join(" "),

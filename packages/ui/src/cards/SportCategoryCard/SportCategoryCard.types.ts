@@ -36,12 +36,12 @@ export type SportCategoryCardProps = Omit<
   actionLabel: string;
   /**
    * Card background color. Also used as the image overlay tint when
-   * `category.backgroundImage` is set. Defaults to `#2563EB`.
+   * `category.backgroundImage` is set. Defaults to `var(--stats-blue)`.
    */
   color?: string;
-  /** Text and icon color. Defaults to `#FFFFFF`. */
+  /** Text and icon color. Defaults to `var(--stats-foreground)`. */
   foregroundColor?: string;
-  /** Circular affordance background. Defaults to `#000000`. */
+  /** Circular affordance background. Defaults to a near-black oklch fill. */
   actionColor?: string;
   /** Circular affordance icon color. Defaults to `foregroundColor`. */
   actionForegroundColor?: string;

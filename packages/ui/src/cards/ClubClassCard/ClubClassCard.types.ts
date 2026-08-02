@@ -33,16 +33,16 @@ export type ClubClassCardProps = Omit<
   /** Accessible label for the corner action. */
   actionLabel?: string;
   /**
-   * Solid fallback / overlay tint color. Defaults to `#121212`.
+   * Solid fallback / overlay tint color. Defaults to a near-black oklch fill.
    * Used as the card background when no image is set, and as the scrim tint
    * when `backgroundImage` is present.
    */
   color?: string;
-  /** Text and icon color. Defaults to `#FFFFFF`. */
+  /** Text and icon color. Defaults to `var(--stats-foreground)`. */
   foregroundColor?: string;
   /**
    * Shared surface for the category chip and corner action.
-   * Defaults to `#2A2A2A`.
+   * Defaults to a dark oklch fill for contrast on photo cards.
    */
   accentColor?: string;
   /** Corner action icon color. Defaults to `foregroundColor`. */

@@ -7,7 +7,7 @@ export const metricReorderItemVariants = tv({
       "flex w-full items-center gap-3 rounded-[22px] border border-border",
       "bg-surface px-3.5 py-3.5 text-start text-surface-foreground",
       "shadow-none outline-none",
-      "data-[dragging=true]:border-warning/40 data-[dragging=true]:shadow-md",
+      "data-[dragging=true]:border-accent/40 data-[dragging=true]:shadow-md",
       "data-[dragging=true]:scale-[1.02]",
     ].join(" "),
     remove: [

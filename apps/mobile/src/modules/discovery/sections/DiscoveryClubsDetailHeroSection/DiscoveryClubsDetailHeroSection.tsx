@@ -17,6 +17,7 @@ export function DiscoveryClubsDetailHeroSection({
   location,
   images,
   isFavorite = false,
+  isSaved = false,
   children,
 }: DiscoveryClubsDetailHeroSectionProps) {
   const t = useTranslations("ClubDetail");
@@ -66,7 +67,10 @@ export function DiscoveryClubsDetailHeroSection({
           />
           <div aria-hidden className={styles.scrim} />
 
-          <DiscoveryClubsDetailHeroSectionHeader isFavorite={isFavorite} />
+          <DiscoveryClubsDetailHeroSectionHeader
+            isFavorite={isFavorite}
+            isSaved={isSaved}
+          />
 
           <div className={styles.bottomBar}>
             <div className={styles.titleBlock}>
@@ -116,12 +120,12 @@ export function DiscoveryClubsDetailHeroSection({
             </div>
           </div>
         </section>
-
-        {/* Rounded sheet edge — visual match to the design overlap */}
-        <div aria-hidden={!children} className={styles.sheet}>
-          {children}
-        </div>
       </DiscoveryClubsDetailHeroSectionPullToView>
+
+      {/* Rounded sheet — outside pull gestures so body content can scroll */}
+      <div aria-hidden={!children} className={styles.sheet}>
+        {children}
+      </div>
 
       <DiscoveryClubsDetailHeroSectionLightbox
         activeIndex={activeIndex}
