@@ -1,16 +1,29 @@
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: gym4me-postgres
+  mongo:
+    image: mongo:7
+    container_name: gym4me-mongo
     restart: unless-stopped
-    environment:
-      POSTGRES_USER: gym4me
-      POSTGRES_PASSWORD: gym4me
-      POSTGRES_DB: gym4me
+    command: ["--replSet", "rs0", "--bind_ip_all"]
     ports:
-      - "5433:5432"
+      - "27018:27017"
     volumes:
-      - gym4me_pgdata:/var/lib/postgresql/data
+      - gym4me_mongodata:/data/db
+    healthcheck:
+      test: |
+        mongosh --quiet --eval "try { rs.status().ok } catch (e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'localhost:27017'}]}).ok }"
+      interval: 5s
+      timeout: 10s
+      retries: 12
+
+  redis:
+    image: redis:7-alpine
+    container_name: gym4me-redis
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    volumes:
+      - gym4me_redisdata:/data
 
 volumes:
-  gym4me_pgdata:
+  gym4me_mongodata:
+  gym4me_redisdata:

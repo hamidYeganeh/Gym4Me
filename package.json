@@ -6,7 +6,9 @@
     "dev": "turbo run dev",
     "dev:mobile": "turbo run dev --filter=mobile",
     "dev:api": "turbo run dev --filter=api",
+    "api:swagger": "npm run swagger --workspace=api",
     "lint": "turbo run lint",
+
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
     "mobile:cap:sync": "npm run cap:sync --workspace=mobile",
