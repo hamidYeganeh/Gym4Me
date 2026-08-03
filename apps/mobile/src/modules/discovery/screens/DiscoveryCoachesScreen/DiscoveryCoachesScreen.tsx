@@ -26,6 +26,10 @@ export function DiscoveryCoachesScreen({
   const t = useTranslations("DiscoveryCoaches");
   const router = useRouter();
 
+  const openCoach = (coachId: string) => {
+    router.push(`/discovery/coaches/${coachId}`);
+  };
+
   return (
     <AppLayout
       className={styles.root}
@@ -68,6 +72,7 @@ export function DiscoveryCoachesScreen({
           closeLabel={t("close")}
           coaches={featuredCoaches}
           newLabel={t("newBadge")}
+          onCoachPress={openCoach}
           seeAllLabel={t("seeAll")}
           title={t("recommendTitle")}
           yoeLabel={(years) => t("yoe", { years })}
@@ -75,6 +80,7 @@ export function DiscoveryCoachesScreen({
 
         <DiscoveryCoachesPopularSection
           coaches={popularCoaches}
+          onCoachPress={openCoach}
           seeAllLabel={t("seeAll")}
           title={t("popularTitle")}
           yoeLabel={(years) => t("yoe", { years })}
@@ -82,6 +88,7 @@ export function DiscoveryCoachesScreen({
 
         <DiscoveryCoachesExpertSection
           coaches={expertCoaches}
+          onCoachPress={openCoach}
           seeAllLabel={t("seeAll")}
           title={t("expertTitle")}
           verifiedLabel={t("verified")}
@@ -90,6 +97,7 @@ export function DiscoveryCoachesScreen({
         <DiscoveryCoachesNearbySection
           coaches={nearbyCoaches}
           inPersonLabel={t("inPersonOnly")}
+          onCoachPress={openCoach}
           remoteLabel={t("availableRemote")}
           seeAllLabel={t("seeAll")}
           title={t("nearbyTitle")}

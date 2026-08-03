@@ -1,0 +1,23 @@
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+import { SplashScreen } from "@/modules/app/screens/SplashScreen";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Splash");
+  return { title: t("title") };
+}
+
+export default async function SplashPage() {
+  const t = await getTranslations("Splash");
+
+  return (
+    <SplashScreen
+      brand={t("brand")}
+      taglines={[
+        t("taglineTrain"),
+        t("taglineRecover"),
+        t("taglineRepeat"),
+      ]}
+    />
+  );
+}

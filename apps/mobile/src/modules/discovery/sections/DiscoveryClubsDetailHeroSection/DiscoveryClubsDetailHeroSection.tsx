@@ -1,7 +1,8 @@
 "use client";
 
-import { Button, Typography } from "@heroui/react";
+import { Button, Chip, Surface, Typography } from "@heroui/react";
 import { MapPin1 } from "@repo/icons/MapPin1";
+import { StarFull } from "@repo/icons/StarFull";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
@@ -12,12 +13,17 @@ import { DiscoveryClubsDetailHeroSectionPullToView } from "../DiscoveryClubsDeta
 import { discoveryClubsDetailHeroSectionStyles as styles } from "./DiscoveryClubsDetailHeroSection.styles";
 import type { DiscoveryClubsDetailHeroSectionProps } from "./DiscoveryClubsDetailHeroSection.types";
 
+function formatRating(rating: number) {
+  return Number.isInteger(rating) ? String(rating) : rating.toFixed(1);
+}
+
 export function DiscoveryClubsDetailHeroSection({
   title,
   location,
   images,
+  rating,
+  reviewCount = 0,
   isFavorite = false,
-  isSaved = false,
   children,
 }: DiscoveryClubsDetailHeroSectionProps) {
   const t = useTranslations("ClubDetail");
@@ -27,6 +33,7 @@ export function DiscoveryClubsDetailHeroSection({
   const gallery = images.length > 0 ? images : [PLACEHOLDER_IMAGE];
   const imageCount = gallery.length;
   const activeImage = gallery[activeIndex] ?? gallery[0] ?? PLACEHOLDER_IMAGE;
+  const showRating = typeof rating === "number" && Number.isFinite(rating);
 
   const goToImage = useCallback(
     (index: number) => {
@@ -46,6 +53,8 @@ export function DiscoveryClubsDetailHeroSection({
 
   return (
     <>
+      <DiscoveryClubsDetailHeroSectionHeader isFavorite={isFavorite} />
+
       <DiscoveryClubsDetailHeroSectionPullToView
         onPullOpen={() => setIsLightboxOpen(true)}
         onSwipeHorizontal={onSwipeHorizontal}
@@ -67,65 +76,97 @@ export function DiscoveryClubsDetailHeroSection({
           />
           <div aria-hidden className={styles.scrim} />
 
-          <DiscoveryClubsDetailHeroSectionHeader
-            isFavorite={isFavorite}
-            isSaved={isSaved}
-          />
-
-          <div className={styles.bottomBar}>
-            <div className={styles.titleBlock}>
-              <Typography className={styles.title} type="h2" weight="bold">
-                {title}
-              </Typography>
-              <div className={styles.locationRow}>
-                <MapPin1 aria-hidden className="shrink-0" size={15} />
-                <Typography className={styles.locationText} type="body-sm">
-                  {location}
-                </Typography>
-              </div>
-            </div>
-
-            <div
-              aria-label={title}
-              className={styles.thumbs}
-              onPointerDown={(event) => event.stopPropagation()}
-            >
-              {gallery.map((image, index) => {
-                const isActive = index === activeIndex;
-                return (
-                  <Button
-                    aria-current={isActive ? "true" : undefined}
-                    aria-label={t("selectImage", { index: index + 1 })}
-                    className={[
-                      styles.thumbButton,
-                      isActive ? styles.thumbActive : styles.thumbIdle,
-                    ].join(" ")}
-                    isIconOnly
-                    key={`${image}-${index}`}
-                    onPress={() => goToImage(index)}
-                    size="lg"
-                    variant="ghost"
-                  >
-                    <Image
-                      alt=""
-                      className={styles.thumbImage}
-                      draggable={false}
-                      fill
-                      sizes="48px"
-                      src={image || PLACEHOLDER_IMAGE}
-                    />
-                  </Button>
-                );
+          <Chip
+            aria-label={t("galleryCount", {
+              current: activeIndex + 1,
+              total: imageCount,
+            })}
+            className={styles.counter}
+            size="sm"
+          >
+            <Chip.Label className={styles.counterLabel}>
+              {t("imageCounter", {
+                current: activeIndex + 1,
+                total: imageCount,
               })}
-            </div>
+            </Chip.Label>
+          </Chip>
+
+          <div
+            aria-label={title}
+            className={styles.thumbs}
+            onPointerDown={(event) => event.stopPropagation()}
+          >
+            {gallery.map((image, index) => {
+              const isActive = index === activeIndex;
+              return (
+                <Button
+                  aria-current={isActive ? "true" : undefined}
+                  aria-label={t("selectImage", { index: index + 1 })}
+                  className={[
+                    styles.thumbButton,
+                    isActive ? styles.thumbActive : styles.thumbIdle,
+                  ].join(" ")}
+                  isIconOnly
+                  key={`${image}-${index}`}
+                  onPress={() => goToImage(index)}
+                  size="lg"
+                  variant="ghost"
+                >
+                  <Image
+                    alt=""
+                    className={styles.thumbImage}
+                    draggable={false}
+                    fill
+                    sizes="48px"
+                    src={image || PLACEHOLDER_IMAGE}
+                  />
+                </Button>
+              );
+            })}
           </div>
         </section>
       </DiscoveryClubsDetailHeroSectionPullToView>
 
-      {/* Rounded sheet — outside pull gestures so body content can scroll */}
-      <div aria-hidden={!children} className={styles.sheet}>
+      <Surface aria-hidden={!children} className={styles.sheet} variant="default">
+        <div className={styles.sheetHeader}>
+          <div className={styles.titleBlock}>
+            <Typography className={styles.title} type="h2" weight="bold">
+              {title}
+            </Typography>
+            <div className={styles.locationRow}>
+              <MapPin1 aria-hidden className="shrink-0" size={15} />
+              <Typography className={styles.locationText} type="body-sm">
+                {location}
+              </Typography>
+            </div>
+          </div>
+
+          {showRating ? (
+            <Surface className={styles.ratingCard} variant="secondary">
+              <div className={styles.ratingValue}>
+                <Typography
+                  className={styles.ratingScore}
+                  type="body"
+                  weight="semibold"
+                >
+                  {formatRating(rating)}
+                </Typography>
+                <StarFull aria-hidden className={styles.ratingStar} size={14} />
+              </div>
+              <Typography
+                className={styles.ratingMeta}
+                color="muted"
+                type="body-xs"
+              >
+                {t("reviewsCount", { count: reviewCount })}
+              </Typography>
+            </Surface>
+          ) : null}
+        </div>
+
         {children}
-      </div>
+      </Surface>
 
       <DiscoveryClubsDetailHeroSectionLightbox
         activeIndex={activeIndex}

@@ -17,13 +17,13 @@ import {
   Megaphone,
   Newspaper1,
   PersonRunning,
-  Plus,
   RobotFace1,
   SleepZzz,
   User,
   UsersThree,
   Whistle,
 } from "@repo/icons";
+import { Logo } from "@repo/ui/common/Logo";
 import {
   BottomNavigation,
   type BottomNavQuickAction,
@@ -235,7 +235,14 @@ export function BottomNavDemo({ labels }: { labels: BottomNavDemoLabels }) {
           aria-label={labels.navLabel}
           centerAction={{
             label: labels.create,
-            icon: <Plus size={26} />,
+            icon: (
+              <Logo
+                color="var(--accent-foreground)"
+                gradient={false}
+                shadow={false}
+                size={48}
+              />
+            ),
             actionsLabel: labels.actionsLabel,
             actions: roleActions,
           }}

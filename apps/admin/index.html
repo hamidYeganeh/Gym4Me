@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="fa" dir="rtl" suppressHydrationWarning>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icon-512.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="پنل مدیریت Gym4Me برای باشگاه، مربی و ورزشکار"
+    />
+    <meta name="application-name" content="Gym4Me" />
+    <meta name="theme-color" content="#1fff6f" />
+    <meta name="color-scheme" content="dark light" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Gym4Me" />
+    <meta property="og:locale" content="fa_IR" />
+    <meta property="og:title" content="پنل مدیریت | Gym4Me" />
+    <meta
+      property="og:description"
+      content="پنل مدیریت Gym4Me برای باشگاه، مربی و ورزشکار"
+    />
+    <meta property="og:image" content="/icon-512.png" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="پنل مدیریت | Gym4Me" />
+    <meta
+      name="twitter:description"
+      content="پنل مدیریت Gym4Me برای باشگاه، مربی و ورزشکار"
+    />
+    <meta name="twitter:image" content="/icon-512.png" />
+    <title>پنل مدیریت | Gym4Me</title>
+    <script>
+      (() => {
+        try {
+          const stored = localStorage.getItem("theme");
+          const theme =
+            stored === "light" || stored === "dark"
+              ? stored
+              : window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light";
+          document.documentElement.classList.add(theme);
+          document.documentElement.dataset.theme = theme;
+        } catch {
+          document.documentElement.classList.add("dark");
+          document.documentElement.dataset.theme = "dark";
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

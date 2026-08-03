@@ -26,7 +26,7 @@
 
 html {
   /* IRANSansX variable axis — max sharpness (0–7) */
-  font-variation-settings: "DOTS" 4;
+  font-variation-settings: "DOTS" 7;
   background: var(--background);
   cursor: var(--pointer-cursor);
 }

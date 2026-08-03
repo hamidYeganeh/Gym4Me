@@ -73,12 +73,14 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body
-        className={`${iranSansX.className} mx-auto min-h-full w-full max-w-xl bg-background text-foreground antialiased`}
+        className={`${iranSansX.className} min-h-full bg-background text-foreground antialiased`}
       >
-        <ThemeProvider>
-          <CapacitorProvider />
-          <NextIntlClientProvider>{children}</NextIntlClientProvider>
-        </ThemeProvider>
+        <div className="relative mx-auto min-h-full w-full max-w-xl">
+          <ThemeProvider>
+            <CapacitorProvider />
+            <NextIntlClientProvider>{children}</NextIntlClientProvider>
+          </ThemeProvider>
+        </div>
       </body>
     </html>
   );

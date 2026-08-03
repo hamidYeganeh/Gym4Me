@@ -38,6 +38,8 @@ export function CoachCalendarWeeklyDaysSection({
                   active={vaporizingWorkoutId === workout.id}
                   key={workout.id}
                   onComplete={() => onVaporizeComplete?.(workout.id)}
+                  spread={20}
+                  density={60}
                 >
                   <ScheduleWorkoutCard
                     aria-label={workout.title}

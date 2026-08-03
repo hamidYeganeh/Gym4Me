@@ -5,12 +5,16 @@ import {
   BarbellHorizontal,
   ChevronLeft,
   Diamond1,
+  DotThreeHorizontal,
+  FilmStrip,
   Gear1,
   Heart,
   House1,
+  Image1,
   Kettlebell,
   LightningBolt1,
   Pencil1,
+  Sparkle1,
   User,
   WifiFull,
 } from "@repo/icons";
@@ -34,6 +38,7 @@ import { CoachFeatureCard } from "@repo/ui/cards/CoachFeatureCard";
 import { CoachMapCard } from "@repo/ui/cards/CoachMapCard";
 import { CoachNearbyCard } from "@repo/ui/cards/CoachNearbyCard";
 import { CoachPopularItem } from "@repo/ui/cards/CoachPopularItem";
+import { DistrictCard } from "@repo/ui/cards/DistrictCard";
 import { IbanCard } from "@repo/ui/cards/IbanCard";
 import { MetricGoalCard } from "@repo/ui/cards/MetricGoalCard";
 import { MetricHistoryItem } from "@repo/ui/cards/MetricHistoryItem";
@@ -41,6 +46,7 @@ import { MetricInsightCard } from "@repo/ui/cards/MetricInsightCard";
 import { MetricPromoCard } from "@repo/ui/cards/MetricPromoCard";
 import { MetricReorderItem } from "@repo/ui/cards/MetricReorderItem";
 import { MuscleCard } from "@repo/ui/cards/MuscleCard";
+import { QuickActionCard } from "@repo/ui/cards/QuickActionCard";
 import { ReviewCard } from "@repo/ui/cards/ReviewCard";
 import { ScheduleWorkoutCard } from "@repo/ui/cards/ScheduleWorkoutCard";
 import { SocialMediaCard } from "@repo/ui/cards/SocialMediaCard";
@@ -51,8 +57,10 @@ import { TicketCard } from "@repo/ui/cards/TicketCard";
 import { WorkoutCard } from "@repo/ui/cards/WorkoutCard";
 import { LogoMark, PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { AreaLineChart } from "@repo/ui/kit/AreaLineChart";
+import { GlyphText } from "@repo/ui/kit/GlyphText";
 import { Header } from "@repo/ui/layout/Header";
 import { useRouter } from "next/navigation";
+import type { ReactNode } from "react";
 import { AnimatedThemeToggler } from "@/components/animated-theme-toggler";
 import { AdaptiveSliderDemo } from "@/components/ui/adaptive-slider-demo";
 import { BottomNavDemo } from "@/components/ui/bottom-nav-demo";
@@ -115,6 +123,9 @@ type ThemeDemoLabels = {
   callToActionPlus: string;
   callToActionIcon: string;
   callToActionOutlined: string;
+  callToActionSoft: string;
+  callToActionMeta: string;
+  callToActionBadge: string;
   socialMediaCardLabel: string;
   socialMediaCardTitle: string;
   socialMediaCardFacebook: string;
@@ -214,6 +225,10 @@ type ThemeDemoLabels = {
   cityCardTitle: string;
   cityCardDiscount: string;
   cityCardAction: string;
+  districtCardLabel: string;
+  districtCardTitle: string;
+  districtCardSubtitle: string;
+  districtCardAction: string;
   clubEquipmentCardLabel: string;
   clubEquipmentCardTitle: string;
   clubEquipmentCardSubtitle: string;
@@ -330,12 +345,40 @@ type ThemeDemoLabels = {
   adaptiveSliderValueLabel: string;
   adaptiveSliderUnit: string;
   screensLabel: string;
+  screensAppLabel: string;
+  screensDiscoveryLabel: string;
+  screensAthleteLabel: string;
+  screensCoachLabel: string;
+  screensOwnerLabel: string;
+  screenSplash: string;
+  screenAthleteHome: string;
+  screenCoachHome: string;
+  screenOwnerHome: string;
+  screenOwnerClubsCreate: string;
+  screenDiscoveryMap: string;
+  screenDiscoveryCoaches: string;
+  screenCoachDetail: string;
   screenClubDetail: string;
+  screenClubReviews: string;
+  screenClubBranches: string;
+  screenClubSports: string;
+  screenClubClasses: string;
+  screenClubClassDetail: string;
   screenFitnessMetrics: string;
   screenFitnessMetricsReorder: string;
   screenWeightMetrics: string;
+  screenWeightHistory: string;
+  screenWeightDetail: string;
   screenCoachCalendarDaily: string;
   screenCoachCalendarWeekly: string;
+  componentsNavLabel: string;
+  profileHeaderLabel: string;
+  profileHeaderHint: string;
+  quickActionCardLabel: string;
+  quickActionCardAi: string;
+  quickActionCardPhoto: string;
+  quickActionCardVideo: string;
+  quickActionCardMore: string;
   bottomNavLabel: string;
   bottomNavPreview: string;
   bottomNavHome: string;
@@ -368,8 +411,133 @@ type ThemeDemoLabels = {
   bottomNavMarketing: string;
 };
 
-export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
+type DemoNavLink = {
+  href: string;
+  label: string;
+};
+
+function DemoScreenLink({ href, label }: DemoNavLink) {
   const router = useRouter();
+
+  return (
+    <Link
+      className="cursor-pointer text-stats-blue no-underline"
+      onPress={() => router.push(href)}
+    >
+      {label}
+    </Link>
+  );
+}
+
+function DemoScreenGroup({
+  title,
+  links,
+}: {
+  title: string;
+  links: DemoNavLink[];
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <h3 className="text-sm font-medium text-muted">{title}</h3>
+      <div className="flex flex-col gap-2">
+        {links.map((link) => (
+          <DemoScreenLink key={link.href} href={link.href} label={link.label} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DemoAnchorLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: ReactNode;
+}) {
+  return (
+    <Link className="cursor-pointer text-stats-blue no-underline" href={href}>
+      {children}
+    </Link>
+  );
+}
+
+export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
+  const componentNav = [
+    { href: "#demo-screens", label: labels.screensLabel },
+    { href: "#demo-quick-action-card", label: labels.quickActionCardLabel },
+    { href: "#demo-profile-header", label: labels.profileHeaderLabel },
+    { href: "#demo-uploader", label: labels.uploaderDemoLabel },
+    { href: "#demo-logo-mark", label: labels.logoMarkLabel },
+    { href: "#demo-header", label: labels.headerLabel },
+    { href: "#demo-bottom-nav", label: labels.bottomNavLabel },
+    { href: "#demo-stats-card", label: labels.statsCardLabel },
+    { href: "#demo-metric-card", label: labels.metricCardLabel },
+    { href: "#demo-club-card", label: labels.clubCardLabel },
+    { href: "#demo-coach-cards", label: labels.coachFeatureCardLabel },
+    { href: "#demo-call-to-action", label: labels.callToActionLabel },
+    { href: "#demo-kit", label: labels.adaptiveSliderLabel },
+  ] as const;
+
+  const appScreens: DemoNavLink[] = [
+    { href: "/splash", label: labels.screenSplash },
+    { href: "/athlete", label: labels.screenAthleteHome },
+    { href: "/coach", label: labels.screenCoachHome },
+    { href: "/owner", label: labels.screenOwnerHome },
+  ];
+
+  const discoveryScreens: DemoNavLink[] = [
+    { href: "/discovery/map", label: labels.screenDiscoveryMap },
+    { href: "/discovery/coaches", label: labels.screenDiscoveryCoaches },
+    { href: "/discovery/coaches/zuckmann", label: labels.screenCoachDetail },
+    { href: "/discovery/clubs/heavenly", label: labels.screenClubDetail },
+    {
+      href: "/discovery/clubs/heavenly/reviews",
+      label: labels.screenClubReviews,
+    },
+    {
+      href: "/discovery/clubs/heavenly/branches",
+      label: labels.screenClubBranches,
+    },
+    {
+      href: "/discovery/clubs/heavenly/sports",
+      label: labels.screenClubSports,
+    },
+    {
+      href: "/discovery/clubs/heavenly/classes",
+      label: labels.screenClubClasses,
+    },
+    {
+      href: "/discovery/clubs/heavenly/classes/power-hiit",
+      label: labels.screenClubClassDetail,
+    },
+  ];
+
+  const athleteScreens: DemoNavLink[] = [
+    { href: "/athlete/metrics", label: labels.screenFitnessMetrics },
+    {
+      href: "/athlete/metrics/reorder",
+      label: labels.screenFitnessMetricsReorder,
+    },
+    { href: "/athlete/metrics/weight", label: labels.screenWeightMetrics },
+    {
+      href: "/athlete/metrics/weight/history",
+      label: labels.screenWeightHistory,
+    },
+    { href: "/athlete/metrics/weight/1", label: labels.screenWeightDetail },
+  ];
+
+  const coachScreens: DemoNavLink[] = [
+    { href: "/coach/calendar/daily", label: labels.screenCoachCalendarDaily },
+    {
+      href: "/coach/calendar/weekly",
+      label: labels.screenCoachCalendarWeekly,
+    },
+  ];
+
+  const ownerScreens: DemoNavLink[] = [
+    { href: "/owner/clubs/create", label: labels.screenOwnerClubsCreate },
+  ];
 
   return (
     <div className="flex w-full flex-col gap-8">
@@ -378,7 +546,81 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
         <p className="text-sm text-muted">{labels.themeLabel}</p>
       </div>
 
-      <section className="flex w-full flex-col gap-3">
+      <GlyphText text={["تمرین کن", "بازیابی کن"]} repeat fixedWidth />
+
+      <section className="flex w-full flex-col gap-3" id="demo-components-nav">
+        <h2 className="text-lg font-medium text-foreground">
+          {labels.componentsNavLabel}
+        </h2>
+        <div className="flex flex-col gap-2">
+          {componentNav.map((item) => (
+            <DemoAnchorLink key={item.href} href={item.href}>
+              {item.label}
+            </DemoAnchorLink>
+          ))}
+        </div>
+      </section>
+
+      <section className="flex w-full flex-col gap-4" id="demo-screens">
+        <h2 className="text-lg font-medium text-foreground">
+          {labels.screensLabel}
+        </h2>
+        <DemoScreenGroup links={appScreens} title={labels.screensAppLabel} />
+        <DemoScreenGroup
+          links={discoveryScreens}
+          title={labels.screensDiscoveryLabel}
+        />
+        <DemoScreenGroup
+          links={athleteScreens}
+          title={labels.screensAthleteLabel}
+        />
+        <DemoScreenGroup
+          links={coachScreens}
+          title={labels.screensCoachLabel}
+        />
+        <DemoScreenGroup
+          links={ownerScreens}
+          title={labels.screensOwnerLabel}
+        />
+      </section>
+
+      <section className="flex w-full flex-col gap-3" id="demo-profile-header">
+        <h2 className="text-lg font-medium text-foreground">
+          {labels.profileHeaderLabel}
+        </h2>
+        <p className="text-sm text-muted">{labels.profileHeaderHint}</p>
+        <div className="flex flex-col gap-2">
+          <DemoScreenLink href="/athlete" label={labels.screenAthleteHome} />
+          <DemoScreenLink href="/coach" label={labels.screenCoachHome} />
+          <DemoScreenLink href="/owner" label={labels.screenOwnerHome} />
+        </div>
+      </section>
+
+      <section className="flex w-full flex-col gap-3" id="demo-quick-action-card">
+        <h2 className="text-lg font-medium text-foreground">
+          {labels.quickActionCardLabel}
+        </h2>
+        <div className="grid grid-cols-4 gap-3">
+          <QuickActionCard
+            icon={<Sparkle1 size={28} />}
+            label={labels.quickActionCardAi}
+          />
+          <QuickActionCard
+            icon={<Image1 size={28} />}
+            label={labels.quickActionCardPhoto}
+          />
+          <QuickActionCard
+            icon={<FilmStrip size={28} />}
+            label={labels.quickActionCardVideo}
+          />
+          <QuickActionCard
+            icon={<DotThreeHorizontal size={28} />}
+            label={labels.quickActionCardMore}
+          />
+        </div>
+      </section>
+
+      <section className="flex w-full flex-col gap-3" id="demo-uploader">
         <h2 className="text-lg font-medium text-foreground">
           {labels.uploaderDemoLabel}
         </h2>
@@ -396,51 +638,7 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
         />
       </section>
 
-      <section className="flex w-full flex-col gap-3">
-        <h2 className="text-lg font-medium text-foreground">
-          {labels.screensLabel}
-        </h2>
-        <div className="flex flex-col gap-2">
-          <Link
-            className="cursor-pointer text-stats-blue no-underline"
-            onPress={() => router.push("/discovery/clubs/heavenly")}
-          >
-            {labels.screenClubDetail}
-          </Link>
-          <Link
-            className="cursor-pointer text-stats-blue no-underline"
-            onPress={() => router.push("/athlete/metrics")}
-          >
-            {labels.screenFitnessMetrics}
-          </Link>
-          <Link
-            className="cursor-pointer text-stats-blue no-underline"
-            onPress={() => router.push("/athlete/metrics/reorder")}
-          >
-            {labels.screenFitnessMetricsReorder}
-          </Link>
-          <Link
-            className="cursor-pointer text-stats-blue no-underline"
-            onPress={() => router.push("/athlete/metrics/weight")}
-          >
-            {labels.screenWeightMetrics}
-          </Link>
-          <Link
-            className="cursor-pointer text-stats-blue no-underline"
-            onPress={() => router.push("/coach/calendar/daily")}
-          >
-            {labels.screenCoachCalendarDaily}
-          </Link>
-          <Link
-            className="cursor-pointer text-stats-blue no-underline"
-            onPress={() => router.push("/coach/calendar/weekly")}
-          >
-            {labels.screenCoachCalendarWeekly}
-          </Link>
-        </div>
-      </section>
-
-      <section className="flex w-full flex-col gap-3">
+      <section className="flex w-full flex-col gap-3" id="demo-logo-mark">
         <h2 className="text-lg font-medium text-foreground">
           {labels.logoMarkLabel}
         </h2>
@@ -452,7 +650,7 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
         </div>
       </section>
 
-      <section className="flex w-full flex-col gap-3">
+      <section className="flex w-full flex-col gap-3" id="demo-header">
         <h2 className="text-lg font-medium text-foreground">
           {labels.headerLabel}
         </h2>
@@ -481,7 +679,7 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
         />
       </section>
 
-      <section className="flex w-full flex-col gap-3">
+      <section className="flex w-full flex-col gap-3" id="demo-bottom-nav">
         <h2 className="text-lg font-medium text-foreground">
           {labels.bottomNavLabel}
         </h2>
@@ -522,7 +720,7 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
         </div>
       </section>
 
-      <section className="flex flex-col gap-3 w-full">
+      <section className="flex flex-col gap-3 w-full" id="demo-stats-card">
         <h2 className="text-lg font-medium text-foreground">
           {labels.statsCardLabel}
         </h2>
@@ -594,7 +792,7 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
         </div>
       </section>
 
-      <section className="flex w-full flex-col gap-3">
+      <section className="flex w-full flex-col gap-3" id="demo-metric-card">
         <h2 className="text-lg font-medium text-foreground">
           {labels.metricCardLabel}
         </h2>
@@ -860,7 +1058,7 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
         </div>
       </section>
 
-      <section className="flex flex-col gap-3">
+      <section className="flex flex-col gap-3" id="demo-club-card">
         <h2 className="text-lg font-medium text-foreground">
           {labels.clubCardLabel}
         </h2>
@@ -970,6 +1168,40 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-medium text-foreground">
+          {labels.districtCardLabel}
+        </h2>
+        <div className="flex flex-wrap items-end gap-4">
+          <DistrictCard
+            actionLabel={labels.districtCardAction}
+            image={PLACEHOLDER_IMAGE}
+            imageAlt={labels.districtCardTitle}
+            onPress={() => {}}
+            size="sm"
+            subtitle={labels.districtCardSubtitle}
+            title={labels.districtCardTitle}
+          />
+          <DistrictCard
+            actionLabel={labels.districtCardAction}
+            image={PLACEHOLDER_IMAGE}
+            imageAlt={labels.districtCardTitle}
+            onPress={() => {}}
+            subtitle={labels.districtCardSubtitle}
+            title={labels.districtCardTitle}
+          />
+          <DistrictCard
+            actionLabel={labels.districtCardAction}
+            image={PLACEHOLDER_IMAGE}
+            imageAlt={labels.districtCardTitle}
+            onPress={() => {}}
+            size="lg"
+            subtitle={labels.districtCardSubtitle}
+            title={labels.districtCardTitle}
+          />
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-medium text-foreground">
           {labels.sportCardLabel}
         </h2>
         <div className="flex flex-wrap items-end gap-4">
@@ -1043,7 +1275,7 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
         </div>
       </section>
 
-      <section className="flex flex-col gap-3">
+      <section className="flex flex-col gap-3" id="demo-call-to-action">
         <h2 className="text-lg font-medium text-foreground">
           {labels.callToActionLabel}
         </h2>
@@ -1071,6 +1303,16 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
             subtitle={labels.callToActionSubtitle}
             title={labels.callToActionTitle}
             variant="outlined"
+          />
+          <p className="text-sm text-muted">{labels.callToActionSoft}</p>
+          <CallToActionCard
+            actionLabel={labels.callToActionAction}
+            actionType="plus"
+            badge={labels.callToActionBadge}
+            meta={labels.callToActionMeta}
+            subtitle={labels.callToActionSubtitle}
+            title={labels.callToActionTitle}
+            variant="soft"
           />
         </div>
       </section>
@@ -1188,7 +1430,7 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
         </div>
       </section>
 
-      <section className="flex flex-col gap-3">
+      <section className="flex flex-col gap-3" id="demo-coach-cards">
         <h2 className="text-lg font-medium text-foreground">
           {labels.coachFeatureCardLabel}
         </h2>
@@ -1418,7 +1660,7 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
         </Card.Content>
       </Card>
 
-      <section className="flex flex-col gap-3">
+      <section className="flex flex-col gap-3" id="demo-kit">
         <h2 className="text-lg font-medium text-foreground">
           {labels.adaptiveSliderLabel}
         </h2>

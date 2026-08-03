@@ -10,4 +10,5 @@ export type DiscoveryCoachesRecommendSectionProps = {
   coaches: FeaturedCoach[];
   onSeeAll?: () => void;
   onClose?: (id: string) => void;
+  onCoachPress?: (id: string) => void;
 };

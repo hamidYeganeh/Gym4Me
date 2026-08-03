@@ -1,0 +1,453 @@
+/**
+ * Map Locomotive landing theme slots → Gym4Me semantic tokens.
+ * Loaded after main.css so these win over hardcoded black / white slots.
+ */
+
+:root {
+  /* Stable light/dark canvases (same values as @repo/theme) — do not flip with html theme */
+  --palette-canvas: oklch(97.02% 0 148.26);
+  --palette-ink: oklch(21.03% 0 148.26);
+  --palette-inverse-canvas: oklch(12% 0 148.26);
+  --palette-inverse-ink: oklch(99.11% 0 0);
+
+  --color-text: var(--foreground);
+  --color-background: var(--background);
+}
+
+/* Brand sections */
+[data-theme="blue"] {
+  --color-text: var(--accent-foreground);
+  --color-background: var(--accent);
+  color: var(--color-text);
+  background-color: var(--color-background);
+}
+
+[data-theme="blue"] *:focus-visible:not(input):not(textarea):not(select) {
+  outline-color: var(--accent-foreground);
+}
+
+[data-theme="blue"] .c-list *:focus-visible:not(input):not(textarea):not(select) {
+  outline-color: var(--accent-foreground);
+}
+
+/* Light content sections */
+[data-theme="white"] {
+  --color-text: var(--palette-ink);
+  --color-background: var(--palette-canvas);
+  color: var(--color-text);
+  background-color: var(--color-background);
+}
+
+[data-theme="white"] *:focus-visible:not(input):not(textarea):not(select) {
+  outline-color: var(--accent);
+}
+
+[data-theme="white"] .c-list *:focus-visible:not(input):not(textarea):not(select) {
+  outline-color: var(--accent);
+}
+
+/* Dark content sections */
+[data-theme="black"] {
+  --color-text: var(--palette-inverse-ink);
+  --color-background: var(--palette-inverse-canvas);
+  color: var(--color-text);
+  background-color: var(--color-background);
+}
+
+/* Fixed header follows the active section theme */
+[data-header-theme="blue"] .c-header {
+  --color-header-text: var(--accent-foreground);
+  --color-header-background: var(--accent);
+}
+
+[data-header-theme="black"] .c-header {
+  --color-header-text: var(--palette-inverse-ink);
+  --color-header-background: var(--palette-inverse-canvas);
+}
+
+[data-header-theme="white"] .c-header {
+  --color-header-text: var(--accent-foreground);
+  --color-header-background: var(--palette-canvas);
+}
+
+/* Fade-in text accents */
+.fadeInText.-blue {
+  --color-cta-fadein: color-mix(in oklab, var(--accent-foreground) 45%, var(--accent));
+  --color: var(--accent-foreground);
+}
+
+.fadeInText.-white {
+  --color-cta-fadein: color-mix(in oklab, var(--accent) 55%, var(--palette-canvas));
+  --color: var(--accent-foreground);
+}
+
+.fadeInText.-black {
+  --color-cta-fadein: color-mix(in oklab, var(--palette-inverse-ink) 35%, var(--palette-inverse-canvas));
+  --color: var(--palette-inverse-ink);
+}
+
+/* -------------------------------------------------------------------------- */
+/* App dark mode (html.dark / html[data-theme=dark] from ThemeProvider)       */
+/* Section data-theme=blue|white|black stays for Locomotive header sync.      */
+/* -------------------------------------------------------------------------- */
+
+html.dark,
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* Content bands follow semantic surfaces instead of locked light canvas */
+html.dark [data-theme="white"],
+html[data-theme="dark"] [data-theme="white"] {
+  --color-text: var(--foreground);
+  --color-background: var(--background);
+}
+
+html.dark [data-theme="black"],
+html[data-theme="dark"] [data-theme="black"] {
+  --color-text: var(--foreground);
+  --color-background: var(--surface);
+}
+
+html.dark [data-header-theme="white"] .c-header,
+html[data-theme="dark"] [data-header-theme="white"] .c-header {
+  --color-header-text: var(--foreground);
+  --color-header-background: var(--background);
+}
+
+html.dark [data-header-theme="black"] .c-header,
+html[data-theme="dark"] [data-header-theme="black"] .c-header {
+  --color-header-text: var(--foreground);
+  --color-header-background: var(--surface);
+}
+
+html.dark .fadeInText.-white,
+html[data-theme="dark"] .fadeInText.-white {
+  --color-cta-fadein: color-mix(in oklab, var(--accent) 45%, var(--background));
+  --color: var(--foreground);
+}
+
+html.dark .fadeInText.-black,
+html[data-theme="dark"] .fadeInText.-black {
+  --color-cta-fadein: color-mix(in oklab, var(--foreground) 30%, var(--surface));
+  --color: var(--foreground);
+}
+
+/* Hardcoded loco feature chrome → semantic borders in dark */
+html.dark .c-features-grid_cell_ratio,
+html[data-theme="dark"] .c-features-grid_cell_ratio,
+html.dark .c-features-grid_cell_ratio::before,
+html[data-theme="dark"] .c-features-grid_cell_ratio::before,
+html.dark .c-features-grid_cell.-direction .c-features-grid_cell_ratio,
+html[data-theme="dark"] .c-features-grid_cell.-direction .c-features-grid_cell_ratio {
+  border-color: var(--border) !important;
+}
+
+/* Header theme control */
+.c-header_actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.marketing-theme-toggle.button {
+  --button-bg: transparent;
+  --button-bg-hover: color-mix(in oklab, currentColor 12%, transparent);
+  --button-bg-pressed: color-mix(in oklab, currentColor 18%, transparent);
+  --button-fg: currentColor;
+  color: inherit;
+  min-width: 2.5rem;
+}
+
+/* Buttons inherit section colors; keep stroke/hover on tokens */
+.c-button {
+  --button-color-text: var(--color-background);
+  --button-color-background: var(--color-text);
+  --button-color-stroke: var(--color-text);
+  --button-hover-color-text: var(--color-text);
+  --button-hover-color-background: var(--color-background);
+  border-radius: var(--radius);
+}
+
+.c-button.-stroke {
+  --button-color-text: currentColor;
+  --button-color-background: transparent;
+  --button-hover-color-text: var(--color-background);
+  --button-hover-color-background: var(--color-text);
+}
+
+/* HeroUI CTAs — theme radius + readable contrast on brand sections */
+.marketing-cta.button {
+  border-radius: var(--radius);
+}
+
+[data-theme="blue"] .marketing-cta.button--primary {
+  --button-bg: var(--color-text);
+  --button-bg-hover: color-mix(in oklab, var(--color-text) 88%, var(--color-background));
+  --button-bg-pressed: color-mix(in oklab, var(--color-text) 82%, var(--color-background));
+  --button-fg: var(--color-background);
+}
+
+[data-theme="blue"] .marketing-cta.button--outline {
+  --button-bg: transparent;
+  --button-bg-hover: var(--color-text);
+  --button-bg-pressed: var(--color-text);
+  --button-fg: var(--color-text);
+  border-color: var(--color-text);
+}
+
+[data-theme="blue"] .marketing-cta.button--outline:hover,
+[data-theme="blue"] .marketing-cta.button--outline[data-hovered="true"] {
+  --button-fg: var(--color-background);
+}
+
+/* Drop locomotive blue fade under the parallax tool block */
+.c-tool.-parallax::before {
+  content: none;
+  display: none;
+  background-image: none;
+}
+
+/* Preloader + page chrome */
+.c-preloader {
+  background-color: var(--accent);
+}
+
+html,
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-iran-sans-x), Tahoma, ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Prefer product font over Locomotive display faces for Persian copy */
+.c-text,
+.c-heading,
+.c-heading-serif,
+.c-hero_word,
+.c-section-heading_word,
+.c-button_label,
+.c-list_title,
+.c-list_description,
+.c-tool_title,
+.c-tool_label,
+.c-tool_description,
+.c-features-grid_title,
+.c-features-grid_desc,
+.c-sticky-heading_title,
+.c-footer_thanks,
+.c-rail_item {
+  font-family: var(--font-iran-sans-x), Tahoma, ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Bolder Persian hierarchy */
+.c-text.-body-regular,
+.c-text.-body-medium,
+.c-list_title,
+.c-list_description,
+.c-tool_label,
+.c-tool_description,
+.c-features-grid_desc,
+.c-button_label,
+.c-header .c-text {
+  font-weight: 600;
+}
+
+.c-heading.-h1,
+.c-heading.-h2,
+.c-heading.-h3,
+.c-heading-serif,
+.c-hero_word,
+.c-section-heading_word,
+.c-sticky-heading_title,
+.c-footer_thanks,
+.c-cascade_word,
+.c-tool_title,
+.c-features-grid_title,
+.c-rail_item {
+  font-weight: 700;
+}
+
+/* Icon glyphs replacing emoji */
+.u-marketing-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.2;
+  vertical-align: middle;
+  color: currentColor;
+}
+
+.u-marketing-glyph svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+.c-hero_word.u-marketing-glyph,
+.c-hero_word .u-marketing-glyph,
+.u-glyph.u-marketing-glyph.c-hero_word {
+  display: inline-flex;
+  gap: 0.25em;
+  line-height: 1.2;
+}
+
+/* Hero / footer display type — room for larger glyphs */
+.c-hero_title.c-heading.-h1,
+.c-footer .c-hero_title.c-heading.-h1 {
+  line-height: 1.2;
+}
+
+.c-hero_line:has(.u-marketing-glyph) {
+  clip-path: inset(-25% 0);
+}
+
+.c-rail_glyph.u-marketing-glyph,
+.c-cascade_glyph.u-marketing-glyph {
+  display: inline-flex;
+}
+
+/* -------------------------------------------------------------------------- */
+/* RTL — careful direction, no character scramble, no cascade tumbling        */
+/* -------------------------------------------------------------------------- */
+
+html[dir="rtl"],
+[dir="rtl"] {
+  text-align: start;
+}
+
+/* Isolate Latin / digits / URLs so BiDi does not reshuffle Persian sentences */
+[dir="rtl"] .u-ltr,
+[dir="rtl"] [dir="ltr"] {
+  unicode-bidi: isolate;
+  direction: ltr;
+}
+
+/* External arrow stays absolute; isolate so it does not flip mid-word */
+[dir="rtl"] .u-external-icon,
+[dir="rtl"] .c-list-anchor {
+  display: inline-block;
+  unicode-bidi: isolate;
+  direction: ltr;
+  margin-inline-start: 0.25em;
+}
+
+/* Indices / codes stay LTR */
+[dir="rtl"] .c-tool_index,
+[dir="rtl"] .c-features-grid_index,
+[dir="rtl"] .c-footer_attributes {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+/*
+ * Prevent cascade 3D “tumbling” on Persian display type.
+ * Keep a soft fade/rise only — rotate3d is unreadable for FA.
+ */
+[dir="rtl"] .c-cascade_line {
+  perspective: none;
+  transform-style: flat;
+}
+
+[dir="rtl"] .c-cascade_word {
+  --item-progress: clamp(
+    0,
+    (var(--progress, 0) - (var(--item-index, 0) / 8)) / 0.125,
+    1
+  );
+  transform: translate3d(0, calc((1 - var(--item-progress)) * 0.4em), 0);
+  opacity: var(--item-progress);
+  transform-origin: center;
+  backface-visibility: visible;
+}
+
+/* Cascade stagger follows inline axis (not physical margin-left) */
+[dir="rtl"] .c-cascade_item + .c-cascade_item {
+  margin-left: 0;
+  margin-inline-start: calc(var(--item-index) * 2.35em);
+}
+
+[dir="rtl"] .c-cascade_glyph {
+  left: auto;
+  inset-inline-start: 0;
+}
+
+/* List reveal line grows from inline-start in RTL */
+[dir="rtl"] .c-list_item_inner::before {
+  left: auto;
+  inset-inline: 0;
+  transform-origin: top left;
+}
+
+/* Rail item spacing on the inline end */
+[dir="rtl"] .c-rail_item {
+  padding-right: 0;
+  padding-inline-end: 0.5em;
+}
+
+/*
+ * Button hover motion was authored for LTR (physical left + negative X).
+ * Mirror clip reveal and icon slide for RTL.
+ */
+[dir="rtl"] .c-button_wrap:nth-child(2) {
+  left: auto;
+  inset-inline-start: -1px;
+  clip-path: inset(10% 100% 10% -100% round 4px 4px 4px 4px);
+}
+
+[dir="rtl"] .c-button:hover .c-button_wrap:nth-child(2) {
+  clip-path: inset(0 0 0 0 round 4px 4px 4px 4px);
+}
+
+[dir="rtl"] .c-button:hover .c-button_wrap:nth-child(1) .c-button_inner {
+  transform: translate3d(calc(var(--icon-width) + var(--button-gap)), 0, 0);
+}
+
+[dir="rtl"] .c-button_wrap:nth-child(2) .c-button_inner {
+  left: auto;
+  inset-inline-start: -1px;
+  flex-direction: row;
+  transform: translate3d(calc(-1 * var(--icon-width) - var(--button-gap)), 0, 0);
+}
+
+[dir="rtl"] .c-button:hover .c-button_wrap:nth-child(2) .c-button_inner {
+  transform: translate3d(0, 0, 0);
+}
+
+/* Tool progress shapes: keep rotation but avoid horizontal flip surprises */
+[dir="rtl"] .c-tool_shape_inner,
+[dir="rtl"] .c-tool_shape {
+  transform-box: fill-box;
+}
+
+/* Sticky / hero text alignment */
+[dir="rtl"] .c-hero_description,
+[dir="rtl"] .c-sticky-heading_description,
+[dir="rtl"] .c-tool_description,
+[dir="rtl"] .c-features-grid_desc,
+[dir="rtl"] .fadeInText {
+  text-align: start;
+}
+
+/* Header columns: keep readable order in RTL without reshuffling mid-flex */
+[dir="rtl"] .c-header_col {
+  text-align: start;
+}
+
+[dir="rtl"] .c-header_col.-center {
+  justify-content: center;
+  text-align: center;
+}
+
+[dir="rtl"] .c-header_col:last-of-type {
+  align-items: flex-start;
+}
+
+/* Prefer reduced motion: no tumble / slide leftovers */
+@media (prefers-reduced-motion: reduce) {
+  [dir="rtl"] .c-cascade_word,
+  [dir="rtl"] .c-hero_word {
+    transform: none !important;
+    opacity: 1 !important;
+    transition: none !important;
+  }
+}

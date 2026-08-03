@@ -1,0 +1,42 @@
+@import "tailwindcss";
+@import "@heroui/styles";
+@import "@repo/theme/heroui.css";
+
+@source "../../../packages/ui/src";
+@source "../../../packages/icons/src";
+
+@font-face {
+  font-family: "IRANSansX";
+  src: url("@repo/fonts/files/IRANSansXV.woff2") format("woff2-variations");
+  font-weight: 100 1000;
+  font-display: swap;
+  font-style: normal;
+}
+
+:root {
+  --font-iran-sans-x: "IRANSansX", Tahoma, ui-sans-serif, system-ui, sans-serif;
+}
+
+/*
+ * Admin is a desktop surface — restore selectable text.
+ * @repo/theme/heroui.css disables selection for the touch app.
+ */
+html,
+body,
+body * {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+html {
+  font-variation-settings: "DOTS" 4;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  font-family: var(--font-iran-sans-x), Tahoma, ui-sans-serif, system-ui,
+    sans-serif;
+}

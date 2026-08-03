@@ -1,0 +1,27 @@
+@import "tailwindcss";
+@import "@heroui/styles";
+@import "@repo/theme/heroui.css";
+
+@source "../../../../packages/ui/src";
+
+/*
+ * Website marketing pages need selectable text.
+ * @repo/theme/heroui.css disables selection for the touch app — restore here.
+ */
+html,
+body,
+body * {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+html {
+  /* IRANSansX variable axis — max sharpness (0–7) */
+  font-variation-settings: "DOTS" 4;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+body {
+  font-family: var(--font-iran-sans-x), Tahoma, ui-sans-serif, system-ui, sans-serif;
+}

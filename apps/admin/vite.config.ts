@@ -1,0 +1,19 @@
+import { defineConfig } from "vite";
+import react, { reactCompilerPreset } from "@vitejs/plugin-react";
+import babel from "@rolldown/plugin-babel";
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [react(), babel({ presets: [reactCompilerPreset()] })],
+  resolve: {
+    dedupe: ["react", "react-dom"],
+  },
+  server: {
+    port: 8082,
+    strictPort: true,
+  },
+  preview: {
+    port: 8082,
+    strictPort: true,
+  },
+});

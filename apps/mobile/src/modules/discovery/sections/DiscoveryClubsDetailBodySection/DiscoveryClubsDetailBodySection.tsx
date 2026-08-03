@@ -6,6 +6,7 @@ import {
   Label,
   Radio,
   RadioGroup,
+  ScrollShadow,
   Typography,
 } from "@heroui/react";
 import { ArrowUpRight } from "@repo/icons/ArrowUpRight";
@@ -27,14 +28,11 @@ import { SocialMediaCard } from "@repo/ui/cards/SocialMediaCard";
 import { SportCard } from "@repo/ui/cards/SportCard";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { AreaLineChart } from "@repo/ui/kit/AreaLineChart";
+import { CarouselNavigation } from "@repo/ui/kit/CarouselNavigation";
+import useEmblaCarousel from "embla-carousel-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import {
-  useLayoutEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import type {
   ClubDetailEquipment,
   ClubDetailStat,
@@ -128,6 +126,39 @@ function SectionTitle({ children }: { children: ReactNode }) {
   );
 }
 
+function SectionCarousel({
+  title,
+  "aria-label": ariaLabel,
+  children,
+}: {
+  title: ReactNode;
+  "aria-label": string;
+  children: ReactNode;
+}) {
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    align: "start",
+    containScroll: "trimSnaps",
+    direction: "rtl",
+  });
+
+  return (
+    <>
+      <div className={styles.sectionHeader}>
+        <SectionTitle>{title}</SectionTitle>
+        <CarouselNavigation emblaApi={emblaApi} size="sm" />
+      </div>
+      <div
+        aria-label={ariaLabel}
+        aria-roledescription="carousel"
+        className={styles.carousel}
+        ref={emblaRef}
+      >
+        <div className={styles.carouselTrack}>{children}</div>
+      </div>
+    </>
+  );
+}
+
 function DescriptionDisclosure({ text }: { text: string }) {
   const t = useTranslations("ClubDetail");
   const [isExpanded, setIsExpanded] = useState(false);
@@ -196,11 +227,7 @@ function DescriptionDisclosure({ text }: { text: string }) {
   );
 }
 
-function EquipmentSection({
-  equipment,
-}: {
-  equipment: ClubDetailEquipment[];
-}) {
+function EquipmentSection({ equipment }: { equipment: ClubDetailEquipment[] }) {
   const t = useTranslations("ClubDetail");
   const [isOpen, setIsOpen] = useState(false);
   const hasMore = equipment.length > EQUIPMENT_PREVIEW_COUNT;
@@ -210,8 +237,10 @@ function EquipmentSection({
 
   return (
     <div className={styles.section}>
-      <SectionTitle>{t("equipmentTitle")}</SectionTitle>
-      <div className={[styles.carousel, styles.carouselBleed].join(" ")}>
+      <SectionCarousel
+        aria-label={t("equipmentTitle")}
+        title={t("equipmentTitle")}
+      >
         {preview.map((item) => (
           <div className={styles.slide} key={item.id}>
             <ClubEquipmentCard
@@ -233,7 +262,7 @@ function EquipmentSection({
             <span className={styles.seeAllLabel}>{t("seeMore")}</span>
           </Button>
         ) : null}
-      </div>
+      </SectionCarousel>
 
       <Drawer.Backdrop isOpen={isOpen} onOpenChange={setIsOpen}>
         <Drawer.Content placement="bottom">
@@ -243,20 +272,26 @@ function EquipmentSection({
             <Drawer.Header>
               <Drawer.Heading>{t("equipmentTitle")}</Drawer.Heading>
             </Drawer.Header>
-            <Drawer.Body>
-              <div className={styles.equipmentDrawerList}>
-                <div className={styles.equipmentGrid}>
+            <Drawer.Body className={styles.equipmentDrawerBody}>
+              <ScrollShadow
+                className={styles.equipmentDrawerScroll}
+                hideScrollBar
+                orientation="vertical"
+                size={56}
+              >
+                <div className={styles.equipmentDrawerList}>
                   {equipment.map((item) => (
                     <ClubEquipmentCard
                       icon={EQUIPMENT_ICONS[item.id]}
                       key={item.id}
                       meta={item.meta}
+                      orientation="horizontal"
                       subtitle={item.subtitle}
                       title={item.title}
                     />
                   ))}
                 </div>
-              </div>
+              </ScrollShadow>
             </Drawer.Body>
           </Drawer.Dialog>
         </Drawer.Content>
@@ -394,14 +429,16 @@ export function DiscoveryClubsDetailBodySection({
 
       {club.sports.length > 0 ? (
         <div className={styles.section}>
-          <SectionTitle>{t("sportsTitle")}</SectionTitle>
-          <div className={[styles.carousel, styles.carouselBleed].join(" ")}>
+          <SectionCarousel
+            aria-label={t("sportsTitle")}
+            title={t("sportsTitle")}
+          >
             {club.sports.map((sport) => (
               <div className={styles.slide} key={sport.id}>
                 <SportCard
                   actionLabel={t("sportAction")}
                   color={sport.color}
-                  size="md"
+                  size="sm"
                   sport={{
                     title: sport.title,
                     subtitle: sport.subtitle,
@@ -416,9 +453,11 @@ export function DiscoveryClubsDetailBodySection({
               variant="secondary"
             >
               <ArrowUpRight size={22} />
-              <span className={styles.classSeeAllLabel}>{t("seeAllSports")}</span>
+              <span className={styles.classSeeAllLabel}>
+                {t("seeAllSports")}
+              </span>
             </Button>
-          </div>
+          </SectionCarousel>
         </div>
       ) : null}
 
@@ -455,8 +494,10 @@ export function DiscoveryClubsDetailBodySection({
 
       {club.branches.length > 0 ? (
         <div className={styles.section}>
-          <SectionTitle>{t("branchesTitle")}</SectionTitle>
-          <div className={[styles.carousel, styles.carouselBleed].join(" ")}>
+          <SectionCarousel
+            aria-label={t("branchesTitle")}
+            title={t("branchesTitle")}
+          >
             {club.branches.map((branch) => (
               <div className={styles.slide} key={branch.id}>
                 <ClubBranchCard
@@ -475,16 +516,20 @@ export function DiscoveryClubsDetailBodySection({
               variant="secondary"
             >
               <ArrowUpRight size={22} />
-              <span className={styles.classSeeAllLabel}>{t("seeAllBranches")}</span>
+              <span className={styles.classSeeAllLabel}>
+                {t("seeAllBranches")}
+              </span>
             </Button>
-          </div>
+          </SectionCarousel>
         </div>
       ) : null}
 
       {visibleClasses.length > 0 ? (
         <div className={styles.section}>
-          <SectionTitle>{t("classesTitle")}</SectionTitle>
-          <div className={[styles.carousel, styles.carouselBleed].join(" ")}>
+          <SectionCarousel
+            aria-label={t("classesTitle")}
+            title={t("classesTitle")}
+          >
             {visibleClasses.map((item) => {
               const href = `/discovery/clubs/${club.id}/classes/${item.id}`;
               return (
@@ -522,46 +567,51 @@ export function DiscoveryClubsDetailBodySection({
               variant="secondary"
             >
               <ArrowUpRight size={22} />
-              <span className={styles.classSeeAllLabel}>{t("seeAllClasses")}</span>
+              <span className={styles.classSeeAllLabel}>
+                {t("seeAllClasses")}
+              </span>
             </Button>
-          </div>
+          </SectionCarousel>
         </div>
       ) : null}
 
       {visibleReviews.length > 0 ? (
         <div className={styles.section}>
-          <SectionTitle>{t("reviewsTitle")}</SectionTitle>
-          <div className={styles.reviewsList}>
+          <SectionCarousel
+            aria-label={t("reviewsTitle")}
+            title={t("reviewsTitle")}
+          >
             {visibleReviews.map((review) => (
-              <ReviewCard
-                avatar={review.avatar}
-                avatarAlt={review.title}
-                avatarFallback={review.avatarFallback}
-                className={styles.reviewCard}
-                content={review.content}
-                date={review.date}
-                dislikeLabel={t("reviewDislike")}
-                isVerified={review.isVerified}
-                key={review.id}
-                likeLabel={t("reviewLike")}
-                rating={review.rating}
-                reportLabel={t("reviewReport")}
-                title={review.title}
-                verifiedLabel={t("reviewVerified")}
-              />
+              <div className={styles.reviewSlide} key={review.id}>
+                <ReviewCard
+                  avatar={review.avatar}
+                  avatarAlt={review.title}
+                  avatarFallback={review.avatarFallback}
+                  className={styles.reviewCard}
+                  content={review.content}
+                  date={review.date}
+                  dislikeLabel={t("reviewDislike")}
+                  isVerified={review.isVerified}
+                  likeLabel={t("reviewLike")}
+                  rating={review.rating}
+                  reportLabel={t("reviewReport")}
+                  title={review.title}
+                  verifiedLabel={t("reviewVerified")}
+                />
+              </div>
             ))}
 
-            <div className={styles.reviewsSeeAllFade}>
-              <Button
-                className={styles.reviewsSeeAllTrigger}
-                onPress={() => router.push(reviewsPath)}
-                size="sm"
-                variant="secondary"
-              >
+            <Button
+              className={styles.reviewSeeAll}
+              onPress={() => router.push(reviewsPath)}
+              variant="secondary"
+            >
+              <ArrowUpRight size={22} />
+              <span className={styles.classSeeAllLabel}>
                 {t("seeAllReviews")}
-              </Button>
-            </div>
-          </div>
+              </span>
+            </Button>
+          </SectionCarousel>
         </div>
       ) : null}
 

@@ -22,6 +22,7 @@ export function DiscoveryCoachesRecommendSection({
   coaches,
   onSeeAll,
   onClose,
+  onCoachPress,
 }: DiscoveryCoachesRecommendSectionProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [visibleIds, setVisibleIds] = useState(() =>
@@ -114,6 +115,7 @@ export function DiscoveryCoachesRecommendSection({
                   imageAlt={coach.name}
                   isNew={coach.isNew}
                   newLabel={newLabel}
+                  onClick={() => onCoachPress?.(coach.id)}
                   onClose={() => dismissCoach(coach.id)}
                   rating={coach.rating}
                   ratingCount={coach.ratingCount}

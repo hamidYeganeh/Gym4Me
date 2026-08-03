@@ -87,7 +87,9 @@ export function DiscoveryMapScreen({
             coach={selectedCoach}
             getDirectionsLabel={t("getDirections")}
             onGetDirections={openDirections}
-            onViewDetails={() => router.push("/discovery/coaches")}
+            onViewDetails={() =>
+              router.push(`/discovery/coaches/${selectedCoach.id}`)
+            }
             viewDetailsLabel={t("viewDetails")}
           />
         ) : null}

@@ -7,6 +7,12 @@ import { DiscoveryClubsDetailHeroSection } from "../../sections/DiscoveryClubsDe
 import { discoveryClubsDetailScreenStyles as styles } from "./DiscoveryClubsDetailScreen.styles";
 import type { DiscoveryClubsDetailScreenProps } from "./DiscoveryClubsDetailScreen.types";
 
+function getClubRating(reviews: { rating: number }[]) {
+  if (reviews.length === 0) return undefined;
+  const total = reviews.reduce((sum, review) => sum + review.rating, 0);
+  return Math.round((total / reviews.length) * 10) / 10;
+}
+
 export function DiscoveryClubsDetailScreen({
   club,
 }: DiscoveryClubsDetailScreenProps) {
@@ -20,6 +26,7 @@ export function DiscoveryClubsDetailScreen({
   const selectedPlan =
     club.subscriptions.find((plan) => plan.id === selectedSubscriptionId) ??
     club.subscriptions[0];
+  const rating = getClubRating(club.reviews);
 
   return (
     <div className={styles.root}>
@@ -27,8 +34,9 @@ export function DiscoveryClubsDetailScreen({
         <DiscoveryClubsDetailHeroSection
           images={club.images}
           isFavorite={club.isFavorite}
-          isSaved={club.isSaved}
           location={club.location}
+          rating={rating}
+          reviewCount={club.reviews.length}
           title={club.title}
         >
           <DiscoveryClubsDetailBodySection
