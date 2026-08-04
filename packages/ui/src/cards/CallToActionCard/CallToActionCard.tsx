@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Typography } from "@heroui/react";
+import { Button, Chip, Typography } from "@heroui/react";
 import { ChatLine } from "@repo/icons/ChatLine";
 import { Plus } from "@repo/icons/Plus";
 import { callToActionCardVariants } from "./CallToActionCard.styles";
@@ -11,6 +11,8 @@ export function CallToActionCard({
   actionType = "plus",
   subtitle,
   title,
+  meta,
+  badge,
   icon,
   actionLabel,
   onAction,
@@ -18,11 +20,27 @@ export function CallToActionCard({
   className,
   ...props
 }: CallToActionCardProps) {
+  const isSoft = variant === "soft";
   const slots = callToActionCardVariants({ variant, actionType });
   const actionIcon =
-    actionType === "icon"
+    actionType === "icon" && !isSoft
       ? (icon ?? <ChatLine size={28} />)
-      : <Plus size={22} />;
+      : <Plus size={isSoft ? 18 : 22} />;
+  const hasBadge = badge != null && badge !== "";
+  const hasMeta = meta != null && meta !== "";
+
+  const actionButton = (
+    <Button
+      aria-label={actionLabel}
+      className={slots.action({ className: actionClassName })}
+      isIconOnly
+      onPress={onAction}
+      size="lg"
+      variant="ghost"
+    >
+      {actionIcon}
+    </Button>
+  );
 
   return (
     <div
@@ -32,24 +50,45 @@ export function CallToActionCard({
       {...props}
     >
       <div className={slots.content()}>
-        <Typography className={slots.subtitle()} type="body" weight="medium">
-          {subtitle}
-        </Typography>
-        <Typography className={slots.title()} type="h3" weight="bold">
-          {title}
-        </Typography>
+        {isSoft ? (
+          <>
+            <Typography className={slots.title()} type="body" weight="bold">
+              {title}
+            </Typography>
+            <Typography className={slots.subtitle()} type="body" weight="semibold">
+              {subtitle}
+              {hasMeta ? (
+                <span className={slots.meta()}>{meta}</span>
+              ) : null}
+            </Typography>
+            {hasBadge ? (
+              <Chip
+                className={slots.badge()}
+                color="accent"
+                size="sm"
+                variant="primary"
+              >
+                <Chip.Label>{badge}</Chip.Label>
+              </Chip>
+            ) : null}
+          </>
+        ) : (
+          <>
+            <Typography className={slots.subtitle()} type="body" weight="medium">
+              {subtitle}
+            </Typography>
+            <Typography className={slots.title()} type="h3" weight="bold">
+              {title}
+            </Typography>
+          </>
+        )}
       </div>
 
-      <Button
-        aria-label={actionLabel}
-        className={slots.action({ className: actionClassName })}
-        isIconOnly
-        onPress={onAction}
-        size="lg"
-        variant="ghost"
-      >
-        {actionIcon}
-      </Button>
+      {isSoft ? (
+        <div className={slots.actionRing()}>{actionButton}</div>
+      ) : (
+        actionButton
+      )}
     </div>
   );
 }

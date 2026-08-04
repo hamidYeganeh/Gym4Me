@@ -74,7 +74,8 @@
 
   /*
    * Motion — durations + app ease alias
-   * JS counterparts: @repo/theme `duration` / `ease` / `spring`
+   * JS counterparts: @repo/theme `duration` / `ease` / `spring` / `transition` / `stagger`
+   * Default Motion spring (`transition` / `spring.default`) is ProfileHeader morph feel
    * Tailwind: duration-instant | duration-fast | … | ease-app
    */
   --duration-instant: 75ms;

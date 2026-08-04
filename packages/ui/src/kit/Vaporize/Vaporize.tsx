@@ -2,160 +2,242 @@
 
 import { durationMs } from "@repo/theme";
 import { toCanvas } from "html-to-image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { vaporizeVariants } from "./Vaporize.styles";
 import type { VaporizeProps } from "./Vaporize.types";
 import {
   calculateVaporizeSpread,
   createParticlesFromImageData,
+  createParticlesFromText,
   getCanvas2dContext,
+  parseColorChannels,
   renderParticlesToImageData,
   resolveSampleRate,
   transformValue,
   updateParticles,
   VAPORIZE_MAX_DELTA,
+  type VaporizeDirection,
   type VaporizeParticle,
   type VaporizeTextBoundaries,
 } from "./vaporize.engine";
 
-type Phase = "idle" | "capturing" | "playing" | "collapsing";
+type Phase = "idle" | "capturing" | "playing" | "done";
 
-function prefersReducedMotion() {
+const PARTICLE_PAD_PX = 40;
+
+function reducedMotionPreferred() {
   if (typeof window === "undefined" || !window.matchMedia) return false;
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
+function resolveCssColor(element: HTMLElement, fallback: string) {
+  const sample = getComputedStyle(element).color || fallback;
+  const channels = parseColorChannels(sample);
+  return `rgba(${channels.r}, ${channels.g}, ${channels.b}, ${channels.a})`;
+}
+
+async function captureDomSnapshot(
+  source: HTMLElement,
+  canvas: HTMLCanvasElement,
+  dpr: number,
+): Promise<{
+  particles: VaporizeParticle[];
+  boundaries: VaporizeTextBoundaries;
+  buffer: ImageData;
+} | null> {
+  const rect = source.getBoundingClientRect();
+  if (rect.width < 1 || rect.height < 1) return null;
+
+  const snapshot = await toCanvas(source, {
+    pixelRatio: dpr,
+    cacheBust: false,
+    skipFonts: true,
+    filter: (node) => {
+      if (!(node instanceof HTMLElement)) return true;
+      return node.dataset.vaporizeIgnore == null;
+    },
+  });
+
+  const width = rect.width;
+  const height = rect.height;
+  const canvasWidth = width + PARTICLE_PAD_PX * 2;
+  const canvasHeight = height + PARTICLE_PAD_PX * 2;
+
+  canvas.style.width = `${canvasWidth}px`;
+  canvas.style.height = `${canvasHeight}px`;
+  canvas.width = Math.floor(canvasWidth * dpr);
+  canvas.height = Math.floor(canvasHeight * dpr);
+
+  const ctx = getCanvas2dContext(canvas);
+  if (!ctx) return null;
+
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(
+    snapshot,
+    PARTICLE_PAD_PX * dpr,
+    PARTICLE_PAD_PX * dpr,
+    width * dpr,
+    height * dpr,
+  );
+
+  const buffer = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const sampleRate = resolveSampleRate(canvas.width, canvas.height, dpr);
+  const particles = createParticlesFromImageData(buffer, sampleRate);
+  const contentLeft = PARTICLE_PAD_PX * dpr;
+  const contentWidth = width * dpr;
+
+  return {
+    particles,
+    boundaries: {
+      left: contentLeft,
+      right: contentLeft + contentWidth,
+      width: contentWidth,
+    },
+    buffer,
+  };
+}
+
+function captureTextSnapshot(
+  canvas: HTMLCanvasElement,
+  texts: string[],
+  source: HTMLElement,
+  dpr: number,
+  direction: VaporizeDirection,
+): {
+  particles: VaporizeParticle[];
+  boundaries: VaporizeTextBoundaries;
+  buffer: ImageData;
+} | null {
+  const label = texts.join(" ").trim();
+  if (!label) return null;
+
+  const styles = getComputedStyle(source);
+  const fontSize = Number.parseFloat(styles.fontSize) || 16;
+  const fontWeight = styles.fontWeight || "400";
+  const fontFamily = styles.fontFamily || "sans-serif";
+  const color = resolveCssColor(source, "rgb(0, 0, 0)");
+
+  const width = Math.max(source.offsetWidth, fontSize * label.length * 0.55);
+  const height = Math.max(source.offsetHeight, fontSize * 1.6);
+  const canvasWidth = width + PARTICLE_PAD_PX * 2;
+  const canvasHeight = height + PARTICLE_PAD_PX * 2;
+
+  canvas.style.width = `${canvasWidth}px`;
+  canvas.style.height = `${canvasHeight}px`;
+  canvas.width = Math.floor(canvasWidth * dpr);
+  canvas.height = Math.floor(canvasHeight * dpr);
+
+  const ctx = getCanvas2dContext(canvas);
+  if (!ctx) return null;
+
+  const alignment =
+    direction === "right-to-left"
+      ? "right"
+      : styles.direction === "rtl"
+        ? "right"
+        : "left";
+  const textX =
+    alignment === "right"
+      ? canvas.width - PARTICLE_PAD_PX * dpr
+      : PARTICLE_PAD_PX * dpr;
+
+  const { particles, textBoundaries } = createParticlesFromText(
+    ctx,
+    canvas,
+    label,
+    textX,
+    canvas.height / 2,
+    `${fontWeight} ${fontSize * dpr}px ${fontFamily}`,
+    color,
+    alignment,
+  );
+
+  return {
+    particles,
+    boundaries: textBoundaries,
+    buffer: ctx.createImageData(canvas.width, canvas.height),
+  };
+}
+
 export function Vaporize({
   children,
+  texts,
   active = false,
   onComplete,
   direction = "left-to-right",
   density = 5,
   spread = 5,
-  duration = 1.05,
-  collapseDurationMs = durationMs.moderate,
+  duration = 1.1,
   className,
 }: VaporizeProps) {
   const [phase, setPhase] = useState<Phase>("idle");
   const slots = vaporizeVariants({ phase });
 
-  const rootRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<VaporizeParticle[]>([]);
   const boundariesRef = useRef<VaporizeTextBoundaries | null>(null);
-  const imageDataRef = useRef<ImageData | null>(null);
+  const bufferRef = useRef<ImageData | null>(null);
   const progressRef = useRef(0);
   const frameRef = useRef<number | null>(null);
-  const completedRef = useRef(false);
-  const startedRef = useRef(false);
-  const onCompleteRef = useRef(onComplete);
-  const collapseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const collapseDurationRef = useRef(collapseDurationMs);
-  const dprRef = useRef(1);
-  const directionRef = useRef(direction);
-  const spreadRef = useRef(spread);
-  const densityRef = useRef(transformValue(density, [0, 10], [0.35, 1], true));
-  const durationRef = useRef(duration * 1000);
+  const runIdRef = useRef(0);
+  const busyRef = useRef(false);
 
-  useEffect(() => {
-    onCompleteRef.current = onComplete;
-  }, [onComplete]);
-
-  useEffect(() => {
-    collapseDurationRef.current = collapseDurationMs;
-    directionRef.current = direction;
-    spreadRef.current = spread;
-    densityRef.current = transformValue(density, [0, 10], [0.35, 1], true);
-    durationRef.current = duration * 1000;
-  }, [collapseDurationMs, density, direction, duration, spread]);
-
-  const clearFrame = () => {
-    if (frameRef.current != null) {
-      cancelAnimationFrame(frameRef.current);
-      frameRef.current = null;
-    }
+  const optionsRef = useRef({
+    direction,
+    density: transformValue(density, [0, 10], [0.35, 1], true),
+    spread,
+    durationMs: duration * 1000,
+  });
+  optionsRef.current = {
+    direction,
+    density: transformValue(density, [0, 10], [0.35, 1], true),
+    spread,
+    durationMs: duration * 1000,
   };
 
-  const resetLayout = () => {
-    const root = rootRef.current;
-    if (!root) return;
-    root.style.height = "";
-    root.style.marginTop = "";
-    root.style.marginBottom = "";
-  };
+  const notifyComplete = useEffectEvent(() => {
+    onComplete?.();
+  });
 
-  const finish = () => {
-    completedRef.current = true;
-    startedRef.current = false;
-    particlesRef.current = [];
-    imageDataRef.current = null;
-    clearFrame();
-    onCompleteRef.current?.();
-  };
-
-  const beginCollapse = () => {
-    clearFrame();
-    const root = rootRef.current;
-    if (!root) {
-      finish();
-      return;
-    }
-
-    const height = root.getBoundingClientRect().height;
-    root.style.height = `${height}px`;
-    void root.offsetHeight;
-    setPhase("collapsing");
-
-    requestAnimationFrame(() => {
-      const node = rootRef.current;
-      if (!node) return;
-      node.style.height = "0px";
-      node.style.marginTop = "0px";
-      node.style.marginBottom = "0px";
-    });
-
-    if (collapseTimerRef.current) clearTimeout(collapseTimerRef.current);
-    collapseTimerRef.current = setTimeout(() => {
-      finish();
-    }, collapseDurationRef.current + 20);
+  const stopFrame = () => {
+    if (frameRef.current == null) return;
+    cancelAnimationFrame(frameRef.current);
+    frameRef.current = null;
   };
 
   useEffect(() => {
     if (!active) {
-      completedRef.current = false;
-      startedRef.current = false;
-      setPhase("idle");
+      runIdRef.current += 1;
+      stopFrame();
+      busyRef.current = false;
       particlesRef.current = [];
-      imageDataRef.current = null;
-      clearFrame();
-      if (collapseTimerRef.current) {
-        clearTimeout(collapseTimerRef.current);
-        collapseTimerRef.current = null;
-      }
-      resetLayout();
+      boundariesRef.current = null;
+      bufferRef.current = null;
+      progressRef.current = 0;
+      setPhase("idle");
       return;
     }
 
-    if (startedRef.current || completedRef.current) return;
-    startedRef.current = true;
+    if (busyRef.current) return;
+    busyRef.current = true;
 
-    if (prefersReducedMotion()) {
-      finish();
+    if (reducedMotionPreferred()) {
+      setPhase("done");
       return;
     }
 
+    const runId = ++runIdRef.current;
     let cancelled = false;
     setPhase("capturing");
 
-    const start = async () => {
+    const boot = async () => {
       const content = contentRef.current;
       const canvas = canvasRef.current;
-      if (!content || !canvas) return;
-
-      const rect = content.getBoundingClientRect();
-      if (rect.width < 1 || rect.height < 1) {
-        finish();
+      if (!content || !canvas) {
+        busyRef.current = false;
+        setPhase("done");
         return;
       }
 
@@ -163,76 +245,48 @@ export function Vaporize({
         typeof window !== "undefined"
           ? Math.min(window.devicePixelRatio || 1, 1.5)
           : 1;
-      dprRef.current = dpr;
 
       try {
-        const snapshot = await toCanvas(content, {
-          pixelRatio: dpr,
-          cacheBust: false,
-          skipFonts: true,
-          filter: (node) => {
-            if (!(node instanceof HTMLElement)) return true;
-            return !node.dataset.vaporizeIgnore;
-          },
-        });
+        const textList = texts;
+        const useTextPath =
+          children == null && textList != null && textList.length > 0;
+        const snapshot = useTextPath
+          ? captureTextSnapshot(
+              canvas,
+              textList,
+              content,
+              dpr,
+              optionsRef.current.direction,
+            )
+          : await captureDomSnapshot(content, canvas, dpr);
 
-        if (cancelled) return;
-
-        const pad = 36;
-        const width = rect.width;
-        const height = rect.height;
-        const canvasWidth = width + pad * 2;
-        const canvasHeight = height + pad * 2;
-        canvas.style.width = `${canvasWidth}px`;
-        canvas.style.height = `${canvasHeight}px`;
-        canvas.width = Math.floor(canvasWidth * dpr);
-        canvas.height = Math.floor(canvasHeight * dpr);
-
-        const ctx = getCanvas2dContext(canvas);
-        if (!ctx) {
-          finish();
+        if (cancelled || runId !== runIdRef.current) return;
+        if (!snapshot || snapshot.particles.length === 0) {
+          busyRef.current = false;
+          setPhase("done");
           return;
         }
 
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(
-          snapshot,
-          pad * dpr,
-          pad * dpr,
-          width * dpr,
-          height * dpr,
-        );
-
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        imageDataRef.current = imageData;
-
-        const sampleRate = resolveSampleRate(canvas.width, canvas.height, dpr);
-        particlesRef.current = createParticlesFromImageData(
-          imageData,
-          sampleRate,
-        );
-
-        const contentLeft = pad * dpr;
-        const contentWidth = width * dpr;
-        boundariesRef.current = {
-          left: contentLeft,
-          right: contentLeft + contentWidth,
-          width: contentWidth,
-        };
+        particlesRef.current = snapshot.particles;
+        boundariesRef.current = snapshot.boundaries;
+        bufferRef.current = snapshot.buffer;
         progressRef.current = 0;
-        completedRef.current = false;
         setPhase("playing");
       } catch {
-        if (!cancelled) finish();
+        if (!cancelled && runId === runIdRef.current) {
+          busyRef.current = false;
+          setPhase("done");
+        }
       }
     };
 
-    void start();
+    void boot();
 
     return () => {
       cancelled = true;
     };
+    // Capture once when `active` turns true; read children/texts from that render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional one-shot trigger
   }, [active]);
 
   useEffect(() => {
@@ -240,104 +294,103 @@ export function Vaporize({
 
     const canvas = canvasRef.current;
     const ctx = canvas ? getCanvas2dContext(canvas) : null;
-    const buffer = imageDataRef.current;
+    const buffer = bufferRef.current;
     if (!canvas || !ctx || !buffer) return;
 
-    const dpr = dprRef.current;
+    const dpr =
+      typeof window !== "undefined"
+        ? Math.min(window.devicePixelRatio || 1, 1.5)
+        : 1;
     const multipliedSpread =
-      calculateVaporizeSpread(Math.min(canvas.height / dpr, 72)) *
-      spreadRef.current;
+      calculateVaporizeSpread(Math.min(canvas.height / dpr, 80)) *
+      optionsRef.current.spread;
 
     let lastTime = performance.now();
-    let settledFrames = 0;
+    let settled = 0;
 
-    const animate = (currentTime: number) => {
-      const deltaTime = Math.min(
-        (currentTime - lastTime) / 1000,
-        VAPORIZE_MAX_DELTA,
-      );
-      lastTime = currentTime;
+    const tick = (now: number) => {
+      const dt = Math.min((now - lastTime) / 1000, VAPORIZE_MAX_DELTA);
+      lastTime = now;
 
-      const vaporizeDurationMs = durationRef.current;
-      progressRef.current +=
-        (deltaTime * 100) / Math.max(vaporizeDurationMs / 1000, 0.01);
+      const { direction: dir, density: dens, durationMs: vaporMs } =
+        optionsRef.current;
+      progressRef.current += (dt * 100) / Math.max(vaporMs / 1000, 0.01);
 
-      const boundaries = boundariesRef.current;
-      if (!boundaries) {
-        frameRef.current = requestAnimationFrame(animate);
+      const bounds = boundariesRef.current;
+      if (!bounds) {
+        frameRef.current = requestAnimationFrame(tick);
         return;
       }
 
       const progress = Math.min(100, progressRef.current);
       const vaporizeX =
-        directionRef.current === "left-to-right"
-          ? boundaries.left + (boundaries.width * progress) / 100
-          : boundaries.right - (boundaries.width * progress) / 100;
+        dir === "left-to-right"
+          ? bounds.left + (bounds.width * progress) / 100
+          : bounds.right - (bounds.width * progress) / 100;
 
-      const allVaporized = updateParticles(
+      const finished = updateParticles(
         particlesRef.current,
         vaporizeX,
-        deltaTime,
+        dt,
         multipliedSpread,
-        vaporizeDurationMs,
-        directionRef.current,
-        densityRef.current,
+        vaporMs,
+        dir,
+        dens,
       );
 
       renderParticlesToImageData(buffer, particlesRef.current);
       ctx.putImageData(buffer, 0, 0);
 
-      if (progress >= 100 && allVaporized) {
-        settledFrames += 1;
-        if (settledFrames >= 2) {
-          beginCollapse();
+      if (progress >= 100 && finished) {
+        settled += 1;
+        if (settled >= 2) {
+          stopFrame();
+          busyRef.current = false;
+          setPhase("done");
           return;
         }
       }
 
-      frameRef.current = requestAnimationFrame(animate);
+      frameRef.current = requestAnimationFrame(tick);
     };
 
-    frameRef.current = requestAnimationFrame(animate);
-
-    return () => {
-      clearFrame();
-    };
+    frameRef.current = requestAnimationFrame(tick);
+    return () => stopFrame();
   }, [phase]);
 
   useEffect(() => {
-    return () => {
-      if (collapseTimerRef.current) clearTimeout(collapseTimerRef.current);
-      clearFrame();
-    };
-  }, []);
+    if (phase !== "done") return;
 
-  const showCanvas = phase === "playing";
-  const hideContent = phase === "playing" || phase === "collapsing";
+    const timer = window.setTimeout(() => {
+      stopFrame();
+      busyRef.current = false;
+      particlesRef.current = [];
+      boundariesRef.current = null;
+      bufferRef.current = null;
+      progressRef.current = 0;
+      notifyComplete();
+    }, durationMs.moderate);
+
+    return () => window.clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- notifyComplete is useEffectEvent
+  }, [phase]);
+
+  useEffect(() => () => stopFrame(), []);
 
   return (
-    <div
-      className={slots.root({ className })}
-      ref={rootRef}
-      style={
-        phase === "collapsing"
-          ? { transitionDuration: `${collapseDurationMs}ms` }
-          : undefined
-      }
-    >
-      <div
-        aria-hidden={hideContent || undefined}
-        className={slots.content()}
-        ref={contentRef}
-        style={hideContent ? { visibility: "hidden" } : undefined}
-      >
-        {children}
+    <div className={slots.root({ className })}>
+      <div className={slots.shell()}>
+        <div className={slots.shellInner()}>
+          <div className={slots.content()} ref={contentRef}>
+            {children ?? (texts != null ? texts.join(" ") : null)}
+          </div>
+        </div>
       </div>
       <canvas
         aria-hidden
         className={slots.canvas()}
         ref={canvasRef}
-        style={{ display: showCanvas ? "block" : "none" }}
+        style={{ display: phase === "playing" ? "block" : "none" }}
       />
     </div>
   );

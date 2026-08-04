@@ -52,5 +52,11 @@
 	<true/>
 	<key>UIStatusBarStyle</key>
 	<string>UIStatusBarStyleDarkContent</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>برای ورود امن به حساب کاربری از Face ID استفاده می‌شود</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Gym4Me داده‌های سلامت شما (از جمله داده‌های همگام‌شده از ساعت هوشمند) را می‌خواند تا معیارهای تناسب اندام را نمایش دهد.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Gym4Me فقط ورودی‌هایی را که خودتان ثبت می‌کنید (مانند وزن) در اپ سلامت ذخیره می‌کند.</string>
 </dict>
 </plist>

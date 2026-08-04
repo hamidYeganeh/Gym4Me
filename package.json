@@ -5,6 +5,8 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "dev:mobile": "turbo run dev --filter=mobile",
+    "dev:website": "turbo run dev --filter=website",
+    "dev:admin": "turbo run dev --filter=admin",
     "dev:api": "turbo run dev --filter=api",
     "api:swagger": "npm run swagger --workspace=api",
     "lint": "turbo run lint",
@@ -13,11 +15,18 @@
     "mobile:cap:sync": "npm run cap:sync --workspace=mobile",
     "mobile:cap:assets": "npm run cap:assets --workspace=mobile",
     "mobile:android:apk": "npm run android:apk --workspace=mobile",
+    "mobile:android:apk:release": "npm run android:apk:release --workspace=mobile",
     "mobile:android:aab": "npm run android:aab --workspace=mobile",
+    "mobile:android:keystore": "npm run android:keystore --workspace=mobile",
     "mobile:ios:sim": "npm run ios:sim --workspace=mobile",
     "mobile:ios:ipa": "npm run ios:ipa --workspace=mobile",
     "mobile:android:open": "npm run android:open --workspace=mobile",
-    "mobile:ios:open": "npm run ios:open --workspace=mobile"
+    "mobile:ios:open": "npm run ios:open --workspace=mobile",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:api": "docker compose up -d --build api",
+    "docker:android:aab": "bash scripts/docker-android-release.sh aab",
+    "docker:android:apk": "bash scripts/docker-android-release.sh apk:release"
   },
   "devDependencies": {
     "prettier": "^3.7.4",

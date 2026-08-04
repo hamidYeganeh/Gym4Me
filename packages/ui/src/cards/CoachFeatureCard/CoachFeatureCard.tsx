@@ -95,6 +95,7 @@ export function CoachFeatureCard({
         <CloseButton
           aria-label={closeLabel}
           className={slots.closeButton()}
+          onClick={(event) => event.stopPropagation()}
           onPress={onClose}
         />
       </div>

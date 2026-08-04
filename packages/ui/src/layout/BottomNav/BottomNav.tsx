@@ -2,6 +2,7 @@
 
 import { Button, Link, Popover, Typography } from "@heroui/react";
 import { useState, type ReactNode } from "react";
+import { ProgressiveBlur } from "../../kit/ProgressiveBlur";
 import { bottomNavVariants } from "./BottomNav.styles";
 import type {
   BottomNavItem,
@@ -17,7 +18,6 @@ export function BottomNav({
   isActionsOpen,
   onActionsOpenChange,
 }: BottomNavProps) {
-  const slots = bottomNavVariants();
   const mid = Math.ceil(items.length / 2);
   const leading = items.slice(0, mid);
   const trailing = items.slice(mid);
@@ -32,6 +32,14 @@ export function BottomNav({
     }
     onActionsOpenChange?.(open);
   };
+
+  const slots = bottomNavVariants({ isActionsOpen: actionsOpen });
+
+  const renderCenterIcon = (icon: ReactNode) => (
+    <span aria-hidden className={slots.centerActionIcon()}>
+      {icon}
+    </span>
+  );
 
   const renderItem = (item: BottomNavItem) => {
     const itemSlots = bottomNavVariants({ isActive: Boolean(item.isActive) });
@@ -123,13 +131,16 @@ export function BottomNav({
         {hasActionsMenu ? (
           <Popover isOpen={actionsOpen} onOpenChange={setActionsOpen}>
             <Button
+              aria-expanded={actionsOpen}
               aria-label={centerAction.label}
               className={slots.centerAction()}
               isIconOnly={Boolean(centerAction.icon)}
               size="lg"
               variant="primary"
             >
-              {centerAction.icon ?? (
+              {centerAction.icon ? (
+                renderCenterIcon(centerAction.icon)
+              ) : (
                 <span className={slots.centerActionLabel()}>
                   {centerAction.label}
                 </span>
@@ -160,7 +171,9 @@ export function BottomNav({
             size="lg"
             variant="primary"
           >
-            {centerAction.icon ?? (
+            {centerAction.icon ? (
+              renderCenterIcon(centerAction.icon)
+            ) : (
               <span className={slots.centerActionLabel()}>
                 {centerAction.label}
               </span>
@@ -181,6 +194,12 @@ export function BottomNav({
         />
       ) : null}
       <nav aria-label={ariaLabel} className={slots.root({ className })}>
+        <ProgressiveBlur
+          blurIntensity={0.85}
+          blurLayers={12}
+          className={slots.blur()}
+          direction="bottom"
+        />
         {leading.map(renderItem)}
         {centerNode}
         {trailing.map(renderItem)}

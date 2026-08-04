@@ -4,12 +4,13 @@ import { tv } from "tailwind-variants";
 export const bottomNavVariants = tv({
   slots: {
     root: [
-      "fixed inset-x-0 bottom-0 z-50",
-      "flex items-end justify-around",
+      "fixed bottom-0 left-1/2 z-50 w-full max-w-xl -translate-x-1/2",
+      "isolate flex items-end justify-around overflow-hidden",
       "bg-linear-to-t from-background to-transparent",
       "px-1 pt-10 pb-[max(0.5rem,env(safe-area-inset-bottom))]",
     ].join(" "),
-    item: "flex min-w-0 flex-1 flex-col items-center gap-1 py-1",
+    blur: "pointer-events-none absolute inset-0 z-0",
+    item: "relative z-10 flex min-w-0 flex-1 flex-col items-center gap-1 py-1",
     itemButton: [
       "flex size-10 items-center justify-center rounded-full",
       "bg-transparent text-current no-underline shadow-none",
@@ -17,16 +18,24 @@ export const bottomNavVariants = tv({
       "data-[hovered=true]:bg-transparent",
     ].join(" "),
     itemLabel: "max-w-full text-current",
-    centerSlot: "relative z-50 flex shrink-0 items-end justify-center px-1 pb-1",
+    centerSlot:
+      "relative z-50 flex shrink-0 items-end justify-center px-1 pb-1",
     centerAction: [
-      "size-14 rounded-full",
+      "size-16 rounded-full",
       "bg-accent text-accent-foreground",
       "shadow-lg shadow-accent/35",
       "hover:bg-accent/90 data-[hovered=true]:bg-accent/90",
+      /* HeroUI Button forces svg to size-5; keep the logo at 48px */
+      "[&_svg]:pointer-events-none [&_svg]:!m-0 [&_svg]:!size-12",
+    ].join(" "),
+    centerActionIcon: [
+      "inline-flex size-12 items-center justify-center",
+      "transition-transform duration-300 ease",
+      "will-change-transform",
     ].join(" "),
     centerActionLabel: "sr-only",
     backdrop: [
-      "fixed inset-0 z-40",
+      "fixed inset-y-0 left-1/2 z-40 w-full max-w-xl -translate-x-1/2",
       "bg-background/50 backdrop-blur-md",
     ].join(" "),
     menu: [
@@ -51,9 +60,14 @@ export const bottomNavVariants = tv({
       true: { item: "text-accent" },
       false: { item: "text-muted" },
     },
+    isActionsOpen: {
+      true: { centerActionIcon: "-rotate-45" },
+      false: { centerActionIcon: "rotate-0" },
+    },
   },
   defaultVariants: {
     isActive: false,
+    isActionsOpen: false,
   },
 });
 

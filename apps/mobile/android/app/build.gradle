@@ -1,5 +1,41 @@
 apply plugin: 'com.android.application'
 
+def keystorePropertiesFile = rootProject.file("key.properties")
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+def envOrProp = { String envName, String propName ->
+    def fromEnv = System.getenv(envName)
+    if (fromEnv != null && !fromEnv.trim().isEmpty()) {
+        return fromEnv.trim()
+    }
+    return keystoreProperties.getProperty(propName)
+}
+
+def uploadStoreFile = envOrProp("GYM4ME_UPLOAD_STORE_FILE", "storeFile")
+def uploadStorePassword = envOrProp("GYM4ME_UPLOAD_STORE_PASSWORD", "storePassword")
+def uploadKeyAlias = envOrProp("GYM4ME_UPLOAD_KEY_ALIAS", "keyAlias")
+def uploadKeyPassword = envOrProp("GYM4ME_UPLOAD_KEY_PASSWORD", "keyPassword")
+def hasReleaseSigning = uploadStoreFile && uploadStorePassword && uploadKeyAlias && uploadKeyPassword
+
+def resolveVersionCode = {
+    def fromEnv = System.getenv("GYM4ME_VERSION_CODE")
+    if (fromEnv != null && !fromEnv.trim().isEmpty()) {
+        return fromEnv.trim().toInteger()
+    }
+    return (project.findProperty("GYM4ME_VERSION_CODE") ?: "1").toString().toInteger()
+}
+
+def resolveVersionName = {
+    def fromEnv = System.getenv("GYM4ME_VERSION_NAME")
+    if (fromEnv != null && !fromEnv.trim().isEmpty()) {
+        return fromEnv.trim()
+    }
+    return (project.findProperty("GYM4ME_VERSION_NAME") ?: "1.0").toString()
+}
+
 android {
     namespace "com.gym4me.app"
     compileSdk rootProject.ext.compileSdkVersion
@@ -7,8 +43,8 @@ android {
         applicationId "com.gym4me.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode resolveVersionCode()
+        versionName resolveVersionName()
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,10 +52,28 @@ android {
             ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        if (hasReleaseSigning) {
+            release {
+                def storePath = file(uploadStoreFile)
+                if (!storePath.isAbsolute()) {
+                    storePath = rootProject.file(uploadStoreFile)
+                }
+                storeFile storePath
+                storePassword uploadStorePassword
+                keyAlias uploadKeyAlias
+                keyPassword uploadKeyPassword
+            }
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
+            shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 }
@@ -40,9 +94,19 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
+    // Required by @capgo/capacitor-health (Health Connect / Java 8+ APIs)
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
 }
 
 apply from: 'capacitor.build.gradle'
+
+// Must run after capacitor.build.gradle — its compileOptions block would otherwise
+// leave desugaring disabled for CheckAarMetadata against :capgo-capacitor-health.
+android {
+    compileOptions {
+        coreLibraryDesugaringEnabled true
+    }
+}
 
 try {
     def servicesJSON = file('google-services.json')

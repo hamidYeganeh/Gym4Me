@@ -1,6 +1,26 @@
 {
   "Metadata": {
-    "description": "Gym4Me — پلتفرم باشگاه و تناسب اندام"
+    "description": "Gym4Me — پلتفرم هوشمند مدیریت باشگاه، مربی و ورزشکار"
+  },
+  "Admin": {
+    "metaTitle": "پنل مدیریت",
+    "metaDescription": "پنل مدیریت Gym4Me برای باشگاه، مربی و ورزشکار",
+    "greeting": "صبح بخیر! 👋",
+    "searchPlaceholder": "جستجو کنید...",
+    "searchAriaLabel": "جستجو",
+    "filtersAriaLabel": "فیلترها",
+    "navAriaLabel": "ناوبری مدیریت",
+    "themeToLight": "تغییر به حالت روشن",
+    "themeToDark": "تغییر به حالت تاریک",
+    "avatarAlt": "پروفایل",
+    "nav": {
+      "home": "خانه",
+      "calendar": "تقویم",
+      "profile": "پروفایل",
+      "settings": "تنظیمات",
+      "analytics": "آمار",
+      "logout": "خروج"
+    }
   },
   "BottomNav": {
     "navLabel": "ناوبری پایین",
@@ -65,6 +85,16 @@
     "promoTitle": "بینش معیارهای سلامت خود را ببینید",
     "promoAction": "مشاهده بینش",
     "promoImageAlt": "تجهیزات ورزشی",
+    "connectTitle": "سلامت و ساعت هوشمند",
+    "connectSubtitle": "اتصال به اپ سلامت دستگاه برای همگام‌سازی دادهٔ ساعت هوشمند (ضربان، گام، کالری و وزن).",
+    "connectAction": "اتصال",
+    "connectAgain": "مدیریت دسترسی",
+    "connectConnecting": "در حال اتصال…",
+    "connectConnected": "متصل شد",
+    "connectDenied": "دسترسی داده نشد",
+    "connectError": "اتصال برقرار نشد",
+    "connectUnsupported": "اتصال سلامت فقط در اپ نصب‌شده روی گوشی (iOS/Android) در دسترس است.",
+    "connectSettings": "تنظیمات سلامت",
     "allMetrics": "همه معیارها",
     "listView": "نمای فهرست",
     "listViewLabel": "تغییر نحوه نمایش",
@@ -184,6 +214,15 @@
     "brand": "Gym4Me",
     "title": "تم و رابط کاربری HeroUI",
     "description": "پکیج تم مشترک مونوریپو با پشتیبانی از حالت روشن و تاریک.",
+    "biometricLabel": "احراز هویت بیومتریک",
+    "biometricAction": "ورود با بیومتریک",
+    "biometricReason": "برای ادامه، هویت خود را تأیید کنید",
+    "biometricCancel": "انصراف",
+    "biometricAndroidTitle": "ورود بیومتریک",
+    "biometricAndroidSubtitle": "با اثر انگشت یا تشخیص چهره وارد شوید",
+    "biometricSuccess": "احراز هویت با موفقیت انجام شد",
+    "biometricUnavailable": "بیومتریک روی این دستگاه در دسترس نیست",
+    "biometricFailed": "احراز هویت ناموفق بود",
     "primaryAction": "شروع کنید",
     "secondaryAction": "بیشتر بدانید",
     "tertiaryAction": "انصراف",
@@ -275,6 +314,9 @@
     "callToActionPlus": "دکمه به‌علاوه",
     "callToActionIcon": "آیکون",
     "callToActionOutlined": "حاشیه‌دار",
+    "callToActionSoft": "نرم",
+    "callToActionMeta": "۲ مورد باقی‌مانده",
+    "callToActionBadge": "نسخه ۳٫۰",
     "socialMediaCardLabel": "کارت شبکه‌های اجتماعی",
     "socialMediaCardTitle": "اشتراک‌گذاری در",
     "socialMediaCardFacebook": "فیسبوک",
@@ -293,7 +335,7 @@
     "clubCardSubtitle": "تهران، ایران",
     "clubCardPricePrefix": "از",
     "clubCardPrice": "۷۶۰٬۰۰۰",
-    "clubCardPriceSuffix": "تومان",
+    "clubCardPriceSuffix": "تومانءءء",
     "clubCardAction": "مشاهده جزئیات",
     "clubCardShare": "اشتراک‌گذاری",
     "clubCardFavorite": "علاقه‌مندی",
@@ -309,6 +351,10 @@
     "cityCardTitle": "کلبه سوئیسی",
     "cityCardDiscount": "٪ ۲۵",
     "cityCardAction": "مشاهده باشگاه‌ها",
+    "districtCardLabel": "کارت محله",
+    "districtCardTitle": "ونک",
+    "districtCardSubtitle": "تهران",
+    "districtCardAction": "مشاهده محله",
     "clubEquipmentCardLabel": "کارت تجهیزات باشگاه",
     "clubEquipmentCardTitle": "تردمیل",
     "clubEquipmentCardSubtitle": "مدل پرو ایکس",
@@ -425,12 +471,40 @@
     "adaptiveSliderValueLabel": "کالری",
     "adaptiveSliderUnit": "کیلوکالری",
     "screensLabel": "صفحه‌های دمو",
+    "screensAppLabel": "اپ و نقش‌ها",
+    "screensDiscoveryLabel": "کشف",
+    "screensAthleteLabel": "ورزشکار",
+    "screensCoachLabel": "مربی",
+    "screensOwnerLabel": "مالک",
+    "screenSplash": "صفحه اسپلش",
+    "screenAthleteHome": "خانه ورزشکار",
+    "screenCoachHome": "خانه مربی",
+    "screenOwnerHome": "خانه مالک",
+    "screenOwnerClubsCreate": "ایجاد باشگاه",
+    "screenDiscoveryMap": "نقشه کشف",
+    "screenDiscoveryCoaches": "لیست مربیان",
+    "screenCoachDetail": "جزئیات مربی",
     "screenClubDetail": "جزئیات باشگاه",
+    "screenClubReviews": "نظرات باشگاه",
+    "screenClubBranches": "شعبه‌های باشگاه",
+    "screenClubSports": "ورزش‌های باشگاه",
+    "screenClubClasses": "کلاس‌های باشگاه",
+    "screenClubClassDetail": "جزئیات کلاس",
     "screenFitnessMetrics": "معیارهای تناسب اندام",
     "screenFitnessMetricsReorder": "مرتب‌سازی معیارها",
     "screenWeightMetrics": "معیارهای وزن",
+    "screenWeightHistory": "تاریخچه وزن",
+    "screenWeightDetail": "جزئیات ثبت وزن",
     "screenCoachCalendarDaily": "برنامه تمرین روزانه",
     "screenCoachCalendarWeekly": "برنامه تمرین هفتگی",
+    "componentsNavLabel": "پیمایش کامپوننت‌ها",
+    "profileHeaderLabel": "هدر پروفایل",
+    "profileHeaderHint": "نسخه زنده در خانه‌های ورزشکار، مربی و مالک",
+    "quickActionCardLabel": "کارت اقدام سریع",
+    "quickActionCardAi": "هوش مصنوعی",
+    "quickActionCardPhoto": "عکس",
+    "quickActionCardVideo": "ویدیو",
+    "quickActionCardMore": "بیشتر",
     "bottomNavLabel": "ناوبری پایین",
     "bottomNavAria": "ناوبری پایین",
     "bottomNavPreview": "محتوا زیر نوار اسکرول می‌شود",
@@ -502,11 +576,14 @@
     "back": "بازگشت",
     "favorite": "علاقه‌مندی",
     "save": "ذخیره",
+    "share": "اشتراک‌گذاری",
     "selectImage": "انتخاب تصویر {index}",
     "pullGallery": "برای گالری بکشید",
     "releaseGallery": "رها کنید",
     "closeGallery": "بستن گالری",
     "galleryCount": "{current} از {total}",
+    "imageCounter": "{current}/{total}",
+    "reviewsCount": "({count} نظر)",
     "notFound": "این باشگاه پیدا نشد.",
     "description": "توضیحات",
     "statMinutes": "دقیقه",
@@ -539,6 +616,8 @@
     "busyHoursTitle": "میزان شلوغی در ساعات مختلف",
     "busyHoursChartLabel": "نمودار میزان شلوغی باشگاه در ساعات مختلف",
     "reserve": "رزرو",
+    "totalLabel": "مجموع",
+    "confirmBooking": "تأیید رزرو",
     "subscriptionsTitle": "پلن‌های اشتراک",
     "subscriptionsLabel": "انتخاب پلن اشتراک",
     "planFree": "پلن رایگان",
@@ -617,7 +696,364 @@
     "zoomOut": "Zoom out",
     "getDirections": "Get Direction",
     "viewDetails": "View Details"
+  },
+  "CoachDetail": {
+    "back": "بازگشت",
+    "notFound": "این مربی پیدا نشد.",
+    "home": "خانه",
+    "inspo": "الهام",
+    "addInspo": "افزودن الهام",
+    "selectInspo": "انتخاب تصویر الهام {index}",
+    "programsTitle": "برنامه",
+    "programsCount": "({count})",
+    "addProgram": "افزودن برنامه",
+    "markDone": "علامت به‌عنوان انجام‌شده",
+    "markUndone": "برداشتن علامت انجام",
+    "statusDone": "انجام‌شده",
+    "statusThinking": "در حال بررسی…",
+    "statusInProgress": "در حال انجام",
+    "statsLine": "{progress}٪ انجام‌شده • {newCount} مورد جدید • {members} نفر",
+    "bookSession": "رزرو جلسه",
+    "bookSessionHint": "ادامه"
+  },
+  "OwnerHome": {
+    "title": "باشگاه من",
+    "subtitle": "باشگاه، پرسنل و رزروها را از اینجا مدیریت کنید.",
+    "profileName": "علی رضایی",
+    "profileRole": "مالک",
+    "profileBio": "مالک باشگاه با بیش از ۱۰ سال تجربه در مدیریت مجموعه ورزشی و رشد اعضای وفادار.",
+    "follow": "دنبال کردن",
+    "share": "اشتراک‌گذاری",
+    "statFollowers": "دنبال‌کننده‌ها",
+    "statFollowersValue": "۱۶.۶k",
+    "statViews": "بازدید ماهانه",
+    "statViewsValue": "۸۰۸k",
+    "statViewsAction": "مشاهده آمار",
+    "notifications": "اعلان‌ها",
+    "navLabel": "ناوبری پایین",
+    "home": "خانه",
+    "ai": "هوش مصنوعی",
+    "resources": "منابع",
+    "profile": "پروفایل",
+    "create": "افزودن",
+    "actionsLabel": "منوی سریع",
+    "clubs": "باشگاه‌ها",
+    "staff": "پرسنل",
+    "classes": "کلاس‌ها",
+    "equipment": "تجهیزات",
+    "bookings": "رزروها",
+    "analytics": "آمار",
+    "marketing": "بازاریابی",
+    "statMembers": "اعضا",
+    "statMembersUnit": "نفر",
+    "statBookings": "رزروها",
+    "statBookingsUnit": "عدد",
+    "statRevenue": "درآمد",
+    "statRevenueUnit": "میلیون",
+    "statOccupancy": "اشغال",
+    "statOccupancyUnit": "٪",
+    "statCopy": "کپی",
+    "statEdit": "ویرایش",
+
+    "createClubTitle": "باشگاه جدید",
+    "createClubSubtitle": "نسخه آزمایشی",
+    "createClubMeta": "۲ باشگاه باقی‌مانده",
+    "createClubBadge": "نسخه ۳٫۰",
+    "createClubAction": "ایجاد باشگاه",
+    "quickActionsLabel": "میانبرهای سریع",
+    "quickActionAi": "ویرایشگر AI",
+    "quickActionPhoto": "ویرایشگر عکس",
+    "quickActionVideo": "ویرایشگر ویدیو",
+    "quickActionMore": "گزینه‌های بیشتر",
+    "tasksOverviewTitle": "نمای کلی کارها",
+    "tasksOverviewSummary": "این هفته <bold>{count} کار جدید</bold> دارید",
+    "tasksOverviewSeeAll": "مشاهده همه",
+    "tasksPrimaryTitle": "مدیریت کارها",
+    "tasksPrimaryValue": "۶/۱۰",
+    "tasksPrimaryDescription": "لطفاً همه کارهای جدید را سریع تخصیص دهید.",
+    "tasksPrimaryAction": "مدیریت کارها",
+    "tasksUpcomingTitle": "کارهای پیش‌رو",
+    "tasksUpcomingValue": "۱۲",
+    "tasksUpcomingDescription": "در انتظار بررسی",
+    "tasksUpcomingAction": "کارهای پیش‌رو",
+    "tasksAssignedTitle": "کارهای تخصیص‌یافته",
+    "tasksAssignedValue": "۳۲",
+    "tasksAssignedDescription": "تقریباً تمام‌شده",
+    "tasksAssignedAction": "کارهای تخصیص‌یافته",
+    "myClubsTitle": "باشگاه‌های من",
+    "clubAction": "مشاهده جزئیات",
+    "clubPricePrefix": "از",
+    "clubPriceSuffix": "تومانءءء",
+    "clubShare": "اشتراک‌گذاری",
+    "clubFavorite": "علاقه‌مندی"
+  },
+  "CoachHome": {
+    "title": "خانه مربی",
+    "subtitle": "جلسات، شاگردان و برنامه هفتگی را از اینجا مدیریت کنید.",
+    "profileName": "سارا محمدی",
+    "profileRole": "مربی",
+    "profileBio": "مربی تناسب اندام با بیش از ۱۰ سال تجربه در فیتنس، آمادگی جسمانی و برنامه‌های شخصی.",
+    "follow": "دنبال کردن",
+    "share": "اشتراک‌گذاری",
+    "statFollowers": "دنبال‌کننده‌ها",
+    "statFollowersValue": "۱۶.۶k",
+    "statViews": "بازدید ماهانه",
+    "statViewsValue": "۸۰۸k",
+    "statViewsAction": "مشاهده آمار",
+    "notifications": "اعلان‌ها",
+    "navLabel": "ناوبری پایین",
+    "home": "خانه",
+    "calendar": "تقویم",
+    "clients": "شاگردان",
+    "profile": "پروفایل",
+    "create": "افزودن",
+    "actionsLabel": "منوی سریع",
+    "dailyPlan": "برنامه روزانه",
+    "weeklyPlan": "برنامه هفتگی",
+    "quickLinksTitle": "میانبرها",
+    "dailyPlanDescription": "جلسات امروز را ببینید و مدیریت کنید.",
+    "weeklyPlanDescription": "نمای هفتگی تمرین‌ها و زمان‌بندی."
+  },
+  "AthleteHome": {
+    "title": "خانه ورزشکار",
+    "subtitle": "تمرین، معیارها و پیشرفت خود را پیگیری کنید.",
+    "profileName": "امیر حسینی",
+    "profileRole": "ورزشکار",
+    "profileBio": "ورزشکار علاقه‌مند به تناسب اندام، تمرین‌های قدرتی و پیگیری پیشرفت هفتگی.",
+    "follow": "دنبال کردن",
+    "share": "اشتراک‌گذاری",
+    "statFollowers": "دنبال‌کننده‌ها",
+    "statFollowersValue": "۱۶.۶k",
+    "statViews": "بازدید ماهانه",
+    "statViewsValue": "۸۰۸k",
+    "statViewsAction": "مشاهده آمار",
+    "notifications": "اعلان‌ها",
+    "navLabel": "ناوبری پایین",
+    "home": "خانه",
+    "metrics": "معیارها",
+    "activity": "فعالیت",
+    "profile": "پروفایل",
+    "create": "افزودن",
+    "actionsLabel": "منوی سریع",
+    "quickLinksTitle": "میانبرها",
+    "metricsTitle": "معیارهای تناسب اندام",
+    "metricsDescription": "وزن، ترکیب بدن و روند پیشرفت را ببینید.",
+    "metricsAction": "مشاهده معیارها"
+  },
+  "OwnerClubsCreate": {
+    "title": "ثبت باشگاه",
+    "subtitle": "اطلاعات باشگاه جدید را وارد کنید.",
+    "back": "بازگشت"
+  },
+  "Splash": {
+    "title": "اسپلش",
+    "brand": "Gym4Me",
+    "taglineTrain": "تمرین کن",
+    "taglineRecover": "بازیابی کن",
+    "taglineRepeat": "تکرار کن"
+  },
+  "MarketingLanding": {
+    "metaTitle": "Gym4Me — پلتفرم باشگاه و تناسب اندام",
+    "metaDescription": "با Gym4Me باشگاه، مربی و ورزشکار را در یک پلتفرم هوشمند مدیریت کنید؛ رزرو، کلاس، آمار و تجربه کاربری مدرن.",
+    "header": {
+      "brand": "Gym4Me",
+      "version": "نسخه ۱٫۰",
+      "github": "گیت‌هاب",
+      "docs": "مستندات",
+      "copyright": "©۲۰۲۶",
+      "themeToggle": "تغییر حالت روشن و تاریک"
+    },
+    "hero": {
+      "titleLine1": "Gym4Me",
+      "titleLine2": "باشگاه",
+      "description": "پلتفرم سبک و مدرن برای مدیریت باشگاه، مربی و ورزشکار. رزرو، کلاس، آمار و تجربه روان — همه در یکجا.",
+      "version": "نسخه ۱٫۰",
+      "ctaPrimary": "شروع کنید",
+      "ctaSecondary": "بیشتر بدانید"
+    },
+    "perks": {
+      "rail": "نسخه (۱٫۰)",
+      "items": [
+        {
+          "title": "ساخته‌شده برای باشگاه‌ها",
+          "description": "ابزارهای مدیریتی برای مالک، مربی و ورزشکار با تمرکز روی عملکرد واقعی سالن."
+        },
+        {
+          "title": "تجربه فارسی و راست‌چین",
+          "description": "رابط کاربری بومی، تایپوگرافی فارسی و پشتیبانی کامل از RTL."
+        },
+        {
+          "title": "رزرو و کلاس هوشمند",
+          "description": "زمان‌بندی کلاس، رزرو جلسه و مدیریت ظرفیت بدون پیچیدگی اضافه."
+        },
+        {
+          "title": "آماده موبایل",
+          "description": "طراحی لمسی و واکنش‌گرا؛ تجربه یکسان روی گوشی، تبلت و دسکتاپ."
+        },
+        {
+          "title": "آماده تولید",
+          "description": "دسترسی‌پذیر، قابل نگهداری و مناسب استفاده روزمره در باشگاه."
+        },
+        {
+          "title": "سبک و سریع",
+          "description": "رابط سریع با تمرکز روی کارهایی که هر روز انجام می‌دهید."
+        }
+      ],
+      "rewrite": "نسخه جدید Gym4Me از صفر برای جریان کار مدرن باشگاه‌ها طراحی شده و برای استفاده واقعی در سالن بهینه‌سازی شده است.",
+      "evolution": "از ایده ساده رزرو تا پلتفرم کامل مدیریت باشگاه؛ مسیر محصول ما همیشه حول نیاز واقعی مربی و ورزشکار بوده است.",
+      "cascadeBrand": "Gym4Me",
+      "cascadeWord": "باشگاه"
+    },
+    "tools": {
+      "titleLine1": "ابزارهای",
+      "titleLine2": "داخلی",
+      "labelLeft": "سریع‌تر کار کنید",
+      "labelRight": "هوشمندانه‌تر پیش بروید",
+      "items": [
+        {
+          "index": "01",
+          "label": "مدیریت اعضا",
+          "title": "مدیریت اعضا",
+          "description": "پروفایل ورزشکار، وضعیت اشتراک و تاریخچه حضور را یکجا ببینید و مدیریت کنید."
+        },
+        {
+          "index": "02",
+          "label": "پیگیری پیشرفت",
+          "title": "پیگیری پیشرفت",
+          "description": "آمار حضور، عملکرد کلاس و روند رشد اعضا را به‌صورت زنده دنبال کنید."
+        },
+        {
+          "index": "03",
+          "label": "تجربه روان",
+          "title": "تجربه روان",
+          "description": "انیمیشن‌ها و تعاملات نرم برای حس مدرن محصول، بدون سنگین‌کردن کار روزمره."
+        }
+      ]
+    },
+    "features": {
+      "title": "ویژگی‌ها",
+      "intro": "Gym4Me لایه هوشمند مدیریت باشگاه است؛ قدرت عملیات روزانه به‌همراه تجربه کاربری تمیز برای مالک، مربی و ورزشکار.",
+      "partnerA": {
+        "label": "ورزشکار",
+        "sr": "مشاهده بخش ورزشکار"
+      },
+      "partnerB": {
+        "label": "مالک",
+        "sr": "مشاهده بخش مالک باشگاه"
+      },
+      "items": [
+        {
+          "index": "01",
+          "title": "رزرو آسان",
+          "description": "رزرو کلاس و جلسه مربی با جریان ساده و آشنا برای کاربر."
+        },
+        {
+          "index": "02",
+          "title": "زمان‌بندی منعطف",
+          "description": "برنامه هفتگی و روزانه مربی با تنظیمات قابل‌سفارشی‌سازی."
+        },
+        {
+          "index": "03",
+          "title": "پایدار روی موبایل",
+          "description": "سازگار با اسکرول و هدر ثابت؛ بدون بهم‌ریختگی چیدمان."
+        },
+        {
+          "index": "04",
+          "title": "اعلان و پیگیری",
+          "description": "وضعیت رزرو، حضور و تغییرات برنامه را شفاف نگه دارید."
+        },
+        {
+          "index": "05",
+          "title": "دسترسی سریع",
+          "description": "پرش برنامه‌ای به بخش‌های مهم باشگاه با ناوبری روان."
+        },
+        {
+          "index": "06",
+          "title": "جهت تعامل",
+          "description": "بازخورد فوری هنگام اسکرول و جابه‌جایی بین بخش‌های صفحه."
+        },
+        {
+          "index": "07",
+          "title": "بدون پرش چیدمان",
+          "description": "رابط پایدار کنار هدر ثابت، کارت‌ها و اجزای موجود محصول."
+        }
+      ]
+    },
+    "showcase": {
+      "description": "نمونه‌هایی از فضاها و جریان‌هایی که با Gym4Me برای باشگاه‌ها و مربیان ساخته می‌شود.",
+      "title": "نمونه‌کارها",
+      "items": [
+        {
+          "title": "باشگاه انرژی",
+          "url": "https://gym4me.ir"
+        },
+        {
+          "title": "آکادمی فیت",
+          "url": "https://gym4me.ir"
+        },
+        {
+          "title": "استودیو کراس",
+          "url": "https://gym4me.ir"
+        },
+        {
+          "title": "باشگاه آذر",
+          "url": "https://gym4me.ir"
+        },
+        {
+          "title": "پاور هاوس",
+          "url": "https://gym4me.ir"
+        },
+        {
+          "title": "فیت‌لایف تهران",
+          "url": "https://gym4me.ir"
+        },
+        {
+          "title": "باشگاه الیت",
+          "url": "https://gym4me.ir"
+        },
+        {
+          "title": "موومنت کلاب",
+          "url": "https://gym4me.ir"
+        },
+        {
+          "title": "استودیو پیلاتس نو",
+          "url": "https://gym4me.ir"
+        },
+        {
+          "title": "باشگاه قهرمان",
+          "url": "https://gym4me.ir"
+        },
+        {
+          "title": "کراس‌فیت شهر",
+          "url": "https://gym4me.ir"
+        },
+        {
+          "title": "یوگا هاب",
+          "url": "https://gym4me.ir"
+        }
+      ]
+    },
+    "footer": {
+      "thanks": "امیدواریم از Gym4Me لذت ببرید.",
+      "titleLine1": "Gym4Me",
+      "titleLine2": "باشگاه",
+      "madeBy": "ساخته‌شده توسط",
+      "madeByLink": "Gym4Me",
+      "ctaPrimary": "شروع کنید",
+      "ctaSecondary": "بیشتر بدانید",
+      "attrs": [
+        ["npm", "npm install", "npm install gym4me", "npm install", "npm"],
+        [
+          "gym4me",
+          "gym4me app",
+          "gym4me v1.x",
+          "gym4me v1.x",
+          "gym4me",
+          "باشگاه"
+        ],
+        ["داده", "رزرو", "کلاس", "مربی", "ورزشکار"],
+        ["باشگاه", "اشتراک", "آمار", "برنامه", "پروفایل"]
+      ]
+    }
   }
 }
-
-

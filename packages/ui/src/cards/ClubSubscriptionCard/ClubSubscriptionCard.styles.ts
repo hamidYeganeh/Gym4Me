@@ -5,7 +5,7 @@ export const clubSubscriptionCardVariants = tv({
   slots: {
     root: [
       "relative w-full cursor-pointer overflow-visible rounded-[24px] border border-accent p-4",
-      "bg-accent/10 text-foreground transition-[opacity,transform] duration-fast ease-app",
+      "bg-background text-foreground transition-[opacity,transform] duration-fast ease-app",
       "outline-none data-[pressed=true]:scale-[0.99]",
     ].join(" "),
     badge: [

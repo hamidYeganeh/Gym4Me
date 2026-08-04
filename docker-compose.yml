@@ -1,0 +1,80 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: gym4me-mongo
+    restart: unless-stopped
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "27018:27017"
+    volumes:
+      - gym4me_mongodata:/data/db
+    healthcheck:
+      test: |
+        mongosh --quiet --eval "try { rs.status().ok } catch (e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'localhost:27017'}]}).ok }"
+      interval: 5s
+      timeout: 10s
+      retries: 12
+
+  redis:
+    image: redis:7-alpine
+    container_name: gym4me-redis
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    volumes:
+      - gym4me_redisdata:/data
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: gym4me-api
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    ports:
+      - "8088:8088"
+    environment:
+      PORT: "8088"
+      MONGODB_URI: mongodb://mongo:27017/gym4me?replicaSet=rs0&directConnection=true
+      REDIS_URL: redis://redis:6379
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-dev-access-secret-change-me}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev-refresh-secret-change-me}
+      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-900s}
+      JWT_REFRESH_TTL_DAYS: ${JWT_REFRESH_TTL_DAYS:-30}
+      SMS_PROVIDER: ${SMS_PROVIDER:-mock}
+      KYC_PROVIDER: ${KYC_PROVIDER:-mock}
+      UPLOAD_DIR: /app/uploads
+    volumes:
+      - gym4me_uploads:/app/uploads
+
+  # One-shot Android release builder (profile: android)
+  # First create signing locally: npm run mobile:android:keystore
+  # Then:
+  #   docker compose --profile android run --rm \
+  #     -v "$PWD/apps/mobile/android/key.properties:/secrets/key.properties:ro" \
+  #     -v "$PWD/apps/mobile/android/upload-keystore.jks:/secrets/upload-keystore.jks:ro" \
+  #     android-release aab
+  # Or pass GYM4ME_UPLOAD_* env vars pointing at an absolute storeFile path mounted into the container.
+  android-release:
+    profiles: ["android"]
+    build:
+      context: .
+      dockerfile: docker/android-release.Dockerfile
+    volumes:
+      - ./apps/mobile/artifacts:/workspace/apps/mobile/artifacts
+    environment:
+      GYM4ME_VERSION_CODE: ${GYM4ME_VERSION_CODE:-1}
+      GYM4ME_VERSION_NAME: ${GYM4ME_VERSION_NAME:-1.0}
+      GYM4ME_UPLOAD_STORE_FILE: ${GYM4ME_UPLOAD_STORE_FILE:-}
+      GYM4ME_UPLOAD_STORE_PASSWORD: ${GYM4ME_UPLOAD_STORE_PASSWORD:-}
+      GYM4ME_UPLOAD_KEY_ALIAS: ${GYM4ME_UPLOAD_KEY_ALIAS:-}
+      GYM4ME_UPLOAD_KEY_PASSWORD: ${GYM4ME_UPLOAD_KEY_PASSWORD:-}
+
+volumes:
+  gym4me_mongodata:
+  gym4me_redisdata:
+  gym4me_uploads:

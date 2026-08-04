@@ -6,6 +6,8 @@ import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
+import { useHealthMetricsConnect } from "@/lib/health";
+import { AthleteMetricsConnectSection } from "../../sections/AthleteMetricsConnectSection";
 import { AthleteMetricsIntroSection } from "../../sections/AthleteMetricsIntroSection";
 import { AthleteMetricsListSection } from "../../sections/AthleteMetricsListSection";
 import { AthleteMetricsPrivacySection } from "../../sections/AthleteMetricsPrivacySection";
@@ -18,6 +20,7 @@ export function AthleteMetricsScreen({
 }: AthleteMetricsScreenProps) {
   const t = useTranslations("FitnessMetrics");
   const router = useRouter();
+  const health = useHealthMetricsConnect();
 
   return (
     <AppLayout
@@ -47,6 +50,31 @@ export function AthleteMetricsScreen({
           promoTitle={t("promoTitle")}
           subtitle={t("subtitle")}
           title={t("title")}
+        />
+
+        <AthleteMetricsConnectSection
+          actionLabel={
+            health.isConnected ? t("connectAgain") : t("connectAction")
+          }
+          connectedLabel={t("connectConnected")}
+          connectingLabel={t("connectConnecting")}
+          deniedLabel={t("connectDenied")}
+          errorLabel={t("connectError")}
+          onConnect={() => {
+            void health.connect();
+          }}
+          onOpenSettings={
+            health.platform === "android"
+              ? () => {
+                  void health.openSettings();
+                }
+              : undefined
+          }
+          settingsLabel={t("connectSettings")}
+          status={health.status}
+          subtitle={t("connectSubtitle")}
+          title={t("connectTitle")}
+          unsupportedLabel={t("connectUnsupported")}
         />
 
         <AthleteMetricsListSection

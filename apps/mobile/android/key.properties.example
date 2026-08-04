@@ -1,0 +1,14 @@
+# Copy to key.properties (gitignored) and fill in real values.
+# Or set the same fields via env vars (preferred in CI/Docker):
+#   GYM4ME_UPLOAD_STORE_FILE
+#   GYM4ME_UPLOAD_STORE_PASSWORD
+#   GYM4ME_UPLOAD_KEY_ALIAS
+#   GYM4ME_UPLOAD_KEY_PASSWORD
+#
+# Generate a keystore:
+#   npm run android:keystore --workspace=mobile
+
+storeFile=upload-keystore.jks
+storePassword=CHANGE_ME
+keyAlias=upload
+keyPassword=CHANGE_ME

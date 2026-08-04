@@ -49,7 +49,7 @@ Outputs go to `apps/mobile/artifacts/`.
 | Target | Command (repo root) | Output |
 | --- | --- | --- |
 | Android debug APK | `npm run mobile:android:apk` | `artifacts/android/Gym4Me-debug.apk` |
-| Android release APK | `npm run android:apk:release --workspace=mobile` | `artifacts/android/Gym4Me-release.apk` |
+| Android release APK | `npm run mobile:android:apk:release` | `artifacts/android/Gym4Me-release.apk` |
 | Android Play Store AAB | `npm run mobile:android:aab` | `artifacts/android/Gym4Me-release.aab` |
 | iOS Simulator `.app` | `npm run mobile:ios:sim` | `artifacts/ios/Gym4Me-simulator.app` |
 | iOS archive | `npm run ios:archive --workspace=mobile` | `artifacts/ios/Gym4Me.xcarchive` |
@@ -62,10 +62,42 @@ npm run mobile:android:open
 npm run mobile:ios:open
 ```
 
+### Android release signing
+
+Release APK/AAB builds require an upload keystore.
+
+```bash
+# Interactive — writes android/upload-keystore.jks + android/key.properties (gitignored)
+npm run mobile:android:keystore
+
+# Then export
+npm run mobile:android:aab
+# or
+npm run mobile:android:apk:release
+```
+
+Alternatively copy `android/key.properties.example` → `android/key.properties`, or set env vars:
+
+- `GYM4ME_UPLOAD_STORE_FILE`
+- `GYM4ME_UPLOAD_STORE_PASSWORD`
+- `GYM4ME_UPLOAD_KEY_ALIAS`
+- `GYM4ME_UPLOAD_KEY_PASSWORD`
+- `GYM4ME_VERSION_CODE` / `GYM4ME_VERSION_NAME` (optional overrides)
+
+### Docker release build
+
+```bash
+# Build Play Store AAB inside Docker (JDK 21 + Android SDK)
+npm run docker:android:aab
+# or: npm run docker:android:apk
+```
+
+Artifacts land in `apps/mobile/artifacts/android/`.
+
 ### Signing notes
 
 - **Debug APK** works out of the box.
-- **Release APK / AAB** need a keystore configured in `android/app` (Android Studio → Generate Signed Bundle / APK, or `signingConfigs` in Gradle).
+- **Release APK / AAB** need the keystore setup above.
 - **IPA** needs an Apple Developer team in Xcode and a valid `ios/ExportOptions.plist` (auto-created with `method=development` on first IPA build).
 
 App ID: `com.gym4me.app` (see `capacitor.config.ts`).

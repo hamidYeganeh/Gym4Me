@@ -57,4 +57,7 @@ ios/ExportOptions.plist
 *.xcarchive
 *.ipa
 *.keystore
+*.jks
 !debug.keystore
+android/key.properties
+android/upload-keystore.jks

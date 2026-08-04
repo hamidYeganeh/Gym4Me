@@ -1,5 +1,6 @@
 import { Logo } from "@repo/ui/common/Logo";
 import { getTranslations } from "next-intl/server";
+import { BiometricAuthButton } from "@/components/biometric-auth-button";
 import { ThemeDemo } from "./theme-demo";
 
 export default async function Home() {
@@ -19,6 +20,24 @@ export default async function Home() {
         </h1>
         <p className="max-w-xl text-base text-muted">{t("description")}</p>
       </header>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-medium text-foreground">
+          {t("biometricLabel")}
+        </h2>
+        <BiometricAuthButton
+          labels={{
+            action: t("biometricAction"),
+            reason: t("biometricReason"),
+            cancel: t("biometricCancel"),
+            androidTitle: t("biometricAndroidTitle"),
+            androidSubtitle: t("biometricAndroidSubtitle"),
+            success: t("biometricSuccess"),
+            unavailable: t("biometricUnavailable"),
+            failed: t("biometricFailed"),
+          }}
+        />
+      </section>
 
       <ThemeDemo
         labels={{

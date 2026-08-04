@@ -6,6 +6,7 @@ import { clubEquipmentCardVariants } from "./ClubEquipmentCard.styles";
 import type { ClubEquipmentCardProps } from "./ClubEquipmentCard.types";
 
 export function ClubEquipmentCard({
+  orientation = "vertical",
   title,
   subtitle,
   meta,
@@ -13,16 +14,18 @@ export function ClubEquipmentCard({
   className,
   ...props
 }: ClubEquipmentCardProps) {
-  const slots = clubEquipmentCardVariants();
+  const slots = clubEquipmentCardVariants({ orientation });
+  const iconSize = orientation === "horizontal" ? 24 : 20;
 
   return (
     <Card
       className={slots.root({ className })}
+      data-orientation={orientation}
       variant="transparent"
       {...props}
     >
       <span aria-hidden className={slots.iconBadge()}>
-        {icon ?? <Treadmill className={slots.icon()} size={20} />}
+        {icon ?? <Treadmill className={slots.icon()} size={iconSize} />}
       </span>
 
       <div className={slots.body()}>

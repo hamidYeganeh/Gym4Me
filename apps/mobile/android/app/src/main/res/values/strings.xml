@@ -5,4 +5,5 @@
     <string name="package_name">com.gym4me.app</string>
     <string name="custom_url_scheme">com.gym4me.app</string>
     <string name="app_description">Gym4Me — پلتفرم باشگاه و تناسب اندام</string>
+    <string name="health_connect_privacy_policy_url">https://gym4me.com/privacy</string>
 </resources>

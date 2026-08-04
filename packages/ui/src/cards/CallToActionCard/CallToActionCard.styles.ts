@@ -6,7 +6,11 @@ export const callToActionCardVariants = tv({
     root: "flex h-[116px] items-center justify-between gap-4 rounded-[32px] p-6 text-start",
     content: "flex min-w-0 flex-col gap-1",
     subtitle: "truncate opacity-95",
+    meta: "ms-1 font-normal text-muted",
     title: "truncate tracking-tight",
+    badge:
+      "mt-2 h-7 w-fit max-w-full border-0 px-3 [&_.chip__label]:text-xs [&_.chip__label]:font-bold",
+    actionRing: "hidden",
     action:
       "shrink-0 transition-opacity duration-fast ease-app outline-none data-[pressed=true]:scale-[0.97]",
   },
@@ -21,6 +25,23 @@ export const callToActionCardVariants = tv({
         root: "border-2 border-accent bg-transparent text-accent",
         title: "text-accent",
         subtitle: "text-accent/95",
+      },
+      soft: {
+        root: [
+          "h-auto min-h-[132px] items-center gap-5",
+          "bg-[color-mix(in_oklab,var(--stats-blue)_12%,var(--surface))] text-foreground",
+        ].join(" "),
+        content: "gap-1.5",
+        title: "text-base font-bold uppercase tracking-wide text-foreground",
+        subtitle: "text-sm font-semibold text-foreground",
+        meta: "font-normal text-muted",
+        badge: "rounded-full",
+        actionRing: [
+          "flex size-[88px] shrink-0 items-center justify-center rounded-full",
+          "border border-dashed border-foreground/70",
+        ].join(" "),
+        action:
+          "size-11 rounded-full bg-foreground text-background hover:opacity-90",
       },
     },
     actionType: {
@@ -61,6 +82,22 @@ export const callToActionCardVariants = tv({
       class: {
         action:
           "bg-accent/10 text-accent ring-accent/20 hover:opacity-90",
+      },
+    },
+    {
+      variant: "soft",
+      actionType: "plus",
+      class: {
+        action:
+          "size-11 rounded-full bg-foreground text-background hover:opacity-90",
+      },
+    },
+    {
+      variant: "soft",
+      actionType: "icon",
+      class: {
+        action:
+          "size-11 rounded-full bg-foreground text-background ring-0 hover:opacity-90",
       },
     },
   ],

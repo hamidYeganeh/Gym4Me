@@ -31,8 +31,28 @@ export const ease = {
   linear: "linear" as const,
 } as const;
 
+/**
+ * Default Motion transition — laggy soft spring from ProfileHeader morph.
+ * Prefer this for entrances, layout shifts, and scroll-linked follows.
+ */
+export const transition = {
+  type: "spring" as const,
+  stiffness: 160,
+  damping: 22,
+  mass: 0.95,
+  restDelta: 0.001,
+} as const;
+
+/** Stagger timings (seconds) for list / section entrances. */
+export const stagger = {
+  children: 0.09,
+  delayChildren: 0.05,
+} as const;
+
 /** Motion spring presets used across kit / cards. */
 export const spring = {
+  /** Alias of {@link transition} — default app spring. */
+  default: transition,
   snap: {
     type: "spring" as const,
     stiffness: 420,

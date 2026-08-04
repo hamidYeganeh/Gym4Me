@@ -15,7 +15,8 @@ if [[ -z "${ANDROID_HOME:-}" && -z "${ANDROID_SDK_ROOT:-}" ]]; then
   for candidate in \
     "${HOME}/Library/Android/sdk" \
     "${HOME}/Android/Sdk" \
-    "/usr/local/share/android-sdk"; do
+    "/usr/local/share/android-sdk" \
+    "/opt/android-sdk"; do
     if [[ -d "${candidate}" ]]; then
       export ANDROID_HOME="${candidate}"
       export ANDROID_SDK_ROOT="${candidate}"
@@ -70,6 +71,32 @@ fi
 
 export PATH="${JAVA_HOME}/bin:${PATH}"
 
+# Cursor / sandboxes sometimes redirect GRADLE_USER_HOME to a partial cache.
+# Prefer the real user home unless the caller explicitly overrides.
+if [[ -n "${GYM4ME_GRADLE_USER_HOME:-}" ]]; then
+  export GRADLE_USER_HOME="${GYM4ME_GRADLE_USER_HOME}"
+elif [[ "${GRADLE_USER_HOME:-}" == *cursor-sandbox-cache* || -z "${GRADLE_USER_HOME:-}" ]]; then
+  export GRADLE_USER_HOME="${HOME}/.gradle"
+fi
+
+has_release_signing() {
+  if [[ -n "${GYM4ME_UPLOAD_STORE_FILE:-}" && -n "${GYM4ME_UPLOAD_STORE_PASSWORD:-}" && -n "${GYM4ME_UPLOAD_KEY_ALIAS:-}" && -n "${GYM4ME_UPLOAD_KEY_PASSWORD:-}" ]]; then
+    return 0
+  fi
+  [[ -f "${ANDROID_DIR}/key.properties" ]]
+}
+
+require_release_signing() {
+  if has_release_signing; then
+    return 0
+  fi
+  echo "Release signing is not configured." >&2
+  echo "Create a keystore: npm run android:keystore --workspace=mobile" >&2
+  echo "Or copy android/key.properties.example → android/key.properties and fill it in." >&2
+  echo "Or set GYM4ME_UPLOAD_STORE_FILE / STORE_PASSWORD / KEY_ALIAS / KEY_PASSWORD." >&2
+  exit 1
+}
+
 mkdir -p "${ARTIFACTS_DIR}"
 cd "${ANDROID_DIR}"
 
@@ -105,14 +132,16 @@ case "${TARGET}" in
     DEST="${ARTIFACTS_DIR}/Gym4Me-debug.apk"
     ;;
   apk:release)
+    require_release_signing
     ./gradlew assembleRelease
-    SRC="${ANDROID_DIR}/app/build/outputs/apk/release/app-release-unsigned.apk"
+    SRC="${ANDROID_DIR}/app/build/outputs/apk/release/app-release.apk"
     if [[ ! -f "${SRC}" ]]; then
-      SRC="${ANDROID_DIR}/app/build/outputs/apk/release/app-release.apk"
+      SRC="${ANDROID_DIR}/app/build/outputs/apk/release/app-release-unsigned.apk"
     fi
     DEST="${ARTIFACTS_DIR}/Gym4Me-release.apk"
     ;;
   aab|aab:release)
+    require_release_signing
     ./gradlew bundleRelease
     SRC="${ANDROID_DIR}/app/build/outputs/bundle/release/app-release.aab"
     DEST="${ARTIFACTS_DIR}/Gym4Me-release.aab"
@@ -127,6 +156,13 @@ esac
 if [[ ! -f "${SRC}" ]]; then
   echo "Build finished but artifact not found at: ${SRC}" >&2
   exit 1
+fi
+
+if [[ "${TARGET}" == "apk:release" || "${TARGET}" == "aab" || "${TARGET}" == "aab:release" ]]; then
+  if [[ "${SRC}" == *"-unsigned.apk" ]]; then
+    echo "Release artifact is still unsigned. Check signing config / keystore path." >&2
+    exit 1
+  fi
 fi
 
 cp "${SRC}" "${DEST}"
