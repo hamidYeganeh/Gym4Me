@@ -5,7 +5,7 @@
   "Admin": {
     "metaTitle": "پنل مدیریت",
     "metaDescription": "پنل مدیریت Gym4Me برای باشگاه، مربی و ورزشکار",
-    "greeting": "صبح بخیر! 👋",
+    "greeting": "داشبورد مدیریت",
     "searchPlaceholder": "جستجو کنید...",
     "searchAriaLabel": "جستجو",
     "filtersAriaLabel": "فیلترها",
@@ -20,6 +20,106 @@
       "settings": "تنظیمات",
       "analytics": "آمار",
       "logout": "خروج"
+    },
+    "Auth": {
+      "title": "ورود به پنل مدیریت Gym4Me",
+      "subtitle": "مدیریت باشگاه، مربی و ورزشکار در یک داشبورد.",
+      "brandAriaLabel": "Gym4Me",
+      "heroAlt": "فضای باشگاه و تمرین",
+      "phoneLabel": "شماره موبایل",
+      "phonePlaceholder": "۰۹۱۲۳۴۵۶۷۸۹",
+      "passwordLabel": "رمز عبور",
+      "passwordPlaceholder": "••••••••",
+      "showPassword": "نمایش رمز عبور",
+      "hidePassword": "مخفی کردن رمز عبور",
+      "remember": "مرا به مدت ۳۰ روز به خاطر بسپار",
+      "forgotPassword": "فراموشی رمز عبور",
+      "submit": "ورود",
+      "errorRequired": "شماره موبایل و رمز عبور را وارد کنید.",
+      "errorPhoneRequired": "برای دریافت کد، شماره موبایل را وارد کنید.",
+      "errorInvalid": "شماره موبایل یا رمز عبور نادرست است.",
+      "errorRateLimited": "تعداد درخواست‌ها زیاد است. کمی بعد دوباره تلاش کنید.",
+      "errorOtpRequest": "ارسال کد ممکن نشد. دوباره تلاش کنید.",
+      "or": "یا",
+      "otpSubmit": "ورود با کد یکبار مصرف",
+      "noAccount": "دسترسی ندارید؟",
+      "contactSupport": "تماس با پشتیبانی"
+    },
+    "Otp": {
+      "title": "کد ورود را وارد کنید",
+      "subtitle": "کد پنج رقمی ارسال‌شده به شماره مدیر را وارد کنید.",
+      "brandAriaLabel": "Gym4Me",
+      "heroAlt": "فضای باشگاه و تمرین",
+      "sentTo": "کد برای این شماره ارسال شد:",
+      "debugLabel": "کد حالت توسعه",
+      "useDebugCode": "استفاده از کد",
+      "submit": "تأیید و ورود",
+      "resendIn": "ارسال دوباره تا",
+      "resend": "ارسال دوباره کد",
+      "resent": "کد جدید ارسال شد.",
+      "back": "بازگشت به ورود با رمز",
+      "securityNote": "کد ورود را با هیچ‌کس به اشتراک نگذارید.",
+      "errorRequired": "کد پنج رقمی را کامل وارد کنید.",
+      "errorInvalid": "کد واردشده نادرست یا منقضی شده است.",
+      "errorRateLimited": "تعداد درخواست‌ها زیاد است. کمی بعد دوباره تلاش کنید."
+    },
+    "Dashboard": {
+      "title": "{name}، این نمای امروز Gym4Me است",
+      "defaultName": "مدیر",
+      "subtitle": "وضعیت رشد پلتفرم، صف رسیدگی و سلامت سرویس‌ها را در یک نگاه دنبال کنید.",
+      "sampleData": "داده نمونه",
+      "refresh": "به‌روزرسانی",
+      "metrics": {
+        "activeClubs": "باشگاه فعال",
+        "pendingKyc": "درخواست احراز هویت",
+        "paidBookings": "رزرو پرداخت‌شده",
+        "gmv": "حجم تراکنش ماه"
+      },
+      "days": {
+        "saturday": "ش",
+        "sunday": "ی",
+        "monday": "د",
+        "tuesday": "س",
+        "wednesday": "چ",
+        "thursday": "پ",
+        "friday": "ج"
+      },
+      "revenue": {
+        "title": "جریان درآمد هفتگی",
+        "description": "مجموع پرداخت‌های تأییدشده در هفت روز اخیر",
+        "unit": "ریال، داده نمونه",
+        "chartAriaLabel": "نمودار میله‌ای جریان درآمد در هفت روز اخیر"
+      },
+      "queue": {
+        "title": "نیازمند رسیدگی",
+        "description": "مواردی که اقدام تیم عملیات را می‌خواهند",
+        "kycTitle": "احراز هویت",
+        "kycDescription": "مدرک مربی و مالک باشگاه",
+        "refundTitle": "بازپرداخت",
+        "refundDescription": "درخواست‌های منتظر بررسی مالی",
+        "reportsTitle": "گزارش محتوا",
+        "reportsDescription": "گزارش‌های اولویت‌دار کاربران",
+        "action": "مشاهده صف رسیدگی"
+      },
+      "activity": {
+        "title": "آخرین رویدادهای مهم",
+        "description": "خلاصه‌ای از فعالیت‌های اخیر پلتفرم",
+        "clubApproved": "باشگاه آریا تأیید شد",
+        "clubApprovedMeta": "۱۲ دقیقه پیش، توسط تیم عملیات",
+        "coachJoined": "مربی جدید آماده بررسی است",
+        "coachJoinedMeta": "۲۸ دقیقه پیش، رشته بدنسازی",
+        "settlementCreated": "دوره تسویه جدید ساخته شد",
+        "settlementCreatedMeta": "امروز، ۱۰:۴۵"
+      },
+      "health": {
+        "title": "سلامت پلتفرم",
+        "description": "نمای نمونه از سرویس‌های حیاتی",
+        "api": "API اصلی",
+        "sms": "ارسال پیامک",
+        "payment": "درگاه پرداخت",
+        "operational": "عملیاتی",
+        "sandbox": "محیط آزمایشی"
+      }
     }
   },
   "BottomNav": {

@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { defaultLocale, getMessages } from "@repo/i18n";
 import { ThemeProvider } from "@repo/theme";
 import { NextIntlClientProvider } from "next-intl";
-import App from "./App.tsx";
+import { AppRouter } from "./app/App";
 import "./index.css";
 
 const locale = defaultLocale;
@@ -13,7 +13,7 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <NextIntlClientProvider locale={locale} messages={messages}>
       <ThemeProvider defaultTheme="system" enableSystem>
-        <App />
+        <AppRouter />
       </ThemeProvider>
     </NextIntlClientProvider>
   </StrictMode>,

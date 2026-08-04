@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-import { User } from './user.schema';
 
 export type MediaDocument = HydratedDocument<Media>;
 
@@ -18,7 +17,8 @@ export class Media {
   @Prop()
   originalName?: string;
 
-  @Prop({ type: Types.ObjectId, ref: User.name, index: true })
+  /** String ref avoids circular import with user.schema. */
+  @Prop({ type: Types.ObjectId, ref: 'User', index: true })
   uploaderId?: Types.ObjectId;
 
   createdAt!: Date;

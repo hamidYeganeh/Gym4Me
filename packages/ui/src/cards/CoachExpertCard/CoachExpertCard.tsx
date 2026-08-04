@@ -2,7 +2,6 @@
 
 import { Avatar, Badge, Button, Typography } from "@heroui/react";
 import { Check } from "@repo/icons/Check";
-import Image from "next/image";
 import { PLACEHOLDER_IMAGE } from "../../common/placeholder";
 import { coachExpertCardVariants } from "./CoachExpertCard.styles";
 import type { CoachExpertCardProps } from "./CoachExpertCard.types";
@@ -28,9 +27,7 @@ export function CoachExpertCard({
 
   const avatar = (
     <Avatar className={slots.avatar()} size="lg">
-      <Avatar.Image asChild height={88} src={src} width={88}>
-        <Image alt={imageAlt} height={88} src={src} width={88} />
-      </Avatar.Image>
+      <Avatar.Image alt={imageAlt} src={src} />
       <Avatar.Fallback>
         {typeof title === "string" ? title.slice(0, 2) : "?"}
       </Avatar.Fallback>

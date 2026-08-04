@@ -39,7 +39,7 @@ export class AdminKycService {
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit)
-        .populate('userId', 'phone firstName lastName code kycStatus')
+        .populate('userId', 'phone name code kycStatus')
         .lean(),
       this.kycModel.countDocuments(filter),
     ]);

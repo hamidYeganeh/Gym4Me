@@ -1,0 +1,61 @@
+---
+description: Domain model shape — prefer enums over booleans; nest related fields
+globs: apps/api/**/*.{ts,prisma}
+alwaysApply: true
+---
+
+# Domain Model Shape
+
+## Prefer enums over booleans
+
+Do not model multi-state or lifecycle flags as booleans. Use a status/enum field so new states can be added without schema rewrites.
+
+```ts
+// ❌ BAD
+isActive: boolean
+isVerified: boolean
+isPublished: boolean
+phoneVerified: boolean
+
+// ✅ GOOD
+status: 'active' | 'inactive' | 'archived'
+verification: 'unsubmitted' | 'pending' | 'approved' | 'rejected'
+publishStatus: 'draft' | 'published' | 'unpublished'
+phone: { number: string; verifiedAt?: Date }  // presence of verifiedAt = verified
+```
+
+**Allowed booleans** only when the value is truly binary forever and never needs a third state (e.g. feature-flag opt-in stored as preference). Prefer enum even then if product language uses statuses.
+
+Timestamps that imply state (`verifiedAt`, `revokedAt`, `deletedAt`) are fine; do not also store a parallel `isX` boolean.
+
+## Nest related fields
+
+Group fields that share a concern into one embedded object (Mongo subdocument / Prisma composite / DTO nested class). Flat parallel names are not allowed.
+
+```ts
+// ❌ BAD
+heightCm?: number
+weightKg?: number
+metricsPrivacy?: Privacy
+photosPrivacy?: Privacy
+firstTouchSource?: string
+firstTouchUtm?: object
+lastTouchSource?: string
+lastTouchUtm?: object
+
+// ✅ GOOD
+body: { heightCm?: number; weightKg?: number }
+privacy: { metrics: Privacy; photos: Privacy }
+attribution: {
+  firstTouch: TouchPoint  // write-once
+  lastTouch: TouchPoint   // updatable
+}
+```
+
+Same rule for DTOs, Mongoose schemas, Prisma models, and API response shapes.
+
+## Checklist before adding a field
+
+1. Could this boolean become a third state later? → enum/status.
+2. Does another field share the same noun/prefix? → nest under that noun.
+3. Is “verified/active/published” expressed only via status or timestamp, not both a bool and a status?

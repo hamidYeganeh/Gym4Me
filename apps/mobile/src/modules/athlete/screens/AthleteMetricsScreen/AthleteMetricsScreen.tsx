@@ -6,7 +6,7 @@ import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useHealthMetricsConnect } from "@/lib/health";
+import { useHealthMetricsConnect } from "@/shared/lib/health";
 import { AthleteMetricsConnectSection } from "../../sections/AthleteMetricsConnectSection";
 import { AthleteMetricsIntroSection } from "../../sections/AthleteMetricsIntroSection";
 import { AthleteMetricsListSection } from "../../sections/AthleteMetricsListSection";

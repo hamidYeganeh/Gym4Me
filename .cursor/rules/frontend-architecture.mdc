@@ -1,0 +1,59 @@
+---
+description: Strict frontend architecture for admin, mobile, and website apps
+alwaysApply: true
+---
+
+# Frontend Architecture
+
+Strict layout for `apps/admin`, `apps/mobile`, and `apps/website`. Violations are review blockers.
+
+## App layers
+
+```text
+src/
+  app/                 # Framework routing only (Next App Router OR Vite router entry)
+  modules/<domain>/    # Feature domains (auth, athlete, marketing, …)
+    screens/           # Full pages / route bodies
+    sections/          # Composable page sections
+    lib/               # Domain data, hooks, API adapters for THIS domain
+    components/        # Domain-private composites (optional)
+  shared/              # Cross-domain app code (NOT packages/*)
+    components/
+    lib/
+    hooks/
+    providers/
+  i18n/                # next-intl request config (Next apps)
+```
+
+## Hard rules
+
+1. **Thin routes** — `app/**/page.tsx` (Next) or route elements (Vite) only wire metadata/params → module screens. No business UI in route files.
+2. **Screens / sections** — PascalCase folder with exactly: `Name.tsx`, `Name.styles.ts`, `Name.types.ts`, `index.ts`. Styles via `tailwind-variants` (`tv`).
+3. **No cross-module imports of internals** — import another module only via its public screen/section/`index` export, never deep `lib/` of a sibling domain.
+4. **API only through `@repo/api`** — no raw `fetch` to Gym4Me backend from screens. Domain `lib/` may wrap `@repo/api` helpers.
+5. **Auth** — authorization uses JWT `activeRole` only. Mobile uses account auth; admin uses admin auth. Session lives in `@repo/api` storage + app provider.
+6. **Shared UI** — product composites go in `@repo/ui` (`cards` / `layout` / `kit` / `common`). App `shared/` is for app-shell glue only (providers, Capacitor, document meta).
+7. **Icons** — `@repo/icons` only. **Primitives** — `@heroui/react` only.
+8. **Mocks** — temporary fixtures live in `modules/<domain>/lib/*-data.ts` and must be replaceable by API adapters without touching screens' public props when possible.
+9. **Aliases** — every app uses `@/*` → `src/*`.
+10. **No demo / scaffold leftovers** in production routes. Dev galleries live under `/dev` (mobile) and are not the default `/`.
+
+## App responsibilities
+
+| App | Role |
+|-----|------|
+| `mobile` | Multi-role product (athlete / coach / owner) + Capacitor |
+| `admin` | Ops panel (Vite SPA) |
+| `website` | Public / SEO marketing |
+
+## Packages
+
+| Package | Use for |
+|---------|---------|
+| `@repo/api` | HTTP client, auth APIs, session storage |
+| `@repo/ui` | Shared product UI (framework-agnostic; no hard `next` runtime deps) |
+| `@repo/theme` / `@repo/icons` / `@repo/fonts` / `@repo/i18n` | Design system + copy |
+
+## Website legacy
+
+Marketing may temporarily keep `public/assets/{styles,scripts}` for GSAP/scroll contracts. Treat as **quarantined legacy** — do not add new BEM/CSS there; new UI is Tailwind + HeroUI + module sections.

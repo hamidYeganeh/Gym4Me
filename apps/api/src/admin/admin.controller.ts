@@ -18,6 +18,7 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '../common/enums';
 import { AdminKycService } from './admin-kyc.service';
 import { AdminUsersService } from './admin-users.service';
+import { AdminVerificationService } from './admin-verification.service';
 import {
   AdminCreateUserDto,
   AdminUpdateUserDto,
@@ -28,6 +29,11 @@ import {
   UpdateUserRolesDto,
   UpdateUserStatusDto,
 } from './dto/admin.dto';
+import {
+  ListClubReviewsQueryDto,
+  ListCoachVerificationsQueryDto,
+  ReviewVerificationDto,
+} from './dto/admin-review.dto';
 
 @ApiTags('admin')
 @ApiBearerAuth('access-token')
@@ -37,6 +43,7 @@ export class AdminController {
   constructor(
     private readonly adminUsers: AdminUsersService,
     private readonly adminKyc: AdminKycService,
+    private readonly adminVerification: AdminVerificationService,
     private readonly audit: AuditService,
   ) {}
 
@@ -125,6 +132,44 @@ export class AdminController {
     @Req() request: Request,
   ) {
     return this.adminKyc.review(id, dto, adminId, request);
+  }
+
+  // ── Coach verification ─────────────────────────
+
+  @Get('coaches/verifications')
+  @ApiOperation({ summary: 'List coach verification submissions' })
+  listCoachVerifications(@Query() query: ListCoachVerificationsQueryDto) {
+    return this.adminVerification.listCoachVerifications(query);
+  }
+
+  @Patch('coaches/:userId/verification')
+  @ApiOperation({ summary: 'Approve or reject coach verification' })
+  reviewCoachVerification(
+    @Param('userId') userId: string,
+    @Body() dto: ReviewVerificationDto,
+    @CurrentUser('sub') adminId: string,
+    @Req() request: Request,
+  ) {
+    return this.adminVerification.reviewCoach(userId, dto, adminId, request);
+  }
+
+  // ── Club review ────────────────────────────────
+
+  @Get('clubs/reviews')
+  @ApiOperation({ summary: 'List club review submissions' })
+  listClubReviews(@Query() query: ListClubReviewsQueryDto) {
+    return this.adminVerification.listClubReviews(query);
+  }
+
+  @Patch('clubs/:id/review')
+  @ApiOperation({ summary: 'Approve or reject a club' })
+  reviewClub(
+    @Param('id') id: string,
+    @Body() dto: ReviewVerificationDto,
+    @CurrentUser('sub') adminId: string,
+    @Req() request: Request,
+  ) {
+    return this.adminVerification.reviewClub(id, dto, adminId, request);
   }
 
   // ── Audit logs ─────────────────────────────────

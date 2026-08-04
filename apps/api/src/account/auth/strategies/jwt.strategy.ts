@@ -4,7 +4,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { UserStatus } from '../../../common/enums';
+import { Role, UserStatus } from '../../../common/enums';
 import type { JwtUser } from '../../../common/types';
 import { User, UserDocument } from '../../../schemas/user.schema';
 
@@ -27,6 +27,10 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       throw new UnauthorizedException();
     }
 
+    if (!payload.activeRole) {
+      throw new UnauthorizedException('Missing active role');
+    }
+
     // Live status check so blocking a user takes effect immediately.
     const user = await this.userModel
       .findById(payload.sub)
@@ -36,6 +40,17 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       throw new UnauthorizedException();
     }
 
-    return { sub: payload.sub, phone: user.phone, roles: user.roles };
+    const roles = user.roles as Role[];
+    if (!roles.includes(payload.activeRole)) {
+      // Do not silently remapping — role was revoked or token is stale.
+      throw new UnauthorizedException('Active role is no longer assigned');
+    }
+
+    return {
+      sub: payload.sub,
+      phone: user.phone,
+      roles,
+      activeRole: payload.activeRole,
+    };
   }
 }

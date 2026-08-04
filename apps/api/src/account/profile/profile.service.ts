@@ -1,32 +1,51 @@
 import {
+  BadRequestException,
   ConflictException,
-  ForbiddenException,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Role } from '../../common/enums';
+import { Model, Types } from 'mongoose';
+import type { Request } from 'express';
+import { EventWriterService } from '../../analytics/event-writer.service';
+import { AuditService } from '../../audit/audit.service';
 import {
-  RoleProfile,
-  RoleProfileDocument,
-} from '../../schemas/role-profile.schema';
+  AnalyticsEventName,
+  AuditAction,
+  Role,
+  VerificationStatus,
+} from '../../common/enums';
+import type { JwtUser } from '../../common/types';
+import {
+  assertCanMutateAsRole,
+  assertHasRole,
+} from '../../common/utils/role-assert.util';
+import {
+  AthleteProfile,
+  AthleteProfileDocument,
+} from '../../schemas/athlete-profile.schema';
+import {
+  CoachProfile,
+  CoachProfileDocument,
+} from '../../schemas/coach-profile.schema';
 import { UsersService } from '../../users/users.service';
-import { UpdateMeDto } from './dto/update-me.dto';
-
-const ROLE_FIELDS: Record<Role, (keyof RoleProfile)[]> = {
-  [Role.ATHLETE]: ['bio', 'heightCm', 'weightKg'],
-  [Role.COACH]: ['bio', 'yearsExperience', 'isVerifiedCoach'],
-  [Role.CLUB_OWNER]: ['bio', 'businessName'],
-  [Role.CLUB_STAFF]: ['bio', 'position'],
-  [Role.ADMIN]: ['bio'],
-};
+import {
+  SubmitCoachVerificationDto,
+  UpdateAthleteProfileDto,
+  UpdateCoachProfileDto,
+  UpdateMeDto,
+} from './dto/update-me.dto';
 
 @Injectable()
 export class ProfileService {
   constructor(
-    @InjectModel(RoleProfile.name)
-    private readonly roleProfileModel: Model<RoleProfileDocument>,
+    @InjectModel(AthleteProfile.name)
+    private readonly athleteModel: Model<AthleteProfileDocument>,
+    @InjectModel(CoachProfile.name)
+    private readonly coachModel: Model<CoachProfileDocument>,
     private readonly users: UsersService,
+    private readonly audit: AuditService,
+    private readonly events: EventWriterService,
   ) {}
 
   async getMe(userId: string) {
@@ -34,11 +53,31 @@ export class ProfileService {
     return this.users.toPublic(user);
   }
 
-  async updateMe(userId: string, dto: UpdateMeDto) {
+  async updateMe(userId: string, dto: UpdateMeDto, jwt: JwtUser) {
     const user = await this.users.findById(userId);
 
-    if (dto.firstName !== undefined) user.firstName = dto.firstName;
-    if (dto.lastName !== undefined) user.lastName = dto.lastName;
+    if (dto.name) {
+      if (dto.name.first !== undefined) user.name.first = dto.name.first;
+      if (dto.name.last !== undefined) user.name.last = dto.name.last;
+      user.markModified('name');
+    }
+
+    if (dto.avatar) {
+      user.avatar.mediaId = dto.avatar.mediaId
+        ? new Types.ObjectId(dto.avatar.mediaId)
+        : undefined;
+      user.markModified('avatar');
+    }
+
+    if (dto.demographics) {
+      if (dto.demographics.gender !== undefined) {
+        user.demographics.gender = dto.demographics.gender;
+      }
+      if (dto.demographics.birthDate !== undefined) {
+        user.demographics.birthDate = new Date(dto.demographics.birthDate);
+      }
+      user.markModified('demographics');
+    }
 
     if (dto.code !== undefined && dto.code !== user.code) {
       const taken = await this.users
@@ -50,37 +89,217 @@ export class ProfileService {
 
     await user.save();
 
-    // If names just arrived and the handle is still the auto "user-xxxx" one, upgrade it.
     if (dto.code === undefined) {
       await this.users.refreshCodeIfAuto(user);
     }
 
-    return this.users.toPublic(user);
-  }
-
-  async getRoleProfile(userId: string, roles: Role[], role: Role) {
-    if (!roles.includes(role)) {
-      throw new ForbiddenException(`You don't have the "${role}" role`);
+    const publicUser = this.users.toPublic(user);
+    if (this.isProfileComplete(user)) {
+      await this.events.track({
+        eventName: AnalyticsEventName.PROFILE_COMPLETED,
+        actor: { userId, activeRole: jwt.activeRole },
+      });
     }
 
-    const profile = await this.roleProfileModel
-      .findOneAndUpdate(
-        { userId, role },
-        { $setOnInsert: { userId, role } },
-        { new: true, upsert: true },
-      )
-      .lean();
+    return publicUser;
+  }
 
-    const fields = Object.fromEntries(
-      ROLE_FIELDS[role].map((key) => [key, profile[key] ?? null]),
+  async ensureAthleteProfile(userId: string) {
+    return this.athleteModel.findOneAndUpdate(
+      { userId: new Types.ObjectId(userId) },
+      { $setOnInsert: { userId: new Types.ObjectId(userId) } },
+      { new: true, upsert: true },
     );
+  }
 
+  async ensureCoachProfile(userId: string) {
+    return this.coachModel.findOneAndUpdate(
+      { userId: new Types.ObjectId(userId) },
+      { $setOnInsert: { userId: new Types.ObjectId(userId) } },
+      { new: true, upsert: true },
+    );
+  }
+
+  async getAthleteProfile(jwt: JwtUser) {
+    assertHasRole(jwt, Role.ATHLETE);
+    const profile = await this.ensureAthleteProfile(jwt.sub);
+    return this.toPublicAthlete(profile);
+  }
+
+  async updateAthleteProfile(jwt: JwtUser, dto: UpdateAthleteProfileDto) {
+    assertCanMutateAsRole(jwt, Role.ATHLETE);
+    const profile = await this.ensureAthleteProfile(jwt.sub);
+
+    if (dto.bio !== undefined) profile.bio = dto.bio;
+    if (dto.levelKey !== undefined) profile.levelKey = dto.levelKey;
+    if (dto.body) {
+      if (dto.body.heightCm !== undefined) profile.body.heightCm = dto.body.heightCm;
+      if (dto.body.weightKg !== undefined) profile.body.weightKg = dto.body.weightKg;
+      profile.markModified('body');
+    }
+    if (dto.privacy) {
+      if (dto.privacy.metrics !== undefined) {
+        profile.privacy.metrics = dto.privacy.metrics;
+      }
+      if (dto.privacy.photos !== undefined) {
+        profile.privacy.photos = dto.privacy.photos;
+      }
+      profile.markModified('privacy');
+    }
+    if (dto.sportIds !== undefined) profile.sportIds = dto.sportIds;
+    if (dto.goalKeys !== undefined) profile.goalKeys = dto.goalKeys;
+
+    await profile.save();
+    return this.toPublicAthlete(profile);
+  }
+
+  async getCoachProfile(jwt: JwtUser) {
+    assertHasRole(jwt, Role.COACH);
+    const profile = await this.ensureCoachProfile(jwt.sub);
+    return this.toPublicCoach(profile);
+  }
+
+  async updateCoachProfile(jwt: JwtUser, dto: UpdateCoachProfileDto) {
+    assertCanMutateAsRole(jwt, Role.COACH);
+    const profile = await this.ensureCoachProfile(jwt.sub);
+
+    if (dto.bio !== undefined) profile.bio = dto.bio;
+    if (dto.experience) {
+      if (dto.experience.years !== undefined) {
+        profile.experience.years = dto.experience.years;
+      }
+      if (dto.experience.headline !== undefined) {
+        profile.experience.headline = dto.experience.headline;
+      }
+      profile.markModified('experience');
+    }
+    if (dto.serviceArea) {
+      profile.serviceArea.cityId = dto.serviceArea.cityId
+        ? new Types.ObjectId(dto.serviceArea.cityId)
+        : undefined;
+      profile.markModified('serviceArea');
+    }
+    if (dto.sportIds !== undefined) profile.sportIds = dto.sportIds;
+    if (dto.specialtyKeys !== undefined) {
+      profile.specialtyKeys = dto.specialtyKeys;
+    }
+
+    await profile.save();
+    return this.toPublicCoach(profile);
+  }
+
+  async submitCoachVerification(
+    jwt: JwtUser,
+    dto: SubmitCoachVerificationDto,
+    request: Request,
+  ) {
+    assertCanMutateAsRole(jwt, Role.COACH);
+    if (!dto.documentMediaIds.length) {
+      throw new BadRequestException('At least one document is required');
+    }
+
+    const profile = await this.ensureCoachProfile(jwt.sub);
+    const status = profile.verification?.status;
+    if (status === VerificationStatus.PENDING) {
+      throw new ConflictException('Verification already pending');
+    }
+    if (status === VerificationStatus.APPROVED) {
+      throw new ConflictException('Already verified');
+    }
+
+    profile.verification = {
+      status: VerificationStatus.PENDING,
+      submittedAt: new Date(),
+      documentMediaIds: dto.documentMediaIds.map(
+        (id) => new Types.ObjectId(id),
+      ),
+      reviewNote: dto.note,
+    };
+    profile.markModified('verification');
+    await profile.save();
+
+    this.audit.log({
+      action: AuditAction.COACH_VERIFICATION_SUBMITTED,
+      actorId: jwt.sub,
+      targetUserId: jwt.sub,
+      metadata: { documentCount: dto.documentMediaIds.length },
+      request,
+    });
+
+    await this.events.track({
+      eventName: AnalyticsEventName.COACH_VERIFICATION_SUBMITTED,
+      actor: { userId: jwt.sub, activeRole: jwt.activeRole },
+    });
+
+    return this.toPublicCoach(profile);
+  }
+
+  private isProfileComplete(user: {
+    name?: { first?: string; last?: string };
+    demographics?: { gender?: string; birthDate?: Date };
+  }): boolean {
+    return !!(
+      user.name?.first &&
+      user.name?.last &&
+      user.demographics?.gender &&
+      user.demographics?.birthDate
+    );
+  }
+
+  private toPublicAthlete(profile: AthleteProfileDocument) {
     return {
       id: profile._id.toString(),
-      role,
-      ...fields,
+      userId: profile.userId.toString(),
+      bio: profile.bio ?? null,
+      levelKey: profile.levelKey ?? null,
+      body: {
+        heightCm: profile.body?.heightCm ?? null,
+        weightKg: profile.body?.weightKg ?? null,
+      },
+      privacy: {
+        metrics: profile.privacy?.metrics,
+        photos: profile.privacy?.photos,
+      },
+      sportIds: profile.sportIds ?? [],
+      goalKeys: profile.goalKeys ?? [],
       createdAt: profile.createdAt,
       updatedAt: profile.updatedAt,
     };
+  }
+
+  private toPublicCoach(profile: CoachProfileDocument) {
+    return {
+      id: profile._id.toString(),
+      userId: profile.userId.toString(),
+      bio: profile.bio ?? null,
+      experience: {
+        years: profile.experience?.years ?? null,
+        headline: profile.experience?.headline ?? null,
+      },
+      verification: {
+        status: profile.verification?.status,
+        submittedAt: profile.verification?.submittedAt ?? null,
+        reviewedAt: profile.verification?.reviewedAt ?? null,
+        reviewNote: profile.verification?.reviewNote ?? null,
+        documentMediaIds: (profile.verification?.documentMediaIds ?? []).map(
+          (id) => id.toString(),
+        ),
+      },
+      serviceArea: {
+        cityId: profile.serviceArea?.cityId?.toString() ?? null,
+      },
+      sportIds: profile.sportIds ?? [],
+      specialtyKeys: profile.specialtyKeys ?? [],
+      createdAt: profile.createdAt,
+      updatedAt: profile.updatedAt,
+    };
+  }
+
+  async getCoachProfileByUserId(userId: string) {
+    const profile = await this.coachModel.findOne({
+      userId: new Types.ObjectId(userId),
+    });
+    if (!profile) throw new NotFoundException('Coach profile not found');
+    return profile;
   }
 }

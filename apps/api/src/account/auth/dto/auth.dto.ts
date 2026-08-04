@@ -1,6 +1,7 @@
 import { Transform } from 'class-transformer';
 import {
   IsBoolean,
+  IsEnum,
   IsOptional,
   IsString,
   Length,
@@ -8,6 +9,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { Role } from '../../../common/enums';
 import { IR_PHONE, normalizeIranPhone } from '../../../common/utils/phone.util';
 
 export class PhoneDto {
@@ -88,4 +90,14 @@ export class SetPasswordDto {
   @IsOptional()
   @IsString()
   currentPassword?: string;
+}
+
+export class SwitchRoleDto {
+  @IsEnum(Role)
+  role!: Role;
+
+  /** Current refresh token to revoke after issuing the new pair. */
+  @IsOptional()
+  @IsString()
+  refreshToken?: string;
 }

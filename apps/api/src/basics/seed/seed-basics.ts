@@ -1,15 +1,20 @@
 /**
- * Idempotent seed for choices, Iran locations, sports tree, and common refs.
+ * Idempotent seed for choices, Iran locations, sports tree, common refs,
+ * and a default platform admin.
  * Run: npm run db:seed -w api
  */
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../../app.module';
-import { LocationKind, RefType, SportKind } from '../../common/enums';
+import { LocationKind, RefType, Role, SportKind } from '../../common/enums';
+import { normalizeIranPhone } from '../../common/utils/phone.util';
+import { UsersService } from '../../users/users.service';
 import { ChoicesService } from '../choices/choices.service';
 import { LocationService } from '../location/location.service';
 import { RefService } from '../ref/ref.service';
 import { SportService } from '../sport/sport.service';
+
+const SEED_ADMIN_PHONE = '09121111111';
 
 async function seed() {
   const app = await NestFactory.createApplicationContext(AppModule, {
@@ -21,6 +26,7 @@ async function seed() {
   const locations = app.get(LocationService);
   const sports = app.get(SportService);
   const refs = app.get(RefService);
+  const users = app.get(UsersService);
 
   // ── Choice groups ──────────────────────────────
   const choiceSeeds = [
@@ -281,6 +287,33 @@ async function seed() {
   }
 
   log.log('refs: amenities/equipment/muscles/goals seeded');
+
+  // ── Platform admin ─────────────────────────────
+  const adminPhone = normalizeIranPhone(SEED_ADMIN_PHONE);
+  const existingAdmin = await users.findByPhone(adminPhone);
+  if (existingAdmin) {
+    if (!existingAdmin.roles.includes(Role.ADMIN)) {
+      existingAdmin.roles = [...existingAdmin.roles, Role.ADMIN];
+      await existingAdmin.save();
+      log.log(`admin: granted Role.ADMIN to ${adminPhone}`);
+    } else {
+      log.log(`admin: ${adminPhone} already exists`);
+    }
+    if (!existingAdmin.phoneVerifiedAt) {
+      existingAdmin.phoneVerifiedAt = new Date();
+      await existingAdmin.save();
+    }
+  } else {
+    await users.create({
+      phone: adminPhone,
+      firstName: 'Admin',
+      lastName: 'Gym4Me',
+      roles: [Role.ADMIN],
+      phoneVerified: true,
+    });
+    log.log(`admin: created ${adminPhone}`);
+  }
+
   log.log('Seed complete');
   await app.close();
 }

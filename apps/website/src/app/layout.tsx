@@ -105,6 +105,7 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        {/* Quarantined legacy marketing CSS — see public/assets/LEGACY.md */}
         <link id="main-css" rel="stylesheet" href="/assets/styles/main.css" />
         <link rel="stylesheet" href="/assets/styles/theme-bridge.css" />
       </head>

@@ -19,7 +19,8 @@
     "check-types": "tsc --noEmit"
   },
   "peerDependencies": {
-    "next": ">=15"
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",
@@ -29,19 +30,21 @@
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
     "eslint": "^9.39.1",
-    "next": "16.2.12",
     "typescript": "5.9.2"
   },
   "dependencies": {
     "@heroui/react": "^3.0.0",
+    "@react-aria/i18n": "^3.13.1",
+    "@react-aria/ssr": "^3.10.1",
+    "@react-aria/utils": "^3.34.1",
     "@repo/icons": "*",
     "@repo/theme": "*",
     "embla-carousel-react": "^8.6.0",
     "html-to-image": "^1.11.13",
     "leaflet": "^1.9.4",
     "motion": "^12.43.0",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "react-dropzone": "^19.2.0",
     "recharts": "^3.10.1",
     "tailwind-variants": "^3.3.0"

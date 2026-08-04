@@ -9,6 +9,10 @@ import * as argon2 from 'argon2';
 import { AuditService } from '../audit/audit.service';
 import { AuditAction, InviteStatus, Role } from '../common/enums';
 import { buildReferralCode, buildUserCode } from '../common/utils/slug.util';
+import {
+  AthleteProfile,
+  AthleteProfileDocument,
+} from '../schemas/athlete-profile.schema';
 import { Invite, InviteDocument } from '../schemas/invite.schema';
 import { User, UserDocument } from '../schemas/user.schema';
 
@@ -22,12 +26,30 @@ export interface CreateUserInput {
   phoneVerified?: boolean;
 }
 
+export interface PublicUser {
+  id: string;
+  phone: string;
+  name: { first: string | null; last: string | null };
+  avatar: { mediaId: string | null };
+  demographics: { gender: string | null; birthDate: Date | null };
+  nationalId: string | null;
+  roles: Role[];
+  code: string | null;
+  referralCode: string | null;
+  status: string;
+  kyc: { status: string; verifiedAt: Date | null };
+  phoneVerifiedAt: Date | null;
+  createdAt: Date;
+}
+
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     @InjectModel(Invite.name)
     private readonly inviteModel: Model<InviteDocument>,
+    @InjectModel(AthleteProfile.name)
+    private readonly athleteModel: Model<AthleteProfileDocument>,
     private readonly audit: AuditService,
   ) {}
 
@@ -61,17 +83,29 @@ export class UsersService {
         })
       : null;
 
+    const roles = input.roles?.length ? input.roles : [Role.ATHLETE];
+
     const user = await this.createWithUniqueCodes({
       phone: input.phone,
-      firstName: input.firstName,
-      lastName: input.lastName,
-      roles: input.roles?.length ? input.roles : [Role.ATHLETE],
+      name: {
+        first: input.firstName,
+        last: input.lastName,
+      },
+      roles,
       passwordHash: input.password
         ? await argon2.hash(input.password)
         : undefined,
       referredBy: referrer?._id,
       phoneVerifiedAt: input.phoneVerified ? new Date() : undefined,
     });
+
+    if (roles.includes(Role.ATHLETE)) {
+      await this.athleteModel.updateOne(
+        { userId: user._id },
+        { $setOnInsert: { userId: user._id } },
+        { upsert: true },
+      );
+    }
 
     if (referrer) {
       await this.inviteModel.updateOne(
@@ -89,10 +123,6 @@ export class UsersService {
     return user;
   }
 
-  /**
-   * `code` and `referralCode` have unique indexes; the random suffixes make
-   * collisions rare, so a couple of retries is plenty.
-   */
   private async createWithUniqueCodes(
     doc: Partial<User>,
     attempt = 0,
@@ -100,8 +130,8 @@ export class UsersService {
     try {
       return await this.userModel.create({
         ...doc,
-        code: buildUserCode(doc.firstName, doc.lastName),
-        referralCode: buildReferralCode(doc.firstName),
+        code: buildUserCode(doc.name?.first, doc.name?.last),
+        referralCode: buildReferralCode(doc.name?.first),
       });
     } catch (err: unknown) {
       const isDupCode =
@@ -120,26 +150,49 @@ export class UsersService {
     }
   }
 
-  /** Regenerate the auto handle when names arrive, unless already name-based. */
   async refreshCodeIfAuto(user: UserDocument): Promise<void> {
-    if (user.code?.startsWith('user-') && (user.firstName || user.lastName)) {
-      user.code = buildUserCode(user.firstName, user.lastName);
+    if (
+      user.code?.startsWith('user-') &&
+      (user.name?.first || user.name?.last)
+    ) {
+      user.code = buildUserCode(user.name?.first, user.name?.last);
       await user.save();
     }
   }
 
-  toPublic(user: UserDocument) {
+  toPublic(
+    user: UserDocument,
+    opts?: { revealNationalId?: boolean },
+  ): PublicUser {
+    const nationalId = user.nationalId ?? null;
     return {
       id: user._id.toString(),
       phone: user.phone,
-      firstName: user.firstName ?? null,
-      lastName: user.lastName ?? null,
-      nationalId: user.nationalId ?? null,
+      name: {
+        first: user.name?.first ?? null,
+        last: user.name?.last ?? null,
+      },
+      avatar: {
+        mediaId: user.avatar?.mediaId?.toString() ?? null,
+      },
+      demographics: {
+        gender: user.demographics?.gender ?? null,
+        birthDate: user.demographics?.birthDate ?? null,
+      },
+      nationalId:
+        opts?.revealNationalId && nationalId
+          ? nationalId
+          : nationalId
+            ? `${nationalId.slice(0, 3)}****${nationalId.slice(-3)}`
+            : null,
       roles: user.roles,
       code: user.code ?? null,
       referralCode: user.referralCode ?? null,
       status: user.status,
-      kycStatus: user.kycStatus,
+      kyc: {
+        status: user.kycStatus,
+        verifiedAt: user.kycVerifiedAt ?? null,
+      },
       phoneVerifiedAt: user.phoneVerifiedAt ?? null,
       createdAt: user.createdAt,
     };

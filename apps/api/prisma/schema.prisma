@@ -141,6 +141,8 @@ model AthleteProfile {
   entryTickets    EntryTicket[]
   groupMemberships StudentGroupMember[]
   supplementPlans SupplementPlan[]
+  mealPlans       MealPlan[]       @relation("MealPlanAthlete")
+  mealAdherence   MealAdherenceLog[]
 }
 
 model CoachProfile {
@@ -169,6 +171,7 @@ model CoachProfile {
   coachBookings    Booking[]              @relation("BookingCoach")
   settlements      Settlement[]           @relation("SettlementCoach")
   supplementPlans  SupplementPlan[]
+  mealPlans        MealPlan[]             @relation("MealPlanCoach")
 }
 
 model Document {
@@ -280,6 +283,8 @@ model FoodItem {
   carbsPer100    Float?
   fatPer100      Float?
   isActive      Boolean @default(true)
+
+  mealItems MealPlanItem[]
 }
 
 model MeasurementUnit {
@@ -703,10 +708,15 @@ enum BookingType {
 
 enum BookingStatus {
   PENDING
+  AWAITING_PAYMENT
   CONFIRMED
-  CANCELLED
+  CHECKED_IN
   COMPLETED
+  CANCELLED
   NO_SHOW
+  REFUND_REQUESTED
+  REFUNDED
+  REJECTED
 }
 
 model Booking {
@@ -1048,6 +1058,98 @@ model SupplementPlan {
   createdAt DateTime        @default(now())
 }
 
+// ─────────────────────────────────────────────
+// Nutrition / meal plans
+// ─────────────────────────────────────────────
+
+model MealPlan {
+  id        String         @id @default(cuid())
+  coachId   String?
+  coach     CoachProfile?  @relation("MealPlanCoach", fields: [coachId], references: [id])
+  athleteId String
+  athlete   AthleteProfile @relation("MealPlanAthlete", fields: [athleteId], references: [id], onDelete: Cascade)
+  title     String
+  notes     String?
+  startsAt  DateTime?
+  endsAt    DateTime?
+  privacy   Privacy        @default(PRIVATE)
+  isActive  Boolean        @default(true)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  days MealPlanDay[]
+
+  @@index([athleteId, isActive])
+  @@index([coachId])
+}
+
+model MealPlanDay {
+  id         String   @id @default(cuid())
+  mealPlanId String
+  mealPlan   MealPlan @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
+  dayIndex   Int // 0-based within the plan week/cycle
+  label      String? // شنبه، روز ۱، …
+
+  meals MealPlanMeal[]
+
+  @@unique([mealPlanId, dayIndex])
+}
+
+enum MealKind {
+  BREAKFAST
+  LUNCH
+  DINNER
+  SNACK
+  PRE_WORKOUT
+  POST_WORKOUT
+  OTHER
+}
+
+model MealPlanMeal {
+  id    String      @id @default(cuid())
+  dayId String
+  day   MealPlanDay @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  kind  MealKind    @default(OTHER)
+  title String?
+  timeHint String? // "08:00"
+  order Int         @default(0)
+  notes String?
+
+  items MealPlanItem[]
+
+  @@index([dayId])
+}
+
+model MealPlanItem {
+  id         String       @id @default(cuid())
+  mealId     String
+  meal       MealPlanMeal @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  foodItemId String?
+  foodItem   FoodItem?    @relation(fields: [foodItemId], references: [id])
+  freeText   String? // custom food name when not in catalog
+  quantity   Float?
+  unit       String? // g | ml | piece | scoop
+  calories   Float?
+  notes      String?
+  order      Int          @default(0)
+
+  @@index([mealId])
+}
+
+model MealAdherenceLog {
+  id        String         @id @default(cuid())
+  athleteId String
+  athlete   AthleteProfile @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  mealPlanId String?
+  date      DateTime       @db.Date
+  // {"breakfast":true,"lunch":false,"dinner":true,"notes":"..."}
+  adherence Json
+  note      String?
+  createdAt DateTime       @default(now())
+
+  @@index([athleteId, date])
+}
+
 // Athlete's performed-workout log
 model WorkoutLog {
   id        String         @id @default(cuid())
@@ -1274,6 +1376,69 @@ model WalletTransaction {
   createdAt DateTime @default(now())
 
   @@index([walletId, createdAt])
+}
+
+// Immutable double-entry ledger — source of truth for money movement.
+// Wallet.balance is a derived cache; never mutate LedgerEntry rows.
+
+enum LedgerOwnerType {
+  USER
+  CLUB
+  COACH
+  PLATFORM
+  GATEWAY
+  TAX
+}
+
+enum LedgerDirection {
+  DEBIT
+  CREDIT
+}
+
+model LedgerAccount {
+  id        String          @id @default(cuid())
+  code      String          @unique // e.g. user:{id}:wallet | club:{id}:receivable | platform:revenue
+  ownerType LedgerOwnerType
+  ownerId   String? // null for PLATFORM / GATEWAY / TAX system accounts
+  name      String
+  currency  String          @default("IRR")
+  isActive  Boolean         @default(true)
+  createdAt DateTime        @default(now())
+
+  entries LedgerEntry[]
+
+  @@index([ownerType, ownerId])
+}
+
+model LedgerTransaction {
+  id          String   @id @default(cuid())
+  // booking | payment | refund | settlement | wallet_topup | adjustment | commission
+  kind        String
+  description String?
+  refType     String? // Payment | Booking | Settlement | …
+  refId       String?
+  createdAt   DateTime @default(now())
+  // no updatedAt — header is append-only; corrections = new transactions
+
+  entries LedgerEntry[]
+
+  @@index([kind, createdAt])
+  @@index([refType, refId])
+}
+
+model LedgerEntry {
+  id            String            @id @default(cuid())
+  transactionId String
+  transaction   LedgerTransaction @relation(fields: [transactionId], references: [id], onDelete: Restrict)
+  accountId     String
+  account       LedgerAccount     @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  direction     LedgerDirection
+  amount        Decimal           @db.Decimal(14, 0) // always positive; direction encodes sign
+  meta          Json?
+  createdAt     DateTime          @default(now())
+
+  @@index([accountId, createdAt])
+  @@index([transactionId])
 }
 
 model Payment {

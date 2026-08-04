@@ -4,10 +4,11 @@ import { Model } from 'mongoose';
 import type { QueryFilter } from 'mongoose';
 import type { Request } from 'express';
 import { AuditService } from '../audit/audit.service';
-import { AuditAction, UserStatus } from '../common/enums';
+import { AuditAction, Role, UserStatus } from '../common/enums';
 import { User, UserDocument } from '../schemas/user.schema';
 import { UsersService } from '../users/users.service';
 import { TokenService } from '../account/auth/token.service';
+import { ProfileService } from '../account/profile/profile.service';
 import {
   AdminCreateUserDto,
   AdminUpdateUserDto,
@@ -26,6 +27,7 @@ export class AdminUsersService {
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     private readonly users: UsersService,
     private readonly tokens: TokenService,
+    private readonly profiles: ProfileService,
     private readonly audit: AuditService,
   ) {}
 
@@ -38,8 +40,8 @@ export class AdminUsersService {
       const rx = new RegExp(escapeRegex(query.search.trim()), 'i');
       filter.$or = [
         { phone: rx },
-        { firstName: rx },
-        { lastName: rx },
+        { 'name.first': rx },
+        { 'name.last': rx },
         { code: rx },
         { referralCode: rx },
         { nationalId: rx },
@@ -59,7 +61,7 @@ export class AdminUsersService {
     ]);
 
     return {
-      items: items.map((u) => this.users.toPublic(u)),
+      items: items.map((u) => this.users.toPublic(u, { revealNationalId: true })),
       total,
       page,
       limit,
@@ -68,7 +70,7 @@ export class AdminUsersService {
 
   async get(id: string) {
     const user = await this.users.findById(id);
-    return this.users.toPublic(user);
+    return this.users.toPublic(user, { revealNationalId: true });
   }
 
   async create(dto: AdminCreateUserDto, adminId: string, request: Request) {
@@ -88,7 +90,7 @@ export class AdminUsersService {
       request,
     });
 
-    return this.users.toPublic(user);
+    return this.users.toPublic(user, { revealNationalId: true });
   }
 
   async update(
@@ -100,14 +102,21 @@ export class AdminUsersService {
     const user = await this.users.findById(id);
     const changes: Record<string, unknown> = {};
 
-    for (const key of ['firstName', 'lastName', 'nationalId'] as const) {
-      if (dto[key] !== undefined && dto[key] !== user[key]) {
-        changes[key] = { from: user[key] ?? null, to: dto[key] };
-        user[key] = dto[key];
-      }
+    if (dto.firstName !== undefined && dto.firstName !== user.name?.first) {
+      changes['name.first'] = { from: user.name?.first ?? null, to: dto.firstName };
+      user.name = { ...user.name, first: dto.firstName };
+    }
+    if (dto.lastName !== undefined && dto.lastName !== user.name?.last) {
+      changes['name.last'] = { from: user.name?.last ?? null, to: dto.lastName };
+      user.name = { ...user.name, last: dto.lastName };
+    }
+    if (dto.nationalId !== undefined && dto.nationalId !== user.nationalId) {
+      changes.nationalId = { from: user.nationalId ?? null, to: dto.nationalId };
+      user.nationalId = dto.nationalId;
     }
 
     if (Object.keys(changes).length) {
+      user.markModified('name');
       await user.save();
       await this.users.refreshCodeIfAuto(user);
       this.audit.log({
@@ -119,7 +128,7 @@ export class AdminUsersService {
       });
     }
 
-    return this.users.toPublic(user);
+    return this.users.toPublic(user, { revealNationalId: true });
   }
 
   async updateStatus(
@@ -152,7 +161,7 @@ export class AdminUsersService {
       request,
     });
 
-    return this.users.toPublic(user);
+    return this.users.toPublic(user, { revealNationalId: true });
   }
 
   async updateRoles(
@@ -166,6 +175,16 @@ export class AdminUsersService {
     user.roles = dto.roles;
     await user.save();
 
+    // Drop sessions whose activeRole is no longer assigned.
+    await this.tokens.revokeInvalidRoleSessions(user._id, user.roles);
+
+    if (dto.roles.includes(Role.ATHLETE)) {
+      await this.profiles.ensureAthleteProfile(id);
+    }
+    if (dto.roles.includes(Role.COACH)) {
+      await this.profiles.ensureCoachProfile(id);
+    }
+
     this.audit.log({
       action: AuditAction.ADMIN_USER_ROLES_CHANGED,
       actorId: adminId,
@@ -174,7 +193,7 @@ export class AdminUsersService {
       request,
     });
 
-    return this.users.toPublic(user);
+    return this.users.toPublic(user, { revealNationalId: true });
   }
 
   /** Soft delete: status → deleted, sessions revoked. Data is retained. */

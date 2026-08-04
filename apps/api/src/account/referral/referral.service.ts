@@ -2,8 +2,14 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import type { Request } from 'express';
+import { EventWriterService } from '../../analytics/event-writer.service';
 import { AuditService } from '../../audit/audit.service';
-import { AuditAction, InviteStatus } from '../../common/enums';
+import {
+  AnalyticsEventName,
+  AuditAction,
+  InviteStatus,
+  Role,
+} from '../../common/enums';
 import { SmsService } from '../../common/sms/sms.service';
 import { Invite, InviteDocument } from '../../schemas/invite.schema';
 import { User, UserDocument } from '../../schemas/user.schema';
@@ -18,6 +24,7 @@ export class ReferralService {
     private readonly users: UsersService,
     private readonly sms: SmsService,
     private readonly audit: AuditService,
+    private readonly events: EventWriterService,
   ) {}
 
   /** Public pre-signup check. Only exposes non-sensitive referrer info. */
@@ -29,8 +36,12 @@ export class ReferralService {
       valid: true,
       referralCode: referrer.referralCode,
       referrer: {
-        firstName: referrer.firstName ?? null,
-        lastName: referrer.lastName ? `${referrer.lastName[0]}…` : null,
+        name: {
+          first: referrer.name?.first ?? null,
+          last: referrer.name?.last
+            ? `${referrer.name.last[0]}…`
+            : null,
+        },
         code: referrer.code ?? null,
       },
     };
@@ -57,10 +68,15 @@ export class ReferralService {
     };
   }
 
-  async invite(userId: string, phones: string[], request: Request) {
+  async invite(
+    userId: string,
+    phones: string[],
+    request: Request,
+    activeRole?: Role,
+  ) {
     const inviter = await this.users.findById(userId);
     const inviterName =
-      [inviter.firstName, inviter.lastName].filter(Boolean).join(' ') ||
+      [inviter.name?.first, inviter.name?.last].filter(Boolean).join(' ') ||
       inviter.phone;
 
     const results: { phone: string; status: string }[] = [];
@@ -91,6 +107,15 @@ export class ReferralService {
       metadata: { results },
       request,
     });
+
+    const sentCount = results.filter((r) => r.status === 'sent').length;
+    if (sentCount > 0) {
+      await this.events.track({
+        eventName: AnalyticsEventName.REFERRAL_INVITE_SENT,
+        actor: { userId, activeRole },
+        properties: { sentCount, results },
+      });
+    }
 
     return { results };
   }

@@ -3,13 +3,18 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import * as argon2 from 'argon2';
 import type { Request } from 'express';
+import { EventWriterService } from '../../analytics/event-writer.service';
 import { AuditService } from '../../audit/audit.service';
-import { AuditAction, OtpPurpose, UserStatus } from '../../common/enums';
-import { User, UserDocument } from '../../schemas/user.schema';
+import {
+  AnalyticsEventName,
+  AuditAction,
+  OtpPurpose,
+  Role,
+  UserStatus,
+} from '../../common/enums';
+import type { UserDocument } from '../../schemas/user.schema';
 import { UsersService } from '../../users/users.service';
 import {
   ConfirmOtpDto,
@@ -17,18 +22,19 @@ import {
   LogoutDto,
   ResetPasswordDto,
   SetPasswordDto,
+  SwitchRoleDto,
 } from './dto/auth.dto';
 import { OtpService } from './otp.service';
-import { TokenService } from './token.service';
+import { pickDefaultActiveRole, TokenService } from './token.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     private readonly users: UsersService,
     private readonly otp: OtpService,
     private readonly tokens: TokenService,
     private readonly audit: AuditService,
+    private readonly events: EventWriterService,
   ) {}
 
   async requestOtp(phone: string) {
@@ -57,6 +63,11 @@ export class AuthService {
         metadata: { method: 'otp', referralCode: dto.referralCode },
         request,
       });
+      await this.events.track({
+        eventName: AnalyticsEventName.USER_REGISTERED,
+        actor: { userId: user._id, activeRole: Role.ATHLETE },
+        properties: { method: 'otp', referralCode: dto.referralCode },
+      });
     } else {
       this.assertActive(user);
       if (!user.phoneVerifiedAt) {
@@ -73,8 +84,20 @@ export class AuthService {
       request,
     });
 
-    const pair = await this.tokens.issuePair(user);
-    return { ...pair, isNewUser, user: this.users.toPublic(user) };
+    const activeRole = pickDefaultActiveRole(user.roles);
+    await this.events.track({
+      eventName: AnalyticsEventName.USER_LOGIN,
+      actor: { userId: user._id, activeRole },
+      properties: { method: 'otp', isNewUser },
+    });
+
+    const pair = await this.tokens.issuePair(user, activeRole);
+    return {
+      ...pair,
+      isNewUser,
+      activeRole,
+      user: this.users.toPublic(user),
+    };
   }
 
   async login(dto: LoginDto, request: Request) {
@@ -97,8 +120,19 @@ export class AuthService {
       request,
     });
 
-    const pair = await this.tokens.issuePair(user);
-    return { ...pair, isNewUser: false, user: this.users.toPublic(user) };
+    const activeRole = pickDefaultActiveRole(user.roles);
+    await this.events.track({
+      eventName: AnalyticsEventName.USER_LOGIN,
+      actor: { userId: user._id, activeRole },
+      properties: { method: 'password' },
+    });
+    const pair = await this.tokens.issuePair(user, activeRole);
+    return {
+      ...pair,
+      isNewUser: false,
+      activeRole,
+      user: this.users.toPublic(user),
+    };
   }
 
   async refresh(refreshToken: string) {
@@ -106,6 +140,45 @@ export class AuthService {
     const user = await this.users.findById(userId.toString());
     this.assertActive(user);
     return this.tokens.rotate(user, refreshToken);
+  }
+
+  async switchRole(
+    userId: string,
+    dto: SwitchRoleDto,
+    request: Request,
+  ) {
+    const user = await this.users.findById(userId);
+    this.assertActive(user);
+
+    if (!user.roles.includes(dto.role)) {
+      throw new BadRequestException('Role not assigned to user');
+    }
+
+    const pair = await this.tokens.switchRole(
+      user,
+      dto.refreshToken,
+      dto.role,
+    );
+
+    this.audit.log({
+      action: AuditAction.ROLE_SWITCHED,
+      actorId: user._id,
+      targetUserId: user._id,
+      metadata: { activeRole: dto.role },
+      request,
+    });
+
+    await this.events.track({
+      eventName: AnalyticsEventName.ROLE_SWITCHED,
+      actor: { userId: user._id, activeRole: dto.role },
+      properties: { role: dto.role },
+    });
+
+    return {
+      ...pair,
+      activeRole: dto.role,
+      user: this.users.toPublic(user),
+    };
   }
 
   async logout(userId: string, dto: LogoutDto, request: Request) {

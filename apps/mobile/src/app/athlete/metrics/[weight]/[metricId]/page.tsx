@@ -5,9 +5,12 @@ import {
   isSupportedMetric,
   normalizeMetricSlug,
   SUPPORTED_METRICS,
-} from "../lib/metrics";
-import { getAllWeightDetailParams, getWeightDetail } from "../lib/weight-detail-data";
-import { WeightDetailScreen } from "./weight-detail-screen";
+} from "@/modules/athlete/lib/weight/metrics";
+import {
+  getAllWeightDetailParams,
+  getWeightDetail,
+} from "@/modules/athlete/lib/weight/weight-detail-data";
+import { AthleteWeightDetailScreen } from "@/modules/athlete/screens/AthleteWeightDetailScreen";
 
 type WeightDetailPageProps = {
   params: Promise<{ weight: string; metricId: string }>;
@@ -44,5 +47,5 @@ export default async function WeightDetailPage({
     notFound();
   }
 
-  return <WeightDetailScreen detail={detail} metric={slug} />;
+  return <AthleteWeightDetailScreen detail={detail} metric={slug} />;
 }

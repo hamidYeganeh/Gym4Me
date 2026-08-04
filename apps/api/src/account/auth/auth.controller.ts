@@ -15,6 +15,7 @@ import {
   RequestOtpDto,
   ResetPasswordDto,
   SetPasswordDto,
+  SwitchRoleDto,
 } from './dto/auth.dto';
 
 @ApiTags('auth')
@@ -107,5 +108,20 @@ export class AuthController {
     @Req() request: Request,
   ) {
     return this.auth.setPassword(userId, dto, request);
+  }
+
+  @ApiBearerAuth('access-token')
+  @Post('switch-role')
+  @HttpCode(200)
+  @ApiOperation({
+    summary:
+      'Switch active role and receive a new token pair (revokes prior refresh)',
+  })
+  switchRole(
+    @CurrentUser('sub') userId: string,
+    @Body() dto: SwitchRoleDto,
+    @Req() request: Request,
+  ) {
+    return this.auth.switchRole(userId, dto, request);
   }
 }

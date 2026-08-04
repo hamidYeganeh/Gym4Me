@@ -4,6 +4,7 @@ import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
+import type { JwtUser } from '../../common/types';
 import { InviteDto } from './dto/invite.dto';
 import { ReferralService } from './referral.service';
 
@@ -27,18 +28,17 @@ export class ReferralController {
     return this.referral.myReferral(userId);
   }
 
-  // Sends SMS — keep it tight.
   @ApiBearerAuth('access-token')
   @Throttle({ default: { limit: 5, ttl: 3_600_000 } })
   @Post('invite')
   @HttpCode(200)
   @ApiOperation({ summary: 'Invite contacts via SMS' })
   invite(
-    @CurrentUser('sub') userId: string,
+    @CurrentUser() user: JwtUser,
     @Body() dto: InviteDto,
     @Req() request: Request,
   ) {
-    return this.referral.invite(userId, dto.phones, request);
+    return this.referral.invite(user.sub, dto.phones, request, user.activeRole);
   }
 
   @ApiBearerAuth('access-token')

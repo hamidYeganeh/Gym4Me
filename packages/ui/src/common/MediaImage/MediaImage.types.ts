@@ -4,7 +4,7 @@ export type MediaImageSource = string | ReactNode;
 
 export type MediaImageProps = {
   /**
-   * URL string or a custom node (already using `next/image`, etc.).
+   * URL string or a custom node.
    * Empty / blank string URLs fall back to the shared mesh placeholder.
    */
   image: MediaImageSource;

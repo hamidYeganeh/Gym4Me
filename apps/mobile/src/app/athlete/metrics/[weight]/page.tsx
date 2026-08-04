@@ -5,8 +5,8 @@ import {
   isSupportedMetric,
   normalizeMetricSlug,
   SUPPORTED_METRICS,
-} from "./lib/metrics";
-import { WeightMetricsScreen } from "./weight-metrics-screen";
+} from "@/modules/athlete/lib/weight/metrics";
+import { AthleteWeightMetricsScreen } from "@/modules/athlete/screens/AthleteWeightMetricsScreen";
 
 type WeightMetricsPageProps = {
   params: Promise<{ weight: string }>;
@@ -38,5 +38,5 @@ export default async function WeightMetricsPage({
     notFound();
   }
 
-  return <WeightMetricsScreen metric={slug} />;
+  return <AthleteWeightMetricsScreen metric={slug} />;
 }

@@ -5,6 +5,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import type Redis from 'ioredis';
 import { OtpPurpose } from '../../common/enums';
 import { REDIS } from '../../common/redis/redis.module';
@@ -20,6 +21,7 @@ export class OtpService {
   constructor(
     @Inject(REDIS) private readonly redis: Redis,
     private readonly sms: SmsService,
+    private readonly config: ConfigService,
   ) {}
 
   private codeKey(purpose: OtpPurpose, phone: string) {
@@ -30,15 +32,15 @@ export class OtpService {
     return `otp:attempts:${purpose}:${phone}`;
   }
 
-  private cooldownKey(phone: string) {
-    return `otp:cooldown:${phone}`;
+  private cooldownKey(purpose: OtpPurpose, phone: string) {
+    return `otp:cooldown:${purpose}:${phone}`;
   }
 
   async request(
     phone: string,
     purpose: OtpPurpose,
-  ): Promise<{ expiresInSeconds: number }> {
-    const cooldownTtl = await this.redis.ttl(this.cooldownKey(phone));
+  ): Promise<{ expiresInSeconds: number; debugCode?: string }> {
+    const cooldownTtl = await this.redis.ttl(this.cooldownKey(purpose, phone));
     if (cooldownTtl > 0) {
       throw new HttpException(
         `OTP recently sent, retry in ${cooldownTtl}s`,
@@ -51,12 +53,20 @@ export class OtpService {
       .multi()
       .set(this.codeKey(purpose, phone), sha256(code), 'EX', OTP_TTL_SECONDS)
       .del(this.attemptsKey(purpose, phone))
-      .set(this.cooldownKey(phone), '1', 'EX', RESEND_COOLDOWN_SECONDS)
+      .set(this.cooldownKey(purpose, phone), '1', 'EX', RESEND_COOLDOWN_SECONDS)
       .exec();
 
     await this.sms.sendOtp(phone, code);
 
-    return { expiresInSeconds: OTP_TTL_SECONDS };
+    const debugMode =
+      (this.config.get<string>('DEBUG_MODE', 'false') ?? 'false')
+        .trim()
+        .toLowerCase() === 'true';
+
+    return {
+      expiresInSeconds: OTP_TTL_SECONDS,
+      ...(debugMode ? { debugCode: code } : {}),
+    };
   }
 
   async verify(

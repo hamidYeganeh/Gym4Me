@@ -3,7 +3,7 @@ import { iranSansX } from "@repo/fonts/iran-sans-x";
 import { ThemeProvider } from "@repo/theme";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
-import { CapacitorProvider } from "@/components/capacitor-provider";
+import { CapacitorProvider } from "@/shared/components/capacitor-provider";
 import "./globals.css";
 
 export const viewport: Viewport = {

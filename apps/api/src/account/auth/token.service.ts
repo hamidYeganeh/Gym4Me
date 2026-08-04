@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { Role } from '../../common/enums';
 import type { JwtUser, PasswordResetTokenPayload } from '../../common/types';
 import { randomToken, sha256 } from '../../common/utils/hash.util';
 import {
@@ -14,6 +15,13 @@ import { UserDocument } from '../../schemas/user.schema';
 export interface TokenPair {
   accessToken: string;
   refreshToken: string;
+}
+
+/** Prefer athlete when present; otherwise first assigned role. */
+export function pickDefaultActiveRole(roles: Role[]): Role {
+  if (roles.includes(Role.ATHLETE)) return Role.ATHLETE;
+  if (roles.includes(Role.ADMIN)) return Role.ADMIN;
+  return roles[0] ?? Role.ATHLETE;
 }
 
 @Injectable()
@@ -30,11 +38,27 @@ export class TokenService {
     return days * 24 * 60 * 60 * 1000;
   }
 
-  async issuePair(user: UserDocument): Promise<TokenPair> {
+  private passwordResetSecret(): string {
+    return (
+      this.config.get<string>('JWT_PASSWORD_RESET_SECRET') ??
+      this.config.getOrThrow<string>('JWT_ACCESS_SECRET')
+    );
+  }
+
+  async issuePair(
+    user: UserDocument,
+    activeRole?: Role,
+  ): Promise<TokenPair> {
+    const role = activeRole ?? pickDefaultActiveRole(user.roles);
+    if (!user.roles.includes(role)) {
+      throw new UnauthorizedException('Role not assigned to user');
+    }
+
     const payload: JwtUser = {
       sub: user._id.toString(),
       phone: user.phone,
       roles: user.roles,
+      activeRole: role,
     };
     const accessToken = await this.jwt.signAsync(payload);
 
@@ -42,6 +66,7 @@ export class TokenService {
     await this.refreshModel.create({
       userId: user._id,
       tokenHash: sha256(refreshToken),
+      activeRole: role,
       expiresAt: new Date(Date.now() + this.refreshTtlMs()),
     });
 
@@ -52,19 +77,56 @@ export class TokenService {
   async rotate(
     user: UserDocument,
     presentedToken: string,
+    forceActiveRole?: Role,
   ): Promise<TokenPair> {
     const doc = await this.findValidToken(presentedToken);
-    const pair = await this.issuePair(user);
+
+    let role: Role;
+    if (forceActiveRole) {
+      if (!user.roles.includes(forceActiveRole)) {
+        throw new UnauthorizedException('Role not assigned to user');
+      }
+      role = forceActiveRole;
+    } else if (doc.activeRole && user.roles.includes(doc.activeRole)) {
+      role = doc.activeRole;
+    } else {
+      await this.revokeAll(user._id);
+      throw new UnauthorizedException('Session role is no longer valid');
+    }
+
+    const pair = await this.issuePair(user, role);
     doc.revokedAt = new Date();
     doc.replacedByHash = sha256(pair.refreshToken);
     await doc.save();
     return pair;
   }
 
-  /** Resolves the userId of a presented refresh token (for the refresh flow). */
+  /**
+   * Issues a new pair for a different activeRole and revokes the current refresh token.
+   */
+  async switchRole(
+    user: UserDocument,
+    presentedRefreshToken: string | undefined,
+    nextRole: Role,
+  ): Promise<TokenPair> {
+    if (!user.roles.includes(nextRole)) {
+      throw new UnauthorizedException('Role not assigned to user');
+    }
+    const pair = await this.issuePair(user, nextRole);
+    if (presentedRefreshToken) {
+      await this.revoke(presentedRefreshToken);
+    }
+    return pair;
+  }
+
   async resolveUserId(presentedToken: string): Promise<Types.ObjectId> {
     const doc = await this.findValidToken(presentedToken);
     return doc.userId;
+  }
+
+  async resolveActiveRole(presentedToken: string): Promise<Role | undefined> {
+    const doc = await this.findValidToken(presentedToken);
+    return doc.activeRole;
   }
 
   private async findValidToken(
@@ -77,7 +139,6 @@ export class TokenService {
       throw new UnauthorizedException('Invalid refresh token');
     }
     if (doc.revokedAt) {
-      // Reuse of a rotated/revoked token — revoke everything for this user.
       await this.revokeAll(doc.userId);
       throw new UnauthorizedException('Refresh token reuse detected');
     }
@@ -98,18 +159,38 @@ export class TokenService {
     );
   }
 
+  /** Revoke sessions whose activeRole is no longer in the user's roles. */
+  async revokeInvalidRoleSessions(
+    userId: Types.ObjectId | string,
+    roles: Role[],
+  ): Promise<void> {
+    await this.refreshModel.updateMany(
+      {
+        userId,
+        revokedAt: null,
+        activeRole: { $nin: roles },
+      },
+      { revokedAt: new Date() },
+    );
+  }
+
   async signPasswordResetToken(userId: string): Promise<string> {
     const payload: PasswordResetTokenPayload = {
       sub: userId,
       type: 'pwd_reset',
     };
-    return this.jwt.signAsync(payload, { expiresIn: '10m' });
+    return this.jwt.signAsync(payload, {
+      secret: this.passwordResetSecret(),
+      expiresIn: '10m',
+    });
   }
 
   async verifyPasswordResetToken(token: string): Promise<string> {
     try {
       const payload =
-        await this.jwt.verifyAsync<PasswordResetTokenPayload>(token);
+        await this.jwt.verifyAsync<PasswordResetTokenPayload>(token, {
+          secret: this.passwordResetSecret(),
+        });
       if (payload.type !== 'pwd_reset') throw new Error('wrong type');
       return payload.sub;
     } catch {

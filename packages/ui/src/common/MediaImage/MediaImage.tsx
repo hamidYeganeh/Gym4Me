@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { PLACEHOLDER_IMAGE } from "../placeholder";
 import type { MediaImageProps } from "./MediaImage.types";
@@ -11,11 +10,15 @@ function resolveImageSrc(image: MediaImageProps["image"]) {
   return trimmed.length > 0 ? trimmed : PLACEHOLDER_IMAGE;
 }
 
+/**
+ * Framework-agnostic media image.
+ * Uses a plain `<img>` so Vite (admin) and Next (mobile/website) share one implementation.
+ * Parents that need fill behavior should wrap with `relative` and pass size classes.
+ */
 export function MediaImage({
   image,
   alt = "",
   className,
-  sizes = "100vw",
   "aria-hidden": ariaHidden,
   priority,
 }: MediaImageProps) {
@@ -38,18 +41,17 @@ export function MediaImage({
   }
 
   return (
-    <Image
+    <img
       alt={alt}
       aria-hidden={ariaHidden}
       className={className}
-      fill
+      decoding="async"
+      loading={priority ? "eager" : "lazy"}
       onError={() => {
         if (src !== PLACEHOLDER_IMAGE) {
           setSrc(PLACEHOLDER_IMAGE);
         }
       }}
-      priority={priority}
-      sizes={sizes}
       src={src}
     />
   );

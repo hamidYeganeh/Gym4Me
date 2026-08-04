@@ -1,0 +1,45 @@
+---
+description: Locked Gym4Me product and architecture decisions
+alwaysApply: true
+---
+
+# Gym4Me Product Decisions
+
+## Auth & roles
+
+- Users may hold multiple roles (`User.roles`).
+- JWT must include `activeRole`; **authorization uses `activeRole` only**. `roles` is for UI switcher.
+- Role switch: `POST /account/auth/switch-role` → validate membership → new token pair → revoke prior refresh.
+- One mobile app with an in-app role switcher (athlete / coach / owner).
+
+## Club staff
+
+- Fine-grained permissions via `PermissionDefinition` keys (`bookings.create`, `finance.read`, …).
+- Named staff roles are presets only; final grants are per staff member.
+
+## Booking
+
+- Independent calendars/capacity for space, session, coach, class.
+- Recurring bookings use `recurringGroupId`; cancel single occurrence or series from date.
+- Full `BookingStatus`: PENDING, AWAITING_PAYMENT, CONFIRMED, CHECKED_IN, COMPLETED, CANCELLED, NO_SHOW, REFUND_REQUESTED, REFUNDED, REJECTED.
+
+## Privacy
+
+- Metrics, progress photos, meal plans default to PRIVATE; enforce in API.
+- Levels: PUBLIC | FOLLOWERS | COACH_ONLY | PRIVATE.
+
+## Money
+
+- Keep platform subscriptions and club memberships as separate domains.
+- Immutable double-entry Ledger is source of truth; wallet balance is a derived cache.
+- Split every payment: amount − discount − tax − provider share − platform fee − gateway fee = net settle.
+
+## Integrations
+
+- SMS: Kavenegar behind `SmsService` (`SMS_PROVIDER=kavenegar|mock`).
+- Payments: Zarinpal behind `PaymentGatewayService` (`PAYMENT_PROVIDER=zarinpal|mock`).
+
+## Apps
+
+- `apps/api` = single source of truth; `apps/mobile` = multi-role app; `apps/admin` = ops; `apps/website` = public/SEO.
+- Domain model lives in `apps/api/prisma/schema.prisma`; follow locked decisions in `docs/product/`.

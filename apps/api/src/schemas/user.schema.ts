@@ -5,16 +5,57 @@ import { IR_PHONE } from '../common/utils/phone.util';
 
 export type UserDocument = HydratedDocument<User>;
 
+@Schema({ _id: false })
+export class UserName {
+  @Prop({ trim: true })
+  first?: string;
+
+  @Prop({ trim: true })
+  last?: string;
+}
+
+export const UserNameSchema = SchemaFactory.createForClass(UserName);
+
+@Schema({ _id: false })
+export class UserAvatar {
+  /** String ref avoids circular import with media.schema. */
+  @Prop({ type: Types.ObjectId, ref: 'Media' })
+  mediaId?: Types.ObjectId;
+}
+
+export const UserAvatarSchema = SchemaFactory.createForClass(UserAvatar);
+
+@Schema({ _id: false })
+export class UserDemographics {
+  /** Choice-group value key, e.g. "male" | "female" | "other". */
+  @Prop({ trim: true })
+  gender?: string;
+
+  @Prop()
+  birthDate?: Date;
+}
+
+export const UserDemographicsSchema =
+  SchemaFactory.createForClass(UserDemographics);
+
 @Schema({ timestamps: true, collection: 'users' })
 export class User {
+  /** E.164 Iran mobile — kept top-level for unique index. */
   @Prop({ required: true, unique: true, match: IR_PHONE })
   phone!: string;
 
-  @Prop({ trim: true })
-  firstName?: string;
+  /** Presence of timestamp implies verified (no parallel boolean). */
+  @Prop()
+  phoneVerifiedAt?: Date;
 
-  @Prop({ trim: true })
-  lastName?: string;
+  @Prop({ type: UserNameSchema, default: () => ({}) })
+  name!: UserName;
+
+  @Prop({ type: UserAvatarSchema, default: () => ({}) })
+  avatar!: UserAvatar;
+
+  @Prop({ type: UserDemographicsSchema, default: () => ({}) })
+  demographics!: UserDemographics;
 
   @Prop({ unique: true, sparse: true, match: /^\d{10}$/ })
   nationalId?: string;
@@ -40,9 +81,6 @@ export class User {
   @Prop({ type: String, enum: UserStatus, default: UserStatus.ACTIVE })
   status!: UserStatus;
 
-  @Prop()
-  phoneVerifiedAt?: Date;
-
   @Prop({ type: String, enum: KycStatus, default: KycStatus.NONE })
   kycStatus!: KycStatus;
 
@@ -55,4 +93,4 @@ export class User {
 
 export const UserSchema = SchemaFactory.createForClass(User);
 
-UserSchema.index({ firstName: 'text', lastName: 'text' });
+UserSchema.index({ 'name.first': 'text', 'name.last': 'text' });

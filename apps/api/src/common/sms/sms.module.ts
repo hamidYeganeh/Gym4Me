@@ -1,10 +1,28 @@
 import { Global, Module } from '@nestjs/common';
-import { MockSmsService, SmsService } from './sms.service';
+import { ConfigService } from '@nestjs/config';
+import {
+  KavenegarSmsService,
+  MockSmsService,
+  SmsService,
+} from './sms.service';
 
 @Global()
 @Module({
-  // Only the mock driver exists for now; swap by SMS_PROVIDER when a real one lands.
-  providers: [{ provide: SmsService, useClass: MockSmsService }],
+  providers: [
+    {
+      provide: SmsService,
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        const provider = (
+          config.get<string>('SMS_PROVIDER', 'mock') ?? 'mock'
+        ).toLowerCase();
+        if (provider === 'kavenegar') {
+          return new KavenegarSmsService(config);
+        }
+        return new MockSmsService();
+      },
+    },
+  ],
   exports: [SmsService],
 })
 export class SmsModule {}

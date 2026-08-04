@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   transpilePackages: [
+    "@repo/api",
     "@repo/fonts",
     "@repo/i18n",
     "@repo/icons",
