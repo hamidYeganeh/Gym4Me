@@ -4,6 +4,10 @@ import { Model, Types } from 'mongoose';
 import type { QueryFilter } from 'mongoose';
 import type { Request } from 'express';
 import { AuditAction } from '../common/enums';
+import {
+  paginatedResult,
+  resolvePageSize,
+} from '../common/utils/pagination.util';
 import { AuditLog, AuditLogDocument } from '../schemas/audit-log.schema';
 
 export interface AuditEntry {
@@ -20,6 +24,7 @@ export interface AuditQuery {
   targetUserId?: string;
   page?: number;
   limit?: number;
+  page_size?: number;
 }
 
 @Injectable()
@@ -50,19 +55,23 @@ export class AuditService {
     if (query.targetUserId)
       filter.targetUserId = new Types.ObjectId(query.targetUserId);
 
-    const page = Math.max(query.page ?? 1, 1);
-    const limit = Math.min(Math.max(query.limit ?? 20, 1), 100);
+    const { page, pageSize } = resolvePageSize({
+      page: query.page,
+      limit: query.limit,
+      page_size: query.page_size,
+    });
+    const cappedSize = Math.min(pageSize, 100);
 
     const [items, total] = await Promise.all([
       this.auditModel
         .find(filter)
         .sort({ createdAt: -1 })
-        .skip((page - 1) * limit)
-        .limit(limit)
+        .skip((page - 1) * cappedSize)
+        .limit(cappedSize)
         .lean(),
       this.auditModel.countDocuments(filter),
     ]);
 
-    return { items, total, page, limit };
+    return paginatedResult(items, total, page, cappedSize);
   }
 }

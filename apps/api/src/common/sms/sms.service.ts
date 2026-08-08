@@ -61,6 +61,7 @@ export class KavenegarSmsService extends SmsService {
   private readonly otpTemplate: string;
   private readonly inviteTemplate?: string;
   private readonly sender?: string;
+  private readonly debugMode: boolean;
 
   constructor(config: ConfigService) {
     super();
@@ -68,6 +69,11 @@ export class KavenegarSmsService extends SmsService {
     this.otpTemplate = config.get<string>('KAVENEGAR_OTP_TEMPLATE', 'verify');
     this.inviteTemplate = config.get<string>('KAVENEGAR_INVITE_TEMPLATE');
     this.sender = config.get<string>('KAVENEGAR_SENDER') || undefined;
+    const debug = config.get<string | boolean>('DEBUG_MODE', 'false');
+    this.debugMode =
+      typeof debug === 'boolean'
+        ? debug
+        : String(debug ?? 'false').trim().toLowerCase() === 'true';
   }
 
   private toLocalPhone(phone: string): string {
@@ -77,6 +83,9 @@ export class KavenegarSmsService extends SmsService {
   }
 
   async sendOtp(phone: string, code: string): Promise<void> {
+    if (this.debugMode) {
+      this.logger.log(`[DEBUG OTP] to=${phone} code=${code}`);
+    }
     await this.verifyLookup(phone, this.otpTemplate, [code]);
   }
 

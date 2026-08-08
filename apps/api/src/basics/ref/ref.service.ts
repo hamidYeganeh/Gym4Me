@@ -9,6 +9,7 @@ import { Model, Types } from 'mongoose';
 import type { Request } from 'express';
 import { AuditService } from '../../audit/audit.service';
 import { AuditAction, RefStatus, RefType } from '../../common/enums';
+import { asSinglePageResult } from '../../common/utils/pagination.util';
 import { slugify } from '../../common/utils/slug.util';
 import { MediaService } from '../../media/media.service';
 import { RefItem, RefItemDocument } from '../../schemas/ref-item.schema';
@@ -43,7 +44,7 @@ export class RefService {
       .find(filter)
       .sort({ order: 1, name: 1 })
       .lean();
-    return { type, items: items.map((i) => this.toPublic(i)) };
+    return { type, ...asSinglePageResult(items.map((i) => this.toPublic(i))) };
   }
 
   async getById(type: RefType, id: string, admin = false) {

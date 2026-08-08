@@ -4,6 +4,7 @@ import { ThemeProvider } from "@repo/theme";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 import { CapacitorProvider } from "@/shared/components/capacitor-provider";
+import { AppProviders } from "@/shared/providers/AppProviders";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -78,7 +79,9 @@ export default async function RootLayout({
         <div className="relative mx-auto min-h-full w-full max-w-xl">
           <ThemeProvider>
             <CapacitorProvider />
-            <NextIntlClientProvider>{children}</NextIntlClientProvider>
+            <NextIntlClientProvider>
+              <AppProviders>{children}</AppProviders>
+            </NextIntlClientProvider>
           </ThemeProvider>
         </div>
       </body>

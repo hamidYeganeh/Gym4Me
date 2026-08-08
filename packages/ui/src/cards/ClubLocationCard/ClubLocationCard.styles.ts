@@ -4,8 +4,9 @@ import { tv } from "tailwind-variants";
 export const clubLocationCardVariants = tv({
   slots: {
     root: [
-      "relative flex w-full max-w-md flex-col overflow-hidden rounded-[28px] p-0",
-      "border border-border/70 bg-default text-default-foreground shadow-sm",
+      "relative flex w-full flex-col overflow-hidden rounded-[28px] p-0",
+      "border border-border/70 text-default-foreground shadow-sm",
+      "bg-linear-to-b from-surface via-default to-[color-mix(in_oklch,var(--accent)_12%,var(--default))]",
     ].join(" "),
     mapShell: "relative w-full overflow-hidden bg-surface-tertiary p-0",
     mapCanvas: [
@@ -24,11 +25,14 @@ export const clubLocationCardVariants = tv({
       "hover:bg-overlay/85 data-[hovered=true]:bg-overlay/85",
       "shadow-sm",
     ].join(" "),
-    footer:
-      "relative z-10 flex items-end justify-between gap-4 bg-default px-5 pb-5 pt-4",
+    footer: [
+      "relative z-10 flex items-end justify-between gap-4 px-5 pb-5 pt-4",
+      "bg-linear-to-t from-[color-mix(in_oklch,var(--accent)_10%,var(--default))] via-default/90 to-transparent",
+    ].join(" "),
     footerText: "flex min-w-0 flex-1 flex-col gap-2",
     header: "gap-0 p-0",
     title: "text-xl font-semibold tracking-tight text-foreground",
+    address: "mt-1 text-sm leading-snug text-muted",
     meta: "flex flex-wrap items-center gap-2 text-sm text-muted",
     metaItem: "inline-flex items-center gap-1.5",
     metaIcon: "size-3.5 shrink-0 opacity-80",
@@ -41,6 +45,19 @@ export const clubLocationCardVariants = tv({
       "hover:opacity-90 data-[hovered=true]:opacity-90",
       "data-[pressed=true]:scale-[0.97]",
     ].join(" "),
+  },
+  variants: {
+    fullWidth: {
+      true: {
+        root: "max-w-none rounded-none border-x-0 sm:rounded-[28px] sm:border-x",
+      },
+      false: {
+        root: "max-w-md",
+      },
+    },
+  },
+  defaultVariants: {
+    fullWidth: false,
   },
 });
 

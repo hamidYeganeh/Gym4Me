@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { DiscoveryClassDetailGate } from "@/modules/discovery/lib/DiscoveryClassDetailGate";
 import {
   getAllClassParams,
   getClassDetail,
 } from "@/modules/discovery/lib/class-detail-data";
-import { DiscoveryClubsClassDetailScreen } from "@/modules/discovery/screens/DiscoveryClubsClassDetailScreen";
 
 type ClassDetailPageProps = {
   params: Promise<{ clubId: string; classId: string }>;
@@ -31,11 +30,6 @@ export default async function ClassDetailPage({
   params,
 }: ClassDetailPageProps) {
   const { clubId, classId } = await params;
-  const classDetail = getClassDetail(clubId, classId);
 
-  if (!classDetail) {
-    notFound();
-  }
-
-  return <DiscoveryClubsClassDetailScreen classDetail={classDetail} />;
+  return <DiscoveryClassDetailGate clubId={clubId} classId={classId} />;
 }

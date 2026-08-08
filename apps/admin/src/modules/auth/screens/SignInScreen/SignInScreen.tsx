@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import {
   Button,
   Checkbox,
@@ -15,6 +15,7 @@ import {
   type AuthLayoutLabels,
 } from "@repo/ui/layout/AuthLayout";
 import { useTranslations } from "next-intl";
+import { routes } from "@/shared/lib/routes";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import type { OtpRouteState } from "../OtpScreen";
 import { signInScreenVariants } from "./SignInScreen.styles";
@@ -56,7 +57,7 @@ export function SignInScreen({ className }: SignInScreenProps) {
       await login(phone.trim(), password);
       // remember flag reserved for longer refresh TTL once API supports it
       void remember;
-      navigate("/", { replace: true });
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.message || t("errorInvalid"));
@@ -181,9 +182,9 @@ export function SignInScreen({ className }: SignInScreenProps) {
             </Checkbox.Content>
           </Checkbox>
 
-          <Link className={styles.forgot()} href="#forgot-password">
+          <RouterLink className={styles.forgot()} to={routes.forgotPassword}>
             {t("forgotPassword")}
-          </Link>
+          </RouterLink>
         </div>
 
         {error ? (

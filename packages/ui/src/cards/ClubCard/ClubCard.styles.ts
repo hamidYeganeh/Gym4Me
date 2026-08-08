@@ -78,6 +78,22 @@ export const clubCardVariants = tv({
           "data-[pressed=true]:scale-[0.97]",
         ].join(" "),
       },
+      fullWidth: {
+        root: [
+          "aspect-[16/10] w-full max-w-none flex-col rounded-[28px] p-5",
+          "sm:aspect-[21/9] sm:p-6",
+        ].join(" "),
+        body: "flex-row items-end justify-between gap-4",
+        header: "flex-1 gap-1",
+        title: "text-2xl font-semibold sm:text-3xl",
+        subtitle: "text-sm sm:text-base",
+        price: "text-base font-semibold",
+        action: [
+          "rounded-full px-4",
+          "[--button-bg:var(--accent)] [--button-fg:var(--accent-foreground)]",
+          "bg-accent text-accent-foreground",
+        ].join(" "),
+      },
     },
   },
   defaultVariants: {

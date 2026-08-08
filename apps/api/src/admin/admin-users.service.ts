@@ -5,6 +5,10 @@ import type { QueryFilter } from 'mongoose';
 import type { Request } from 'express';
 import { AuditService } from '../audit/audit.service';
 import { AuditAction, Role, UserStatus } from '../common/enums';
+import {
+  paginatedResult,
+  resolvePageSize,
+} from '../common/utils/pagination.util';
 import { User, UserDocument } from '../schemas/user.schema';
 import { UsersService } from '../users/users.service';
 import { TokenService } from '../account/auth/token.service';
@@ -48,24 +52,23 @@ export class AdminUsersService {
       ];
     }
 
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 20;
+    const { page, pageSize } = resolvePageSize(query);
 
     const [items, total] = await Promise.all([
       this.userModel
         .find(filter)
         .sort({ createdAt: -1 })
-        .skip((page - 1) * limit)
-        .limit(limit),
+        .skip((page - 1) * pageSize)
+        .limit(pageSize),
       this.userModel.countDocuments(filter),
     ]);
 
-    return {
-      items: items.map((u) => this.users.toPublic(u, { revealNationalId: true })),
+    return paginatedResult(
+      items.map((u) => this.users.toPublic(u, { revealNationalId: true })),
       total,
       page,
-      limit,
-    };
+      pageSize,
+    );
   }
 
   async get(id: string) {

@@ -12,16 +12,18 @@ import { AuditService } from '../audit/audit.service';
 import {
   AnalyticsEventName,
   AuditAction,
-  ClubLifecycleStatus,
   VerificationStatus,
 } from '../common/enums';
-import { Club, ClubDocument } from '../schemas/club.schema';
+import {
+  paginatedResult,
+  resolvePageSize,
+} from '../common/utils/pagination.util';
 import {
   CoachProfile,
   CoachProfileDocument,
 } from '../schemas/coach-profile.schema';
-import { ClubsService } from '../account/clubs/clubs.service';
 import { ProfileService } from '../account/profile/profile.service';
+import { UsersService } from '../users/users.service';
 import { ReviewVerificationDto } from './dto/admin-review.dto';
 
 @Injectable()
@@ -29,53 +31,73 @@ export class AdminVerificationService {
   constructor(
     @InjectModel(CoachProfile.name)
     private readonly coachModel: Model<CoachProfileDocument>,
-    @InjectModel(Club.name)
-    private readonly clubModel: Model<ClubDocument>,
     private readonly profiles: ProfileService,
-    private readonly clubs: ClubsService,
+    private readonly users: UsersService,
     private readonly audit: AuditService,
     private readonly events: EventWriterService,
   ) {}
 
   async listCoachVerifications(query: {
-    status?: VerificationStatus;
+    status?: VerificationStatus | 'all';
     page?: number;
     limit?: number;
   }) {
     const filter: QueryFilter<CoachProfileDocument> = {};
-    if (query.status) filter['verification.status'] = query.status;
-    else filter['verification.status'] = VerificationStatus.PENDING;
+    if (query.status && query.status !== 'all') {
+      filter['verification.status'] = query.status;
+    } else if (query.status !== 'all') {
+      filter['verification.status'] = VerificationStatus.PENDING;
+    }
 
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 20;
+    const { page, pageSize } = resolvePageSize(query);
     const [items, total] = await Promise.all([
       this.coachModel
         .find(filter)
         .sort({ 'verification.submittedAt': -1 })
-        .skip((page - 1) * limit)
-        .limit(limit)
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
         .lean(),
       this.coachModel.countDocuments(filter),
     ]);
 
-    return {
-      items: items.map((p) => ({
-        userId: p.userId.toString(),
-        verification: {
-          status: p.verification?.status,
-          submittedAt: p.verification?.submittedAt ?? null,
-          documentMediaIds: (p.verification?.documentMediaIds ?? []).map((id) =>
-            id.toString(),
-          ),
-          reviewNote: p.verification?.reviewNote ?? null,
+    const summaries = await this.users.findSummariesByIds(
+      items.map((p) => p.userId),
+    );
+    const byId = new Map(
+      summaries.map((u) => [
+        u._id.toString(),
+        {
+          id: u._id.toString(),
+          phone: u.phone,
+          name: u.name,
+          code: u.code ?? null,
+          kycStatus: u.kycStatus,
         },
-        experience: p.experience ?? {},
-        bio: p.bio ?? null,
-      })),
+      ]),
+    );
+
+    return paginatedResult(
+      items.map((p) => {
+        const userId = p.userId.toString();
+        return {
+          userId,
+          user: byId.get(userId) ?? { id: userId },
+          verification: {
+            status: p.verification?.status,
+            submittedAt: p.verification?.submittedAt ?? null,
+            documentMediaIds: (p.verification?.documentMediaIds ?? []).map(
+              (id) => id.toString(),
+            ),
+            reviewNote: p.verification?.reviewNote ?? null,
+          },
+          experience: p.experience ?? {},
+          bio: p.bio ?? null,
+        };
+      }),
       total,
       page,
-      limit,
-    };
+      pageSize,
+    );
   }
 
   async reviewCoach(
@@ -126,78 +148,4 @@ export class AdminVerificationService {
     };
   }
 
-  async listClubReviews(query: {
-    status?: ClubLifecycleStatus;
-    page?: number;
-    limit?: number;
-  }) {
-    const filter: QueryFilter<ClubDocument> = {};
-    if (query.status) filter['review.status'] = query.status;
-    else filter['review.status'] = ClubLifecycleStatus.PENDING_REVIEW;
-
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 20;
-    const [items, total] = await Promise.all([
-      this.clubModel
-        .find(filter)
-        .sort({ 'review.submittedAt': -1 })
-        .skip((page - 1) * limit)
-        .limit(limit),
-      this.clubModel.countDocuments(filter),
-    ]);
-
-    return {
-      items: items.map((c) => this.clubs.toPublic(c)),
-      total,
-      page,
-      limit,
-    };
-  }
-
-  async reviewClub(
-    clubId: string,
-    dto: ReviewVerificationDto,
-    adminId: string,
-    request: Request,
-  ) {
-    const club = await this.clubModel.findById(clubId);
-    if (!club) throw new NotFoundException('Club not found');
-    if (club.review.status !== ClubLifecycleStatus.PENDING_REVIEW) {
-      throw new ConflictException('Club is not pending review');
-    }
-
-    club.review.status =
-      dto.action === 'approve'
-        ? ClubLifecycleStatus.APPROVED
-        : ClubLifecycleStatus.REJECTED;
-    club.review.reviewedAt = new Date();
-    club.review.reviewedBy = new Types.ObjectId(adminId);
-    club.review.reviewNote =
-      dto.action === 'reject'
-        ? (dto.reviewNote ?? 'Rejected')
-        : dto.reviewNote;
-    club.markModified('review');
-    await club.save();
-
-    this.audit.log({
-      action: AuditAction.CLUB_REVIEWED,
-      actorId: adminId,
-      targetUserId: club.ownerId,
-      metadata: {
-        clubId,
-        action: dto.action,
-        reviewNote: club.review.reviewNote,
-      },
-      request,
-    });
-
-    await this.events.track({
-      eventName: AnalyticsEventName.CLUB_REVIEWED,
-      actor: { userId: adminId },
-      context: { clubId },
-      properties: { action: dto.action, ownerId: club.ownerId.toString() },
-    });
-
-    return this.clubs.toPublic(club);
-  }
 }

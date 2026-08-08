@@ -149,7 +149,7 @@ subscription_upgraded
 - first-touch و last-touch جداگانه.
 - UTM، referrer، landing page، referral/affiliate و deep-link source.
 - attribution اولیه write-once؛ attribution تبدیل قابل محاسبه مجدد.
-- mapping مشخص در مهاجرت MongoDB به PostgreSQL تا referral فعلی از بین نرود.
+- referral (`referralCode` / `referredBy`) روی همان مدل User در MongoDB نگه داشته می‌شود.
 
 #### Delivery
 

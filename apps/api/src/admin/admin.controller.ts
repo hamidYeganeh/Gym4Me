@@ -9,13 +9,15 @@ import {
   Post,
   Query,
   Req,
+  Res,
+  StreamableFile,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { AuditService } from '../audit/audit.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
-import { Role } from '../common/enums';
+import { Role, UserStatus } from '../common/enums';
 import { AdminKycService } from './admin-kyc.service';
 import { AdminUsersService } from './admin-users.service';
 import { AdminVerificationService } from './admin-verification.service';
@@ -28,9 +30,9 @@ import {
   ReviewKycDto,
   UpdateUserRolesDto,
   UpdateUserStatusDto,
+  UserActivationDto,
 } from './dto/admin.dto';
 import {
-  ListClubReviewsQueryDto,
   ListCoachVerificationsQueryDto,
   ReviewVerificationDto,
 } from './dto/admin-review.dto';
@@ -55,10 +57,10 @@ export class AdminController {
     return this.adminUsers.list(query);
   }
 
-  @Get('users/:id')
+  @Get('users/:userId')
   @ApiOperation({ summary: 'Get user by id' })
-  getUser(@Param('id') id: string) {
-    return this.adminUsers.get(id);
+  getUser(@Param('userId') userId: string) {
+    return this.adminUsers.get(userId);
   }
 
   @Post('users')
@@ -71,48 +73,80 @@ export class AdminController {
     return this.adminUsers.create(dto, adminId, request);
   }
 
-  @Patch('users/:id')
+  @Patch('users/:userId')
   @ApiOperation({ summary: 'Update a user' })
   updateUser(
-    @Param('id') id: string,
+    @Param('userId') userId: string,
     @Body() dto: AdminUpdateUserDto,
     @CurrentUser('sub') adminId: string,
     @Req() request: Request,
   ) {
-    return this.adminUsers.update(id, dto, adminId, request);
+    return this.adminUsers.update(userId, dto, adminId, request);
   }
 
-  @Patch('users/:id/status')
+  @Patch('users/:userId/status')
   @ApiOperation({ summary: 'Update user status' })
   updateUserStatus(
-    @Param('id') id: string,
+    @Param('userId') userId: string,
     @Body() dto: UpdateUserStatusDto,
     @CurrentUser('sub') adminId: string,
     @Req() request: Request,
   ) {
-    return this.adminUsers.updateStatus(id, dto, adminId, request);
+    return this.adminUsers.updateStatus(userId, dto, adminId, request);
   }
 
-  @Patch('users/:id/roles')
+  @Patch('users/:userId/activate')
+  @ApiOperation({ summary: 'Activate a user' })
+  activateUser(
+    @Param('userId') userId: string,
+    @Body() dto: UserActivationDto = {},
+    @CurrentUser('sub') adminId: string,
+    @Req() request: Request,
+  ) {
+    return this.adminUsers.updateStatus(
+      userId,
+      { status: UserStatus.ACTIVE, reason: dto.reason },
+      adminId,
+      request,
+    );
+  }
+
+  @Patch('users/:userId/deactivate')
+  @ApiOperation({ summary: 'Deactivate (block) a user' })
+  deactivateUser(
+    @Param('userId') userId: string,
+    @Body() dto: UserActivationDto = {},
+    @CurrentUser('sub') adminId: string,
+    @Req() request: Request,
+  ) {
+    return this.adminUsers.updateStatus(
+      userId,
+      { status: UserStatus.BLOCKED, reason: dto.reason },
+      adminId,
+      request,
+    );
+  }
+
+  @Patch('users/:userId/roles')
   @ApiOperation({ summary: 'Update user roles' })
   updateUserRoles(
-    @Param('id') id: string,
+    @Param('userId') userId: string,
     @Body() dto: UpdateUserRolesDto,
     @CurrentUser('sub') adminId: string,
     @Req() request: Request,
   ) {
-    return this.adminUsers.updateRoles(id, dto, adminId, request);
+    return this.adminUsers.updateRoles(userId, dto, adminId, request);
   }
 
-  @Delete('users/:id')
+  @Delete('users/:userId')
   @HttpCode(200)
   @ApiOperation({ summary: 'Soft-delete a user' })
   deleteUser(
-    @Param('id') id: string,
+    @Param('userId') userId: string,
     @CurrentUser('sub') adminId: string,
     @Req() request: Request,
   ) {
-    return this.adminUsers.remove(id, adminId, request);
+    return this.adminUsers.remove(userId, adminId, request);
   }
 
   // ── KYC review ─────────────────────────────────
@@ -121,6 +155,21 @@ export class AdminController {
   @ApiOperation({ summary: 'List KYC review requests' })
   listKycRequests(@Query() query: ListKycRequestsQueryDto) {
     return this.adminKyc.list(query);
+  }
+
+  @Get('kyc/requests/:id/document')
+  @ApiOperation({ summary: 'Stream KYC document for admin review' })
+  async getKycDocument(
+    @Param('id') id: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const file = await this.adminKyc.openDocument(id);
+    res.set({
+      'Content-Type': file.mimeType,
+      'Content-Length': String(file.size),
+      'Content-Disposition': `inline; filename="${file.filename}"`,
+    });
+    return new StreamableFile(file.stream);
   }
 
   @Patch('kyc/requests/:id')
@@ -151,25 +200,6 @@ export class AdminController {
     @Req() request: Request,
   ) {
     return this.adminVerification.reviewCoach(userId, dto, adminId, request);
-  }
-
-  // ── Club review ────────────────────────────────
-
-  @Get('clubs/reviews')
-  @ApiOperation({ summary: 'List club review submissions' })
-  listClubReviews(@Query() query: ListClubReviewsQueryDto) {
-    return this.adminVerification.listClubReviews(query);
-  }
-
-  @Patch('clubs/:id/review')
-  @ApiOperation({ summary: 'Approve or reject a club' })
-  reviewClub(
-    @Param('id') id: string,
-    @Body() dto: ReviewVerificationDto,
-    @CurrentUser('sub') adminId: string,
-    @Req() request: Request,
-  ) {
-    return this.adminVerification.reviewClub(id, dto, adminId, request);
   }
 
   // ── Audit logs ─────────────────────────────────

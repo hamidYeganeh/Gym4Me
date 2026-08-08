@@ -13,7 +13,10 @@ import {
   RobotFace1,
   User,
   UsersThree,
+  UsersTwo,
+  Wallet,
 } from "@repo/icons";
+import { QuickActionCard } from "@repo/ui/cards/QuickActionCard";
 import { stagger, transition } from "@repo/theme";
 import { Logo } from "@repo/ui/common/Logo";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
@@ -92,46 +95,55 @@ export function OwnerHomeScreen({ stats, clubs }: OwnerHomeScreenProps) {
                 key: "clubs",
                 label: t("clubs"),
                 icon: <Building2 size={ACTION_ICON_SIZE} />,
+                href: "/owner/clubs",
               },
               {
                 key: "staff",
                 label: t("staff"),
                 icon: <UsersThree size={ACTION_ICON_SIZE} />,
+                href: "/owner/staff",
               },
               {
                 key: "classes",
                 label: t("classes"),
                 icon: <Kettlebell size={ACTION_ICON_SIZE} />,
+                href: "/owner/clubs",
               },
               {
                 key: "equipment",
                 label: t("equipment"),
                 icon: <BarbellHorizontal size={ACTION_ICON_SIZE} />,
+                href: "/owner/clubs",
               },
               {
                 key: "bookings",
                 label: t("bookings"),
                 icon: <Calendar1 size={ACTION_ICON_SIZE} />,
+                href: "/owner/members",
               },
               {
                 key: "analytics",
                 label: t("analytics"),
                 icon: <ChartBar2 size={ACTION_ICON_SIZE} />,
+                href: "/owner/analytics",
               },
               {
                 key: "marketing",
                 label: t("marketing"),
                 icon: <Megaphone size={ACTION_ICON_SIZE} />,
+                href: "/owner/analytics",
               },
               {
                 key: "ai",
                 label: t("ai"),
                 icon: <RobotFace1 size={ACTION_ICON_SIZE} />,
+                href: "/owner/ai",
               },
               {
                 key: "resources",
                 label: t("resources"),
                 icon: <BookOpen size={ACTION_ICON_SIZE} />,
+                href: "/owner/resources",
               },
             ],
           }}
@@ -148,16 +160,19 @@ export function OwnerHomeScreen({ stats, clubs }: OwnerHomeScreenProps) {
               key: "ai",
               label: t("ai"),
               icon: <RobotFace1 size={ICON_SIZE} />,
+              href: "/owner/ai",
             },
             {
               key: "resources",
               label: t("resources"),
               icon: <Newspaper1 size={ICON_SIZE} />,
+              href: "/owner/resources",
             },
             {
               key: "profile",
               label: t("profile"),
               icon: <User size={ICON_SIZE} />,
+              href: "/owner/profile",
             },
           ]}
           onActionsOpenChange={setIsActionsOpen}
@@ -171,6 +186,7 @@ export function OwnerHomeScreen({ stats, clubs }: OwnerHomeScreenProps) {
           hasNotification
           name={t("profileName")}
           notificationLabel={t("notifications")}
+          onNotificationPress={() => router.push("/owner/notifications")}
         />
       }
     >
@@ -213,6 +229,39 @@ export function OwnerHomeScreen({ stats, clubs }: OwnerHomeScreenProps) {
             videoLabel={t("quickActionVideo")}
             onMorePress={() => setIsActionsOpen(true)}
           />
+        </StaggerSection>
+
+        <StaggerSection>
+          <section
+            aria-label={t("quickLinksTitle")}
+            className="grid grid-cols-5 gap-2"
+          >
+            <QuickActionCard
+              icon={<Building2 size={ACTION_ICON_SIZE} />}
+              label={t("quickLinkClubs")}
+              onPress={() => router.push("/owner/clubs")}
+            />
+            <QuickActionCard
+              icon={<UsersThree size={ACTION_ICON_SIZE} />}
+              label={t("quickLinkMembers")}
+              onPress={() => router.push("/owner/members")}
+            />
+            <QuickActionCard
+              icon={<UsersTwo size={ACTION_ICON_SIZE} />}
+              label={t("quickLinkStaff")}
+              onPress={() => router.push("/owner/staff")}
+            />
+            <QuickActionCard
+              icon={<Wallet size={ACTION_ICON_SIZE} />}
+              label={t("quickLinkFinance")}
+              onPress={() => router.push("/owner/finance")}
+            />
+            <QuickActionCard
+              icon={<ChartBar2 size={ACTION_ICON_SIZE} />}
+              label={t("quickLinkAnalytics")}
+              onPress={() => router.push("/owner/analytics")}
+            />
+          </section>
         </StaggerSection>
 
         <StaggerSection>
@@ -286,7 +335,7 @@ export function OwnerHomeScreen({ stats, clubs }: OwnerHomeScreenProps) {
             actionLabel={t("clubAction")}
             clubs={clubs}
             favoriteLabel={t("clubFavorite")}
-            onClubAction={(clubId) => router.push(`/discovery/clubs/${clubId}`)}
+            onClubAction={(clubId) => router.push(`/owner/clubs/${clubId}`)}
             pricePrefix={t("clubPricePrefix")}
             priceSuffix={t("clubPriceSuffix")}
             shareLabel={t("clubShare")}

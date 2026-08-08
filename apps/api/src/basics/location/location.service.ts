@@ -9,6 +9,7 @@ import { Model, Types } from 'mongoose';
 import type { Request } from 'express';
 import { AuditService } from '../../audit/audit.service';
 import { AuditAction, LocationKind } from '../../common/enums';
+import { asSinglePageResult } from '../../common/utils/pagination.util';
 import { slugify } from '../../common/utils/slug.util';
 import { MediaService } from '../../media/media.service';
 import { Location, LocationDocument } from '../../schemas/location.schema';
@@ -53,7 +54,7 @@ export class LocationService {
       .find(filter)
       .sort({ order: 1, name: 1 })
       .lean();
-    return { items: items.map((l) => this.toPublic(l)) };
+    return asSinglePageResult(items.map((l) => this.toPublic(l)));
   }
 
   async getById(id: string, admin = false) {
@@ -70,7 +71,12 @@ export class LocationService {
       throw new NotFoundException('Location not found');
     }
     const childKind = CHILD_KIND[parent.kind];
-    if (!childKind) return { items: [], parent: this.toPublic(parent) };
+    if (!childKind) {
+      return {
+        parent: this.toPublic(parent),
+        ...asSinglePageResult([]),
+      };
+    }
 
     const filter: Record<string, unknown> = {
       kind: childKind,
@@ -85,7 +91,7 @@ export class LocationService {
 
     return {
       parent: this.toPublic(parent),
-      items: items.map((l) => this.toPublic(l)),
+      ...asSinglePageResult(items.map((l) => this.toPublic(l))),
     };
   }
 
@@ -99,6 +105,9 @@ export class LocationService {
       name: dto.name,
       slug,
       description: dto.description,
+      icon: dto.icon,
+      flagSvg:
+        dto.kind === LocationKind.COUNTRY ? dto.flagSvg : undefined,
       parentId,
       ancestors,
       center: dto.center
@@ -137,6 +146,14 @@ export class LocationService {
     if (dto.description !== undefined) location.description = dto.description;
     if (dto.order !== undefined) location.order = dto.order;
     if (dto.isActive !== undefined) location.isActive = dto.isActive;
+
+    if (dto.icon === null) location.icon = undefined;
+    else if (dto.icon !== undefined) location.icon = dto.icon;
+
+    if (location.kind === LocationKind.COUNTRY) {
+      if (dto.flagSvg === null) location.flagSvg = undefined;
+      else if (dto.flagSvg !== undefined) location.flagSvg = dto.flagSvg;
+    }
 
     if (dto.slug !== undefined && dto.slug !== location.slug) {
       location.slug = await this.uniqueSlug(location.kind, dto.slug, id);
@@ -209,6 +226,9 @@ export class LocationService {
       name: dto.name,
       slug,
       description: dto.description,
+      icon: dto.icon,
+      flagSvg:
+        dto.kind === LocationKind.COUNTRY ? dto.flagSvg : undefined,
       parentId,
       ancestors,
       center: dto.center
@@ -278,6 +298,8 @@ export class LocationService {
       name: location.name,
       slug: location.slug,
       description: location.description ?? null,
+      icon: location.icon ?? null,
+      flagSvg: location.flagSvg ?? null,
       parentId: location.parentId?.toString() ?? null,
       ancestors: (location.ancestors ?? []).map((a) => a.toString()),
       coordinates: location.center?.coordinates

@@ -1,7 +1,9 @@
 "use client";
 
 import {
+  Accordion,
   Button,
+  Chip,
   Drawer,
   Label,
   Radio,
@@ -11,36 +13,70 @@ import {
 } from "@heroui/react";
 import { ArrowUpRight } from "@repo/icons/ArrowUpRight";
 import { BarbellHorizontal } from "@repo/icons/BarbellHorizontal";
+import { Car1 } from "@repo/icons/Car1";
 import { Check } from "@repo/icons/Check";
+import { ChevronDown } from "@repo/icons/ChevronDown";
 import { Clock } from "@repo/icons/Clock";
+import { Coffee } from "@repo/icons/Coffee";
 import { ListTwoCheck } from "@repo/icons/ListTwoCheck";
+import { Lock1 } from "@repo/icons/Lock1";
+import { Medal } from "@repo/icons/Medal";
+import { PersonMan1 } from "@repo/icons/PersonMan1";
+import { Shower1 } from "@repo/icons/Shower1";
+import { Snowflake1 } from "@repo/icons/Snowflake1";
 import { StarFull } from "@repo/icons/StarFull";
+import { Telephone1 } from "@repo/icons/Telephone1";
 import { Treadmill } from "@repo/icons/Treadmill";
 import { Weight } from "@repo/icons/Weight";
+import { WifiHigh } from "@repo/icons/WifiHigh";
+import { AchievementCard } from "@repo/ui/cards/AchievementCard";
+import { ClubAmenityCard } from "@repo/ui/cards/ClubAmenityCard";
 import { ClubBranchCard } from "@repo/ui/cards/ClubBranchCard";
 import { ClubCancellationPolicy } from "@repo/ui/cards/ClubCancellationPolicy";
 import { ClubClassCard } from "@repo/ui/cards/ClubClassCard";
 import { ClubEquipmentCard } from "@repo/ui/cards/ClubEquipmentCard";
 import { ClubLocationCard } from "@repo/ui/cards/ClubLocationCard";
 import { ClubSubscriptionCard } from "@repo/ui/cards/ClubSubscriptionCard";
+import { CoachNearbyCard } from "@repo/ui/cards/CoachNearbyCard";
 import { ReviewCard } from "@repo/ui/cards/ReviewCard";
 import { SocialMediaCard } from "@repo/ui/cards/SocialMediaCard";
 import { SportCard } from "@repo/ui/cards/SportCard";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
-import { AreaLineChart } from "@repo/ui/kit/AreaLineChart";
+import { BusyHoursChart } from "@repo/ui/kit/BusyHoursChart";
 import { CarouselNavigation } from "@repo/ui/kit/CarouselNavigation";
 import useEmblaCarousel from "embla-carousel-react";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { weekdayKey } from "../../lib/club-calendar-data";
 import type {
+  ClubDetailAmenity,
+  ClubDetailAmenityIconKey,
+  ClubDetailAudience,
+  ClubDetailCoach,
   ClubDetailEquipment,
+  ClubDetailFaq,
+  ClubDetailLocation,
+  ClubDetailOperatingHour,
+  ClubDetailOwner,
+  ClubDetailPhone,
+  ClubDetailRule,
   ClubDetailStat,
   ClubDetailStatKey,
   ClubDetailSubscription,
 } from "../../lib/club-detail-data";
+import { DiscoveryClubsDetailCalendarSection } from "../DiscoveryClubsDetailCalendarSection";
 import { discoveryClubsDetailBodySectionStyles as styles } from "./DiscoveryClubsDetailBodySection.styles";
 import type { DiscoveryClubsDetailBodySectionProps } from "./DiscoveryClubsDetailBodySection.types";
+
+function formatLocationAddress(location: ClubDetailLocation) {
+  const parts = [location.province, location.city, location.neighborhood].filter(
+    Boolean,
+  );
+  if (parts.length > 0) return parts.join("، ");
+  return location.address ?? "";
+}
 
 function formatPlanPrice(price: number) {
   return price.toLocaleString("fa-IR");
@@ -117,6 +153,17 @@ const EQUIPMENT_ICONS: Record<string, ReactNode> = {
   dumbbell: <Weight size={20} />,
   bench: <BarbellHorizontal size={20} />,
 };
+
+const AMENITY_ICONS: Record<ClubDetailAmenityIconKey, ReactNode> = {
+  wifi: <WifiHigh size={36} />,
+  parking: <Car1 size={36} />,
+  shower: <Shower1 size={36} />,
+  locker: <Lock1 size={36} />,
+  ac: <Snowflake1 size={36} />,
+  cafe: <Coffee size={36} />,
+};
+
+const COACH_PREVIEW_COUNT = 4;
 
 function SectionTitle({ children }: { children: ReactNode }) {
   return (
@@ -300,6 +347,337 @@ function EquipmentSection({ equipment }: { equipment: ClubDetailEquipment[] }) {
   );
 }
 
+function AmenitiesSection({ amenities }: { amenities: ClubDetailAmenity[] }) {
+  const t = useTranslations("ClubDetail");
+
+  if (amenities.length === 0) return null;
+
+  return (
+    <div className={styles.section}>
+      <SectionCarousel
+        aria-label={t("amenitiesTitle")}
+        title={t("amenitiesTitle")}
+      >
+        {amenities.map((item) => (
+          <div className={styles.amenitySlide} key={item.id}>
+            <ClubAmenityCard
+              className={styles.amenityCard}
+              icon={AMENITY_ICONS[item.iconKey]}
+              subtitle={item.subtitle}
+              title={item.title}
+            />
+          </div>
+        ))}
+      </SectionCarousel>
+    </div>
+  );
+}
+
+function CoachesSection({ coaches }: { coaches: ClubDetailCoach[] }) {
+  const t = useTranslations("ClubDetail");
+  const router = useRouter();
+  const preview = coaches.slice(0, COACH_PREVIEW_COUNT);
+  const hasMore = coaches.length > COACH_PREVIEW_COUNT;
+
+  if (preview.length === 0) return null;
+
+  return (
+    <div className={styles.section}>
+      <SectionCarousel aria-label={t("coachesTitle")} title={t("coachesTitle")}>
+        {preview.map((coach) => (
+          <div className={styles.coachSlide} key={coach.id}>
+            <CoachNearbyCard
+              availability={coach.availability}
+              className={styles.coachCard}
+              distanceLabel={coach.distanceLabel}
+              image={coach.image || PLACEHOLDER_IMAGE}
+              imageAlt={coach.name}
+              inPersonLabel={t("coachInPerson")}
+              onPress={() => router.push(`/discovery/coaches/${coach.id}`)}
+              priceLabel={coach.priceLabel}
+              rating={coach.rating}
+              ratingCount={coach.ratingCount}
+              remoteLabel={t("coachRemote")}
+              specialtyLabel={coach.specialtyLabel}
+              title={coach.name}
+            />
+          </div>
+        ))}
+
+        {hasMore ? (
+          <Button
+            className={styles.coachSeeAll}
+            onPress={() => router.push("/discovery/coaches")}
+            variant="secondary"
+          >
+            <ArrowUpRight size={22} />
+            <span className={styles.classSeeAllLabel}>{t("seeAllCoaches")}</span>
+          </Button>
+        ) : null}
+      </SectionCarousel>
+    </div>
+  );
+}
+
+function PhonesSection({ phones }: { phones: ClubDetailPhone[] }) {
+  const t = useTranslations("ClubDetail");
+  if (phones.length === 0) return null;
+
+  return (
+    <div className={styles.section}>
+      <SectionTitle>{t("phonesTitle")}</SectionTitle>
+      <div className={styles.infoCard}>
+        {phones.map((phone) => (
+          <div className={styles.phoneRow} key={phone.id}>
+            <div className={styles.phoneMeta}>
+              {phone.label ? (
+                <Typography className={styles.phoneLabel} type="body-xs">
+                  {phone.label}
+                </Typography>
+              ) : null}
+              <Typography className={styles.phoneNumber} type="body-sm">
+                {phone.number}
+              </Typography>
+            </div>
+            <Button
+              aria-label={t("callPhone")}
+              isIconOnly
+              onPress={() => {
+                const tel = phone.number.replace(/[^\d+]/g, "");
+                if (tel) window.location.href = `tel:${tel}`;
+              }}
+              size="lg"
+              variant="secondary"
+            >
+              <Telephone1 size={20} />
+            </Button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function OperatingHoursSection({
+  hours,
+}: {
+  hours: ClubDetailOperatingHour[];
+}) {
+  const t = useTranslations("ClubDetail");
+  if (hours.length === 0) return null;
+
+  const sorted = [...hours].sort((a, b) => a.weekday - b.weekday);
+
+  return (
+    <div className={styles.section}>
+      <SectionTitle>{t("operatingHoursTitle")}</SectionTitle>
+      <div className={styles.infoCard}>
+        {sorted.map((row) => (
+          <div className={styles.infoRow} key={row.weekday}>
+            <Typography className={styles.infoRowLabel} type="body-sm">
+              {t(`calendarWeekdayFull.${weekdayKey(row.weekday)}`)}
+            </Typography>
+            <Typography className={styles.infoRowValue} type="body-sm">
+              {row.status === "closed"
+                ? t("hoursClosed")
+                : `${row.open ?? "—"} – ${row.close ?? "—"}`}
+            </Typography>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function RulesSection({ rules }: { rules: ClubDetailRule[] }) {
+  const t = useTranslations("ClubDetail");
+  if (rules.length === 0) return null;
+
+  return (
+    <div className={styles.section}>
+      <SectionTitle>{t("rulesTitle")}</SectionTitle>
+      <div className="flex flex-col gap-2.5">
+        {rules.map((rule) => (
+          <div className={styles.ruleItem} key={rule.id}>
+            <div className="flex items-center justify-between gap-2">
+              <Typography className={styles.ruleTitle} type="body-sm">
+                {rule.title}
+              </Typography>
+              <Chip size="sm" variant="secondary">
+                <Chip.Label
+                  className={
+                    rule.policy === "required"
+                      ? styles.rulePolicyRequired
+                      : rule.policy === "recommended"
+                        ? styles.rulePolicyRecommended
+                        : styles.rulePolicyProhibited
+                  }
+                >
+                  {t(`rulePolicy.${rule.policy}`)}
+                </Chip.Label>
+              </Chip>
+            </div>
+            {rule.description ? (
+              <Typography className={styles.ruleBody} type="body-sm">
+                {rule.description}
+              </Typography>
+            ) : null}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const GENDER_POLICY_KEYS = ["mixed", "male_only", "female_only"] as const;
+const AGE_GROUP_KEYS = ["adults", "teens", "kids", "seniors"] as const;
+const LEVEL_KEYS = ["beginner", "intermediate", "advanced"] as const;
+const ACCESSIBILITY_KEYS = ["standard", "accessible"] as const;
+
+function translateChoice(
+  t: ReturnType<typeof useTranslations<"ClubDetail">>,
+  prefix: "genderPolicy" | "ageGroup" | "clubLevel" | "accessibility",
+  key: string | undefined,
+  allowed: readonly string[],
+) {
+  if (!key || !allowed.includes(key)) return key || "—";
+  return t(`${prefix}.${key}` as Parameters<typeof t>[0]);
+}
+
+function AudienceSection({ audience }: { audience: ClubDetailAudience }) {
+  const t = useTranslations("ClubDetail");
+  const gender = translateChoice(
+    t,
+    "genderPolicy",
+    audience.genderPolicy,
+    GENDER_POLICY_KEYS,
+  );
+  const ages =
+    audience.ageGroupKeys.length > 0
+      ? audience.ageGroupKeys
+          .map((key) => translateChoice(t, "ageGroup", key, AGE_GROUP_KEYS))
+          .join("، ")
+      : "—";
+  const levels =
+    audience.levelKeys.length > 0
+      ? audience.levelKeys
+          .map((key) => translateChoice(t, "clubLevel", key, LEVEL_KEYS))
+          .join("، ")
+      : "—";
+  const accessibility = translateChoice(
+    t,
+    "accessibility",
+    audience.accessibility,
+    ACCESSIBILITY_KEYS,
+  );
+
+  return (
+    <div className={styles.section}>
+      <SectionTitle>{t("audienceTitle")}</SectionTitle>
+      <div className={styles.audienceGrid}>
+        <div className={styles.audienceCell}>
+          <Typography className={styles.audienceLabel} type="body-xs">
+            {t("audienceGender")}
+          </Typography>
+          <Typography className={styles.audienceValue} type="body-sm">
+            {gender}
+          </Typography>
+        </div>
+        <div className={styles.audienceCell}>
+          <Typography className={styles.audienceLabel} type="body-xs">
+            {t("audienceAge")}
+          </Typography>
+          <Typography className={styles.audienceValue} type="body-sm">
+            {ages}
+          </Typography>
+        </div>
+        <div className={styles.audienceCell}>
+          <Typography className={styles.audienceLabel} type="body-xs">
+            {t("audienceLevel")}
+          </Typography>
+          <Typography className={styles.audienceValue} type="body-sm">
+            {levels}
+          </Typography>
+        </div>
+        <div className={styles.audienceCell}>
+          <Typography className={styles.audienceLabel} type="body-xs">
+            {t("audienceAccessibility")}
+          </Typography>
+          <Typography className={styles.audienceValue} type="body-sm">
+            {accessibility}
+          </Typography>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FaqSection({ items }: { items: ClubDetailFaq[] }) {
+  const t = useTranslations("ClubDetail");
+  if (items.length === 0) return null;
+
+  return (
+    <div className={styles.section}>
+      <SectionTitle>{t("faqTitle")}</SectionTitle>
+      <Accordion className={styles.faqRoot}>
+        {items.map((item) => (
+          <Accordion.Item className={styles.faqItem} key={item.id}>
+            <Accordion.Heading>
+              <Accordion.Trigger>
+                {item.title}
+                <Accordion.Indicator>
+                  <ChevronDown size={18} />
+                </Accordion.Indicator>
+              </Accordion.Trigger>
+            </Accordion.Heading>
+            <Accordion.Panel>
+              <Accordion.Body>{item.description}</Accordion.Body>
+            </Accordion.Panel>
+          </Accordion.Item>
+        ))}
+      </Accordion>
+    </div>
+  );
+}
+
+function OwnerSection({ owner }: { owner?: ClubDetailOwner }) {
+  const t = useTranslations("ClubDetail");
+  if (!owner) return null;
+
+  return (
+    <div className={styles.section}>
+      <SectionTitle>{t("ownerTitle")}</SectionTitle>
+      <div className={styles.ownerCard}>
+        <div className={styles.ownerAvatar}>
+          {owner.avatar ? (
+            <Image
+              alt={owner.name}
+              className="size-full object-cover"
+              height={48}
+              src={owner.avatar}
+              width={48}
+            />
+          ) : (
+            <div className="flex size-full items-center justify-center text-muted">
+              <PersonMan1 size={24} />
+            </div>
+          )}
+        </div>
+        <div className={styles.ownerMeta}>
+          <Typography className={styles.ownerName} type="body">
+            {owner.name}
+          </Typography>
+          {owner.headline ? (
+            <Typography className={styles.ownerHeadline} type="body-sm">
+              {owner.headline}
+            </Typography>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SubscriptionsSection({
   plans,
   selectedId,
@@ -388,11 +766,54 @@ export function DiscoveryClubsDetailBodySection({
         <DescriptionDisclosure text={club.overview} />
       </div>
 
+      <AmenitiesSection amenities={club.amenities} />
+
+      {club.categories.length > 0 ? (
+        <div className={styles.section}>
+          <SectionTitle>{t("categoriesTitle")}</SectionTitle>
+          <div className={styles.chipRow}>
+            {club.categories.map((category) => (
+              <Chip key={category.id} size="sm" variant="secondary">
+                <Chip.Label>{category.title}</Chip.Label>
+              </Chip>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {club.achievements.length > 0 ? (
+        <div className={styles.section}>
+          <SectionCarousel
+            aria-label={t("achievementsTitle")}
+            title={t("achievementsTitle")}
+          >
+            {club.achievements.map((item) => (
+              <div className={styles.achievementSlide} key={item.id}>
+                <AchievementCard
+                  color={item.color ?? "accent"}
+                  icon={<Medal size={28} />}
+                />
+                <Typography className={styles.achievementLabel} type="body-xs">
+                  {item.title}
+                </Typography>
+              </div>
+            ))}
+          </SectionCarousel>
+        </div>
+      ) : null}
+
+      <OperatingHoursSection hours={club.operatingHours} />
+      <PhonesSection phones={club.phones} />
+      <AudienceSection audience={club.audience} />
+      <OwnerSection owner={club.owner} />
+
       <SubscriptionsSection
         onChange={onSubscriptionChange}
         plans={club.subscriptions}
         selectedId={selectedSubscriptionId}
       />
+
+      <RulesSection rules={club.rules} />
 
       <div className={styles.section}>
         <SectionTitle>{t("cancellationTitle")}</SectionTitle>
@@ -465,14 +886,17 @@ export function DiscoveryClubsDetailBodySection({
         <EquipmentSection equipment={club.equipment} />
       ) : null}
 
+      <CoachesSection coaches={club.coaches} />
+
       {club.busyHours.length > 0 ? (
         <div className={styles.section}>
           <SectionTitle>{t("busyHoursTitle")}</SectionTitle>
           <div className={styles.busyHoursChart}>
-            <AreaLineChart
+            <BusyHoursChart
               aria-label={t("busyHoursChartLabel")}
-              color="var(--success)"
+              color="var(--accent)"
               data={club.busyHours}
+              peakLabel={t("busyHoursPeak")}
             />
           </div>
         </div>
@@ -480,16 +904,20 @@ export function DiscoveryClubsDetailBodySection({
 
       <div className={styles.section}>
         <SectionTitle>{t("locationTitle")}</SectionTitle>
-        <ClubLocationCard
-          actionLabel={t("locationAction")}
-          calories={club.locationCard.calories}
-          distanceLabel={club.locationCard.distanceLabel}
-          duration={club.locationCard.duration}
-          endLabel={club.locationCard.endLabel}
-          route={club.locationCard.route}
-          startLabel={club.locationCard.startLabel}
-          title={club.locationCard.title}
-        />
+        <div className={styles.fullBleed}>
+          <ClubLocationCard
+            actionLabel={t("locationAction")}
+            address={formatLocationAddress(club.locationCard)}
+            calories={club.locationCard.calories}
+            distanceLabel={club.locationCard.distanceLabel}
+            duration={club.locationCard.duration}
+            endLabel={club.locationCard.endLabel}
+            fullWidth
+            route={club.locationCard.route}
+            startLabel={club.locationCard.startLabel}
+            title={club.locationCard.title}
+          />
+        </div>
       </div>
 
       {club.branches.length > 0 ? (
@@ -523,6 +951,10 @@ export function DiscoveryClubsDetailBodySection({
           </SectionCarousel>
         </div>
       ) : null}
+
+      <div className={styles.section}>
+        <DiscoveryClubsDetailCalendarSection club={club} />
+      </div>
 
       {visibleClasses.length > 0 ? (
         <div className={styles.section}>
@@ -614,6 +1046,8 @@ export function DiscoveryClubsDetailBodySection({
           </SectionCarousel>
         </div>
       ) : null}
+
+      <FaqSection items={club.faq} />
 
       <div className={styles.section}>
         <SocialMediaCard

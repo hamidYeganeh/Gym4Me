@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Card, Typography } from "@heroui/react";
 import {
@@ -15,45 +14,22 @@ import {
   UserCheck,
   UsersThree,
 } from "@repo/icons";
-import {
-  AdminDashboardLayout,
-  type AdminDashboardLabels,
-  type AdminDashboardNavId,
-} from "@repo/ui/layout/AdminDashboardLayout";
 import { useTranslations } from "next-intl";
+import { AdminShell } from "@/shared/components";
 import { useAuth } from "@/shared/providers/AuthProvider";
+import { userDisplayName } from "@/shared/lib/user-format";
 import { dashboardHomeScreenVariants } from "./DashboardHomeScreen.styles";
 import type { DashboardHomeScreenProps } from "./DashboardHomeScreen.types";
 
 export function DashboardHomeScreen({ className }: DashboardHomeScreenProps) {
   const t = useTranslations("Admin");
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const styles = dashboardHomeScreenVariants();
 
-  const labels: AdminDashboardLabels = useMemo(
-    () => ({
-      greeting: t("greeting"),
-      searchPlaceholder: t("searchPlaceholder"),
-      searchAriaLabel: t("searchAriaLabel"),
-      filtersAriaLabel: t("filtersAriaLabel"),
-      navAriaLabel: t("navAriaLabel"),
-      themeToLight: t("themeToLight"),
-      themeToDark: t("themeToDark"),
-      avatarAlt: t("avatarAlt"),
-      nav: {
-        home: t("nav.home"),
-        calendar: t("nav.calendar"),
-        profile: t("nav.profile"),
-        settings: t("nav.settings"),
-        analytics: t("nav.analytics"),
-        logout: t("nav.logout"),
-      },
-    }),
-    [t],
-  );
-
-  const displayName = [user?.firstName, user?.lastName].filter(Boolean).join(" ");
+  const displayName = user
+    ? userDisplayName(user, t("Dashboard.defaultName"))
+    : t("Dashboard.defaultName");
 
   const metrics = [
     {
@@ -145,27 +121,13 @@ export function DashboardHomeScreen({ className }: DashboardHomeScreenProps) {
     },
   ];
 
-  const handleNav = async (id: AdminDashboardNavId) => {
-    if (id === "logout") {
-      await logout();
-      navigate("/sign-in", { replace: true });
-    }
-  };
-
   return (
-    <AdminDashboardLayout
-      activeNavId="home"
-      className={className}
-      labels={labels}
-      onNavPress={handleNav}
-    >
+    <AdminShell activeNavId="home" className={className}>
       <div className={styles.content()}>
         <section className={styles.intro()}>
           <div className={styles.introCopy()}>
             <Typography className={styles.title()} type="h1" weight="bold">
-              {t("Dashboard.title", {
-                name: displayName || t("Dashboard.defaultName"),
-              })}
+              {t("Dashboard.title", { name: displayName })}
             </Typography>
             <Typography className={styles.subtitle()}>
               {t("Dashboard.subtitle")}
@@ -176,6 +138,10 @@ export function DashboardHomeScreen({ className }: DashboardHomeScreenProps) {
             <span className={styles.sampleLabel()}>
               {t("Dashboard.sampleData")}
             </span>
+            <Button variant="outline" onPress={() => navigate("/dashboard/users")}>
+              <UsersThree size={18} />
+              {t("nav.users")}
+            </Button>
             <Button variant="outline">
               <ArrowRotateClockwise1 size={18} />
               {t("Dashboard.refresh")}
@@ -353,6 +319,6 @@ export function DashboardHomeScreen({ className }: DashboardHomeScreenProps) {
           </Card>
         </div>
       </div>
-    </AdminDashboardLayout>
+    </AdminShell>
   );
 }

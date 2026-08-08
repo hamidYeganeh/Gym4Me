@@ -1,8 +1,16 @@
 import {
   ADMIN_SESSION_KEY,
   createAdminAuthApi,
+  createAdminBasicsApi,
+  createAdminClubsApi,
+  createAdminClubSlotsApi,
+  createAdminKycApi,
+  createAdminSupportApi,
+  createAdminUsersApi,
+  createAdminVerificationApi,
   createApiClient,
   createLocalStorage,
+  createMediaApi,
 } from "@repo/api";
 import { getApiBaseUrl } from "./env";
 
@@ -20,3 +28,11 @@ export const apiClient = createApiClient({
 });
 
 export const adminAuth = createAdminAuthApi(apiClient);
+export const adminUsers = createAdminUsersApi(apiClient);
+export const adminBasics = createAdminBasicsApi(apiClient);
+export const adminClubs = createAdminClubsApi(apiClient);
+export const adminClubSlots = createAdminClubSlotsApi(apiClient);
+export const adminKyc = createAdminKycApi(apiClient);
+export const adminVerification = createAdminVerificationApi(apiClient);
+export const adminSupport = createAdminSupportApi(apiClient);
+export const mediaApi = createMediaApi(apiClient);

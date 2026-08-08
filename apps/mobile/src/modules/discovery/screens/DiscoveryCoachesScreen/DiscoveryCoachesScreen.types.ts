@@ -12,4 +12,5 @@ export type DiscoveryCoachesScreenProps = {
   popularCoaches: PopularCoach[];
   expertCoaches: ExpertCoach[];
   nearbyCoaches: NearbyCoach[];
+  isEmpty?: boolean;
 };

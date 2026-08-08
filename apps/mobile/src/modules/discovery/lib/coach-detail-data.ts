@@ -1,3 +1,4 @@
+import { statsColors } from "@repo/theme";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import {
   EXPERT_COACHES,
@@ -7,20 +8,67 @@ import {
 } from "./coaches-browse-data";
 import { MAP_COACHES } from "./map-data";
 
-export type CoachProgramStatus = "done" | "thinking" | "inProgress";
+export type CoachDetailStatKey = "years" | "students" | "sessions";
 
-export type CoachDetailProgram = {
+export type CoachDetailStat = {
+  labelKey: CoachDetailStatKey;
+  value: string;
+};
+
+export type CoachDetailSpecialty = {
   id: string;
   title: string;
   subtitle: string;
-  image: string;
-  status: CoachProgramStatus;
-  done: boolean;
+  backgroundImage?: string;
+  color?: string;
 };
 
-export type CoachDetailInspo = {
+export type CoachDetailServiceIconKey =
+  | "online"
+  | "inPerson"
+  | "nutrition"
+  | "program"
+  | "assessment"
+  | "group";
+
+export type CoachDetailService = {
   id: string;
+  title: string;
+  subtitle?: string;
+  iconKey: CoachDetailServiceIconKey;
+};
+
+export type CoachDetailPackage = {
+  id: string;
+  /** Translation key under CoachDetail, e.g. `packageTrial`. */
+  planNameKey: "packageTrial" | "packageSingle" | "packageMonthly";
+  /** Translation key under CoachDetail for the plan blurb. */
+  descriptionKey:
+    | "packageTrialDescription"
+    | "packageSingleDescription"
+    | "packageMonthlyDescription";
+  /** Numeric price used by NumberFlow in the reserve bar. */
+  price: number;
+  /** Optional promo badge (e.g. "۲۰٪"). */
+  badge?: string;
+};
+
+export type CoachDetailClub = {
+  id: string;
+  title: string;
+  subtitle?: string;
   image: string;
+};
+
+export type CoachDetailReview = {
+  id: string;
+  title: string;
+  content: string;
+  date: string;
+  rating: number;
+  avatar?: string;
+  avatarFallback?: string;
+  isVerified?: boolean;
 };
 
 export type CoachDetail = {
@@ -28,66 +76,190 @@ export type CoachDetail = {
   name: string;
   specialty: string;
   tagline: string;
-  image: string;
+  location: string;
+  images: string[];
   avatar: string;
+  availability: "remote" | "in-person" | "hybrid";
   availabilityLabel: string;
-  nextSessionLabel: string;
   rating: number;
   ratingCount: number;
   yearsExperience: number;
-  membersCount: number;
-  progressPercent: number;
-  newAddedCount: number;
-  inspo: CoachDetailInspo[];
-  programs: CoachDetailProgram[];
-  price: number;
+  stats: CoachDetailStat[];
+  overview: string;
+  services: CoachDetailService[];
+  specialties: CoachDetailSpecialty[];
+  packages: CoachDetailPackage[];
+  clubs: CoachDetailClub[];
+  reviews: CoachDetailReview[];
   pricePrefix: string;
   priceSuffix: string;
+  isFavorite?: boolean;
+  isVerified?: boolean;
 };
 
 const PORTRAIT = "/demo/coach-portrait.png";
 const GYM = PLACEHOLDER_IMAGE;
 
-const DEFAULT_PROGRAMS: CoachDetailProgram[] = [
+const DEFAULT_STATS: CoachDetailStat[] = [
+  { labelKey: "years", value: "۸" },
+  { labelKey: "students", value: "۱۲۴" },
+  { labelKey: "sessions", value: "۱٫۲k" },
+];
+
+const DEFAULT_SERVICES: CoachDetailService[] = [
   {
-    id: "strength",
-    title: "برنامه قدرتی",
-    subtitle: "۳ جلسه / هفته · پایین‌تنه",
-    image: GYM,
-    status: "done",
-    done: true,
+    id: "online",
+    title: "جلسه آنلاین",
+    subtitle: "ویدیو کال زنده",
+    iconKey: "online",
   },
   {
-    id: "hiit",
-    title: "HIIT فشرده",
-    subtitle: "قایق‌سواری · عکاسی ورزشی",
-    image: GYM,
-    status: "thinking",
-    done: false,
+    id: "in-person",
+    title: "جلسه حضوری",
+    subtitle: "در باشگاه یا فضای باز",
+    iconKey: "inPerson",
   },
   {
-    id: "mobility",
-    title: "ریکاوری و تحرک",
-    subtitle: "تور جزیره · کشش فعال",
-    image: GYM,
-    status: "inProgress",
-    done: false,
+    id: "program",
+    title: "برنامه تمرینی",
+    subtitle: "سفارشی‌سازی هفتگی",
+    iconKey: "program",
   },
   {
     id: "nutrition",
     title: "تغذیه همراه",
-    subtitle: "برنامه غذایی ۷ روزه",
-    image: GYM,
-    status: "thinking",
-    done: false,
+    subtitle: "پلن غذایی ۷ روزه",
+    iconKey: "nutrition",
+  },
+  {
+    id: "assessment",
+    title: "ارزیابی بدن",
+    subtitle: "آنالیز اولیه رایگان",
+    iconKey: "assessment",
+  },
+  {
+    id: "group",
+    title: "تمرین گروهی",
+    subtitle: "تا ۴ نفر",
+    iconKey: "group",
   },
 ];
 
-const DEFAULT_INSPO: CoachDetailInspo[] = [
-  { id: "i1", image: PORTRAIT },
-  { id: "i2", image: GYM },
-  { id: "i3", image: PORTRAIT },
+const DEFAULT_SPECIALTIES: CoachDetailSpecialty[] = [
+  {
+    id: "lower",
+    title: "پایین‌تنه",
+    subtitle: "تخصص اصلی",
+    color: statsColors.orange,
+  },
+  {
+    id: "strength",
+    title: "قدرتی",
+    subtitle: "هایپرتروفی",
+    color: "oklch(15% 0.02 250)",
+  },
+  {
+    id: "hiit",
+    title: "HIIT",
+    subtitle: "کالری‌سوزی",
+    color: statsColors.red,
+  },
+  {
+    id: "mobility",
+    title: "موبیلیتی",
+    subtitle: "ریکاوری فعال",
+    color: statsColors.purple,
+  },
 ];
+
+const DEFAULT_PACKAGES: CoachDetailPackage[] = [
+  {
+    id: "trial",
+    planNameKey: "packageTrial",
+    descriptionKey: "packageTrialDescription",
+    price: 0,
+  },
+  {
+    id: "single",
+    planNameKey: "packageSingle",
+    descriptionKey: "packageSingleDescription",
+    price: 850_000,
+    badge: "۲۰٪",
+  },
+  {
+    id: "monthly",
+    planNameKey: "packageMonthly",
+    descriptionKey: "packageMonthlyDescription",
+    price: 2_800_000,
+    badge: "۱۵٪",
+  },
+];
+
+const DEFAULT_CLUBS: CoachDetailClub[] = [
+  {
+    id: "heavenly",
+    title: "آسمانی",
+    subtitle: "ونک، تهران",
+    image: GYM,
+  },
+  {
+    id: "iron",
+    title: "آیرون هاوس",
+    subtitle: "جردن، تهران",
+    image: GYM,
+  },
+  {
+    id: "pulse",
+    title: "پالس فیت",
+    subtitle: "سعادت‌آباد",
+    image: GYM,
+  },
+];
+
+const DEFAULT_REVIEWS: CoachDetailReview[] = [
+  {
+    id: "r1",
+    title: "سارا محمدی",
+    content:
+      "برنامه دقیقشون واقعاً نتیجه داد. جلسات آنلاین هم کیفیت حضوری رو دارن.",
+    date: "۳ خرداد ۱۴۰۴",
+    rating: 5,
+    avatarFallback: "سم",
+    isVerified: true,
+  },
+  {
+    id: "r2",
+    title: "علی رضایی",
+    content:
+      "تخصص پایین‌تنه عالی بود. پیگیری بین جلسه‌ها منظم و حرفه‌ایه.",
+    date: "۲۸ اردیبهشت ۱۴۰۴",
+    rating: 4.5,
+    avatarFallback: "عر",
+    isVerified: true,
+  },
+  {
+    id: "r3",
+    title: "نیکا احمدی",
+    content:
+      "تغذیه همراه خیلی کمک کرد. توضیح حرکات واضح و بدون فشار اضافیه.",
+    date: "۱۵ اردیبهشت ۱۴۰۴",
+    rating: 5,
+    avatarFallback: "نا",
+    isVerified: true,
+  },
+  {
+    id: "r4",
+    title: "مهدی کریمی",
+    content: "پکیج ماهانه ارزشش رو داره. پیشرفت اندازه‌گیری‌شده و قابل پیگیریه.",
+    date: "۲ اردیبهشت ۱۴۰۴",
+    rating: 4,
+    avatarFallback: "مک",
+    isVerified: false,
+  },
+];
+
+const DEFAULT_OVERVIEW =
+  "مربی تأییدشده با تمرکز روی قدرت پایین‌تنه، هایپرتروفی و ریکاوری فعال. برنامه‌ها بر اساس سطح، تجهیزات در دسترس و هدف شما شخصی‌سازی می‌شن — حضوری در باشگاه‌های همکار یا آنلاین از خانه.";
 
 type CoachSeed = {
   id: string;
@@ -174,61 +346,78 @@ const COACH_DETAIL_OVERRIDES: Partial<
 > = {
   zuckmann: {
     name: "Zuckmann D. Meta",
-    specialty: "Lower Body Expert",
-    tagline: "تمرین خصوصی با تیم",
-    availabilityLabel: "۲۳–۲۸ اردیبهشت",
-    nextSessionLabel: "۰۱:۲۳",
-    progressPercent: 34,
-    newAddedCount: 2,
-    membersCount: 6,
+    specialty: "تخصص پایین‌تنه",
+    tagline: "قدرت، هایپرتروفی و ریکاوری هدفمند",
+    location: "تهران · ونک",
+    availability: "hybrid",
+    availabilityLabel: "حضوری و آنلاین",
+    isVerified: true,
+    isFavorite: true,
   },
   arnold: {
     name: "Arnold Swarznibble",
-    specialty: "Cardio Expert",
-    tagline: "تمرین خصوصی با تیم",
-    availabilityLabel: "۲۳–۲۸ اردیبهشت",
-    nextSessionLabel: "۰۱:۲۳",
-    progressPercent: 34,
-    newAddedCount: 2,
-    membersCount: 6,
+    specialty: "تمرین قدرتی و بدنسازی",
+    tagline: "برنامه‌های سخت‌گیرانه با تمرکز روی قدرت و هایپرتروفی",
+    location: "تهران · جردن",
+    availability: "hybrid",
+    availabilityLabel: "حضوری و آنلاین",
+    isVerified: true,
+    rating: 4.8,
+    ratingCount: 240,
+    yearsExperience: 15,
   },
   "arnold-feat": {
     name: "Arnold Swarznibble",
-    specialty: "Upper Body Expert",
+    specialty: "تخصص بالاتنه",
     tagline: "قدرت و حجم بالاتنه",
-    availabilityLabel: "این هفته",
-    nextSessionLabel: "۱۸:۳۰",
+    location: "تهران · سعادت‌آباد",
+    availability: "hybrid",
+    availabilityLabel: "حضوری و آنلاین",
   },
   "near-arnold": {
     name: "Arnold Swarznibble",
-    specialty: "HIIT Expert",
+    specialty: "تخصص HIIT",
     tagline: "تمرین فشرده گروهی",
+    location: "تهران · مرکز",
+    availability: "remote",
+    availabilityLabel: "فقط آنلاین",
   },
 };
 
 function buildCoachDetail(seed: CoachSeed): CoachDetail {
   const override = COACH_DETAIL_OVERRIDES[seed.id] ?? {};
+  const hero = override.images?.[0] ?? (seed.image || PORTRAIT);
 
   return {
     id: seed.id,
     name: override.name ?? seed.name,
     specialty: override.specialty ?? seed.specialty,
-    tagline: override.tagline ?? "تمرین خصوصی با مربی",
-    image: override.image ?? (seed.image || PORTRAIT),
-    avatar: override.avatar ?? (seed.image || PORTRAIT),
-    availabilityLabel: override.availabilityLabel ?? "این هفته",
-    nextSessionLabel: override.nextSessionLabel ?? "۰۹:۰۰",
+    tagline: override.tagline ?? "تمرین خصوصی با مربی تأییدشده",
+    location: override.location ?? "تهران",
+    images: override.images ?? [hero, GYM, PORTRAIT],
+    avatar: override.avatar ?? hero,
+    availability: override.availability ?? "hybrid",
+    availabilityLabel: override.availabilityLabel ?? "حضوری و آنلاین",
     rating: override.rating ?? seed.rating,
     ratingCount: override.ratingCount ?? seed.ratingCount,
     yearsExperience: override.yearsExperience ?? seed.yearsExperience,
-    membersCount: override.membersCount ?? 6,
-    progressPercent: override.progressPercent ?? 34,
-    newAddedCount: override.newAddedCount ?? 2,
-    inspo: override.inspo ?? DEFAULT_INSPO,
-    programs: override.programs ?? DEFAULT_PROGRAMS,
-    price: override.price ?? 850_000,
+    stats: override.stats ?? [
+      {
+        labelKey: "years",
+        value: String(override.yearsExperience ?? seed.yearsExperience),
+      },
+      ...DEFAULT_STATS.slice(1),
+    ],
+    overview: override.overview ?? DEFAULT_OVERVIEW,
+    services: override.services ?? DEFAULT_SERVICES,
+    specialties: override.specialties ?? DEFAULT_SPECIALTIES,
+    packages: override.packages ?? DEFAULT_PACKAGES,
+    clubs: override.clubs ?? DEFAULT_CLUBS,
+    reviews: override.reviews ?? DEFAULT_REVIEWS,
     pricePrefix: override.pricePrefix ?? "",
     priceSuffix: override.priceSuffix ?? "/جلسه",
+    isFavorite: override.isFavorite ?? false,
+    isVerified: override.isVerified ?? true,
   };
 }
 

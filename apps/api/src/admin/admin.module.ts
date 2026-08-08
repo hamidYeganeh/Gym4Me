@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { ClubsModule } from '../account/clubs/clubs.module';
 import { AuthModule } from '../account/auth/auth.module';
 import { KycModule } from '../account/kyc/kyc.module';
 import { ProfileModule } from '../account/profile/profile.module';
@@ -12,7 +11,7 @@ import { AdminAuthController } from './auth/admin-auth.controller';
 import { AdminAuthService } from './auth/admin-auth.service';
 
 @Module({
-  imports: [UsersModule, KycModule, AuthModule, ProfileModule, ClubsModule],
+  imports: [UsersModule, KycModule, AuthModule, ProfileModule],
   controllers: [AdminController, AdminAuthController],
   providers: [
     AdminUsersService,

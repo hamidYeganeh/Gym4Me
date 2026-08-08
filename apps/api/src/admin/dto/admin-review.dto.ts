@@ -1,6 +1,4 @@
-import { Type } from 'class-transformer';
 import {
-  IsEnum,
   IsIn,
   IsInt,
   IsOptional,
@@ -10,6 +8,7 @@ import {
   Min,
 } from 'class-validator';
 import { ClubLifecycleStatus, VerificationStatus } from '../../common/enums';
+import { Type } from 'class-transformer';
 
 export class ReviewVerificationDto {
   @IsIn(['approve', 'reject'])
@@ -23,8 +22,8 @@ export class ReviewVerificationDto {
 
 export class ListCoachVerificationsQueryDto {
   @IsOptional()
-  @IsEnum(VerificationStatus)
-  status?: VerificationStatus;
+  @IsIn([...Object.values(VerificationStatus), 'all'])
+  status?: VerificationStatus | 'all';
 
   @IsOptional()
   @Type(() => Number)
@@ -42,8 +41,8 @@ export class ListCoachVerificationsQueryDto {
 
 export class ListClubReviewsQueryDto {
   @IsOptional()
-  @IsEnum(ClubLifecycleStatus)
-  status?: ClubLifecycleStatus;
+  @IsIn([...Object.values(ClubLifecycleStatus), 'all'])
+  status?: ClubLifecycleStatus | 'all';
 
   @IsOptional()
   @Type(() => Number)

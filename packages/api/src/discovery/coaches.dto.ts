@@ -1,0 +1,46 @@
+import type { VerificationStatus } from "../types";
+
+export type DiscoveryCoachesQuery = {
+  page?: number;
+  limit?: number;
+  page_size?: number;
+  q?: string;
+  sportId?: string;
+  cityId?: string;
+  specialtyKey?: string;
+  gender?: string;
+};
+
+/** Privacy-safe user projection for public coach cards. */
+export type DiscoveryCoachUser = {
+  id: string;
+  name: { first: string | null; last: string | null };
+  avatar: { mediaId: string | null };
+  demographics: { gender: string | null };
+  code: string | null;
+};
+
+export type DiscoveryCoachClub = {
+  id: string;
+  name: string;
+  coverMediaId: string | null;
+  address: string | null;
+};
+
+export type DiscoveryCoach = {
+  id: string;
+  userId: string;
+  user: DiscoveryCoachUser;
+  bio: string | null;
+  experience: { years: number | null; headline: string | null };
+  verification: {
+    status: VerificationStatus;
+    reviewedAt: string | null;
+  };
+  serviceArea: { cityId: string | null };
+  sportIds: string[];
+  specialtyKeys: string[];
+  clubs?: DiscoveryCoachClub[];
+  createdAt: string;
+  updatedAt: string;
+};

@@ -13,10 +13,17 @@ export type ClubLocationCardProps = Omit<
 > & {
   /** Route / location title (e.g. `"مسیر دویدن ۷"`). */
   title: ReactNode;
+  /**
+   * Address line under the title — typically
+   * `استان، شهر، محله` or a free-form address.
+   */
+  address?: ReactNode;
   /** Duration meta (e.g. `"۴۰ دقیقه"` / `"40min"`). */
-  duration: ReactNode;
+  duration?: ReactNode;
   /** Calories meta (e.g. `"۱۵۰ کالری"` / `"150kcal"`). */
-  calories: ReactNode;
+  calories?: ReactNode;
+  /** Stretch edge-to-edge (no max-width / side borders on mobile). */
+  fullWidth?: boolean;
   /**
    * Ordered path coordinates. Use real Iran locations (WGS84).
    * At least two points are required to draw a route.

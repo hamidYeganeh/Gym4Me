@@ -2,8 +2,10 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import * as argon2 from 'argon2';
 import type { Request } from 'express';
 import { OtpService } from '../../account/auth/otp.service';
@@ -20,18 +22,32 @@ import { UsersService } from '../../users/users.service';
 
 @Injectable()
 export class AdminAuthService {
+  private readonly logger = new Logger(AdminAuthService.name);
+
   constructor(
     private readonly users: UsersService,
     private readonly otp: OtpService,
     private readonly tokens: TokenService,
     private readonly audit: AuditService,
+    private readonly config: ConfigService,
   ) {}
+
+  private isDebugMode(): boolean {
+    const value = this.config.get<string | boolean>('DEBUG_MODE', 'false');
+    if (typeof value === 'boolean') return value;
+    return String(value ?? 'false').trim().toLowerCase() === 'true';
+  }
 
   async requestOtp(phone: string) {
     // Identical response either way — no account enumeration.
     const user = await this.users.findByPhone(phone);
     if (user && this.isAdmin(user) && user.status === UserStatus.ACTIVE) {
       return this.otp.request(phone, OtpPurpose.AUTH);
+    }
+    if (this.isDebugMode()) {
+      this.logger.warn(
+        `[DEBUG] OTP skipped for ${phone}: ${!user ? 'user not found' : !this.isAdmin(user) ? 'not an admin' : `status=${user.status}`}`,
+      );
     }
     return { expiresInSeconds: 120 };
   }
@@ -131,6 +147,11 @@ export class AdminAuthService {
       user.status === UserStatus.ACTIVE
     ) {
       return this.otp.request(phone, OtpPurpose.PASSWORD_RESET);
+    }
+    if (this.isDebugMode()) {
+      this.logger.warn(
+        `[DEBUG] forgot-password OTP skipped for ${phone}: ${!user ? 'user not found' : !this.isAdmin(user) ? 'not an admin' : `status=${user.status}`}`,
+      );
     }
     return { expiresInSeconds: 120 };
   }

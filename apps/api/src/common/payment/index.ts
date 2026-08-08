@@ -6,8 +6,6 @@ export {
   type VerifyPaymentResult,
   type PaymentCurrency,
 } from './payment-gateway.service';
-export {
-  MockPaymentGatewayService,
-  ZarinpalPaymentGatewayService,
-} from './zarinpal.service';
+export { MockPaymentGatewayService } from './mock-payment.service';
+export { ZarinpalPaymentGatewayService } from './zarinpal.service';
 export { PaymentModule } from './payment.module';

@@ -9,6 +9,7 @@ import { Model } from 'mongoose';
 import type { Request } from 'express';
 import { AuditService } from '../../audit/audit.service';
 import { AuditAction } from '../../common/enums';
+import { asSinglePageResult } from '../../common/utils/pagination.util';
 import {
   ChoiceGroup,
   ChoiceGroupDocument,
@@ -32,9 +33,9 @@ export class ChoicesService {
       .find({ isActive: true })
       .sort({ key: 1 })
       .lean();
-    return {
-      items: items.map((g) => this.toPublic(g, /* activeOptionsOnly */ true)),
-    };
+    return asSinglePageResult(
+      items.map((g) => this.toPublic(g, /* activeOptionsOnly */ true)),
+    );
   }
 
   async getPublic(key: string) {
@@ -45,7 +46,7 @@ export class ChoicesService {
 
   async listAdmin() {
     const items = await this.choiceModel.find().sort({ key: 1 });
-    return { items: items.map((g) => this.toPublic(g, false)) };
+    return asSinglePageResult(items.map((g) => this.toPublic(g, false)));
   }
 
   async create(dto: CreateChoiceGroupDto, adminId: string, request: Request) {

@@ -47,6 +47,10 @@ services:
       JWT_REFRESH_TTL_DAYS: ${JWT_REFRESH_TTL_DAYS:-30}
       SMS_PROVIDER: ${SMS_PROVIDER:-mock}
       KYC_PROVIDER: ${KYC_PROVIDER:-mock}
+      FINNOTECH_BASE_URL: ${FINNOTECH_BASE_URL:-https://api.finnotech.ir}
+      FINNOTECH_CLIENT_ID: ${FINNOTECH_CLIENT_ID:-}
+      FINNOTECH_CLIENT_SECRET: ${FINNOTECH_CLIENT_SECRET:-}
+      FINNOTECH_CLIENT_NATIONAL_ID: ${FINNOTECH_CLIENT_NATIONAL_ID:-}
       UPLOAD_DIR: /app/uploads
     volumes:
       - gym4me_uploads:/app/uploads

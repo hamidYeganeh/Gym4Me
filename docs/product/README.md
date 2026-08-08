@@ -9,6 +9,7 @@
 | [checklist.md](./checklist.md) | وضعیت پیاده‌سازی در هر اپ |
 | [market-requirements.md](./market-requirements.md) | نیازهای بازار ایران از نگاه مالک، مربی و ورزشکار |
 | [growth-lifecycle.md](./growth-lifecycle.md) | استراتژی Growth، lifecycle، retention و الزامات داده |
+| [architecture-owner-coach.md](./architecture-owner-coach.md) | معماری فنی سرویس‌های مالک باشگاه و مربی |
 
 ## زمینهٔ خودکار Cursor
 
@@ -21,4 +22,5 @@
 - `decisions.md`: تصمیم‌های تأییدشده و قفل‌شده.
 - `user-stories.md` و `scenarios.md`: محدودهٔ محصول و رفتار مورد انتظار.
 - `market-requirements.md` و `growth-lifecycle.md`: backlog و جهت‌گیری پیشنهادی؛ برای قفل‌شدن باید به `decisions.md` منتقل شوند.
+- `architecture-owner-coach.md`: طرح پیاده‌سازی نیازهای پیشنهادی؛ تصمیم قفل‌شدهٔ جدید ایجاد نمی‌کند.
 - `checklist.md`: فقط وضعیت پیاده‌سازی است و نباید به‌عنوان مدرک تکمیل قابلیت استفاده شود مگر جریان end-to-end کار کند.

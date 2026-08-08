@@ -20,12 +20,20 @@ export class PaginationQueryDto {
   @Min(1)
   page?: number;
 
+  /** @deprecated Prefer `page_size`. Kept for backward-compatible clients. */
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
   @Max(200)
   limit?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(200)
+  page_size?: number;
 }
 
 export class GeoPointDto {

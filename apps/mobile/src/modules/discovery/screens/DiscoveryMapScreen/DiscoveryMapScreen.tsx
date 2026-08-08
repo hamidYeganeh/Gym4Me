@@ -88,7 +88,10 @@ export function DiscoveryMapScreen({
             getDirectionsLabel={t("getDirections")}
             onGetDirections={openDirections}
             onViewDetails={() =>
-              router.push(`/discovery/coaches/${selectedCoach.id}`)
+              router.push(
+                selectedCoach.detailsHref ??
+                  `/discovery/coaches/${selectedCoach.id}`,
+              )
             }
             viewDetailsLabel={t("viewDetails")}
           />

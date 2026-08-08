@@ -1,0 +1,31 @@
+export const ownerClubsScreenStyles = {
+  root: "bg-background",
+  content: "flex flex-col gap-6 pb-10 pt-1",
+  intro: "flex flex-col gap-2",
+  introTitle: "tracking-tight text-foreground",
+  introSubtitle: "text-muted",
+  list: "flex flex-col gap-4",
+  clubCard:
+    "h-auto w-full items-stretch justify-start gap-0 rounded-[24px] border border-border bg-surface p-4 text-start font-normal",
+  clubBody: "flex w-full flex-col gap-3",
+  clubTop: "flex items-center gap-3",
+  clubThumb:
+    "size-14 shrink-0 overflow-hidden rounded-2xl bg-default object-cover",
+  clubHeading: "flex min-w-0 flex-1 flex-col gap-0.5",
+  clubName: "truncate text-foreground",
+  clubCity: "truncate text-muted",
+  metaRow: "flex flex-wrap items-center gap-4",
+  metaItem: "inline-flex items-center gap-1.5 text-sm text-muted",
+  metaIcon: "shrink-0 text-muted",
+  occupancy: "flex flex-col gap-1.5",
+  occupancyRow: "flex items-center justify-between",
+  occupancyLabel: "text-muted",
+  occupancyValue: "text-sm font-medium text-foreground",
+  occupancyTrack: "block h-1.5 w-full overflow-hidden rounded-full bg-default",
+  occupancyFill: "block h-full rounded-full bg-accent",
+  revenue: "text-muted",
+  empty:
+    "flex flex-col items-center gap-2 rounded-[24px] border border-border bg-surface px-6 py-10 text-center",
+  emptyTitle: "text-foreground",
+  emptyBody: "text-muted",
+} as const;

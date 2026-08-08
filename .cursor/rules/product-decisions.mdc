@@ -42,4 +42,5 @@ alwaysApply: true
 ## Apps
 
 - `apps/api` = single source of truth; `apps/mobile` = multi-role app; `apps/admin` = ops; `apps/website` = public/SEO.
-- Domain model lives in `apps/api/prisma/schema.prisma`; follow locked decisions in `docs/product/`.
+- Runtime DB is **MongoDB (Mongoose)** under `apps/api/src/schemas`. No PostgreSQL migration.
+- Follow locked decisions in `docs/product/`.

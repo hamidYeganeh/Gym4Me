@@ -168,41 +168,47 @@ export function DiscoveryClubsClassDetailBodySection({
         </Tabs.ListContainer>
 
         <Tabs.Panel className={styles.panel} id="overview">
-          <div className={styles.section}>
-            <SectionTitle>{t("description")}</SectionTitle>
-            <Typography className={styles.bodyText} type="body-sm">
-              {classDetail.description}
-            </Typography>
-          </div>
-
-          <div className={styles.section}>
-            <SectionTitle>{t("benefits")}</SectionTitle>
-            <ul className={styles.benefits}>
-              {classDetail.benefits.map((benefit) => (
-                <li className={styles.benefitRow} key={benefit}>
-                  <CheckCircle
-                    aria-hidden
-                    className={styles.benefitIcon}
-                    size={18}
-                  />
-                  <Typography className={styles.benefitText} type="body-sm">
-                    {benefit}
-                  </Typography>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className={styles.section}>
-            <SectionTitle>{t("tags")}</SectionTitle>
-            <div className={styles.tags}>
-              {classDetail.tags.map((tag) => (
-                <Chip className={styles.tag} key={tag} size="sm">
-                  <Chip.Label>{`# ${tag}`}</Chip.Label>
-                </Chip>
-              ))}
+          {classDetail.description ? (
+            <div className={styles.section}>
+              <SectionTitle>{t("description")}</SectionTitle>
+              <Typography className={styles.bodyText} type="body-sm">
+                {classDetail.description}
+              </Typography>
             </div>
-          </div>
+          ) : null}
+
+          {classDetail.benefits.length > 0 ? (
+            <div className={styles.section}>
+              <SectionTitle>{t("benefits")}</SectionTitle>
+              <ul className={styles.benefits}>
+                {classDetail.benefits.map((benefit) => (
+                  <li className={styles.benefitRow} key={benefit}>
+                    <CheckCircle
+                      aria-hidden
+                      className={styles.benefitIcon}
+                      size={18}
+                    />
+                    <Typography className={styles.benefitText} type="body-sm">
+                      {benefit}
+                    </Typography>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          {classDetail.tags.length > 0 ? (
+            <div className={styles.section}>
+              <SectionTitle>{t("tags")}</SectionTitle>
+              <div className={styles.tags}>
+                {classDetail.tags.map((tag) => (
+                  <Chip className={styles.tag} key={tag} size="sm">
+                    <Chip.Label>{`# ${tag}`}</Chip.Label>
+                  </Chip>
+                ))}
+              </div>
+            </div>
+          ) : null}
 
           <div className={styles.section}>
             <SectionHeader seeAllLabel={t("seeAll")} title={t("galleries")} />
@@ -270,61 +276,69 @@ export function DiscoveryClubsClassDetailBodySection({
             </div>
           </div>
 
-          <div className={styles.section}>
-            <SectionTitle>{t("instructions")}</SectionTitle>
-            <InstructionList steps={classDetail.instructions} />
-          </div>
-
-          <div className={styles.section}>
-            <SectionHeader seeAllLabel={t("seeAll")} title={t("related")} />
-            <div className={styles.related}>
-              {classDetail.related.map((item) => (
-                <NextLink
-                  className={styles.relatedCard}
-                  href={`/discovery/clubs/${classDetail.clubId}/classes/${item.id}`}
-                  key={item.id}
-                >
-                  <div className={styles.relatedMedia}>
-                    <Image
-                      alt=""
-                      className={styles.relatedImage}
-                      fill
-                      sizes="260px"
-                      src={item.image || PLACEHOLDER_IMAGE}
-                    />
-                  </div>
-                  <Chip className={styles.relatedCategory} size="sm">
-                    <Chip.Label>{item.category}</Chip.Label>
-                  </Chip>
-                  <Typography
-                    className={styles.relatedTitle}
-                    type="body"
-                    weight="semibold"
-                  >
-                    {item.title}
-                  </Typography>
-                  <div className={styles.relatedMeta}>
-                    <span className={styles.relatedMetaItem}>
-                      <Clock
-                        aria-hidden
-                        className={styles.relatedMetaIcon}
-                        size={14}
-                      />
-                      <Typography type="body-xs">{item.durationLabel}</Typography>
-                    </span>
-                    <span className={styles.relatedMetaItem}>
-                      <Fire1
-                        aria-hidden
-                        className={styles.relatedMetaIcon}
-                        size={14}
-                      />
-                      <Typography type="body-xs">{item.caloriesLabel}</Typography>
-                    </span>
-                  </div>
-                </NextLink>
-              ))}
+          {classDetail.instructions.length > 0 ? (
+            <div className={styles.section}>
+              <SectionTitle>{t("instructions")}</SectionTitle>
+              <InstructionList steps={classDetail.instructions} />
             </div>
-          </div>
+          ) : null}
+
+          {classDetail.related.length > 0 ? (
+            <div className={styles.section}>
+              <SectionHeader seeAllLabel={t("seeAll")} title={t("related")} />
+              <div className={styles.related}>
+                {classDetail.related.map((item) => (
+                  <NextLink
+                    className={styles.relatedCard}
+                    href={`/discovery/clubs/${classDetail.clubId}/classes/${item.id}`}
+                    key={item.id}
+                  >
+                    <div className={styles.relatedMedia}>
+                      <Image
+                        alt=""
+                        className={styles.relatedImage}
+                        fill
+                        sizes="260px"
+                        src={item.image || PLACEHOLDER_IMAGE}
+                      />
+                    </div>
+                    <Chip className={styles.relatedCategory} size="sm">
+                      <Chip.Label>{item.category}</Chip.Label>
+                    </Chip>
+                    <Typography
+                      className={styles.relatedTitle}
+                      type="body"
+                      weight="semibold"
+                    >
+                      {item.title}
+                    </Typography>
+                    <div className={styles.relatedMeta}>
+                      <span className={styles.relatedMetaItem}>
+                        <Clock
+                          aria-hidden
+                          className={styles.relatedMetaIcon}
+                          size={14}
+                        />
+                        <Typography type="body-xs">{item.durationLabel}</Typography>
+                      </span>
+                      {item.caloriesLabel ? (
+                        <span className={styles.relatedMetaItem}>
+                          <Fire1
+                            aria-hidden
+                            className={styles.relatedMetaIcon}
+                            size={14}
+                          />
+                          <Typography type="body-xs">
+                            {item.caloriesLabel}
+                          </Typography>
+                        </span>
+                      ) : null}
+                    </div>
+                  </NextLink>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </Tabs.Panel>
 
         <Tabs.Panel className={styles.panel} id="plan">
@@ -334,10 +348,12 @@ export function DiscoveryClubsClassDetailBodySection({
               {t("planDescription")}
             </Typography>
           </div>
-          <div className={styles.section}>
-            <SectionTitle>{t("planSteps")}</SectionTitle>
-            <InstructionList steps={classDetail.planSteps} />
-          </div>
+          {classDetail.planSteps.length > 0 ? (
+            <div className={styles.section}>
+              <SectionTitle>{t("planSteps")}</SectionTitle>
+              <InstructionList steps={classDetail.planSteps} />
+            </div>
+          ) : null}
         </Tabs.Panel>
       </Tabs>
     </section>

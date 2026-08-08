@@ -9,7 +9,9 @@ import { join } from 'node:path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './account/auth/auth.module';
+import { ClubSlotsModule } from './account/club-slots/club-slots.module';
 import { ClubsModule } from './account/clubs/clubs.module';
+import { CoachesModule } from './account/coaches/coaches.module';
 import { KycModule } from './account/kyc/kyc.module';
 import { ProfileModule } from './account/profile/profile.module';
 import { ReferralModule } from './account/referral/referral.module';
@@ -19,11 +21,15 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { AuditModule } from './audit/audit.module';
 import { BasicsModule } from './basics/basics.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { KycGuard } from './common/guards/kyc.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { REDIS, RedisModule } from './common/redis/redis.module';
 import { SmsModule } from './common/sms/sms.module';
+import { PushModule } from './common/push/push.module';
 import { PaymentModule } from './common/payment/payment.module';
 import { MediaModule } from './media/media.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { SupportModule } from './support/support.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -48,7 +54,9 @@ import { UsersModule } from './users/users.module';
       }),
     }),
     SmsModule,
+    PushModule,
     PaymentModule,
+    NotificationsModule,
     AuditModule,
     AnalyticsModule,
     MediaModule,
@@ -58,8 +66,11 @@ import { UsersModule } from './users/users.module';
     ProfileModule,
     RolesModule,
     ClubsModule,
+    CoachesModule,
+    ClubSlotsModule,
     ReferralModule,
     KycModule,
+    SupportModule,
     AdminModule,
   ],
   controllers: [AppController],
@@ -68,6 +79,7 @@ import { UsersModule } from './users/users.module';
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
+    { provide: APP_GUARD, useClass: KycGuard },
   ],
 })
 export class AppModule {}

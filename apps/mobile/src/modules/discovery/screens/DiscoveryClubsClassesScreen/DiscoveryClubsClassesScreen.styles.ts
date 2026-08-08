@@ -1,11 +1,14 @@
 export const discoveryClubsClassesScreenStyles = {
-  root: "relative min-h-dvh w-full bg-background",
-  header: [
-    "sticky top-0 z-20 flex items-center gap-3",
-    "border-b border-border/50 bg-background/95 px-4 py-3 backdrop-blur-xl",
-    "pt-[max(0.75rem,env(safe-area-inset-top))]",
-  ].join(" "),
-  title: "min-w-0 flex-1 text-foreground",
-  list: "mx-auto flex w-full max-w-lg flex-col gap-4 px-4 py-5",
-  empty: "px-4 py-10 text-center text-muted",
+  root: "bg-background",
+  content: "flex flex-col gap-6 pb-10 pt-1",
+  intro: "flex flex-col gap-2",
+  introTitle: "tracking-tight text-foreground",
+  introSubtitle: "text-muted",
+  meta: "text-muted",
+  list: "flex flex-col gap-4",
+  card: "w-full",
+  empty:
+    "flex flex-col items-center gap-2 rounded-[24px] border border-border bg-surface px-6 py-10 text-center",
+  emptyTitle: "text-foreground",
+  emptyBody: "text-muted",
 } as const;

@@ -1,36 +1,59 @@
 "use client";
 
 import { Button, Typography } from "@heroui/react";
-import { ArrowForward2 } from "@repo/icons/ArrowForward2";
+import { Plus } from "@repo/icons/Plus";
+import { ProgressiveBlur } from "@repo/ui/kit/ProgressiveBlur";
 import { useTranslations } from "next-intl";
 import { discoveryCoachesDetailActionsSectionStyles as styles } from "./DiscoveryCoachesDetailActionsSection.styles";
 import type { DiscoveryCoachesDetailActionsSectionProps } from "./DiscoveryCoachesDetailActionsSection.types";
 
 export function DiscoveryCoachesDetailActionsSection({
   onBook,
+  onSecondary,
 }: DiscoveryCoachesDetailActionsSectionProps) {
   const t = useTranslations("CoachDetail");
 
   return (
     <div className={styles.root}>
-      <div className={styles.pill}>
+      <ProgressiveBlur
+        blurIntensity={0.85}
+        blurLayers={12}
+        className={styles.blur}
+        direction="bottom"
+      />
+
+      <div className={styles.stack}>
         <Button
           aria-label={t("bookSession")}
-          className={styles.action}
+          className={styles.primary}
           onPress={onBook}
           size="lg"
-          variant="ghost"
+          variant="primary"
         >
+          <Plus aria-hidden size={18} />
           <Typography
-            className={styles.actionLabel}
+            className={styles.confirmLabel}
             type="body"
             weight="semibold"
           >
             {t("bookSession")}
           </Typography>
-          <ArrowForward2 aria-hidden className="text-background" size={18} />
         </Button>
-        <span aria-hidden className={styles.accent} />
+        <Button
+          aria-label={t("consultAvailability")}
+          className={styles.secondary}
+          onPress={onSecondary}
+          size="lg"
+          variant="outline"
+        >
+          <Typography
+            className={styles.confirmLabel}
+            type="body"
+            weight="semibold"
+          >
+            {t("consultAvailability")}
+          </Typography>
+        </Button>
       </div>
     </div>
   );

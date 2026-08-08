@@ -32,9 +32,12 @@ export function DiscoveryClubsDetailScreen({
     <div className={styles.root}>
       <div className={styles.scroll}>
         <DiscoveryClubsDetailHeroSection
+          gallery={club.gallery}
           images={club.images}
           isFavorite={club.isFavorite}
+          isOpen={club.isOpen}
           location={club.location}
+          openHoursLabel={club.openHoursLabel}
           rating={rating}
           reviewCount={club.reviews.length}
           title={club.title}

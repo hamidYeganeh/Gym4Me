@@ -104,7 +104,7 @@ export function OtpScreen({ className }: OtpScreenProps) {
     setIsPending(true);
     try {
       await loginWithOtp(phone, code);
-      navigate("/", { replace: true });
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {

@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import * as argon2 from 'argon2';
 import { AuditService } from '../audit/audit.service';
 import { AuditAction, InviteStatus, Role } from '../common/enums';
@@ -57,6 +57,15 @@ export class UsersService {
     const user = await this.userModel.findById(id);
     if (!user) throw new NotFoundException('User not found');
     return user;
+  }
+
+  /** Lean summaries for admin review queues (name / phone / code). */
+  async findSummariesByIds(ids: Array<string | Types.ObjectId>) {
+    if (ids.length === 0) return [];
+    return this.userModel
+      .find({ _id: { $in: ids } })
+      .select('phone name code kycStatus')
+      .lean();
   }
 
   async findByPhone(phone: string): Promise<UserDocument | null> {

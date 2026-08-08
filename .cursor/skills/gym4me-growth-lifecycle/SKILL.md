@@ -69,7 +69,7 @@ Use a Transactional Outbox for domain events. Consumers must be idempotent and s
 
 - Store first-touch and last-touch separately.
 - Capture UTM, referrer, landing page, referral/affiliate and deep-link source.
-- Preserve existing referral attribution during MongoDB→PostgreSQL migration.
+- Keep referral attribution on MongoDB User fields (`referralCode` / `referredBy`); no Postgres migration.
 - Never overwrite original first-touch.
 - Do not infer campaign success from clicks when a payment/check-in conversion exists.
 

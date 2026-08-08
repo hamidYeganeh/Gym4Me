@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { routes } from "@/shared/lib/routes";
 import { useAuth } from "@/shared/providers/AuthProvider";
 
 export function RequireAuth() {
@@ -7,7 +8,7 @@ export function RequireAuth() {
   const location = useLocation();
 
   if (!isAuthenticated) {
-    return <Navigate replace state={{ from: location }} to="/sign-in" />;
+    return <Navigate replace state={{ from: location }} to={routes.signIn} />;
   }
 
   return <Outlet />;
@@ -16,7 +17,7 @@ export function RequireAuth() {
 export function RedirectIfAuthed({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth();
   if (isAuthenticated) {
-    return <Navigate replace to="/" />;
+    return <Navigate replace to={routes.dashboard} />;
   }
   return children;
 }

@@ -9,6 +9,7 @@ import { Model, Types } from 'mongoose';
 import type { Request } from 'express';
 import { AuditService } from '../../audit/audit.service';
 import { AuditAction, SportKind } from '../../common/enums';
+import { asSinglePageResult } from '../../common/utils/pagination.util';
 import { slugify } from '../../common/utils/slug.util';
 import { MediaService } from '../../media/media.service';
 import { Sport, SportDocument } from '../../schemas/sport.schema';
@@ -61,7 +62,7 @@ export class SportService {
       .find(filter)
       .sort({ order: 1, name: 1 })
       .lean();
-    return { items: items.map((s) => this.toPublic(s)) };
+    return asSinglePageResult(items.map((s) => this.toPublic(s)));
   }
 
   async getById(id: string, admin = false) {
@@ -78,7 +79,9 @@ export class SportService {
       throw new NotFoundException('Sport not found');
     }
     const childKind = CHILD_KIND[parent.kind];
-    if (!childKind) return { parent: this.toPublic(parent), items: [] };
+    if (!childKind) {
+      return { parent: this.toPublic(parent), ...asSinglePageResult([]) };
+    }
 
     const filter: Record<string, unknown> = {
       kind: childKind,
@@ -93,7 +96,7 @@ export class SportService {
 
     return {
       parent: this.toPublic(parent),
-      items: items.map((s) => this.toPublic(s)),
+      ...asSinglePageResult(items.map((s) => this.toPublic(s))),
     };
   }
 

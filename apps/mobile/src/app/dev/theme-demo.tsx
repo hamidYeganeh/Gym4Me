@@ -59,7 +59,6 @@ import { LogoMark, PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { AreaLineChart } from "@repo/ui/kit/AreaLineChart";
 import { GlyphText } from "@repo/ui/kit/GlyphText";
 import { Header } from "@repo/ui/layout/Header";
-import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { AnimatedThemeToggler } from "@/shared/components/animated-theme-toggler";
 import { AdaptiveSliderDemo } from "@/shared/components/ui/adaptive-slider-demo";
@@ -355,8 +354,10 @@ type ThemeDemoLabels = {
   screenCoachHome: string;
   screenOwnerHome: string;
   screenOwnerClubsCreate: string;
+  screenHome: string;
   screenDiscoveryMap: string;
   screenDiscoveryCoaches: string;
+  screenDiscoveryClubs: string;
   screenCoachDetail: string;
   screenClubDetail: string;
   screenClubReviews: string;
@@ -417,13 +418,8 @@ type DemoNavLink = {
 };
 
 function DemoScreenLink({ href, label }: DemoNavLink) {
-  const router = useRouter();
-
   return (
-    <Link
-      className="cursor-pointer text-stats-blue no-underline"
-      onPress={() => router.push(href)}
-    >
+    <Link className="cursor-pointer text-stats-blue no-underline" href={href}>
       {label}
     </Link>
   );
@@ -487,6 +483,8 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
   ];
 
   const discoveryScreens: DemoNavLink[] = [
+    { href: "/home", label: labels.screenHome },
+    { href: "/discovery/clubs", label: labels.screenDiscoveryClubs },
     { href: "/discovery/map", label: labels.screenDiscoveryMap },
     { href: "/discovery/coaches", label: labels.screenDiscoveryCoaches },
     { href: "/discovery/coaches/zuckmann", label: labels.screenCoachDetail },

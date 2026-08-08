@@ -4,14 +4,21 @@ import { useState, type ReactNode } from "react";
 import { Avatar, Badge, Button, SearchField, Typography } from "@heroui/react";
 import {
   ArrowSignOut1,
+  BarbellHorizontal,
+  Building2,
   Calendar2,
   ChartTrendUp,
+  Database,
   Gear1,
+  Headset1,
   House1,
+  ListThreeSquare,
+  MapPin2,
   Moon,
   SliderLineThreeHorizontal,
   Sun,
   User,
+  UsersThree,
 } from "@repo/icons";
 import { useTheme } from "@repo/theme";
 import { Logo } from "../../common/Logo";
@@ -28,6 +35,13 @@ const DEFAULT_AVATAR =
 
 const NAV_ICONS: Record<AdminDashboardNavId, ReactNode> = {
   home: <House1 size={22} />,
+  users: <UsersThree size={22} />,
+  clubs: <Building2 size={22} />,
+  locations: <MapPin2 size={22} />,
+  sports: <BarbellHorizontal size={22} />,
+  choices: <ListThreeSquare size={22} />,
+  refs: <Database size={22} />,
+  support: <Headset1 size={22} />,
   calendar: <Calendar2 size={22} />,
   profile: <User size={22} />,
   settings: <Gear1 size={22} />,
@@ -37,6 +51,13 @@ const NAV_ICONS: Record<AdminDashboardNavId, ReactNode> = {
 
 const NAV_ORDER: AdminDashboardNavId[] = [
   "home",
+  "users",
+  "clubs",
+  "locations",
+  "sports",
+  "choices",
+  "refs",
+  "support",
   "calendar",
   "profile",
   "settings",
@@ -54,14 +75,17 @@ export function AdminDashboardLayout({
   onAvatarPress,
   avatarSrc = DEFAULT_AVATAR,
   notificationCount = 2,
+  header,
   className,
 }: AdminDashboardLayoutProps) {
   const { resolvedTheme, setTheme } = useTheme();
   const [uncontrolledActiveId, setUncontrolledActiveId] =
     useState<AdminDashboardNavId>("home");
   const activeNavId = activeNavIdProp ?? uncontrolledActiveId;
-  const styles = adminDashboardLayoutVariants();
   const isDark = resolvedTheme === "dark";
+  const colorScheme = isDark ? "dark" : "light";
+  const styles = adminDashboardLayoutVariants({ colorScheme });
+  const hasCustomHeader = Boolean(header);
 
   const handleNavPress = (id: AdminDashboardNavId) => {
     if (activeNavIdProp === undefined) {
@@ -69,6 +93,21 @@ export function AdminDashboardLayout({
     }
     onNavPress?.(id);
   };
+
+  const themeToggle = (
+    <Button
+      isIconOnly
+      size="lg"
+      variant="ghost"
+      aria-label={isDark ? labels.themeToLight : labels.themeToDark}
+      className={
+        hasCustomHeader ? styles.themeButtonSection() : styles.themeButton()
+      }
+      onPress={() => setTheme(isDark ? "light" : "dark")}
+    >
+      {isDark ? <Sun size={20} /> : <Moon size={20} />}
+    </Button>
+  );
 
   return (
     <div className={styles.shell({ className })}>
@@ -134,48 +173,49 @@ export function AdminDashboardLayout({
       </aside>
 
       <div className={styles.main()}>
-        <header className={styles.header()}>
-          <Typography className={styles.greeting()} type="h3" weight="bold">
-            {labels.greeting}
-          </Typography>
+        <header
+          className={hasCustomHeader ? styles.headerSection() : styles.header()}
+        >
+          {hasCustomHeader ? (
+            <div className="flex w-full min-w-0 items-center gap-3">
+              <div className="min-w-0 flex-1">{header}</div>
+              {themeToggle}
+            </div>
+          ) : (
+            <>
+              <Typography className={styles.greeting()} type="h3" weight="bold">
+                {labels.greeting}
+              </Typography>
 
-          <div className={styles.headerActions()}>
-            <SearchField
-              aria-label={labels.searchAriaLabel}
-              className={styles.search()}
-              name="admin-search"
-              variant="secondary"
-            >
-              <SearchField.Group className={styles.searchGroup()}>
-                <SearchField.SearchIcon />
-                <SearchField.Input
-                  className={styles.searchInput()}
-                  placeholder={labels.searchPlaceholder}
-                />
-                <Button
-                  isIconOnly
-                  size="lg"
-                  variant="ghost"
-                  aria-label={labels.filtersAriaLabel}
-                  className={styles.filterButton()}
-                  onPress={onFilterPress}
+              <div className={styles.headerActions()}>
+                <SearchField
+                  aria-label={labels.searchAriaLabel}
+                  className={styles.search()}
+                  name="admin-search"
+                  variant="secondary"
                 >
-                  <SliderLineThreeHorizontal size={18} />
-                </Button>
-              </SearchField.Group>
-            </SearchField>
-
-            <Button
-              isIconOnly
-              size="lg"
-              variant="ghost"
-              aria-label={isDark ? labels.themeToLight : labels.themeToDark}
-              className={styles.themeButton()}
-              onPress={() => setTheme(isDark ? "light" : "dark")}
-            >
-              {isDark ? <Sun size={20} /> : <Moon size={20} />}
-            </Button>
-          </div>
+                  <SearchField.Group className={styles.searchGroup()}>
+                    <SearchField.SearchIcon />
+                    <SearchField.Input
+                      className={styles.searchInput()}
+                      placeholder={labels.searchPlaceholder}
+                    />
+                    <Button
+                      isIconOnly
+                      size="lg"
+                      variant="ghost"
+                      aria-label={labels.filtersAriaLabel}
+                      className={styles.filterButton()}
+                      onPress={onFilterPress}
+                    >
+                      <SliderLineThreeHorizontal size={18} />
+                    </Button>
+                  </SearchField.Group>
+                </SearchField>
+                {themeToggle}
+              </div>
+            </>
+          )}
         </header>
 
         <main className={styles.content()}>{children}</main>

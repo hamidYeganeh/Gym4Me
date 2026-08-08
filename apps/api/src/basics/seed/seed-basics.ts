@@ -13,6 +13,7 @@ import { ChoicesService } from '../choices/choices.service';
 import { LocationService } from '../location/location.service';
 import { RefService } from '../ref/ref.service';
 import { SportService } from '../sport/sport.service';
+import { IRAN_FLAG_SVG } from './iran-flag';
 
 const SEED_ADMIN_PHONE = '09121111111';
 
@@ -101,6 +102,29 @@ async function seed() {
         { value: 'female_only', name: 'فقط بانوان', order: 2 },
       ],
     },
+    {
+      key: 'age_group',
+      name: 'گروه سنی',
+      isSystem: true,
+      options: [
+        { value: 'kids', name: 'کودکان', order: 0 },
+        { value: 'teens', name: 'نوجوانان', order: 1 },
+        { value: 'adults', name: 'بزرگسالان', order: 2 },
+        { value: 'seniors', name: 'سالمندان', order: 3 },
+      ],
+    },
+    {
+      key: 'social_platform',
+      name: 'شبکه‌های اجتماعی',
+      isSystem: false,
+      options: [
+        { value: 'instagram', name: 'اینستاگرام', order: 0 },
+        { value: 'telegram', name: 'تلگرام', order: 1 },
+        { value: 'whatsapp', name: 'واتساپ', order: 2 },
+        { value: 'website', name: 'وب‌سایت', order: 3 },
+        { value: 'x', name: 'ایکس', order: 4 },
+      ],
+    },
   ];
 
   for (const c of choiceSeeds) {
@@ -113,9 +137,14 @@ async function seed() {
     kind: LocationKind.COUNTRY,
     name: 'ایران',
     slug: 'iran',
+    flagSvg: IRAN_FLAG_SVG,
     center: { lng: 53.688, lat: 32.4279 },
     order: 0,
   });
+  if (!iran.flagSvg) {
+    iran.flagSvg = IRAN_FLAG_SVG;
+    await iran.save();
+  }
 
   const tehranProvince = await locations.upsertSeed({
     kind: LocationKind.PROVINCE,
@@ -248,6 +277,7 @@ async function seed() {
     ['سونا', 'sauna'],
     ['استخر', 'pool'],
     ['wifi', 'wifi'],
+    ['دسترسی‌پذیری', 'accessibility'],
   ] as const;
   for (const [i, [name, slug]] of amenitySeeds.entries()) {
     await refs.upsertSeed(RefType.AMENITY, { name, slug, order: i });
@@ -286,7 +316,30 @@ async function seed() {
     await refs.upsertSeed(RefType.GOAL_TYPE, { name, slug, order: i });
   }
 
-  log.log('refs: amenities/equipment/muscles/goals seeded');
+  const clubCategorySeeds = [
+    ['بدنسازی', 'gym'],
+    ['استخر', 'pool'],
+    ['فوتبال', 'football'],
+    ['مجموعه ورزشی', 'multi-sport'],
+    ['کلاس گروهی', 'group-class'],
+  ] as const;
+  for (const [i, [name, slug]] of clubCategorySeeds.entries()) {
+    await refs.upsertSeed(RefType.CLUB_CATEGORY, { name, slug, order: i });
+  }
+
+  const reviewCriterionSeeds = [
+    ['نحوه پذیرش', 'check-in'],
+    ['نظافت', 'cleanliness'],
+    ['تطابق با اطلاعات', 'accuracy'],
+    ['نحوه میزبانی', 'hosting'],
+    ['موقعیت مکانی', 'location'],
+    ['ارزش قیمت', 'value'],
+  ] as const;
+  for (const [i, [name, slug]] of reviewCriterionSeeds.entries()) {
+    await refs.upsertSeed(RefType.REVIEW_CRITERION, { name, slug, order: i });
+  }
+
+  log.log('refs: amenities/equipment/muscles/goals/categories/criteria seeded');
 
   // ── Platform admin ─────────────────────────────
   const adminPhone = normalizeIranPhone(SEED_ADMIN_PHONE);

@@ -48,7 +48,7 @@ export function FileItem({
   const slots = fileItemVariants({ status });
   const clamped = Math.min(100, Math.max(0, defaultProgress(status, progress)));
   const meta = statusMessage ?? defaultStatusMessage(status, fileSize);
-  const showRemove = status !== "success";
+  const showRemove = Boolean(onRemove);
   const showRetry = status === "error";
   const fileType = type ?? resolveFileItemType(fileName);
 
@@ -82,11 +82,7 @@ export function FileItem({
           </Typography>
 
           <div className={slots.trailing()}>
-            {status === "success" ? (
-              <span aria-hidden className={slots.successBadge()}>
-                <Check className={slots.successBadgeIcon()} size={12} />
-              </span>
-            ) : showRemove ? (
+            {showRemove ? (
               <Button
                 aria-label={removeLabel}
                 className={slots.removeButton()}
@@ -97,6 +93,10 @@ export function FileItem({
               >
                 <Trash1 className={slots.trailingIcon()} size={20} />
               </Button>
+            ) : status === "success" ? (
+              <span aria-hidden className={slots.successBadge()}>
+                <Check className={slots.successBadgeIcon()} size={12} />
+              </span>
             ) : null}
           </div>
         </div>

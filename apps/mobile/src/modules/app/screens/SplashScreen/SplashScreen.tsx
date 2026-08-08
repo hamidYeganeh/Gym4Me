@@ -10,7 +10,7 @@ export function SplashScreen({ brand, taglines }: SplashScreenProps) {
     <main className={styles.root}>
       <div aria-hidden className={styles.glow} />
       <div className={styles.content}>
-        <Logo gradient={false} size="xl" />
+        <Logo color="var(--background)" gradient={false} shadow={false} size="xl" />
         <h1 className={styles.brand}>
           <GlyphText
             delay={0.15}
@@ -18,7 +18,7 @@ export function SplashScreen({ brand, taglines }: SplashScreenProps) {
             duration={1.6}
             startOnView={false}
             text={brand}
-            textColor="var(--foreground)"
+            textColor="var(--background)"
           />
         </h1>
         <p className={styles.tagline}>
@@ -31,7 +31,7 @@ export function SplashScreen({ brand, taglines }: SplashScreenProps) {
             repeatDelay={0.85}
             startOnView={false}
             text={taglines}
-            textColor="var(--muted)"
+            textColor="var(--background)"
           />
         </p>
       </div>

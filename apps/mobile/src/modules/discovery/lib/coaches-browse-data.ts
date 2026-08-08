@@ -8,7 +8,7 @@ export type CoachSpecialtyId =
   | "mobility";
 
 export type CoachSpecialty = {
-  id: CoachSpecialtyId;
+  id: string;
   label: string;
 };
 

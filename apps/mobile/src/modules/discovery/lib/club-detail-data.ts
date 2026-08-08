@@ -24,6 +24,33 @@ export type ClubDetailEquipment = {
   meta?: string;
 };
 
+export type ClubDetailAmenityIconKey =
+  | "wifi"
+  | "parking"
+  | "shower"
+  | "locker"
+  | "ac"
+  | "cafe";
+
+export type ClubDetailAmenity = {
+  id: string;
+  title: string;
+  subtitle?: string;
+  iconKey: ClubDetailAmenityIconKey;
+};
+
+export type ClubDetailCoach = {
+  id: string;
+  name: string;
+  image: string;
+  priceLabel: string;
+  specialtyLabel: string;
+  distanceLabel: string;
+  rating: number;
+  ratingCount: number;
+  availability: "remote" | "in-person";
+};
+
 export type ClubDetailBranch = {
   id: string;
   title: string;
@@ -43,12 +70,87 @@ export type ClubDetailClassPreview = {
 
 export type ClubDetailLocation = {
   title: string;
-  duration: string;
-  calories: string;
-  distanceLabel: string;
-  startLabel: string;
-  endLabel: string;
+  /** Province / استان */
+  province?: string;
+  /** City / شهر */
+  city?: string;
+  /** Neighborhood / محله */
+  neighborhood?: string;
+  /** Full address line fallback. */
+  address?: string;
+  duration?: string;
+  calories?: string;
+  distanceLabel?: string;
+  startLabel?: string;
+  endLabel?: string;
   route: readonly ClubLocationLatLng[];
+};
+
+export type ClubDetailGalleryItem = {
+  url: string;
+  title?: string;
+  description?: string;
+};
+
+export type ClubDetailPhone = {
+  id: string;
+  number: string;
+  label?: string;
+};
+
+export type ClubDetailOperatingHour = {
+  weekday: number;
+  status: "open" | "closed";
+  open?: string;
+  close?: string;
+  description?: string;
+};
+
+export type ClubDetailRule = {
+  id: string;
+  policy: "required" | "recommended" | "prohibited";
+  title: string;
+  description?: string;
+};
+
+export type ClubDetailCategory = {
+  id: string;
+  title: string;
+};
+
+export type ClubDetailAchievement = {
+  id: string;
+  title: string;
+  color?:
+    | "accent"
+    | "danger"
+    | "success"
+    | "warning"
+    | "red"
+    | "orange"
+    | "blue"
+    | "yellow"
+    | "purple";
+};
+
+export type ClubDetailFaq = {
+  id: string;
+  title: string;
+  description: string;
+};
+
+export type ClubDetailAudience = {
+  genderPolicy?: string;
+  ageGroupKeys: string[];
+  levelKeys: string[];
+  accessibility: string;
+};
+
+export type ClubDetailOwner = {
+  id: string;
+  name: string;
+  avatar?: string;
+  headline?: string;
 };
 
 export type ClubDetailSubscription = {
@@ -87,21 +189,36 @@ export type ClubDetail = {
   id: string;
   title: string;
   location: string;
+  /** e.g. "۰۶:۰۰ – ۲۳:۰۰" */
+  openHoursLabel: string;
+  /** Whether the club is currently open (demo flag). */
+  isOpen: boolean;
   images: string[];
+  gallery: ClubDetailGalleryItem[];
   stats: ClubDetailStat[];
   overview: string;
   pricePrefix: string;
   price: string;
   priceSuffix: string;
   subscriptions: ClubDetailSubscription[];
+  amenities: ClubDetailAmenity[];
   sports: ClubDetailSport[];
   equipment: ClubDetailEquipment[];
+  coaches: ClubDetailCoach[];
   locationCard: ClubDetailLocation;
   branches: ClubDetailBranch[];
   classes: ClubDetailClassPreview[];
   reviews: ClubDetailReview[];
   /** Typical crowd level across the day (hour labels). */
   busyHours: ClubDetailBusyHour[];
+  phones: ClubDetailPhone[];
+  operatingHours: ClubDetailOperatingHour[];
+  rules: ClubDetailRule[];
+  categories: ClubDetailCategory[];
+  achievements: ClubDetailAchievement[];
+  faq: ClubDetailFaq[];
+  audience: ClubDetailAudience;
+  owner?: ClubDetailOwner;
   isFavorite?: boolean;
   isSaved?: boolean;
 };
@@ -147,6 +264,94 @@ const DEFAULT_SPORTS: ClubDetailSport[] = [
     title: "HIIT",
     subtitle: "کالری‌سوزی",
     color: statsColors.orange,
+  },
+];
+
+const COACH_PORTRAIT = "/demo/coach-portrait.png";
+
+const DEFAULT_AMENITIES: ClubDetailAmenity[] = [
+  {
+    id: "wifi",
+    title: "وای‌فای",
+    subtitle: "پرسرعت در کل سالن",
+    iconKey: "wifi",
+  },
+  {
+    id: "parking",
+    title: "پارکینگ",
+    subtitle: "ظرفیت محدود رایگان",
+    iconKey: "parking",
+  },
+  {
+    id: "shower",
+    title: "دوش و رختکن",
+    subtitle: "کابین اختصاصی",
+    iconKey: "shower",
+  },
+  {
+    id: "locker",
+    title: "کمد امن",
+    subtitle: "قفل دیجیتال",
+    iconKey: "locker",
+  },
+  {
+    id: "ac",
+    title: "تهویه مطبوع",
+    subtitle: "کنترل دمای سالن",
+    iconKey: "ac",
+  },
+  {
+    id: "cafe",
+    title: "کافه ورزشی",
+    subtitle: "پروتئین و نوشیدنی",
+    iconKey: "cafe",
+  },
+];
+
+const DEFAULT_COACHES: ClubDetailCoach[] = [
+  {
+    id: "sara",
+    name: "سارا محمدی",
+    image: COACH_PORTRAIT,
+    priceLabel: "از ۸۵۰٬۰۰۰ تومان",
+    specialtyLabel: "HIIT",
+    distanceLabel: "همین شعبه",
+    rating: 4.9,
+    ratingCount: 128,
+    availability: "in-person",
+  },
+  {
+    id: "ali",
+    name: "علی رضایی",
+    image: PLACEHOLDER_IMAGE,
+    priceLabel: "از ۷۲۰٬۰۰۰ تومان",
+    specialtyLabel: "قدرتی",
+    distanceLabel: "همین شعبه",
+    rating: 4.7,
+    ratingCount: 96,
+    availability: "in-person",
+  },
+  {
+    id: "nika",
+    name: "نیکا احمدی",
+    image: PLACEHOLDER_IMAGE,
+    priceLabel: "از ۶۵۰٬۰۰۰ تومان",
+    specialtyLabel: "یوگا",
+    distanceLabel: "آنلاین",
+    rating: 4.8,
+    ratingCount: 74,
+    availability: "remote",
+  },
+  {
+    id: "mehdi",
+    name: "مهدی کریمی",
+    image: PLACEHOLDER_IMAGE,
+    priceLabel: "از ۹۰۰٬۰۰۰ تومان",
+    specialtyLabel: "اسپینینگ",
+    distanceLabel: "همین شعبه",
+    rating: 4.6,
+    ratingCount: 61,
+    availability: "in-person",
   },
 ];
 
@@ -275,6 +480,10 @@ const DEFAULT_CLASSES: ClubDetailClassPreview[] = [
 
 const DEFAULT_LOCATION: ClubDetailLocation = {
   title: "مسیر باشگاه",
+  province: "تهران",
+  city: "تهران",
+  neighborhood: "ونک",
+  address: "تهران، ونک، خیابان ملاصدرا",
   duration: "۴۰ دقیقه",
   calories: "۱۵۰ کالری",
   distanceLabel: "۷٫۲ کیلومتر",
@@ -282,6 +491,135 @@ const DEFAULT_LOCATION: ClubDetailLocation = {
   endLabel: "پایان",
   route: TEHRAN_ROUTE,
 };
+
+const DEFAULT_GALLERY: ClubDetailGalleryItem[] = [
+  {
+    url: PLACEHOLDER_IMAGE,
+    title: "سالن اصلی",
+    description: "فضای وزنه‌آزاد و رک‌های المپیک با نور طبیعی.",
+  },
+  {
+    url: PLACEHOLDER_IMAGE,
+    title: "کلاس گروهی",
+    description: "سالن کلاس‌های HIIT و گروهی با ظرفیت محدود.",
+  },
+  {
+    url: PLACEHOLDER_IMAGE,
+    title: "فضای ریکاوری",
+    description: "منطقه کشش، موبیلیتی و ریکاوری پس از تمرین.",
+  },
+];
+
+const DEFAULT_PHONES: ClubDetailPhone[] = [
+  { id: "main", number: "۰۲۱-۸۸۷۷۶۶۵۵", label: "پذیرش" },
+  { id: "support", number: "۰۹۱۲-۱۲۳۴۵۶۷", label: "پشتیبانی" },
+];
+
+const DEFAULT_OPERATING_HOURS: ClubDetailOperatingHour[] = [
+  { weekday: 0, status: "open", open: "۰۶:۰۰", close: "۲۳:۰۰" },
+  { weekday: 1, status: "open", open: "۰۶:۰۰", close: "۲۳:۰۰" },
+  { weekday: 2, status: "open", open: "۰۶:۰۰", close: "۲۳:۰۰" },
+  { weekday: 3, status: "open", open: "۰۶:۰۰", close: "۲۳:۰۰" },
+  { weekday: 4, status: "open", open: "۰۶:۰۰", close: "۲۳:۰۰" },
+  { weekday: 5, status: "open", open: "۰۷:۰۰", close: "۲۲:۰۰" },
+  { weekday: 6, status: "closed" },
+];
+
+const DEFAULT_RULES: ClubDetailRule[] = [
+  {
+    id: "towel",
+    policy: "required",
+    title: "همراه داشتن حوله",
+    description: "برای استفاده از دستگاه‌ها همراه داشتن حوله الزامی است.",
+  },
+  {
+    id: "shoes",
+    policy: "required",
+    title: "کفش ورزشی تمیز",
+    description: "ورود با کفش خیابانی به سالن مجاز نیست.",
+  },
+  {
+    id: "photo",
+    policy: "prohibited",
+    title: "عکاسی بدون اجازه",
+    description: "فیلم‌برداری از سایر اعضا بدون رضایت آن‌ها ممنوع است.",
+  },
+  {
+    id: "water",
+    policy: "recommended",
+    title: "بطری آب شخصی",
+    description: "برای حفظ بهداشت، بطری آب شخصی پیشنهاد می‌شود.",
+  },
+];
+
+const DEFAULT_CATEGORIES: ClubDetailCategory[] = [
+  { id: "gym", title: "باشگاه بدنسازی" },
+  { id: "group", title: "کلاس گروهی" },
+  { id: "recovery", title: "ریکاوری" },
+  { id: "premium", title: "پریمیوم" },
+];
+
+const DEFAULT_ACHIEVEMENTS: ClubDetailAchievement[] = [
+  { id: "top-rated", title: "برترین امتیاز منطقه", color: "warning" },
+  { id: "verified", title: "باشگاه تأییدشده", color: "success" },
+  { id: "clean", title: "بهداشت ممتاز", color: "blue" },
+  { id: "coach", title: "مربیان حرفه‌ای", color: "purple" },
+];
+
+const DEFAULT_FAQ: ClubDetailFaq[] = [
+  {
+    id: "trial",
+    title: "آیا جلسه آزمایشی دارید؟",
+    description:
+      "بله، برای اعضای جدید یک جلسه آزمایشی رایگان در ساعات غیر اوج قابل رزرو است.",
+  },
+  {
+    id: "parking",
+    title: "پارکینگ دارید؟",
+    description: "پارکینگ اختصاصی با ظرفیت محدود در طبقه منفی یک موجود است.",
+  },
+  {
+    id: "freeze",
+    title: "امکان فریز عضویت هست؟",
+    description: "عضویت را تا ۱۴ روز در هر دوره می‌توانید فریز کنید.",
+  },
+];
+
+const DEFAULT_AUDIENCE: ClubDetailAudience = {
+  genderPolicy: "mixed",
+  ageGroupKeys: ["adults", "teens"],
+  levelKeys: ["beginner", "intermediate", "advanced"],
+  accessibility: "accessible",
+};
+
+const DEFAULT_OWNER: ClubDetailOwner = {
+  id: "owner-1",
+  name: "کیانوش مرادی",
+  avatar: PLACEHOLDER_IMAGE,
+  headline: "مالک و مدیر باشگاه",
+};
+
+function galleryFromImages(images: string[]): ClubDetailGalleryItem[] {
+  return images.map((url, index) => ({
+    url,
+    title: DEFAULT_GALLERY[index]?.title,
+    description: DEFAULT_GALLERY[index]?.description,
+  }));
+}
+
+function clubExtras() {
+  return {
+    gallery: DEFAULT_GALLERY,
+    phones: DEFAULT_PHONES,
+    operatingHours: DEFAULT_OPERATING_HOURS,
+    rules: DEFAULT_RULES,
+    categories: DEFAULT_CATEGORIES,
+    achievements: DEFAULT_ACHIEVEMENTS,
+    faq: DEFAULT_FAQ,
+    audience: DEFAULT_AUDIENCE,
+    owner: DEFAULT_OWNER,
+  };
+}
 
 const DEFAULT_SUBSCRIPTIONS: ClubDetailSubscription[] = [
   {
@@ -396,21 +734,26 @@ const LONG_OVERVIEW =
 const CLUBS: Record<string, ClubDetail> = {
   heavenly: {
     id: "heavenly",
-    title: "Heavenly Fitness",
-    location: "Tehran, Iran",
+    title: "آسمانی فیتنس",
+    location: "تهران، ونک",
+    openHoursLabel: "۰۶:۰۰ – ۲۳:۰۰",
+    isOpen: true,
     images: [...DEFAULT_IMAGES],
+    ...clubExtras(),
     stats: [
-      { labelKey: "minutes", value: "10-20" },
-      { labelKey: "score", value: "+5" },
-      { labelKey: "tasks", value: "3" },
+      { labelKey: "minutes", value: "۱۰–۲۰" },
+      { labelKey: "score", value: "+۵" },
+      { labelKey: "tasks", value: "۳" },
     ],
     overview: LONG_OVERVIEW,
     pricePrefix: "از",
     price: "۷۰۰٬۰۰۰",
-    priceSuffix: "تومانءء",
+    priceSuffix: "تومان",
     subscriptions: DEFAULT_SUBSCRIPTIONS,
+    amenities: DEFAULT_AMENITIES,
     sports: DEFAULT_SPORTS,
     equipment: DEFAULT_EQUIPMENT,
+    coaches: DEFAULT_COACHES,
     locationCard: DEFAULT_LOCATION,
     branches: DEFAULT_BRANCHES,
     classes: DEFAULT_CLASSES,
@@ -421,29 +764,38 @@ const CLUBS: Record<string, ClubDetail> = {
   },
   iron: {
     id: "iron",
-    title: "Iron Paradise",
-    location: "Isfahan, Iran",
+    title: "آیرون پارادایس",
+    location: "اصفهان، جلفا",
+    openHoursLabel: "۰۵:۳۰ – ۲۲:۳۰",
+    isOpen: true,
     images: [...DEFAULT_IMAGES],
+    ...clubExtras(),
     stats: [
-      { labelKey: "minutes", value: "15-30" },
-      { labelKey: "score", value: "+4" },
-      { labelKey: "tasks", value: "5" },
+      { labelKey: "minutes", value: "۱۵–۳۰" },
+      { labelKey: "score", value: "+۴" },
+      { labelKey: "tasks", value: "۵" },
     ],
     overview:
       "باشگاهی قدرت‌محور برای لیفترهای جدی. وزنه‌های آزاد سنگین، رک‌های اختصاصی و مربیان متخصص در اورلود پیشرونده و فرم صحیح حرکت. فضای متمرکز، بدون حواس‌پرتی، فقط تمرین واقعی.",
     pricePrefix: "از",
     price: "۵۵۰٬۰۰۰",
-    priceSuffix: "تومانءء",
+    priceSuffix: "تومان",
     subscriptions: [
       DEFAULT_SUBSCRIPTIONS[0],
       { ...DEFAULT_SUBSCRIPTIONS[1], price: 550_000 },
       { ...DEFAULT_SUBSCRIPTIONS[2], price: 950_000 },
     ],
+    amenities: DEFAULT_AMENITIES.slice(0, 4),
     sports: DEFAULT_SPORTS.slice(0, 3),
     equipment: DEFAULT_EQUIPMENT.slice(0, 5),
+    coaches: DEFAULT_COACHES.slice(0, 3),
     locationCard: {
       ...DEFAULT_LOCATION,
       title: "مسیر آیرون پارادایس",
+      city: "اصفهان",
+      neighborhood: "جلفا",
+      province: "اصفهان",
+      address: "اصفهان، جلفا",
     },
     branches: DEFAULT_BRANCHES.slice(0, 2),
     classes: DEFAULT_CLASSES.slice(0, 4),
@@ -462,27 +814,36 @@ const CLUBS: Record<string, ClubDetail> = {
   },
   "123": {
     id: "123",
-    title: "Club 123",
-    location: "Tehran, Iran",
+    title: "باشگاه ۱۲۳",
+    location: "تهران، سعادت‌آباد",
+    openHoursLabel: "۰۷:۰۰ – ۲۲:۰۰",
+    isOpen: false,
     images: [...DEFAULT_IMAGES],
+    ...clubExtras(),
     stats: [
-      { labelKey: "minutes", value: "20-40" },
-      { labelKey: "score", value: "+3" },
-      { labelKey: "tasks", value: "2" },
+      { labelKey: "minutes", value: "۲۰–۴۰" },
+      { labelKey: "score", value: "+۳" },
+      { labelKey: "tasks", value: "۲" },
     ],
     overview:
       "باشگاه محله‌ای با دستگاه‌های مدرن، کلاس‌های گروهی و مربیانی آماده برای ساخت عادت تمرینی پایدار.",
     pricePrefix: "از",
     price: "۳۵۰٬۰۰۰",
-    priceSuffix: "تومانءء",
+    priceSuffix: "تومان",
     subscriptions: [
       DEFAULT_SUBSCRIPTIONS[0],
       { ...DEFAULT_SUBSCRIPTIONS[1], price: 350_000, badge: undefined },
       { ...DEFAULT_SUBSCRIPTIONS[2], price: 650_000, badge: "۳۰٪" },
     ],
+    amenities: DEFAULT_AMENITIES.slice(0, 3),
     sports: DEFAULT_SPORTS.slice(0, 2),
     equipment: DEFAULT_EQUIPMENT.slice(0, 4),
-    locationCard: DEFAULT_LOCATION,
+    coaches: DEFAULT_COACHES.slice(0, 2),
+    locationCard: {
+      ...DEFAULT_LOCATION,
+      neighborhood: "سعادت‌آباد",
+      address: "تهران، سعادت‌آباد",
+    },
     branches: DEFAULT_BRANCHES.slice(0, 1),
     classes: DEFAULT_CLASSES.slice(0, 3),
     reviews: DEFAULT_REVIEWS.slice(0, 5),
@@ -506,20 +867,26 @@ function createFallbackClub(clubId: string): ClubDetail {
   return {
     id: clubId,
     title,
-    location: "Tehran, Iran",
+    location: "تهران",
+    openHoursLabel: "۰۶:۰۰ – ۲۳:۰۰",
+    isOpen: true,
     images: [...DEFAULT_IMAGES],
+    ...clubExtras(),
+    gallery: galleryFromImages([...DEFAULT_IMAGES]),
     stats: [
-      { labelKey: "minutes", value: "10-20" },
-      { labelKey: "score", value: "+5" },
-      { labelKey: "tasks", value: "3" },
+      { labelKey: "minutes", value: "۱۰–۲۰" },
+      { labelKey: "score", value: "+۵" },
+      { labelKey: "tasks", value: "۳" },
     ],
     overview: `باشگاه ${title} را کشف کنید — تجهیزات، کلاس‌ها و مربیگری برای هر هدف تمرینی. فضای مدرن، برنامه‌های متنوع و پشتیبانی مربیان حرفه‌ای در کنار شماست تا مسیر تناسب اندام را با انگیزه ادامه دهید.`,
     pricePrefix: "از",
     price: "۷۰۰٬۰۰۰",
-    priceSuffix: "تومانءء",
+    priceSuffix: "تومان",
     subscriptions: DEFAULT_SUBSCRIPTIONS,
+    amenities: DEFAULT_AMENITIES,
     sports: DEFAULT_SPORTS,
     equipment: DEFAULT_EQUIPMENT,
+    coaches: DEFAULT_COACHES,
     locationCard: DEFAULT_LOCATION,
     branches: DEFAULT_BRANCHES,
     classes: DEFAULT_CLASSES,

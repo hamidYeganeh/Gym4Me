@@ -10,6 +10,8 @@ export type MapCoach = {
   address: string;
   lat: number;
   lng: number;
+  /** Defaults to coach detail route when omitted. */
+  detailsHref?: string;
 };
 
 /** Sample coaches around Laleh Park / Keshavarz Blvd, Tehran. */

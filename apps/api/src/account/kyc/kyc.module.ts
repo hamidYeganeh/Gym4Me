@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import {
   KycRequest,
@@ -7,6 +8,7 @@ import {
 import { UsersModule } from '../../users/users.module';
 import { KycController } from './kyc.controller';
 import {
+  FinnotechKycProviderService,
   KycProviderService,
   MockKycProviderService,
 } from './kyc-provider.service';
@@ -22,8 +24,19 @@ import { KycService } from './kyc.service';
   controllers: [KycController],
   providers: [
     KycService,
-    // Only the mock driver exists for now; swap by KYC_PROVIDER when real ones land.
-    { provide: KycProviderService, useClass: MockKycProviderService },
+    {
+      provide: KycProviderService,
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        const provider = (
+          config.get<string>('KYC_PROVIDER', 'mock') ?? 'mock'
+        ).toLowerCase();
+        if (provider === 'finnotech') {
+          return new FinnotechKycProviderService(config);
+        }
+        return new MockKycProviderService();
+      },
+    },
   ],
   exports: [KycService, MongooseModule],
 })

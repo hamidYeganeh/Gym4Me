@@ -1,145 +1,106 @@
 "use client";
 
-import { Avatar, Button, Chip, Surface, Typography } from "@heroui/react";
+import { Button, Typography } from "@heroui/react";
+import { BarbellHorizontal } from "@repo/icons/BarbellHorizontal";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
-import { Plus } from "@repo/icons/Plus";
-import { Sun } from "@repo/icons/Sun";
-import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
-import { Logo } from "@repo/ui/common/Logo";
+import { Kebab } from "@repo/icons/Kebab";
+import { SealCheck } from "@repo/icons/SealCheck";
+import { StarFull } from "@repo/icons/StarFull";
 import { useTranslations } from "next-intl";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { discoveryCoachesDetailHeroSectionStyles as styles } from "./DiscoveryCoachesDetailHeroSection.styles";
 import type { DiscoveryCoachesDetailHeroSectionProps } from "./DiscoveryCoachesDetailHeroSection.types";
 
+function formatRating(rating: number) {
+  return Number.isInteger(rating) ? String(rating) : rating.toFixed(1);
+}
+
 export function DiscoveryCoachesDetailHeroSection({
   coach,
-  children,
 }: DiscoveryCoachesDetailHeroSectionProps) {
   const t = useTranslations("CoachDetail");
   const router = useRouter();
-  const heroImage = coach.image || PLACEHOLDER_IMAGE;
-  const avatarImage = coach.avatar || heroImage;
+  const showRating =
+    typeof coach.rating === "number" && Number.isFinite(coach.rating);
 
   return (
-    <>
-      <section aria-label={coach.name} className={styles.root}>
-        <div className={styles.media}>
-          <Image
-            alt=""
-            className={styles.image}
-            fill
-            priority
-            sizes="100vw"
-            src={heroImage}
-          />
-          <div aria-hidden className={styles.scrim} />
+    <section aria-label={coach.name} className={styles.root}>
+      <header className={styles.header}>
+        <Button
+          aria-label={t("back")}
+          isIconOnly
+          onPress={() => router.back()}
+          size="lg"
+          variant="ghost"
+        >
+          <ChevronLeft className="text-foreground" size={22} />
+        </Button>
+        <Typography
+          className={styles.headerTitle}
+          type="body"
+          weight="semibold"
+        >
+          {t("pageTitle")}
+        </Typography>
+        <Button
+          aria-label={t("more")}
+          isIconOnly
+          size="lg"
+          variant="ghost"
+          onPress={() => {
+            if (typeof navigator !== "undefined" && navigator.share) {
+              void navigator.share({ title: coach.name, url: window.location.href });
+            }
+          }}
+        >
+          <Kebab className="text-foreground" size={22} />
+        </Button>
+      </header>
 
-          <div className={styles.topBar}>
-            <Button
-              aria-label={t("back")}
-              className={styles.backButton}
-              isIconOnly
-              onPress={() => router.back()}
-              size="lg"
-              variant="secondary"
-            >
-              <ChevronLeft size={20} />
-            </Button>
-
-            <Surface className={styles.island} variant="default">
-              <Logo
-                className={styles.islandLogo}
-                color="currentColor"
-                gradient={false}
-                shadow={false}
-                size={28}
-                title={t("home")}
-              />
-              <Avatar className={styles.islandAvatar} size="sm">
-                <Avatar.Image alt={coach.name} src={avatarImage} />
-                <Avatar.Fallback>
-                  {coach.name.slice(0, 1).toUpperCase()}
-                </Avatar.Fallback>
-              </Avatar>
-            </Surface>
-
-            <span aria-hidden />
-          </div>
-
-          <div className={styles.inspo}>
-            <Button
-              aria-label={t("addInspo")}
-              className={styles.inspoAdd}
-              isIconOnly
-              size="lg"
-              variant="secondary"
-            >
-              <Plus size={16} />
-            </Button>
-            <Typography
-              aria-hidden
-              className={styles.inspoLabel}
-              color="muted"
-              type="body-xs"
-            >
-              {t("inspo")}
+      <div className={styles.identityCard}>
+        {coach.isVerified ? (
+          <div className={styles.verifiedRow}>
+            <SealCheck aria-hidden size={18} />
+            <Typography className={styles.verifiedText} type="body-sm">
+              {t("certifiedTrainer")}
             </Typography>
-            <div className={styles.inspoStack}>
-              {coach.inspo.map((item, index) => (
-                <Button
-                  aria-label={t("selectInspo", { index: index + 1 })}
-                  className={styles.inspoThumb}
-                  isIconOnly
-                  key={item.id}
-                  size="lg"
-                  variant="secondary"
-                >
-                  <Image
-                    alt=""
-                    className={styles.inspoImage}
-                    fill
-                    sizes="40px"
-                    src={item.image || PLACEHOLDER_IMAGE}
-                  />
-                </Button>
-              ))}
-            </div>
           </div>
+        ) : null}
 
-          <div className={styles.content}>
-            <div className={styles.pills}>
-              <Chip className={styles.pill} color="default" size="sm" variant="soft">
-                <Chip.Label>{coach.availabilityLabel}</Chip.Label>
-              </Chip>
-              <Chip className={styles.pill} color="warning" size="sm" variant="soft">
-                <Sun aria-hidden size={14} />
-                <Chip.Label>{coach.nextSessionLabel}</Chip.Label>
-              </Chip>
-            </div>
+        <Typography className={styles.name} type="h2" weight="bold">
+          {coach.name}
+        </Typography>
+        <Typography className={styles.specialty} type="body">
+          {coach.specialty}
+        </Typography>
 
-            <div className={styles.titleBlock}>
-              <Typography className={styles.title} type="h1" weight="bold">
-                {coach.name}
+        <div className={styles.metaRow}>
+          {showRating ? (
+            <span className={styles.metaItem}>
+              <StarFull aria-hidden className={styles.ratingStar} size={16} />
+              <Typography className={styles.metaValue} type="body-sm" weight="semibold">
+                {formatRating(coach.rating)}{" "}
+                <span className="text-muted">
+                  {t("reviewsCount", { count: coach.ratingCount })}
+                </span>
               </Typography>
-              <Typography className={styles.specialty} color="muted" type="body">
-                {coach.tagline}
+            </span>
+          ) : null}
+
+          {showRating && coach.yearsExperience > 0 ? (
+            <span aria-hidden className={styles.metaDot} />
+          ) : null}
+
+          {coach.yearsExperience > 0 ? (
+            <span className={styles.metaItem}>
+              <BarbellHorizontal aria-hidden className="text-muted" size={16} />
+              <Typography className={styles.metaValue} type="body-sm">
+                {t("yearsExperience", { count: coach.yearsExperience })}
               </Typography>
-              <Typography className={styles.stats} color="muted" type="body-sm">
-                {t("statsLine", {
-                  progress: coach.progressPercent,
-                  newCount: coach.newAddedCount,
-                  members: coach.membersCount,
-                })}
-              </Typography>
-            </div>
-          </div>
+            </span>
+          ) : null}
         </div>
-      </section>
-
-      <Surface aria-hidden={!children} className={styles.sheet} variant="default">
-        {children}
-      </Surface>
-    </>
+      </div>
+    </section>
   );
 }

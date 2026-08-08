@@ -22,7 +22,7 @@
     "mobile:ios:ipa": "npm run ios:ipa --workspace=mobile",
     "mobile:android:open": "npm run android:open --workspace=mobile",
     "mobile:ios:open": "npm run ios:open --workspace=mobile",
-    "docker:up": "docker compose up -d",
+    "docker:up": "docker compose up -d mongo redis",
     "docker:down": "docker compose down",
     "docker:api": "docker compose up -d --build api",
     "docker:android:aab": "bash scripts/docker-android-release.sh aab",

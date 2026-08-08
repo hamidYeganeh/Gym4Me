@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import {
-  getAllClubIds,
-  getClubDetail,
-} from "@/modules/discovery/lib/club-detail-data";
-import { DiscoveryClubsSportsScreen } from "@/modules/discovery/screens/DiscoveryClubsSportsScreen";
+import { DiscoveryClubDetailGate } from "@/modules/discovery/lib/DiscoveryClubDetailGate";
+import { getAllClubIds, getClubDetail } from "@/modules/discovery/lib/club-detail-data";
 
 type ClubSportsPageProps = {
   params: Promise<{ clubId: string }>;
@@ -29,11 +25,6 @@ export async function generateMetadata({
 
 export default async function ClubSportsPage({ params }: ClubSportsPageProps) {
   const { clubId } = await params;
-  const club = getClubDetail(clubId);
 
-  if (!club) {
-    notFound();
-  }
-
-  return <DiscoveryClubsSportsScreen club={club} />;
+  return <DiscoveryClubDetailGate clubId={clubId} view="sports" />;
 }

@@ -11,7 +11,10 @@ import { DiscoveryClubsDetailHeroSectionHeader } from "../DiscoveryClubsDetailHe
 import { DiscoveryClubsDetailHeroSectionLightbox } from "../DiscoveryClubsDetailHeroSectionLightbox";
 import { DiscoveryClubsDetailHeroSectionPullToView } from "../DiscoveryClubsDetailHeroSectionPullToView";
 import { discoveryClubsDetailHeroSectionStyles as styles } from "./DiscoveryClubsDetailHeroSection.styles";
-import type { DiscoveryClubsDetailHeroSectionProps } from "./DiscoveryClubsDetailHeroSection.types";
+import type {
+  DiscoveryClubsDetailHeroSectionGalleryItem,
+  DiscoveryClubsDetailHeroSectionProps,
+} from "./DiscoveryClubsDetailHeroSection.types";
 
 function formatRating(rating: number) {
   return Number.isInteger(rating) ? String(rating) : rating.toFixed(1);
@@ -20,6 +23,9 @@ function formatRating(rating: number) {
 export function DiscoveryClubsDetailHeroSection({
   title,
   location,
+  openHoursLabel,
+  isOpen,
+  gallery: galleryProp,
   images,
   rating,
   reviewCount = 0,
@@ -30,10 +36,17 @@ export function DiscoveryClubsDetailHeroSection({
   const [activeIndex, setActiveIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
-  const gallery = images.length > 0 ? images : [PLACEHOLDER_IMAGE];
+  const gallery: DiscoveryClubsDetailHeroSectionGalleryItem[] =
+    galleryProp && galleryProp.length > 0
+      ? galleryProp
+      : (images ?? []).length > 0
+        ? (images ?? []).map((url) => ({ url }))
+        : [{ url: PLACEHOLDER_IMAGE }];
   const imageCount = gallery.length;
-  const activeImage = gallery[activeIndex] ?? gallery[0] ?? PLACEHOLDER_IMAGE;
+  const activeImage =
+    gallery[activeIndex]?.url ?? gallery[0]?.url ?? PLACEHOLDER_IMAGE;
   const showRating = typeof rating === "number" && Number.isFinite(rating);
+  const showOpenStatus = typeof isOpen === "boolean";
 
   const goToImage = useCallback(
     (index: number) => {
@@ -102,24 +115,26 @@ export function DiscoveryClubsDetailHeroSection({
               return (
                 <Button
                   aria-current={isActive ? "true" : undefined}
-                  aria-label={t("selectImage", { index: index + 1 })}
+                  aria-label={
+                    image.title ?? t("selectImage", { index: index + 1 })
+                  }
                   className={[
                     styles.thumbButton,
                     isActive ? styles.thumbActive : styles.thumbIdle,
                   ].join(" ")}
                   isIconOnly
-                  key={`${image}-${index}`}
+                  key={`${image.url}-${index}`}
                   onPress={() => goToImage(index)}
                   size="lg"
                   variant="ghost"
                 >
                   <Image
-                    alt=""
+                    alt={image.title ?? ""}
                     className={styles.thumbImage}
                     draggable={false}
                     fill
                     sizes="48px"
-                    src={image || PLACEHOLDER_IMAGE}
+                    src={image.url || PLACEHOLDER_IMAGE}
                   />
                 </Button>
               );
@@ -140,6 +155,33 @@ export function DiscoveryClubsDetailHeroSection({
                 {location}
               </Typography>
             </div>
+
+            {showOpenStatus || openHoursLabel ? (
+              <div className={styles.metaRow}>
+                {showOpenStatus ? (
+                  <Chip
+                    className={
+                      isOpen ? styles.openChip : styles.closedChip
+                    }
+                    size="sm"
+                  >
+                    <Chip.Label>
+                      {isOpen ? t("openNow") : t("closedNow")}
+                    </Chip.Label>
+                  </Chip>
+                ) : null}
+                {openHoursLabel ? (
+                  <Typography
+                    className={styles.hoursText}
+                    color="muted"
+                    type="body-xs"
+                  >
+                    <span className="sr-only">{t("hoursLabel")}: </span>
+                    {openHoursLabel}
+                  </Typography>
+                ) : null}
+              </div>
+            ) : null}
           </div>
 
           {showRating ? (
@@ -171,9 +213,11 @@ export function DiscoveryClubsDetailHeroSection({
       <DiscoveryClubsDetailHeroSectionLightbox
         activeIndex={activeIndex}
         images={gallery}
+        isFavorite={isFavorite}
         isOpen={isLightboxOpen}
         onOpenChange={setIsLightboxOpen}
         onSelectImage={goToImage}
+        title={t("galleryTitle")}
       />
     </>
   );

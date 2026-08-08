@@ -1,0 +1,22 @@
+export const coachClientsScreenStyles = {
+  root: "bg-background",
+  content: "flex flex-col gap-6 pb-10 pt-1",
+  intro: "flex flex-col gap-2",
+  introTitle: "tracking-tight text-foreground",
+  introSubtitle: "text-muted",
+  search: "w-full",
+  groupCard: "overflow-hidden rounded-[24px] border border-border bg-surface",
+  row: "flex h-auto w-full items-center justify-start gap-3 rounded-none px-4 py-3.5 text-start font-normal",
+  avatar: "size-12 shrink-0 rounded-full object-cover",
+  rowBody: "flex min-w-0 flex-1 flex-col gap-1",
+  rowTop: "flex items-center justify-between gap-2",
+  rowName: "truncate text-foreground",
+  rowGoal: "truncate text-muted",
+  progressTrack: "h-1.5 w-full overflow-hidden rounded-full bg-default",
+  progressFill: "h-full rounded-full bg-accent",
+  divider: "mx-4 h-px bg-border last:hidden",
+  empty:
+    "flex flex-col items-center gap-2 rounded-[24px] border border-border bg-surface px-6 py-10 text-center",
+  emptyTitle: "text-foreground",
+  emptyBody: "text-muted",
+} as const;

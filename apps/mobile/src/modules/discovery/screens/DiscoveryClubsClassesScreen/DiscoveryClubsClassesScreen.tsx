@@ -3,6 +3,8 @@
 import { Button, Typography } from "@heroui/react";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { ClubClassCard } from "@repo/ui/cards/ClubClassCard";
+import { AppLayout } from "@repo/ui/layout/AppLayout";
+import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { discoveryClubsClassesScreenStyles as styles } from "./DiscoveryClubsClassesScreen.styles";
@@ -15,60 +17,72 @@ export function DiscoveryClubsClassesScreen({
   const router = useRouter();
 
   return (
-    <div className={styles.root}>
-      <header className={styles.header}>
-        <Button
-          aria-label={t("back")}
-          isIconOnly
-          onPress={() => router.back()}
-          size="lg"
-          variant="secondary"
-        >
-          <ChevronLeft size={20} />
-        </Button>
-        <Typography className={styles.title} type="h4" weight="semibold">
-          {t("classesPageTitle")}
-        </Typography>
-      </header>
+    <AppLayout
+      className={styles.root}
+      header={
+        <Header
+          className="border-b-0 bg-background"
+          startContent={
+            <Button
+              aria-label={t("back")}
+              isIconOnly
+              onPress={() => router.back()}
+              size="lg"
+              variant="ghost"
+            >
+              <ChevronLeft className="text-foreground" size={22} />
+            </Button>
+          }
+        />
+      }
+    >
+      <div className={styles.content}>
+        <section className={styles.intro}>
+          <Typography className={styles.introTitle} type="h1" weight="bold">
+            {t("classesPageTitle")}
+          </Typography>
+          <Typography className={styles.introSubtitle} type="body">
+            {club.title}
+          </Typography>
+        </section>
 
-      {club.classes.length === 0 ? (
-        <Typography className={styles.empty} type="body-sm">
-          {t("notFound")}
+        <Typography className={styles.meta} type="body-sm">
+          {t("classesCount", { count: club.classes.length })}
         </Typography>
-      ) : (
-        <div className={styles.list}>
-          {club.classes.map((item) => {
-            const href = `/discovery/clubs/${club.id}/classes/${item.id}`;
-            return (
-              <div
-                className="cursor-pointer"
-                key={item.id}
-                onClick={() => router.push(href)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault();
-                    router.push(href);
-                  }
-                }}
-                role="link"
-                tabIndex={0}
-              >
+
+        {club.classes.length === 0 ? (
+          <div className={styles.empty}>
+            <Typography className={styles.emptyTitle} type="h4" weight="semibold">
+              {t("classesEmptyTitle")}
+            </Typography>
+            <Typography className={styles.emptyBody} type="body-sm">
+              {t("classesEmptyBody")}
+            </Typography>
+          </div>
+        ) : (
+          <div className={styles.list}>
+            {club.classes.map((item) => {
+              const href = `/discovery/clubs/${club.id}/classes/${item.id}`;
+              return (
                 <ClubClassCard
                   actionLabel={t("classAction")}
                   author={item.author}
                   backgroundImage={item.backgroundImage}
+                  backgroundImageAlt={item.title}
                   category={item.category}
+                  className={styles.card}
                   date={item.date}
                   duration={item.duration}
+                  key={item.id}
                   onAction={() => router.push(href)}
                   size="md"
                   title={item.title}
                 />
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </AppLayout>
   );
 }

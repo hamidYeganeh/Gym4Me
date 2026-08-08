@@ -65,4 +65,4 @@
 - فیلدهای مرتبط در آبجکت تو در تو گروه‌بندی شوند (`name: { first, last }`).
 - جزئیات در `.cursor/rules/domain-model-shape.mdc`.
 
-> دامنهٔ کامل در `apps/api/prisma/schema.prisma` مدل شده است. رانتایم فعلی هویت/ادمین روی MongoDB (Mongoose) است؛ مهاجرت تدریجی به PostgreSQL/Prisma در فازهای بعدی.
+> رانتایم و منبع حقیقت دامنه: MongoDB با Mongoose (`apps/api/src/schemas`). PostgreSQL در محدودهٔ محصول نیست.

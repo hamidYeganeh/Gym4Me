@@ -92,6 +92,68 @@ export enum RefType {
   CANCELLATION_REASON = 'cancellation_reason',
   DOCUMENT_TYPE = 'document_type',
   MEASUREMENT_UNIT = 'measurement_unit',
+  /** Club categories: pool, gym, football pitch, multi-sport, … */
+  CLUB_CATEGORY = 'club_category',
+  /** Admin-defined review rating dimensions: cleanliness, value, … */
+  REVIEW_CRITERION = 'review_criterion',
+}
+
+/** Operational on/off for a club (separate from admin lifecycle approval). */
+export enum ClubOperationalStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+}
+
+/** User-authored club reviews (discovery UI). */
+export enum ClubUserReviewStatus {
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+  HIDDEN = 'hidden',
+}
+
+export enum WeekdayStatus {
+  OPEN = 'open',
+  CLOSED = 'closed',
+}
+
+/** Club calendar slot resource kind. */
+export enum SlotKind {
+  CLASS = 'class',
+  SESSION = 'session',
+}
+
+export enum SlotRecurrenceType {
+  WEEKLY = 'weekly',
+  ONCE = 'once',
+}
+
+export enum SlotExceptionStatus {
+  CANCELLED = 'cancelled',
+}
+
+export enum OccurrenceStatus {
+  SCHEDULED = 'scheduled',
+  CANCELLED = 'cancelled',
+}
+
+export enum RulePolicy {
+  ALLOWED = 'allowed',
+  FORBIDDEN = 'forbidden',
+}
+
+export enum AchievementGrantMode {
+  AUTOMATIC = 'automatic',
+  MANUAL = 'manual',
+}
+
+/** Rough city-area orientation for club location filters. */
+export enum GeoDirection {
+  NORTH = 'north',
+  SOUTH = 'south',
+  EAST = 'east',
+  WEST = 'west',
+  CENTER = 'center',
 }
 
 export enum RefStatus {
@@ -117,6 +179,125 @@ export enum AnalyticsEventName {
   ATTRIBUTION_CAPTURED = 'attribution_captured',
 }
 
+/** Lifecycle of a mock-gateway payment session (dev/test only). */
+export enum MockPaymentStatus {
+  CREATED = 'created',
+  PAID = 'paid',
+  CANCELLED = 'cancelled',
+  VERIFIED = 'verified',
+}
+
+/**
+ * Deterministic mock-gateway behavior derived from the amount's last digit:
+ * `…1` → auto-cancel at checkout, `…2` → verify always fails.
+ */
+export enum MockPaymentOutcomeRule {
+  INTERACTIVE = 'interactive',
+  AUTO_CANCEL = 'auto_cancel',
+  VERIFY_FAIL = 'verify_fail',
+}
+
+export enum NotificationReadStatus {
+  UNREAD = 'unread',
+  READ = 'read',
+  ARCHIVED = 'archived',
+}
+
+export enum NotificationChannelSetting {
+  ENABLED = 'enabled',
+  DISABLED = 'disabled',
+}
+
+/** SMS behavior per template: never, only as fallback for critical sends, or always. */
+export enum NotificationSmsSetting {
+  DISABLED = 'disabled',
+  CRITICAL_FALLBACK = 'critical_fallback',
+  ALWAYS = 'always',
+}
+
+export enum NotificationDeliveryStatus {
+  SENT = 'sent',
+  FAILED = 'failed',
+  SKIPPED = 'skipped',
+}
+
+export enum DevicePlatform {
+  IOS = 'ios',
+  ANDROID = 'android',
+  WEB = 'web',
+}
+
+export enum DeviceTokenStatus {
+  ACTIVE = 'active',
+  REVOKED = 'revoked',
+}
+
+/** Transactional notification templates shipped with the platform. */
+export enum NotificationTemplateKey {
+  PAYMENT_SUCCEEDED = 'payment.succeeded',
+  PAYMENT_FAILED = 'payment.failed',
+  BOOKING_CONFIRMED = 'booking.confirmed',
+  BOOKING_REJECTED = 'booking.rejected',
+  BOOKING_REMINDER = 'booking.reminder',
+  BOOKING_CANCELLED_BY_PROVIDER = 'booking.cancelled_by_provider',
+  WAITLIST_OFFER = 'waitlist.offer',
+  MEMBERSHIP_EXPIRING = 'membership.expiring',
+  COACH_VERIFICATION_RESULT = 'coach.verification_result',
+  PAYOUT_SETTLED = 'payout.settled',
+}
+
+export enum SupportTicketCategory {
+  PAYMENT = 'payment',
+  BOOKING = 'booking',
+  MEMBERSHIP = 'membership',
+  TECHNICAL = 'technical',
+  CLUB_COMPLAINT = 'club_complaint',
+  SUGGESTION = 'suggestion',
+  COMPLAINT = 'complaint',
+  OTHER = 'other',
+}
+
+export enum SupportTicketPriority {
+  LOW = 'low',
+  NORMAL = 'normal',
+  HIGH = 'high',
+  URGENT = 'urgent',
+}
+
+export enum SupportTicketStatus {
+  OPEN = 'open',
+  AWAITING_ADMIN = 'awaiting_admin',
+  AWAITING_USER = 'awaiting_user',
+  RESOLVED = 'resolved',
+  CLOSED = 'closed',
+}
+
+export enum SupportMessageAuthorKind {
+  REQUESTER = 'requester',
+  ADMIN = 'admin',
+}
+
+/** Soft reference targets for support tickets / disputes. */
+export enum SupportRelatedEntityKind {
+  BOOKING = 'booking',
+  PAYMENT = 'payment',
+  CLUB = 'club',
+  MEMBERSHIP = 'membership',
+}
+
+export enum FaqAudience {
+  ALL = 'all',
+  ATHLETE = 'athlete',
+  COACH = 'coach',
+  CLUB_OWNER = 'club_owner',
+}
+
+export enum PublishStatus {
+  DRAFT = 'draft',
+  PUBLISHED = 'published',
+  UNPUBLISHED = 'unpublished',
+}
+
 export enum AuditAction {
   USER_REGISTERED = 'user.registered',
   USER_LOGIN = 'user.login',
@@ -139,8 +320,14 @@ export enum AuditAction {
   COACH_VERIFICATION_REVIEWED = 'coach.verification_reviewed',
   CLUB_CREATED = 'club.created',
   CLUB_UPDATED = 'club.updated',
+  CLUB_DELETED = 'club.deleted',
   CLUB_SUBMITTED = 'club.submitted',
   CLUB_REVIEWED = 'club.reviewed',
+  CLUB_ACTIVATED = 'club.activated',
+  CLUB_DEACTIVATED = 'club.deactivated',
+  CLUB_USER_REVIEW_CREATED = 'club.user_review_created',
+  CLUB_USER_REVIEW_MODERATED = 'club.user_review_moderated',
+  ACHIEVEMENT_GRANTED = 'club.achievement_granted',
   MEDIA_UPLOADED = 'media.uploaded',
   CHOICE_CREATED = 'basics.choice_created',
   CHOICE_UPDATED = 'basics.choice_updated',
@@ -154,4 +341,11 @@ export enum AuditAction {
   REF_CREATED = 'basics.ref_created',
   REF_UPDATED = 'basics.ref_updated',
   REF_DELETED = 'basics.ref_deleted',
+  SUPPORT_TICKET_CREATED = 'support.ticket_created',
+  SUPPORT_TICKET_REPLIED = 'support.ticket_replied',
+  SUPPORT_TICKET_UPDATED = 'support.ticket_updated',
+  SUPPORT_TICKET_CLOSED = 'support.ticket_closed',
+  SUPPORT_FAQ_CREATED = 'support.faq_created',
+  SUPPORT_FAQ_UPDATED = 'support.faq_updated',
+  SUPPORT_FAQ_DELETED = 'support.faq_deleted',
 }

@@ -2,6 +2,11 @@
 
 import { Button } from "@heroui/react";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
+import { Fire1 } from "@repo/icons/Fire1";
+import {
+  EMPTY_STATE_ILLUSTRATIONS,
+  EmptyState,
+} from "@repo/ui/kit/EmptyState";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
@@ -22,6 +27,7 @@ export function DiscoveryCoachesScreen({
   popularCoaches,
   expertCoaches,
   nearbyCoaches,
+  isEmpty,
 }: DiscoveryCoachesScreenProps) {
   const t = useTranslations("DiscoveryCoaches");
   const router = useRouter();
@@ -56,52 +62,95 @@ export function DiscoveryCoachesScreen({
           title={t("title")}
         />
 
-        <DiscoveryCoachesSpecialtySection
-          seeAllLabel={t("seeAll")}
-          specialties={specialties}
-          title={t("specialtyTitle")}
-        />
+        {isEmpty ? (
+          <EmptyState
+            description={t("emptyBody")}
+            illustration={EMPTY_STATE_ILLUSTRATIONS.search}
+            illustrationAlt=""
+            layout="media"
+            primaryAction={{
+              label: t("exploreClubs"),
+              onPress: () => router.push("/discovery/clubs"),
+            }}
+            suggestions={[
+              {
+                key: "hiit",
+                label: t("suggestionHiit"),
+                icon: <Fire1 size={16} />,
+                onPress: () => router.push("/discovery/coaches"),
+              },
+              {
+                key: "yoga",
+                label: t("suggestionYoga"),
+                onPress: () => router.push("/discovery/coaches"),
+              },
+              {
+                key: "pilates",
+                label: t("suggestionPilates"),
+                onPress: () => router.push("/discovery/coaches"),
+              },
+            ]}
+            suggestionsLabel={t("suggestionsLabel")}
+            title={t("emptyTitle")}
+          />
+        ) : (
+          <>
+            <DiscoveryCoachesSpecialtySection
+              seeAllLabel={t("seeAll")}
+              specialties={specialties}
+              title={t("specialtyTitle")}
+            />
 
-        <DiscoveryCoachesAiSection
-          actionLabel={t("aiAction")}
-          title={t("aiTitle")}
-        />
+            <DiscoveryCoachesAiSection
+              actionLabel={t("aiAction")}
+              title={t("aiTitle")}
+            />
 
-        <DiscoveryCoachesRecommendSection
-          certifiedLabel={t("certified")}
-          closeLabel={t("close")}
-          coaches={featuredCoaches}
-          newLabel={t("newBadge")}
-          onCoachPress={openCoach}
-          seeAllLabel={t("seeAll")}
-          title={t("recommendTitle")}
-          yoeLabel={(years) => t("yoe", { years })}
-        />
+            {featuredCoaches.length > 0 ? (
+              <DiscoveryCoachesRecommendSection
+                certifiedLabel={t("certified")}
+                closeLabel={t("close")}
+                coaches={featuredCoaches}
+                newLabel={t("newBadge")}
+                onCoachPress={openCoach}
+                seeAllLabel={t("seeAll")}
+                title={t("recommendTitle")}
+                yoeLabel={(years) => t("yoe", { years })}
+              />
+            ) : null}
 
-        <DiscoveryCoachesPopularSection
-          coaches={popularCoaches}
-          onCoachPress={openCoach}
-          seeAllLabel={t("seeAll")}
-          title={t("popularTitle")}
-          yoeLabel={(years) => t("yoe", { years })}
-        />
+            {popularCoaches.length > 0 ? (
+              <DiscoveryCoachesPopularSection
+                coaches={popularCoaches}
+                onCoachPress={openCoach}
+                seeAllLabel={t("seeAll")}
+                title={t("popularTitle")}
+                yoeLabel={(years) => t("yoe", { years })}
+              />
+            ) : null}
 
-        <DiscoveryCoachesExpertSection
-          coaches={expertCoaches}
-          onCoachPress={openCoach}
-          seeAllLabel={t("seeAll")}
-          title={t("expertTitle")}
-          verifiedLabel={t("verified")}
-        />
+            {expertCoaches.length > 0 ? (
+              <DiscoveryCoachesExpertSection
+                coaches={expertCoaches}
+                onCoachPress={openCoach}
+                seeAllLabel={t("seeAll")}
+                title={t("expertTitle")}
+                verifiedLabel={t("verified")}
+              />
+            ) : null}
 
-        <DiscoveryCoachesNearbySection
-          coaches={nearbyCoaches}
-          inPersonLabel={t("inPersonOnly")}
-          onCoachPress={openCoach}
-          remoteLabel={t("availableRemote")}
-          seeAllLabel={t("seeAll")}
-          title={t("nearbyTitle")}
-        />
+            {nearbyCoaches.length > 0 ? (
+              <DiscoveryCoachesNearbySection
+                coaches={nearbyCoaches}
+                inPersonLabel={t("inPersonOnly")}
+                onCoachPress={openCoach}
+                remoteLabel={t("availableRemote")}
+                seeAllLabel={t("seeAll")}
+                title={t("nearbyTitle")}
+              />
+            ) : null}
+          </>
+        )}
       </div>
     </AppLayout>
   );

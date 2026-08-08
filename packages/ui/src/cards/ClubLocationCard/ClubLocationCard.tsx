@@ -2,10 +2,10 @@
 
 import { Button, Card, Skeleton } from "@heroui/react";
 import { Clock } from "@repo/icons/Clock";
+import { Compass } from "@repo/icons/Compass";
 import { Fire1 } from "@repo/icons/Fire1";
 import { Maximize } from "@repo/icons/Maximize";
 import { Minus } from "@repo/icons/Minus";
-import { PersonRunning } from "@repo/icons/PersonRunning";
 import { Plus } from "@repo/icons/Plus";
 import {
   useCallback,
@@ -172,8 +172,10 @@ function distanceIcon(
 
 export function ClubLocationCard({
   title,
+  address,
   duration,
   calories,
+  fullWidth = false,
   route,
   distanceLabel,
   startLabel = "Start",
@@ -190,9 +192,10 @@ export function ClubLocationCard({
   className,
   ...props
 }: ClubLocationCardProps) {
-  const slots = clubLocationCardVariants();
+  const slots = clubLocationCardVariants({ fullWidth });
   const reactId = useId();
   const mapId = `club-loc-map-${reactId.replace(/:/g, "")}`;
+  const showMeta = Boolean(duration) || Boolean(calories);
 
   const shellRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletMap | null>(null);
@@ -477,17 +480,30 @@ export function ClubLocationCard({
         <div className={slots.footerText()}>
           <Card.Header className={slots.header()}>
             <Card.Title className={slots.title()}>{title}</Card.Title>
-            <Card.Description className={slots.meta()}>
-              <span className={slots.metaItem()}>
-                <Clock className={slots.metaIcon()} size={14} />
-                {duration}
-              </span>
-              <span aria-hidden className={slots.metaDot()} />
-              <span className={slots.metaItem()}>
-                <Fire1 className={slots.metaIcon()} size={14} />
-                {calories}
-              </span>
-            </Card.Description>
+            {address ? (
+              <Card.Description className={slots.address()}>
+                {address}
+              </Card.Description>
+            ) : null}
+            {showMeta ? (
+              <Card.Description className={slots.meta()}>
+                {duration ? (
+                  <span className={slots.metaItem()}>
+                    <Clock className={slots.metaIcon()} size={14} />
+                    {duration}
+                  </span>
+                ) : null}
+                {duration && calories ? (
+                  <span aria-hidden className={slots.metaDot()} />
+                ) : null}
+                {calories ? (
+                  <span className={slots.metaItem()}>
+                    <Fire1 className={slots.metaIcon()} size={14} />
+                    {calories}
+                  </span>
+                ) : null}
+              </Card.Description>
+            ) : null}
           </Card.Header>
         </div>
 
@@ -498,7 +514,7 @@ export function ClubLocationCard({
           onPress={onAction}
           variant="primary"
         >
-          <PersonRunning size={22} />
+          <Compass size={22} />
         </Button>
       </Card.Footer>
     </Card>

@@ -8,36 +8,6 @@ import {
   VerifyPaymentResult,
 } from './payment-gateway.service';
 
-@Injectable()
-export class MockPaymentGatewayService extends PaymentGatewayService {
-  private readonly logger = new Logger('MockPayment');
-
-  async createPayment(
-    request: CreatePaymentRequest,
-  ): Promise<CreatePaymentResult> {
-    const authority = `MOCK-${request.orderId}-${Date.now()}`;
-    this.logger.log(
-      `[CREATE] amount=${request.amount} order=${request.orderId} authority=${authority}`,
-    );
-    return {
-      authority,
-      redirectUrl: `${request.callbackUrl}?Authority=${authority}&Status=OK`,
-    };
-  }
-
-  async verifyPayment(
-    request: VerifyPaymentRequest,
-  ): Promise<VerifyPaymentResult> {
-    this.logger.log(
-      `[VERIFY] authority=${request.authority} amount=${request.amount}`,
-    );
-    return {
-      ok: true,
-      refId: `MOCK-REF-${request.authority}`,
-    };
-  }
-}
-
 /**
  * Zarinpal REST (v4).
  * Docs: https://docs.zarinpal.com/paymentGateway/

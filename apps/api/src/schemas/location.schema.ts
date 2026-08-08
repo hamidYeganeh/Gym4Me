@@ -31,6 +31,14 @@ export class Location {
   @Prop({ trim: true })
   description?: string;
 
+  /** Optional icon key / emoji — mainly used for countries. */
+  @Prop({ trim: true })
+  icon?: string;
+
+  /** Inline SVG markup for country flags (countries only). */
+  @Prop({ trim: true })
+  flagSvg?: string;
+
   @Prop({ type: Types.ObjectId, ref: Location.name, index: true })
   parentId?: Types.ObjectId;
 

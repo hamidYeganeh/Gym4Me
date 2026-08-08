@@ -1,0 +1,40 @@
+export {
+  createDiscoveryClubsApi,
+  type DiscoveryClubsApi,
+} from "./clubs.client";
+export { discoveryClubsEndpoints } from "./clubs.endpoint";
+export type {
+  Club,
+  ClubUserReview,
+  CreateDiscoveryReviewInput,
+  DiscoveryClubReviewsQuery,
+  DiscoveryClubsQuery,
+} from "./clubs.dto";
+export { discoveryClubsKeys } from "./clubs.keys";
+
+export {
+  createDiscoveryClubSlotsApi,
+  type DiscoveryClubSlotsApi,
+} from "./club-slots.client";
+export { discoveryClubSlotsEndpoints } from "./club-slots.endpoint";
+export type {
+  ClubCalendarDay,
+  ClubCalendarOccurrence,
+  ClubCalendarQuery,
+  ClubCalendarResponse,
+  ClubClass,
+} from "./club-slots.dto";
+export { discoveryClubSlotsKeys } from "./club-slots.keys";
+
+export {
+  createDiscoveryCoachesApi,
+  type DiscoveryCoachesApi,
+} from "./coaches.client";
+export { discoveryCoachesEndpoints } from "./coaches.endpoint";
+export type {
+  DiscoveryCoach,
+  DiscoveryCoachClub,
+  DiscoveryCoachesQuery,
+  DiscoveryCoachUser,
+} from "./coaches.dto";
+export { discoveryCoachesKeys } from "./coaches.keys";

@@ -1,4 +1,4 @@
-import { ApiError } from "./errors";
+import { ApiError, KYC_REQUIRED_CODE } from "./errors";
 import type { ApiErrorBody, AuthSession, TokenPair } from "./types";
 import type { TokenStorage } from "./storage";
 
@@ -10,11 +10,15 @@ export type ApiClientOptions = {
   fetch?: typeof fetch;
   getAccessToken?: () => string | null;
   onUnauthorized?: () => void;
+  /** Called when a 403 with `code: 'KYC_REQUIRED'` is returned (identity verification needed). */
+  onKycRequired?: (body: ApiErrorBody | null) => void;
 };
 
 export type RequestOptions = {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
+  /** Multipart body — Content-Type is left unset so the boundary is set by fetch. */
+  formData?: FormData;
   query?: Record<string, string | number | boolean | undefined | null>;
   headers?: HeadersInit;
   /** Skip Authorization header even if a token exists. */
@@ -28,6 +32,7 @@ export class ApiClient {
   private readonly fetchImpl: typeof fetch;
   private readonly getAccessToken: () => string | null;
   private readonly onUnauthorized?: () => void;
+  private readonly onKycRequired?: (body: ApiErrorBody | null) => void;
   private refreshPromise: Promise<TokenPair | null> | null = null;
   private refreshPath: string | null = null;
 
@@ -39,11 +44,16 @@ export class ApiClient {
       options.getAccessToken ??
       (() => this.storage?.get()?.accessToken ?? null);
     this.onUnauthorized = options.onUnauthorized;
+    this.onKycRequired = options.onKycRequired;
   }
 
   /** Wire the refresh endpoint used by 401 retry (once per client). */
   configureRefresh(path: string) {
     this.refreshPath = path;
+  }
+
+  getBaseUrl(): string {
+    return this.baseUrl;
   }
 
   getSession(): AuthSession | null {
@@ -59,6 +69,35 @@ export class ApiClient {
     options: RequestOptions = {},
     isRetry = false,
   ): Promise<T> {
+    const response = await this.sendWithAuthRetry(path, options, isRetry);
+    return this.parseResponse<T>(response);
+  }
+
+  /** Authenticated binary download (KYC docs, exports). */
+  async requestBlob(
+    path: string,
+    options: RequestOptions = {},
+    isRetry = false,
+  ): Promise<Blob> {
+    const response = await this.sendWithAuthRetry(path, options, isRetry);
+    if (!response.ok) {
+      const text = await response.text();
+      let data: ApiErrorBody | null = null;
+      try {
+        data = text ? (JSON.parse(text) as ApiErrorBody) : null;
+      } catch {
+        data = null;
+      }
+      this.raiseError(response, data);
+    }
+    return response.blob();
+  }
+
+  private async sendWithAuthRetry(
+    path: string,
+    options: RequestOptions,
+    isRetry: boolean,
+  ): Promise<Response> {
     const response = await this.send(path, options);
 
     if (
@@ -69,13 +108,13 @@ export class ApiClient {
     ) {
       const refreshed = await this.refreshTokens();
       if (refreshed) {
-        return this.request<T>(path, options, true);
+        return this.sendWithAuthRetry(path, options, true);
       }
       this.storage?.set(null);
       this.onUnauthorized?.();
     }
 
-    return this.parseResponse<T>(response);
+    return response;
   }
 
   private async send(path: string, options: RequestOptions): Promise<Response> {
@@ -86,7 +125,9 @@ export class ApiClient {
     }
 
     let body: BodyInit | undefined;
-    if (options.body !== undefined) {
+    if (options.formData) {
+      body = options.formData;
+    } else if (options.body !== undefined) {
       headers.set("Content-Type", "application/json");
       body = JSON.stringify(options.body);
     }
@@ -164,14 +205,21 @@ export class ApiClient {
     const data = text ? (JSON.parse(text) as unknown) : null;
 
     if (!response.ok) {
-      throw new ApiError(
-        response.status,
-        (data as ApiErrorBody | null) ?? null,
-        response.statusText || "Request failed",
-      );
+      this.raiseError(response, (data as ApiErrorBody | null) ?? null);
     }
 
     return data as T;
+  }
+
+  private raiseError(response: Response, body: ApiErrorBody | null): never {
+    if (response.status === 403 && body?.code === KYC_REQUIRED_CODE) {
+      this.onKycRequired?.(body);
+    }
+    throw new ApiError(
+      response.status,
+      body,
+      response.statusText || "Request failed",
+    );
   }
 }
 

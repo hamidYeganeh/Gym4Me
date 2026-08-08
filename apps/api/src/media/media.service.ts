@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { createHash } from 'crypto';
 import { Model, Types } from 'mongoose';
 import type { Request } from 'express';
-import { createReadStream, existsSync } from 'fs';
+import { createReadStream, existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { AuditService } from '../audit/audit.service';
 import { AuditAction } from '../common/enums';
@@ -20,10 +21,16 @@ export class MediaService {
     uploaderId: string,
     request?: Request,
   ) {
+    const absolute = join(process.env.UPLOAD_DIR || './uploads', file.filename);
+    const hash = existsSync(absolute)
+      ? createHash('sha256').update(readFileSync(absolute)).digest('hex')
+      : undefined;
+
     const media = await this.mediaModel.create({
       path: file.filename,
       mimeType: file.mimetype,
       size: file.size,
+      hash,
       originalName: file.originalname,
       uploaderId: new Types.ObjectId(uploaderId),
     });
@@ -35,6 +42,7 @@ export class MediaService {
         mediaId: media._id.toString(),
         mimeType: media.mimeType,
         size: media.size,
+        hash: media.hash,
       },
       request,
     });
@@ -75,6 +83,7 @@ export class MediaService {
       id: media._id.toString(),
       mimeType: media.mimeType,
       size: media.size,
+      hash: media.hash ?? null,
       originalName: media.originalName ?? null,
       url: `/api/v1/media/${media._id.toString()}/file`,
       createdAt: media.createdAt,

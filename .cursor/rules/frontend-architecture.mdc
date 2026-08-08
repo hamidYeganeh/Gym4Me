@@ -50,7 +50,7 @@ src/
 
 | Package | Use for |
 |---------|---------|
-| `@repo/api` | HTTP client, auth APIs, session storage |
+| `@repo/api` | HTTP client, domain APIs (`*.client` / `*.endpoint` / `*.dto` / `*.keys` / `*.hooks`), session storage |
 | `@repo/ui` | Shared product UI (framework-agnostic; no hard `next` runtime deps) |
 | `@repo/theme` / `@repo/icons` / `@repo/fonts` / `@repo/i18n` | Design system + copy |
 

@@ -26,6 +26,9 @@ const config: CapacitorConfig = {
       splashFullScreen: true,
       splashImmersive: true,
     },
+    PushNotifications: {
+      presentationOptions: ["badge", "sound", "alert"],
+    },
     StatusBar: {
       // Overlay so CSS `env(safe-area-inset-*)` owns notch / status bar spacing
       overlaysWebView: true,

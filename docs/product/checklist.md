@@ -2,22 +2,24 @@
 
 علائم: ✅ انجام‌شده · 🟡 ناقص (schema / UI mock / API بدون UI) · ❌ شروع‌نشده · — بی‌ربط
 
-> schema دامنه در Prisma تقریباً کامل است؛ رانتایم فعلی فقط هویت/ادمین/basics روی MongoDB پیاده شده و موبایل هنوز به API وصل نیست.
+> رانتایم فعلی هویت/ادمین/basics/analytics روی MongoDB است. موبایل به API احراز هویت/پروفایل/KYC وصل شده؛ discovery باشگاه/مربی روی API با fallback به mock برای slugهای دمو است.
+>
+> **Seed دمو:** `npm run db:seed:all -w api` — کاربران همهٔ نقش‌ها (رمز `Gym4Me!123`)، باشگاه‌های تأییدشده/در انتظار/پیش‌نویس، کلاس/سانس، KYC و نظرات. تست فلوها: `apps/api/test/smoke-flows.sh` (نیازمند API در حال اجرا + `DEBUG_MODE=true`). ادمین به‌صورت پیش‌فرض کلاب‌ها را از API واقعی می‌خواند (`VITE_CLUBS_USE_MOCK=true` فقط برای دموی آفلاین).
 
 | استوری | api | mobile | admin | website |
 |--------|-----|--------|-------|---------|
-| A1 ورود OTP | ✅ | ❌ | — | — |
-| A2 رمز عبور | ✅ | ❌ | 🟡 UI ورود | — |
-| A3 پروفایل پایه | ✅ | ❌ | — | — |
-| A4 سوئیچ نقش + توکن | ✅ | ❌ | — | — |
-| A5 KYC | ✅ | ❌ | ❌ UI | — |
-| A6 دعوت با کد معرف | ✅ | ❌ | — | — |
-| B1 پروفایل ورزشکار | 🟡 schema | 🟡 UI mock | — | — |
-| B2–B3 پروفایل/تأیید مربی | 🟡 schema | 🟡 UI mock | ❌ | — |
-| B4–B5 ساخت باشگاه/مدارک | 🟡 schema | 🟡 UI mock | ❌ | — |
-| C1–C2 جست‌وجوی باشگاه | ❌ | 🟡 UI mock | — | ❌ |
-| C3–C4 جست‌وجوی مربی | ❌ | 🟡 UI mock | — | ❌ |
-| C5 صفحات SEO | — | — | — | 🟡 لندینگ |
+| A1 ورود OTP | ✅ | ✅ | — | — |
+| A2 رمز عبور | ✅ | 🟡 ورود با رمز | ✅ | — |
+| A3 پروفایل پایه | ✅ | ✅ | — | — |
+| A4 سوئیچ نقش + توکن | ✅ | ✅ | — | — |
+| A5 KYC | ✅ | ✅ | ✅ | — |
+| A6 دعوت با کد معرف | ✅ | 🟡 کلاینت API | — | — |
+| B1 پروفایل ورزشکار | ✅ | ✅ | — | — |
+| B2–B3 پروفایل/تأیید مربی | ✅ | ✅ | ✅ | — |
+| B4–B5 ساخت باشگاه/مدارک | ✅ | ✅ | ✅ | — |
+| C1–C2 جست‌وجوی باشگاه | ✅ + Q11 filters | 🟡 API + mock + فیلترها + نقشه geo | — | 🟡 SEO /clubs |
+| C3–C4 جست‌وجوی مربی | ✅ | 🟡 API + mock fallback | — | 🟡 SEO /coaches |
+| C5 صفحات SEO | — | — | — | 🟡 JSON-LD + sitemap + robots |
 | D1–D9 رزروها | 🟡 schema | ❌ | ❌ | — |
 | D10 check-in | 🟡 schema | ❌ | — | — |
 | D11 تأیید مربی | 🟡 schema | ❌ | — | — |
@@ -30,38 +32,42 @@
 | H6 MetricType | 🟡 schema | — | ❌ | — |
 | I1–I3 تغذیه | 🟡 schema | ❌ | ❌ | — |
 | J1–J6 اجتماعی | 🟡 schema | ❌ | ❌ | — |
-| K1 فضا/سانس | 🟡 schema | 🟡 UI mock | — | — |
+| K1 فضا/سانس | ✅ class/slot + calendar | 🟡 API برای clubId واقعی + mock برای slug | ✅ CRUD/edit/cancel occurrence | — |
 | K2 پرسنل + مجوز | 🟡 schema | ❌ | — | — |
-| K3–K8 عملیات باشگاه | 🟡 schema | ❌ | ❌ | — |
+| K3–K8 عملیات باشگاه | 🟡 K3 assign (نقش coach الزامی) | 🟡 owner club coaches UI | 🟡 assign + audience در فرم | — |
 | L1 زرین‌پال | 🟡 gateway stub | ❌ | — | — |
 | L2 کیف پول | 🟡 schema | ❌ | ❌ | — |
 | L3 Ledger | 🟡 schema | — | — | — |
 | L4–L8 کمیسیون/تسویه | 🟡 schema | ❌ | ❌ | — |
-| M1 CRUD کاربران | ✅ | — | ❌ UI | — |
-| M2 تأیید KYC | ✅ | — | ❌ UI | — |
-| M3 دادهٔ مرجع | ✅ | — | ❌ UI | — |
+| M1 CRUD کاربران | ✅ | — | ✅ | — |
+| M2 تأیید KYC | ✅ | — | ✅ | — |
+| M3 دادهٔ مرجع | ✅ | — | ✅ | — |
 | M4 تأیید UGC | 🟡 schema | — | ❌ | — |
 | M5 impersonation | 🟡 schema | — | ❌ | — |
 | M6 AuditLog نمایش | ✅ ثبت | — | ❌ | — |
-| M7–M10 CMS/گزارش/تیکت | 🟡 schema | — | ❌ | — |
-| N1 اعلان تراکنشی | 🟡 schema | ❌ | ❌ | — |
+| M7 FAQ | ✅ (`/support/faq` عمومی + CRUD ادمین) | ❌ نمایش موبایل | ✅ | ❌ نمایش سایت |
+| M8–M9 اعلان/گزارش | 🟡 schema | — | ❌ | — |
+| M10 تیکت پشتیبانی | ✅ (ticket + thread + resolve/close + audit) | ❌ UI موبایل (hooks آماده) | ✅ | — |
+| N1 اعلان تراکنشی | ✅ dispatch (template + push + SMS fallback + FCM driver) | 🟡 پوش native نصب شد؛ نیاز به Firebase config | ❌ مدیریت قالب | — |
 | N2 کاوه‌نگار | ✅ درایور | — | — | — |
-| N3 inbox | 🟡 schema | ❌ | — | — |
+| N3 inbox | ✅ (`/account/notifications` + device tokens) | ✅ صفحه اعلان‌ها متصل به API | — | — |
 | N4 پیام مربی-شاگرد | 🟡 schema | ❌ | — | — |
 | O1 پرداخت حضوری/ترکیبی | ❌ | — | ❌ | — |
 | O2–O15 عملیات واقعی باشگاه | ❌ | ❌ | ❌ | — |
 | P1–P12 کسب‌وکار/کیفیت مربی | ❌ | ❌ | ❌ | — |
-| Q1–Q12 اعتماد/سلامت ورزشکار | 🟡 بخشی در schema | ❌ | ❌ | 🟡 بخشی از discovery |
-| R1–R2 event/attribution | ❌ | ❌ | ❌ | ❌ |
+| Q1–Q12 اعتماد/سلامت ورزشکار | 🟡 Q11 audience روی Club + discovery filters | 🟡 Q2/Q3 + فیلترهای Q11 در لیست باشگاه | ❌ | 🟡 SEO جزئیات باشگاه audience |
+| R1–R2 event/attribution | ✅ | ✅ کلاینت attribution | — | ❌ |
 | R3–R7 lifecycle delivery | ❌ | ❌ | ❌ | — |
 | R8–R9 referral reward | ❌ (invite بدون reward ✅) | ❌ | ❌ | ❌ |
 | R10–R12 analytics/expansion | ❌ | ❌ | ❌ | — |
 
 ## شکاف‌های فوری فاز ۱
 
-1. اتصال `apps/mobile` به API احراز هویت
-2. UI پنل ادمین برای کاربران/KYC/basics (سرویس‌ها آماده‌اند)
+1. ~~اتصال `apps/mobile` به API احراز هویت~~ ✅
+2. ~~UI پنل ادمین برای کاربران/KYC/basics~~ ✅
 3. فعال‌سازی واقعی `SMS_PROVIDER=kavenegar` در محیط staging
-4. تکمیل پروفایل‌های نقش (B) روی API رانتایم
-5. تعریف و ثبت eventهای سروری و attribution پیش از شروع acquisition پولی
-6. حفظ `referralCode` و `referredBy` در طرح مهاجرت MongoDB → PostgreSQL
+4. ~~تکمیل پروفایل‌های نقش (B) روی API رانتایم + UI~~ ✅ (سطح پایه)
+5. ~~ثبت attribution کلاینت~~ ✅ (پوشش event سروری جزئی؛ taxonomy کامل later)
+6. تست دستی end-to-end: OTP → پروفایل → KYC → تأیید ادمین
+
+> دیتابیس: فقط MongoDB — مهاجرت به PostgreSQL در محدوده نیست.

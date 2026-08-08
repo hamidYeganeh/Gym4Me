@@ -1,7 +1,7 @@
 import type { ButtonProps } from "@heroui/react";
 import type { HTMLAttributes, ReactNode } from "react";
 
-export type ClubCardOrientation = "horizontal" | "vertical";
+export type ClubCardOrientation = "horizontal" | "vertical" | "fullWidth";
 
 export type ClubCardFeature = {
   /** Feature chip label (e.g. `"Dining"`). */
@@ -16,8 +16,9 @@ export type ClubCardProps = Omit<
 > & {
   /**
    * Layout direction.
-   * - `horizontal` — landscape full-bleed cover (`aspect-ratio: 4/3`)
-   * - `vertical` — portrait full-bleed cover with stars, features, and footer CTA
+   * - `horizontal` — landscape cover (`aspect-ratio: 4/3`, max-width)
+   * - `vertical` — portrait cover with stars, features, and footer CTA
+   * - `fullWidth` — edge-to-edge landscape hero cover (no max-width)
    */
   orientation?: ClubCardOrientation;
   /**

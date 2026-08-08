@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import {
-  getAllClubIds,
-  getClubDetail,
-} from "@/modules/discovery/lib/club-detail-data";
-import { DiscoveryClubsBranchesScreen } from "@/modules/discovery/screens/DiscoveryClubsBranchesScreen";
+import { DiscoveryClubDetailGate } from "@/modules/discovery/lib/DiscoveryClubDetailGate";
+import { getAllClubIds, getClubDetail } from "@/modules/discovery/lib/club-detail-data";
 
 type ClubBranchesPageProps = {
   params: Promise<{ clubId: string }>;
@@ -31,11 +27,6 @@ export default async function ClubBranchesPage({
   params,
 }: ClubBranchesPageProps) {
   const { clubId } = await params;
-  const club = getClubDetail(clubId);
 
-  if (!club) {
-    notFound();
-  }
-
-  return <DiscoveryClubsBranchesScreen club={club} />;
+  return <DiscoveryClubDetailGate clubId={clubId} view="branches" />;
 }

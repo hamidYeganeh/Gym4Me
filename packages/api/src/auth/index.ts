@@ -1,19 +1,27 @@
 export {
   createAccountAuthApi,
   type AccountAuthApi,
-  type ConfirmOtpInput,
-  type ForgotPasswordConfirmInput,
-  type ForgotPasswordInput,
-  type LoginInput,
-  type LogoutInput,
-  type OtpRequested,
-  type RequestOtpInput,
-  type ResetPasswordInput,
-  type SetPasswordInput,
-  type SwitchRoleInput,
-} from "./account";
+} from "./account.client";
+export { authAccountEndpoints } from "./account.endpoint";
+export type {
+  ConfirmOtpInput,
+  ForgotPasswordConfirmInput,
+  ForgotPasswordConfirmed,
+  ForgotPasswordInput,
+  LoginInput,
+  LogoutInput,
+  OtpRequested,
+  RequestOtpInput,
+  ResetPasswordInput,
+  SetPasswordInput,
+  SwitchRoleInput,
+} from "./account.dto";
+export { authAccountKeys } from "./account.keys";
+
 export {
   createAdminAuthApi,
   type AdminAuthApi,
-  type AdminConfirmOtpInput,
-} from "./admin";
+} from "./admin.client";
+export { authAdminEndpoints } from "./admin.endpoint";
+export type { AdminConfirmOtpInput } from "./admin.dto";
+export { authAdminKeys } from "./admin.keys";

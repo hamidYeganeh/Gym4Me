@@ -1,6 +1,6 @@
 ---
 name: gym4me-product-planning
-description: Plans and reviews Gym4Me product requirements for Iranian clubs, coaches, athletes, staff, and admins. Use when changing product scope, user stories, Prisma domain models, delivery phases, end-to-end scenarios, or persona requirements.
+description: Plans and reviews Gym4Me product requirements for Iranian clubs, coaches, athletes, staff, and admins. Use when changing product scope, user stories, MongoDB/Mongoose domain models, delivery phases, end-to-end scenarios, or persona requirements.
 ---
 
 # Gym4Me Product Planning
@@ -15,7 +15,7 @@ Before planning or changing a product domain, read:
 4. `docs/product/checklist.md`
 5. `docs/product/phases.md`
 6. `docs/product/market-requirements.md`
-7. Relevant models in `apps/api/prisma/schema.prisma`
+7. Relevant models in `apps/api/src/schemas` (MongoDB / Mongoose)
 
 Treat `decisions.md` as locked. Treat `market-requirements.md` as proposed until the user explicitly approves moving an item into decisions.
 

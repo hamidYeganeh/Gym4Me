@@ -31,12 +31,20 @@ export class PaginationQueryDto {
   @Min(1)
   page?: number;
 
+  /** @deprecated Prefer `page_size`. */
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
   @Max(100)
   limit?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  page_size?: number;
 }
 
 export class ListUsersQueryDto extends PaginationQueryDto {
@@ -108,6 +116,14 @@ export class UpdateUserStatusDto {
   @IsEnum(UserStatus)
   status!: UserStatus;
 
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  reason?: string;
+}
+
+/** Optional reason for activate / deactivate shortcuts. */
+export class UserActivationDto {
   @IsOptional()
   @IsString()
   @MaxLength(500)

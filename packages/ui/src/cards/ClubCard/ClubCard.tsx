@@ -78,6 +78,7 @@ export function ClubCard({
 }: ClubCardProps) {
   const slots = clubCardVariants({ orientation });
   const isVertical = orientation === "vertical";
+  const showTopBar = !isVertical;
   const showRating = rating != null;
   const showSubtitle = subtitle != null && subtitle !== "";
   const showFeatures = features != null && features.length > 0;
@@ -103,7 +104,7 @@ export function ClubCard({
         <div aria-hidden className={slots.mediaScrim()} />
       </div>
 
-      {!isVertical ? (
+      {showTopBar ? (
         <div className={slots.topBar()}>
           {showRating ? (
             <Chip className={slots.ratingChip()} size="sm" variant="primary">

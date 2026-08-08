@@ -14,6 +14,10 @@ export class Media {
   @Prop({ required: true })
   size!: number;
 
+  /** SHA-256 of file bytes when available. */
+  @Prop({ index: true })
+  hash?: string;
+
   @Prop()
   originalName?: string;
 

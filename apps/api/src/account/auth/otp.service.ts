@@ -3,6 +3,7 @@ import {
   HttpStatus,
   Inject,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -18,11 +19,19 @@ const MAX_ATTEMPTS = 5;
 
 @Injectable()
 export class OtpService {
+  private readonly logger = new Logger(OtpService.name);
+
   constructor(
     @Inject(REDIS) private readonly redis: Redis,
     private readonly sms: SmsService,
     private readonly config: ConfigService,
   ) {}
+
+  private isDebugMode(): boolean {
+    const value = this.config.get<string | boolean>('DEBUG_MODE', 'false');
+    if (typeof value === 'boolean') return value;
+    return String(value ?? 'false').trim().toLowerCase() === 'true';
+  }
 
   private codeKey(purpose: OtpPurpose, phone: string) {
     return `otp:${purpose}:${phone}`;
@@ -58,10 +67,12 @@ export class OtpService {
 
     await this.sms.sendOtp(phone, code);
 
-    const debugMode =
-      (this.config.get<string>('DEBUG_MODE', 'false') ?? 'false')
-        .trim()
-        .toLowerCase() === 'true';
+    const debugMode = this.isDebugMode();
+    if (debugMode) {
+      this.logger.log(
+        `[DEBUG] purpose=${purpose} phone=${phone} code=${code}`,
+      );
+    }
 
     return {
       expiresInSeconds: OTP_TTL_SECONDS,

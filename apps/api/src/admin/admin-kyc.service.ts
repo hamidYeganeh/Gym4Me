@@ -4,17 +4,31 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { createReadStream, existsSync, statSync } from 'fs';
 import { Model, Types } from 'mongoose';
 import type { QueryFilter } from 'mongoose';
 import type { Request } from 'express';
+import { basename, isAbsolute, join } from 'path';
 import { KycService } from '../account/kyc/kyc.service';
 import { AuditService } from '../audit/audit.service';
 import { AuditAction, KycRequestStatus } from '../common/enums';
+import {
+  paginatedResult,
+  resolvePageSize,
+} from '../common/utils/pagination.util';
 import {
   KycRequest,
   KycRequestDocument,
 } from '../schemas/kyc-request.schema';
 import { ListKycRequestsQueryDto, ReviewKycDto } from './dto/admin.dto';
+
+type PopulatedUser = {
+  _id: Types.ObjectId;
+  phone?: string;
+  name?: { first?: string | null; last?: string | null };
+  code?: string | null;
+  kycStatus?: string;
+};
 
 @Injectable()
 export class AdminKycService {
@@ -30,21 +44,46 @@ export class AdminKycService {
     if (query.status) filter.status = query.status;
     if (query.kind) filter.kind = query.kind;
 
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 20;
+    const { page, pageSize } = resolvePageSize(query);
 
     const [items, total] = await Promise.all([
       this.kycModel
         .find(filter)
         .sort({ createdAt: -1 })
-        .skip((page - 1) * limit)
-        .limit(limit)
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
         .populate('userId', 'phone name code kycStatus')
         .lean(),
       this.kycModel.countDocuments(filter),
     ]);
 
-    return { items, total, page, limit };
+    return paginatedResult(
+      items.map((item) => this.toPublic(item)),
+      total,
+      page,
+      pageSize,
+    );
+  }
+
+  async openDocument(id: string) {
+    const kycRequest = await this.kycModel.findById(id).lean();
+    if (!kycRequest) throw new NotFoundException('KYC request not found');
+    if (!kycRequest.filePath) {
+      throw new NotFoundException('No document attached to this request');
+    }
+
+    const absolute = this.resolveUploadPath(kycRequest.filePath);
+    if (!existsSync(absolute)) {
+      throw new NotFoundException('Document file is missing on disk');
+    }
+
+    const stats = statSync(absolute);
+    return {
+      stream: createReadStream(absolute),
+      mimeType: kycRequest.fileMimeType ?? 'application/octet-stream',
+      size: stats.size,
+      filename: basename(absolute),
+    };
   }
 
   async review(
@@ -84,6 +123,67 @@ export class AdminKycService {
       request,
     });
 
-    return kycRequest.toObject();
+    const populated = await this.kycModel
+      .findById(kycRequest._id)
+      .populate('userId', 'phone name code kycStatus')
+      .lean();
+    return this.toPublic(populated!);
+  }
+
+  private toPublic(
+    doc: {
+      _id: Types.ObjectId;
+      userId: Types.ObjectId | PopulatedUser;
+      kind: string;
+      status: string;
+      documentType?: string;
+      nationalId?: string;
+      birthDate?: Date;
+      filePath?: string;
+      fileMimeType?: string;
+      rejectionReason?: string;
+      createdAt: Date;
+      reviewedAt?: Date;
+    },
+  ) {
+    const id = doc._id.toString();
+    const populated =
+      doc.userId &&
+      typeof doc.userId === 'object' &&
+      '_id' in doc.userId
+        ? (doc.userId as PopulatedUser)
+        : null;
+
+    return {
+      id,
+      userId: populated
+        ? {
+            id: populated._id.toString(),
+            phone: populated.phone,
+            name: populated.name,
+            code: populated.code,
+            kycStatus: populated.kycStatus,
+          }
+        : doc.userId.toString(),
+      kind: doc.kind,
+      status: doc.status,
+      documentType: doc.documentType ?? null,
+      nationalId: doc.nationalId ?? null,
+      birthDate: doc.birthDate ?? null,
+      fileMimeType: doc.fileMimeType ?? null,
+      hasDocument: Boolean(doc.filePath),
+      documentUrl: doc.filePath
+        ? `/admin/kyc/requests/${id}/document`
+        : null,
+      rejectionReason: doc.rejectionReason ?? null,
+      createdAt: doc.createdAt,
+      reviewedAt: doc.reviewedAt ?? null,
+    };
+  }
+
+  private resolveUploadPath(stored: string): string {
+    if (isAbsolute(stored)) return stored;
+    const uploadDir = process.env.UPLOAD_DIR || './uploads';
+    return join(uploadDir, stored);
   }
 }

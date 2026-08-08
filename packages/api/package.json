@@ -6,15 +6,41 @@
   "exports": {
     ".": "./src/index.ts",
     "./auth": "./src/auth/index.ts",
-    "./client": "./src/client.ts"
+    "./auth/hooks": "./src/auth/hooks.ts",
+    "./account": "./src/account/index.ts",
+    "./account/hooks": "./src/account/hooks.ts",
+    "./admin": "./src/admin/index.ts",
+    "./admin/hooks": "./src/admin/hooks.ts",
+    "./discovery": "./src/discovery/index.ts",
+    "./discovery/hooks": "./src/discovery/hooks.ts",
+    "./basics": "./src/basics/index.ts",
+    "./basics/hooks": "./src/basics/hooks.ts",
+    "./media": "./src/media/index.ts",
+    "./media/hooks": "./src/media/hooks.ts",
+    "./analytics": "./src/analytics/index.ts",
+    "./analytics/hooks": "./src/analytics/hooks.ts",
+    "./client": "./src/client.ts",
+    "./react": "./src/react/index.ts"
   },
   "scripts": {
     "check-types": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0"
   },
+  "peerDependencies": {
+    "@tanstack/react-query": "^5.0.0",
+    "react": "^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@tanstack/react-query": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*",
+    "@tanstack/react-query": "^5.90.2",
+    "@types/react": "^19.2.17",
+    "react": "19.2.4",
     "typescript": "5.9.2"
   }
 }

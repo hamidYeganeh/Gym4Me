@@ -18,21 +18,41 @@ export const adminDashboardLayoutVariants = tv({
       "pointer-events-none absolute start-0 top-1/2 h-7 w-1 -translate-y-1/2 rounded-e-full bg-accent-foreground",
     avatarWrap: "mt-auto flex items-center justify-center pb-1",
     avatar: "size-10 ring-2 ring-accent-foreground/25 sm:size-11",
-    main: "flex min-w-0 flex-1 flex-col overflow-hidden rounded-[2rem] border border-border bg-surface text-surface-foreground shadow-[0_24px_80px_-40px_rgba(0,0,0,0.35)] sm:rounded-[2.5rem]",
+    main: "flex min-w-0 flex-1 flex-col overflow-hidden rounded-[2rem] bg-surface text-surface-foreground shadow-[0_24px_80px_-40px_rgba(0,0,0,0.35)] sm:rounded-[2.5rem]",
     header:
-      "flex flex-col gap-4 border-b border-separator px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8 sm:py-6",
+      "flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8 sm:py-6",
+    headerSection:
+      "flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-8 sm:py-4",
     headerActions: "flex items-center gap-2 sm:gap-3",
     greeting:
       "text-2xl font-bold tracking-tight text-foreground sm:text-[1.75rem]",
     search: "w-full sm:w-auto",
-    searchGroup:
-      "min-h-11 rounded-full border border-border bg-surface px-1 shadow-none",
+    searchGroup: "min-h-11 rounded-full bg-surface px-1 shadow-none",
     searchInput: "w-full min-w-0 sm:w-64",
     filterButton:
       "shrink-0 text-muted outline-none data-[pressed=true]:opacity-70",
     themeButton:
       "shrink-0 text-muted outline-none data-[pressed=true]:opacity-70",
+    themeButtonSection: "shrink-0 outline-none data-[pressed=true]:opacity-70",
     content: "min-h-0 flex-1 p-5 sm:p-8",
+  },
+  variants: {
+    colorScheme: {
+      light: {
+        // Inverse strip on light canvas — same composition as the dark reference.
+        headerSection: "bg-background",
+        themeButtonSection:
+          "text-foreground data-[hovered=true]:bg-background/10 data-[hovered=true]:text-foreground",
+      },
+      dark: {
+        headerSection: "bg-black",
+        themeButtonSection:
+          "text-neutral-300 data-[hovered=true]:bg-white/10 data-[hovered=true]:text-white",
+      },
+    },
+  },
+  defaultVariants: {
+    colorScheme: "light",
   },
 });
 

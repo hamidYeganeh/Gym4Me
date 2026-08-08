@@ -19,6 +19,13 @@ const SPECIALTY_ICONS: Record<CoachSpecialtyId, ReactNode> = {
   mobility: <Bone className={styles.chipIcon} size={16} />,
 };
 
+function specialtyIcon(id: string): ReactNode {
+  if (id in SPECIALTY_ICONS) {
+    return SPECIALTY_ICONS[id as CoachSpecialtyId];
+  }
+  return <BarbellHorizontal className={styles.chipIcon} size={16} />;
+}
+
 export function DiscoveryCoachesSpecialtySection({
   title,
   seeAllLabel,
@@ -45,7 +52,7 @@ export function DiscoveryCoachesSpecialtySection({
             onPress={() => onSpecialtyPress?.(specialty.id)}
             variant="ghost"
           >
-            {SPECIALTY_ICONS[specialty.id]}
+            {specialtyIcon(specialty.id)}
             <span>{specialty.label}</span>
           </Button>
         ))}

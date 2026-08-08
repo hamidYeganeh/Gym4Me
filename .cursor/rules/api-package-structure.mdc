@@ -1,0 +1,42 @@
+---
+description: Domain folder layout for @repo/api (client/endpoint/dto/keys/hooks)
+globs: packages/api/**
+alwaysApply: false
+---
+
+# `@repo/api` Domain Structure
+
+Each API domain lives under `packages/api/src/<domain>/`. Resources inside a domain use a fixed five-file set:
+
+```text
+packages/api/src/discovery/
+  clubs.client.ts    # createXApi(client) — HTTP calls via ApiClient
+  clubs.endpoint.ts  # path constants / builders
+  clubs.dto.ts       # request + response types
+  clubs.keys.ts      # TanStack Query key factories
+  clubs.hooks.ts     # react-query hooks (use ApiProvider)
+  index.ts           # domain barrel
+```
+
+## Rules
+
+1. **One resource prefix** — `clubs.*` files share the same resource name; do not mix resources in one file.
+2. **Endpoints only in `*.endpoint.ts`** — clients must not hardcode path strings.
+3. **DTOs only in `*.dto.ts`** — no request/response types in client/hooks.
+4. **Keys only in `*.keys.ts`** — hierarchical factories (`all` → `lists` → `list(query)`).
+5. **Hooks only in `*.hooks.ts`** — use `useApiClient()` from the package `react` export; pair keys with client methods.
+6. **Do not re-export hooks from domain `index.ts`** — Vite would pull `@tanstack/react-query` into every `@repo/api` import. Export hooks via `hooks.ts` and `@repo/api/<domain>/hooks`.
+7. **Cross-domain types** — import DTOs from the owning domain (e.g. `Club` from `account/clubs.dto`); do not duplicate.
+8. **Shared infrastructure** stays at package root: `client.ts`, `errors.ts`, `storage.ts`, `types.ts`, `react/`.
+9. **Public exports** — domain `index.ts` re-exports client, endpoints, dto, keys only; root `index.ts` keeps app-facing client/type barrels stable.
+
+## Domains
+
+| Folder | Resources |
+|--------|-----------|
+| `auth` | `account`, `admin` |
+| `account` | `profile`, `kyc`, `roles`, `referral`, `clubs` |
+| `admin` | `users`, `basics`, `kyc`, `verification`, `clubs` |
+| `discovery` | `clubs` |
+| `media` | `media` |
+| `analytics` | `analytics` |

@@ -19,22 +19,30 @@ export function DiscoveryClubsClassDetailHeroSection({
   const image = classDetail.image || PLACEHOLDER_IMAGE;
 
   const stats = [
-    {
-      key: "duration",
-      icon: <Clock aria-hidden size={16} />,
-      value: classDetail.durationLabel,
-    },
-    {
-      key: "rating",
-      icon: <StarFull aria-hidden className="text-stats-orange" size={16} />,
-      value: t("ratingValue", { rating: classDetail.rating }),
-    },
-    {
-      key: "calories",
-      icon: <Fire1 aria-hidden className="text-stats-orange" size={16} />,
-      value: classDetail.caloriesLabel,
-    },
-  ] as const;
+    classDetail.durationLabel
+      ? {
+          key: "duration",
+          icon: <Clock aria-hidden size={16} />,
+          value: classDetail.durationLabel,
+        }
+      : null,
+    classDetail.rating && classDetail.rating !== "—"
+      ? {
+          key: "rating",
+          icon: (
+            <StarFull aria-hidden className="text-stats-orange" size={16} />
+          ),
+          value: t("ratingValue", { rating: classDetail.rating }),
+        }
+      : null,
+    classDetail.caloriesLabel
+      ? {
+          key: "calories",
+          icon: <Fire1 aria-hidden className="text-stats-orange" size={16} />,
+          value: classDetail.caloriesLabel,
+        }
+      : null,
+  ].filter((stat): stat is NonNullable<typeof stat> => Boolean(stat));
 
   return (
     <section aria-label={classDetail.title} className={styles.root}>
@@ -66,22 +74,26 @@ export function DiscoveryClubsClassDetailHeroSection({
             {classDetail.title}
           </Typography>
 
-          <Typography className={styles.tagline} type="body-sm">
-            {classDetail.tagline}
-          </Typography>
+          {classDetail.tagline ? (
+            <Typography className={styles.tagline} type="body-sm">
+              {classDetail.tagline}
+            </Typography>
+          ) : null}
 
-          <div className={styles.stats}>
-            {stats.map((stat) => (
-              <div className={styles.stat} key={stat.key}>
-                <span aria-hidden className={styles.statIconWrap}>
-                  {stat.icon}
-                </span>
-                <Typography className={styles.statValue} type="body-xs">
-                  {stat.value}
-                </Typography>
-              </div>
-            ))}
-          </div>
+          {stats.length > 0 ? (
+            <div className={styles.stats}>
+              {stats.map((stat) => (
+                <div className={styles.stat} key={stat.key}>
+                  <span aria-hidden className={styles.statIconWrap}>
+                    {stat.icon}
+                  </span>
+                  <Typography className={styles.statValue} type="body-xs">
+                    {stat.value}
+                  </Typography>
+                </div>
+              ))}
+            </div>
+          ) : null}
         </div>
       </div>
     </section>

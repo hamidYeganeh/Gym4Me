@@ -2,6 +2,13 @@ import type { ReactNode } from "react";
 
 export type AdminDashboardNavId =
   | "home"
+  | "users"
+  | "clubs"
+  | "locations"
+  | "sports"
+  | "choices"
+  | "refs"
+  | "support"
   | "calendar"
   | "profile"
   | "settings"
@@ -36,5 +43,7 @@ export type AdminDashboardLayoutProps = {
   onAvatarPress?: () => void;
   avatarSrc?: string;
   notificationCount?: number;
+  /** Replaces the default greeting + search header content. */
+  header?: ReactNode;
   className?: string;
 };

@@ -33,6 +33,17 @@ export class CreateLocationDto {
   description?: string;
 
   @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  icon?: string;
+
+  /** Inline SVG for country flags. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(100_000)
+  flagSvg?: string;
+
+  @IsOptional()
   @IsMongoId()
   parentId?: string;
 
@@ -71,6 +82,16 @@ export class UpdateLocationDto {
   @IsString()
   @MaxLength(2000)
   description?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  icon?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100_000)
+  flagSvg?: string | null;
 
   @IsOptional()
   @ValidateNested()

@@ -1,2 +1,3 @@
 export { OwnerClubsCreateScreen } from "./OwnerClubsCreateScreen";
-export { ownerClubsCreateScreenStyles } from "./OwnerClubsCreateScreen.styles";
+export { ownerClubsCreateScreenVariants } from "./OwnerClubsCreateScreen.styles";
+export type { OwnerClubsCreateScreenProps } from "./OwnerClubsCreateScreen.types";

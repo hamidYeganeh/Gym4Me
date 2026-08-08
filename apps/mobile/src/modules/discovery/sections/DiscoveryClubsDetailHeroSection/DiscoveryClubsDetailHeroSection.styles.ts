@@ -35,9 +35,19 @@ export const discoveryClubsDetailHeroSectionStyles = {
     "text-balance text-[1.65rem] leading-tight tracking-tight text-foreground",
   locationRow: "mt-2 flex items-center gap-1.5 text-muted",
   locationText: "truncate",
+  metaRow: "mt-3 flex flex-wrap items-center gap-2",
+  openChip: [
+    "h-7 rounded-full border-0 bg-success/15 px-2.5",
+    "text-success shadow-none",
+  ].join(" "),
+  closedChip: [
+    "h-7 rounded-full border-0 bg-danger/15 px-2.5",
+    "text-danger shadow-none",
+  ].join(" "),
+  hoursText: "text-[0.8rem] tabular-nums tracking-tight",
   ratingCard: [
     "flex shrink-0 flex-col items-center justify-center gap-0.75",
-    "rounded-xl px-4 py-2.5",
+    "rounded-[1.15rem] px-4 py-2.5",
   ].join(" "),
   ratingValue: "flex items-center gap-1 text-foreground",
   ratingScore: "text-base leading-none",

@@ -17,3 +17,14 @@ function resolveMessage(body: ApiErrorBody | null): string | null {
   if (!body?.message) return null;
   return Array.isArray(body.message) ? body.message.join(", ") : body.message;
 }
+
+export const KYC_REQUIRED_CODE = "KYC_REQUIRED";
+
+/** True when the API rejected the action because identity (Shahkar) verification is missing. */
+export function isKycRequiredError(error: unknown): error is ApiError {
+  return (
+    error instanceof ApiError &&
+    error.status === 403 &&
+    error.body?.code === KYC_REQUIRED_CODE
+  );
+}
