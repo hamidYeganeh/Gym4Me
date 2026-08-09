@@ -22,12 +22,14 @@
     "@repo/ui": "*",
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/react-virtual": "^3.14.9",
+    "@tinymce/tinymce-react": "^6.3.0",
     "next-intl": "^4.3.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-hook-form": "^7.84.0",
     "react-router-dom": "^7.9.6",
     "tailwind-variants": "^3.3.0",
+    "tinymce": "^8.8.2",
     "zod": "^4.4.3"
   },
   "devDependencies": {

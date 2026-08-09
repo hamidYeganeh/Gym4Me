@@ -15,8 +15,14 @@ function DiscoveryClubsPageSkeleton() {
     >
       <ClubCardSkeleton orientation="fullWidth" />
       <div className="flex gap-3 overflow-hidden">
-        <ClubCardSkeleton className="w-[min(17.5rem,78vw)] shrink-0" orientation="vertical" />
-        <ClubCardSkeleton className="w-[min(17.5rem,78vw)] shrink-0" orientation="vertical" />
+        <ClubCardSkeleton
+          className="w-[min(17.5rem,78vw)] shrink-0"
+          orientation="vertical"
+        />
+        <ClubCardSkeleton
+          className="w-[min(17.5rem,78vw)] shrink-0"
+          orientation="vertical"
+        />
       </div>
       <ClubCardSkeleton orientation="horizontal" />
       <ClubCardSkeleton orientation="horizontal" />
@@ -28,7 +34,20 @@ export function DiscoveryClubsScreenLoader() {
   const searchParams = useSearchParams();
   const locationId = searchParams.get("locationId");
   const sportId = searchParams.get("sportId");
-  const browse = useDiscoveryClubsBrowse({ locationId, sportId });
+  const genderPolicy = searchParams.get("genderPolicy");
+  const amenitySlug = searchParams.get("amenitySlug");
+  const accessibility = searchParams.get("accessibility");
+  const ageGroupKey = searchParams.get("ageGroupKey");
+  const levelKey = searchParams.get("levelKey");
+  const browse = useDiscoveryClubsBrowse({
+    locationId,
+    sportId,
+    genderPolicy,
+    amenitySlug,
+    accessibility,
+    ageGroupKey,
+    levelKey,
+  });
 
   if (browse.isLoading && browse.clubs.length === 0) {
     return <DiscoveryClubsPageSkeleton />;

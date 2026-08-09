@@ -51,6 +51,17 @@ export const callToActionCardVariants = tv({
       icon: {
         action: "size-14 rounded-[18px] ring-4",
       },
+      button: {
+        root: "h-auto min-h-[104px] px-7 py-5",
+        content: "gap-0.5",
+        title: "text-[1.75rem] leading-tight",
+        actionRing: "hidden",
+        action: [
+          "h-14 shrink-0 rounded-2xl px-6 font-bold shadow-none",
+          "transition-opacity duration-fast ease-app",
+          "data-[pressed=true]:scale-[0.98]",
+        ].join(" "),
+      },
     },
   },
   compoundVariants: [
@@ -85,6 +96,21 @@ export const callToActionCardVariants = tv({
       },
     },
     {
+      variant: "primary",
+      actionType: "button",
+      class: {
+        action:
+          "bg-accent-foreground text-accent hover:opacity-90",
+      },
+    },
+    {
+      variant: "outlined",
+      actionType: "button",
+      class: {
+        action: "bg-accent text-accent-foreground hover:opacity-90",
+      },
+    },
+    {
       variant: "soft",
       actionType: "plus",
       class: {
@@ -98,6 +124,14 @@ export const callToActionCardVariants = tv({
       class: {
         action:
           "size-11 rounded-full bg-foreground text-background ring-0 hover:opacity-90",
+      },
+    },
+    {
+      variant: "soft",
+      actionType: "button",
+      class: {
+        action:
+          "h-11 rounded-2xl bg-foreground px-5 text-background hover:opacity-90",
       },
     },
   ],

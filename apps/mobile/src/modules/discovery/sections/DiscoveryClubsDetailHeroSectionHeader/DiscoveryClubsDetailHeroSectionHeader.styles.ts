@@ -6,7 +6,7 @@ export const discoveryClubsDetailHeroSectionHeaderStyles = {
   ].join(" "),
   veil: [
     "pointer-events-none absolute inset-0 z-0",
-    "bg-linear-to-b from-background via-background/70 to-transparent",
+    "bg-linear-to-t from-transparent via-background/70 to-background",
   ].join(" "),
   blur: "pointer-events-none absolute inset-0 z-0",
   bar: [

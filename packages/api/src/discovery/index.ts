@@ -23,6 +23,7 @@ export type {
   ClubCalendarQuery,
   ClubCalendarResponse,
   ClubClass,
+  ClubSlot,
 } from "./club-slots.dto";
 export { discoveryClubSlotsKeys } from "./club-slots.keys";
 

@@ -20,4 +20,5 @@ export const routes = {
   refs: (type: RefType = "equipment") => `/dashboard/refs/${type}`,
   support: "/dashboard/support",
   supportFaq: "/dashboard/support/faq",
+  articles: "/dashboard/articles",
 } as const;

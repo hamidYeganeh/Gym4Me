@@ -22,17 +22,21 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { readFileSync, renameSync } from 'fs';
+import { join } from 'path';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { randomToken } from '../../common/utils/hash.util';
+import {
+  extensionForMime,
+  sanitizeContentDispositionFilename,
+  sniffAllowedMime,
+} from '../../common/utils/mime-sniff.util';
 import {
   KYC_DOCUMENT_TYPES,
   SubmitDocumentDto,
   SubmitIdentityDto,
 } from './dto/kyc.dto';
 import { KycService } from './kyc.service';
-
-const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
 
 @ApiTags('kyc')
 @ApiBearerAuth('access-token')
@@ -83,13 +87,10 @@ export class KycController {
     FileInterceptor('file', {
       storage: diskStorage({
         destination: process.env.UPLOAD_DIR || './uploads',
-        filename: (_req, file, cb) =>
-          cb(null, `kyc-${randomToken(16)}${extname(file.originalname)}`),
+        filename: (_req, _file, cb) =>
+          cb(null, `kyc-${randomToken(16)}.bin`),
       }),
-      fileFilter: (_req, file, cb) =>
-        ALLOWED_MIME.includes(file.mimetype)
-          ? cb(null, true)
-          : cb(new BadRequestException('Only jpeg/png/webp/pdf allowed'), false),
+      fileFilter: (_req, _file, cb) => cb(null, true),
     }),
   )
   submitDocument(
@@ -103,6 +104,20 @@ export class KycController {
     file: Express.Multer.File,
     @Req() request: Request,
   ) {
+    const absolute = join(process.env.UPLOAD_DIR || './uploads', file.filename);
+    const head = readFileSync(absolute).subarray(0, 32);
+    const mime = sniffAllowedMime(head);
+    if (!mime) {
+      throw new BadRequestException('Only jpeg/png/webp/pdf allowed');
+    }
+    const ext = extensionForMime(mime);
+    const finalName = `kyc-${randomToken(16)}${ext}`;
+    renameSync(absolute, join(process.env.UPLOAD_DIR || './uploads', finalName));
+    file.filename = finalName;
+    file.mimetype = mime;
+    file.originalname = sanitizeContentDispositionFilename(
+      file.originalname || finalName,
+    );
     return this.kyc.submitDocument(userId, dto.documentType, file, request);
   }
 

@@ -108,7 +108,6 @@ export function SettingsScreen({
       className={styles.root({ className })}
       header={
         <Header
-          className="border-b-0 bg-background"
           startContent={
             <Button
               aria-label={t("back")}
@@ -254,7 +253,7 @@ export function SettingsScreen({
           variant="danger"
           onPress={async () => {
             await logout();
-            router.replace("/auth/sign-in");
+            router.replace("/auth");
           }}
         >
           <Door size={ROW_ICON_SIZE} />

@@ -3,12 +3,12 @@ import type { ButtonProps } from "@heroui/react";
 export type OwnerHomeQuickActionsSectionProps = {
   /** Accessible name for the quick-actions row. */
   sectionLabel?: string;
-  aiLabel: string;
-  photoLabel: string;
-  videoLabel: string;
+  classesLabel: string;
+  bookingsLabel: string;
+  equipmentLabel: string;
   moreLabel: string;
-  onAiPress?: ButtonProps["onPress"];
-  onPhotoPress?: ButtonProps["onPress"];
-  onVideoPress?: ButtonProps["onPress"];
+  onClassesPress?: ButtonProps["onPress"];
+  onBookingsPress?: ButtonProps["onPress"];
+  onEquipmentPress?: ButtonProps["onPress"];
   onMorePress?: ButtonProps["onPress"];
 };

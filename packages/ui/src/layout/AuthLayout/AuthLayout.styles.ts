@@ -4,27 +4,34 @@ import { tv } from "tailwind-variants";
 export const authLayoutVariants = tv({
   slots: {
     shell:
-      "dark flex min-h-dvh items-stretch bg-background text-foreground",
+      "dark relative flex min-h-dvh flex-col overflow-x-hidden overflow-y-auto bg-background text-foreground",
+    media: "pointer-events-none fixed inset-0",
+    mediaImage:
+      "absolute inset-0 size-full object-cover object-[center_30%]",
+    mediaOverlay:
+      "pointer-events-none absolute inset-0 bg-gradient-to-t from-background from-[12%] via-background/88 via-45% to-background/35",
+    mediaVignette:
+      "pointer-events-none absolute inset-0 bg-[radial-gradient(120%_70%_at_50%_0%,transparent_35%,color-mix(in_oklch,var(--background)_55%,transparent)_100%)]",
     panel:
-      "relative flex w-full flex-col justify-center px-6 py-10 sm:px-10 lg:w-[min(448px,44%)] lg:shrink-0 lg:px-14 xl:ms-[clamp(2rem,8vw,8.875rem)] xl:px-0",
-    brandMark:
-      "mb-8 flex size-16 items-center justify-center self-center rounded-[1.3rem] bg-surface-secondary text-foreground",
-    header: "mb-8 flex max-w-md flex-col items-center gap-3 text-center",
+      "relative z-10 mx-auto flex min-h-dvh w-full max-w-md flex-col px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(2.5rem,env(safe-area-inset-top))] sm:max-w-lg sm:px-8",
+    brand:
+      "relative mb-6 flex flex-col items-center gap-3 self-center",
+    brandGlow:
+      "pointer-events-none absolute top-1/2 left-1/2 size-28 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/25 blur-3xl",
+    brandMark: "relative text-accent",
+    brandName:
+      "relative text-lg font-bold tracking-tight text-foreground",
+    header:
+      "mb-8 flex max-w-sm flex-col items-center gap-2 self-center text-center",
     title:
-      "text-[1.75rem] font-bold tracking-tight text-foreground sm:text-[2.25rem] sm:leading-[2.75rem]",
-    subtitle: "max-w-sm text-base leading-relaxed text-muted sm:text-lg",
-    body: "flex w-full max-w-md flex-col gap-8",
+      "text-balance text-[1.75rem] font-bold tracking-tight text-foreground sm:text-[2rem] sm:leading-tight",
+    subtitle:
+      "max-w-xs text-pretty text-base leading-relaxed text-muted sm:text-lg",
+    spacer: "min-h-10 flex-1",
+    body: "flex w-full flex-col gap-6 pb-2",
     formSlot: "flex w-full flex-col gap-5",
     belowForm: "flex w-full flex-col gap-4",
-    footer: "text-center text-base text-muted",
-    media:
-      "relative hidden min-h-dvh flex-1 p-6 lg:flex",
-    mediaFrame:
-      "relative h-full w-full overflow-hidden rounded-[2rem] border border-border/60 bg-surface-secondary shadow-[0_28px_80px_-40px_rgba(0,0,0,0.65)]",
-    mediaImage:
-      "absolute inset-0 size-full object-cover object-center",
-    mediaOverlay:
-      "pointer-events-none absolute inset-0 bg-gradient-to-t from-background/55 via-transparent to-background/10",
+    footer: "pt-1 text-center text-sm text-muted sm:text-base",
   },
 });
 

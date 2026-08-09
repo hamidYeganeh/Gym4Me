@@ -19,6 +19,8 @@
     "./media/hooks": "./src/media/hooks.ts",
     "./analytics": "./src/analytics/index.ts",
     "./analytics/hooks": "./src/analytics/hooks.ts",
+    "./articles": "./src/articles/index.ts",
+    "./articles/hooks": "./src/articles/hooks.ts",
     "./client": "./src/client.ts",
     "./react": "./src/react/index.ts"
   },

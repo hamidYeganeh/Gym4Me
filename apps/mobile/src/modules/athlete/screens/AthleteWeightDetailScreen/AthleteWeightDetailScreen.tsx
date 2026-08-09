@@ -10,7 +10,6 @@ import { Clock } from "@repo/icons/Clock";
 import { FootSteps } from "@repo/icons/FootSteps";
 import { Pencil1 } from "@repo/icons/Pencil1";
 import { Percentage } from "@repo/icons/Percentage";
-import { RobotFace1 } from "@repo/icons/RobotFace1";
 import { StepSneaker } from "@repo/icons/StepSneaker";
 import { Stopwatch } from "@repo/icons/Stopwatch";
 import { WeightScale } from "@repo/icons/WeightScale";
@@ -103,16 +102,14 @@ export function AthleteWeightDetailScreen({
           </Button>
           <Button
             className="h-12 w-full gap-2 bg-stats-orange text-stats-foreground data-[hovered=true]:bg-stats-orange/90"
-            onPress={() => undefined}
+            onPress={() => router.push("/athlete/metrics/weight/history")}
           >
-            <RobotFace1 size={20} />
-            {t("consultAi")}
+            {t("viewHistory")}
           </Button>
         </div>
       }
       header={
         <Header
-          className="border-b-0 bg-background"
           endContent={
             <Button
               aria-label={t("edit")}

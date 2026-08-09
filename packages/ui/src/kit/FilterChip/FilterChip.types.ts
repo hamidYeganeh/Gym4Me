@@ -8,7 +8,7 @@ export type FilterChipSelectedVariant = NonNullable<
 
 export type FilterChipProps = Omit<
   ButtonProps,
-  "children" | "variant" | "size" | "isIconOnly"
+  "children" | "variant" | "size" | "isIconOnly" | "className"
 > & {
   children: ReactNode;
   /** Leading icon shown before the label. */
@@ -21,6 +21,8 @@ export type FilterChipProps = Omit<
    * - `solid` — accent fill + accent-foreground text
    */
   selectedVariant?: FilterChipSelectedVariant;
+  /** Extra classes for the root pressable. */
+  className?: string;
 };
 
 export type FilterChipBarProps = {

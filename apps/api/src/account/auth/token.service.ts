@@ -1,9 +1,11 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
+import type Redis from 'ioredis';
 import { Model, Types } from 'mongoose';
 import { Role } from '../../common/enums';
+import { REDIS } from '../../common/redis/redis.module';
 import type { JwtUser, PasswordResetTokenPayload } from '../../common/types';
 import { randomToken, sha256 } from '../../common/utils/hash.util';
 import {
@@ -17,11 +19,18 @@ export interface TokenPair {
   refreshToken: string;
 }
 
-/** Prefer athlete when present; otherwise first assigned role. */
+const ACCOUNT_ROLES: Role[] = [Role.ATHLETE, Role.COACH, Role.CLUB_OWNER];
+
+/**
+ * Prefer athlete when present; never pick admin for account (mobile) sessions.
+ */
 export function pickDefaultActiveRole(roles: Role[]): Role {
-  if (roles.includes(Role.ATHLETE)) return Role.ATHLETE;
-  if (roles.includes(Role.ADMIN)) return Role.ADMIN;
-  return roles[0] ?? Role.ATHLETE;
+  for (const role of ACCOUNT_ROLES) {
+    if (roles.includes(role)) return role;
+  }
+  throw new UnauthorizedException(
+    'No account role available; use admin authentication',
+  );
 }
 
 @Injectable()
@@ -31,6 +40,7 @@ export class TokenService {
     private readonly refreshModel: Model<RefreshTokenDocument>,
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
+    @Inject(REDIS) private readonly redis: Redis,
   ) {}
 
   private refreshTtlMs(): number {
@@ -39,10 +49,44 @@ export class TokenService {
   }
 
   private passwordResetSecret(): string {
-    return (
-      this.config.get<string>('JWT_PASSWORD_RESET_SECRET') ??
-      this.config.getOrThrow<string>('JWT_ACCESS_SECRET')
+    return this.config.getOrThrow<string>('JWT_PASSWORD_RESET_SECRET');
+  }
+
+  private sessionsRevokedKey(userId: string): string {
+    return `auth:sessions_revoked:${userId}`;
+  }
+
+  async markSessionsRevoked(userId: Types.ObjectId | string): Promise<void> {
+    const id = userId.toString();
+    const accessTtl = this.config.get('JWT_ACCESS_TTL', '900s');
+    const seconds = Math.max(this.parseTtlSeconds(accessTtl), 900);
+    await this.redis.set(
+      this.sessionsRevokedKey(id),
+      String(Math.floor(Date.now() / 1000)),
+      'EX',
+      seconds,
     );
+  }
+
+  async assertAccessNotRevoked(userId: string, iat?: number): Promise<void> {
+    if (iat == null) return;
+    const raw = await this.redis.get(this.sessionsRevokedKey(userId));
+    if (!raw) return;
+    const revokedAt = Number(raw);
+    if (Number.isFinite(revokedAt) && iat <= revokedAt) {
+      throw new UnauthorizedException('Session revoked');
+    }
+  }
+
+  private parseTtlSeconds(ttl: string): number {
+    const match = /^(\d+)([smhd])?$/.exec(ttl.trim());
+    if (!match) return 900;
+    const n = Number(match[1]);
+    const unit = match[2] ?? 's';
+    if (unit === 'm') return n * 60;
+    if (unit === 'h') return n * 3600;
+    if (unit === 'd') return n * 86400;
+    return n;
   }
 
   async issuePair(
@@ -60,7 +104,9 @@ export class TokenService {
       roles: user.roles,
       activeRole: role,
     };
-    const accessToken = await this.jwt.signAsync(payload);
+    const accessToken = await this.jwt.signAsync(payload, {
+      algorithm: 'HS256',
+    });
 
     const refreshToken = randomToken();
     await this.refreshModel.create({
@@ -112,6 +158,11 @@ export class TokenService {
     if (!user.roles.includes(nextRole)) {
       throw new UnauthorizedException('Role not assigned to user');
     }
+    if (nextRole === Role.ADMIN) {
+      throw new UnauthorizedException(
+        'Admin role cannot be activated via account auth',
+      );
+    }
     const pair = await this.issuePair(user, nextRole);
     if (presentedRefreshToken) {
       await this.revoke(presentedRefreshToken);
@@ -157,6 +208,7 @@ export class TokenService {
       { userId, revokedAt: null },
       { revokedAt: new Date() },
     );
+    await this.markSessionsRevoked(userId);
   }
 
   /** Revoke sessions whose activeRole is no longer in the user's roles. */
@@ -175,13 +227,17 @@ export class TokenService {
   }
 
   async signPasswordResetToken(userId: string): Promise<string> {
+    const jti = randomToken(16);
+    await this.redis.set(`pwd_reset:${jti}`, userId, 'EX', 600);
     const payload: PasswordResetTokenPayload = {
       sub: userId,
       type: 'pwd_reset',
+      jti,
     };
     return this.jwt.signAsync(payload, {
       secret: this.passwordResetSecret(),
       expiresIn: '10m',
+      algorithm: 'HS256',
     });
   }
 
@@ -190,8 +246,17 @@ export class TokenService {
       const payload =
         await this.jwt.verifyAsync<PasswordResetTokenPayload>(token, {
           secret: this.passwordResetSecret(),
+          algorithms: ['HS256'],
         });
-      if (payload.type !== 'pwd_reset') throw new Error('wrong type');
+      if (payload.type !== 'pwd_reset' || !payload.jti) {
+        throw new Error('wrong type');
+      }
+      const key = `pwd_reset:${payload.jti}`;
+      const stored = await this.redis.get(key);
+      if (!stored || stored !== payload.sub) {
+        throw new Error('already used or missing');
+      }
+      await this.redis.del(key);
       return payload.sub;
     } catch {
       throw new UnauthorizedException('Invalid or expired reset token');

@@ -220,6 +220,12 @@ export type FaqAudience = "all" | "athlete" | "coach" | "club_owner";
 /** Mirrors `PublishStatus` in apps/api. */
 export type PublishStatus = "draft" | "published" | "unpublished";
 
+/** Mirrors `ArticleKind` in apps/api. */
+export type ArticleKind = "guide" | "news" | "tip" | "story" | "workout";
+
+/** Mirrors `ArticleAudience` in apps/api. */
+export type ArticleAudience = "all" | "athlete" | "coach" | "club_owner";
+
 /** Mirrors `NotificationReadStatus` in apps/api. */
 export type NotificationReadStatus = "unread" | "read" | "archived";
 

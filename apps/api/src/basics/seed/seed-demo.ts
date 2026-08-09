@@ -8,12 +8,14 @@
  * Then:
  *   npm run db:seed:demo -w api
  *
- * All demo users share the password `Gym4Me!123`.
+ * Password: SEED_DEMO_PASSWORD env, else a generated value printed once.
+ * Refuses to run in production unless ALLOW_DEMO_SEED=true.
  */
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { getModelToken } from '@nestjs/mongoose';
 import * as argon2 from 'argon2';
+import { randomBytes } from 'crypto';
 import { Model, Types } from 'mongoose';
 import { AppModule } from '../../app.module';
 import { ClubsService } from '../../account/clubs/clubs.service';
@@ -31,6 +33,7 @@ import {
   RefType,
   Role,
   RulePolicy,
+  OperatingHourAudience,
   SlotKind,
   SlotRecurrenceType,
   VerificationStatus,
@@ -59,7 +62,11 @@ import { Sport, SportDocument } from '../../schemas/sport.schema';
 import { User, UserDocument } from '../../schemas/user.schema';
 import { UsersService } from '../../users/users.service';
 
-const DEMO_PASSWORD = 'Gym4Me!123';
+const DEMO_PASSWORD =
+  process.env.SEED_DEMO_PASSWORD?.trim() ||
+  ((process.env.NODE_ENV ?? 'development').toLowerCase() === 'production'
+    ? `Gym4Me!${randomBytes(9).toString('base64url')}`
+    : 'Gym4Me!123');
 
 const PHONES = {
   admin: '09121111111',
@@ -92,10 +99,18 @@ const USER_SPECS: DemoUserSpec[] = [
 ];
 
 async function seed() {
+  const nodeEnv = (process.env.NODE_ENV ?? 'development').toLowerCase();
+  if (nodeEnv === 'production' && process.env.ALLOW_DEMO_SEED !== 'true') {
+    throw new Error(
+      'Refusing demo seed in production without ALLOW_DEMO_SEED=true',
+    );
+  }
+
   const app = await NestFactory.createApplicationContext(AppModule, {
     logger: ['error', 'warn', 'log'],
   });
   const log = new Logger('SeedDemo');
+  log.warn(`Demo password for all seeded users: ${DEMO_PASSWORD}`);
 
   const users = app.get(UsersService);
   const clubsService = app.get(ClubsService);
@@ -368,9 +383,28 @@ async function seed() {
   const defaultHours = [0, 1, 2, 3, 4, 5].map((weekday) => ({
     weekday,
     status: WeekdayStatus.OPEN,
+    audience: OperatingHourAudience.SHARED,
     open: '07:00',
     close: '23:00',
   }));
+
+  /** Mixed club with time-separated male/female hours (Iran common pattern). */
+  const genderSplitHours = [0, 1, 2, 3, 4, 5].flatMap((weekday) => [
+    {
+      weekday,
+      status: WeekdayStatus.OPEN,
+      audience: OperatingHourAudience.MALE,
+      open: '06:00',
+      close: '14:00',
+    },
+    {
+      weekday,
+      status: WeekdayStatus.OPEN,
+      audience: OperatingHourAudience.FEMALE,
+      open: '14:00',
+      close: '23:00',
+    },
+  ]);
 
   const ensureClub = async (
     ownerId: Types.ObjectId,
@@ -434,7 +468,7 @@ async function seed() {
       levelKeys: ['standard', 'premium'],
       accessibility: 'accessible',
     },
-    operatingHours: defaultHours,
+    operatingHours: genderSplitHours,
     socials: [
       { platform: 'instagram', url: 'https://instagram.com/energy.vanak' },
     ],

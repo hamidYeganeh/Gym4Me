@@ -5,6 +5,7 @@ import type { QueryFilter } from 'mongoose';
 import type { Request } from 'express';
 import { AuditService } from '../audit/audit.service';
 import { AuditAction, Role, UserStatus } from '../common/enums';
+import { escapeRegex } from '../common/utils/escape-regex.util';
 import {
   paginatedResult,
   resolvePageSize,
@@ -20,10 +21,6 @@ import {
   UpdateUserRolesDto,
   UpdateUserStatusDto,
 } from './dto/admin.dto';
-
-function escapeRegex(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
 
 @Injectable()
 export class AdminUsersService {

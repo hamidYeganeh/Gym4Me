@@ -1,16 +1,17 @@
+import type { BrowseCoach } from "../../lib/coaches-browse-data";
 import type {
-  CoachSpecialty,
-  ExpertCoach,
-  FeaturedCoach,
-  NearbyCoach,
-  PopularCoach,
-} from "../../lib/coaches-browse-data";
+  CoachDiscoveryFilter,
+  CoachDiscoveryFilterId,
+} from "../../lib/coach-discovery-filters";
+import type { HomeLocationItem } from "../../lib/home-browse-data";
 
 export type DiscoveryCoachesScreenProps = {
-  specialties: CoachSpecialty[];
-  featuredCoaches: FeaturedCoach[];
-  popularCoaches: PopularCoach[];
-  expertCoaches: ExpertCoach[];
-  nearbyCoaches: NearbyCoach[];
-  isEmpty?: boolean;
+  coaches: BrowseCoach[];
+  discoveryFilters: CoachDiscoveryFilter[];
+  activeFilter: CoachDiscoveryFilterId;
+  onFilterChange: (id: CoachDiscoveryFilterId) => void;
+  provinces: HomeLocationItem[];
+  cities: HomeLocationItem[];
+  districts: HomeLocationItem[];
+  isLoading?: boolean;
 };

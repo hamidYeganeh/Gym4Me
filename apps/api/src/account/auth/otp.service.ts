@@ -16,6 +16,7 @@ import { randomOtpCode, sha256 } from '../../common/utils/hash.util';
 const OTP_TTL_SECONDS = 120;
 const RESEND_COOLDOWN_SECONDS = 90;
 const MAX_ATTEMPTS = 5;
+const OTP_DIGITS = 6;
 
 @Injectable()
 export class OtpService {
@@ -48,7 +49,7 @@ export class OtpService {
   async request(
     phone: string,
     purpose: OtpPurpose,
-  ): Promise<{ expiresInSeconds: number; debugCode?: string }> {
+  ): Promise<{ expiresInSeconds: number }> {
     const cooldownTtl = await this.redis.ttl(this.cooldownKey(purpose, phone));
     if (cooldownTtl > 0) {
       throw new HttpException(
@@ -57,7 +58,7 @@ export class OtpService {
       );
     }
 
-    const code = randomOtpCode(5);
+    const code = randomOtpCode(OTP_DIGITS);
     await this.redis
       .multi()
       .set(this.codeKey(purpose, phone), sha256(code), 'EX', OTP_TTL_SECONDS)
@@ -67,8 +68,8 @@ export class OtpService {
 
     await this.sms.sendOtp(phone, code);
 
-    const debugMode = this.isDebugMode();
-    if (debugMode) {
+    if (this.isDebugMode()) {
+      // Never return the code over HTTP — log locally for mock/dev only.
       this.logger.log(
         `[DEBUG] purpose=${purpose} phone=${phone} code=${code}`,
       );
@@ -76,7 +77,6 @@ export class OtpService {
 
     return {
       expiresInSeconds: OTP_TTL_SECONDS,
-      ...(debugMode ? { debugCode: code } : {}),
     };
   }
 

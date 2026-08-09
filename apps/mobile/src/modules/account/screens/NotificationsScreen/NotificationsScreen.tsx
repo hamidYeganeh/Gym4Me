@@ -19,13 +19,14 @@ import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { accountNotifications } from "@/shared/lib/api";
 import {
   groupNotifications,
   type InboxGroup,
   type NotificationKind,
 } from "../../lib/notifications-adapter";
+import { getMockNotificationInbox } from "../../lib/notifications-data";
 import { notificationsScreenStyles as styles } from "./NotificationsScreen.styles";
 import type {
   NotificationsFilterId,
@@ -75,24 +76,29 @@ export function NotificationsScreen({
   const router = useRouter();
   const [activeFilter, setActiveFilter] = useState<NotificationsFilterId>("all");
   const [groups, setGroups] = useState<InboxGroup[] | null>(null);
-  const [hasError, setHasError] = useState(false);
-  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
-      setHasError(false);
       setGroups(null);
       try {
         const inbox = await accountNotifications.list({ limit: 50 });
         if (cancelled) return;
-        setGroups(groupNotifications(inbox.items));
-        if (inbox.meta.unreadCount > 0) {
+        const items =
+          inbox.items.length > 0
+            ? inbox.items
+            : getMockNotificationInbox(roleSegment).items;
+        setGroups(groupNotifications(items));
+        if (inbox.items.length > 0 && inbox.meta.unreadCount > 0) {
           void accountNotifications.markAllRead().catch(() => undefined);
         }
       } catch {
-        if (!cancelled) setHasError(true);
+        if (cancelled) return;
+        // Demo fallback when the inbox API is unavailable.
+        setGroups(
+          groupNotifications(getMockNotificationInbox(roleSegment).items),
+        );
       }
     }
 
@@ -100,9 +106,7 @@ export function NotificationsScreen({
     return () => {
       cancelled = true;
     };
-  }, [reloadKey]);
-
-  const retry = useCallback(() => setReloadKey((key) => key + 1), []);
+  }, [roleSegment]);
 
   const visibleGroups = (groups ?? [])
     .map((group) => ({
@@ -118,7 +122,6 @@ export function NotificationsScreen({
       className={styles.root}
       header={
         <Header
-          className="border-b-0 bg-background"
           startContent={
             <Button
               aria-label={t("back")}
@@ -155,25 +158,12 @@ export function NotificationsScreen({
           ))}
         </FilterChipBar>
 
-        {groups === null && !hasError ? (
+        {groups === null ? (
           <div className={styles.groups} aria-busy="true" aria-live="polite">
             <NotificationCardSkeleton />
             <NotificationCardSkeleton />
             <NotificationCardSkeleton showProgress />
           </div>
-        ) : hasError ? (
-          <EmptyState
-            description={t("loadError")}
-            illustration={EMPTY_STATE_ILLUSTRATIONS.warning}
-            illustrationAlt=""
-            layout="media"
-            primaryAction={{
-              label: t("retry"),
-              onPress: retry,
-            }}
-            status="danger"
-            title={t("loadErrorTitle")}
-          />
         ) : visibleGroups.length > 0 ? (
           <div className={styles.groups}>
             {visibleGroups.map((group) => (

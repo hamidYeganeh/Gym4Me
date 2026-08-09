@@ -16,6 +16,7 @@ import type {
   ClubDetailReview,
   ClubDetailSport,
 } from "./club-detail-data";
+import { withGalleryCardDefaults } from "./gallery-media";
 import { mapDiscoveryClassToPreview } from "./map-discovery-class";
 
 /** Runtime discovery club payload (API hydrates refs beyond the thin Club DTO). */
@@ -30,6 +31,8 @@ export type DiscoveryClubPayload = {
     mediaId: string;
     title: string | null;
     description: string | null;
+    views?: number;
+    createdAt?: string;
   }>;
   amenities?: Array<{
     amenityId?: string;
@@ -103,11 +106,52 @@ export type DiscoveryClubPayload = {
   operatingHours: Array<{
     weekday: number;
     status: "open" | "closed";
+    audience?: "shared" | "male" | "female";
     open?: string;
     close?: string;
   }>;
   operationalStatus: "active" | "inactive";
 };
+
+type HourAudience = "shared" | "male" | "female";
+
+function resolveAudience(
+  audience: HourAudience | undefined,
+): HourAudience {
+  return audience ?? "shared";
+}
+
+function formatHourRange(row: {
+  status: "open" | "closed";
+  open?: string;
+  close?: string;
+}): string {
+  if (row.status === "closed") return "تعطیل";
+  return `${row.open ?? "—"} – ${row.close ?? "—"}`;
+}
+
+function isRowOpenNow(row: {
+  status: "open" | "closed";
+  open?: string;
+  close?: string;
+}): boolean {
+  if (row.status === "closed" || !row.open || !row.close) return false;
+  const now = new Date();
+  const minutes = now.getHours() * 60 + now.getMinutes();
+  const [openH, openM] = row.open.split(":").map(Number);
+  const [closeH, closeM] = row.close.split(":").map(Number);
+  if (
+    [openH, openM, closeH, closeM].some((n) => Number.isNaN(n))
+  ) {
+    return true;
+  }
+  const openMinutes = openH * 60 + openM;
+  const closeMinutes = closeH * 60 + closeM;
+  if (closeMinutes <= openMinutes) {
+    return minutes >= openMinutes || minutes < closeMinutes;
+  }
+  return minutes >= openMinutes && minutes < closeMinutes;
+}
 
 type BranchLike = {
   id: string;
@@ -136,13 +180,31 @@ function formatOpenHours(
     return { label: "ساعات کاری نامشخص", isOpen: true };
   }
   const today = (new Date().getDay() + 1) % 7;
-  const row = hours.find((h) => h.weekday === today) ?? hours[0];
-  if (!row || row.status === "closed") {
+  const todayRows = hours.filter((h) => h.weekday === today);
+  const rows = todayRows.length > 0 ? todayRows : hours;
+
+  const male = rows.find((h) => resolveAudience(h.audience) === "male");
+  const female = rows.find((h) => resolveAudience(h.audience) === "female");
+  const shared = rows.find((h) => resolveAudience(h.audience) === "shared");
+
+  if (male && female) {
+    const maleLabel = formatHourRange(male);
+    const femaleLabel = formatHourRange(female);
+    const isOpen = isRowOpenNow(male) || isRowOpenNow(female);
+    return {
+      label: `آقایان ${maleLabel} · بانوان ${femaleLabel}`,
+      isOpen,
+    };
+  }
+
+  const row = shared ?? male ?? female ?? rows[0];
+  if (!row) {
+    return { label: "ساعات کاری نامشخص", isOpen: true };
+  }
+  if (row.status === "closed") {
     return { label: "تعطیل", isOpen: false };
   }
-  const open = row.open ?? "—";
-  const close = row.close ?? "—";
-  return { label: `${open} – ${close}`, isOpen: true };
+  return { label: formatHourRange(row), isOpen: isRowOpenNow(row) };
 }
 
 function mapAmenities(
@@ -182,7 +244,7 @@ function mapEquipment(
 function mapCoaches(
   coaches: DiscoveryClubPayload["coaches"],
 ): ClubDetailCoach[] {
-  return (coaches ?? []).map((coach) => ({
+  return (coaches ?? []).map((coach, index) => ({
     id: coach.coachId,
     name: displayName(coach.name),
     image: mediaFileUrl(coach.avatar?.mediaId) ?? PLACEHOLDER_IMAGE,
@@ -192,6 +254,8 @@ function mapCoaches(
     rating: 0,
     ratingCount: 0,
     availability: "in-person" as const,
+    isCertified: true,
+    isNew: index === 0,
   }));
 }
 
@@ -237,11 +301,15 @@ function mapGallery(club: DiscoveryClubPayload): ClubDetailGalleryItem[] {
       url,
       title: item.title ?? undefined,
       description: item.description ?? undefined,
+      views: item.views,
+      createdAt: item.createdAt ?? undefined,
     });
   }
-  return items.length > 0
-    ? items
-    : [{ url: PLACEHOLDER_IMAGE, title: club.identity.name }];
+  const resolved =
+    items.length > 0
+      ? items
+      : [{ url: PLACEHOLDER_IMAGE, title: club.identity.name }];
+  return resolved.map((item, index) => withGalleryCardDefaults(item, index));
 }
 
 export function mapDiscoveryClubToDetail(input: {
@@ -291,16 +359,16 @@ export function mapDiscoveryClubToDetail(input: {
     gallery,
     stats: [
       {
+        labelKey: "distance",
+        value: "—",
+      },
+      {
         labelKey: "score",
         value: String(club.reviewsSummary.average.toFixed(1)),
       },
       {
-        labelKey: "tasks",
-        value: String(club.reviewsSummary.count),
-      },
-      {
-        labelKey: "minutes",
-        value: String(club.sports?.length ?? 0),
+        labelKey: "students",
+        value: "—",
       },
     ],
     overview: club.identity.description ?? "",
@@ -336,6 +404,7 @@ export function mapDiscoveryClubToDetail(input: {
     operatingHours: club.operatingHours.map((row) => ({
       weekday: row.weekday,
       status: row.status,
+      audience: resolveAudience(row.audience),
       open: row.open,
       close: row.close,
     })),
@@ -371,6 +440,7 @@ export function mapDiscoveryClubToDetail(input: {
           name: ownerName === "مربی" ? "مالک باشگاه" : ownerName,
           avatar: mediaFileUrl(club.owner.avatar?.mediaId) ?? undefined,
           headline: "مالک باشگاه",
+          rank: 1,
         }
       : undefined,
   };

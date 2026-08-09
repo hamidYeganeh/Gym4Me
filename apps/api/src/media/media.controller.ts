@@ -23,19 +23,19 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { readFileSync, renameSync } from 'fs';
+import { join } from 'path';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { OptionalAuth } from '../common/decorators/optional-auth.decorator';
 import { Public } from '../common/decorators/public.decorator';
+import type { JwtUser } from '../common/types';
 import { randomToken } from '../common/utils/hash.util';
+import {
+  extensionForMime,
+  sanitizeContentDispositionFilename,
+  sniffAllowedMime,
+} from '../common/utils/mime-sniff.util';
 import { MediaService } from './media.service';
-
-const ALLOWED_MIME = [
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-  'image/svg+xml',
-  'application/pdf',
-];
 
 @ApiTags('media')
 @Controller('media')
@@ -54,7 +54,7 @@ export class MediaController {
         file: {
           type: 'string',
           format: 'binary',
-          description: 'jpeg / png / webp / svg / pdf, max 8MB',
+          description: 'jpeg / png / webp / pdf, max 8MB',
         },
       },
     },
@@ -64,16 +64,11 @@ export class MediaController {
     FileInterceptor('file', {
       storage: diskStorage({
         destination: process.env.UPLOAD_DIR || './uploads',
-        filename: (_req, file, cb) =>
-          cb(null, `media-${randomToken(16)}${extname(file.originalname)}`),
+        filename: (_req, _file, cb) =>
+          cb(null, `media-${randomToken(16)}.bin`),
       }),
-      fileFilter: (_req, file, cb) =>
-        ALLOWED_MIME.includes(file.mimetype)
-          ? cb(null, true)
-          : cb(
-              new BadRequestException('Only jpeg/png/webp/svg/pdf allowed'),
-              false,
-            ),
+      // MIME is verified from magic bytes after write — do not trust client.
+      fileFilter: (_req, _file, cb) => cb(null, true),
     }),
   )
   upload(
@@ -86,32 +81,64 @@ export class MediaController {
     file: Express.Multer.File,
     @Req() request: Request,
   ) {
-    return this.media.create(file, userId, request);
+    const absolute = join(process.env.UPLOAD_DIR || './uploads', file.filename);
+    const head = readFileSync(absolute).subarray(0, 32);
+    const mime = sniffAllowedMime(head);
+    if (!mime) {
+      throw new BadRequestException('Only jpeg/png/webp/pdf allowed');
+    }
+
+    const ext = extensionForMime(mime);
+    const finalName = `media-${randomToken(16)}${ext}`;
+    const finalPath = join(process.env.UPLOAD_DIR || './uploads', finalName);
+    renameSync(absolute, finalPath);
+    file.filename = finalName;
+    file.mimetype = mime;
+
+    return this.media.create(file, userId, request, {
+      mimeType: mime,
+      originalName: sanitizeContentDispositionFilename(
+        file.originalname || finalName,
+      ),
+    });
   }
 
   @Public()
+  @OptionalAuth()
   @Get(':id')
   @ApiOperation({ summary: 'Get media metadata' })
-  getMeta(@Param('id') id: string) {
-    return this.media.getMeta(id);
+  getMeta(
+    @Param('id') id: string,
+    @CurrentUser() user?: JwtUser,
+  ) {
+    return this.media.getMeta(id, user ?? null);
   }
 
   @Public()
+  @OptionalAuth()
   @Get(':id/file')
   @ApiOperation({ summary: 'Stream the media file' })
   async getFile(
     @Param('id') id: string,
     @Res({ passthrough: true }) res: Response,
+    @CurrentUser() user?: JwtUser,
   ) {
-    const file = await this.media.openFile(id);
+    const file = await this.media.openFile(id, user ?? null);
+    const safeName = file.originalName
+      ? sanitizeContentDispositionFilename(file.originalName)
+      : undefined;
     res.set({
       'Content-Type': file.mimeType,
       'Content-Length': String(file.size),
-      ...(file.originalName
+      // Prefer attachment for PDFs; images can stay inline.
+      ...(safeName
         ? {
-            'Content-Disposition': `inline; filename="${file.originalName}"`,
+            'Content-Disposition': `${
+              file.mimeType === 'application/pdf' ? 'attachment' : 'inline'
+            }; filename="${safeName}"`,
           }
         : {}),
+      'X-Content-Type-Options': 'nosniff',
     });
     return new StreamableFile(file.stream);
   }

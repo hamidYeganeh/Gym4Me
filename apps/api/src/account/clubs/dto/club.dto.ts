@@ -17,6 +17,7 @@ import {
 import {
   ClubUserReviewStatus,
   GeoDirection,
+  OperatingHourAudience,
   RulePolicy,
   WeekdayStatus,
 } from '../../../common/enums';
@@ -166,6 +167,10 @@ export class OperatingHourDto {
 
   @IsEnum(WeekdayStatus)
   status!: WeekdayStatus;
+
+  @IsOptional()
+  @IsEnum(OperatingHourAudience)
+  audience?: OperatingHourAudience;
 
   @IsOptional()
   @IsString()

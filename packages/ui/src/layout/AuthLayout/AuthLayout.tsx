@@ -17,9 +17,27 @@ export function AuthLayout({
 
   return (
     <div className={styles.shell({ className })} data-theme="dark">
-      <section className={styles.panel()}>
-        <div className={styles.brandMark()} aria-label={labels.brandAriaLabel}>
-          <Logo color="currentColor" shadow={false} size="sm" />
+      <div aria-hidden className={styles.media()}>
+        <img
+          alt=""
+          className={styles.mediaImage()}
+          decoding="async"
+          src={heroSrc}
+        />
+        <div className={styles.mediaOverlay()} />
+        <div className={styles.mediaVignette()} />
+      </div>
+
+      <section className={styles.panel()} aria-label={labels.heroAlt}>
+        <div className={styles.brand()} aria-label={labels.brandAriaLabel}>
+          <span className={styles.brandGlow()} />
+          <Logo
+            className={styles.brandMark()}
+            shadow
+            size="3xl"
+            title={labels.brandAriaLabel}
+          />
+          <span className={styles.brandName()}>{labels.brandAriaLabel}</span>
         </div>
 
         <header className={styles.header()}>
@@ -31,6 +49,8 @@ export function AuthLayout({
           </Typography>
         </header>
 
+        <div className={styles.spacer()} aria-hidden />
+
         <div className={styles.body()}>
           <div className={styles.formSlot()}>{children}</div>
           {belowForm ? (
@@ -39,17 +59,6 @@ export function AuthLayout({
           {footer ? <div className={styles.footer()}>{footer}</div> : null}
         </div>
       </section>
-
-      <aside className={styles.media()}>
-        <div className={styles.mediaFrame()}>
-          <img
-            alt={labels.heroAlt}
-            className={styles.mediaImage()}
-            src={heroSrc}
-          />
-          <div className={styles.mediaOverlay()} />
-        </div>
-      </aside>
     </div>
   );
 }

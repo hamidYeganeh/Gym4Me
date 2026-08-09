@@ -61,7 +61,22 @@ export enum KycRequestStatus {
 
 export enum OtpPurpose {
   AUTH = 'auth',
+  /** Admin panel login — must never share Redis keys with account AUTH. */
+  ADMIN_AUTH = 'admin_auth',
   PASSWORD_RESET = 'password_reset',
+}
+
+/** Roles that account (mobile) sessions may switch into. Admin is admin-auth only. */
+export enum SelfSwitchableRole {
+  ATHLETE = 'athlete',
+  COACH = 'coach',
+  CLUB_OWNER = 'club_owner',
+}
+
+/** Media readability for public vs authenticated/owner reads. */
+export enum MediaVisibility {
+  PUBLIC = 'public',
+  PRIVATE = 'private',
 }
 
 export enum InviteStatus {
@@ -115,6 +130,17 @@ export enum ClubUserReviewStatus {
 export enum WeekdayStatus {
   OPEN = 'open',
   CLOSED = 'closed',
+}
+
+/**
+ * Who an operating-hours row applies to.
+ * `shared` = same hours for all (or single-gender clubs).
+ * `male` / `female` = gender-split schedule (typical for mixed clubs).
+ */
+export enum OperatingHourAudience {
+  SHARED = 'shared',
+  MALE = 'male',
+  FEMALE = 'female',
 }
 
 /** Club calendar slot resource kind. */
@@ -298,6 +324,23 @@ export enum PublishStatus {
   UNPUBLISHED = 'unpublished',
 }
 
+/** Editorial format / type of an article. */
+export enum ArticleKind {
+  GUIDE = 'guide',
+  NEWS = 'news',
+  TIP = 'tip',
+  STORY = 'story',
+  WORKOUT = 'workout',
+}
+
+/** Who the article is primarily written for. */
+export enum ArticleAudience {
+  ALL = 'all',
+  ATHLETE = 'athlete',
+  COACH = 'coach',
+  CLUB_OWNER = 'club_owner',
+}
+
 export enum AuditAction {
   USER_REGISTERED = 'user.registered',
   USER_LOGIN = 'user.login',
@@ -348,4 +391,12 @@ export enum AuditAction {
   SUPPORT_FAQ_CREATED = 'support.faq_created',
   SUPPORT_FAQ_UPDATED = 'support.faq_updated',
   SUPPORT_FAQ_DELETED = 'support.faq_deleted',
+  ARTICLE_CREATED = 'article.created',
+  ARTICLE_UPDATED = 'article.updated',
+  ARTICLE_DELETED = 'article.deleted',
+  ARTICLE_LIKED = 'article.liked',
+  ARTICLE_UNLIKED = 'article.unliked',
+  ARTICLE_SAVED = 'article.saved',
+  ARTICLE_UNSAVED = 'article.unsaved',
+  ARTICLE_COMMENT_CREATED = 'article.comment_created',
 }

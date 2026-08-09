@@ -8,6 +8,7 @@ export type AdminDashboardNavId =
   | "sports"
   | "choices"
   | "refs"
+  | "articles"
   | "support"
   | "calendar"
   | "profile"

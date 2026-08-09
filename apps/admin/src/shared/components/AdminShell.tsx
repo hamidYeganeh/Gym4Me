@@ -62,6 +62,7 @@ type AdminShellProps = {
   supportSection?: SectionSearch & {
     activeTabId: SupportSectionTabId;
   };
+  articlesSection?: SectionSearch;
 };
 
 export function AdminShell({
@@ -76,6 +77,7 @@ export function AdminShell({
   refsSection,
   analyticsSection,
   supportSection,
+  articlesSection,
 }: AdminShellProps) {
   const t = useTranslations("Admin");
   const { logout } = useAuth();
@@ -99,6 +101,7 @@ export function AdminShell({
         sports: t("nav.sports"),
         choices: t("nav.choices"),
         refs: t("nav.refs"),
+        articles: t("nav.articles"),
         support: t("nav.support"),
         calendar: t("nav.calendar"),
         profile: t("nav.profile"),
@@ -191,6 +194,7 @@ export function AdminShell({
       sports: routes.sports(),
       choices: routes.choices,
       refs: routes.refs(),
+      articles: routes.articles,
       support: routes.support,
       analytics: routes.analytics,
     };
@@ -308,6 +312,17 @@ export function AdminShell({
         onTabPress={(id) =>
           navigate(supportTabPath[id as SupportSectionTabId] ?? routes.support)
         }
+      />
+    );
+  } else if (articlesSection) {
+    header = (
+      <AdminSectionHeader
+        filtersAriaLabel={t("filtersAriaLabel")}
+        searchAriaLabel={t("Articles.searchAriaLabel")}
+        searchPlaceholder={t("Articles.searchPlaceholder")}
+        searchValue={articlesSection.searchValue}
+        onFilterPress={articlesSection.onFilterPress}
+        onSearchChange={articlesSection.onSearchChange}
       />
     );
   } else if (choicesSection) {

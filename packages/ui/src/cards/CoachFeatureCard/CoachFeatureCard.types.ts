@@ -26,11 +26,13 @@ export type CoachFeatureCardProps = Omit<
   newLabel?: ReactNode;
   /** Accessible label for the close control. */
   closeLabel?: string;
-  /** Called when close is pressed. */
+  /** Called when close is pressed. Omit to hide the close control. */
   onClose?: ButtonProps["onPress"];
-  /** Certified label (e.g. "Certified"). */
+  /** Press handler for the card (navigation). */
+  onPress?: ButtonProps["onPress"];
+  /** Certified label (e.g. "تأییدشده"). */
   certifiedLabel?: ReactNode;
-  /** Years-of-experience label (e.g. "5 YOE"). */
+  /** Years-of-experience label (e.g. "۵ سال سابقه"). */
   experienceLabel?: ReactNode;
   /** Extra classes for the cover image. */
   imageClassName?: string;

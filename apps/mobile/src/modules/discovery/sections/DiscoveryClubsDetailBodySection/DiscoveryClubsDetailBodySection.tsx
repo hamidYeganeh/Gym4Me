@@ -13,36 +13,43 @@ import {
 } from "@heroui/react";
 import { ArrowUpRight } from "@repo/icons/ArrowUpRight";
 import { BarbellHorizontal } from "@repo/icons/BarbellHorizontal";
+import { Briefcase1 } from "@repo/icons/Briefcase1";
+import { Building2 } from "@repo/icons/Building2";
+import { Calendar1 } from "@repo/icons/Calendar1";
 import { Car1 } from "@repo/icons/Car1";
 import { Check } from "@repo/icons/Check";
 import { ChevronDown } from "@repo/icons/ChevronDown";
-import { Clock } from "@repo/icons/Clock";
 import { Coffee } from "@repo/icons/Coffee";
-import { ListTwoCheck } from "@repo/icons/ListTwoCheck";
+import { GenderMale } from "@repo/icons/GenderMale";
 import { Lock1 } from "@repo/icons/Lock1";
 import { Medal } from "@repo/icons/Medal";
-import { PersonMan1 } from "@repo/icons/PersonMan1";
+import { PersonWheelchair } from "@repo/icons/PersonWheelchair";
 import { Shower1 } from "@repo/icons/Shower1";
 import { Snowflake1 } from "@repo/icons/Snowflake1";
+import { Sparkle1 } from "@repo/icons/Sparkle1";
 import { StarFull } from "@repo/icons/StarFull";
-import { Telephone1 } from "@repo/icons/Telephone1";
+import { Target1 } from "@repo/icons/Target1";
 import { Treadmill } from "@repo/icons/Treadmill";
+import { UsersThree } from "@repo/icons/UsersThree";
 import { Weight } from "@repo/icons/Weight";
 import { WifiHigh } from "@repo/icons/WifiHigh";
+
 import { AchievementCard } from "@repo/ui/cards/AchievementCard";
+import { BusyHoursCard } from "@repo/ui/cards/BusyHoursCard";
 import { ClubAmenityCard } from "@repo/ui/cards/ClubAmenityCard";
 import { ClubBranchCard } from "@repo/ui/cards/ClubBranchCard";
 import { ClubCancellationPolicy } from "@repo/ui/cards/ClubCancellationPolicy";
 import { ClubClassCard } from "@repo/ui/cards/ClubClassCard";
+import { ClubContactSection } from "@repo/ui/cards/ClubContactSection";
 import { ClubEquipmentCard } from "@repo/ui/cards/ClubEquipmentCard";
 import { ClubLocationCard } from "@repo/ui/cards/ClubLocationCard";
+import { ClubOwnerCard } from "@repo/ui/cards/ClubOwnerCard";
 import { ClubSubscriptionCard } from "@repo/ui/cards/ClubSubscriptionCard";
-import { CoachNearbyCard } from "@repo/ui/cards/CoachNearbyCard";
+import { CoachFeatureCard } from "@repo/ui/cards/CoachFeatureCard";
 import { ReviewCard } from "@repo/ui/cards/ReviewCard";
 import { SocialMediaCard } from "@repo/ui/cards/SocialMediaCard";
 import { SportCard } from "@repo/ui/cards/SportCard";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
-import { BusyHoursChart } from "@repo/ui/kit/BusyHoursChart";
 import { CarouselNavigation } from "@repo/ui/kit/CarouselNavigation";
 import useEmblaCarousel from "embla-carousel-react";
 import { useTranslations } from "next-intl";
@@ -67,13 +74,16 @@ import type {
   ClubDetailSubscription,
 } from "../../lib/club-detail-data";
 import { DiscoveryClubsDetailCalendarSection } from "../DiscoveryClubsDetailCalendarSection";
+import { DiscoveryGallerySection } from "../DiscoveryGallerySection";
 import { discoveryClubsDetailBodySectionStyles as styles } from "./DiscoveryClubsDetailBodySection.styles";
 import type { DiscoveryClubsDetailBodySectionProps } from "./DiscoveryClubsDetailBodySection.types";
 
 function formatLocationAddress(location: ClubDetailLocation) {
-  const parts = [location.province, location.city, location.neighborhood].filter(
-    Boolean,
-  );
+  const parts = [
+    location.province,
+    location.city,
+    location.neighborhood,
+  ].filter(Boolean);
   if (parts.length > 0) return parts.join("، ");
   return location.address ?? "";
 }
@@ -82,68 +92,43 @@ function formatPlanPrice(price: number) {
   return price.toLocaleString("fa-IR");
 }
 
-const EQUIPMENT_PREVIEW_COUNT = 5;
+const EQUIPMENT_PREVIEW_COUNT = 4;
 const CLASS_PREVIEW_COUNT = 5;
 const REVIEW_PREVIEW_COUNT = 5;
 
 const STAT_LABEL_KEYS = {
-  minutes: "statMinutes",
+  distance: "statDistance",
   score: "statScore",
-  tasks: "statTasks",
+  students: "statStudents",
 } as const satisfies Record<
   ClubDetailStatKey,
-  "statMinutes" | "statScore" | "statTasks"
+  "statDistance" | "statScore" | "statStudents"
 >;
 
-function StatIcon({ labelKey }: { labelKey: ClubDetailStatKey }) {
-  if (labelKey === "minutes") {
-    return (
-      <Clock
-        aria-hidden
-        className={[styles.statIcon, styles.statIconMuted].join(" ")}
-        size={14}
-      />
-    );
-  }
-  if (labelKey === "score") {
-    return (
-      <StarFull
-        aria-hidden
-        className={[styles.statIcon, styles.statIconScore].join(" ")}
-        size={14}
-      />
-    );
-  }
-  return (
-    <ListTwoCheck
-      aria-hidden
-      className={[styles.statIcon, styles.statIconTasks].join(" ")}
-      size={14}
-    />
-  );
-}
-
-function ClubStatsBar({ stats }: { stats: ClubDetailStat[] }) {
+function ClubLocationStats({
+  stats,
+  isOpen,
+  hoursLabel,
+}: {
+  stats: ClubDetailStat[];
+  isOpen: boolean;
+  hoursLabel: string;
+}) {
   const t = useTranslations("ClubDetail");
 
   if (stats.length === 0) return null;
 
   return (
-    <div className={styles.statsBar}>
-      {stats.map((stat) => (
-        <div className={styles.statCell} key={stat.labelKey}>
-          <Typography className={styles.statValue} type="h3" weight="bold">
-            {stat.value}
-          </Typography>
-          <div className={styles.statMeta}>
-            <StatIcon labelKey={stat.labelKey} />
-            <Typography className={styles.statLabel} type="body-xs">
-              {t(STAT_LABEL_KEYS[stat.labelKey])}
-            </Typography>
-          </div>
-        </div>
-      ))}
-    </div>
+    <ClubLocationCard
+      hoursLabel={hoursLabel || undefined}
+      status={isOpen ? "open" : "closed"}
+      statusLabel={isOpen ? t("openNow") : t("closedNow")}
+      stats={stats.map((stat) => ({
+        key: stat.labelKey,
+        value: stat.value,
+        label: t(STAT_LABEL_KEYS[stat.labelKey]),
+      }))}
+    />
   );
 }
 
@@ -165,34 +150,58 @@ const AMENITY_ICONS: Record<ClubDetailAmenityIconKey, ReactNode> = {
 
 const COACH_PREVIEW_COUNT = 4;
 
-function SectionTitle({ children }: { children: ReactNode }) {
+const SECTION_TITLE_ICON_SIZE = 20;
+
+function SectionTitle({
+  children,
+  icon,
+}: {
+  children: ReactNode;
+  icon?: ReactNode;
+}) {
   return (
-    <Typography className={styles.sectionTitle} type="h4" weight="semibold">
-      {children}
-    </Typography>
+    <div className={styles.sectionTitleRow}>
+      {icon ? (
+        <span aria-hidden className={styles.sectionTitleIcon}>
+          {icon}
+        </span>
+      ) : null}
+      <Typography className={styles.sectionTitle} type="h4" weight="semibold">
+        {children}
+      </Typography>
+    </div>
   );
 }
 
 function SectionCarousel({
   title,
+  icon,
   "aria-label": ariaLabel,
+  action,
   children,
 }: {
   title: ReactNode;
+  icon?: ReactNode;
   "aria-label": string;
+  /** Optional header action (e.g. view more). */
+  action?: ReactNode;
   children: ReactNode;
 }) {
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "start",
     containScroll: "trimSnaps",
     direction: "rtl",
+    dragFree: true,
   });
 
   return (
     <>
       <div className={styles.sectionHeader}>
-        <SectionTitle>{title}</SectionTitle>
-        <CarouselNavigation emblaApi={emblaApi} size="sm" />
+        <SectionTitle icon={icon}>{title}</SectionTitle>
+        <div className={styles.sectionHeaderAside}>
+          {action}
+          <CarouselNavigation emblaApi={emblaApi} size="sm" />
+        </div>
       </div>
       <div
         aria-label={ariaLabel}
@@ -286,6 +295,7 @@ function EquipmentSection({ equipment }: { equipment: ClubDetailEquipment[] }) {
     <div className={styles.section}>
       <SectionCarousel
         aria-label={t("equipmentTitle")}
+        icon={<BarbellHorizontal size={SECTION_TITLE_ICON_SIZE} />}
         title={t("equipmentTitle")}
       >
         {preview.map((item) => (
@@ -306,7 +316,7 @@ function EquipmentSection({ equipment }: { equipment: ClubDetailEquipment[] }) {
             variant="secondary"
           >
             <ArrowUpRight size={20} />
-            <span className={styles.seeAllLabel}>{t("seeMore")}</span>
+            <span className={styles.seeAllLabel}>{t("seeAllEquipment")}</span>
           </Button>
         ) : null}
       </SectionCarousel>
@@ -356,6 +366,7 @@ function AmenitiesSection({ amenities }: { amenities: ClubDetailAmenity[] }) {
     <div className={styles.section}>
       <SectionCarousel
         aria-label={t("amenitiesTitle")}
+        icon={<Sparkle1 size={SECTION_TITLE_ICON_SIZE} />}
         title={t("amenitiesTitle")}
       >
         {amenities.map((item) => (
@@ -383,22 +394,31 @@ function CoachesSection({ coaches }: { coaches: ClubDetailCoach[] }) {
 
   return (
     <div className={styles.section}>
-      <SectionCarousel aria-label={t("coachesTitle")} title={t("coachesTitle")}>
+      <SectionCarousel
+        aria-label={t("coachesTitle")}
+        icon={<UsersThree size={SECTION_TITLE_ICON_SIZE} />}
+        title={t("coachesTitle")}
+      >
         {preview.map((coach) => (
           <div className={styles.coachSlide} key={coach.id}>
-            <CoachNearbyCard
-              availability={coach.availability}
+            <CoachFeatureCard
+              certifiedLabel={
+                coach.isCertified ? t("coachCertified") : undefined
+              }
               className={styles.coachCard}
-              distanceLabel={coach.distanceLabel}
+              experienceLabel={
+                coach.yearsExperience != null
+                  ? t("coachYoe", { years: coach.yearsExperience })
+                  : undefined
+              }
               image={coach.image || PLACEHOLDER_IMAGE}
               imageAlt={coach.name}
-              inPersonLabel={t("coachInPerson")}
+              isNew={coach.isNew}
+              newLabel={t("coachNew")}
               onPress={() => router.push(`/discovery/coaches/${coach.id}`)}
-              priceLabel={coach.priceLabel}
               rating={coach.rating}
               ratingCount={coach.ratingCount}
-              remoteLabel={t("coachRemote")}
-              specialtyLabel={coach.specialtyLabel}
+              specialty={coach.specialtyLabel}
               title={coach.name}
             />
           </div>
@@ -411,7 +431,9 @@ function CoachesSection({ coaches }: { coaches: ClubDetailCoach[] }) {
             variant="secondary"
           >
             <ArrowUpRight size={22} />
-            <span className={styles.classSeeAllLabel}>{t("seeAllCoaches")}</span>
+            <span className={styles.classSeeAllLabel}>
+              {t("seeAllCoaches")}
+            </span>
           </Button>
         ) : null}
       </SectionCarousel>
@@ -419,38 +441,78 @@ function CoachesSection({ coaches }: { coaches: ClubDetailCoach[] }) {
   );
 }
 
+function toTelHref(number: string) {
+  const latin = number
+    .replace(/[۰-۹]/g, (digit) =>
+      String(digit.charCodeAt(0) - "۰".charCodeAt(0)),
+    )
+    .replace(/[٠-٩]/g, (digit) =>
+      String(digit.charCodeAt(0) - "٠".charCodeAt(0)),
+    );
+  const tel = latin.replace(/[^\d+]/g, "");
+  return tel ? `tel:${tel}` : null;
+}
+
 function PhonesSection({ phones }: { phones: ClubDetailPhone[] }) {
   const t = useTranslations("ClubDetail");
   if (phones.length === 0) return null;
 
   return (
-    <div className={styles.section}>
-      <SectionTitle>{t("phonesTitle")}</SectionTitle>
+    <ClubContactSection
+      className={styles.section}
+      onCall={(phone) => {
+        const href = toTelHref(phone.number);
+        if (href) window.location.href = href;
+      }}
+      phones={phones.map((phone) => ({
+        id: phone.id,
+        number: phone.number,
+        label: phone.label ?? t("phoneItemLabel"),
+        callLabel: t("callPhone"),
+      }))}
+      title={t("phonesTitle")}
+    />
+  );
+}
+
+function formatOperatingHourValue(
+  row: ClubDetailOperatingHour,
+  t: ReturnType<typeof useTranslations<"ClubDetail">>,
+) {
+  return row.status === "closed"
+    ? t("hoursClosed")
+    : `${row.open ?? "—"} – ${row.close ?? "—"}`;
+}
+
+function OperatingHoursGroup({
+  title,
+  hours,
+}: {
+  title?: string;
+  hours: ClubDetailOperatingHour[];
+}) {
+  const t = useTranslations("ClubDetail");
+  const sorted = [...hours].sort((a, b) => a.weekday - b.weekday);
+
+  return (
+    <div className={styles.hoursGroup}>
+      {title ? (
+        <Typography className={styles.hoursGroupTitle} type="body-sm">
+          {title}
+        </Typography>
+      ) : null}
       <div className={styles.infoCard}>
-        {phones.map((phone) => (
-          <div className={styles.phoneRow} key={phone.id}>
-            <div className={styles.phoneMeta}>
-              {phone.label ? (
-                <Typography className={styles.phoneLabel} type="body-xs">
-                  {phone.label}
-                </Typography>
-              ) : null}
-              <Typography className={styles.phoneNumber} type="body-sm">
-                {phone.number}
-              </Typography>
-            </div>
-            <Button
-              aria-label={t("callPhone")}
-              isIconOnly
-              onPress={() => {
-                const tel = phone.number.replace(/[^\d+]/g, "");
-                if (tel) window.location.href = `tel:${tel}`;
-              }}
-              size="lg"
-              variant="secondary"
-            >
-              <Telephone1 size={20} />
-            </Button>
+        {sorted.map((row) => (
+          <div
+            className={styles.infoRow}
+            key={`${row.audience ?? "shared"}-${row.weekday}`}
+          >
+            <Typography className={styles.infoRowLabel} type="body-sm">
+              {t(`calendarWeekdayFull.${weekdayKey(row.weekday)}`)}
+            </Typography>
+            <Typography className={styles.infoRowValue} type="body-sm">
+              {formatOperatingHourValue(row, t)}
+            </Typography>
           </div>
         ))}
       </div>
@@ -466,25 +528,35 @@ function OperatingHoursSection({
   const t = useTranslations("ClubDetail");
   if (hours.length === 0) return null;
 
-  const sorted = [...hours].sort((a, b) => a.weekday - b.weekday);
+  const male = hours.filter((row) => (row.audience ?? "shared") === "male");
+  const female = hours.filter((row) => (row.audience ?? "shared") === "female");
+  const shared = hours.filter((row) => (row.audience ?? "shared") === "shared");
+  const hasSplit = male.length > 0 && female.length > 0;
 
   return (
     <div className={styles.section}>
       <SectionTitle>{t("operatingHoursTitle")}</SectionTitle>
-      <div className={styles.infoCard}>
-        {sorted.map((row) => (
-          <div className={styles.infoRow} key={row.weekday}>
-            <Typography className={styles.infoRowLabel} type="body-sm">
-              {t(`calendarWeekdayFull.${weekdayKey(row.weekday)}`)}
-            </Typography>
-            <Typography className={styles.infoRowValue} type="body-sm">
-              {row.status === "closed"
-                ? t("hoursClosed")
-                : `${row.open ?? "—"} – ${row.close ?? "—"}`}
-            </Typography>
-          </div>
-        ))}
-      </div>
+      {hasSplit ? (
+        <div className={styles.hoursGroups}>
+          <OperatingHoursGroup hours={male} title={t("hoursAudienceMale")} />
+          <OperatingHoursGroup
+            hours={female}
+            title={t("hoursAudienceFemale")}
+          />
+        </div>
+      ) : (
+        <OperatingHoursGroup
+          hours={
+            shared.length > 0
+              ? shared
+              : male.length > 0
+                ? male
+                : female.length > 0
+                  ? female
+                  : hours
+          }
+        />
+      )}
     </div>
   );
 }
@@ -571,42 +643,60 @@ function AudienceSection({ audience }: { audience: ClubDetailAudience }) {
     ACCESSIBILITY_KEYS,
   );
 
+  const cells = [
+    {
+      key: "gender",
+      label: t("audienceGender"),
+      value: gender,
+      icon: (
+        <GenderMale aria-hidden className={styles.audienceIcon} size={20} />
+      ),
+    },
+    {
+      key: "age",
+      label: t("audienceAge"),
+      value: ages,
+      icon: (
+        <UsersThree aria-hidden className={styles.audienceIcon} size={20} />
+      ),
+    },
+    {
+      key: "level",
+      label: t("audienceLevel"),
+      value: levels,
+      icon: <Target1 aria-hidden className={styles.audienceIcon} size={20} />,
+    },
+    {
+      key: "accessibility",
+      label: t("audienceAccessibility"),
+      value: accessibility,
+      icon: (
+        <PersonWheelchair
+          aria-hidden
+          className={styles.audienceIcon}
+          size={20}
+        />
+      ),
+    },
+  ] as const;
+
   return (
     <div className={styles.section}>
       <SectionTitle>{t("audienceTitle")}</SectionTitle>
       <div className={styles.audienceGrid}>
-        <div className={styles.audienceCell}>
-          <Typography className={styles.audienceLabel} type="body-xs">
-            {t("audienceGender")}
-          </Typography>
-          <Typography className={styles.audienceValue} type="body-sm">
-            {gender}
-          </Typography>
-        </div>
-        <div className={styles.audienceCell}>
-          <Typography className={styles.audienceLabel} type="body-xs">
-            {t("audienceAge")}
-          </Typography>
-          <Typography className={styles.audienceValue} type="body-sm">
-            {ages}
-          </Typography>
-        </div>
-        <div className={styles.audienceCell}>
-          <Typography className={styles.audienceLabel} type="body-xs">
-            {t("audienceLevel")}
-          </Typography>
-          <Typography className={styles.audienceValue} type="body-sm">
-            {levels}
-          </Typography>
-        </div>
-        <div className={styles.audienceCell}>
-          <Typography className={styles.audienceLabel} type="body-xs">
-            {t("audienceAccessibility")}
-          </Typography>
-          <Typography className={styles.audienceValue} type="body-sm">
-            {accessibility}
-          </Typography>
-        </div>
+        {cells.map((cell) => (
+          <div className={styles.audienceCell} key={cell.key}>
+            <span className={styles.audienceIconWrap}>{cell.icon}</span>
+            <div className={styles.audienceText}>
+              <Typography className={styles.audienceLabel} type="body-xs">
+                {cell.label}
+              </Typography>
+              <Typography className={styles.audienceValue} type="body-sm">
+                {cell.value}
+              </Typography>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -642,38 +732,110 @@ function FaqSection({ items }: { items: ClubDetailFaq[] }) {
 
 function OwnerSection({ owner }: { owner?: ClubDetailOwner }) {
   const t = useTranslations("ClubDetail");
+  const [isOpen, setIsOpen] = useState(false);
+
   if (!owner) return null;
+
+  const experienceLabel =
+    owner.yearsExperience != null
+      ? t("ownerYoe", { years: owner.yearsExperience })
+      : undefined;
 
   return (
     <div className={styles.section}>
       <SectionTitle>{t("ownerTitle")}</SectionTitle>
-      <div className={styles.ownerCard}>
-        <div className={styles.ownerAvatar}>
-          {owner.avatar ? (
-            <Image
-              alt={owner.name}
-              className="size-full object-cover"
-              height={48}
-              src={owner.avatar}
-              width={48}
-            />
-          ) : (
-            <div className="flex size-full items-center justify-center text-muted">
-              <PersonMan1 size={24} />
-            </div>
-          )}
-        </div>
-        <div className={styles.ownerMeta}>
-          <Typography className={styles.ownerName} type="body">
-            {owner.name}
-          </Typography>
-          {owner.headline ? (
-            <Typography className={styles.ownerHeadline} type="body-sm">
-              {owner.headline}
-            </Typography>
-          ) : null}
-        </div>
-      </div>
+      <ClubOwnerCard
+        actionLabel={t("ownerAction")}
+        experienceLabel={experienceLabel}
+        image={owner.avatar ?? PLACEHOLDER_IMAGE}
+        imageAlt={owner.name}
+        onPress={() => setIsOpen(true)}
+        rank={owner.rank}
+        rating={owner.rating}
+        ratingCount={owner.ratingCount}
+        title={owner.name}
+      />
+
+      <Drawer.Backdrop isOpen={isOpen} onOpenChange={setIsOpen}>
+        <Drawer.Content placement="bottom">
+          <Drawer.Dialog>
+            <Drawer.Handle />
+            <Drawer.CloseTrigger />
+            <Drawer.Header>
+              <Drawer.Heading>{t("ownerDetailsTitle")}</Drawer.Heading>
+            </Drawer.Header>
+            <Drawer.Body className={styles.ownerDrawerBody}>
+              <ScrollShadow
+                className={styles.ownerDrawerScroll}
+                hideScrollBar
+                orientation="vertical"
+                size={56}
+              >
+                <div className={styles.ownerSheet}>
+                  <div className={styles.ownerSheetAvatar}>
+                    <Image
+                      alt={owner.name}
+                      className="size-full object-cover"
+                      height={96}
+                      src={owner.avatar ?? PLACEHOLDER_IMAGE}
+                      width={96}
+                    />
+                  </div>
+
+                  <div className={styles.ownerSheetIdentity}>
+                    <Typography className={styles.ownerSheetName} type="body">
+                      {owner.name}
+                    </Typography>
+                    {owner.headline ? (
+                      <Typography
+                        className={styles.ownerSheetHeadline}
+                        type="body-sm"
+                      >
+                        {owner.headline}
+                      </Typography>
+                    ) : null}
+                  </div>
+
+                  {experienceLabel != null || owner.rating != null ? (
+                    <div className={styles.ownerSheetMeta}>
+                      {experienceLabel != null ? (
+                        <span className={styles.ownerSheetMetaItem}>
+                          <Briefcase1 aria-hidden size={14} />
+                          {experienceLabel}
+                        </span>
+                      ) : null}
+                      {experienceLabel != null && owner.rating != null ? (
+                        <span aria-hidden>•</span>
+                      ) : null}
+                      {owner.rating != null ? (
+                        <span className={styles.ownerSheetMetaItem}>
+                          <StarFull
+                            aria-hidden
+                            className={styles.ownerSheetStar}
+                            size={14}
+                          />
+                          {Number.isInteger(owner.rating)
+                            ? String(owner.rating)
+                            : owner.rating.toFixed(1)}
+                          {owner.ratingCount != null
+                            ? ` (${owner.ratingCount.toLocaleString("en-US")})`
+                            : null}
+                        </span>
+                      ) : null}
+                    </div>
+                  ) : null}
+
+                  {owner.bio ? (
+                    <Typography className={styles.ownerSheetBio} type="body-sm">
+                      {owner.bio}
+                    </Typography>
+                  ) : null}
+                </div>
+              </ScrollShadow>
+            </Drawer.Body>
+          </Drawer.Dialog>
+        </Drawer.Content>
+      </Drawer.Backdrop>
     </div>
   );
 }
@@ -757,14 +919,29 @@ export function DiscoveryClubsDetailBodySection({
   const classesPath = `/discovery/clubs/${club.id}/classes`;
   const reviewsPath = `/discovery/clubs/${club.id}/reviews`;
 
+  const locationAddress = formatLocationAddress(club.locationCard);
+
   return (
     <section className={styles.root}>
-      <ClubStatsBar stats={club.stats} />
-
       <div className={styles.section}>
         <SectionTitle>{t("description")}</SectionTitle>
         <DescriptionDisclosure text={club.overview} />
       </div>
+
+      <DiscoveryGallerySection
+        gallery={club.gallery}
+        labels={{
+          title: t("galleryTitle"),
+          seeAll: t("seeAllGallery"),
+          action: t("galleryAction"),
+          newBadge: t("galleryNew"),
+          close: t("closeGallery"),
+          favorite: t("favorite"),
+          prev: t("galleryPrev"),
+          next: t("galleryNext"),
+          selectImage: (index) => t("selectImage", { index }),
+        }}
+      />
 
       <AmenitiesSection amenities={club.amenities} />
 
@@ -785,6 +962,7 @@ export function DiscoveryClubsDetailBodySection({
         <div className={styles.section}>
           <SectionCarousel
             aria-label={t("achievementsTitle")}
+            icon={<Medal size={SECTION_TITLE_ICON_SIZE} />}
             title={t("achievementsTitle")}
           >
             {club.achievements.map((item) => (
@@ -840,7 +1018,7 @@ export function DiscoveryClubsDetailBodySection({
             },
             {
               id: "no-show",
-              color: "accent",
+              color: "danger",
               title: t("cancellationStep4Title"),
               description: t("cancellationStep4Description"),
             },
@@ -852,6 +1030,7 @@ export function DiscoveryClubsDetailBodySection({
         <div className={styles.section}>
           <SectionCarousel
             aria-label={t("sportsTitle")}
+            icon={<Target1 size={SECTION_TITLE_ICON_SIZE} />}
             title={t("sportsTitle")}
           >
             {club.sports.map((sport) => (
@@ -890,40 +1069,34 @@ export function DiscoveryClubsDetailBodySection({
 
       {club.busyHours.length > 0 ? (
         <div className={styles.section}>
-          <SectionTitle>{t("busyHoursTitle")}</SectionTitle>
-          <div className={styles.busyHoursChart}>
-            <BusyHoursChart
-              aria-label={t("busyHoursChartLabel")}
-              color="var(--accent)"
-              data={club.busyHours}
-              peakLabel={t("busyHoursPeak")}
-            />
-          </div>
+          <BusyHoursCard
+            aria-label={t("busyHoursChartLabel")}
+            data={club.busyHours}
+            title={t("busyHoursTitle")}
+            unit={t("busyHoursUnit")}
+          />
         </div>
       ) : null}
 
       <div className={styles.section}>
         <SectionTitle>{t("locationTitle")}</SectionTitle>
-        <div className={styles.fullBleed}>
-          <ClubLocationCard
-            actionLabel={t("locationAction")}
-            address={formatLocationAddress(club.locationCard)}
-            calories={club.locationCard.calories}
-            distanceLabel={club.locationCard.distanceLabel}
-            duration={club.locationCard.duration}
-            endLabel={club.locationCard.endLabel}
-            fullWidth
-            route={club.locationCard.route}
-            startLabel={club.locationCard.startLabel}
-            title={club.locationCard.title}
-          />
-        </div>
+        <ClubLocationStats
+          hoursLabel={club.openHoursLabel}
+          isOpen={club.isOpen}
+          stats={club.stats}
+        />
+        {locationAddress ? (
+          <Typography className={styles.bodyText} type="body-sm">
+            {locationAddress}
+          </Typography>
+        ) : null}
       </div>
 
       {club.branches.length > 0 ? (
         <div className={styles.section}>
           <SectionCarousel
             aria-label={t("branchesTitle")}
+            icon={<Building2 size={SECTION_TITLE_ICON_SIZE} />}
             title={t("branchesTitle")}
           >
             {club.branches.map((branch) => (
@@ -960,6 +1133,7 @@ export function DiscoveryClubsDetailBodySection({
         <div className={styles.section}>
           <SectionCarousel
             aria-label={t("classesTitle")}
+            icon={<Calendar1 size={SECTION_TITLE_ICON_SIZE} />}
             title={t("classesTitle")}
           >
             {visibleClasses.map((item) => {
@@ -1011,6 +1185,7 @@ export function DiscoveryClubsDetailBodySection({
         <div className={styles.section}>
           <SectionCarousel
             aria-label={t("reviewsTitle")}
+            icon={<StarFull size={SECTION_TITLE_ICON_SIZE} />}
             title={t("reviewsTitle")}
           >
             {visibleReviews.map((review) => (

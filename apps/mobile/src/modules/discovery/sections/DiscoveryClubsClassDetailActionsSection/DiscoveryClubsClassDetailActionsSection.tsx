@@ -1,40 +1,63 @@
 "use client";
 
-import { Button } from "@heroui/react";
-import { CancerRibbon } from "@repo/icons/CancerRibbon";
-import { Plus } from "@repo/icons/Plus";
+import { Button, Typography } from "@heroui/react";
+import { ArrowForward2 } from "@repo/icons/ArrowForward2";
+import { StickyBottomActions } from "@repo/ui/kit/StickyBottomActions";
+import NumberFlow from "@number-flow/react";
 import { useTranslations } from "next-intl";
 import { discoveryClubsClassDetailActionsSectionStyles as styles } from "./DiscoveryClubsClassDetailActionsSection.styles";
 import type { DiscoveryClubsClassDetailActionsSectionProps } from "./DiscoveryClubsClassDetailActionsSection.types";
 
 export function DiscoveryClubsClassDetailActionsSection({
+  classDetail,
   onBook,
-  onConsult,
 }: DiscoveryClubsClassDetailActionsSectionProps) {
   const t = useTranslations("ClubClassDetail");
+  const price = classDetail.enrollment.price;
+  const priceSuffix = classDetail.enrollment.priceSuffix ?? "تومان";
 
   return (
-    <div className={styles.root}>
-      <div className={styles.stack}>
-        <Button
-          className={styles.primary}
-          onPress={onBook}
-          size="lg"
-          variant="primary"
-        >
-          {t("bookClass")}
-          <Plus size={18} />
-        </Button>
-        <Button
-          className={styles.secondary}
-          onPress={onConsult}
-          size="lg"
-          variant="outline"
-        >
-          <CancerRibbon size={18} />
-          {t("consultCoach")}
-        </Button>
+    <StickyBottomActions contentClassName={styles.row}>
+      <div className={styles.priceGroup}>
+        <Typography className={styles.priceLabel} type="body-xs">
+          {t("totalLabel")}
+        </Typography>
+        <div className={styles.priceRow}>
+          {price > 0 ? (
+            <NumberFlow
+              className={styles.price}
+              format={{ useGrouping: true }}
+              locales="en-US"
+              style={{ color: "var(--foreground)" }}
+              value={price}
+            />
+          ) : (
+            <Typography className={styles.price} type="body" weight="semibold">
+              —
+            </Typography>
+          )}
+          {price > 0 ? (
+            <span className={styles.priceSuffix}>{priceSuffix}</span>
+          ) : null}
+        </div>
       </div>
-    </div>
+
+      <Button
+        aria-label={t("confirmBooking")}
+        className={styles.confirm}
+        onPress={onBook}
+        size="lg"
+        variant="primary"
+      >
+        <Typography
+          className={styles.confirmLabel}
+          type="body"
+          weight="semibold"
+        >
+          {t("confirmBooking")}
+        </Typography>
+        <ArrowForward2 aria-hidden className={styles.confirmIcon} size={18} />
+      </Button>
+    </StickyBottomActions>
   );
 }

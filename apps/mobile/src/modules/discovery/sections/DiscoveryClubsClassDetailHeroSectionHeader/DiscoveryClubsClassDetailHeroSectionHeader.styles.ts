@@ -1,13 +1,23 @@
 export const discoveryClubsClassDetailHeroSectionHeaderStyles = {
   root: [
-    "absolute inset-x-0 top-0 z-20",
-    "flex items-center justify-between gap-3 px-4",
-    "pt-[max(0.875rem,env(safe-area-inset-top))]",
+    "pointer-events-none fixed inset-x-0 top-0 z-40 isolate",
+    "overflow-hidden",
+    "pt-[env(safe-area-inset-top)]",
   ].join(" "),
-  title:
-    "min-w-0 flex-1 truncate text-center text-base font-semibold text-stats-foreground drop-shadow-sm",
-  iconButton: [
-    "border-0 bg-overlay/70 text-overlay-foreground shadow-none backdrop-blur-md",
-    "hover:bg-overlay/85 pressed:bg-overlay",
+  veil: [
+    "pointer-events-none absolute inset-0 z-0",
+    "bg-linear-to-t from-transparent via-background/70 to-background",
   ].join(" "),
+  blur: "pointer-events-none absolute inset-0 z-0",
+  bar: [
+    "pointer-events-auto relative z-10 flex items-center justify-between",
+    "px-4 pt-3.5 pb-8",
+  ].join(" "),
+  actions: "flex items-center gap-2",
+  control: [
+    "rounded-full border-0 bg-surface text-foreground shadow-md",
+    "backdrop-blur-xl",
+    "hover:bg-surface pressed:bg-surface",
+  ].join(" "),
+  controlActive: "text-danger",
 } as const;

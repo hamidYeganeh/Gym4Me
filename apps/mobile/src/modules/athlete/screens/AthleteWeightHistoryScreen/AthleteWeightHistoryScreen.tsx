@@ -63,7 +63,6 @@ export function AthleteWeightHistoryScreen({ metric }: AthleteWeightHistoryScree
       className="bg-background"
       header={
         <Header
-          className="border-b-0 bg-background"
           endContent={<span aria-hidden className="size-10" />}
           startContent={
             <Button

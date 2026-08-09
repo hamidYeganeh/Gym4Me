@@ -1,11 +1,12 @@
 "use client";
 
-import { Button, Chip, Typography } from "@heroui/react";
-import { Calendar1 } from "@repo/icons/Calendar1";
+import { Button, Typography } from "@heroui/react";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
-import { Clock } from "@repo/icons/Clock";
 import { Compass } from "@repo/icons/Compass";
-import { MapPin1 } from "@repo/icons/MapPin1";
+import {
+  ReservationCard,
+  type ReservationCardStatusColor,
+} from "@repo/ui/cards/ReservationCard";
 import {
   EMPTY_STATE_ILLUSTRATIONS,
   EmptyState,
@@ -16,14 +17,15 @@ import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import type { BookingStatus } from "../../lib/bookings-data";
+import {
+  canManageBooking,
+  type BookingStatus,
+} from "../../lib/bookings-data";
 import { athleteBookingsScreenStyles as styles } from "./AthleteBookingsScreen.styles";
 import type {
   AthleteBookingsScreenProps,
   BookingsFilterId,
 } from "./AthleteBookingsScreen.types";
-
-const ROW_ICON_SIZE = 16;
 
 const FILTER_STATUSES: Record<BookingsFilterId, BookingStatus[]> = {
   upcoming: ["PENDING", "AWAITING_PAYMENT", "CONFIRMED", "CHECKED_IN"],
@@ -35,7 +37,7 @@ const FILTER_IDS: BookingsFilterId[] = ["upcoming", "past", "cancelled"];
 
 export function getBookingStatusColor(
   status: BookingStatus,
-): "success" | "warning" | "danger" | undefined {
+): ReservationCardStatusColor {
   switch (status) {
     case "CONFIRMED":
     case "CHECKED_IN":
@@ -43,13 +45,16 @@ export function getBookingStatusColor(
       return "success";
     case "PENDING":
     case "AWAITING_PAYMENT":
+    case "REFUND_REQUESTED":
       return "warning";
     case "CANCELLED":
     case "REJECTED":
     case "NO_SHOW":
       return "danger";
+    case "REFUNDED":
+      return "accent";
     default:
-      return undefined;
+      return "default";
   }
 }
 
@@ -67,7 +72,6 @@ export function AthleteBookingsScreen({ bookings }: AthleteBookingsScreenProps) 
       className={styles.root}
       header={
         <Header
-          className="border-b-0 bg-background"
           startContent={
             <Button
               aria-label={t("back")}
@@ -98,86 +102,55 @@ export function AthleteBookingsScreen({ bookings }: AthleteBookingsScreenProps) 
               key={filterId}
               onPress={() => setActiveFilter(filterId)}
               selected={activeFilter === filterId}
+              selectedVariant="solid"
             >
               {t(`filters.${filterId}`)}
             </FilterChip>
           ))}
         </FilterChipBar>
 
+        <Typography className={styles.meta} type="body-sm">
+          {t("resultsCount", { count: visibleBookings.length })}
+        </Typography>
+
         {visibleBookings.length > 0 ? (
           <div className={styles.list}>
-            {visibleBookings.map((booking) => (
-              <Button
-                key={booking.id}
-                className={styles.card}
-                onPress={() => router.push(`/athlete/bookings/${booking.id}`)}
-                variant="ghost"
-              >
-                <span className={styles.cardHeader}>
-                  <span className={styles.cardTitles}>
-                    <Typography
-                      className={styles.cardTitle}
-                      type="body"
-                      weight="semibold"
-                    >
-                      {booking.title}
-                    </Typography>
-                    <Typography className={styles.cardClub} type="body-sm">
-                      {booking.clubName}
-                    </Typography>
-                  </span>
-                  <Chip color={getBookingStatusColor(booking.status)} size="sm">
-                    <Chip.Label>{t(`status.${booking.status}`)}</Chip.Label>
-                  </Chip>
-                </span>
+            {visibleBookings.map((booking) => {
+              const coachName = booking.coach?.name ?? booking.clubName;
+              const manageable = canManageBooking(booking.status);
 
-                <span className={styles.cardRows}>
-                  <span className={styles.cardRow}>
-                    <Calendar1
-                      aria-hidden
-                      className={styles.cardRowIcon}
-                      size={ROW_ICON_SIZE}
-                    />
-                    <Typography className={styles.cardRowText} type="body-sm">
-                      {booking.dateLabel}
-                    </Typography>
-                  </span>
-                  <span className={styles.cardRow}>
-                    <Clock
-                      aria-hidden
-                      className={styles.cardRowIcon}
-                      size={ROW_ICON_SIZE}
-                    />
-                    <Typography className={styles.cardRowText} type="body-sm">
-                      {booking.timeLabel}
-                    </Typography>
-                  </span>
-                  <span className={styles.cardRow}>
-                    <MapPin1
-                      aria-hidden
-                      className={styles.cardRowIcon}
-                      size={ROW_ICON_SIZE}
-                    />
-                    <Typography className={styles.cardRowText} type="body-sm">
-                      {booking.locationLabel}
-                    </Typography>
-                  </span>
-                </span>
-
-                <span className={styles.cardFooter}>
-                  <Typography
-                    className={styles.cardPrice}
-                    type="body"
-                    weight="semibold"
-                  >
-                    {booking.priceLabel}
-                  </Typography>
-                  <Typography className={styles.cardClub} type="body-sm">
-                    {t("viewDetail")}
-                  </Typography>
-                </span>
-              </Button>
-            ))}
+              return (
+                <ReservationCard
+                  key={booking.id}
+                  aria-label={t("viewDetail")}
+                  cancelLabel={t("cancel")}
+                  coachName={coachName}
+                  datetimeLabel={booking.datetimeLabel}
+                  isVerified={booking.coach?.verification === "verified"}
+                  onCancel={
+                    manageable
+                      ? () => router.push(`/athlete/bookings/${booking.id}`)
+                      : undefined
+                  }
+                  onPress={() =>
+                    router.push(`/athlete/bookings/${booking.id}`)
+                  }
+                  onReschedule={
+                    manageable
+                      ? () => router.push(`/athlete/bookings/${booking.id}`)
+                      : undefined
+                  }
+                  rating={booking.coach?.rating}
+                  ratingCount={booking.coach?.ratingCount}
+                  rescheduleLabel={t("reschedule")}
+                  sessionTitle={booking.title}
+                  specialtyLabel={booking.coach?.specialtyLabel ?? booking.clubName}
+                  statusColor={getBookingStatusColor(booking.status)}
+                  statusLabel={t(`status.${booking.status}`)}
+                  verifiedLabel={t("verified")}
+                />
+              );
+            })}
           </div>
         ) : (
           <EmptyState

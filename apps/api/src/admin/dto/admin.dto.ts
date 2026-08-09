@@ -22,6 +22,10 @@ import {
   Role,
   UserStatus,
 } from '../../common/enums';
+import {
+  PASSWORD_MESSAGE,
+  PASSWORD_PATTERN,
+} from '../../common/utils/password.util';
 import { IR_PHONE, normalizeIranPhone } from '../../common/utils/phone.util';
 
 export class PaginationQueryDto {
@@ -93,6 +97,7 @@ export class AdminCreateUserDto {
   @IsString()
   @MinLength(8)
   @MaxLength(128)
+  @Matches(PASSWORD_PATTERN, { message: PASSWORD_MESSAGE })
   password?: string;
 }
 

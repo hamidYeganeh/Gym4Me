@@ -1,5 +1,18 @@
+import { statsColors } from "@repo/theme";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
-import { getAllClubIds, getClubDetail } from "./club-detail-data";
+import {
+  getAllClubIds,
+  getClubDetail,
+  type ClubDetailAmenity,
+  type ClubDetailCoach,
+  type ClubDetailEquipment,
+  type ClubDetailSport,
+} from "./club-detail-data";
+import {
+  DEFAULT_GALLERY_ITEMS,
+  galleryFromImages,
+  type GalleryMediaItem,
+} from "./gallery-media";
 
 export type ClassDetailInstruction = {
   title: string;
@@ -15,26 +28,41 @@ export type ClassDetailRelated = {
   caloriesLabel: string;
 };
 
+export type ClassDetailEnrollment = {
+  /** Seat price in toman (numeric for sticky CTA NumberFlow). */
+  price: number;
+  priceSuffix?: string;
+};
+
 export type ClassDetail = {
   id: string;
   clubId: string;
   category: string;
   title: string;
   tagline: string;
+  /** Optional coach display name for the hero meta row. */
+  coachName?: string;
   image: string;
-  gallery: string[];
+  gallery: GalleryMediaItem[];
   durationLabel: string;
   rating: string;
   caloriesLabel: string;
   description: string;
   benefits: string[];
   tags: string[];
-  sessionDuration: {
-    range: string;
-    unit: string;
+  enrollment: ClassDetailEnrollment;
+  coaches: ClubDetailCoach[];
+  /** Gear athletes should bring / use for this class. */
+  equipment: ClubDetailEquipment[];
+  amenities: ClubDetailAmenity[];
+  sports: ClubDetailSport[];
+  /** Class series progress for the sessions knob chart. */
+  sessionProgress: {
+    /** Sessions already held. */
+    passed: number;
+    /** Total sessions in the visible series window. */
+    total: number;
     caption: string;
-    /** 0–1 fill for the semicircle gauge */
-    progress: number;
   };
   intensity: {
     score: string;
@@ -47,90 +75,290 @@ export type ClassDetail = {
   isBookmarked?: boolean;
 };
 
-const DEFAULT_GALLERY = [
-  PLACEHOLDER_IMAGE,
-  PLACEHOLDER_IMAGE,
-  PLACEHOLDER_IMAGE,
-  PLACEHOLDER_IMAGE,
-] as const;
+const DEFAULT_GALLERY: GalleryMediaItem[] = DEFAULT_GALLERY_ITEMS.slice(0, 4);
+const COACH_PORTRAIT = "/demo/coach-portrait.png";
+
+const CLASS_COACHES = {
+  sara: {
+    id: "sara",
+    name: "سارا محمدی",
+    image: COACH_PORTRAIT,
+    priceLabel: "از ۸۵۰٬۰۰۰ تومان",
+    specialtyLabel: "HIIT",
+    distanceLabel: "همین شعبه",
+    rating: 4.9,
+    ratingCount: 128,
+    availability: "in-person" as const,
+    yearsExperience: 5,
+    isNew: true,
+    isCertified: true,
+  },
+  ali: {
+    id: "ali",
+    name: "علی رضایی",
+    image: PLACEHOLDER_IMAGE,
+    priceLabel: "از ۷۲۰٬۰۰۰ تومان",
+    specialtyLabel: "قدرتی",
+    distanceLabel: "همین شعبه",
+    rating: 4.7,
+    ratingCount: 96,
+    availability: "in-person" as const,
+    yearsExperience: 8,
+    isCertified: true,
+  },
+  nika: {
+    id: "nika",
+    name: "نیکا احمدی",
+    image: PLACEHOLDER_IMAGE,
+    priceLabel: "از ۶۵۰٬۰۰۰ تومان",
+    specialtyLabel: "موبیلیتی",
+    distanceLabel: "همین شعبه",
+    rating: 4.8,
+    ratingCount: 74,
+    availability: "in-person" as const,
+    yearsExperience: 4,
+    isCertified: true,
+  },
+} satisfies Record<string, ClubDetailCoach>;
+
+const HIIT_EQUIPMENT: ClubDetailEquipment[] = [
+  {
+    id: "mat",
+    title: "مت تمرین",
+    subtitle: "ضدلغزش",
+    meta: "الزامی",
+  },
+  {
+    id: "rope",
+    title: "بتل روپ",
+    subtitle: "قدرت و کاردیو",
+    meta: "باشگاه",
+  },
+  {
+    id: "kettlebell",
+    title: "کتل‌بل",
+    subtitle: "وزنه متغیر",
+    meta: "باشگاه",
+  },
+  {
+    id: "bike",
+    title: "دوچرخه ثابت",
+    subtitle: "پایان‌دهنده",
+    meta: "اختیاری",
+  },
+];
+
+const STRENGTH_EQUIPMENT: ClubDetailEquipment[] = [
+  {
+    id: "rack",
+    title: "رک اسکوات",
+    subtitle: "پاور رک",
+    meta: "باشگاه",
+  },
+  {
+    id: "dumbbell",
+    title: "دمبل",
+    subtitle: "ست کامل",
+    meta: "باشگاه",
+  },
+  {
+    id: "bench",
+    title: "نیمکت پرس",
+    subtitle: "تخت و شیبدار",
+    meta: "باشگاه",
+  },
+  {
+    id: "barbell",
+    title: "هالتر المپیک",
+    subtitle: "صفحات استاندارد",
+    meta: "باشگاه",
+  },
+];
+
+const CLASS_AMENITIES: ClubDetailAmenity[] = [
+  {
+    id: "shower",
+    title: "دوش و رختکن",
+    subtitle: "بعد از کلاس",
+    iconKey: "shower",
+  },
+  {
+    id: "locker",
+    title: "کمد امن",
+    subtitle: "قفل دیجیتال",
+    iconKey: "locker",
+  },
+  {
+    id: "ac",
+    title: "تهویه مطبوع",
+    subtitle: "کنترل دمای سالن",
+    iconKey: "ac",
+  },
+  {
+    id: "wifi",
+    title: "وای‌فای",
+    subtitle: "در فضای تمرین",
+    iconKey: "wifi",
+  },
+];
+
+const HIIT_SPORTS: ClubDetailSport[] = [
+  {
+    id: "hiit",
+    title: "HIIT",
+    subtitle: "کالری‌سوزی",
+    color: statsColors.orange,
+  },
+  {
+    id: "cardio",
+    title: "کاردیو",
+    subtitle: "استقامت",
+    color: statsColors.red,
+  },
+  {
+    id: "core",
+    title: "مرکز بدن",
+    subtitle: "قدرت و ثبات",
+    color: statsColors.purple,
+  },
+];
+
+const STRENGTH_SPORTS: ClubDetailSport[] = [
+  {
+    id: "strength",
+    title: "قدرتی",
+    subtitle: "تمرین با وزنه",
+    color: "oklch(15% 0.02 250)",
+  },
+  {
+    id: "hypertrophy",
+    title: "هایپرتروفی",
+    subtitle: "عضله‌سازی",
+    color: statsColors.blue,
+  },
+  {
+    id: "functional",
+    title: "فانکشنال",
+    subtitle: "حرکت ترکیبی",
+    color: statsColors.orange,
+  },
+];
+
+const FALLBACK_EQUIPMENT: ClubDetailEquipment[] = [
+  {
+    id: "mat",
+    title: "مت تمرین",
+    subtitle: "ضدلغزش",
+    meta: "پیشنهادی",
+  },
+  {
+    id: "water",
+    title: "بطری آب",
+    subtitle: "هیدراته بمانید",
+    meta: "الزامی",
+  },
+  {
+    id: "towel",
+    title: "حوله",
+    subtitle: "شخصی",
+    meta: "پیشنهادی",
+  },
+];
+
+const FALLBACK_SPORTS: ClubDetailSport[] = [
+  {
+    id: "fitness",
+    title: "تناسب اندام",
+    subtitle: "عمومی",
+    color: statsColors.blue,
+  },
+];
 
 const CLASSES: Record<string, ClassDetail> = {
   "power-hiit": {
     id: "power-hiit",
     clubId: "heavenly",
     category: "HIIT",
-    title: "Power HIIT With Core Burn",
-    tagline: "intense, efficient, and results-driven — built for a stronger you.",
+    title: "پاور HIIT با تمرکز شکم",
+    tagline: "شدید، مؤثر و نتیجه‌محور — برای نسخه‌ای قوی‌تر از خودت.",
+    coachName: "سارا محمدی",
     image: "/demo/coach-portrait.png",
-    gallery: [...DEFAULT_GALLERY],
-    durationLabel: "10-20 Minutes",
-    rating: "4.6",
-    caloriesLabel: "648 kcal",
+    gallery: DEFAULT_GALLERY,
+    durationLabel: "۴۵ دقیقه",
+    rating: "۴٫۶",
+    caloriesLabel: "۶۴۸ کیلوکالری",
     description:
-      "A high-intensity interval class that blends explosive cardio with focused core work. Expect short bursts, smart recovery, and a finish that leaves you sharp.",
+      "کلاس اینتروال با شدت بالا که کاردیوی انفجاری را با کار متمرکز روی مرکز بدن ترکیب می‌کند. انتظار داشته باشید دوره‌های کوتاه تلاش، ریکاوری هوشمند و پایانی که شما را تیز و پرانرژی نگه می‌دارد.",
     benefits: [
-      "High calorie burn for fat loss",
-      "Builds explosive power and stamina",
-      "Strengthens core and posture",
-      "Scalable for all fitness levels",
-      "Easy to fit into a busy schedule",
+      "سوخت کالری بالا برای کاهش چربی",
+      "تقویت قدرت انفجاری و استقامت",
+      "تقویت مرکز بدن و وضعیت قامت",
+      "قابل تنظیم برای همه سطوح آمادگی",
+      "مناسب برنامه‌های شلوغ روزانه",
     ],
-    tags: ["HIIT", "Core", "Fat Burn", "All Levels", "Cardio"],
-    sessionDuration: {
-      range: "30-45",
-      unit: "Total minutes",
-      caption: "Moderate session length",
-      progress: 0.62,
+    tags: ["HIIT", "مرکز بدن", "چربی‌سوزی", "همه سطوح", "کاردیو"],
+    enrollment: {
+      price: 350_000,
+      priceSuffix: "تومان",
+    },
+    sessionProgress: {
+      passed: 5,
+      total: 12,
+      caption: "۷ جلسه باقی‌مانده",
     },
     intensity: {
-      score: "87.2",
-      label: "Great for fat burn",
-      description: "This class is excellent for metabolism and conditioning.",
+      score: "۸۷٫۲",
+      label: "عالی برای چربی‌سوزی",
+      description: "این کلاس برای متابولیسم و آمادگی قلبی‌عروقی بسیار مناسب است.",
     },
     instructions: [
       {
-        title: "Warm Up & Prep",
-        body: "Start with dynamic mobility, light cardio, and activation drills to raise your heart rate safely.",
+        title: "گرم‌کردن و آماده‌سازی",
+        body: "با موبیلیتی پویا، کاردیوی سبک و حرکات فعال‌سازی شروع کنید تا ضربان قلب به‌صورت ایمن بالا برود.",
       },
       {
-        title: "Main HIIT Blocks",
-        body: "Alternate high-effort intervals with short recovery. Focus on form over speed as fatigue builds.",
+        title: "بلوک‌های اصلی HIIT",
+        body: "اینتروال‌های پرشدت را با ریکاوری کوتاه جایگزین کنید. با خستگی، فرم را بر سرعت اولویت دهید.",
       },
       {
-        title: "Core Burn & Cool Down",
-        body: "Finish with targeted core work, then stretch and breathe to bring your heart rate down.",
+        title: "تمرین مرکز بدن و سردکردن",
+        body: "با کار هدفمند روی مرکز بدن تمام کنید؛ سپس کشش و تنفس برای پایین آوردن ضربان قلب.",
       },
     ],
     planSteps: [
       {
-        title: "Block A — Power",
-        body: "Jump squats, battle ropes, and burpees for 40s on / 20s off × 4.",
+        title: "بلوک الف — قدرت",
+        body: "اسکوات پرشی، بتل روپ و بارپی · ۴۰ ثانیه کار / ۲۰ ثانیه استراحت × ۴",
       },
       {
-        title: "Block B — Core",
-        body: "Plank variations, hollow holds, and Russian twists for 3 rounds.",
+        title: "بلوک ب — مرکز بدن",
+        body: "انواع پلانک، هالوهولد و چرخش روسی · ۳ دور",
       },
       {
-        title: "Block C — Finisher",
-        body: "Assault bike or rower sprint ladder, then full-body stretch.",
+        title: "بلوک ج — پایان‌دهنده",
+        body: "اسپرینت نردبانی با دوچرخه یا روئینگ، سپس کشش کامل بدن",
       },
     ],
+    coaches: [CLASS_COACHES.sara, CLASS_COACHES.nika],
+    equipment: HIIT_EQUIPMENT,
+    amenities: CLASS_AMENITIES,
+    sports: HIIT_SPORTS,
     related: [
       {
         id: "strength-circuit",
-        category: "Strength",
-        title: "Strength Circuit Deluxe",
+        category: "قدرتی",
+        title: "سیرکت قدرتی Deluxe",
         image: PLACEHOLDER_IMAGE,
-        durationLabel: "45 Minutes",
-        caloriesLabel: "520 kcal",
+        durationLabel: "۵۰ دقیقه",
+        caloriesLabel: "۵۲۰ کیلوکالری",
       },
       {
         id: "mobility-flow",
-        category: "Mobility",
-        title: "Mobility Flow Session",
+        category: "موبیلیتی",
+        title: "فلوی موبیلیتی",
         image: PLACEHOLDER_IMAGE,
-        durationLabel: "30 Minutes",
-        caloriesLabel: "180 kcal",
+        durationLabel: "۳۰ دقیقه",
+        caloriesLabel: "۱۸۰ کیلوکالری",
       },
     ],
     isBookmarked: false,
@@ -138,71 +366,79 @@ const CLASSES: Record<string, ClassDetail> = {
   "strength-circuit": {
     id: "strength-circuit",
     clubId: "heavenly",
-    category: "Strength",
-    title: "Strength Circuit Deluxe",
-    tagline: "compound lifts, smart pacing, and progressive overload.",
+    category: "قدرتی",
+    title: "سیرکت قدرتی Deluxe",
+    tagline: "حرکات ترکیبی، ریتم هوشمند و اضافه‌بار تدریجی.",
+    coachName: "علی رضایی",
     image: PLACEHOLDER_IMAGE,
-    gallery: [...DEFAULT_GALLERY],
-    durationLabel: "40-50 Minutes",
-    rating: "4.8",
-    caloriesLabel: "520 kcal",
+    gallery: DEFAULT_GALLERY,
+    durationLabel: "۵۰ دقیقه",
+    rating: "۴٫۸",
+    caloriesLabel: "۵۲۰ کیلوکالری",
     description:
-      "A coach-led strength circuit focused on major movement patterns. Build muscle, improve technique, and leave with a clear sense of progress.",
+      "سیرکت قدرتی مربی‌محور با تمرکز روی الگوهای حرکتی اصلی. عضله بسازید، تکنیک را بهتر کنید و با حس پیشرفت مشخص جلسه را ترک کنید.",
     benefits: [
-      "Builds lean muscle efficiently",
-      "Improves joint stability",
-      "Teaches proper lifting form",
-      "Progressive weekly structure",
-      "Great for busy schedules",
+      "ساخت عضلهٔ خشک به‌صورت مؤثر",
+      "بهبود ثبات مفصل‌ها",
+      "آموزش فرم صحیح لیفت",
+      "ساختار هفتگی پیشرونده",
+      "مناسب برنامه‌های شلوغ",
     ],
-    tags: ["Strength", "Barbell", "Hypertrophy", "Gym", "Coach Led"],
-    sessionDuration: {
-      range: "40-50",
-      unit: "Total minutes",
-      caption: "Full training session",
-      progress: 0.78,
+    tags: ["قدرتی", "هالتر", "هایپرتروفی", "باشگاه", "مربی‌محور"],
+    enrollment: {
+      price: 420_000,
+      priceSuffix: "تومان",
+    },
+    sessionProgress: {
+      passed: 8,
+      total: 10,
+      caption: "۲ جلسه باقی‌مانده",
     },
     intensity: {
-      score: "82.4",
-      label: "Solid for muscle gain",
-      description: "Balanced intensity for strength without excessive fatigue.",
+      score: "۸۲٫۴",
+      label: "مناسب عضله‌سازی",
+      description: "شدت متعادل برای قدرت، بدون خستگی بیش از حد.",
     },
     instructions: [
       {
-        title: "Movement Prep",
-        body: "Foam roll, activate glutes and shoulders, then practice empty-bar patterns.",
+        title: "آماده‌سازی حرکتی",
+        body: "فوم‌رول، فعال‌سازی باسن و شانه، سپس تمرین الگوها با هالتر خالی.",
       },
       {
-        title: "Circuit Rounds",
-        body: "Rotate through squat, hinge, push, and pull stations with controlled tempo.",
+        title: "دورهای سیرکت",
+        body: "بین ایستگاه‌های اسکوات، hinge، پرس و کشش با تمپوی کنترل‌شده بچرخید.",
       },
       {
-        title: "Accessories & Stretch",
-        body: "Finish with arms/core accessories and a short mobility cool-down.",
+        title: "اکسسوری و کشش",
+        body: "با اکسسوری دست/مرکز بدن و موبیلیتی کوتاه جلسه را تمام کنید.",
       },
     ],
     planSteps: [
       {
-        title: "Station 1 — Squat",
-        body: "Goblet or back squat · 4 × 8 with 60s rest.",
+        title: "ایستگاه ۱ — اسکوات",
+        body: "گابلت یا بک اسکوات · ۴ × ۸ با ۶۰ ثانیه استراحت",
       },
       {
-        title: "Station 2 — Pull",
-        body: "Lat pulldown or rows · 4 × 10 controlled reps.",
+        title: "ایستگاه ۲ — کشش",
+        body: "لت‌پول‌داون یا رو · ۴ × ۱۰ با تکرار کنترل‌شده",
       },
       {
-        title: "Station 3 — Push",
-        body: "Bench or push-ups · 4 × 8–12 to near failure.",
+        title: "ایستگاه ۳ — فشار",
+        body: "پرس سینه یا شنا · ۴ × ۸–۱۲ تا نزدیک ناتوانی",
       },
     ],
+    coaches: [CLASS_COACHES.ali, CLASS_COACHES.sara],
+    equipment: STRENGTH_EQUIPMENT,
+    amenities: CLASS_AMENITIES,
+    sports: STRENGTH_SPORTS,
     related: [
       {
         id: "power-hiit",
         category: "HIIT",
-        title: "Power HIIT With Core Burn",
+        title: "پاور HIIT با تمرکز شکم",
         image: "/demo/coach-portrait.png",
-        durationLabel: "35 Minutes",
-        caloriesLabel: "648 kcal",
+        durationLabel: "۴۵ دقیقه",
+        caloriesLabel: "۶۴۸ کیلوکالری",
       },
     ],
     isBookmarked: true,
@@ -219,75 +455,85 @@ function titleFromClassId(classId: string): string {
 
 function createFallbackClass(clubId: string, classId: string): ClassDetail {
   const club = getClubDetail(clubId);
-  const title = titleFromClassId(classId) || `Class ${classId}`;
+  const title = titleFromClassId(classId) || `کلاس ${classId}`;
+  const clubTitle = club?.title ?? "این باشگاه";
 
   return {
     id: classId,
     clubId,
-    category: "Fitness",
+    category: "تناسب اندام",
     title,
-    tagline: "coach-led training designed for real progress.",
+    tagline: "تمرین مربی‌محور برای پیشرفت واقعی.",
     image: club?.images[0] ?? PLACEHOLDER_IMAGE,
-    gallery: club?.images?.length ? club.images : [...DEFAULT_GALLERY],
-    durationLabel: "30-45 Minutes",
-    rating: "4.5",
-    caloriesLabel: "400 kcal",
-    description: `Join ${title} at ${club?.title ?? "this club"} — structured programming, expert coaching, and an energetic room.`,
+    gallery: club?.images?.length
+      ? galleryFromImages(club.images)
+      : DEFAULT_GALLERY,
+    durationLabel: "۳۰ تا ۴۵ دقیقه",
+    rating: "۴٫۵",
+    caloriesLabel: "۴۰۰ کیلوکالری",
+    description: `در کلاس ${title} در ${clubTitle} شرکت کنید — برنامه‌نویسی ساختاریافته، مربیگری حرفه‌ای و فضایی پرانرژی.`,
     benefits: [
-      "Expert coaching and form cues",
-      "Clear session structure",
-      "Scalable intensity",
-      "Supportive community vibe",
-      "Easy to book and attend",
+      "مربیگری حرفه‌ای و اصلاح فرم",
+      "ساختار جلسه شفاف",
+      "شدت قابل تنظیم",
+      "فضای حمایتی گروهی",
+      "رزرو و حضور آسان",
     ],
-    tags: ["Fitness", "Club Class", "Coach", "Training"],
-    sessionDuration: {
-      range: "30-45",
-      unit: "Total minutes",
-      caption: "Moderate session length",
-      progress: 0.55,
+    tags: ["تناسب اندام", "کلاس باشگاه", "مربی", "تمرین"],
+    enrollment: {
+      price: 280_000,
+      priceSuffix: "تومان",
+    },
+    sessionProgress: {
+      passed: 3,
+      total: 8,
+      caption: "۵ جلسه باقی‌مانده",
     },
     intensity: {
-      score: "80.0",
-      label: "Balanced intensity",
-      description: "A well-rounded class for consistency and progress.",
+      score: "۸۰٫۰",
+      label: "شدت متعادل",
+      description: "کلاسی متعادل برای استمرار و پیشرفت پایدار.",
     },
     instructions: [
       {
-        title: "Arrive & Warm Up",
-        body: "Check in early, set up your space, and complete the guided warm-up.",
+        title: "ورود و گرم‌کردن",
+        body: "زودتر چک‌این کنید، فضای خود را آماده کنید و گرم‌کردن راهنما را انجام دهید.",
       },
       {
-        title: "Main Session",
-        body: "Follow coach cues through the primary training blocks.",
+        title: "جلسه اصلی",
+        body: "با راهنمایی مربی، بلوک‌های تمرینی اصلی را دنبال کنید.",
       },
       {
-        title: "Cool Down",
-        body: "Stretch, hydrate, and note any wins for next time.",
+        title: "سردکردن",
+        body: "کشش کنید، آب بنوشید و پیشرفت‌های جلسه را یادداشت کنید.",
       },
     ],
     planSteps: [
       {
-        title: "Warm-up",
-        body: "5–8 minutes of mobility and activation.",
+        title: "گرم‌کردن",
+        body: "۵ تا ۸ دقیقه موبیلیتی و فعال‌سازی.",
       },
       {
-        title: "Work sets",
-        body: "Primary training block with programmed rest.",
+        title: "ست‌های کاری",
+        body: "بلوک تمرینی اصلی با استراحت برنامه‌ریزی‌شده.",
       },
       {
-        title: "Finisher",
-        body: "Optional conditioning plus cool-down stretch.",
+        title: "پایان‌دهنده",
+        body: "کندیشنینگ اختیاری به‌همراه کشش سردکردن.",
       },
     ],
+    coaches: club?.coaches?.slice(0, 2) ?? [CLASS_COACHES.sara],
+    equipment: FALLBACK_EQUIPMENT,
+    amenities: CLASS_AMENITIES,
+    sports: FALLBACK_SPORTS,
     related: [
       {
         id: "power-hiit",
         category: "HIIT",
-        title: "Power HIIT With Core Burn",
+        title: "پاور HIIT با تمرکز شکم",
         image: "/demo/coach-portrait.png",
-        durationLabel: "35 Minutes",
-        caloriesLabel: "648 kcal",
+        durationLabel: "۴۵ دقیقه",
+        caloriesLabel: "۶۴۸ کیلوکالری",
       },
     ],
     isBookmarked: false,

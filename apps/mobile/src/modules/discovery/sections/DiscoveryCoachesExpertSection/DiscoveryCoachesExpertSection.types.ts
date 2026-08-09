@@ -2,6 +2,7 @@ import type { ExpertCoach } from "../../lib/coaches-browse-data";
 
 export type DiscoveryCoachesExpertSectionProps = {
   title: string;
+  hint?: string;
   seeAllLabel: string;
   verifiedLabel: string;
   coaches: ExpertCoach[];

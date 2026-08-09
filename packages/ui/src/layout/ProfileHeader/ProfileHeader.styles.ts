@@ -12,7 +12,7 @@ export const profileHeaderVariants = tv({
     backdropBlur: "absolute inset-0",
     backdropFade: [
       "pointer-events-none absolute inset-0",
-      "bg-linear-to-b from-background via-background/70 to-transparent",
+      "bg-linear-to-t from-transparent via-background/70 to-background",
     ].join(" "),
     cover: "pointer-events-none absolute inset-0 z-0 [contain:paint]",
     coverImage: "object-cover",
@@ -23,7 +23,7 @@ export const profileHeaderVariants = tv({
     coverBlur: "pointer-events-none absolute inset-x-0 bottom-0 z-[2] h-[55%]",
     veil: [
       "pointer-events-none absolute inset-0 z-[3]",
-      "bg-linear-to-b from-background via-background/85 to-transparent",
+      "bg-linear-to-t from-transparent via-background/85 to-background",
     ].join(" "),
     stage: "relative z-10 w-full",
     avatar: [

@@ -1,12 +1,12 @@
 "use client";
 
-import { Tabs } from "@heroui/react";
 import { useTranslations } from "next-intl";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { useRequireAuthAction } from "@/shared/hooks/useRequireAuthAction";
 import { DiscoveryCoachesDetailActionsSection } from "../../sections/DiscoveryCoachesDetailActionsSection";
 import { DiscoveryCoachesDetailBodySection } from "../../sections/DiscoveryCoachesDetailBodySection";
 import { DiscoveryCoachesDetailHeroSection } from "../../sections/DiscoveryCoachesDetailHeroSection";
-import { DiscoveryCoachesDetailReviewsSection } from "../../sections/DiscoveryCoachesDetailReviewsSection";
 import { discoveryCoachesDetailScreenStyles as styles } from "./DiscoveryCoachesDetailScreen.styles";
 import type { DiscoveryCoachesDetailScreenProps } from "./DiscoveryCoachesDetailScreen.types";
 
@@ -14,6 +14,8 @@ export function DiscoveryCoachesDetailScreen({
   coach,
 }: DiscoveryCoachesDetailScreenProps) {
   const t = useTranslations("CoachDetail");
+  const pathname = usePathname();
+  const { runWithAuth } = useRequireAuthAction();
   const defaultPackageId =
     coach.packages.find((plan) => plan.price > 0)?.id ??
     coach.packages[0]?.id ??
@@ -34,39 +36,16 @@ export function DiscoveryCoachesDetailScreen({
   return (
     <div className={styles.root}>
       <div className={styles.scroll}>
-        <DiscoveryCoachesDetailHeroSection coach={coach} />
-
-        <div className={styles.tabsWrap}>
-          <Tabs className={styles.tabs} defaultSelectedKey="overview">
-            <Tabs.ListContainer className={styles.tabsListContainer}>
-              <Tabs.List aria-label={t("tabsLabel")} className={styles.tabsList}>
-                <Tabs.Tab id="overview">
-                  {t("tabOverview")}
-                  <Tabs.Indicator />
-                </Tabs.Tab>
-                <Tabs.Tab id="review">
-                  {t("tabReview")}
-                  <Tabs.Indicator />
-                </Tabs.Tab>
-              </Tabs.List>
-            </Tabs.ListContainer>
-
-            <Tabs.Panel className={styles.panel} id="overview">
-              <DiscoveryCoachesDetailBodySection
-                coach={coach}
-                onPackageChange={setSelectedPackageId}
-                selectedPackageId={selectedPackageId}
-              />
-            </Tabs.Panel>
-
-            <Tabs.Panel className={styles.panel} id="review">
-              <DiscoveryCoachesDetailReviewsSection coach={coach} />
-            </Tabs.Panel>
-          </Tabs>
-        </div>
+        <DiscoveryCoachesDetailHeroSection coach={coach}>
+          <DiscoveryCoachesDetailBodySection
+            coach={coach}
+            onPackageChange={setSelectedPackageId}
+            selectedPackageId={selectedPackageId}
+          />
+        </DiscoveryCoachesDetailHeroSection>
       </div>
-
       <DiscoveryCoachesDetailActionsSection
+        onBook={() => runWithAuth(() => undefined, pathname)}
         price={selectedPackage?.price ?? 0}
         pricePrefix={selectedPackage ? coach.pricePrefix : undefined}
         priceSuffix={selectedPackage ? priceSuffix : undefined}

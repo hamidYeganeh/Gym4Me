@@ -9,7 +9,11 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { Role } from '../../../common/enums';
+import { SelfSwitchableRole } from '../../../common/enums';
+import {
+  PASSWORD_MESSAGE,
+  PASSWORD_PATTERN,
+} from '../../../common/utils/password.util';
 import { IR_PHONE, normalizeIranPhone } from '../../../common/utils/phone.util';
 
 export class PhoneDto {
@@ -22,7 +26,7 @@ export class RequestOtpDto extends PhoneDto {}
 
 export class ConfirmOtpDto extends PhoneDto {
   @IsString()
-  @Length(5, 5)
+  @Length(6, 6)
   code!: string;
 
   @IsOptional()
@@ -67,7 +71,7 @@ export class ForgotPasswordDto extends PhoneDto {}
 
 export class ForgotPasswordConfirmDto extends PhoneDto {
   @IsString()
-  @Length(5, 5)
+  @Length(6, 6)
   code!: string;
 }
 
@@ -78,6 +82,7 @@ export class ResetPasswordDto {
   @IsString()
   @MinLength(8)
   @MaxLength(128)
+  @Matches(PASSWORD_PATTERN, { message: PASSWORD_MESSAGE })
   password!: string;
 }
 
@@ -85,6 +90,7 @@ export class SetPasswordDto {
   @IsString()
   @MinLength(8)
   @MaxLength(128)
+  @Matches(PASSWORD_PATTERN, { message: PASSWORD_MESSAGE })
   password!: string;
 
   @IsOptional()
@@ -93,8 +99,9 @@ export class SetPasswordDto {
 }
 
 export class SwitchRoleDto {
-  @IsEnum(Role)
-  role!: Role;
+  /** Admin cannot be activated through the account API. */
+  @IsEnum(SelfSwitchableRole)
+  role!: SelfSwitchableRole;
 
   /** Current refresh token to revoke after issuing the new pair. */
   @IsOptional()

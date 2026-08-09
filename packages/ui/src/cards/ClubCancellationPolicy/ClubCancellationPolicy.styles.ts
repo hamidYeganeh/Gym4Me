@@ -15,7 +15,7 @@ export const clubCancellationPolicyVariants = tv({
       "relative z-[1] flex size-5 shrink-0 items-center justify-center rounded-full",
     ].join(" "),
     nodeDot: "size-1.5 rounded-full",
-    connector: "w-0.5 flex-1 min-h-8 bg-default",
+    connector: "w-0.5 flex-1 min-h-8",
     content: "min-w-0 flex-1 pb-8",
     stepTitle: "text-lg font-bold leading-snug",
     stepDescription: "mt-1 text-sm leading-relaxed text-muted",
@@ -54,7 +54,6 @@ export const clubCancellationPolicyVariants = tv({
       class: {
         node: "bg-success",
         nodeDot: "bg-success-foreground",
-        connector: "bg-success",
       },
     },
     {
@@ -79,7 +78,6 @@ export const clubCancellationPolicyVariants = tv({
       class: {
         node: "bg-warning",
         nodeDot: "bg-warning-foreground",
-        connector: "bg-warning",
       },
     },
     {
@@ -104,7 +102,6 @@ export const clubCancellationPolicyVariants = tv({
       class: {
         node: "bg-danger",
         nodeDot: "bg-danger-foreground",
-        connector: "bg-danger",
       },
     },
     {
@@ -129,7 +126,6 @@ export const clubCancellationPolicyVariants = tv({
       class: {
         node: "bg-accent",
         nodeDot: "bg-accent-foreground",
-        connector: "bg-accent",
       },
     },
     {

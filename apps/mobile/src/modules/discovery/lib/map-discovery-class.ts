@@ -10,7 +10,9 @@ import type { ClubDetailClassPreview } from "./club-detail-data";
 import {
   formatJalaliDateShort,
   slotDurationLabel,
+  todayIso,
 } from "./club-calendar-data";
+import { galleryFromImages } from "./gallery-media";
 
 function displayName(name?: { first?: string | null; last?: string | null } | null) {
   return [name?.first, name?.last].filter(Boolean).join(" ").trim();
@@ -59,7 +61,9 @@ function upcomingScheduleLabels(
 ): string[] {
   if (!calendar) return [];
   const tags: string[] = [];
+  const today = todayIso();
   for (const day of calendar.days) {
+    if (day.date < today) continue;
     for (const item of day.items) {
       if (item.class?.id !== classId) continue;
       if (item.occurrenceStatus === "cancelled") continue;
@@ -70,6 +74,25 @@ function upcomingScheduleLabels(
     }
   }
   return tags;
+}
+
+function sessionProgressForClass(
+  classId: string,
+  calendar: ClubCalendarResponse | null | undefined,
+): { passed: number; total: number; left: number } {
+  if (!calendar) return { passed: 0, total: 0, left: 0 };
+  const today = todayIso();
+  let passed = 0;
+  let left = 0;
+  for (const day of calendar.days) {
+    for (const item of day.items) {
+      if (item.class?.id !== classId) continue;
+      if (item.occurrenceStatus === "cancelled") continue;
+      if (day.date < today) passed += 1;
+      else left += 1;
+    }
+  }
+  return { passed, total: passed + left, left };
 }
 
 export function mapDiscoveryClassToPreview(
@@ -106,12 +129,20 @@ export function mapDiscoveryClassToDetail(
   const coachName = coachDisplayName(cls);
   const next = nextOccurrenceForClass(cls.id, calendar);
   const upcoming = upcomingScheduleLabels(cls.id, calendar);
+  const sessions = sessionProgressForClass(cls.id, calendar);
   const durationLabel = next
     ? `${next.startTime} – ${next.endTime}`
     : "";
   const minutesLabel = next
     ? slotDurationLabel(next.startTime, next.endTime)
     : "";
+
+  const coachId =
+    typeof cls.coachId === "string" && cls.coachId
+      ? cls.coachId
+      : coachName
+        ? "coach"
+        : "";
 
   return {
     id: cls.id,
@@ -120,7 +151,7 @@ export function mapDiscoveryClassToDetail(
     title: cls.title,
     tagline: coachName ? `با مربی ${coachName}` : (cls.description ?? ""),
     image: cover,
-    gallery: [cover],
+    gallery: galleryFromImages([cover, PLACEHOLDER_IMAGE, PLACEHOLDER_IMAGE]),
     durationLabel: minutesLabel || durationLabel || "—",
     rating: "—",
     caloriesLabel: "",
@@ -130,13 +161,39 @@ export function mapDiscoveryClassToDetail(
         ? upcoming.map((slot) => `سانس: ${slot}`)
         : ["برنامه زمانی هنوز اعلام نشده"],
     tags: upcoming.slice(0, 3),
-    sessionDuration: {
-      range: minutesLabel.replace(" دقیقه", "") || "—",
-      unit: minutesLabel.includes("دقیقه") ? "دقیقه" : "",
-      caption: next
-        ? `نزدیک‌ترین سانس · ${formatJalaliDateShort(next.date)}`
-        : "نزدیک‌ترین سانس",
-      progress: upcoming.length > 0 ? 0.7 : 0.25,
+    enrollment: {
+      price: 0,
+      priceSuffix: "تومان",
+    },
+    coachName: coachName || undefined,
+    coaches: coachName
+      ? [
+          {
+            id: coachId,
+            name: coachName,
+            image: PLACEHOLDER_IMAGE,
+            priceLabel: "—",
+            specialtyLabel: "مربی کلاس",
+            distanceLabel: "همین شعبه",
+            rating: 0,
+            ratingCount: 0,
+            availability: "in-person",
+            isCertified: true,
+          },
+        ]
+      : [],
+    equipment: [],
+    amenities: [],
+    sports: [],
+    sessionProgress: {
+      passed: sessions.passed,
+      total: sessions.total,
+      caption:
+        sessions.total === 0
+          ? "سانسی در بازه تقویم نیست"
+          : sessions.left === 0
+            ? "همه جلسات برگزار شده"
+            : `${sessions.left.toLocaleString("fa-IR")} جلسه باقی‌مانده`,
     },
     intensity: {
       score: String(upcoming.length || "—"),

@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
+import type { ArticleSummary } from "@repo/api";
 import type { ClubClass } from "@repo/api/discovery";
 import {
+  articlesApi,
   basicsLocations,
   basicsSports,
   discoveryClubSlots,
@@ -12,48 +14,131 @@ import {
   mediaFileUrl,
 } from "@/shared/lib/api";
 import {
-  FEATURED_CLUBS,
+  BROWSE_CLUBS,
+  clubsNearby,
+  clubsOpen24Hours,
+  sortClubsByRating,
   type BrowseClub,
 } from "./clubs-browse-data";
 import {
-  POPULAR_COACHES,
-  type PopularCoach,
+  FEATURED_COACHES,
+  type FeaturedCoach,
 } from "./coaches-browse-data";
 import {
+  DEFAULT_COACH_CITY_NAME,
+  HOME_FEATURE_ITEMS,
+  MOCK_AMENITIES,
+  MOCK_ARTICLES,
   MOCK_CITIES,
-  MOCK_PROVINCES,
-  MOCK_SPORT_CATEGORIES,
+  MOCK_CLASSES,
   MOCK_SPORTS,
+  galleryItemsFromClubs,
   mapLocationToHomeItem,
   mapSportToHomeItem,
+  type HomeAmenityItem,
+  type HomeArticleItem,
   type HomeClassItem,
+  type HomeFeatureItem,
+  type HomeGalleryItem,
   type HomeLocationItem,
   type HomeSportItem,
 } from "./home-browse-data";
 import { mapDiscoveryClassToPreview } from "./map-discovery-class";
 import { mapDiscoveryClubToBrowse } from "./map-discovery-club-browse";
-import { mapDiscoveryCoachToPopular } from "./map-discovery-coach";
+import { mapDiscoveryCoachToFeatured } from "./map-discovery-coach";
 
 export type DiscoveryHomeState = {
-  provinces: HomeLocationItem[];
+  features: HomeFeatureItem[];
   cities: HomeLocationItem[];
-  sportCategories: HomeSportItem[];
-  sports: HomeSportItem[];
-  clubs: BrowseClub[];
-  coaches: PopularCoach[];
+  nearbyClubs: BrowseClub[];
+  topClubs: BrowseClub[];
+  open24Clubs: BrowseClub[];
+  coaches: FeaturedCoach[];
+  coachCityName: string;
   classes: HomeClassItem[];
+  amenities: HomeAmenityItem[];
+  sports: HomeSportItem[];
+  articles: HomeArticleItem[];
+  galleryItems: HomeGalleryItem[];
   isLoading: boolean;
   source: "api" | "mock";
 };
 
+const ARTICLE_KIND_LABELS: Record<string, string> = {
+  guide: "راهنما",
+  news: "خبر",
+  tip: "نکته",
+  story: "داستان",
+  workout: "تمرین",
+};
+
+function formatArticleCount(value: number): string {
+  return new Intl.NumberFormat("fa-IR").format(value);
+}
+
+function formatArticleRelativeTime(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  const diffMs = Date.now() - date.getTime();
+  const minutes = Math.max(0, Math.floor(diffMs / 60_000));
+  if (minutes < 60) return `${Math.max(1, minutes)} دقیقه پیش`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 48) return `${hours} ساعت پیش`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days} روز پیش`;
+  const months = Math.floor(days / 30);
+  if (months < 12) return `${months} ماه پیش`;
+  return `${Math.floor(months / 12)} سال پیش`;
+}
+
+function formatArticleCategory(article: ArticleSummary): string {
+  return (
+    ARTICLE_KIND_LABELS[article.taxonomy.kind] ??
+    article.taxonomy.category.replace(/-/g, " ")
+  );
+}
+
+function mapArticleToHomeItem(article: ArticleSummary): HomeArticleItem {
+  return {
+    id: article.id,
+    slug: article.slug,
+    title: article.title,
+    category: formatArticleCategory(article),
+    coverSrc: mediaFileUrl(article.coverMediaId),
+    authorName: article.author.name || "Gym4Me",
+    authorAvatarSrc: mediaFileUrl(article.author.avatarMediaId),
+    publishedAtLabel: formatArticleRelativeTime(
+      article.publishedAt ?? article.createdAt,
+    ),
+    readingTimeMinutes: article.readingTimeMinutes,
+    viewsLabel: formatArticleCount(article.engagement.viewsCount),
+    likesLabel: formatArticleCount(article.engagement.likesCount),
+  };
+}
+
+function buildSlices(clubs: BrowseClub[]): Pick<
+  DiscoveryHomeState,
+  "nearbyClubs" | "topClubs" | "open24Clubs" | "galleryItems"
+> {
+  return {
+    nearbyClubs: clubsNearby(clubs).slice(0, 8),
+    topClubs: sortClubsByRating(clubs).slice(0, 8),
+    open24Clubs: clubsOpen24Hours(clubs).slice(0, 8),
+    galleryItems: galleryItemsFromClubs(clubs),
+  };
+}
+
 const MOCK_STATE: DiscoveryHomeState = {
-  provinces: MOCK_PROVINCES,
+  features: HOME_FEATURE_ITEMS,
   cities: MOCK_CITIES,
-  sportCategories: MOCK_SPORT_CATEGORIES,
+  ...buildSlices(BROWSE_CLUBS),
+  coaches: FEATURED_COACHES,
+  coachCityName: DEFAULT_COACH_CITY_NAME,
+  classes: MOCK_CLASSES,
+  amenities: MOCK_AMENITIES,
   sports: MOCK_SPORTS,
-  clubs: FEATURED_CLUBS,
-  coaches: POPULAR_COACHES,
-  classes: [],
+  articles: MOCK_ARTICLES,
   isLoading: false,
   source: "mock",
 };
@@ -88,13 +173,13 @@ export function useDiscoveryHome(): DiscoveryHomeState {
 
     void (async () => {
       try {
-        const [countriesPage, sportsPage, categoriesPage, clubsPage, coachesPage] =
+        const [countriesPage, sportsPage, clubsPage, coachesPage, articlesPage] =
           await Promise.all([
             basicsLocations.listCountries(),
             basicsSports.listSports(),
-            basicsSports.listCategories(),
-            discoveryClubs.list({ page_size: 8 }),
+            discoveryClubs.list({ page_size: 16 }),
             discoveryCoaches.list({ page_size: 8 }),
+            articlesApi.list({ page_size: 8 }).catch(() => null),
           ]);
 
         if (cancelled) return;
@@ -103,15 +188,12 @@ export function useDiscoveryHome(): DiscoveryHomeState {
           countriesPage.result.find((c) => c.slug === "iran") ??
           countriesPage.result[0];
 
-        let provinces: HomeLocationItem[] = [];
         let cities: HomeLocationItem[] = [];
+        let coachCityName = DEFAULT_COACH_CITY_NAME;
 
         if (iran) {
           const provincesRes = await basicsLocations.listProvinces(iran.id);
           if (cancelled) return;
-          provinces = provincesRes.result.slice(0, 12).map((p) =>
-            mapLocationToHomeItem(p, locationImage(p), "استان"),
-          );
 
           const cityBatches = await Promise.all(
             provincesRes.result.slice(0, 4).map((p) =>
@@ -131,6 +213,9 @@ export function useDiscoveryHome(): DiscoveryHomeState {
             }
           }
           cities = [...cityMap.values()].slice(0, 12);
+          const tehran =
+            cities.find((c) => /تهران|tehran/i.test(c.name)) ?? cities[0];
+          if (tehran) coachCityName = tehran.name;
         }
 
         const clubs =
@@ -138,14 +223,14 @@ export function useDiscoveryHome(): DiscoveryHomeState {
             ? clubsPage.result.map((club) =>
                 mapDiscoveryClubToBrowse(club as never),
               )
-            : FEATURED_CLUBS;
+            : BROWSE_CLUBS;
 
         const coaches =
           coachesPage.result.length > 0
-            ? coachesPage.result.slice(0, 8).map(mapDiscoveryCoachToPopular)
-            : POPULAR_COACHES;
+            ? coachesPage.result.slice(0, 8).map(mapDiscoveryCoachToFeatured)
+            : FEATURED_COACHES;
 
-        const classClubIds = clubsPage.result.slice(0, 3).map((c) => c.id);
+        const classClubIds = clubs.slice(0, 4).map((c) => c.id);
         const classLists = await Promise.all(
           classClubIds.map((clubId) =>
             discoveryClubSlots.listClasses(clubId).catch(() => null),
@@ -173,27 +258,32 @@ export function useDiscoveryHome(): DiscoveryHomeState {
           }
         }
 
+        const slices = buildSlices(clubs);
+        const articles =
+          articlesPage && articlesPage.result.length > 0
+            ? articlesPage.result.map(mapArticleToHomeItem)
+            : MOCK_ARTICLES;
+
         setState({
-          provinces: provinces.length > 0 ? provinces : MOCK_PROVINCES,
+          features: HOME_FEATURE_ITEMS,
           cities: cities.length > 0 ? cities : MOCK_CITIES,
-          sportCategories:
-            categoriesPage.result.length > 0
-              ? categoriesPage.result.map((s) =>
-                  mapSportToHomeItem(s, sportImage(s)),
-                )
-              : MOCK_SPORT_CATEGORIES,
+          ...slices,
+          coaches,
+          coachCityName,
+          classes: classes.length > 0 ? classes.slice(0, 10) : MOCK_CLASSES,
+          amenities: MOCK_AMENITIES,
           sports:
             sportsPage.result.length > 0
               ? sportsPage.result.slice(0, 12).map((s) =>
                   mapSportToHomeItem(s, sportImage(s)),
                 )
               : MOCK_SPORTS,
-          clubs,
-          coaches,
-          classes: classes.slice(0, 8),
+          articles,
           isLoading: false,
           source:
-            clubsPage.result.length > 0 || coachesPage.result.length > 0
+            clubsPage.result.length > 0 ||
+            coachesPage.result.length > 0 ||
+            Boolean(articlesPage?.result.length)
               ? "api"
               : "mock",
         });

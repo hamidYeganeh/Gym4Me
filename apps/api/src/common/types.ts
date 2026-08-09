@@ -12,4 +12,5 @@ export interface JwtUser {
 export interface PasswordResetTokenPayload {
   sub: string;
   type: 'pwd_reset';
+  jti: string;
 }

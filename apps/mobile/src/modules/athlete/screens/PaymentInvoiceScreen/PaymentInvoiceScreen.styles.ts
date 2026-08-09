@@ -1,6 +1,10 @@
 export const paymentInvoiceScreenStyles = {
   root: "bg-background",
-  content: "flex flex-col gap-6 pb-10 pt-1",
+  content: [
+    "flex flex-col gap-6 pt-1",
+    "pb-[calc(6.5rem+env(safe-area-inset-bottom))]",
+  ].join(" "),
+  payCta: "h-14 w-full",
   intro: "flex flex-col gap-2",
   introTitle: "tracking-tight text-foreground",
   introSubtitle: "text-muted",

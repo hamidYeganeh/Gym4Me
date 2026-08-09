@@ -6,24 +6,27 @@ export const discoveryClubsDetailHeroSectionLightboxVariants = tv({
       "rounded-none border-0 shadow-none",
       "bg-background text-foreground",
     ].join(" "),
-    root: "flex h-dvh w-full flex-col gap-4",
+    root: "flex h-dvh w-full flex-col",
     header: [
-      "grid grid-cols-[2.75rem_1fr_2.75rem] items-center gap-2",
-      "px-screen pt-[max(0.75rem,env(safe-area-inset-top))]",
+      "relative z-20 grid grid-cols-[2.75rem_1fr_2.75rem] items-center gap-2",
+      "bg-linear-to-t from-transparent via-background/80 to-background",
+      "px-screen pb-4 pt-[max(0.75rem,env(safe-area-inset-top))]",
     ].join(" "),
     headerTitle: "text-center text-foreground",
     headerSide: "flex items-center justify-center",
-    stageWrap: "flex min-h-0 flex-1 flex-col px-screen",
-    stage: [
-      "relative flex min-h-0 flex-1 overflow-hidden rounded-[2rem]",
-      "border border-border/40 bg-surface-secondary",
+    stageWrap: [
+      "relative flex min-h-0 flex-1 flex-col items-stretch justify-center",
+      "overflow-hidden",
     ].join(" "),
-    image: "object-cover",
-    favorite: [
-      "absolute end-3 top-3 z-20",
-      "bg-overlay/45 text-overlay-foreground backdrop-blur-md",
-      "hover:bg-overlay/60 data-[hovered=true]:bg-overlay/60",
+    viewport: "w-full overflow-hidden",
+    track: "flex touch-pan-y",
+    slide: "min-w-0 shrink-0 grow-0 basis-full",
+    slideInner: "relative w-full",
+    image: [
+      "pointer-events-none block h-auto w-full aspect-[4/3] object-cover select-none rounded-xl",
+      "bg-surface-secondary",
     ].join(" "),
+    favorite: "text-foreground data-[pressed=true]:scale-[0.96]",
     caption: [
       "pointer-events-none absolute inset-x-0 bottom-0 z-10",
       "bg-linear-to-t from-background via-background/80 to-transparent",
@@ -44,18 +47,20 @@ export const discoveryClubsDetailHeroSectionLightboxVariants = tv({
     dots: "pointer-events-none flex items-center gap-1.5",
     dot: "size-1.5 rounded-full bg-muted transition-colors",
     dotActive: "bg-foreground",
-    thumbs: [
-      "flex gap-2.5 overflow-x-auto px-screen",
-      "pb-[max(1.25rem,env(safe-area-inset-bottom))]",
-      "[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+    thumbsViewport: [
+      "w-full overflow-hidden",
+      "px-screen pb-[max(1.25rem,env(safe-area-inset-bottom))]",
     ].join(" "),
+    thumbsTrack: "flex touch-pan-x gap-2.5",
     thumbButton: [
-      "relative size-[4.5rem] min-w-0 shrink-0 overflow-hidden rounded-2xl",
-      "border-2 bg-transparent p-0",
+      "relative !size-auto aspect-square h-auto w-[4.5rem] min-h-0 min-w-0 shrink-0",
+      "overflow-hidden rounded-2xl border-2 bg-transparent p-0",
     ].join(" "),
     thumbActive: "border-accent",
     thumbIdle: "border-transparent opacity-80",
-    thumbImage: "object-cover",
+    thumbImage: [
+      "pointer-events-none block h-auto w-full aspect-square object-cover select-none",
+    ].join(" "),
   },
 });
 

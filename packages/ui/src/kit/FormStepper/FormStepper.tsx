@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { Check } from "@repo/icons/Check";
 import { formStepperVariants } from "./FormStepper.styles";
 import type { FormStepperProps } from "./FormStepper.types";
@@ -7,6 +8,7 @@ import type { FormStepperProps } from "./FormStepper.types";
 /**
  * Horizontal wizard progress indicator for multi-step forms.
  * Renders numbered circles joined by connectors; completed steps show a check.
+ * Scrolls horizontally when steps do not fit, keeping labels readable.
  */
 export function FormStepper({
   steps,
@@ -15,9 +17,30 @@ export function FormStepper({
   className,
 }: FormStepperProps) {
   const base = formStepperVariants();
+  const rootRef = useRef<HTMLElement>(null);
+  const stepRefs = useRef<Array<HTMLDivElement | null>>([]);
+
+  useEffect(() => {
+    const stepEl = stepRefs.current[activeIndex];
+    const rootEl = rootRef.current;
+    if (!stepEl || !rootEl) return;
+
+    const rootRect = rootEl.getBoundingClientRect();
+    const stepRect = stepEl.getBoundingClientRect();
+    const offset =
+      stepRect.left -
+      rootRect.left -
+      (rootRect.width - stepRect.width) / 2;
+
+    rootEl.scrollBy({ left: offset, behavior: "smooth" });
+  }, [activeIndex, steps.length]);
 
   return (
-    <nav aria-label={ariaLabel} className={base.root({ className })}>
+    <nav
+      ref={rootRef}
+      aria-label={ariaLabel}
+      className={base.root({ className })}
+    >
       {steps.map((step, index) => {
         const state =
           index < activeIndex
@@ -38,6 +61,9 @@ export function FormStepper({
 
         return (
           <div
+            ref={(node) => {
+              stepRefs.current[index] = node;
+            }}
             aria-current={state === "active" ? "step" : undefined}
             className={base.step()}
             key={step.key}

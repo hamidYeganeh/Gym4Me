@@ -63,8 +63,10 @@ export function useDiscoveryClassDetail(
 
     void (async () => {
       try {
-        const from = todayIso();
-        const to = addDaysIso(from, 13);
+        const today = todayIso();
+        // Include a past window so the sessions knob can show passed vs left.
+        const from = addDaysIso(today, -13);
+        const to = addDaysIso(today, 13);
         const [cls, calendar] = await Promise.all([
           discoveryClubSlots.getClass(clubId, classId),
           discoveryClubSlots.getCalendar(clubId, { from, to }).catch(() => null),

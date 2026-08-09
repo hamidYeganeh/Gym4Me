@@ -1,7 +1,7 @@
 "use client";
 
-import { CoachExpertCardSkeleton } from "@repo/ui/cards/CoachExpertCard";
-import { CoachNearbyCardSkeleton } from "@repo/ui/cards/CoachNearbyCard";
+import { ClubCardSkeleton } from "@repo/ui/cards/ClubCard";
+import { useSearchParams } from "next/navigation";
 import { useDiscoveryCoachesBrowse } from "../../lib/use-discovery-coaches-browse";
 import { DiscoveryCoachesScreen } from "./DiscoveryCoachesScreen";
 
@@ -10,37 +10,50 @@ function DiscoveryCoachesPageSkeleton() {
     <div
       aria-busy="true"
       aria-live="polite"
-      className="flex flex-col gap-6 px-screen py-6"
+      className="flex flex-col gap-4 px-screen py-6"
       role="status"
     >
+      <ClubCardSkeleton orientation="fullWidth" />
       <div className="flex gap-3 overflow-hidden">
-        <CoachExpertCardSkeleton className="shrink-0" />
-        <CoachExpertCardSkeleton className="shrink-0" />
-        <CoachExpertCardSkeleton className="shrink-0" />
-        <CoachExpertCardSkeleton className="shrink-0" />
+        <ClubCardSkeleton
+          className="w-[min(17.5rem,78vw)] shrink-0"
+          orientation="vertical"
+        />
+        <ClubCardSkeleton
+          className="w-[min(17.5rem,78vw)] shrink-0"
+          orientation="vertical"
+        />
       </div>
-      <CoachNearbyCardSkeleton />
-      <CoachNearbyCardSkeleton />
-      <CoachNearbyCardSkeleton />
+      <ClubCardSkeleton orientation="horizontal" />
+      <ClubCardSkeleton orientation="horizontal" />
     </div>
   );
 }
 
 export function DiscoveryCoachesScreenLoader() {
-  const browse = useDiscoveryCoachesBrowse();
+  const searchParams = useSearchParams();
+  const browse = useDiscoveryCoachesBrowse({
+    specialtyKey: searchParams.get("specialtyKey"),
+    cityId: searchParams.get("cityId"),
+    availability: searchParams.get("availability"),
+    verified: searchParams.get("verified"),
+    fresh: searchParams.get("fresh"),
+  });
 
-  if (browse.isLoading) {
+  if (browse.isLoading && browse.coaches.length === 0) {
     return <DiscoveryCoachesPageSkeleton />;
   }
 
   return (
     <DiscoveryCoachesScreen
-      expertCoaches={browse.expertCoaches}
-      featuredCoaches={browse.featuredCoaches}
-      isEmpty={browse.isEmpty}
-      nearbyCoaches={browse.nearbyCoaches}
-      popularCoaches={browse.popularCoaches}
-      specialties={browse.specialties}
+      activeFilter={browse.activeFilter}
+      cities={browse.cities}
+      coaches={browse.coaches}
+      discoveryFilters={browse.filters}
+      districts={browse.districts}
+      isLoading={browse.isLoading}
+      onFilterChange={browse.setActiveFilter}
+      provinces={browse.provinces}
     />
   );
 }

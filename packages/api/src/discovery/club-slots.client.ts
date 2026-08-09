@@ -4,10 +4,11 @@ import type {
   ClubCalendarQuery,
   ClubCalendarResponse,
   ClubClass,
+  ClubSlot,
 } from "./club-slots.dto";
 import { discoveryClubSlotsEndpoints as ep } from "./club-slots.endpoint";
 
-/** Public discovery calendar & classes. */
+/** Public discovery calendar, classes & slots. */
 export function createDiscoveryClubSlotsApi(client: ApiClient) {
   return {
     getCalendar(clubId: string, query: ClubCalendarQuery) {
@@ -25,6 +26,18 @@ export function createDiscoveryClubSlotsApi(client: ApiClient) {
 
     getClass(clubId: string, classId: string) {
       return client.request<ClubClass>(ep.classById(clubId, classId), {
+        public: true,
+      });
+    },
+
+    listSlots(clubId: string) {
+      return client.request<ItemsResponse<ClubSlot>>(ep.slots(clubId), {
+        public: true,
+      });
+    },
+
+    getSlot(clubId: string, slotId: string) {
+      return client.request<ClubSlot>(ep.slotById(clubId, slotId), {
         public: true,
       });
     },

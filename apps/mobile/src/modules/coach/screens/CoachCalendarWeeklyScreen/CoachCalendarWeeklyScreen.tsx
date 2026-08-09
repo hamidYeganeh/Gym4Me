@@ -52,7 +52,6 @@ export function CoachCalendarWeeklyScreen({
       className={styles.root}
       header={
         <Header
-          className="border-b-0 bg-background"
           endContent={
             <Button
               aria-label={t("calendar")}

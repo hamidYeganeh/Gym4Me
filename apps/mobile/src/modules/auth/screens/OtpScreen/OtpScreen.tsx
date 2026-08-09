@@ -14,13 +14,14 @@ import {
   clearOtpPending,
   readOtpPending,
 } from "@/modules/auth/lib/otp-pending";
+import { authHref } from "@/shared/lib/auth-redirect";
 import { roleHomePath } from "@/shared/lib/role-routes";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { otpScreenVariants } from "./OtpScreen.styles";
 import type { OtpScreenProps } from "./OtpScreen.types";
 
 const HERO_SRC = "/auth-hero.jpg";
-const OTP_LENGTH = 5;
+const OTP_LENGTH = 6;
 const OTP_PATTERN = "^[0-9۰-۹٠-٩]+$";
 
 function normalizeDigits(value: string) {
@@ -63,14 +64,15 @@ export function OtpScreen({ className }: OtpScreenProps) {
   useEffect(() => {
     const pending = readOtpPending();
     if (!pending?.phone) {
-      router.replace("/auth/sign-in");
+      const next = searchParams.get("next");
+      router.replace(authHref(next));
       return;
     }
     setPhone(pending.phone);
     setRemainingSeconds(pending.expiresInSeconds);
     setDebugCode(pending.debugCode ?? null);
     setHydrated(true);
-  }, [router]);
+  }, [router, searchParams]);
 
   useEffect(() => {
     if (!phone) return;
@@ -249,7 +251,7 @@ export function OtpScreen({ className }: OtpScreenProps) {
           variant="ghost"
           onPress={() => {
             clearOtpPending();
-            router.replace("/auth/sign-in");
+            router.replace(authHref(searchParams.get("next")));
           }}
         >
           <ArrowLeft size={18} />

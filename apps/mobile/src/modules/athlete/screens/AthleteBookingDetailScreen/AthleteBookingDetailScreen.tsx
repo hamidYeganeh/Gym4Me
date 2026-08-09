@@ -73,7 +73,7 @@ export function AthleteBookingDetailScreen({
       <AppLayout
         className={styles.root}
         header={
-          <Header className="border-b-0 bg-background" startContent={backButton} />
+          <Header startContent={backButton} />
         }
       >
         <div className={styles.content}>
@@ -108,7 +108,7 @@ export function AthleteBookingDetailScreen({
     <AppLayout
       className={styles.root}
       header={
-        <Header className="border-b-0 bg-background" startContent={backButton} />
+        <Header startContent={backButton} />
       }
     >
       <div className={styles.content}>

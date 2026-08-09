@@ -10,7 +10,6 @@ import {
   Kettlebell,
   Megaphone,
   Newspaper1,
-  RobotFace1,
   User,
   UsersThree,
   UsersTwo,
@@ -134,12 +133,6 @@ export function OwnerHomeScreen({ stats, clubs }: OwnerHomeScreenProps) {
                 href: "/owner/analytics",
               },
               {
-                key: "ai",
-                label: t("ai"),
-                icon: <RobotFace1 size={ACTION_ICON_SIZE} />,
-                href: "/owner/ai",
-              },
-              {
                 key: "resources",
                 label: t("resources"),
                 icon: <BookOpen size={ACTION_ICON_SIZE} />,
@@ -157,10 +150,10 @@ export function OwnerHomeScreen({ stats, clubs }: OwnerHomeScreenProps) {
               isActive: true,
             },
             {
-              key: "ai",
-              label: t("ai"),
-              icon: <RobotFace1 size={ICON_SIZE} />,
-              href: "/owner/ai",
+              key: "analytics",
+              label: t("analytics"),
+              icon: <ChartBar2 size={ICON_SIZE} />,
+              href: "/owner/analytics",
             },
             {
               key: "resources",
@@ -222,11 +215,14 @@ export function OwnerHomeScreen({ stats, clubs }: OwnerHomeScreenProps) {
 
         <StaggerSection>
           <OwnerHomeQuickActionsSection
-            aiLabel={t("quickActionAi")}
+            bookingsLabel={t("quickActionBookings")}
+            classesLabel={t("quickActionClasses")}
+            equipmentLabel={t("quickActionEquipment")}
             moreLabel={t("quickActionMore")}
-            photoLabel={t("quickActionPhoto")}
             sectionLabel={t("quickActionsLabel")}
-            videoLabel={t("quickActionVideo")}
+            onBookingsPress={() => router.push("/owner/members")}
+            onClassesPress={() => router.push("/owner/clubs")}
+            onEquipmentPress={() => router.push("/owner/clubs")}
             onMorePress={() => setIsActionsOpen(true)}
           />
         </StaggerSection>

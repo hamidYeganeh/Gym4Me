@@ -71,3 +71,10 @@ export {
   useUpdateAdminFaq,
   useUpdateAdminSupportTicket,
 } from "./support.hooks";
+export {
+  useAdminArticle,
+  useAdminArticles,
+  useCreateAdminArticle,
+  useDeleteAdminArticle,
+  useUpdateAdminArticle,
+} from "./articles.hooks";

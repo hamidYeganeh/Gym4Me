@@ -2,8 +2,9 @@
 
 import { useEffect, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useAuth } from "@/shared/providers/AuthProvider";
+import { authHref } from "@/shared/lib/auth-redirect";
 import { roleHomePath } from "@/shared/lib/role-routes";
+import { useAuth } from "@/shared/providers/AuthProvider";
 
 type RequireAuthProps = {
   children: ReactNode;
@@ -38,8 +39,7 @@ export function RequireAuth({ children, guestOnly = false }: RequireAuthProps) {
     }
 
     if (!isAuthenticated) {
-      const next = encodeURIComponent(pathname || "/");
-      router.replace(`/auth/sign-in?next=${next}`);
+      router.replace(authHref(pathname || "/"));
     }
   }, [activeRole, guestOnly, isAuthenticated, isReady, pathname, router]);
 

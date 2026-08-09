@@ -6,15 +6,13 @@ import {
   ChevronLeft,
   Diamond1,
   DotThreeHorizontal,
-  FilmStrip,
+  Calendar1,
   Gear1,
   Heart,
   House1,
-  Image1,
   Kettlebell,
   LightningBolt1,
   Pencil1,
-  Sparkle1,
   User,
   WifiFull,
 } from "@repo/icons";
@@ -32,8 +30,8 @@ import { ClubCard } from "@repo/ui/cards/ClubCard";
 import { ClubClassCard } from "@repo/ui/cards/ClubClassCard";
 import { ClubEquipmentCard } from "@repo/ui/cards/ClubEquipmentCard";
 import { ClubSubscriptionCard } from "@repo/ui/cards/ClubSubscriptionCard";
-import { CoachAiCard } from "@repo/ui/cards/CoachAiCard";
 import { CoachExpertCard } from "@repo/ui/cards/CoachExpertCard";
+import { CoachMatchCard } from "@repo/ui/cards/CoachMatchCard";
 import { CoachFeatureCard } from "@repo/ui/cards/CoachFeatureCard";
 import { CoachMapCard } from "@repo/ui/cards/CoachMapCard";
 import { CoachNearbyCard } from "@repo/ui/cards/CoachNearbyCard";
@@ -157,9 +155,9 @@ type ThemeDemoLabels = {
   coachSpecialty: string;
   coachCertified: string;
   coachYears: string;
-  coachAiCardLabel: string;
-  coachAiCardTitle: string;
-  coachAiCardAction: string;
+  coachMatchCardLabel: string;
+  coachMatchCardTitle: string;
+  coachMatchCardAction: string;
   coachExpertCardLabel: string;
   coachFeatureCardLabel: string;
   coachFeatureNew: string;
@@ -251,13 +249,14 @@ type ThemeDemoLabels = {
   workoutCardDuration: string;
   workoutCardPlay: string;
   clubLocationCardLabel: string;
-  clubLocationCardTitle: string;
-  clubLocationCardDuration: string;
-  clubLocationCardCalories: string;
+  clubLocationCardOpen: string;
+  clubLocationCardHours: string;
+  clubLocationCardDistanceValue: string;
   clubLocationCardDistance: string;
-  clubLocationCardStart: string;
-  clubLocationCardEnd: string;
-  clubLocationCardAction: string;
+  clubLocationCardScoreValue: string;
+  clubLocationCardScore: string;
+  clubLocationCardStudentsValue: string;
+  clubLocationCardStudents: string;
   knobSliderLabel: string;
   fractionalPickerLabel: string;
   weightSliderLabel: string;
@@ -376,14 +375,14 @@ type ThemeDemoLabels = {
   profileHeaderLabel: string;
   profileHeaderHint: string;
   quickActionCardLabel: string;
-  quickActionCardAi: string;
-  quickActionCardPhoto: string;
-  quickActionCardVideo: string;
+  quickActionCardClasses: string;
+  quickActionCardBookings: string;
+  quickActionCardEquipment: string;
   quickActionCardMore: string;
   bottomNavLabel: string;
   bottomNavPreview: string;
   bottomNavHome: string;
-  bottomNavAi: string;
+  bottomNavAnalytics: string;
   bottomNavResources: string;
   bottomNavProfile: string;
   bottomNavCreate: string;
@@ -403,7 +402,6 @@ type ThemeDemoLabels = {
   bottomNavSchedule: string;
   bottomNavPrograms: string;
   bottomNavMessages: string;
-  bottomNavAnalytics: string;
   bottomNavClubs: string;
   bottomNavStaff: string;
   bottomNavClasses: string;
@@ -600,16 +598,16 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
         </h2>
         <div className="grid grid-cols-4 gap-3">
           <QuickActionCard
-            icon={<Sparkle1 size={28} />}
-            label={labels.quickActionCardAi}
+            icon={<Kettlebell size={28} />}
+            label={labels.quickActionCardClasses}
           />
           <QuickActionCard
-            icon={<Image1 size={28} />}
-            label={labels.quickActionCardPhoto}
+            icon={<Calendar1 size={28} />}
+            label={labels.quickActionCardBookings}
           />
           <QuickActionCard
-            icon={<FilmStrip size={28} />}
-            label={labels.quickActionCardVideo}
+            icon={<BarbellHorizontal size={28} />}
+            label={labels.quickActionCardEquipment}
           />
           <QuickActionCard
             icon={<DotThreeHorizontal size={28} />}
@@ -687,7 +685,7 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
               navLabel: labels.bottomNavAria,
               preview: labels.bottomNavPreview,
               home: labels.bottomNavHome,
-              ai: labels.bottomNavAi,
+              analytics: labels.bottomNavAnalytics,
               resources: labels.bottomNavResources,
               profile: labels.bottomNavProfile,
               create: labels.bottomNavCreate,
@@ -706,7 +704,6 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
               schedule: labels.bottomNavSchedule,
               programs: labels.bottomNavPrograms,
               messages: labels.bottomNavMessages,
-              analytics: labels.bottomNavAnalytics,
               clubs: labels.bottomNavClubs,
               staff: labels.bottomNavStaff,
               classes: labels.bottomNavClasses,
@@ -955,13 +952,14 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
           {labels.clubLocationCardLabel}
         </h2>
         <ClubLocationCardDemo
-          actionLabel={labels.clubLocationCardAction}
-          calories={labels.clubLocationCardCalories}
           distanceLabel={labels.clubLocationCardDistance}
-          duration={labels.clubLocationCardDuration}
-          endLabel={labels.clubLocationCardEnd}
-          startLabel={labels.clubLocationCardStart}
-          title={labels.clubLocationCardTitle}
+          distanceValue={labels.clubLocationCardDistanceValue}
+          hoursLabel={labels.clubLocationCardHours}
+          openLabel={labels.clubLocationCardOpen}
+          scoreLabel={labels.clubLocationCardScore}
+          scoreValue={labels.clubLocationCardScoreValue}
+          studentsLabel={labels.clubLocationCardStudents}
+          studentsValue={labels.clubLocationCardStudentsValue}
         />
       </section>
 
@@ -1405,11 +1403,11 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-medium text-foreground">
-          {labels.coachAiCardLabel}
+          {labels.coachMatchCardLabel}
         </h2>
-        <CoachAiCard
-          actionLabel={labels.coachAiCardAction}
-          title={labels.coachAiCardTitle}
+        <CoachMatchCard
+          actionLabel={labels.coachMatchCardAction}
+          title={labels.coachMatchCardTitle}
         />
       </section>
 

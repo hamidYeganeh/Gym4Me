@@ -111,3 +111,16 @@ export type {
   UpdateFaqInput,
 } from "./support.dto";
 export { adminSupportKeys } from "./support.keys";
+
+export {
+  createAdminArticlesApi,
+  type AdminArticlesApi,
+} from "./articles.client";
+export { adminArticlesEndpoints } from "./articles.endpoint";
+export type {
+  AdminArticle,
+  CreateArticleInput,
+  ListAdminArticlesQuery,
+  UpdateArticleInput,
+} from "./articles.dto";
+export { adminArticlesKeys } from "./articles.keys";

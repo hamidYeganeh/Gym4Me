@@ -17,7 +17,6 @@ import {
   Megaphone,
   Newspaper1,
   PersonRunning,
-  RobotFace1,
   SleepZzz,
   User,
   UsersThree,
@@ -35,7 +34,7 @@ type BottomNavDemoLabels = {
   navLabel: string;
   preview: string;
   home: string;
-  ai: string;
+  analytics: string;
   resources: string;
   profile: string;
   create: string;
@@ -54,7 +53,6 @@ type BottomNavDemoLabels = {
   schedule: string;
   programs: string;
   messages: string;
-  analytics: string;
   clubs: string;
   staff: string;
   classes: string;
@@ -72,11 +70,6 @@ export function BottomNavDemo({ labels }: { labels: BottomNavDemoLabels }) {
 
   const roleActions = useMemo((): BottomNavQuickAction[] => {
     const sharedTail: BottomNavQuickAction[] = [
-      {
-        key: "ai",
-        label: labels.ai,
-        icon: <RobotFace1 size={ACTION_ICON_SIZE} />,
-      },
       {
         key: "resources",
         label: labels.resources,
@@ -218,7 +211,10 @@ export function BottomNavDemo({ labels }: { labels: BottomNavDemoLabels }) {
         {roles.map((item) => (
           <Button
             key={item.key}
-            onPress={() => setRole(item.key)}
+            onPress={() => {
+              setRole(item.key);
+              setActive("home");
+            }}
             size="sm"
             variant={role === item.key ? "primary" : "secondary"}
           >
@@ -226,11 +222,8 @@ export function BottomNavDemo({ labels }: { labels: BottomNavDemoLabels }) {
           </Button>
         ))}
       </div>
-
-      <div className="relative w-full overflow-hidden rounded-3xl border border-border bg-surface">
-        <div className="flex h-72 items-end justify-center bg-background px-4 pb-2">
-          <p className="text-sm text-muted">{labels.preview}</p>
-        </div>
+      <p className="text-center text-sm text-muted">{labels.preview}</p>
+      <div className="overflow-hidden rounded-3xl border border-border bg-background">
         <BottomNavigation
           aria-label={labels.navLabel}
           centerAction={{
@@ -256,11 +249,11 @@ export function BottomNavDemo({ labels }: { labels: BottomNavDemoLabels }) {
               onPress: () => setActive("home"),
             },
             {
-              key: "ai",
-              label: labels.ai,
-              icon: <RobotFace1 size={ICON_SIZE} />,
-              isActive: active === "ai",
-              onPress: () => setActive("ai"),
+              key: "analytics",
+              label: labels.analytics,
+              icon: <ChartBar2 size={ICON_SIZE} />,
+              isActive: active === "analytics",
+              onPress: () => setActive("analytics"),
             },
             {
               key: "resources",

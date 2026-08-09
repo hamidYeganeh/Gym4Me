@@ -8,8 +8,8 @@ export const scheduleWorkoutCardVariants = tv({
       "absolute inset-y-0 end-0 z-0 flex items-center justify-center pe-1",
     panel: [
       "relative z-10 flex w-full cursor-grab items-center gap-3",
-      "rounded-[22px] border border-border bg-surface px-3 py-3",
-      "text-start shadow-[0_8px_24px_color-mix(in_oklch,var(--foreground)_6%,transparent)]",
+      "rounded-[22px] border border-surface-tertiary bg-surface-secondary px-3 py-3",
+      "text-start",
       "active:cursor-grabbing touch-pan-y select-none",
     ].join(" "),
     thumb:

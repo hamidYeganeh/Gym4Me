@@ -9,6 +9,7 @@ import {
   createAnalyticsApi,
   createApiClient,
   createBasicsLocationsApi,
+  createBasicsRefsApi,
   createBasicsSportsApi,
   createDiscoveryClubsApi,
   createDiscoveryClubSlotsApi,
@@ -16,6 +17,7 @@ import {
   createLocalStorage,
   createMediaApi,
   createAccountNotificationsApi,
+  createArticlesApi,
 } from "@repo/api";
 import { getApiBaseUrl } from "./env";
 import { roleHomePath } from "./role-routes";
@@ -28,7 +30,7 @@ export const apiClient = createApiClient({
   onUnauthorized: () => {
     storage.set(null);
     if (typeof window !== "undefined" && !window.location.pathname.startsWith("/auth")) {
-      window.location.assign("/auth/sign-in");
+      window.location.assign("/auth");
     }
   },
   onKycRequired: () => {
@@ -52,8 +54,10 @@ export const discoveryClubSlots = createDiscoveryClubSlotsApi(apiClient);
 export const discoveryCoaches = createDiscoveryCoachesApi(apiClient);
 export const basicsLocations = createBasicsLocationsApi(apiClient);
 export const basicsSports = createBasicsSportsApi(apiClient);
+export const basicsRefs = createBasicsRefsApi(apiClient);
 export const analyticsApi = createAnalyticsApi(apiClient);
 export const mediaApi = createMediaApi(apiClient);
+export const articlesApi = createArticlesApi(apiClient);
 
 export function mediaFileUrl(mediaId: string | null | undefined): string | null {
   if (!mediaId) return null;

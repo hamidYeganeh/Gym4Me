@@ -21,7 +21,6 @@ export function DiscoveryClubsClassesScreen({
       className={styles.root}
       header={
         <Header
-          className="border-b-0 bg-background"
           startContent={
             <Button
               aria-label={t("back")}

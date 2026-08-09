@@ -17,9 +17,11 @@ import {
   ClubOperationalStatus,
   ClubUserReviewStatus,
   EntityStatus,
+  OperatingHourAudience,
   RefType,
   Role,
   UserStatus,
+  WeekdayStatus,
 } from '../../common/enums';
 import type { JwtUser } from '../../common/types';
 import {
@@ -27,6 +29,7 @@ import {
   paginatedResult,
   resolvePageSize,
 } from '../../common/utils/pagination.util';
+import { escapeRegex } from '../../common/utils/escape-regex.util';
 import { assertCanMutateAsRole } from '../../common/utils/role-assert.util';
 import { Location, LocationDocument } from '../../schemas/location.schema';
 import {
@@ -382,7 +385,11 @@ export class ClubsService {
     };
 
     if (query.q?.trim()) {
-      filter['identity.name'] = { $regex: query.q.trim(), $options: 'i' };
+      const q = query.q.trim().slice(0, 64);
+      filter['identity.name'] = {
+        $regex: escapeRegex(q),
+        $options: 'i',
+      };
     }
     if (query.categoryId) {
       filter['categories.categoryId'] = new Types.ObjectId(query.categoryId);
@@ -565,17 +572,22 @@ export class ClubsService {
     return this.listClasses(clubId);
   }
 
-  async listCoaches(clubId: string) {
+  async listCoaches(clubId: string, opts?: { discovery?: boolean }) {
     const club = await this.findClubOrFail(clubId);
     const coachIds = (club.coaches ?? []).map((c) => c.coachId);
     const users = await this.userModel.find({ _id: { $in: coachIds } });
     const byId = new Map(users.map((u) => [u._id.toString(), u]));
+    const discovery = opts?.discovery === true;
     return asSinglePageResult(
       coachIds.map((id) => {
         const user = byId.get(id.toString());
-        return user
-          ? { coachId: id.toString(), ...this.users.toPublic(user) }
-          : { coachId: id.toString() };
+        if (!user) return { coachId: id.toString() };
+        return {
+          coachId: id.toString(),
+          ...(discovery
+            ? this.users.toDiscoveryPublic(user)
+            : this.users.toPublic(user)),
+        };
       }),
     );
   }
@@ -933,11 +945,20 @@ export class ClubsService {
     }
 
     if (dto.gallery !== undefined) {
-      club.gallery = dto.gallery.map((g) => ({
-        mediaId: new Types.ObjectId(g.mediaId),
-        title: g.title,
-        description: g.description,
-      }));
+      const previousByMediaId = new Map(
+        (club.gallery ?? []).map((item) => [item.mediaId.toString(), item]),
+      );
+      const now = new Date();
+      club.gallery = dto.gallery.map((g) => {
+        const previous = previousByMediaId.get(g.mediaId);
+        return {
+          mediaId: new Types.ObjectId(g.mediaId),
+          title: g.title,
+          description: g.description,
+          views: previous?.views ?? 0,
+          createdAt: previous?.createdAt ?? now,
+        };
+      });
       club.markModified('gallery');
     }
 
@@ -1048,7 +1069,7 @@ export class ClubsService {
     }
 
     if (dto.operatingHours !== undefined) {
-      club.operatingHours = dto.operatingHours;
+      club.operatingHours = normalizeOperatingHours(dto.operatingHours);
       club.markModified('operatingHours');
     }
 
@@ -1086,7 +1107,11 @@ export class ClubsService {
 
     if (query.ownerId) filter.ownerId = new Types.ObjectId(query.ownerId);
     if (query.q?.trim()) {
-      filter['identity.name'] = { $regex: query.q.trim(), $options: 'i' };
+      const q = query.q.trim().slice(0, 64);
+      filter['identity.name'] = {
+        $regex: escapeRegex(q),
+        $options: 'i',
+      };
     }
     if (query.categoryId) {
       filter['categories.categoryId'] = new Types.ObjectId(query.categoryId);
@@ -1268,7 +1293,7 @@ export class ClubsService {
     return {
       id: c._id.toString(),
       ownerId: c.ownerId.toString(),
-      owner: owner ? this.users.toPublic(owner) : null,
+      owner: owner ? this.users.toDiscoveryPublic(owner) : null,
       parentClubId: c.parentClubId?.toString() ?? null,
       identity: {
         name: c.identity?.name,
@@ -1286,6 +1311,8 @@ export class ClubsService {
         mediaId: g.mediaId.toString(),
         title: g.title ?? null,
         description: g.description ?? null,
+        views: g.views ?? 0,
+        createdAt: (g.createdAt ?? c.createdAt ?? new Date()).toISOString(),
       })),
       cancellation: {
         rules: c.cancellation?.rules ?? [],
@@ -1301,7 +1328,7 @@ export class ClubsService {
       coaches: coachIds.map((id) => {
         const user = coachById.get(id.toString());
         return user
-          ? { coachId: id.toString(), ...this.users.toPublic(user) }
+          ? { coachId: id.toString(), ...this.users.toDiscoveryPublic(user) }
           : { coachId: id.toString() };
       }),
       location: c.location
@@ -1337,7 +1364,7 @@ export class ClubsService {
           average: x.average,
         })),
       },
-      operatingHours: c.operatingHours ?? [],
+      operatingHours: normalizeOperatingHours(c.operatingHours ?? []),
       socials: c.socials ?? [],
       achievements: (c.achievements ?? []).map((a) => ({
         achievementId: a.achievementId.toString(),
@@ -1366,4 +1393,32 @@ export class ClubsService {
       updatedAt: c.updatedAt,
     };
   }
+}
+
+function normalizeOperatingHours(
+  rows: Array<{
+    weekday: number;
+    status: WeekdayStatus | string;
+    audience?: OperatingHourAudience | string;
+    open?: string;
+    close?: string;
+    description?: string;
+  }>,
+) {
+  return rows.map((row) => ({
+    weekday: row.weekday,
+    status:
+      row.status === WeekdayStatus.CLOSED
+        ? WeekdayStatus.CLOSED
+        : WeekdayStatus.OPEN,
+    audience:
+      row.audience === OperatingHourAudience.MALE ||
+      row.audience === OperatingHourAudience.FEMALE ||
+      row.audience === OperatingHourAudience.SHARED
+        ? row.audience
+        : OperatingHourAudience.SHARED,
+    open: row.open,
+    close: row.close,
+    description: row.description,
+  }));
 }

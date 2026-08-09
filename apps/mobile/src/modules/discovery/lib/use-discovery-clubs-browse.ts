@@ -14,6 +14,7 @@ import {
 } from "./clubs-browse-data";
 import {
   CLUB_DISCOVERY_FILTERS,
+  matchDiscoveryFilterFromQuery,
   type ClubDiscoveryFilter,
   type ClubDiscoveryFilterId,
 } from "./club-discovery-filters";
@@ -29,6 +30,11 @@ import { mapDiscoveryClubToBrowse } from "./map-discovery-club-browse";
 export type DiscoveryClubsBrowseOptions = {
   locationId?: string | null;
   sportId?: string | null;
+  genderPolicy?: string | null;
+  amenitySlug?: string | null;
+  accessibility?: string | null;
+  ageGroupKey?: string | null;
+  levelKey?: string | null;
 };
 
 export type DiscoveryClubsBrowseState = {
@@ -52,8 +58,20 @@ export function useDiscoveryClubsBrowse(
 ): DiscoveryClubsBrowseState {
   const locationId = options.locationId ?? undefined;
   const sportId = options.sportId ?? undefined;
+  const genderPolicy = options.genderPolicy ?? undefined;
+  const amenitySlug = options.amenitySlug ?? undefined;
+  const accessibility = options.accessibility ?? undefined;
+  const ageGroupKey = options.ageGroupKey ?? undefined;
+  const levelKey = options.levelKey ?? undefined;
+  const initialFilter = matchDiscoveryFilterFromQuery({
+    genderPolicy,
+    amenitySlug,
+    accessibility,
+    ageGroupKey,
+    levelKey,
+  });
   const [activeFilter, setActiveFilter] =
-    useState<ClubDiscoveryFilterId>("all");
+    useState<ClubDiscoveryFilterId>(initialFilter);
   const [clubs, setClubs] = useState<BrowseClub[]>(BROWSE_CLUBS);
   const [isLoading, setIsLoading] = useState(true);
   const [source, setSource] = useState<"api" | "mock">("mock");
@@ -122,12 +140,20 @@ export function useDiscoveryClubsBrowse(
     async (filterId: ClubDiscoveryFilterId) => {
       setIsLoading(true);
       const filter = CLUB_DISCOVERY_FILTERS.find((f) => f.id === filterId);
-      const hasScopedQuery = Boolean(locationId || sportId);
-      const query: DiscoveryClubsQuery = {
-        page_size: 40,
-        ...(filter?.query ?? {}),
+      const scopedFromUrl = {
         ...(locationId ? { locationId } : {}),
         ...(sportId ? { sportId } : {}),
+        ...(genderPolicy ? { genderPolicy } : {}),
+        ...(amenitySlug ? { amenitySlug } : {}),
+        ...(accessibility ? { accessibility } : {}),
+        ...(ageGroupKey ? { ageGroupKey } : {}),
+        ...(levelKey ? { levelKey } : {}),
+      };
+      const hasScopedQuery = Object.keys(scopedFromUrl).length > 0;
+      const query: DiscoveryClubsQuery = {
+        page_size: 40,
+        ...scopedFromUrl,
+        ...(filter?.query ?? {}),
       };
 
       try {
@@ -148,12 +174,24 @@ export function useDiscoveryClubsBrowse(
         setIsLoading(false);
       }
     },
-    [locationId, sportId],
+    [
+      accessibility,
+      ageGroupKey,
+      amenitySlug,
+      genderPolicy,
+      levelKey,
+      locationId,
+      sportId,
+    ],
   );
 
   useEffect(() => {
     void loadLocations();
   }, [loadLocations]);
+
+  useEffect(() => {
+    setActiveFilter(initialFilter);
+  }, [initialFilter]);
 
   useEffect(() => {
     void loadClubs(activeFilter);

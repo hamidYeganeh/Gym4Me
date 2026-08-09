@@ -2,18 +2,19 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/shared/providers/AuthProvider";
+import { hasSeenWelcome } from "@/modules/app/lib/welcome-storage";
 import { roleHomePath } from "@/shared/lib/role-routes";
+import { useAuth } from "@/shared/providers/AuthProvider";
 
 const CONTINUE_DELAY_MS = 2800;
 
 type SplashContinueProps = {
-  /** Dev-only override when unauthenticated (e.g. `/dev`). */
+  /** Destination for returning guests who already saw welcome (default `/home`). */
   guestHref?: string;
 };
 
-/** Soft-continues past splash based on session. */
-export function SplashContinue({ guestHref = "/auth/sign-in" }: SplashContinueProps) {
+/** Soft-continues past splash based on session + first-visit welcome. */
+export function SplashContinue({ guestHref = "/home" }: SplashContinueProps) {
   const router = useRouter();
   const { isAuthenticated, activeRole, isReady } = useAuth();
 
@@ -23,6 +24,10 @@ export function SplashContinue({ guestHref = "/auth/sign-in" }: SplashContinuePr
     const timer = window.setTimeout(() => {
       if (isAuthenticated) {
         router.replace(roleHomePath(activeRole));
+        return;
+      }
+      if (!hasSeenWelcome()) {
+        router.replace("/welcome");
         return;
       }
       router.replace(guestHref);

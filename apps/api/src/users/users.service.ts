@@ -42,6 +42,15 @@ export interface PublicUser {
   createdAt: Date;
 }
 
+/** Safe subset for unauthenticated discovery surfaces — no phone/PII. */
+export interface DiscoveryPublicUser {
+  id: string;
+  name: { first: string | null; last: string | null };
+  avatar: { mediaId: string | null };
+  demographics: { gender: string | null };
+  code: string | null;
+}
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -204,6 +213,23 @@ export class UsersService {
       },
       phoneVerifiedAt: user.phoneVerifiedAt ?? null,
       createdAt: user.createdAt,
+    };
+  }
+
+  toDiscoveryPublic(user: UserDocument): DiscoveryPublicUser {
+    return {
+      id: user._id.toString(),
+      name: {
+        first: user.name?.first ?? null,
+        last: user.name?.last ?? null,
+      },
+      avatar: {
+        mediaId: user.avatar?.mediaId?.toString() ?? null,
+      },
+      demographics: {
+        gender: user.demographics?.gender ?? null,
+      },
+      code: user.code ?? null,
     };
   }
 }

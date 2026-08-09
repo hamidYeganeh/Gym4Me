@@ -27,6 +27,10 @@ import {
 import { OtpService } from './otp.service';
 import { pickDefaultActiveRole, TokenService } from './token.service';
 
+function asAccountRole(role: SwitchRoleDto['role']): Role {
+  return role as unknown as Role;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -150,33 +154,34 @@ export class AuthService {
     const user = await this.users.findById(userId);
     this.assertActive(user);
 
-    if (!user.roles.includes(dto.role)) {
+    const nextRole = asAccountRole(dto.role);
+    if (!user.roles.includes(nextRole)) {
       throw new BadRequestException('Role not assigned to user');
     }
 
     const pair = await this.tokens.switchRole(
       user,
       dto.refreshToken,
-      dto.role,
+      nextRole,
     );
 
     this.audit.log({
       action: AuditAction.ROLE_SWITCHED,
       actorId: user._id,
       targetUserId: user._id,
-      metadata: { activeRole: dto.role },
+      metadata: { activeRole: nextRole },
       request,
     });
 
     await this.events.track({
       eventName: AnalyticsEventName.ROLE_SWITCHED,
-      actor: { userId: user._id, activeRole: dto.role },
-      properties: { role: dto.role },
+      actor: { userId: user._id, activeRole: nextRole },
+      properties: { role: nextRole },
     });
 
     return {
       ...pair,
-      activeRole: dto.role,
+      activeRole: nextRole,
       user: this.users.toPublic(user),
     };
   }

@@ -22,6 +22,7 @@ const SPECIALTY_ICONS: Record<CoachSpecialtyId, ReactNode> = {
 
 export function DiscoveryCoachesNearbySection({
   title,
+  hint,
   seeAllLabel,
   remoteLabel,
   inPersonLabel,
@@ -32,24 +33,32 @@ export function DiscoveryCoachesNearbySection({
   return (
     <section className={styles.root}>
       <div className={styles.header}>
-        <Typography className={styles.title} type="h4" weight="bold">
-          {title}
-        </Typography>
-        <Link className={styles.seeAll} onPress={onSeeAll}>
-          {seeAllLabel}
-        </Link>
+        <div className={styles.titleBlock}>
+          <Typography className={styles.title} type="h4" weight="bold">
+            {title}
+          </Typography>
+          {hint ? (
+            <Typography className={styles.hint} type="body-xs">
+              {hint}
+            </Typography>
+          ) : null}
+        </div>
+        {onSeeAll ? (
+          <Link className={styles.seeAll} onPress={onSeeAll}>
+            {seeAllLabel}
+          </Link>
+        ) : null}
       </div>
 
       <div className={styles.list}>
         {coaches.map((coach) => (
           <CoachNearbyCard
-            key={coach.id}
             availability={coach.availability}
             distanceLabel={coach.distanceLabel}
             image={coach.image}
             imageAlt={coach.name}
             inPersonLabel={inPersonLabel}
-            onPress={() => onCoachPress?.(coach.id)}
+            key={coach.id}
             priceLabel={coach.priceLabel}
             rating={coach.rating}
             ratingCount={coach.ratingCount}
@@ -57,6 +66,7 @@ export function DiscoveryCoachesNearbySection({
             specialtyIcon={SPECIALTY_ICONS[coach.specialtyId]}
             specialtyLabel={coach.specialtyLabel}
             title={coach.name}
+            onPress={() => onCoachPress?.(coach.id)}
           />
         ))}
       </div>

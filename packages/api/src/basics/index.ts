@@ -17,3 +17,11 @@ export type {
   SportNode,
 } from "./sports.dto";
 export { basicsSportsKeys } from "./sports.keys";
+
+export {
+  createBasicsRefsApi,
+  type BasicsRefsApi,
+} from "./refs.client";
+export { basicsRefsEndpoints } from "./refs.endpoint";
+export type { BasicsRefListResponse } from "./refs.dto";
+export { basicsRefsKeys } from "./refs.keys";

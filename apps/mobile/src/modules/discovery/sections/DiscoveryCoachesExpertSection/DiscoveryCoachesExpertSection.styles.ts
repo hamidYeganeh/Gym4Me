@@ -1,8 +1,12 @@
 export const discoveryCoachesExpertSectionStyles = {
-  root: "flex flex-col gap-3 px-screen",
-  header: "flex items-center justify-between gap-3",
+  root: "flex flex-col gap-3",
+  header: "flex items-start justify-between gap-3 px-screen",
+  titleBlock: "min-w-0 flex-1",
   title: "text-foreground",
+  hint: "text-muted",
   seeAll:
-    "cursor-pointer text-sm font-semibold text-accent no-underline shadow-none",
-  grid: "grid grid-cols-3 gap-x-3 gap-y-4",
+    "shrink-0 cursor-pointer text-sm font-semibold text-accent no-underline shadow-none",
+  scroller:
+    "flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth px-screen pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+  card: "w-[6.5rem] shrink-0 snap-start",
 } as const;

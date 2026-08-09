@@ -1,18 +1,27 @@
 import type { BrowseClub } from "../../lib/clubs-browse-data";
-import type { PopularCoach } from "../../lib/coaches-browse-data";
+import type { FeaturedCoach } from "../../lib/coaches-browse-data";
 import type {
+  HomeAmenityItem,
+  HomeArticleItem,
   HomeClassItem,
+  HomeFeatureItem,
+  HomeGalleryItem,
   HomeLocationItem,
   HomeSportItem,
 } from "../../lib/home-browse-data";
 
 export type DiscoveryHomeScreenProps = {
-  provinces: HomeLocationItem[];
+  features: HomeFeatureItem[];
   cities: HomeLocationItem[];
-  sportCategories: HomeSportItem[];
+  nearbyClubs: BrowseClub[];
+  topClubs: BrowseClub[];
+  open24Clubs: BrowseClub[];
+  coaches: FeaturedCoach[];
+  coachCityName: string;
+  classes: HomeClassItem[];
+  amenities: HomeAmenityItem[];
   sports: HomeSportItem[];
-  featuredClubs: BrowseClub[];
-  popularCoaches: PopularCoach[];
-  featuredClasses: HomeClassItem[];
+  articles: HomeArticleItem[];
+  galleryItems: HomeGalleryItem[];
   isLoading?: boolean;
 };

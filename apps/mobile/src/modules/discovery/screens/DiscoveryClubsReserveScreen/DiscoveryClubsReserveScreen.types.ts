@@ -6,6 +6,8 @@ import type {
 
 export type DiscoveryClubsReserveScreenProps = {
   clubTitle: string;
+  clubLocation?: string;
+  clubImage: string;
   days: ReserveDay[];
   slotsByDay: Record<string, ReserveSlot[]>;
   plans: ReservePlan[];

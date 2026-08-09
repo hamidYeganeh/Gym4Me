@@ -23,7 +23,7 @@ import type {
 } from "./ForgotPasswordScreen.types";
 
 const HERO_SRC = "/assets/images/auth-hero.jpg";
-const OTP_LENGTH = 5;
+const OTP_LENGTH = 6;
 const OTP_PATTERN = "^[0-9۰-۹٠-٩]+$";
 
 function normalizeDigits(value: string) {

@@ -23,12 +23,12 @@ export const otpScreenVariants = tv({
     error: "text-center text-sm text-danger",
     notice: "text-center text-sm text-success",
     submit:
-      "min-h-16 rounded-[1.3rem] text-lg font-semibold text-accent-foreground",
+      "min-h-14 rounded-full text-base font-semibold text-accent-foreground",
     submitIcon: "ms-2 size-6",
     resendRow:
       "flex min-h-10 items-center justify-center gap-2 text-sm text-muted",
     resend:
-      "font-semibold text-accent outline-none data-[hovered=true]:opacity-80",
+      "font-semibold text-accent underline underline-offset-4 outline-none data-[hovered=true]:opacity-80",
     timer:
       "font-bold text-foreground [direction:ltr] [font-variant-numeric:tabular-nums]",
     back:

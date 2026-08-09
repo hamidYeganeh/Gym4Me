@@ -10,6 +10,7 @@ import { SportsListScreen } from "@/modules/basics/screens/SportsListScreen";
 import { ClubDetailScreen } from "@/modules/clubs/screens/ClubDetailScreen";
 import { ClubsListScreen } from "@/modules/clubs/screens/ClubsListScreen";
 import { DashboardHomeScreen } from "@/modules/dashboard/screens/DashboardHomeScreen";
+import { ArticlesListScreen } from "@/modules/articles/screens/ArticlesListScreen";
 import { FaqListScreen } from "@/modules/support/screens/FaqListScreen";
 import { SupportTicketsScreen } from "@/modules/support/screens/SupportTicketsScreen";
 import { ClubReviewsScreen } from "@/modules/users/screens/ClubReviewsScreen";
@@ -131,6 +132,10 @@ export function AppRouter() {
               path="/dashboard/support"
             />
             <Route element={<FaqListScreen />} path="/dashboard/support/faq" />
+            <Route
+              element={<ArticlesListScreen />}
+              path="/dashboard/articles"
+            />
           </Route>
           <Route
             element={<Navigate replace to={routes.dashboard} />}

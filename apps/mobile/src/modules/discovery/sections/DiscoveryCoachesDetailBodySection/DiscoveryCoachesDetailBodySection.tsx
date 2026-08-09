@@ -2,36 +2,61 @@
 
 import {
   Button,
-  Chip,
   Label,
   Radio,
   RadioGroup,
   Typography,
 } from "@heroui/react";
 import { BarbellHorizontal } from "@repo/icons/BarbellHorizontal";
+import { Building2 } from "@repo/icons/Building2";
+import { Calendar1 } from "@repo/icons/Calendar1";
 import { Check } from "@repo/icons/Check";
-import { Headset1 } from "@repo/icons/Headset1";
 import { ListTwoCheck } from "@repo/icons/ListTwoCheck";
-import { MapPin1 } from "@repo/icons/MapPin1";
 import { Medal } from "@repo/icons/Medal";
+import { Sparkle1 } from "@repo/icons/Sparkle1";
+import { StarFull } from "@repo/icons/StarFull";
+import { Target1 } from "@repo/icons/Target1";
+import { UsersThree } from "@repo/icons/UsersThree";
 import { UsersTwo } from "@repo/icons/UsersTwo";
 import { Video } from "@repo/icons/Video";
 import { Weight } from "@repo/icons/Weight";
+import { ClubAmenityCard } from "@repo/ui/cards/ClubAmenityCard";
+import { ClubBranchCard } from "@repo/ui/cards/ClubBranchCard";
 import { ClubCancellationPolicy } from "@repo/ui/cards/ClubCancellationPolicy";
 import { ClubSubscriptionCard } from "@repo/ui/cards/ClubSubscriptionCard";
+import { CoachFeatureCard } from "@repo/ui/cards/CoachFeatureCard";
+import { ReviewCard } from "@repo/ui/cards/ReviewCard";
+import { SportCard } from "@repo/ui/cards/SportCard";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
+import { CarouselNavigation } from "@repo/ui/kit/CarouselNavigation";
+import useEmblaCarousel from "embla-carousel-react";
 import { useTranslations } from "next-intl";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import {
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import type {
+  CoachDetailClub,
   CoachDetailPackage,
+  CoachDetailRelated,
+  CoachDetailReview,
+  CoachDetailService,
   CoachDetailServiceIconKey,
+  CoachDetailSpecialty,
   CoachDetailStat,
   CoachDetailStatKey,
 } from "../../lib/coach-detail-data";
+import { getClubDetail } from "../../lib/club-detail-data";
+import { DiscoveryClubsDetailCalendarSection } from "../DiscoveryClubsDetailCalendarSection";
+import { DiscoveryGallerySection } from "../DiscoveryGallerySection";
 import { discoveryCoachesDetailBodySectionStyles as styles } from "./DiscoveryCoachesDetailBodySection.styles";
 import type { DiscoveryCoachesDetailBodySectionProps } from "./DiscoveryCoachesDetailBodySection.types";
+
+const SECTION_TITLE_ICON_SIZE = 18;
+const REVIEW_PREVIEW_COUNT = 5;
 
 function formatPlanPrice(price: number) {
   return price.toLocaleString("fa-IR");
@@ -47,26 +72,12 @@ const STAT_LABEL_KEYS = {
 >;
 
 const SERVICE_ICONS: Record<CoachDetailServiceIconKey, ReactNode> = {
-  online: <Video size={16} />,
-  inPerson: <BarbellHorizontal size={16} />,
-  nutrition: <Weight size={16} />,
-  program: <ListTwoCheck size={16} />,
-  assessment: <Medal size={16} />,
-  group: <UsersTwo size={16} />,
-};
-
-const DEMO_SLOTS = {
-  today: [
-    { id: "t1", label: "۰۸:۰۰", state: "unavailable" as const },
-    { id: "t2", label: "۱۰:۰۰", state: "available" as const },
-    { id: "t3", label: "۱۴:۰۰", state: "available" as const },
-    { id: "t4", label: "۱۸:۰۰", state: "selected" as const },
-  ],
-  tomorrow: [
-    { id: "m1", label: "۰۹:۰۰", state: "available" as const },
-    { id: "m2", label: "۱۱:۳۰", state: "available" as const },
-    { id: "m3", label: "۱۶:۰۰", state: "unavailable" as const },
-  ],
+  online: <Video size={36} />,
+  inPerson: <BarbellHorizontal size={36} />,
+  nutrition: <Weight size={36} />,
+  program: <ListTwoCheck size={36} />,
+  assessment: <Medal size={36} />,
+  group: <UsersTwo size={36} />,
 };
 
 function StatIcon({ labelKey }: { labelKey: CoachDetailStatKey }) {
@@ -97,34 +108,64 @@ function StatIcon({ labelKey }: { labelKey: CoachDetailStatKey }) {
   );
 }
 
-function CoachStatsBar({ stats }: { stats: CoachDetailStat[] }) {
-  const t = useTranslations("CoachDetail");
-  if (stats.length === 0) return null;
-
+function SectionTitle({
+  children,
+  icon,
+}: {
+  children: ReactNode;
+  icon?: ReactNode;
+}) {
   return (
-    <div className={styles.statsBar}>
-      {stats.map((stat) => (
-        <div className={styles.statCell} key={stat.labelKey}>
-          <Typography className={styles.statValue} type="h3" weight="bold">
-            {stat.value}
-          </Typography>
-          <div className={styles.statMeta}>
-            <StatIcon labelKey={stat.labelKey} />
-            <Typography className={styles.statLabel} type="body-xs">
-              {t(STAT_LABEL_KEYS[stat.labelKey])}
-            </Typography>
-          </div>
-        </div>
-      ))}
+    <div className={styles.sectionTitleRow}>
+      {icon ? (
+        <span aria-hidden className={styles.sectionTitleIcon}>
+          {icon}
+        </span>
+      ) : null}
+      <Typography className={styles.sectionTitle} type="h4" weight="semibold">
+        {children}
+      </Typography>
     </div>
   );
 }
 
-function SectionTitle({ children }: { children: ReactNode }) {
+function SectionCarousel({
+  title,
+  icon,
+  "aria-label": ariaLabel,
+  action,
+  children,
+}: {
+  title: ReactNode;
+  icon?: ReactNode;
+  "aria-label": string;
+  action?: ReactNode;
+  children: ReactNode;
+}) {
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    align: "start",
+    dragFree: true,
+    direction: "rtl",
+  });
+
   return (
-    <Typography className={styles.sectionTitle} type="h4" weight="semibold">
-      {children}
-    </Typography>
+    <>
+      <div className={styles.sectionHeader}>
+        <SectionTitle icon={icon}>{title}</SectionTitle>
+        <div className={styles.sectionHeaderAside}>
+          {action}
+          <CarouselNavigation emblaApi={emblaApi} size="sm" />
+        </div>
+      </div>
+      <div
+        aria-label={ariaLabel}
+        aria-roledescription="carousel"
+        className={styles.carousel}
+        ref={emblaRef}
+      >
+        <div className={styles.carouselTrack}>{children}</div>
+      </div>
+    </>
   );
 }
 
@@ -182,11 +223,124 @@ function DescriptionDisclosure({ text }: { text: string }) {
           className={styles.seeMoreTrigger}
           onPress={() => setIsExpanded((prev) => !prev)}
           size="sm"
-          variant="ghost"
+          variant={isExpanded ? "tertiary" : "secondary"}
         >
           {isExpanded ? t("seeLess") : t("seeMore")}
         </Button>
       </div>
+    </div>
+  );
+}
+
+function CoachStatsBar({ stats }: { stats: CoachDetailStat[] }) {
+  const t = useTranslations("CoachDetail");
+  if (stats.length === 0) return null;
+
+  return (
+    <div className={styles.statsBar}>
+      {stats.map((stat) => (
+        <div className={styles.statCell} key={stat.labelKey}>
+          <Typography className={styles.statValue} type="h3" weight="bold">
+            {stat.value}
+          </Typography>
+          <div className={styles.statMeta}>
+            <StatIcon labelKey={stat.labelKey} />
+            <Typography className={styles.statLabel} type="body-xs">
+              {t(STAT_LABEL_KEYS[stat.labelKey])}
+            </Typography>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ServicesSection({ services }: { services: CoachDetailService[] }) {
+  const t = useTranslations("CoachDetail");
+  if (services.length === 0) return null;
+
+  return (
+    <div className={styles.section}>
+      <SectionCarousel
+        aria-label={t("servicesTitle")}
+        icon={<Sparkle1 size={SECTION_TITLE_ICON_SIZE} />}
+        title={t("servicesTitle")}
+      >
+        {services.map((service) => (
+          <div className={styles.amenitySlide} key={service.id}>
+            <ClubAmenityCard
+              className={styles.amenityCard}
+              icon={SERVICE_ICONS[service.iconKey]}
+              subtitle={service.subtitle}
+              title={service.title}
+            />
+          </div>
+        ))}
+      </SectionCarousel>
+    </div>
+  );
+}
+
+function SpecialtiesSection({
+  specialties,
+}: {
+  specialties: CoachDetailSpecialty[];
+}) {
+  const t = useTranslations("CoachDetail");
+  if (specialties.length === 0) return null;
+
+  return (
+    <div className={styles.section}>
+      <SectionCarousel
+        aria-label={t("specialtiesTitle")}
+        icon={<Target1 size={SECTION_TITLE_ICON_SIZE} />}
+        title={t("specialtiesTitle")}
+      >
+        {specialties.map((specialty) => (
+          <div className={styles.slide} key={specialty.id}>
+            <SportCard
+              actionLabel={t("specialtyAction")}
+              color={specialty.color}
+              size="sm"
+              sport={{
+                title: specialty.title,
+                subtitle: specialty.subtitle,
+                backgroundImage: specialty.backgroundImage,
+              }}
+            />
+          </div>
+        ))}
+      </SectionCarousel>
+    </div>
+  );
+}
+
+function ClubsSection({ clubs }: { clubs: CoachDetailClub[] }) {
+  const t = useTranslations("CoachDetail");
+  const router = useRouter();
+  if (clubs.length === 0) return null;
+
+  return (
+    <div className={styles.section}>
+      <SectionCarousel
+        aria-label={t("clubsTitle")}
+        icon={<Building2 size={SECTION_TITLE_ICON_SIZE} />}
+        title={t("clubsTitle")}
+      >
+        {clubs.map((club) => (
+          <div className={styles.branchSlide} key={club.id}>
+            <ClubBranchCard
+              actionLabel={t("clubAction")}
+              image={club.image || PLACEHOLDER_IMAGE}
+              imageAlt={club.title}
+              onAction={() => router.push(`/discovery/clubs/${club.id}`)}
+              size="md"
+              subtitle={club.subtitle}
+              title={club.title}
+            />
+          </div>
+        ))}
+      </SectionCarousel>
     </div>
   );
 }
@@ -241,7 +395,13 @@ function PackagesSection({
                   description={t(plan.descriptionKey)}
                   planName={t(plan.planNameKey)}
                   price={formatPlanPrice(plan.price)}
-                  priceSuffix={t("packagePriceSuffix")}
+                  priceSuffix={
+                    plan.planNameKey === "packageMonthly"
+                      ? t("packagePriceSuffixMonthly")
+                      : plan.planNameKey === "packageTrial"
+                        ? ""
+                        : t("packagePriceSuffix")
+                  }
                   selected={isSelected}
                 />
               </Radio.Content>
@@ -253,17 +413,89 @@ function PackagesSection({
   );
 }
 
+function ReviewsPreviewSection({ reviews }: { reviews: CoachDetailReview[] }) {
+  const t = useTranslations("CoachDetail");
+  const preview = reviews.slice(0, REVIEW_PREVIEW_COUNT);
+  if (preview.length === 0) return null;
+
+  return (
+    <div className={styles.section}>
+      <SectionCarousel
+        aria-label={t("reviewsPreviewTitle")}
+        icon={<StarFull size={SECTION_TITLE_ICON_SIZE} />}
+        title={t("reviewsPreviewTitle")}
+      >
+        {preview.map((review) => (
+          <div className={styles.reviewSlide} key={review.id}>
+            <ReviewCard
+              avatar={review.avatar}
+              avatarAlt={review.title}
+              avatarFallback={review.avatarFallback}
+              className={styles.reviewCard}
+              content={review.content}
+              date={review.date}
+              dislikeLabel={t("reviewDislike")}
+              isVerified={review.isVerified}
+              likeLabel={t("reviewLike")}
+              rating={review.rating}
+              reportLabel={t("reviewReport")}
+              title={review.title}
+              verifiedLabel={t("reviewVerified")}
+            />
+          </div>
+        ))}
+      </SectionCarousel>
+    </div>
+  );
+}
+
+function RelatedCoachesSection({
+  coaches,
+}: {
+  coaches: CoachDetailRelated[];
+}) {
+  const t = useTranslations("CoachDetail");
+  const router = useRouter();
+  if (coaches.length === 0) return null;
+
+  return (
+    <div className={styles.section}>
+      <SectionCarousel
+        aria-label={t("relatedTitle")}
+        icon={<UsersThree size={SECTION_TITLE_ICON_SIZE} />}
+        title={t("relatedTitle")}
+      >
+        {coaches.map((coach) => (
+          <div className={styles.coachSlide} key={coach.id}>
+            <CoachFeatureCard
+              className={styles.coachCard}
+              experienceLabel={
+                coach.yearsExperience > 0
+                  ? t("yearsExperience", { count: coach.yearsExperience })
+                  : undefined
+              }
+              image={coach.image || PLACEHOLDER_IMAGE}
+              imageAlt={coach.name}
+              onPress={() => router.push(`/discovery/coaches/${coach.id}`)}
+              rating={coach.rating}
+              specialty={coach.specialty}
+              title={coach.name}
+            />
+          </div>
+        ))}
+      </SectionCarousel>
+    </div>
+  );
+}
+
 export function DiscoveryCoachesDetailBodySection({
   coach,
   selectedPackageId,
   onPackageChange,
 }: DiscoveryCoachesDetailBodySectionProps) {
   const t = useTranslations("CoachDetail");
-  const router = useRouter();
-  const [selectedSlotId, setSelectedSlotId] = useState("t4");
-  const gallery =
-    coach.images.length > 0 ? coach.images : [PLACEHOLDER_IMAGE];
-  const primaryClub = coach.clubs[0];
+  const partnerClubId = coach.clubs[0]?.id ?? "heavenly";
+  const club = getClubDetail(partnerClubId);
 
   return (
     <section className={styles.root}>
@@ -271,71 +503,41 @@ export function DiscoveryCoachesDetailBodySection({
 
       {coach.overview ? (
         <div className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <SectionTitle>{t("description")}</SectionTitle>
-            <Button className={styles.seeAll} size="sm" variant="ghost">
-              {t("seeMore")}
-            </Button>
-          </div>
+          <SectionTitle>{t("description")}</SectionTitle>
           <DescriptionDisclosure text={coach.overview} />
         </div>
       ) : null}
 
-      {coach.services.length > 0 ? (
+      <ServicesSection services={coach.services} />
+      <SpecialtiesSection specialties={coach.specialties} />
+
+      <DiscoveryGallerySection
+        gallery={coach.gallery}
+        labels={{
+          title: t("galleryTitle"),
+          seeAll: t("seeAllGallery"),
+          action: t("galleryAction"),
+          newBadge: t("galleryNew"),
+          close: t("closeGallery"),
+          favorite: t("favorite"),
+          prev: t("galleryPrev"),
+          next: t("galleryNext"),
+          selectImage: (index) => t("selectImage", { index }),
+        }}
+      />
+
+      <ClubsSection clubs={coach.clubs} />
+
+      {club ? (
         <div className={styles.section}>
-          <SectionTitle>{t("coachingTypeTitle")}</SectionTitle>
-          <div className={styles.chips}>
-            {coach.services.slice(0, 3).map((service) => (
-              <Chip className={styles.chip} key={service.id}>
-                <span aria-hidden className={styles.chipIcon}>
-                  {SERVICE_ICONS[service.iconKey] ?? (
-                    <Headset1 size={16} />
-                  )}
-                </span>
-                <Chip.Label>{service.title}</Chip.Label>
-              </Chip>
-            ))}
-          </div>
+          <DiscoveryClubsDetailCalendarSection
+            club={club}
+            coachId={coach.id}
+            seeAllHref={`/discovery/clubs/${club.id}/slots`}
+            title={t("calendarTitle")}
+          />
         </div>
       ) : null}
-
-      {coach.specialties.length > 0 ? (
-        <div className={styles.section}>
-          <SectionTitle>{t("specialtiesTitle")}</SectionTitle>
-          <div className={styles.chips}>
-            {coach.specialties.map((specialty) => (
-              <Chip className={styles.chip} key={specialty.id}>
-                <span aria-hidden className={styles.chipIcon}>
-                  <BarbellHorizontal size={16} />
-                </span>
-                <Chip.Label>{specialty.title}</Chip.Label>
-              </Chip>
-            ))}
-          </div>
-        </div>
-      ) : null}
-
-      <div className={styles.section}>
-        <div className={styles.sectionHeader}>
-          <SectionTitle>{t("galleryTitle")}</SectionTitle>
-          <Button className={styles.seeAll} size="sm" variant="ghost">
-            {t("seeAllGallery")}
-          </Button>
-        </div>
-        <div className={styles.gallery}>
-          {gallery.map((image, index) => (
-            <div className={styles.galleryItem} key={`${image}-${index}`}>
-              <Image
-                alt=""
-                className={styles.galleryImage}
-                fill
-                sizes="112px"
-                src={image || PLACEHOLDER_IMAGE}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
 
       <PackagesSection
         onChange={onPackageChange}
@@ -344,110 +546,9 @@ export function DiscoveryCoachesDetailBodySection({
       />
 
       <div className={styles.section}>
-        <SectionTitle>{t("upcomingSlotsTitle")}</SectionTitle>
-        <div className={styles.slotGroup}>
-          {(
-            [
-              ["today", DEMO_SLOTS.today],
-              ["tomorrow", DEMO_SLOTS.tomorrow],
-            ] as const
-          ).map(([dayKey, slots]) => (
-            <div className={styles.slotDay} key={dayKey}>
-              <Typography className={styles.slotDayLabel} type="body-sm">
-                {t(dayKey === "today" ? "slotsToday" : "slotsTomorrow")}
-              </Typography>
-              <div className={styles.slotRow}>
-                {slots.map((slot) => {
-                  const state =
-                    slot.id === selectedSlotId ? "selected" : slot.state;
-                  return (
-                    <Button
-                      className={[
-                        styles.slotChip,
-                        state === "available" ? styles.slotAvailable : "",
-                        state === "selected" ? styles.slotSelected : "",
-                        state === "unavailable" ? styles.slotUnavailable : "",
-                      ]
-                        .filter(Boolean)
-                        .join(" ")}
-                      isDisabled={slot.state === "unavailable"}
-                      key={slot.id}
-                      size="sm"
-                      variant="ghost"
-                      onPress={() => setSelectedSlotId(slot.id)}
-                    >
-                      {slot.label}
-                    </Button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className={styles.section}>
-        <SectionTitle>{t("experienceTitle")}</SectionTitle>
-        <Typography className={styles.bodyText} type="body-sm">
-          {coach.tagline}
-        </Typography>
-        <div className={styles.timeline}>
-          {coach.clubs.slice(0, 3).map((club, index) => (
-            <div className={styles.timelineItem} key={club.id}>
-              {index < Math.min(coach.clubs.length, 3) - 1 ? (
-                <span aria-hidden className={styles.timelineRail} />
-              ) : null}
-              <span aria-hidden className={styles.timelineDot} />
-              <div className={styles.timelineBody}>
-                <Typography
-                  className={styles.timelineTitle}
-                  type="body-sm"
-                  weight="semibold"
-                >
-                  {club.title}
-                </Typography>
-                {club.subtitle ? (
-                  <Typography className={styles.timelineText} type="body-sm">
-                    {club.subtitle}
-                  </Typography>
-                ) : null}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {primaryClub ? (
-        <div className={styles.section}>
-          <SectionTitle>{t("preferredLocationTitle")}</SectionTitle>
-          <div className={styles.locationCard}>
-            <div className="flex items-start gap-2">
-              <MapPin1 aria-hidden className="mt-0.5 shrink-0 text-accent" size={18} />
-              <div className="min-w-0 flex-1">
-                <Typography type="body" weight="semibold">
-                  {primaryClub.title}
-                </Typography>
-                <Typography className={styles.bodyText} type="body-sm">
-                  {primaryClub.subtitle ?? coach.location}
-                </Typography>
-                <Button
-                  className={styles.locationLink}
-                  size="sm"
-                  variant="ghost"
-                  onPress={() =>
-                    router.push(`/discovery/clubs/${primaryClub.id}`)
-                  }
-                >
-                  {t("getDirections")}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      <div className={styles.section}>
-        <SectionTitle>{t("cancellationTitle")}</SectionTitle>
+        <SectionTitle icon={<Calendar1 size={SECTION_TITLE_ICON_SIZE} />}>
+          {t("cancellationTitle")}
+        </SectionTitle>
         <ClubCancellationPolicy
           activeIndex={1}
           steps={[
@@ -478,6 +579,9 @@ export function DiscoveryCoachesDetailBodySection({
           ]}
         />
       </div>
+
+      <ReviewsPreviewSection reviews={coach.reviews} />
+      <RelatedCoachesSection coaches={coach.related} />
     </section>
   );
 }

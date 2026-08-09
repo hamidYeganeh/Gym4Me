@@ -1,117 +1,204 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import type { DiscoveryCoach } from "@repo/api/discovery";
+import { useCallback, useEffect, useState } from "react";
+import type { DiscoveryCoachesQuery } from "@repo/api/discovery";
+import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import {
-  COACH_SPECIALTIES,
-  EXPERT_COACHES,
-  FEATURED_COACHES,
-  NEARBY_COACHES,
-  POPULAR_COACHES,
-  type ExpertCoach,
-  type FeaturedCoach,
-  type NearbyCoach,
-  type PopularCoach,
-  type CoachSpecialty,
+  basicsLocations,
+  discoveryCoaches,
+  mediaFileUrl,
+} from "@/shared/lib/api";
+import {
+  BROWSE_COACHES,
+  filterBrowseCoaches,
+  type BrowseCoach,
 } from "./coaches-browse-data";
 import {
-  mapDiscoveryCoachToExpert,
-  mapDiscoveryCoachToFeatured,
-  mapDiscoveryCoachToNearby,
-  mapDiscoveryCoachToPopular,
-} from "./map-discovery-coach";
-import { discoveryCoaches } from "@/shared/lib/api";
+  COACH_DISCOVERY_FILTERS,
+  matchCoachDiscoveryFilterFromQuery,
+  type CoachDiscoveryFilter,
+  type CoachDiscoveryFilterId,
+} from "./coach-discovery-filters";
+import {
+  MOCK_CITIES,
+  MOCK_DISTRICTS,
+  MOCK_PROVINCES_EXTENDED,
+  mapLocationToHomeItem,
+  type HomeLocationItem,
+} from "./home-browse-data";
+import { mapDiscoveryCoachToBrowse } from "./map-discovery-coach";
 
-type DiscoveryCoachesBrowseState = {
-  specialties: CoachSpecialty[];
-  featuredCoaches: FeaturedCoach[];
-  popularCoaches: PopularCoach[];
-  expertCoaches: ExpertCoach[];
-  nearbyCoaches: NearbyCoach[];
+export type DiscoveryCoachesBrowseOptions = {
+  specialtyKey?: string | null;
+  cityId?: string | null;
+  availability?: string | null;
+  verified?: string | null;
+  fresh?: string | null;
+};
+
+export type DiscoveryCoachesBrowseState = {
+  coaches: BrowseCoach[];
+  filters: CoachDiscoveryFilter[];
+  activeFilter: CoachDiscoveryFilterId;
   isLoading: boolean;
-  isEmpty: boolean;
   source: "api" | "mock";
+  provinces: HomeLocationItem[];
+  cities: HomeLocationItem[];
+  districts: HomeLocationItem[];
+  setActiveFilter: (id: CoachDiscoveryFilterId) => void;
 };
 
-const MOCK_STATE: DiscoveryCoachesBrowseState = {
-  specialties: COACH_SPECIALTIES,
-  featuredCoaches: FEATURED_COACHES,
-  popularCoaches: POPULAR_COACHES,
-  expertCoaches: EXPERT_COACHES,
-  nearbyCoaches: NEARBY_COACHES,
-  isLoading: false,
-  isEmpty: false,
-  source: "mock",
-};
-
-function specialtiesFromCoaches(coaches: DiscoveryCoach[]): CoachSpecialty[] {
-  const keys: string[] = [];
-  for (const coach of coaches) {
-    for (const key of coach.specialtyKeys) {
-      if (key && !keys.includes(key)) keys.push(key);
-    }
-    if (coach.experience.headline && !keys.includes(coach.experience.headline)) {
-      keys.push(coach.experience.headline);
-    }
-  }
-  if (keys.length === 0) return COACH_SPECIALTIES;
-  return keys.slice(0, 8).map((key) => ({ id: key, label: key }));
+function locationImage(node: { coverMediaId: string | null }) {
+  return mediaFileUrl(node.coverMediaId) ?? PLACEHOLDER_IMAGE;
 }
 
-export function useDiscoveryCoachesBrowse(): DiscoveryCoachesBrowseState {
-  const [state, setState] = useState<DiscoveryCoachesBrowseState>({
-    ...MOCK_STATE,
-    isLoading: true,
+export function useDiscoveryCoachesBrowse(
+  options: DiscoveryCoachesBrowseOptions = {},
+): DiscoveryCoachesBrowseState {
+  const specialtyKey = options.specialtyKey ?? undefined;
+  const cityId = options.cityId ?? undefined;
+  const availability = options.availability ?? undefined;
+  const verified = options.verified ?? undefined;
+  const fresh = options.fresh ?? undefined;
+
+  const initialFilter = matchCoachDiscoveryFilterFromQuery({
+    specialtyKey,
+    availability,
+    verified,
+    fresh,
   });
 
-  useEffect(() => {
-    let cancelled = false;
+  const [activeFilter, setActiveFilter] =
+    useState<CoachDiscoveryFilterId>(initialFilter);
+  const [coaches, setCoaches] = useState<BrowseCoach[]>(BROWSE_COACHES);
+  const [isLoading, setIsLoading] = useState(true);
+  const [source, setSource] = useState<"api" | "mock">("mock");
+  const [provinces, setProvinces] = useState<HomeLocationItem[]>(
+    MOCK_PROVINCES_EXTENDED,
+  );
+  const [cities, setCities] = useState<HomeLocationItem[]>(MOCK_CITIES);
+  const [districts, setDistricts] =
+    useState<HomeLocationItem[]>(MOCK_DISTRICTS);
 
-    void (async () => {
-      try {
-        const page = await discoveryCoaches.list({ page_size: 24 });
-        if (cancelled) return;
-        if (page.result.length === 0) {
-          setState(MOCK_STATE);
-          return;
-        }
+  const loadLocations = useCallback(async () => {
+    try {
+      const countries = await basicsLocations.listCountries();
+      const iran =
+        countries.result.find((c) => c.slug === "iran" || c.name === "ایران") ??
+        countries.result[0];
+      if (!iran) return;
 
-        const featured = page.result.slice(0, 6).map(mapDiscoveryCoachToFeatured);
-        const popular = page.result.slice(0, 8).map(mapDiscoveryCoachToPopular);
-        const expert = page.result
-          .filter((c) => c.verification.status === "approved")
-          .slice(0, 8)
-          .map(mapDiscoveryCoachToExpert);
-        const nearby = page.result.slice(0, 8).map(mapDiscoveryCoachToNearby);
+      const provincesRes = await basicsLocations.listProvinces(iran.id);
+      const nextProvinces = provincesRes.result
+        .slice(0, 12)
+        .map((p) => mapLocationToHomeItem(p, locationImage(p), "استان"));
+      if (nextProvinces.length > 0) setProvinces(nextProvinces);
 
-        setState({
-          specialties: specialtiesFromCoaches(page.result),
-          featuredCoaches: featured,
-          popularCoaches: popular,
-          expertCoaches:
-            expert.length > 0
-              ? expert
-              : featured.map((c) => ({
-                  id: c.id,
-                  name: c.name,
-                  image: c.image,
-                  isVerified: c.isCertified,
-                })),
-          nearbyCoaches: nearby,
-          isLoading: false,
-          isEmpty: false,
-          source: "api",
-        });
-      } catch {
-        if (cancelled) return;
-        setState(MOCK_STATE);
-      }
-    })();
+      const cityMap = new Map<string, HomeLocationItem>();
+      const districtList: HomeLocationItem[] = [];
 
-    return () => {
-      cancelled = true;
-    };
+      await Promise.all(
+        provincesRes.result.slice(0, 4).map(async (province) => {
+          const citiesRes = await basicsLocations.listCities(province.id);
+          for (const city of citiesRes.result.slice(0, 6)) {
+            cityMap.set(
+              city.id,
+              mapLocationToHomeItem(city, locationImage(city)),
+            );
+            try {
+              const districtsRes = await basicsLocations.listDistricts(city.id);
+              for (const district of districtsRes.result.slice(0, 4)) {
+                districtList.push(
+                  mapLocationToHomeItem(
+                    district,
+                    locationImage(district),
+                    city.name,
+                  ),
+                );
+              }
+            } catch {
+              /* districts endpoint may be unavailable */
+            }
+          }
+        }),
+      );
+
+      if (cityMap.size > 0) setCities([...cityMap.values()].slice(0, 12));
+      if (districtList.length > 0) setDistricts(districtList.slice(0, 16));
+    } catch {
+      setProvinces(MOCK_PROVINCES_EXTENDED);
+      setCities(MOCK_CITIES);
+      setDistricts(MOCK_DISTRICTS);
+    }
   }, []);
 
-  return state;
+  const loadCoaches = useCallback(
+    async (filterId: CoachDiscoveryFilterId) => {
+      setIsLoading(true);
+      const filter = COACH_DISCOVERY_FILTERS.find((f) => f.id === filterId);
+      const scopedFromUrl = {
+        ...(cityId ? { cityId } : {}),
+        ...(specialtyKey && filterId === "all" ? { specialtyKey } : {}),
+      };
+      const hasScopedQuery =
+        Object.keys(scopedFromUrl).length > 0 ||
+        Boolean(availability || verified || fresh);
+      const query: DiscoveryCoachesQuery = {
+        page_size: 40,
+        ...scopedFromUrl,
+        ...(filter?.query?.specialtyKey
+          ? { specialtyKey: filter.query.specialtyKey }
+          : {}),
+      };
+
+      try {
+        const page = await discoveryCoaches.list(query);
+        if (page.result.length === 0 && filterId === "all" && !hasScopedQuery) {
+          setCoaches(BROWSE_COACHES);
+          setSource("mock");
+        } else if (page.result.length === 0) {
+          setCoaches(filterBrowseCoaches(BROWSE_COACHES, filterId));
+          setSource("mock");
+        } else {
+          const mapped = page.result.map(mapDiscoveryCoachToBrowse);
+          setCoaches(filterBrowseCoaches(mapped, filterId));
+          setSource("api");
+        }
+      } catch {
+        setCoaches(
+          hasScopedQuery
+            ? filterBrowseCoaches(BROWSE_COACHES, filterId)
+            : BROWSE_COACHES,
+        );
+        setSource("mock");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [availability, cityId, fresh, specialtyKey, verified],
+  );
+
+  useEffect(() => {
+    void loadLocations();
+  }, [loadLocations]);
+
+  useEffect(() => {
+    setActiveFilter(initialFilter);
+  }, [initialFilter]);
+
+  useEffect(() => {
+    void loadCoaches(activeFilter);
+  }, [activeFilter, loadCoaches]);
+
+  return {
+    coaches,
+    filters: COACH_DISCOVERY_FILTERS,
+    activeFilter,
+    isLoading,
+    source,
+    provinces,
+    cities,
+    districts,
+    setActiveFilter,
+  };
 }

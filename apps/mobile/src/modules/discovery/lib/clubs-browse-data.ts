@@ -46,7 +46,7 @@ export const BROWSE_CLUBS: BrowseClub[] = [
     rating: 4.8,
     ratingCount: 146,
     price: "۲/۵ میلیون",
-    featureLabels: ["پارکینگ", "کافه", "سونا"],
+    featureLabels: ["پارکینگ", "کافه", "سونا", "شبانه‌روزی"],
     sportIds: ["fitness", "crossfit"],
     distanceLabel: "۱/۲ کیلومتر",
     openState: "open",
@@ -59,7 +59,7 @@ export const BROWSE_CLUBS: BrowseClub[] = [
     rating: 4.6,
     ratingCount: 98,
     price: "۱/۸ میلیون",
-    featureLabels: ["بدنسازی", "کمد اختصاصی"],
+    featureLabels: ["بدنسازی", "کمد اختصاصی", "شبانه‌روزی"],
     sportIds: ["fitness"],
     distanceLabel: "۲/۴ کیلومتر",
     openState: "open",
@@ -111,7 +111,7 @@ export const BROWSE_CLUBS: BrowseClub[] = [
     rating: 4.9,
     ratingCount: 188,
     price: "۲/۹ میلیون",
-    featureLabels: ["HIIT", "اسپینینگ"],
+    featureLabels: ["HIIT", "اسپینینگ", "شبانه‌روزی"],
     sportIds: ["fitness", "crossfit"],
     distanceLabel: "۱/۸ کیلومتر",
     openState: "open",
@@ -161,4 +161,14 @@ export function clubsNearby(clubs: BrowseClub[]): BrowseClub[] {
     const db = Number.parseFloat(b.distanceLabel.replace(/[^\d./]/g, "").replace("/", "."));
     return (Number.isFinite(da) ? da : 99) - (Number.isFinite(db) ? db : 99);
   });
+}
+
+const OPEN_24H_LABEL = /شبانه|۲۴\s*ساع|24\s*h/i;
+
+/** Clubs tagged as 24/7 (falls back to open-now when tags are missing). */
+export function clubsOpen24Hours(clubs: BrowseClub[]): BrowseClub[] {
+  const tagged = clubs.filter((club) =>
+    club.featureLabels.some((label) => OPEN_24H_LABEL.test(label)),
+  );
+  return tagged.length > 0 ? tagged : clubsOpenNow(clubs);
 }

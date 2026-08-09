@@ -14,12 +14,14 @@ import type { DiscoveryCoachesRecommendSectionProps } from "./DiscoveryCoachesRe
 
 export function DiscoveryCoachesRecommendSection({
   title,
+  hint,
   seeAllLabel,
   newLabel,
   closeLabel,
   certifiedLabel,
   yoeLabel,
   coaches,
+  dismissible = true,
   onSeeAll,
   onClose,
   onCoachPress,
@@ -79,12 +81,21 @@ export function DiscoveryCoachesRecommendSection({
   return (
     <section className={styles.root}>
       <div className={styles.header}>
-        <Typography className={styles.title} type="h4" weight="bold">
-          {title}
-        </Typography>
-        <Link className={styles.seeAll} onPress={onSeeAll}>
-          {seeAllLabel}
-        </Link>
+        <div className={styles.titleBlock}>
+          <Typography className={styles.title} type="h4" weight="bold">
+            {title}
+          </Typography>
+          {hint ? (
+            <Typography className={styles.hint} type="body-xs">
+              {hint}
+            </Typography>
+          ) : null}
+        </div>
+        {onSeeAll ? (
+          <Link className={styles.seeAll} onPress={onSeeAll}>
+            {seeAllLabel}
+          </Link>
+        ) : null}
       </div>
 
       {visibleCoaches.length === 0 ? (
@@ -115,8 +126,10 @@ export function DiscoveryCoachesRecommendSection({
                   imageAlt={coach.name}
                   isNew={coach.isNew}
                   newLabel={newLabel}
-                  onClick={() => onCoachPress?.(coach.id)}
-                  onClose={() => dismissCoach(coach.id)}
+                  onPress={() => onCoachPress?.(coach.id)}
+                  onClose={
+                    dismissible ? () => dismissCoach(coach.id) : undefined
+                  }
                   rating={coach.rating}
                   ratingCount={coach.ratingCount}
                   specialty={coach.specialty}

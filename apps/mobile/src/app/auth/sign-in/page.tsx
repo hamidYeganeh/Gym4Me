@@ -1,20 +1,18 @@
-import type { Metadata } from "next";
-import { Suspense } from "react";
-import { getTranslations } from "next-intl/server";
-import { SignInScreen } from "@/modules/auth/screens/SignInScreen";
-import { RequireAuth } from "@/shared/components/RequireAuth";
+import { redirect } from "next/navigation";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Mobile.Auth");
-  return { title: t("title") };
-}
+type SignInPageProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
 
-export default function SignInPage() {
-  return (
-    <RequireAuth guestOnly>
-      <Suspense fallback={null}>
-        <SignInScreen />
-      </Suspense>
-    </RequireAuth>
-  );
+/** Legacy path — prefer `/auth`. */
+export default async function SignInRedirectPage({
+  searchParams,
+}: SignInPageProps) {
+  const params = (await searchParams) ?? {};
+  const next = params.next;
+  const nextValue = Array.isArray(next) ? next[0] : next;
+  if (nextValue && nextValue.startsWith("/")) {
+    redirect(`/auth?next=${encodeURIComponent(nextValue)}`);
+  }
+  redirect("/auth");
 }

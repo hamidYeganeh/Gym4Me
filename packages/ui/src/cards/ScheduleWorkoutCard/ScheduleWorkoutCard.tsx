@@ -7,12 +7,7 @@ import { Fire1 } from "@repo/icons/Fire1";
 import { Trash2 } from "@repo/icons/Trash2";
 import { WaterDrop } from "@repo/icons/WaterDrop";
 import { spring } from "@repo/theme";
-import {
-  animate,
-  motion,
-  useMotionValue,
-  type PanInfo,
-} from "motion/react";
+import { animate, motion, useMotionValue, type PanInfo } from "motion/react";
 import {
   useCallback,
   useEffect,

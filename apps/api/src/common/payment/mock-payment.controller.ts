@@ -5,10 +5,12 @@ import {
   Query,
   Res,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { ApiExcludeController } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { Public } from '../decorators/public.decorator';
 import { MockPaymentOutcomeRule, MockPaymentStatus } from '../enums';
+import { escapeHtml } from '../utils/html-sanitize.util';
 import {
   MockCheckoutOutcome,
   MockPaymentGatewayService,
@@ -22,7 +24,19 @@ import {
 @ApiExcludeController()
 @Controller('payments/mock')
 export class MockPaymentController {
-  constructor(private readonly mockGateway: MockPaymentGatewayService) {}
+  constructor(
+    private readonly mockGateway: MockPaymentGatewayService,
+    private readonly config: ConfigService,
+  ) {}
+
+  private assertMockEnabled(): void {
+    const provider = (
+      this.config.get<string>('PAYMENT_PROVIDER', 'mock') ?? 'mock'
+    ).toLowerCase();
+    if (provider !== 'mock') {
+      throw new NotFoundException();
+    }
+  }
 
   @Public()
   @Get('checkout')
@@ -30,6 +44,7 @@ export class MockPaymentController {
     @Query('authority') authority: string,
     @Res() res: Response,
   ): Promise<void> {
+    this.assertMockEnabled();
     const payment = await this.mockGateway.findByAuthority(authority ?? '');
     if (!payment) throw new NotFoundException('Unknown mock payment');
 
@@ -58,6 +73,7 @@ export class MockPaymentController {
     @Query('outcome') outcome: string,
     @Res() res: Response,
   ): Promise<void> {
+    this.assertMockEnabled();
     const normalized: MockCheckoutOutcome =
       outcome === 'paid' ? 'paid' : 'cancelled';
     const result = await this.mockGateway.completeCheckout(
@@ -75,6 +91,8 @@ export class MockPaymentController {
   }): string {
     const amountToman = Math.floor(payment.amount / 10).toLocaleString('fa-IR');
     const authority = encodeURIComponent(payment.authority);
+    const description = escapeHtml(payment.description ?? '');
+    const authorityLabel = escapeHtml(payment.authority);
     return `<!doctype html>
 <html lang="fa" dir="rtl">
 <head>
@@ -103,11 +121,11 @@ export class MockPaymentController {
   <div class="card">
     <span class="badge">درگاه آزمایشی — پرداخت واقعی انجام نمی‌شود</span>
     <h1>پرداخت Gym4Me</h1>
-    <p class="desc">${payment.description}</p>
+    <p class="desc">${description}</p>
     <div class="amount">${amountToman} <small>تومان</small></div>
     <a class="btn pay" href="/api/v1/payments/mock/complete?authority=${authority}&outcome=paid">پرداخت موفق</a>
     <a class="btn cancel" href="/api/v1/payments/mock/complete?authority=${authority}&outcome=cancelled">انصراف از پرداخت</a>
-    <div class="authority">${payment.authority}</div>
+    <div class="authority">${authorityLabel}</div>
   </div>
 </body>
 </html>`;

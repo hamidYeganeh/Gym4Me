@@ -37,4 +37,21 @@ export class DiscoveryClubSlotsController {
   ) {
     return this.slots.getClass(clubId, classId);
   }
+
+  @Public()
+  @Get(':clubId/slots')
+  @ApiOperation({ summary: 'Public club slots' })
+  listSlots(@Param('clubId') clubId: string) {
+    return this.slots.listSlots(clubId);
+  }
+
+  @Public()
+  @Get(':clubId/slots/:slotId')
+  @ApiOperation({ summary: 'Public club slot detail' })
+  getSlot(
+    @Param('clubId') clubId: string,
+    @Param('slotId') slotId: string,
+  ) {
+    return this.slots.getSlot(clubId, slotId);
+  }
 }

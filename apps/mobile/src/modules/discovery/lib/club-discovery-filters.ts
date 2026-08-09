@@ -9,7 +9,8 @@ export type ClubDiscoveryFilterId =
   | "accessible"
   | "kids"
   | "adults"
-  | "premium";
+  | "premium"
+  | "open24";
 
 export type ClubDiscoveryFilter = {
   id: ClubDiscoveryFilterId;
@@ -60,7 +61,33 @@ export const CLUB_DISCOVERY_FILTERS: ClubDiscoveryFilter[] = [
     label: "پریمیوم",
     query: { levelKey: "premium" },
   },
+  {
+    id: "open24",
+    label: "شبانه‌روزی",
+    query: { amenitySlug: "24h" },
+  },
 ];
+
+/** Resolve a chip filter from discovery deep-link query params. */
+export function matchDiscoveryFilterFromQuery(query: {
+  genderPolicy?: string | null;
+  amenitySlug?: string | null;
+  accessibility?: string | null;
+  ageGroupKey?: string | null;
+  levelKey?: string | null;
+}): ClubDiscoveryFilterId {
+  for (const filter of CLUB_DISCOVERY_FILTERS) {
+    if (filter.id === "all" || !filter.query) continue;
+    const q = filter.query;
+    if (q.genderPolicy && q.genderPolicy === query.genderPolicy) return filter.id;
+    if (q.amenitySlug && q.amenitySlug === query.amenitySlug) return filter.id;
+    if (q.accessibility && q.accessibility === query.accessibility)
+      return filter.id;
+    if (q.ageGroupKey && q.ageGroupKey === query.ageGroupKey) return filter.id;
+    if (q.levelKey && q.levelKey === query.levelKey) return filter.id;
+  }
+  return "all";
+}
 
 /** @deprecated Prefer CLUB_DISCOVERY_FILTERS for Q11. */
 export const CLUB_SPORT_FILTERS_FALLBACK: ClubSportFilter[] = [

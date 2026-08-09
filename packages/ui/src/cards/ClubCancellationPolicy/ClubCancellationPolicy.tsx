@@ -15,6 +15,13 @@ const DEFAULT_STEP_COLORS: ClubCancellationPolicyStepColor[] = [
   "accent",
 ];
 
+const STEP_COLOR_CSS_VAR: Record<ClubCancellationPolicyStepColor, string> = {
+  success: "var(--success)",
+  warning: "var(--warning)",
+  danger: "var(--danger)",
+  accent: "var(--accent)",
+};
+
 function resolveStatus(
   explicit: ClubCancellationPolicyStepStatus | undefined,
   index: number,
@@ -36,6 +43,13 @@ function resolveColor(
     DEFAULT_STEP_COLORS[index % DEFAULT_STEP_COLORS.length] ??
     "accent"
   );
+}
+
+function connectorGradient(
+  from: ClubCancellationPolicyStepColor,
+  to: ClubCancellationPolicyStepColor,
+) {
+  return `linear-gradient(to bottom, ${STEP_COLOR_CSS_VAR[from]}, ${STEP_COLOR_CSS_VAR[to]})`;
 }
 
 export function ClubCancellationPolicy({
@@ -63,6 +77,7 @@ export function ClubCancellationPolicy({
         {steps.map((step, index) => {
           const status = resolveStatus(step.status, index, activeIndex);
           const color = resolveColor(step.color, index);
+          const nextColor = resolveColor(steps[index + 1]?.color, index + 1);
           const isLast = index === steps.length - 1;
           const stepSlots = clubCancellationPolicyVariants({
             status,
@@ -80,7 +95,12 @@ export function ClubCancellationPolicy({
                   <span className={stepSlots.nodeDot()} />
                 </span>
                 {!isLast ? (
-                  <span className={stepSlots.connector()} />
+                  <span
+                    className={stepSlots.connector()}
+                    style={{
+                      backgroundImage: connectorGradient(color, nextColor),
+                    }}
+                  />
                 ) : null}
               </div>
 

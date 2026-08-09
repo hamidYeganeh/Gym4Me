@@ -4,6 +4,7 @@ import { Button, Typography } from "@heroui/react";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { CreditCard } from "@repo/icons/CreditCard";
 import { Wallet } from "@repo/icons/Wallet";
+import { StickyBottomActions } from "@repo/ui/kit/StickyBottomActions";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
@@ -43,7 +44,7 @@ export function PaymentInvoiceScreen({
       <AppLayout
         className={styles.root}
         header={
-          <Header className="border-b-0 bg-background" startContent={backButton} />
+          <Header startContent={backButton} />
         }
       >
         <div className={styles.content}>
@@ -81,7 +82,7 @@ export function PaymentInvoiceScreen({
     <AppLayout
       className={styles.root}
       header={
-        <Header className="border-b-0 bg-background" startContent={backButton} />
+        <Header startContent={backButton} />
       }
     >
       <div className={styles.content}>
@@ -178,6 +179,7 @@ export function PaymentInvoiceScreen({
                   }`}
                   key={method.id}
                   onPress={() => setSelectedMethod(method.id)}
+                  size="lg"
                   variant="ghost"
                 >
                   <span aria-hidden className={styles.methodIcon}>
@@ -211,8 +213,11 @@ export function PaymentInvoiceScreen({
           </div>
         </section>
 
+      </div>
+
+      <StickyBottomActions>
         <Button
-          fullWidth
+          className={styles.payCta}
           onPress={() =>
             router.push(
               `/athlete/payment/result?status=success&invoice=${invoice.id}`,
@@ -223,7 +228,7 @@ export function PaymentInvoiceScreen({
         >
           {t("payCta")}
         </Button>
-      </div>
+      </StickyBottomActions>
     </AppLayout>
   );
 }

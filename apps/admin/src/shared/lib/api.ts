@@ -2,6 +2,7 @@ import {
   ADMIN_SESSION_KEY,
   createAdminAuthApi,
   createAdminBasicsApi,
+  createAdminArticlesApi,
   createAdminClubsApi,
   createAdminClubSlotsApi,
   createAdminKycApi,
@@ -35,4 +36,5 @@ export const adminClubSlots = createAdminClubSlotsApi(apiClient);
 export const adminKyc = createAdminKycApi(apiClient);
 export const adminVerification = createAdminVerificationApi(apiClient);
 export const adminSupport = createAdminSupportApi(apiClient);
+export const adminArticles = createAdminArticlesApi(apiClient);
 export const mediaApi = createMediaApi(apiClient);

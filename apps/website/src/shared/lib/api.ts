@@ -1,5 +1,6 @@
 import {
   createApiClient,
+  createArticlesApi,
   createDiscoveryClubsApi,
   createDiscoveryCoachesApi,
 } from "@repo/api";
@@ -11,6 +12,7 @@ const apiClient = createApiClient({
 
 export const discoveryClubs = createDiscoveryClubsApi(apiClient);
 export const discoveryCoaches = createDiscoveryCoachesApi(apiClient);
+export const articlesApi = createArticlesApi(apiClient);
 
 export function mediaFileUrl(mediaId: string | null | undefined): string | null {
   if (!mediaId) return null;

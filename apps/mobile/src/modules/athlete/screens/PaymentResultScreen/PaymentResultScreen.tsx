@@ -35,7 +35,7 @@ export function PaymentResultScreen({
   return (
     <AppLayout
       className={styles.root}
-      header={<Header className="border-b-0 bg-background" title={t("pageTitle")} />}
+      header={<Header title={t("pageTitle")} />}
     >
       <div className={styles.content}>
         <EmptyState

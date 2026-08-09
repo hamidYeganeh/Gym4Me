@@ -3,8 +3,13 @@ import type { HTMLAttributes, ReactNode } from "react";
 
 export type CallToActionCardVariant = "primary" | "outlined" | "soft";
 
-/** Action control style. `plus` is a circular + button; `icon` is a squircle with a custom icon. */
-export type CallToActionCardActionType = "plus" | "icon";
+/**
+ * Action control style.
+ * - `plus` — circular + button
+ * - `icon` — squircle with a custom icon
+ * - `button` — labeled pill (e.g. enrollment "Book Seat")
+ */
+export type CallToActionCardActionType = "plus" | "icon" | "button";
 
 export type CallToActionCardProps = Omit<
   HTMLAttributes<HTMLDivElement>,
@@ -24,7 +29,7 @@ export type CallToActionCardProps = Omit<
   badge?: ReactNode;
   /** Icon shown inside the squircle when `actionType` is `icon`. */
   icon?: ReactNode;
-  /** Accessible label for the action button. */
+  /** Accessible label for the action; also the visible text when `actionType` is `button`. */
   actionLabel: string;
   /** Called when the action button is pressed. */
   onAction?: ButtonProps["onPress"];

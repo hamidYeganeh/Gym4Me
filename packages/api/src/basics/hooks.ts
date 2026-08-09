@@ -6,13 +6,19 @@ import {
   type UseQueryOptions,
 } from "@tanstack/react-query";
 import { useApiClient } from "../react";
-import type { LocationNode, Paginated, SportNode } from "../types";
+import type { LocationNode, Paginated, RefType, SportNode } from "../types";
 import {
   createBasicsLocationsApi,
   type BasicsLocationsApi,
 } from "./locations.client";
 import type { LocationChildrenResponse } from "./locations.dto";
 import { basicsLocationsKeys } from "./locations.keys";
+import {
+  createBasicsRefsApi,
+  type BasicsRefsApi,
+} from "./refs.client";
+import type { BasicsRefListResponse } from "./refs.dto";
+import { basicsRefsKeys } from "./refs.keys";
 import {
   createBasicsSportsApi,
   type BasicsSportsApi,
@@ -28,6 +34,11 @@ function useBasicsLocationsApi(): BasicsLocationsApi {
 function useBasicsSportsApi(): BasicsSportsApi {
   const client = useApiClient();
   return useMemo(() => createBasicsSportsApi(client), [client]);
+}
+
+function useBasicsRefsApi(): BasicsRefsApi {
+  const client = useApiClient();
+  return useMemo(() => createBasicsRefsApi(client), [client]);
 }
 
 export function useBasicsCountries(
@@ -117,6 +128,21 @@ export function useBasicsCategorySports(
     queryKey: basicsSportsKeys.categorySports(categoryId),
     queryFn: () => api.listCategorySports(categoryId),
     enabled: Boolean(categoryId),
+    ...options,
+  });
+}
+
+export function useBasicsRefs(
+  type: RefType,
+  options?: Omit<
+    UseQueryOptions<BasicsRefListResponse, Error>,
+    "queryKey" | "queryFn"
+  >,
+) {
+  const api = useBasicsRefsApi();
+  return useQuery({
+    queryKey: basicsRefsKeys.list(type),
+    queryFn: () => api.list(type),
     ...options,
   });
 }

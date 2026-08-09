@@ -7,6 +7,7 @@ import type { DiscoveryCoachesExpertSectionProps } from "./DiscoveryCoachesExper
 
 export function DiscoveryCoachesExpertSection({
   title,
+  hint,
   seeAllLabel,
   verifiedLabel,
   coaches,
@@ -16,24 +17,34 @@ export function DiscoveryCoachesExpertSection({
   return (
     <section className={styles.root}>
       <div className={styles.header}>
-        <Typography className={styles.title} type="h4" weight="bold">
-          {title}
-        </Typography>
-        <Link className={styles.seeAll} onPress={onSeeAll}>
-          {seeAllLabel}
-        </Link>
+        <div className={styles.titleBlock}>
+          <Typography className={styles.title} type="h4" weight="bold">
+            {title}
+          </Typography>
+          {hint ? (
+            <Typography className={styles.hint} type="body-xs">
+              {hint}
+            </Typography>
+          ) : null}
+        </div>
+        {onSeeAll ? (
+          <Link className={styles.seeAll} onPress={onSeeAll}>
+            {seeAllLabel}
+          </Link>
+        ) : null}
       </div>
 
-      <div className={styles.grid}>
+      <div aria-label={title} className={styles.scroller}>
         {coaches.map((coach) => (
           <CoachExpertCard
-            key={coach.id}
+            className={styles.card}
             image={coach.image}
             imageAlt={coach.name}
             isVerified={coach.isVerified ?? true}
-            onPress={() => onCoachPress?.(coach.id)}
+            key={coach.id}
             title={coach.name}
             verifiedLabel={verifiedLabel}
+            onPress={() => onCoachPress?.(coach.id)}
           />
         ))}
       </div>

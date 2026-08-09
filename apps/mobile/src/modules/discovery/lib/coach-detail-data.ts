@@ -6,6 +6,7 @@ import {
   NEARBY_COACHES,
   POPULAR_COACHES,
 } from "./coaches-browse-data";
+import type { GalleryMediaItem } from "./gallery-media";
 import { MAP_COACHES } from "./map-data";
 
 export type CoachDetailStatKey = "years" | "students" | "sessions";
@@ -71,6 +72,15 @@ export type CoachDetailReview = {
   isVerified?: boolean;
 };
 
+export type CoachDetailRelated = {
+  id: string;
+  name: string;
+  specialty: string;
+  image: string;
+  rating: number;
+  yearsExperience: number;
+};
+
 export type CoachDetail = {
   id: string;
   name: string;
@@ -78,6 +88,7 @@ export type CoachDetail = {
   tagline: string;
   location: string;
   images: string[];
+  gallery: GalleryMediaItem[];
   avatar: string;
   availability: "remote" | "in-person" | "hybrid";
   availabilityLabel: string;
@@ -91,6 +102,7 @@ export type CoachDetail = {
   packages: CoachDetailPackage[];
   clubs: CoachDetailClub[];
   reviews: CoachDetailReview[];
+  related: CoachDetailRelated[];
   pricePrefix: string;
   priceSuffix: string;
   isFavorite?: boolean;
@@ -98,7 +110,13 @@ export type CoachDetail = {
 };
 
 const PORTRAIT = "/demo/coach-portrait.png";
-const GYM = PLACEHOLDER_IMAGE;
+
+/** Hero carousel photos for a coach (portrait-first, like club venue images). */
+function coachHeroImages(primary: string): string[] {
+  const hero = primary || PORTRAIT;
+  // Demo only has one portrait asset — repeat so the hero carousel matches club UX.
+  return [hero, hero, hero];
+}
 
 const DEFAULT_STATS: CoachDetailStat[] = [
   { labelKey: "years", value: "۸" },
@@ -200,19 +218,19 @@ const DEFAULT_CLUBS: CoachDetailClub[] = [
     id: "heavenly",
     title: "آسمانی",
     subtitle: "ونک، تهران",
-    image: GYM,
+    image: PLACEHOLDER_IMAGE,
   },
   {
     id: "iron",
     title: "آیرون هاوس",
     subtitle: "جردن، تهران",
-    image: GYM,
+    image: PLACEHOLDER_IMAGE,
   },
   {
     id: "pulse",
     title: "پالس فیت",
     subtitle: "سعادت‌آباد",
-    image: GYM,
+    image: PLACEHOLDER_IMAGE,
   },
 ];
 
@@ -291,7 +309,7 @@ function collectCoachSeeds(): CoachSeed[] {
     byId.set(coach.id, {
       id: coach.id,
       name: coach.name.replace(/^Coach\s+/i, ""),
-      specialty: "Fitness Coach",
+      specialty: "مربی تناسب اندام",
       image: coach.image,
       rating: coach.rating,
       ratingCount: coach.ratingCount,
@@ -317,7 +335,7 @@ function collectCoachSeeds(): CoachSeed[] {
     byId.set(coach.id, {
       id: coach.id,
       name: coach.name,
-      specialty: "Expert Coach",
+      specialty: "مربی متخصص",
       image: coach.image,
       rating: 4.8,
       ratingCount: 120,
@@ -345,7 +363,7 @@ const COACH_DETAIL_OVERRIDES: Partial<
   Record<string, Partial<Omit<CoachDetail, "id">>>
 > = {
   zuckmann: {
-    name: "Zuckmann D. Meta",
+    name: "زاکمن متا",
     specialty: "تخصص پایین‌تنه",
     tagline: "قدرت، هایپرتروفی و ریکاوری هدفمند",
     location: "تهران · ونک",
@@ -355,7 +373,7 @@ const COACH_DETAIL_OVERRIDES: Partial<
     isFavorite: true,
   },
   arnold: {
-    name: "Arnold Swarznibble",
+    name: "آرنولد شوارزنبل",
     specialty: "تمرین قدرتی و بدنسازی",
     tagline: "برنامه‌های سخت‌گیرانه با تمرکز روی قدرت و هایپرتروفی",
     location: "تهران · جردن",
@@ -367,7 +385,7 @@ const COACH_DETAIL_OVERRIDES: Partial<
     yearsExperience: 15,
   },
   "arnold-feat": {
-    name: "Arnold Swarznibble",
+    name: "آرنولد شوارزنبل",
     specialty: "تخصص بالاتنه",
     tagline: "قدرت و حجم بالاتنه",
     location: "تهران · سعادت‌آباد",
@@ -375,7 +393,7 @@ const COACH_DETAIL_OVERRIDES: Partial<
     availabilityLabel: "حضوری و آنلاین",
   },
   "near-arnold": {
-    name: "Arnold Swarznibble",
+    name: "آرنولد شوارزنبل",
     specialty: "تخصص HIIT",
     tagline: "تمرین فشرده گروهی",
     location: "تهران · مرکز",
@@ -384,9 +402,33 @@ const COACH_DETAIL_OVERRIDES: Partial<
   },
 };
 
-function buildCoachDetail(seed: CoachSeed): CoachDetail {
+function relatedFor(seedId: string, seeds: CoachSeed[]): CoachDetailRelated[] {
+  return seeds
+    .filter((seed) => seed.id !== seedId)
+    .slice(0, 4)
+    .map((seed) => ({
+      id: seed.id,
+      name: COACH_DETAIL_OVERRIDES[seed.id]?.name ?? seed.name,
+      specialty: COACH_DETAIL_OVERRIDES[seed.id]?.specialty ?? seed.specialty,
+      image: seed.image || PORTRAIT,
+      rating: seed.rating,
+      yearsExperience: seed.yearsExperience,
+    }));
+}
+
+function buildCoachDetail(seed: CoachSeed, seeds: CoachSeed[]): CoachDetail {
   const override = COACH_DETAIL_OVERRIDES[seed.id] ?? {};
-  const hero = override.images?.[0] ?? (seed.image || PORTRAIT);
+  const hero = override.images?.[0] ?? override.avatar ?? (seed.image || PORTRAIT);
+  const images = override.images ?? coachHeroImages(hero);
+  const gallery =
+    override.gallery ??
+    images.map((url, index) => ({
+      id: `coach-photo-${index + 1}`,
+      url,
+      title: index === 0 ? "پرتره مربی" : `عکس مربی ${index + 1}`,
+      mediaKind: "image" as const,
+      author: override.name ?? seed.name,
+    }));
 
   return {
     id: seed.id,
@@ -394,7 +436,8 @@ function buildCoachDetail(seed: CoachSeed): CoachDetail {
     specialty: override.specialty ?? seed.specialty,
     tagline: override.tagline ?? "تمرین خصوصی با مربی تأییدشده",
     location: override.location ?? "تهران",
-    images: override.images ?? [hero, GYM, PORTRAIT],
+    images,
+    gallery,
     avatar: override.avatar ?? hero,
     availability: override.availability ?? "hybrid",
     availabilityLabel: override.availabilityLabel ?? "حضوری و آنلاین",
@@ -404,7 +447,10 @@ function buildCoachDetail(seed: CoachSeed): CoachDetail {
     stats: override.stats ?? [
       {
         labelKey: "years",
-        value: String(override.yearsExperience ?? seed.yearsExperience),
+        value: String(override.yearsExperience ?? seed.yearsExperience).replace(
+          /\d/g,
+          (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)] ?? digit,
+        ),
       },
       ...DEFAULT_STATS.slice(1),
     ],
@@ -414,14 +460,18 @@ function buildCoachDetail(seed: CoachSeed): CoachDetail {
     packages: override.packages ?? DEFAULT_PACKAGES,
     clubs: override.clubs ?? DEFAULT_CLUBS,
     reviews: override.reviews ?? DEFAULT_REVIEWS,
-    pricePrefix: override.pricePrefix ?? "",
-    priceSuffix: override.priceSuffix ?? "/جلسه",
+    related: override.related ?? relatedFor(seed.id, seeds),
+    pricePrefix: override.pricePrefix ?? "از",
+    priceSuffix: override.priceSuffix ?? "تومان",
     isFavorite: override.isFavorite ?? false,
     isVerified: override.isVerified ?? true,
   };
 }
 
-const COACH_DETAILS: CoachDetail[] = collectCoachSeeds().map(buildCoachDetail);
+const COACH_SEEDS = collectCoachSeeds();
+const COACH_DETAILS: CoachDetail[] = COACH_SEEDS.map((seed) =>
+  buildCoachDetail(seed, COACH_SEEDS),
+);
 
 export function getAllCoachIds(): string[] {
   return COACH_DETAILS.map((coach) => coach.id);

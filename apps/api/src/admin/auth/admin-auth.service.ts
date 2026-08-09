@@ -42,7 +42,7 @@ export class AdminAuthService {
     // Identical response either way — no account enumeration.
     const user = await this.users.findByPhone(phone);
     if (user && this.isAdmin(user) && user.status === UserStatus.ACTIVE) {
-      return this.otp.request(phone, OtpPurpose.AUTH);
+      return this.otp.request(phone, OtpPurpose.ADMIN_AUTH);
     }
     if (this.isDebugMode()) {
       this.logger.warn(
@@ -53,7 +53,7 @@ export class AdminAuthService {
   }
 
   async confirmOtp(phone: string, code: string, request: Request) {
-    await this.otp.verify(phone, OtpPurpose.AUTH, code);
+    await this.otp.verify(phone, OtpPurpose.ADMIN_AUTH, code);
 
     const user = await this.requireAdminByPhone(phone);
     if (!user.phoneVerifiedAt) {

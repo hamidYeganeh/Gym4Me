@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
+import { MediaVisibility } from '../common/enums';
 
 export type MediaDocument = HydratedDocument<Media>;
 
@@ -20,6 +21,19 @@ export class Media {
 
   @Prop()
   originalName?: string;
+
+  /**
+   * public = unauthenticated file/meta reads allowed.
+   * private = uploader or admin only.
+   * Default public preserves existing gallery/cover URLs.
+   */
+  @Prop({
+    type: String,
+    enum: MediaVisibility,
+    default: MediaVisibility.PUBLIC,
+    index: true,
+  })
+  visibility!: MediaVisibility;
 
   /** String ref avoids circular import with user.schema. */
   @Prop({ type: Types.ObjectId, ref: 'User', index: true })

@@ -1,9 +1,10 @@
 "use client";
 
 import { Chip, CloseButton, Typography } from "@heroui/react";
-import { Calendar1 } from "@repo/icons/Calendar1";
+import { Briefcase1 } from "@repo/icons/Briefcase1";
 import { SealCheck } from "@repo/icons/SealCheck";
 import { StarFull } from "@repo/icons/StarFull";
+import type { KeyboardEvent } from "react";
 import { MediaImage } from "../../common/MediaImage";
 import { coachFeatureCardVariants } from "./CoachFeatureCard.styles";
 import type { CoachFeatureCardProps } from "./CoachFeatureCard.types";
@@ -63,6 +64,8 @@ export function CoachFeatureCard({
   newLabel = "New",
   closeLabel = "Close",
   onClose,
+  onPress,
+  onClick,
   certifiedLabel,
   experienceLabel,
   imageClassName,
@@ -71,9 +74,38 @@ export function CoachFeatureCard({
 }: CoachFeatureCardProps) {
   const slots = coachFeatureCardVariants();
   const showRating = rating != null;
+  const showTopBar = isNew || onClose != null;
+  const isPressable = onPress != null || onClick != null;
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    props.onKeyDown?.(event);
+    if (!isPressable) return;
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      if (onPress) {
+        void onPress({} as never);
+        return;
+      }
+      onClick?.(event as never);
+    }
+  };
 
   return (
-    <div className={slots.root({ className })} {...props}>
+    <div
+      {...props}
+      className={slots.root({ className })}
+      data-pressable={isPressable || undefined}
+      onClick={(event) => {
+        if (onPress) {
+          void onPress({} as never);
+          return;
+        }
+        onClick?.(event);
+      }}
+      onKeyDown={handleKeyDown}
+      role={isPressable ? "button" : undefined}
+      tabIndex={isPressable ? 0 : props.tabIndex}
+    >
       <div className={slots.media()}>
         <MediaImage
           alt={imageAlt}
@@ -84,21 +116,27 @@ export function CoachFeatureCard({
         <div aria-hidden className={slots.mediaScrim()} />
       </div>
 
-      <div className={slots.topBar()}>
-        {isNew ? (
-          <Chip className={slots.newBadge()} size="sm">
-            <Chip.Label>{newLabel}</Chip.Label>
-          </Chip>
-        ) : (
-          <span />
-        )}
-        <CloseButton
-          aria-label={closeLabel}
-          className={slots.closeButton()}
-          onClick={(event) => event.stopPropagation()}
-          onPress={onClose}
-        />
-      </div>
+      {showTopBar ? (
+        <div className={slots.topBar()}>
+          {isNew ? (
+            <Chip className={slots.newBadge()} size="sm">
+              <Chip.Label>{newLabel}</Chip.Label>
+            </Chip>
+          ) : (
+            <span />
+          )}
+          {onClose != null ? (
+            <CloseButton
+              aria-label={closeLabel}
+              className={slots.closeButton()}
+              onClick={(event) => event.stopPropagation()}
+              onPress={onClose}
+            />
+          ) : (
+            <span />
+          )}
+        </div>
+      ) : null}
 
       <div className={slots.body()}>
         <Typography className={slots.title()} type="h4" weight="bold">
@@ -112,6 +150,12 @@ export function CoachFeatureCard({
 
         {showRating ? (
           <div className={slots.ratingRow()}>
+            <Typography className={slots.ratingText()} type="body-sm">
+              {ratingCount != null ? (
+                <span className={slots.ratingCount()}>({ratingCount}) </span>
+              ) : null}
+              {formatRating(rating)}
+            </Typography>
             <StarRow
               maxRating={maxRating}
               rating={rating}
@@ -119,17 +163,23 @@ export function CoachFeatureCard({
               starEmptyClassName={slots.starEmpty()}
               starsClassName={slots.stars()}
             />
-            <Typography className={slots.ratingText()} type="body-sm">
-              {formatRating(rating)}
-              {ratingCount != null ? (
-                <span className={slots.ratingCount()}> ({ratingCount})</span>
-              ) : null}
-            </Typography>
           </div>
         ) : null}
 
-        {(certifiedLabel != null || experienceLabel != null) && (
+        {certifiedLabel != null || experienceLabel != null ? (
           <div className={slots.meta()}>
+            {experienceLabel != null ? (
+              <span className={slots.metaItem()}>
+                <Briefcase1
+                  aria-hidden
+                  className={slots.metaIconMuted()}
+                  size={14}
+                />
+                {experienceLabel}
+              </span>
+            ) : (
+              <span />
+            )}
             {certifiedLabel != null ? (
               <span className={slots.metaItem()}>
                 <SealCheck
@@ -140,18 +190,8 @@ export function CoachFeatureCard({
                 {certifiedLabel}
               </span>
             ) : null}
-            {experienceLabel != null ? (
-              <span className={slots.metaItem()}>
-                <Calendar1
-                  aria-hidden
-                  className={slots.metaIconMuted()}
-                  size={14}
-                />
-                {experienceLabel}
-              </span>
-            ) : null}
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

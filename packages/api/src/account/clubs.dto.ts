@@ -6,6 +6,7 @@ import type {
 export type ClubOperationalStatus = "active" | "inactive";
 export type GeoDirection = "north" | "south" | "east" | "west" | "center";
 export type WeekdayStatus = "open" | "closed";
+export type OperatingHourAudience = "shared" | "male" | "female";
 export type RulePolicy = "allowed" | "forbidden";
 export type ClubUserReviewStatus =
   | "pending"
@@ -22,6 +23,10 @@ export type ClubGalleryItem = {
   mediaId: string;
   title: string | null;
   description: string | null;
+  /** Cumulative view count (response); omit on write — server managed. */
+  views?: number;
+  /** ISO timestamp when added (response); omit on write — server managed. */
+  createdAt?: string;
 };
 
 export type CancellationRule = {
@@ -124,6 +129,8 @@ export type Club = {
   operatingHours: {
     weekday: number;
     status: WeekdayStatus;
+    /** Defaults to `shared` when omitted (legacy rows). */
+    audience?: OperatingHourAudience;
     open?: string;
     close?: string;
     description?: string;

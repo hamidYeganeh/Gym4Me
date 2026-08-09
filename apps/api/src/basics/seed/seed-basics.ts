@@ -18,6 +18,13 @@ import { IRAN_FLAG_SVG } from './iran-flag';
 const SEED_ADMIN_PHONE = '09121111111';
 
 async function seed() {
+  const nodeEnv = (process.env.NODE_ENV ?? 'development').toLowerCase();
+  if (nodeEnv === 'production' && process.env.ALLOW_DEMO_SEED !== 'true') {
+    throw new Error(
+      'Refusing basics seed in production without ALLOW_DEMO_SEED=true',
+    );
+  }
+
   const app = await NestFactory.createApplicationContext(AppModule, {
     logger: ['error', 'warn', 'log'],
   });

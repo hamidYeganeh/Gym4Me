@@ -122,10 +122,13 @@ function coachName(
   return parts.length ? parts.join(" ") : "—";
 }
 
+export type ClubCalendarSlotIntensity = "intense" | "normal" | "extreme";
+
 export type ClubCalendarListItem = {
   id: string;
   slotId: string;
   classId: string | null;
+  coachId: string | null;
   kind: ClubCalendarOccurrence["kind"];
   title: string;
   category: string;
@@ -134,8 +137,49 @@ export type ClubCalendarListItem = {
   startTime: string;
   endTime: string;
   occurrenceStatus: ClubCalendarOccurrence["occurrenceStatus"];
+  intensity: ClubCalendarSlotIntensity;
   backgroundImage?: string;
 };
+
+export type ClubCalendarHourGroup = {
+  /** Hour key `HH` from startTime. */
+  hourKey: string;
+  /** Localized badge label for the timeline (e.g. "۷ ق.ظ"). */
+  label: string;
+  items: ClubCalendarListItem[];
+};
+
+/** Timeline badge for an hour bucket (12h Persian). */
+export function formatHourBadge(startTime: string): string {
+  const [hourRaw] = startTime.split(":");
+  const hour = Number(hourRaw);
+  if (!Number.isFinite(hour)) return startTime;
+  const hour12 = hour % 12 || 12;
+  const period = hour < 12 ? "ق.ظ" : "ب.ظ";
+  return `${hour12.toLocaleString("fa-IR")} ${period}`;
+}
+
+export function groupDayItemsByHour(
+  items: ClubCalendarListItem[],
+): ClubCalendarHourGroup[] {
+  const groups = new Map<string, ClubCalendarListItem[]>();
+  for (const item of items) {
+    const hourKey = item.startTime.slice(0, 2) || "00";
+    const bucket = groups.get(hourKey) ?? [];
+    bucket.push(item);
+    groups.set(hourKey, bucket);
+  }
+
+  return [...groups.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([hourKey, bucket]) => ({
+      hourKey,
+      label: formatHourBadge(`${hourKey}:00`),
+      items: [...bucket].sort((a, b) =>
+        a.startTime.localeCompare(b.startTime),
+      ),
+    }));
+}
 
 export function mapOccurrenceToListItem(
   item: ClubCalendarOccurrence,
@@ -147,6 +191,7 @@ export function mapOccurrenceToListItem(
     id: `${item.slotId}-${item.startTime}`,
     slotId: item.slotId,
     classId: item.class?.id ?? null,
+    coachId: item.coach?.id ?? null,
     kind: item.kind,
     title,
     category: item.kind === "class" ? "کلاس" : "جلسه",
@@ -155,6 +200,7 @@ export function mapOccurrenceToListItem(
     startTime: item.startTime,
     endTime: item.endTime,
     occurrenceStatus: item.occurrenceStatus,
+    intensity: item.kind === "session" ? "normal" : "intense",
   };
 }
 
@@ -179,7 +225,125 @@ function seedOccurrences(clubId: string, date: string, weekday: number): ClubCal
       capacity: 20,
       occurrenceStatus: "scheduled",
     },
+    {
+      slotId: `${clubId}-slot-hiit-am`,
+      kind: "class",
+      class: {
+        id: `${clubId}-hiit-am`,
+        title: "HIIT کاردیو",
+        media: { coverMediaId: null },
+      },
+      coach: {
+        id: "coach-2",
+        name: { first: "علی", last: "رضایی" },
+      },
+      startTime: "08:00",
+      endTime: "08:30",
+      capacity: 16,
+      occurrenceStatus: "scheduled",
+    },
   ];
+
+  // Demo class detail IDs — keep slots so class-filtered calendars have content.
+  if (weekday === 0 || weekday === 2 || weekday === 4) {
+    items.push({
+      slotId: `${clubId}-slot-power-hiit`,
+      kind: "class",
+      class: {
+        id: "power-hiit",
+        title: "پاور HIIT با تمرکز شکم",
+        media: { coverMediaId: null },
+      },
+      coach: {
+        id: "sara",
+        name: { first: "سارا", last: "محمدی" },
+      },
+      startTime: "17:30",
+      endTime: "18:15",
+      capacity: 18,
+      occurrenceStatus: "scheduled",
+    });
+  }
+  if (weekday === 1 || weekday === 3) {
+    items.push({
+      slotId: `${clubId}-slot-strength-circuit`,
+      kind: "class",
+      class: {
+        id: "strength-circuit",
+        title: "سیرکت قدرتی Deluxe",
+        media: { coverMediaId: null },
+      },
+      coach: {
+        id: "ali",
+        name: { first: "علی", last: "رضایی" },
+      },
+      startTime: "19:00",
+      endTime: "19:50",
+      capacity: 14,
+      occurrenceStatus: "scheduled",
+    });
+  }
+
+  // Demo coach detail IDs — private sessions for coach-filtered calendars.
+  if (weekday === 0 || weekday === 2 || weekday === 4) {
+    items.push({
+      slotId: `${clubId}-slot-zuckmann-pt`,
+      kind: "session",
+      class: null,
+      coach: {
+        id: "zuckmann",
+        name: { first: "زاکمن", last: "متا" },
+      },
+      startTime: "16:00",
+      endTime: "17:00",
+      capacity: 1,
+      occurrenceStatus: "scheduled",
+    });
+  }
+  if (weekday === 1 || weekday === 3) {
+    items.push({
+      slotId: `${clubId}-slot-arnold-pt`,
+      kind: "session",
+      class: null,
+      coach: {
+        id: "arnold",
+        name: { first: "آرنولد", last: "شوارزنبل" },
+      },
+      startTime: "15:00",
+      endTime: "16:00",
+      capacity: 1,
+      occurrenceStatus: "scheduled",
+    });
+    items.push({
+      slotId: `${clubId}-slot-arnold-feat-pt`,
+      kind: "session",
+      class: null,
+      coach: {
+        id: "arnold-feat",
+        name: { first: "آرنولد", last: "شوارزنبل" },
+      },
+      startTime: "20:00",
+      endTime: "21:00",
+      capacity: 1,
+      occurrenceStatus: "scheduled",
+    });
+  }
+  if (weekday === 0 || weekday === 3) {
+    items.push({
+      slotId: `${clubId}-slot-jeanette-pt`,
+      kind: "session",
+      class: null,
+      coach: {
+        id: "jeanette",
+        name: { first: "ژانت", last: "پینک" },
+      },
+      startTime: "10:30",
+      endTime: "11:30",
+      capacity: 1,
+      occurrenceStatus: "scheduled",
+    });
+  }
+
   if (hash % 2 === 0) {
     items.push({
       slotId: `${clubId}-slot-hiit`,
@@ -196,6 +360,23 @@ function seedOccurrences(clubId: string, date: string, weekday: number): ClubCal
       startTime: "18:30",
       endTime: "19:30",
       capacity: 15,
+      occurrenceStatus: "scheduled",
+    });
+    items.push({
+      slotId: `${clubId}-slot-spin`,
+      kind: "class",
+      class: {
+        id: `${clubId}-spin`,
+        title: "اسپینینگ عصر",
+        media: { coverMediaId: null },
+      },
+      coach: {
+        id: "coach-3",
+        name: { first: "نیکا", last: "احمدی" },
+      },
+      startTime: "18:45",
+      endTime: "19:45",
+      capacity: 12,
       occurrenceStatus: "scheduled",
     });
   }

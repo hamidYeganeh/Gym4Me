@@ -4,6 +4,7 @@ import {
   ClubLifecycleStatus,
   ClubOperationalStatus,
   GeoDirection,
+  OperatingHourAudience,
   RulePolicy,
   WeekdayStatus,
 } from '../common/enums';
@@ -62,6 +63,14 @@ export class ClubGalleryItem {
 
   @Prop({ trim: true })
   description?: string;
+
+  /** Cumulative view count for this gallery item. */
+  @Prop({ type: Number, min: 0, default: 0 })
+  views!: number;
+
+  /** When this gallery item was added to the club. */
+  @Prop({ type: Date, default: Date.now })
+  createdAt!: Date;
 }
 
 export const ClubGalleryItemSchema =
@@ -231,6 +240,17 @@ export class OperatingHour {
     default: WeekdayStatus.OPEN,
   })
   status!: WeekdayStatus;
+
+  /**
+   * Audience for this row. Missing / `shared` = one schedule for everyone.
+   * Use `male` + `female` rows when a mixed club has gender-split hours.
+   */
+  @Prop({
+    type: String,
+    enum: OperatingHourAudience,
+    default: OperatingHourAudience.SHARED,
+  })
+  audience!: OperatingHourAudience;
 
   @Prop({ trim: true })
   open?: string;

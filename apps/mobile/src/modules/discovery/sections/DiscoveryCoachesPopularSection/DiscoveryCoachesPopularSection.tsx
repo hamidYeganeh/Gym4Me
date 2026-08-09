@@ -8,6 +8,7 @@ import type { DiscoveryCoachesPopularSectionProps } from "./DiscoveryCoachesPopu
 
 export function DiscoveryCoachesPopularSection({
   title,
+  hint,
   seeAllLabel,
   yoeLabel,
   coaches,
@@ -17,12 +18,21 @@ export function DiscoveryCoachesPopularSection({
   return (
     <section className={styles.root}>
       <div className={styles.header}>
-        <Typography className={styles.title} type="h4" weight="bold">
-          {title}
-        </Typography>
-        <Link className={styles.seeAll} onPress={onSeeAll}>
-          {seeAllLabel}
-        </Link>
+        <div className={styles.titleBlock}>
+          <Typography className={styles.title} type="h4" weight="bold">
+            {title}
+          </Typography>
+          {hint ? (
+            <Typography className={styles.hint} type="body-xs">
+              {hint}
+            </Typography>
+          ) : null}
+        </div>
+        {onSeeAll ? (
+          <Link className={styles.seeAll} onPress={onSeeAll}>
+            {seeAllLabel}
+          </Link>
+        ) : null}
       </div>
 
       <div className={styles.list}>

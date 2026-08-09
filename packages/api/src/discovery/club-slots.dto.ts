@@ -1,9 +1,16 @@
-import type { ClubClass, OccurrenceStatus, SlotKind } from "../account/club-slots.dto";
+import type {
+  ClubClass,
+  ClubSlot,
+  OccurrenceStatus,
+  SlotKind,
+} from "../account/club-slots.dto";
 
 export type ClubCalendarQuery = {
   from: string;
   to: string;
 };
+
+export type { ClubSlot };
 
 export type ClubCalendarOccurrence = {
   slotId: string;

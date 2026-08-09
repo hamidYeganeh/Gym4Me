@@ -21,7 +21,10 @@ import { TokenService } from './token.service';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         secret: config.getOrThrow<string>('JWT_ACCESS_SECRET'),
-        signOptions: { expiresIn: config.get('JWT_ACCESS_TTL', '900s') },
+        signOptions: {
+          expiresIn: config.get('JWT_ACCESS_TTL', '900s'),
+          algorithm: 'HS256',
+        },
       }),
     }),
     MongooseModule.forFeature([

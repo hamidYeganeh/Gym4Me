@@ -1,6 +1,7 @@
 "use client";
 
 import { Button, Chip, Surface, Typography } from "@heroui/react";
+import { DotThreeHorizontal } from "@repo/icons/DotThreeHorizontal";
 import { MapPin1 } from "@repo/icons/MapPin1";
 import { StarFull } from "@repo/icons/StarFull";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
@@ -15,6 +16,8 @@ import type {
   DiscoveryClubsDetailHeroSectionGalleryItem,
   DiscoveryClubsDetailHeroSectionProps,
 } from "./DiscoveryClubsDetailHeroSection.types";
+
+const HERO_THUMB_PREVIEW_COUNT = 3;
 
 function formatRating(rating: number) {
   return Number.isInteger(rating) ? String(rating) : rating.toFixed(1);
@@ -110,7 +113,7 @@ export function DiscoveryClubsDetailHeroSection({
             className={styles.thumbs}
             onPointerDown={(event) => event.stopPropagation()}
           >
-            {gallery.map((image, index) => {
+            {gallery.slice(0, HERO_THUMB_PREVIEW_COUNT).map((image, index) => {
               const isActive = index === activeIndex;
               return (
                 <Button
@@ -139,11 +142,32 @@ export function DiscoveryClubsDetailHeroSection({
                 </Button>
               );
             })}
+
+            {imageCount > HERO_THUMB_PREVIEW_COUNT ? (
+              <Button
+                aria-label={t("seeAllGallery")}
+                className={[styles.thumbButton, styles.thumbMore].join(" ")}
+                isIconOnly
+                onPress={() => setIsLightboxOpen(true)}
+                size="lg"
+                variant="tertiary"
+              >
+                <DotThreeHorizontal
+                  aria-hidden
+                  className={styles.thumbMoreIcon}
+                  size={18}
+                />
+              </Button>
+            ) : null}
           </div>
         </section>
       </DiscoveryClubsDetailHeroSectionPullToView>
 
-      <Surface aria-hidden={!children} className={styles.sheet} variant="default">
+      <Surface
+        aria-hidden={!children}
+        className={styles.sheet}
+        variant="default"
+      >
         <div className={styles.sheetHeader}>
           <div className={styles.titleBlock}>
             <Typography className={styles.title} type="h2" weight="bold">
@@ -160,9 +184,7 @@ export function DiscoveryClubsDetailHeroSection({
               <div className={styles.metaRow}>
                 {showOpenStatus ? (
                   <Chip
-                    className={
-                      isOpen ? styles.openChip : styles.closedChip
-                    }
+                    className={isOpen ? styles.openChip : styles.closedChip}
                     size="sm"
                   >
                     <Chip.Label>

@@ -139,7 +139,6 @@ export function AthleteWeightMetricsScreen({ metric }: AthleteWeightMetricsScree
       className="bg-background"
       header={
         <Header
-          className="border-b-0 bg-background"
           endContent={
             <Button
               aria-label={t("analytics")}

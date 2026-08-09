@@ -1,6 +1,9 @@
 export { ClubLocationCard } from "./ClubLocationCard";
 export { clubLocationCardVariants } from "./ClubLocationCard.styles";
+export type { ClubLocationCardVariantProps } from "./ClubLocationCard.styles";
 export type {
   ClubLocationCardProps,
-  ClubLocationLatLng,
+  ClubLocationOpenStatus,
+  ClubLocationStat,
+  ClubLocationStatKey,
 } from "./ClubLocationCard.types";

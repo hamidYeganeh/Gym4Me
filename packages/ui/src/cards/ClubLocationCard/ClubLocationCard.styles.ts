@@ -3,61 +3,47 @@ import { tv } from "tailwind-variants";
 
 export const clubLocationCardVariants = tv({
   slots: {
-    root: [
-      "relative flex w-full flex-col overflow-hidden rounded-[28px] p-0",
-      "border border-border/70 text-default-foreground shadow-sm",
-      "bg-linear-to-b from-surface via-default to-[color-mix(in_oklch,var(--accent)_12%,var(--default))]",
+    root: "flex w-full flex-col gap-3",
+    header: "flex flex-wrap items-center gap-2.5",
+    statusChip: "h-7 rounded-full border-0 px-2.5 shadow-none",
+    hours: "text-[0.8rem] tabular-nums tracking-tight text-muted",
+    card: [
+      "flex w-full items-stretch overflow-hidden rounded-[1.75rem] p-0",
+      "border border-border/70 bg-default text-default-foreground shadow-none",
     ].join(" "),
-    mapShell: "relative w-full overflow-hidden bg-surface-tertiary p-0",
-    mapCanvas: [
-      "absolute inset-0 z-0 size-full",
-      "[&_.leaflet-control-attribution]:!bg-transparent [&_.leaflet-control-attribution]:!text-[9px]",
-      "[&_.leaflet-control-attribution]:!text-muted [&_.leaflet-control-attribution]:!m-1",
-      "[&_.club-location-tip]:!bg-transparent [&_.club-location-tip]:!border-0",
+    body: "flex w-full items-stretch",
+    cell: [
+      "relative flex min-w-0 flex-1 flex-col items-center justify-center gap-2",
+      "px-2 py-5",
+      "after:absolute after:end-0 after:top-[18%] after:bottom-[18%] after:w-px after:bg-border",
+      "last:after:hidden",
     ].join(" "),
-    mapSkeleton: "absolute inset-0 z-[1] rounded-none",
-    controlsStart:
-      "pointer-events-auto absolute start-3 top-3 z-20 flex flex-col gap-2",
-    controlsEnd: "pointer-events-auto absolute end-3 top-3 z-20",
-    mapButton: [
-      "size-10 min-w-10 rounded-2xl",
-      "bg-overlay/70 text-overlay-foreground backdrop-blur-md",
-      "hover:bg-overlay/85 data-[hovered=true]:bg-overlay/85",
-      "shadow-sm",
-    ].join(" "),
-    footer: [
-      "relative z-10 flex items-end justify-between gap-4 px-5 pb-5 pt-4",
-      "bg-linear-to-t from-[color-mix(in_oklch,var(--accent)_10%,var(--default))] via-default/90 to-transparent",
-    ].join(" "),
-    footerText: "flex min-w-0 flex-1 flex-col gap-2",
-    header: "gap-0 p-0",
-    title: "text-xl font-semibold tracking-tight text-foreground",
-    address: "mt-1 text-sm leading-snug text-muted",
-    meta: "flex flex-wrap items-center gap-2 text-sm text-muted",
-    metaItem: "inline-flex items-center gap-1.5",
-    metaIcon: "size-3.5 shrink-0 opacity-80",
-    metaDot: "size-1 shrink-0 rounded-full bg-muted",
-    action: [
-      "size-14 min-w-14 shrink-0 rounded-[18px]",
-      "[--button-bg:var(--accent)] [--button-fg:var(--accent-foreground)]",
-      "[--button-bg-hover:var(--accent)] [--button-bg-pressed:var(--accent)]",
-      "bg-accent text-accent-foreground",
-      "hover:opacity-90 data-[hovered=true]:opacity-90",
-      "data-[pressed=true]:scale-[0.97]",
-    ].join(" "),
+    valueStack: "flex flex-col items-center gap-0.5 text-center",
+    value: "text-[1.65rem] leading-none tracking-tight text-foreground",
+    unit: "text-[0.7rem] font-medium leading-none tracking-tight text-foreground/80",
+    meta: "flex items-center gap-1.5 text-muted",
+    icon: "shrink-0 text-muted",
+    iconScore: "shrink-0 text-accent",
+    iconStudents: "shrink-0 text-accent",
+    label: "text-[0.8rem] leading-none text-muted",
   },
   variants: {
-    fullWidth: {
-      true: {
-        root: "max-w-none rounded-none border-x-0 sm:rounded-[28px] sm:border-x",
+    status: {
+      open: {
+        statusChip: [
+          "bg-success/15 text-success",
+          "[--chip-bg:color-mix(in_oklch,var(--success)_15%,transparent)]",
+          "[--chip-fg:var(--success)]",
+        ].join(" "),
       },
-      false: {
-        root: "max-w-md",
+      closed: {
+        statusChip: [
+          "bg-danger/15 text-danger",
+          "[--chip-bg:color-mix(in_oklch,var(--danger)_15%,transparent)]",
+          "[--chip-fg:var(--danger)]",
+        ].join(" "),
       },
     },
-  },
-  defaultVariants: {
-    fullWidth: false,
   },
 });
 

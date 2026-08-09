@@ -64,8 +64,11 @@ export type {
   ClubUserReview,
   CreateClubInput,
   GeoDirection,
+  RulePolicy,
   SubmitClubReviewInput,
   UpdateClubInput,
+  OperatingHourAudience,
+  WeekdayStatus,
 } from "./clubs.dto";
 export { accountClubsKeys } from "./clubs.keys";
 

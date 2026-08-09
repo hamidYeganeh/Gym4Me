@@ -20,6 +20,7 @@ import { AdminModule } from './admin/admin.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { AuditModule } from './audit/audit.module';
 import { BasicsModule } from './basics/basics.module';
+import { ArticlesModule } from './articles/articles.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { KycGuard } from './common/guards/kyc.guard';
 import { RolesGuard } from './common/guards/roles.guard';
@@ -71,6 +72,7 @@ import { UsersModule } from './users/users.module';
     ReferralModule,
     KycModule,
     SupportModule,
+    ArticlesModule,
     AdminModule,
   ],
   controllers: [AppController],

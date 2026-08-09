@@ -97,7 +97,6 @@ export function OwnerMembersScreen({
       className={[styles.root, className].filter(Boolean).join(" ")}
       header={
         <Header
-          className="border-b-0 bg-background"
           startContent={
             <Button
               aria-label={t("back")}

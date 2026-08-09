@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     command: ["--replSet", "rs0", "--bind_ip_all"]
     ports:
-      - "27018:27017"
+      - "127.0.0.1:27018:27017"
     volumes:
       - gym4me_mongodata:/data/db
     healthcheck:
@@ -20,7 +20,7 @@ services:
     container_name: gym4me-redis
     restart: unless-stopped
     ports:
-      - "6380:6379"
+      - "127.0.0.1:6380:6379"
     volumes:
       - gym4me_redisdata:/data
 
@@ -41,11 +41,16 @@ services:
       PORT: "8088"
       MONGODB_URI: mongodb://mongo:27017/gym4me?replicaSet=rs0&directConnection=true
       REDIS_URL: redis://redis:6379
-      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-dev-access-secret-change-me}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev-refresh-secret-change-me}
+      # Required — no weak defaults. Set in root .env (see .env.example).
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?JWT_ACCESS_SECRET is required}
+      JWT_PASSWORD_RESET_SECRET: ${JWT_PASSWORD_RESET_SECRET:?JWT_PASSWORD_RESET_SECRET is required}
       JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-900s}
       JWT_REFRESH_TTL_DAYS: ${JWT_REFRESH_TTL_DAYS:-30}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      ENABLE_SWAGGER: ${ENABLE_SWAGGER:-false}
+      DEBUG_MODE: ${DEBUG_MODE:-false}
       SMS_PROVIDER: ${SMS_PROVIDER:-mock}
+      PAYMENT_PROVIDER: ${PAYMENT_PROVIDER:-mock}
       KYC_PROVIDER: ${KYC_PROVIDER:-mock}
       FINNOTECH_BASE_URL: ${FINNOTECH_BASE_URL:-https://api.finnotech.ir}
       FINNOTECH_CLIENT_ID: ${FINNOTECH_CLIENT_ID:-}

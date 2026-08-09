@@ -1,46 +1,31 @@
 "use client";
 
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Button,
-  Input,
-  InputGroup,
-  Label,
-  TextField,
-  Typography,
-} from "@heroui/react";
-import { ApiError } from "@repo/api";
-import { Calendar1 } from "@repo/icons/Calendar1";
-import { Check } from "@repo/icons/Check";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
+import { Avatar, Button, Chip, Typography } from "@heroui/react";
+import { ArrowUpload } from "@repo/icons/ArrowUpload";
+import { ChartPie1 } from "@repo/icons/ChartPie1";
+import { Chat } from "@repo/icons/Chat";
+import { File1 } from "@repo/icons/File1";
 import { Gear1 } from "@repo/icons/Gear1";
-import { GenderFemale } from "@repo/icons/GenderFemale";
-import { Lock1 } from "@repo/icons/Lock1";
-import { Pencil1 } from "@repo/icons/Pencil1";
-import { Share1 } from "@repo/icons/Share1";
+import { Image1 } from "@repo/icons/Image1";
+import { Plus } from "@repo/icons/Plus";
 import { ShieldCheck } from "@repo/icons/ShieldCheck";
+import { StarFour } from "@repo/icons/StarFour";
+import { ThumbsUp } from "@repo/icons/ThumbsUp";
 import { User } from "@repo/icons/User";
+import { UsersTwo } from "@repo/icons/UsersTwo";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
-import {
-  getProfileRoleShowcase,
-  profileRolePrimaryHref,
-} from "@/modules/account/lib/profile-role-data";
-import { ProfileIdentitySection } from "@/modules/account/sections/ProfileIdentitySection";
-import { ProfileShowcaseSection } from "@/modules/account/sections/ProfileShowcaseSection";
-import { accountProfile } from "@/shared/lib/api";
-import {
-  isoToJalaliDisplay,
-  jalaliDisplayToIso,
-} from "@/shared/lib/jalali";
-import { roleHomePath } from "@/shared/lib/role-routes";
+import { formatMemberSince } from "@/modules/account/lib/profile-demographics";
+import { mediaFileUrl } from "@/shared/lib/api";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { baseProfileScreenVariants } from "./BaseProfileScreen.styles";
 import type { BaseProfileScreenProps } from "./BaseProfileScreen.types";
 
-const FIELD_ICON = 18;
+const ICON = 20;
+const STAT_ICON = 18;
+const AVATAR_ICON = 40;
 
 export function BaseProfileScreen({
   className,
@@ -50,32 +35,7 @@ export function BaseProfileScreen({
   const tRole = useTranslations("Mobile.RoleApply");
   const styles = baseProfileScreenVariants();
   const router = useRouter();
-  const { user, activeRole, refreshUser, switchRole, logout } = useAuth();
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [gender, setGender] = useState("");
-  const [birthDateJalali, setBirthDateJalali] = useState("");
-  const [code, setCode] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
-  const [isPending, setIsPending] = useState(false);
-
-  const showcase = useMemo(
-    () => getProfileRoleShowcase(roleSegment),
-    [roleSegment],
-  );
-
-  useEffect(() => {
-    if (!user) return;
-    setFirstName(user.name.first ?? "");
-    setLastName(user.name.last ?? "");
-    setGender(user.demographics.gender ?? "");
-    setBirthDateJalali(isoToJalaliDisplay(user.demographics.birthDate));
-    setCode(user.code ?? "");
-  }, [user]);
-
-  const showKycCta =
-    user?.kyc.status === "none" || user?.kyc.status === "rejected";
+  const { user, activeRole } = useAuth();
 
   const displayName = useMemo(() => {
     const parts = [user?.name.first, user?.name.last].filter(Boolean);
@@ -89,115 +49,160 @@ export function BaseProfileScreen({
     return tRole("athlete");
   }, [activeRole, tRole]);
 
-  const handleSave = async (event: FormEvent) => {
-    event.preventDefault();
-    setError(null);
-    setNotice(null);
+  const memberSince = formatMemberSince(user?.createdAt);
+  const avatarSrc = mediaFileUrl(user?.avatar.mediaId);
+  const showKycCta =
+    user?.kyc.status === "none" || user?.kyc.status === "rejected";
 
-    let birthDate: string | undefined;
-    if (birthDateJalali.trim()) {
-      const iso = jalaliDisplayToIso(birthDateJalali);
-      if (!iso) {
-        setError(t("birthDateHint"));
-        return;
-      }
-      birthDate = iso;
-    }
-
-    setIsPending(true);
-    try {
-      const next = await accountProfile.updateMe({
-        name: {
-          first: firstName.trim() || undefined,
-          last: lastName.trim() || undefined,
-        },
-        demographics: {
-          gender: gender || undefined,
-          birthDate,
-        },
-        code: code.trim() || undefined,
-      });
-      refreshUser(next);
-      setNotice(t("saved"));
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : t("errorSave"));
-    } finally {
-      setIsPending(false);
-    }
-  };
-
-  const handleSwitch = async (role: "athlete" | "coach" | "club_owner") => {
-    setError(null);
-    try {
-      const session = await switchRole(role);
-      router.replace(roleHomePath(session.activeRole));
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : t("errorSave"));
-    }
-  };
+  const path = (suffix: string) => `/${roleSegment}/profile/${suffix}`;
 
   return (
-    <AppLayout
-      className={styles.root({ className })}
-      header={
-        <Header
-          className="border-b-0 bg-background"
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={() => router.push(roleHomePath(activeRole))}
-              size="lg"
-              variant="ghost"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
-            </Button>
-          }
-          endContent={
+    <AppLayout className={styles.root({ className })}>
+      <div className={styles.content()}>
+        <section className={styles.hero()}>
+          <div aria-hidden className={styles.cover()}>
+            <Image1 className={styles.coverIcon()} size={36} />
+          </div>
+
+          <div className={styles.avatarRow()}>
             <Button
               aria-label={t("settings")}
+              className={styles.sideAction()}
               isIconOnly
               onPress={() => router.push(`/${roleSegment}/settings`)}
               size="lg"
-              variant="ghost"
+              variant="secondary"
             >
-              <Gear1 className="text-foreground" size={22} />
+              <Gear1 size={ICON} />
             </Button>
-          }
-        />
-      }
-    >
-      <div className={styles.content()}>
-        <ProfileIdentitySection
-          name={displayName}
-          roleLabel={activeRoleLabel}
-          subtitle={t(showcase.subtitleKey)}
-        />
 
-        <ProfileShowcaseSection showcase={showcase} t={t} />
+            <div className={styles.avatarWrap()}>
+              <Avatar className={styles.avatar()} color="accent">
+                {avatarSrc ? (
+                  <Avatar.Image
+                    alt={displayName}
+                    className={styles.avatarImage()}
+                    src={avatarSrc}
+                  />
+                ) : null}
+                <Avatar.Fallback className={styles.avatarFallback()}>
+                  <User size={AVATAR_ICON} />
+                </Avatar.Fallback>
+              </Avatar>
+              <Button
+                aria-label={t("uploadAvatar")}
+                className={styles.avatarUpload()}
+                isIconOnly
+                onPress={() => router.push(path("edit"))}
+                size="lg"
+                variant="tertiary"
+              >
+                <ArrowUpload size={14} />
+              </Button>
+            </div>
+
+            <Button
+              aria-label={t("analytics")}
+              className={styles.sideAction()}
+              isIconOnly
+              onPress={() => router.push(`/${roleSegment}`)}
+              size="lg"
+              variant="secondary"
+            >
+              <ChartPie1 size={ICON} />
+            </Button>
+          </div>
+        </section>
+
+        <section className={styles.identity()}>
+          <Chip
+            className={styles.memberChip()}
+            color="accent"
+            size="sm"
+            variant="secondary"
+          >
+            <StarFour size={12} />
+            <Chip.Label>{t("memberPlus", { role: activeRoleLabel })}</Chip.Label>
+          </Chip>
+          <Typography className={styles.memberSince()} type="body-sm">
+            {memberSince
+              ? t("memberSince", { date: memberSince })
+              : t("memberSinceFallback")}
+          </Typography>
+          <Typography className={styles.name()} type="h1" weight="bold">
+            {displayName}
+          </Typography>
+        </section>
+
+        <div className={styles.stats()}>
+          <div className={styles.stat()}>
+            <File1 aria-hidden className={styles.statIcon()} size={STAT_ICON} />
+            <Typography
+              className={styles.statValue()}
+              type="body"
+              weight="bold"
+            >
+              {t("statPostsValue")}
+            </Typography>
+            <Typography className={styles.statLabel()} type="body-sm">
+              {t("statPosts")}
+            </Typography>
+          </div>
+          <div className={styles.stat()}>
+            <UsersTwo
+              aria-hidden
+              className={styles.statIcon()}
+              size={STAT_ICON}
+            />
+            <Typography
+              className={styles.statValue()}
+              type="body"
+              weight="bold"
+            >
+              {t("statFollowersValue")}
+            </Typography>
+            <Typography className={styles.statLabel()} type="body-sm">
+              {t("statFollowers")}
+            </Typography>
+          </div>
+          <div className={styles.stat()}>
+            <ThumbsUp
+              aria-hidden
+              className={styles.statIcon()}
+              size={STAT_ICON}
+            />
+            <Typography
+              className={styles.statValue()}
+              type="body"
+              weight="bold"
+            >
+              {t("statLikesValue")}
+            </Typography>
+            <Typography className={styles.statLabel()} type="body-sm">
+              {t("statLikes")}
+            </Typography>
+          </div>
+        </div>
 
         <div className={styles.actions()}>
           <Button
+            className={styles.followButton()}
             fullWidth
             size="lg"
             variant="primary"
-            onPress={() => router.push(profileRolePrimaryHref(roleSegment))}
           >
-            <Pencil1 size={18} />
-            {t(showcase.primaryCtaKey)}
+            {t("follow")}
+            <Plus size={16} />
           </Button>
           <Button
+            className={styles.chatButton()}
             fullWidth
             size="lg"
             variant="outline"
-            onPress={() => {
-              if (typeof navigator !== "undefined" && navigator.share) {
-                void navigator.share({ title: displayName, text: displayName });
-              }
-            }}
+            onPress={() => router.push(path("help"))}
           >
-            <Share1 size={18} />
-            {t("shareProfile")}
+            {t("chat")}
+            <Chat size={16} />
           </Button>
         </div>
 
@@ -217,181 +222,26 @@ export function BaseProfileScreen({
           </section>
         ) : null}
 
-        <section className={styles.card()}>
-          <Typography className={styles.sectionTitle()} type="h4" weight="bold">
-            {t("baseInfoTitle")}
-          </Typography>
-          <Typography color="muted" type="body-sm">
-            {t("subtitle")}
-          </Typography>
-
-          <form className={styles.form()} onSubmit={handleSave}>
-            <div className={styles.fieldRow()}>
-              <TextField
-                className={styles.field()}
-                fullWidth
-                name="firstName"
-                value={firstName}
-                onChange={setFirstName}
-              >
-                <Label>{t("firstName")}</Label>
-                <InputGroup variant="secondary">
-                  <InputGroup.Prefix>
-                    <User size={FIELD_ICON} />
-                  </InputGroup.Prefix>
-                  <InputGroup.Input />
-                </InputGroup>
-              </TextField>
-
-              <TextField
-                className={styles.field()}
-                fullWidth
-                name="lastName"
-                value={lastName}
-                onChange={setLastName}
-              >
-                <Label>{t("lastName")}</Label>
-                <InputGroup variant="secondary">
-                  <InputGroup.Prefix>
-                    <User size={FIELD_ICON} />
-                  </InputGroup.Prefix>
-                  <InputGroup.Input />
-                </InputGroup>
-              </TextField>
-            </div>
-
-            <TextField
-              className={styles.field()}
-              fullWidth
-              name="gender"
-              value={gender}
-              onChange={setGender}
+        <section className={styles.postsCard()}>
+          <div className={styles.postsBody()}>
+            <Typography
+              className={styles.postsTitle()}
+              type="body"
+              weight="bold"
             >
-              <Label>{t("gender")}</Label>
-              <InputGroup variant="secondary">
-                <InputGroup.Prefix>
-                  <GenderFemale size={FIELD_ICON} />
-                </InputGroup.Prefix>
-                <InputGroup.Input
-                  placeholder={`${t("genderMale")} / ${t("genderFemale")}`}
-                />
-              </InputGroup>
-            </TextField>
-
-            <TextField
-              className={styles.field()}
-              fullWidth
-              name="birthDate"
-              value={birthDateJalali}
-              onChange={setBirthDateJalali}
-            >
-              <Label>{t("birthDate")}</Label>
-              <InputGroup variant="secondary">
-                <InputGroup.Prefix>
-                  <Calendar1 size={FIELD_ICON} />
-                </InputGroup.Prefix>
-                <InputGroup.Input placeholder={t("birthDateHint")} />
-              </InputGroup>
-            </TextField>
-
-            <TextField
-              className={styles.field()}
-              fullWidth
-              name="code"
-              value={code}
-              onChange={setCode}
-            >
-              <Label>{t("code")}</Label>
-              <Input />
-            </TextField>
-
-            {error ? (
-              <p className={styles.error()} role="alert">
-                {error}
-              </p>
-            ) : null}
-            {notice ? (
-              <p className={styles.notice()} role="status">
-                {notice}
-              </p>
-            ) : null}
-
-            <div className={styles.formActions()}>
-              <Button
-                fullWidth
-                isPending={isPending}
-                size="lg"
-                type="submit"
-                variant="primary"
-              >
-                {t("updateProfile")}
-                <Check size={18} />
-              </Button>
-            </div>
-          </form>
-        </section>
-
-        <section className={styles.card()}>
-          <Typography className={styles.sectionTitle()} type="h4" weight="bold">
-            {t("switchRole")}
-          </Typography>
-          <div className={styles.roleRow()}>
-            {user?.roles.includes("athlete") && activeRole !== "athlete" ? (
-              <Button
-                size="lg"
-                variant="outline"
-                onPress={() => handleSwitch("athlete")}
-              >
-                {tRole("athlete")}
-              </Button>
-            ) : null}
-            {user?.roles.includes("coach") && activeRole !== "coach" ? (
-              <Button
-                size="lg"
-                variant="outline"
-                onPress={() => handleSwitch("coach")}
-              >
-                {tRole("coach")}
-              </Button>
-            ) : null}
-            {user?.roles.includes("club_owner") &&
-            activeRole !== "club_owner" ? (
-              <Button
-                size="lg"
-                variant="outline"
-                onPress={() => handleSwitch("club_owner")}
-              >
-                {tRole("owner")}
-              </Button>
-            ) : null}
-            <Button
-              size="lg"
-              variant="secondary"
-              onPress={() => router.push(`/${roleSegment}/roles`)}
-            >
-              {t("applyRole")}
+              {t("postsEmptyTitle")}
+            </Typography>
+            <Typography className={styles.postsHint()} type="body-sm">
+              {t("postsEmptyHint")}
+            </Typography>
+          </div>
+          <div className={styles.postsFooter()}>
+            <Button className={styles.createPost()} variant="ghost">
+              {t("createPost")}
+              <Plus size={16} />
             </Button>
           </div>
         </section>
-
-        <Button
-          fullWidth
-          size="lg"
-          variant="danger"
-          onPress={async () => {
-            await logout();
-            router.replace("/auth/sign-in");
-          }}
-        >
-          {t("logout")}
-        </Button>
-
-        <footer className={styles.privacy()}>
-          <Lock1 aria-hidden className={styles.privacyIcon()} size={16} />
-          <Typography className={styles.privacyText()} type="body-sm">
-            {t("privacyNote")}
-          </Typography>
-        </footer>
       </div>
     </AppLayout>
   );

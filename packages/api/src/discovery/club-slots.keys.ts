@@ -8,4 +8,8 @@ export const discoveryClubSlotsKeys = {
     [...discoveryClubSlotsKeys.all, "classes", clubId] as const,
   class: (clubId: string, classId: string) =>
     [...discoveryClubSlotsKeys.classes(clubId), classId] as const,
+  slots: (clubId: string) =>
+    [...discoveryClubSlotsKeys.all, "slots", clubId] as const,
+  slot: (clubId: string, slotId: string) =>
+    [...discoveryClubSlotsKeys.slots(clubId), slotId] as const,
 };

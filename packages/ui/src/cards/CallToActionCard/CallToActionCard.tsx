@@ -21,6 +21,7 @@ export function CallToActionCard({
   ...props
 }: CallToActionCardProps) {
   const isSoft = variant === "soft";
+  const isLabeledButton = actionType === "button";
   const slots = callToActionCardVariants({ variant, actionType });
   const actionIcon =
     actionType === "icon" && !isSoft
@@ -29,7 +30,17 @@ export function CallToActionCard({
   const hasBadge = badge != null && badge !== "";
   const hasMeta = meta != null && meta !== "";
 
-  const actionButton = (
+  const actionButton = isLabeledButton ? (
+    <Button
+      aria-label={actionLabel}
+      className={slots.action({ className: actionClassName })}
+      onPress={onAction}
+      size="lg"
+      variant="secondary"
+    >
+      {actionLabel}
+    </Button>
+  ) : (
     <Button
       aria-label={actionLabel}
       className={slots.action({ className: actionClassName })}
@@ -84,7 +95,7 @@ export function CallToActionCard({
         )}
       </div>
 
-      {isSoft ? (
+      {isSoft && !isLabeledButton ? (
         <div className={slots.actionRing()}>{actionButton}</div>
       ) : (
         actionButton

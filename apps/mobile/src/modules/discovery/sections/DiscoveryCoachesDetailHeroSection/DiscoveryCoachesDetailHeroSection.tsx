@@ -1,15 +1,22 @@
 "use client";
 
-import { Button, Typography } from "@heroui/react";
-import { BarbellHorizontal } from "@repo/icons/BarbellHorizontal";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
-import { Kebab } from "@repo/icons/Kebab";
+import { Button, Chip, Surface, Typography } from "@heroui/react";
+import { DotThreeHorizontal } from "@repo/icons/DotThreeHorizontal";
+import { MapPin1 } from "@repo/icons/MapPin1";
 import { SealCheck } from "@repo/icons/SealCheck";
 import { StarFull } from "@repo/icons/StarFull";
+import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { useCallback, useState } from "react";
+import type { GalleryMediaItem } from "../../lib/gallery-media";
+import { DiscoveryClubsDetailHeroSectionLightbox } from "../DiscoveryClubsDetailHeroSectionLightbox";
+import { DiscoveryClubsDetailHeroSectionPullToView } from "../DiscoveryClubsDetailHeroSectionPullToView";
+import { DiscoveryCoachesDetailHeroSectionHeader } from "../DiscoveryCoachesDetailHeroSectionHeader";
 import { discoveryCoachesDetailHeroSectionStyles as styles } from "./DiscoveryCoachesDetailHeroSection.styles";
 import type { DiscoveryCoachesDetailHeroSectionProps } from "./DiscoveryCoachesDetailHeroSection.types";
+
+const HERO_THUMB_PREVIEW_COUNT = 3;
 
 function formatRating(rating: number) {
   return Number.isInteger(rating) ? String(rating) : rating.toFixed(1);
@@ -17,90 +24,242 @@ function formatRating(rating: number) {
 
 export function DiscoveryCoachesDetailHeroSection({
   coach,
+  children,
 }: DiscoveryCoachesDetailHeroSectionProps) {
   const t = useTranslations("CoachDetail");
-  const router = useRouter();
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+
+  // Prefer coach photo URLs (`images` / avatar) for the hero — same role as
+  // club venue photos — instead of the richer body `gallery` (which may mix media).
+  const safeGallery: GalleryMediaItem[] = (() => {
+    const fromImages = coach.images
+      .map((url) => url.trim())
+      .filter(Boolean)
+      .map((url) => ({ url, mediaKind: "image" as const }));
+    if (fromImages.length > 0) return fromImages;
+
+    const fromAvatar = coach.avatar?.trim();
+    if (fromAvatar) {
+      return [{ url: fromAvatar, mediaKind: "image" as const }];
+    }
+
+    const fromGallery = coach.gallery.filter(
+      (item) => item.url && (item.mediaKind ?? "image") === "image",
+    );
+    if (fromGallery.length > 0) return fromGallery;
+
+    return [{ url: PLACEHOLDER_IMAGE, mediaKind: "image" as const }];
+  })();
+  const imageCount = safeGallery.length;
+  const activeImage =
+    safeGallery[activeIndex]?.url ??
+    safeGallery[0]?.url ??
+    PLACEHOLDER_IMAGE;
   const showRating =
-    typeof coach.rating === "number" && Number.isFinite(coach.rating);
+    typeof coach.rating === "number" &&
+    Number.isFinite(coach.rating) &&
+    coach.rating > 0;
+
+  const goToImage = useCallback(
+    (index: number) => {
+      if (imageCount === 0) return;
+      const next = ((index % imageCount) + imageCount) % imageCount;
+      setActiveIndex(next);
+    },
+    [imageCount],
+  );
+
+  const onSwipeHorizontal = useCallback(
+    (direction: 1 | -1) => {
+      goToImage(activeIndex + direction);
+    },
+    [activeIndex, goToImage],
+  );
 
   return (
-    <section aria-label={coach.name} className={styles.root}>
-      <header className={styles.header}>
-        <Button
-          aria-label={t("back")}
-          isIconOnly
-          onPress={() => router.back()}
-          size="lg"
-          variant="ghost"
-        >
-          <ChevronLeft className="text-foreground" size={22} />
-        </Button>
-        <Typography
-          className={styles.headerTitle}
-          type="body"
-          weight="semibold"
-        >
-          {t("pageTitle")}
-        </Typography>
-        <Button
-          aria-label={t("more")}
-          isIconOnly
-          size="lg"
-          variant="ghost"
-          onPress={() => {
-            if (typeof navigator !== "undefined" && navigator.share) {
-              void navigator.share({ title: coach.name, url: window.location.href });
-            }
-          }}
-        >
-          <Kebab className="text-foreground" size={22} />
-        </Button>
-      </header>
+    <>
+      <DiscoveryCoachesDetailHeroSectionHeader isFavorite={coach.isFavorite} />
 
-      <div className={styles.identityCard}>
-        {coach.isVerified ? (
-          <div className={styles.verifiedRow}>
-            <SealCheck aria-hidden size={18} />
-            <Typography className={styles.verifiedText} type="body-sm">
-              {t("certifiedTrainer")}
-            </Typography>
+      <DiscoveryClubsDetailHeroSectionPullToView
+        onPullOpen={() => setIsLightboxOpen(true)}
+        onSwipeHorizontal={onSwipeHorizontal}
+      >
+        <section
+          aria-label={coach.name}
+          aria-roledescription="carousel"
+          className={styles.carousel}
+        >
+          <Image
+            alt=""
+            className={styles.image}
+            draggable={false}
+            fill
+            key={`${activeImage}-${activeIndex}`}
+            priority
+            sizes="100vw"
+            src={activeImage}
+          />
+          <div aria-hidden className={styles.scrim} />
+
+          <Chip
+            aria-label={t("galleryCount", {
+              current: activeIndex + 1,
+              total: imageCount,
+            })}
+            className={styles.counter}
+            size="sm"
+          >
+            <Chip.Label className={styles.counterLabel}>
+              {t("imageCounter", {
+                current: activeIndex + 1,
+                total: imageCount,
+              })}
+            </Chip.Label>
+          </Chip>
+
+          <div
+            aria-label={coach.name}
+            className={styles.thumbs}
+            onPointerDown={(event) => event.stopPropagation()}
+          >
+            {safeGallery.slice(0, HERO_THUMB_PREVIEW_COUNT).map((image, index) => {
+              const isActive = index === activeIndex;
+              return (
+                <Button
+                  aria-current={isActive ? "true" : undefined}
+                  aria-label={
+                    image.title ?? t("selectImage", { index: index + 1 })
+                  }
+                  className={[
+                    styles.thumbButton,
+                    isActive ? styles.thumbActive : styles.thumbIdle,
+                  ].join(" ")}
+                  isIconOnly
+                  key={`${image.url}-${index}`}
+                  onPress={() => goToImage(index)}
+                  size="lg"
+                  variant="ghost"
+                >
+                  <Image
+                    alt={image.title ?? ""}
+                    className={styles.thumbImage}
+                    draggable={false}
+                    fill
+                    sizes="48px"
+                    src={image.url || PLACEHOLDER_IMAGE}
+                  />
+                </Button>
+              );
+            })}
+
+            {imageCount > HERO_THUMB_PREVIEW_COUNT ? (
+              <Button
+                aria-label={t("seeAllGallery")}
+                className={[styles.thumbButton, styles.thumbMore].join(" ")}
+                isIconOnly
+                onPress={() => setIsLightboxOpen(true)}
+                size="lg"
+                variant="tertiary"
+              >
+                <DotThreeHorizontal
+                  aria-hidden
+                  className={styles.thumbMoreIcon}
+                  size={18}
+                />
+              </Button>
+            ) : null}
           </div>
-        ) : null}
+        </section>
+      </DiscoveryClubsDetailHeroSectionPullToView>
 
-        <Typography className={styles.name} type="h2" weight="bold">
-          {coach.name}
-        </Typography>
-        <Typography className={styles.specialty} type="body">
-          {coach.specialty}
-        </Typography>
+      <Surface
+        aria-hidden={!children}
+        className={styles.sheet}
+        variant="default"
+      >
+        <div className={styles.sheetHeader}>
+          <div className={styles.titleBlock}>
+            <Typography className={styles.title} type="h2" weight="bold">
+              {coach.name}
+            </Typography>
 
-        <div className={styles.metaRow}>
+            {coach.location ? (
+              <div className={styles.metaRow}>
+                <MapPin1 aria-hidden className="shrink-0" size={15} />
+                <Typography className={styles.metaText} type="body-sm">
+                  {coach.location}
+                </Typography>
+              </div>
+            ) : null}
+
+            <div className={styles.statsRow}>
+              {coach.isVerified ? (
+                <Chip className={styles.verifiedChip} size="sm">
+                  <SealCheck aria-hidden size={14} />
+                  <Chip.Label>{t("verified")}</Chip.Label>
+                </Chip>
+              ) : null}
+              {coach.specialty ? (
+                <Chip className={styles.specialtyChip} size="sm">
+                  <Chip.Label>{coach.specialty}</Chip.Label>
+                </Chip>
+              ) : null}
+              {coach.availabilityLabel ? (
+                <Typography
+                  className={styles.availabilityText}
+                  color="muted"
+                  type="body-xs"
+                >
+                  {coach.availabilityLabel}
+                </Typography>
+              ) : null}
+            </div>
+          </div>
+
           {showRating ? (
-            <span className={styles.metaItem}>
-              <StarFull aria-hidden className={styles.ratingStar} size={16} />
-              <Typography className={styles.metaValue} type="body-sm" weight="semibold">
-                {formatRating(coach.rating)}{" "}
-                <span className="text-muted">
-                  {t("reviewsCount", { count: coach.ratingCount })}
-                </span>
+            <Surface className={styles.ratingCard} variant="secondary">
+              <div className={styles.ratingValue}>
+                <Typography
+                  className={styles.ratingScore}
+                  type="body"
+                  weight="semibold"
+                >
+                  {formatRating(coach.rating)}
+                </Typography>
+                <StarFull aria-hidden className={styles.ratingStar} size={14} />
+              </div>
+              <Typography
+                className={styles.ratingMeta}
+                color="muted"
+                type="body-xs"
+              >
+                {t("reviewsCount", { count: coach.ratingCount })}
               </Typography>
-            </span>
-          ) : null}
-
-          {showRating && coach.yearsExperience > 0 ? (
-            <span aria-hidden className={styles.metaDot} />
-          ) : null}
-
-          {coach.yearsExperience > 0 ? (
-            <span className={styles.metaItem}>
-              <BarbellHorizontal aria-hidden className="text-muted" size={16} />
-              <Typography className={styles.metaValue} type="body-sm">
-                {t("yearsExperience", { count: coach.yearsExperience })}
-              </Typography>
-            </span>
+            </Surface>
           ) : null}
         </div>
-      </div>
-    </section>
+
+        {children}
+      </Surface>
+
+      <DiscoveryClubsDetailHeroSectionLightbox
+        activeIndex={activeIndex}
+        images={safeGallery}
+        isFavorite={coach.isFavorite}
+        isOpen={isLightboxOpen}
+        labels={{
+          close: t("closeGallery"),
+          favorite: t("favorite"),
+          prev: t("galleryPrev"),
+          next: t("galleryNext"),
+          selectImage: (index) => t("selectImage", { index }),
+          title: t("galleryTitle"),
+        }}
+        onOpenChange={setIsLightboxOpen}
+        onSelectImage={goToImage}
+        title={t("galleryTitle")}
+      />
+    </>
   );
 }

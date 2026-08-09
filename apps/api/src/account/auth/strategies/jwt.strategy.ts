@@ -7,21 +7,26 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Role, UserStatus } from '../../../common/enums';
 import type { JwtUser } from '../../../common/types';
 import { User, UserDocument } from '../../../schemas/user.schema';
+import { TokenService } from '../token.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
     config: ConfigService,
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    private readonly tokens: TokenService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: config.getOrThrow<string>('JWT_ACCESS_SECRET'),
+      algorithms: ['HS256'],
     });
   }
 
-  async validate(payload: JwtUser & { type?: string }): Promise<JwtUser> {
+  async validate(
+    payload: JwtUser & { type?: string; iat?: number },
+  ): Promise<JwtUser> {
     if (payload.type) {
       // Single-purpose tokens (e.g. pwd_reset) are not valid for API auth.
       throw new UnauthorizedException();
@@ -30,6 +35,8 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     if (!payload.activeRole) {
       throw new UnauthorizedException('Missing active role');
     }
+
+    await this.tokens.assertAccessNotRevoked(payload.sub, payload.iat);
 
     // Live status check so blocking a user takes effect immediately.
     const user = await this.userModel

@@ -1,8 +1,22 @@
 import { statsColors } from "@repo/theme";
-import type { ClubLocationLatLng } from "@repo/ui/cards/ClubLocationCard";
+import type { ClubRouteMapLatLng } from "@repo/ui/cards/ClubRouteMapCard";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
+import {
+  DEFAULT_GALLERY_ITEMS,
+  galleryFromImages,
+  type GalleryMediaItem,
+} from "./gallery-media";
 
-export type ClubDetailStatKey = "minutes" | "score" | "tasks";
+export type {
+  GalleryMediaItem as ClubDetailGalleryItem,
+  GalleryMediaKind as ClubDetailGalleryMediaKind,
+} from "./gallery-media";
+export {
+  formatGalleryViews,
+  withGalleryCardDefaults,
+} from "./gallery-media";
+
+export type ClubDetailStatKey = "distance" | "score" | "students";
 
 export type ClubDetailStat = {
   labelKey: ClubDetailStatKey;
@@ -49,6 +63,11 @@ export type ClubDetailCoach = {
   rating: number;
   ratingCount: number;
   availability: "remote" | "in-person";
+  yearsExperience?: number;
+  /** Show the "New" badge on the feature card. */
+  isNew?: boolean;
+  /** Show certified / verified meta. */
+  isCertified?: boolean;
 };
 
 export type ClubDetailBranch = {
@@ -83,13 +102,7 @@ export type ClubDetailLocation = {
   distanceLabel?: string;
   startLabel?: string;
   endLabel?: string;
-  route: readonly ClubLocationLatLng[];
-};
-
-export type ClubDetailGalleryItem = {
-  url: string;
-  title?: string;
-  description?: string;
+  route: readonly ClubRouteMapLatLng[];
 };
 
 export type ClubDetailPhone = {
@@ -98,9 +111,13 @@ export type ClubDetailPhone = {
   label?: string;
 };
 
+export type ClubDetailOperatingHourAudience = "shared" | "male" | "female";
+
 export type ClubDetailOperatingHour = {
   weekday: number;
   status: "open" | "closed";
+  /** Defaults to `shared` when omitted. */
+  audience?: ClubDetailOperatingHourAudience;
   open?: string;
   close?: string;
   description?: string;
@@ -151,6 +168,14 @@ export type ClubDetailOwner = {
   name: string;
   avatar?: string;
   headline?: string;
+  /** Optional short bio shown in the owner details sheet. */
+  bio?: string;
+  /** Years of experience. */
+  yearsExperience?: number;
+  rating?: number;
+  ratingCount?: number;
+  /** Optional rank badge overlaid on the avatar. */
+  rank?: number;
 };
 
 export type ClubDetailSubscription = {
@@ -194,7 +219,7 @@ export type ClubDetail = {
   /** Whether the club is currently open (demo flag). */
   isOpen: boolean;
   images: string[];
-  gallery: ClubDetailGalleryItem[];
+  gallery: GalleryMediaItem[];
   stats: ClubDetailStat[];
   overview: string;
   pricePrefix: string;
@@ -229,7 +254,7 @@ const DEFAULT_IMAGES = [
   PLACEHOLDER_IMAGE,
 ] as const;
 
-const TEHRAN_ROUTE: ClubLocationLatLng[] = [
+const TEHRAN_ROUTE: ClubRouteMapLatLng[] = [
   { lat: 35.7089, lng: 51.3912 },
   { lat: 35.7118, lng: 51.3948 },
   { lat: 35.7142, lng: 51.3915 },
@@ -319,6 +344,9 @@ const DEFAULT_COACHES: ClubDetailCoach[] = [
     rating: 4.9,
     ratingCount: 128,
     availability: "in-person",
+    yearsExperience: 5,
+    isNew: true,
+    isCertified: true,
   },
   {
     id: "ali",
@@ -330,6 +358,8 @@ const DEFAULT_COACHES: ClubDetailCoach[] = [
     rating: 4.7,
     ratingCount: 96,
     availability: "in-person",
+    yearsExperience: 8,
+    isCertified: true,
   },
   {
     id: "nika",
@@ -341,6 +371,8 @@ const DEFAULT_COACHES: ClubDetailCoach[] = [
     rating: 4.8,
     ratingCount: 74,
     availability: "remote",
+    yearsExperience: 4,
+    isCertified: true,
   },
   {
     id: "mehdi",
@@ -352,6 +384,8 @@ const DEFAULT_COACHES: ClubDetailCoach[] = [
     rating: 4.6,
     ratingCount: 61,
     availability: "in-person",
+    yearsExperience: 6,
+    isCertified: true,
   },
 ];
 
@@ -492,23 +526,7 @@ const DEFAULT_LOCATION: ClubDetailLocation = {
   route: TEHRAN_ROUTE,
 };
 
-const DEFAULT_GALLERY: ClubDetailGalleryItem[] = [
-  {
-    url: PLACEHOLDER_IMAGE,
-    title: "سالن اصلی",
-    description: "فضای وزنه‌آزاد و رک‌های المپیک با نور طبیعی.",
-  },
-  {
-    url: PLACEHOLDER_IMAGE,
-    title: "کلاس گروهی",
-    description: "سالن کلاس‌های HIIT و گروهی با ظرفیت محدود.",
-  },
-  {
-    url: PLACEHOLDER_IMAGE,
-    title: "فضای ریکاوری",
-    description: "منطقه کشش، موبیلیتی و ریکاوری پس از تمرین.",
-  },
-];
+const DEFAULT_GALLERY: GalleryMediaItem[] = DEFAULT_GALLERY_ITEMS;
 
 const DEFAULT_PHONES: ClubDetailPhone[] = [
   { id: "main", number: "۰۲۱-۸۸۷۷۶۶۵۵", label: "پذیرش" },
@@ -516,13 +534,31 @@ const DEFAULT_PHONES: ClubDetailPhone[] = [
 ];
 
 const DEFAULT_OPERATING_HOURS: ClubDetailOperatingHour[] = [
-  { weekday: 0, status: "open", open: "۰۶:۰۰", close: "۲۳:۰۰" },
-  { weekday: 1, status: "open", open: "۰۶:۰۰", close: "۲۳:۰۰" },
-  { weekday: 2, status: "open", open: "۰۶:۰۰", close: "۲۳:۰۰" },
-  { weekday: 3, status: "open", open: "۰۶:۰۰", close: "۲۳:۰۰" },
-  { weekday: 4, status: "open", open: "۰۶:۰۰", close: "۲۳:۰۰" },
-  { weekday: 5, status: "open", open: "۰۷:۰۰", close: "۲۲:۰۰" },
-  { weekday: 6, status: "closed" },
+  { weekday: 0, status: "open", audience: "shared", open: "۰۶:۰۰", close: "۲۳:۰۰" },
+  { weekday: 1, status: "open", audience: "shared", open: "۰۶:۰۰", close: "۲۳:۰۰" },
+  { weekday: 2, status: "open", audience: "shared", open: "۰۶:۰۰", close: "۲۳:۰۰" },
+  { weekday: 3, status: "open", audience: "shared", open: "۰۶:۰۰", close: "۲۳:۰۰" },
+  { weekday: 4, status: "open", audience: "shared", open: "۰۶:۰۰", close: "۲۳:۰۰" },
+  { weekday: 5, status: "open", audience: "shared", open: "۰۷:۰۰", close: "۲۲:۰۰" },
+  { weekday: 6, status: "closed", audience: "shared" },
+];
+
+/** Mixed club with gender-split schedule (demo). */
+const GENDER_SPLIT_OPERATING_HOURS: ClubDetailOperatingHour[] = [
+  { weekday: 0, status: "open", audience: "male", open: "۰۶:۰۰", close: "۱۴:۰۰" },
+  { weekday: 1, status: "open", audience: "male", open: "۰۶:۰۰", close: "۱۴:۰۰" },
+  { weekday: 2, status: "open", audience: "male", open: "۰۶:۰۰", close: "۱۴:۰۰" },
+  { weekday: 3, status: "open", audience: "male", open: "۰۶:۰۰", close: "۱۴:۰۰" },
+  { weekday: 4, status: "open", audience: "male", open: "۰۶:۰۰", close: "۱۴:۰۰" },
+  { weekday: 5, status: "open", audience: "male", open: "۰۷:۰۰", close: "۱۴:۰۰" },
+  { weekday: 6, status: "closed", audience: "male" },
+  { weekday: 0, status: "open", audience: "female", open: "۱۴:۰۰", close: "۲۳:۰۰" },
+  { weekday: 1, status: "open", audience: "female", open: "۱۴:۰۰", close: "۲۳:۰۰" },
+  { weekday: 2, status: "open", audience: "female", open: "۱۴:۰۰", close: "۲۳:۰۰" },
+  { weekday: 3, status: "open", audience: "female", open: "۱۴:۰۰", close: "۲۳:۰۰" },
+  { weekday: 4, status: "open", audience: "female", open: "۱۴:۰۰", close: "۲۳:۰۰" },
+  { weekday: 5, status: "open", audience: "female", open: "۱۴:۰۰", close: "۲۲:۰۰" },
+  { weekday: 6, status: "closed", audience: "female" },
 ];
 
 const DEFAULT_RULES: ClubDetailRule[] = [
@@ -597,15 +633,12 @@ const DEFAULT_OWNER: ClubDetailOwner = {
   name: "کیانوش مرادی",
   avatar: PLACEHOLDER_IMAGE,
   headline: "مالک و مدیر باشگاه",
+  bio: "بیش از یک دهه مدیریت باشگاه‌های ورزشی در تهران؛ تمرکز روی تجربه اعضا، مربیان حرفه‌ای و برنامه‌های تمرینی متنوع.",
+  yearsExperience: 5,
+  rating: 4.5,
+  ratingCount: 257,
+  rank: 1,
 };
-
-function galleryFromImages(images: string[]): ClubDetailGalleryItem[] {
-  return images.map((url, index) => ({
-    url,
-    title: DEFAULT_GALLERY[index]?.title,
-    description: DEFAULT_GALLERY[index]?.description,
-  }));
-}
 
 function clubExtras() {
   return {
@@ -644,15 +677,15 @@ const DEFAULT_SUBSCRIPTIONS: ClubDetailSubscription[] = [
   },
 ];
 
-/** Mock peak-hours curve — morning rush, midday lull, evening peak. */
+/** Mock typical-day busyness — hour buckets across open hours, value 0–100. */
 const DEFAULT_BUSY_HOURS: ClubDetailBusyHour[] = [
-  { label: "۶", value: 82 },
-  { label: "۹", value: 55 },
-  { label: "۱۲", value: 68 },
-  { label: "۱۵", value: 32 },
-  { label: "۱۸", value: 58 },
-  { label: "۲۱", value: 92 },
-  { label: "۲۳", value: 74 },
+  { label: "۶", value: 28 },
+  { label: "۹", value: 45 },
+  { label: "۱۲", value: 62 },
+  { label: "۱۵", value: 38 },
+  { label: "۱۸", value: 92 },
+  { label: "۲۱", value: 74 },
+  { label: "۲۳", value: 40 },
 ];
 
 const DEFAULT_REVIEWS: ClubDetailReview[] = [
@@ -736,14 +769,15 @@ const CLUBS: Record<string, ClubDetail> = {
     id: "heavenly",
     title: "آسمانی فیتنس",
     location: "تهران، ونک",
-    openHoursLabel: "۰۶:۰۰ – ۲۳:۰۰",
+    openHoursLabel: "آقایان ۰۶:۰۰ – ۱۴:۰۰ · بانوان ۱۴:۰۰ – ۲۳:۰۰",
     isOpen: true,
     images: [...DEFAULT_IMAGES],
     ...clubExtras(),
+    operatingHours: GENDER_SPLIT_OPERATING_HOURS,
     stats: [
-      { labelKey: "minutes", value: "۱۰–۲۰" },
+      { labelKey: "distance", value: "۱٫۲ کیلومتر" },
       { labelKey: "score", value: "+۵" },
-      { labelKey: "tasks", value: "۳" },
+      { labelKey: "students", value: "۱۲۴" },
     ],
     overview: LONG_OVERVIEW,
     pricePrefix: "از",
@@ -771,9 +805,9 @@ const CLUBS: Record<string, ClubDetail> = {
     images: [...DEFAULT_IMAGES],
     ...clubExtras(),
     stats: [
-      { labelKey: "minutes", value: "۱۵–۳۰" },
+      { labelKey: "distance", value: "۲٫۴ کیلومتر" },
       { labelKey: "score", value: "+۴" },
-      { labelKey: "tasks", value: "۵" },
+      { labelKey: "students", value: "۸۶" },
     ],
     overview:
       "باشگاهی قدرت‌محور برای لیفترهای جدی. وزنه‌های آزاد سنگین، رک‌های اختصاصی و مربیان متخصص در اورلود پیشرونده و فرم صحیح حرکت. فضای متمرکز، بدون حواس‌پرتی، فقط تمرین واقعی.",
@@ -801,13 +835,13 @@ const CLUBS: Record<string, ClubDetail> = {
     classes: DEFAULT_CLASSES.slice(0, 4),
     reviews: DEFAULT_REVIEWS.slice(0, 6),
     busyHours: [
-      { label: "۶", value: 70 },
-      { label: "۹", value: 88 },
-      { label: "۱۲", value: 45 },
+      { label: "۶", value: 35 },
+      { label: "۹", value: 70 },
+      { label: "۱۲", value: 48 },
       { label: "۱۵", value: 28 },
-      { label: "۱۸", value: 62 },
-      { label: "۲۱", value: 95 },
-      { label: "۲۳", value: 60 },
+      { label: "۱۸", value: 95 },
+      { label: "۲۱", value: 82 },
+      { label: "۲۳", value: 55 },
     ],
     isFavorite: true,
     isSaved: true,
@@ -821,9 +855,9 @@ const CLUBS: Record<string, ClubDetail> = {
     images: [...DEFAULT_IMAGES],
     ...clubExtras(),
     stats: [
-      { labelKey: "minutes", value: "۲۰–۴۰" },
+      { labelKey: "distance", value: "۳٫۸ کیلومتر" },
       { labelKey: "score", value: "+۳" },
-      { labelKey: "tasks", value: "۲" },
+      { labelKey: "students", value: "۵۲" },
     ],
     overview:
       "باشگاه محله‌ای با دستگاه‌های مدرن، کلاس‌های گروهی و مربیانی آماده برای ساخت عادت تمرینی پایدار.",
@@ -874,9 +908,9 @@ function createFallbackClub(clubId: string): ClubDetail {
     ...clubExtras(),
     gallery: galleryFromImages([...DEFAULT_IMAGES]),
     stats: [
-      { labelKey: "minutes", value: "۱۰–۲۰" },
+      { labelKey: "distance", value: "۱٫۲ کیلومتر" },
       { labelKey: "score", value: "+۵" },
-      { labelKey: "tasks", value: "۳" },
+      { labelKey: "students", value: "۱۲۴" },
     ],
     overview: `باشگاه ${title} را کشف کنید — تجهیزات، کلاس‌ها و مربیگری برای هر هدف تمرینی. فضای مدرن، برنامه‌های متنوع و پشتیبانی مربیان حرفه‌ای در کنار شماست تا مسیر تناسب اندام را با انگیزه ادامه دهید.`,
     pricePrefix: "از",

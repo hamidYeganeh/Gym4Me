@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import {
   getAllClubIds,
   getClubDetail,
@@ -35,6 +36,8 @@ export default async function ClubReservePage({ params }: ReservePageProps) {
 
   return (
     <DiscoveryClubsReserveScreen
+      clubImage={club?.images[0] ?? PLACEHOLDER_IMAGE}
+      clubLocation={club?.location}
       clubTitle={club?.title ?? ""}
       days={RESERVE_DAYS}
       plans={RESERVE_PLANS}

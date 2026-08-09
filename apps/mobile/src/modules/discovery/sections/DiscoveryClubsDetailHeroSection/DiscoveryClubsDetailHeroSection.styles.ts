@@ -10,12 +10,18 @@ export const discoveryClubsDetailHeroSectionStyles = {
     "flex shrink-0 flex-col gap-2.5",
   ].join(" "),
   thumbButton: [
-    "relative h-14 w-12 min-w-0 overflow-hidden rounded-2xl border-2 bg-transparent p-0 shadow-none",
+    "relative !size-12 aspect-square overflow-hidden",
+    "rounded-radius border-2 bg-transparent p-0 shadow-none",
     "transition-[border-color,opacity,transform] duration-fast ease-app",
   ].join(" "),
   thumbActive: "border-surface opacity-100",
   thumbIdle: "border-surface/70 opacity-90",
   thumbImage: "object-cover",
+  thumbMore: [
+    "flex items-center justify-center border-surface/80",
+    "bg-foreground/55 text-background backdrop-blur-md",
+  ].join(" "),
+  thumbMoreIcon: "shrink-0 text-background",
   counter: [
     "pointer-events-none absolute start-4 bottom-14 z-10",
     "h-7 rounded-full border-0 bg-foreground/70 px-3 text-background",
@@ -23,7 +29,8 @@ export const discoveryClubsDetailHeroSectionStyles = {
   ].join(" "),
   counterLabel: "text-[0.7rem] font-semibold tabular-nums text-background",
   sheet: [
-    "relative z-10 -mt-10 overflow-hidden rounded-t-[2.5rem]",
+    // overflow-x only — vertical overflow:hidden breaks sticky timeline badges.
+    "relative z-10 -mt-10 overflow-x-clip rounded-t-[2.5rem]",
     "bg-surface text-surface-foreground",
   ].join(" "),
   sheetHeader: [

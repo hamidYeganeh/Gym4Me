@@ -42,20 +42,29 @@ function DiscoveryHomePageSkeleton() {
 export function DiscoveryHomeScreenLoader() {
   const home = useDiscoveryHome();
 
-  if (home.isLoading && home.clubs.length === 0) {
+  if (
+    home.isLoading &&
+    home.nearbyClubs.length === 0 &&
+    home.topClubs.length === 0
+  ) {
     return <DiscoveryHomePageSkeleton />;
   }
 
   return (
     <DiscoveryHomeScreen
-      featuredClasses={home.classes}
-      featuredClubs={home.clubs}
-      isLoading={home.isLoading}
-      popularCoaches={home.coaches}
-      provinces={home.provinces}
+      amenities={home.amenities}
+      articles={home.articles}
       cities={home.cities}
-      sportCategories={home.sportCategories}
+      classes={home.classes}
+      coachCityName={home.coachCityName}
+      coaches={home.coaches}
+      features={home.features}
+      galleryItems={home.galleryItems}
+      isLoading={home.isLoading}
+      nearbyClubs={home.nearbyClubs}
+      open24Clubs={home.open24Clubs}
       sports={home.sports}
+      topClubs={home.topClubs}
     />
   );
 }

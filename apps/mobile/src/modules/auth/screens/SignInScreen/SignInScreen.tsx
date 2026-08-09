@@ -69,7 +69,12 @@ export function SignInScreen({ className }: SignInScreenProps) {
         expiresInSeconds: result.expiresInSeconds,
         debugCode: result.debugCode,
       });
-      router.push("/auth/otp");
+      const next = afterAuthPath();
+      router.push(
+        next
+          ? `/auth/otp?next=${encodeURIComponent(next)}`
+          : "/auth/otp",
+      );
     } catch (err) {
       if (err instanceof ApiError && err.status === 429) {
         setError(t("errorRateLimited"));

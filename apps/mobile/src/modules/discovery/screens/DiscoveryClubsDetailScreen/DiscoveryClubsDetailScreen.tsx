@@ -1,6 +1,8 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useRequireAuthAction } from "@/shared/hooks/useRequireAuthAction";
 import { DiscoveryClubsDetailActionsSection } from "../../sections/DiscoveryClubsDetailActionsSection";
 import { DiscoveryClubsDetailBodySection } from "../../sections/DiscoveryClubsDetailBodySection";
 import { DiscoveryClubsDetailHeroSection } from "../../sections/DiscoveryClubsDetailHeroSection";
@@ -16,6 +18,8 @@ function getClubRating(reviews: { rating: number }[]) {
 export function DiscoveryClubsDetailScreen({
   club,
 }: DiscoveryClubsDetailScreenProps) {
+  const router = useRouter();
+  const { runWithAuth } = useRequireAuthAction();
   const defaultPlanId =
     club.subscriptions.find((plan) => plan.price > 0)?.id ??
     club.subscriptions[0]?.id ??
@@ -27,6 +31,7 @@ export function DiscoveryClubsDetailScreen({
     club.subscriptions.find((plan) => plan.id === selectedSubscriptionId) ??
     club.subscriptions[0];
   const rating = getClubRating(club.reviews);
+  const reserveHref = `/discovery/clubs/${club.id}/reserve`;
 
   return (
     <div className={styles.root}>
@@ -50,6 +55,9 @@ export function DiscoveryClubsDetailScreen({
         </DiscoveryClubsDetailHeroSection>
       </div>
       <DiscoveryClubsDetailActionsSection
+        onReserve={() =>
+          runWithAuth(() => router.push(reserveHref), reserveHref)
+        }
         price={selectedPlan?.price ?? 0}
         pricePrefix={club.pricePrefix}
         priceSuffix={club.priceSuffix}

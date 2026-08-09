@@ -1,6 +1,11 @@
 "use client";
 
-import { DotThreeHorizontal, FilmStrip, Image1, Sparkle1 } from "@repo/icons";
+import {
+  BarbellHorizontal,
+  Calendar1,
+  DotThreeHorizontal,
+  Kettlebell,
+} from "@repo/icons";
 import { QuickActionCard } from "@repo/ui/cards/QuickActionCard";
 import { ownerHomeQuickActionsSectionStyles as styles } from "./OwnerHomeQuickActionsSection.styles";
 import type { OwnerHomeQuickActionsSectionProps } from "./OwnerHomeQuickActionsSection.types";
@@ -9,32 +14,32 @@ const ICON_SIZE = 28;
 
 export function OwnerHomeQuickActionsSection({
   sectionLabel,
-  aiLabel,
-  photoLabel,
-  videoLabel,
+  classesLabel,
+  bookingsLabel,
+  equipmentLabel,
   moreLabel,
-  onAiPress,
-  onPhotoPress,
-  onVideoPress,
+  onClassesPress,
+  onBookingsPress,
+  onEquipmentPress,
   onMorePress,
 }: OwnerHomeQuickActionsSectionProps) {
   return (
     <section aria-label={sectionLabel} className={styles.root}>
       <div className={styles.grid}>
         <QuickActionCard
-          icon={<Sparkle1 size={ICON_SIZE} />}
-          label={aiLabel}
-          onPress={onAiPress}
+          icon={<Kettlebell size={ICON_SIZE} />}
+          label={classesLabel}
+          onPress={onClassesPress}
         />
         <QuickActionCard
-          icon={<Image1 size={ICON_SIZE} />}
-          label={photoLabel}
-          onPress={onPhotoPress}
+          icon={<Calendar1 size={ICON_SIZE} />}
+          label={bookingsLabel}
+          onPress={onBookingsPress}
         />
         <QuickActionCard
-          icon={<FilmStrip size={ICON_SIZE} />}
-          label={videoLabel}
-          onPress={onVideoPress}
+          icon={<BarbellHorizontal size={ICON_SIZE} />}
+          label={equipmentLabel}
+          onPress={onEquipmentPress}
         />
         <QuickActionCard
           icon={<DotThreeHorizontal size={ICON_SIZE} />}

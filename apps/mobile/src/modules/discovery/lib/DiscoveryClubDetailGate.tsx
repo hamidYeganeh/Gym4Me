@@ -7,6 +7,7 @@ import { DiscoveryClubsBranchesScreen } from "../screens/DiscoveryClubsBranchesS
 import { DiscoveryClubsClassesScreen } from "../screens/DiscoveryClubsClassesScreen";
 import { DiscoveryClubsDetailScreen } from "../screens/DiscoveryClubsDetailScreen";
 import { DiscoveryClubsReviewsScreen } from "../screens/DiscoveryClubsReviewsScreen";
+import { DiscoveryClubsSlotsScreen } from "../screens/DiscoveryClubsSlotsScreen";
 import { DiscoveryClubsSportsScreen } from "../screens/DiscoveryClubsSportsScreen";
 import { useDiscoveryClubDetail } from "./use-discovery-club-detail";
 import type { ClubDetail } from "./club-detail-data";
@@ -21,6 +22,7 @@ const CLUB_VIEWS = {
   sports: DiscoveryClubsSportsScreen,
   reviews: DiscoveryClubsReviewsScreen,
   classes: DiscoveryClubsClassesScreen,
+  slots: DiscoveryClubsSlotsScreen,
 } satisfies Record<string, ComponentType<{ club: ClubDetail }>>;
 
 export type DiscoveryClubView = keyof typeof CLUB_VIEWS;

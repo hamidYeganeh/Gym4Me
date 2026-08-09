@@ -71,6 +71,6 @@ export class DiscoveryClubsController {
   @Get(':clubId/coaches')
   @ApiOperation({ summary: 'Public coach refs' })
   coaches(@Param('clubId') clubId: string) {
-    return this.clubs.listCoaches(clubId);
+    return this.clubs.listCoaches(clubId, { discovery: true });
   }
 }

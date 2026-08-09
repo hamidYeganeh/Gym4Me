@@ -1,9 +1,11 @@
 export const discoveryCoachesRecommendSectionStyles = {
   root: "flex flex-col gap-3",
-  header: "flex items-center justify-between gap-3 px-screen",
+  header: "flex items-start justify-between gap-3 px-screen",
+  titleBlock: "min-w-0 flex-1",
   title: "text-foreground",
+  hint: "text-muted",
   seeAll:
-    "cursor-pointer text-sm font-semibold text-accent no-underline shadow-none",
+    "shrink-0 cursor-pointer text-sm font-semibold text-accent no-underline shadow-none",
   carousel:
     "flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth px-screen pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
   slide: "w-[min(78vw,280px)] shrink-0 snap-center",

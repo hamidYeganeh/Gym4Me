@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { createHash } from 'crypto';
 import { Model, Types } from 'mongoose';
@@ -6,7 +10,8 @@ import type { Request } from 'express';
 import { createReadStream, existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { AuditService } from '../audit/audit.service';
-import { AuditAction } from '../common/enums';
+import { AuditAction, MediaVisibility, Role } from '../common/enums';
+import type { JwtUser } from '../common/types';
 import { Media, MediaDocument } from '../schemas/media.schema';
 
 @Injectable()
@@ -20,6 +25,11 @@ export class MediaService {
     file: Express.Multer.File,
     uploaderId: string,
     request?: Request,
+    opts?: {
+      mimeType?: string;
+      visibility?: MediaVisibility;
+      originalName?: string;
+    },
   ) {
     const absolute = join(process.env.UPLOAD_DIR || './uploads', file.filename);
     const hash = existsSync(absolute)
@@ -28,10 +38,11 @@ export class MediaService {
 
     const media = await this.mediaModel.create({
       path: file.filename,
-      mimeType: file.mimetype,
+      mimeType: opts?.mimeType ?? file.mimetype,
       size: file.size,
       hash,
-      originalName: file.originalname,
+      originalName: opts?.originalName ?? file.originalname,
+      visibility: opts?.visibility ?? MediaVisibility.PUBLIC,
       uploaderId: new Types.ObjectId(uploaderId),
     });
 
@@ -43,6 +54,7 @@ export class MediaService {
         mimeType: media.mimeType,
         size: media.size,
         hash: media.hash,
+        visibility: media.visibility,
       },
       request,
     });
@@ -57,12 +69,26 @@ export class MediaService {
     return media;
   }
 
-  async getMeta(id: string) {
-    return this.toPublic(await this.findById(id));
+  private assertCanRead(media: MediaDocument, user?: JwtUser | null): void {
+    const visibility = media.visibility ?? MediaVisibility.PUBLIC;
+    if (visibility === MediaVisibility.PUBLIC) return;
+    if (!user) {
+      throw new ForbiddenException('Media is private');
+    }
+    if (user.activeRole === Role.ADMIN) return;
+    if (media.uploaderId?.toString() === user.sub) return;
+    throw new ForbiddenException('Media is private');
   }
 
-  async openFile(id: string) {
+  async getMeta(id: string, user?: JwtUser | null) {
     const media = await this.findById(id);
+    this.assertCanRead(media, user);
+    return this.toPublic(media);
+  }
+
+  async openFile(id: string, user?: JwtUser | null) {
+    const media = await this.findById(id);
+    this.assertCanRead(media, user);
     const absolute = join(process.env.UPLOAD_DIR || './uploads', media.path);
     if (!existsSync(absolute)) throw new NotFoundException('File missing on disk');
     return {
@@ -70,6 +96,7 @@ export class MediaService {
       mimeType: media.mimeType,
       originalName: media.originalName,
       size: media.size,
+      visibility: media.visibility ?? MediaVisibility.PUBLIC,
     };
   }
 
@@ -85,6 +112,7 @@ export class MediaService {
       size: media.size,
       hash: media.hash ?? null,
       originalName: media.originalName ?? null,
+      visibility: media.visibility ?? MediaVisibility.PUBLIC,
       url: `/api/v1/media/${media._id.toString()}/file`,
       createdAt: media.createdAt,
     };
