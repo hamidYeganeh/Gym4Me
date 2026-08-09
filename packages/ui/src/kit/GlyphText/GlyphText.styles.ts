@@ -2,7 +2,7 @@ import { tv } from "tailwind-variants";
 
 export const glyphTextVariants = tv({
   slots: {
-    root: "align-bottom leading-[100%] text-inherit",
+    root: "align-bottom leading-[107%] text-inherit",
   },
   variants: {
     multi: {

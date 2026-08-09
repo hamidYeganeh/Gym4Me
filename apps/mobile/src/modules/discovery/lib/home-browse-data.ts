@@ -1,6 +1,6 @@
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import type { LocationNode, SportNode } from "@repo/api";
-import type { AchievementCardColor } from "@repo/ui/cards/AchievementCard";
+import type { AchievementTagColor } from "@repo/ui/cards/AchievementTag";
 import type { BrowseClub } from "./clubs-browse-data";
 
 /** Vintage city posters used for discovery location mocks. */
@@ -39,7 +39,7 @@ export type HomeClassItem = {
 export type HomeFeatureItem = {
   id: string;
   title: string;
-  color: AchievementCardColor;
+  color: AchievementTagColor;
   iconKey:
     | "female"
     | "male"

@@ -1,4 +1,4 @@
-export * from "./AchievementCard";
+export * from "./AchievementTag";
 export * from "./ArticleCard";
 export * from "./BusyHoursCard";
 export * from "./CallToActionCard";

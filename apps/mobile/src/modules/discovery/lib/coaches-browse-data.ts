@@ -1,4 +1,4 @@
-import type { AchievementCardColor } from "@repo/ui/cards/AchievementCard";
+import type { AchievementTagColor } from "@repo/ui/cards/AchievementTag";
 
 export type CoachSpecialtyId =
   | "hiit"
@@ -67,7 +67,7 @@ export type MapCoach = {
 export type CoachFeatureItem = {
   id: string;
   title: string;
-  color: AchievementCardColor;
+  color: AchievementTagColor;
   iconKey:
     | "remote"
     | "inPerson"

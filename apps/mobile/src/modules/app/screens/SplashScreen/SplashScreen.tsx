@@ -25,16 +25,12 @@ export function SplashScreen({ brand, taglines }: SplashScreenProps) {
   return (
     <main className={styles.root()}>
       <div className={styles.markAnchor()}>
-        <Logo
-          color={SPLASH_INK}
-          gradient={false}
-          shadow={false}
-          size="5xl"
-        />
+        <Logo color={SPLASH_INK} gradient={false} shadow={false} size="5xl" />
         <div className={styles.copy()}>
           <h1 className={styles.brand()} style={{ color: SPLASH_INK }}>
             {brand}
           </h1>
+
           <p className={styles.tagline()}>
             <GlyphText
               colors={SPLASH_GLYPH_COLORS}

@@ -34,7 +34,7 @@ import { UsersThree } from "@repo/icons/UsersThree";
 import { Weight } from "@repo/icons/Weight";
 import { WifiHigh } from "@repo/icons/WifiHigh";
 
-import { AchievementCard } from "@repo/ui/cards/AchievementCard";
+import { AchievementTag } from "@repo/ui/cards/AchievementTag";
 import { BusyHoursCard } from "@repo/ui/cards/BusyHoursCard";
 import { ClubAmenityCard } from "@repo/ui/cards/ClubAmenityCard";
 import { ClubBranchCard } from "@repo/ui/cards/ClubBranchCard";
@@ -967,9 +967,9 @@ export function DiscoveryClubsDetailBodySection({
           >
             {club.achievements.map((item) => (
               <div className={styles.achievementSlide} key={item.id}>
-                <AchievementCard
+                <AchievementTag
                   color={item.color ?? "accent"}
-                  icon={<Medal size={28} />}
+                  icon={<Medal size={20} />}
                 />
                 <Typography className={styles.achievementLabel} type="body-xs">
                   {item.title}

@@ -18,9 +18,10 @@ import {
 } from "@repo/icons";
 import { statsColors } from "@repo/theme";
 import {
-  AchievementCard,
-  type AchievementCardColor,
-} from "@repo/ui/cards/AchievementCard";
+  AchievementTag,
+  type AchievementTagColor,
+  type AchievementTagVariant,
+} from "@repo/ui/cards/AchievementTag";
 import { CallToActionCard } from "@repo/ui/cards/CallToActionCard";
 import { CityCard } from "@repo/ui/cards/CityCard";
 import { ClubAmenityCard } from "@repo/ui/cards/ClubAmenityCard";
@@ -71,7 +72,7 @@ import { SwipeButtonDemo } from "@/shared/components/ui/swipe-button-demo";
 import { UploaderDemo } from "@/shared/components/ui/uploader-demo";
 import { WeightSliderDemo } from "@/shared/components/ui/weight-slider-demo";
 
-const ACHIEVEMENT_COLORS: AchievementCardColor[] = [
+const ACHIEVEMENT_COLORS: AchievementTagColor[] = [
   "accent",
   "danger",
   "success",
@@ -81,6 +82,18 @@ const ACHIEVEMENT_COLORS: AchievementCardColor[] = [
   "blue",
   "yellow",
   "purple",
+];
+
+const ACHIEVEMENT_VARIANTS: AchievementTagVariant[] = [
+  "polygon",
+  "circular",
+  "wavy",
+  "shield1",
+  "shield2",
+  "octagon",
+  "diamond",
+  "star1",
+  "star2",
 ];
 
 const AREA_CHART_DATA = [
@@ -1044,14 +1057,18 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
         <h2 className="text-lg font-medium text-foreground">
           {labels.achievementCardLabel}
         </h2>
-        <div className="flex flex-wrap items-end gap-4 pb-2">
-          {ACHIEVEMENT_COLORS.map((color) => (
-            <AchievementCard
-              key={color}
-              aria-label={`${labels.achievementCardAria} (${color})`}
-              color={color}
-              variant="polygon"
-            />
+        <div className="flex flex-col gap-3 pb-2">
+          {ACHIEVEMENT_VARIANTS.map((variant) => (
+            <div className="flex flex-wrap items-end gap-4" key={variant}>
+              {ACHIEVEMENT_COLORS.map((color) => (
+                <AchievementTag
+                  key={`${variant}-${color}`}
+                  aria-label={`${labels.achievementCardAria} ${variant} (${color})`}
+                  color={color}
+                  variant={variant}
+                />
+              ))}
+            </div>
           ))}
         </div>
       </section>

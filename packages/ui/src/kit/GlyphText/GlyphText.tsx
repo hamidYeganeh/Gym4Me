@@ -15,10 +15,12 @@ import type { GlyphTextProps } from "./GlyphText.types";
 
 /** Theme-synced sweep palette (stats + brand accent). */
 const DEFAULT_COLORS = [
+  statsColors.purple,
   statsColors.red,
   statsColors.yellow,
   statsColors.orange,
   "var(--accent)",
+  statsColors.blue,
 ];
 
 const BAND_HALF = 17;

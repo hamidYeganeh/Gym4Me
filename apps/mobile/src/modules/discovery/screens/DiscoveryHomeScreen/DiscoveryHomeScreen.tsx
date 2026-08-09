@@ -16,7 +16,7 @@ import { Shower1 } from "@repo/icons/Shower1";
 import { UsersTwo } from "@repo/icons/UsersTwo";
 import { Wheelchair } from "@repo/icons/Wheelchair";
 import { WifiFull } from "@repo/icons/WifiFull";
-import { AchievementCard } from "@repo/ui/cards/AchievementCard";
+import { AchievementTag } from "@repo/ui/cards/AchievementTag";
 import { ArticleCard } from "@repo/ui/cards/ArticleCard";
 import { CityCard } from "@repo/ui/cards/CityCard";
 import { ClubAmenityCard } from "@repo/ui/cards/ClubAmenityCard";
@@ -44,7 +44,7 @@ import {
 import type { DiscoveryHomeScreenProps } from "./DiscoveryHomeScreen.types";
 
 const QUICK_NAV_ICON_SIZE = 22;
-const FEATURE_ICON_SIZE = 28;
+const FEATURE_ICON_SIZE = 20;
 const AMENITY_ICON_SIZE = 36;
 
 function SectionRail({
@@ -258,7 +258,7 @@ export function DiscoveryHomeScreen({
                 variant="ghost"
                 onPress={() => router.push(feature.href)}
               >
-                <AchievementCard
+                <AchievementTag
                   color={feature.color}
                   icon={featureIcon(feature.iconKey)}
                 />
