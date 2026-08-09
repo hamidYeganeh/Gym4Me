@@ -13,14 +13,10 @@ export default async function SplashPage() {
 
   return (
     <>
-      <SplashContinue guestHref="/home" />
+      {/* <SplashContinue guestHref="/home" /> */}
       <SplashScreen
         brand={t("brand")}
-        taglines={[
-          t("taglineTrain"),
-          t("taglineRecover"),
-          t("taglineRepeat"),
-        ]}
+        taglines={[t("taglineTrain"), t("taglineRecover"), t("taglineRepeat")]}
       />
     </>
   );

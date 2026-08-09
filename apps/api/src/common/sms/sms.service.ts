@@ -65,7 +65,7 @@ export class KavenegarSmsService extends SmsService {
 
   constructor(config: ConfigService) {
     super();
-    this.apiKey = config.getOrThrow<string>('KAVENEGAR_API_KEY');
+    this.apiKey = config.getOrThrow<string>('KAVENEGAR_API_KEY').trim();
     this.otpTemplate = config.get<string>('KAVENEGAR_OTP_TEMPLATE', 'verify');
     this.inviteTemplate = config.get<string>('KAVENEGAR_INVITE_TEMPLATE');
     this.sender = config.get<string>('KAVENEGAR_SENDER') || undefined;
@@ -76,6 +76,11 @@ export class KavenegarSmsService extends SmsService {
         : String(debug ?? 'false').trim().toLowerCase() === 'true';
   }
 
+  /** API key may contain `+` / `=` — must be path-encoded or Kavenegar returns 404. */
+  private apiUrl(path: string): string {
+    return `https://api.kavenegar.com/v1/${encodeURIComponent(this.apiKey)}/${path}`;
+  }
+
   private toLocalPhone(phone: string): string {
     // +98912… → 0912…
     if (phone.startsWith('+98')) return `0${phone.slice(3)}`;
@@ -83,6 +88,7 @@ export class KavenegarSmsService extends SmsService {
   }
 
   async sendOtp(phone: string, code: string): Promise<void> {
+    // Only log the code when debugging; real send always goes through Kavenegar.
     if (this.debugMode) {
       this.logger.log(`[DEBUG OTP] to=${phone} code=${code}`);
     }
@@ -129,20 +135,31 @@ export class KavenegarSmsService extends SmsService {
     if (tokens[1]) params.set('token2', tokens[1]);
     if (tokens[2]) params.set('token3', tokens[2]);
 
-    const url = `https://api.kavenegar.com/v1/${this.apiKey}/verify/lookup.json`;
-    const res = await fetch(`${url}?${params.toString()}`, { method: 'GET' });
-    if (!res.ok) {
-      const body = await res.text();
+    const res = await fetch(`${this.apiUrl('verify/lookup.json')}?${params}`, {
+      method: 'GET',
+    });
+    const body = await res.text();
+    let json: { return?: { status?: number; message?: string } };
+    try {
+      json = JSON.parse(body) as {
+        return?: { status?: number; message?: string };
+      };
+    } catch {
       this.logger.error(`Kavenegar verify failed: ${res.status} ${body}`);
       throw new Error(`Kavenegar SMS failed (${res.status})`);
     }
-    const json = (await res.json()) as {
-      return?: { status?: number; message?: string };
-    };
     const status = json.return?.status;
-    if (status !== undefined && status !== 200) {
-      this.logger.error(`Kavenegar verify status=${status}: ${json.return?.message}`);
-      throw new Error(`Kavenegar SMS status ${status}`);
+    if (!res.ok || (status !== undefined && status !== 200)) {
+      const message = json.return?.message ?? body;
+      this.logger.error(
+        `Kavenegar verify failed: http=${res.status} status=${status}: ${message}`,
+      );
+      if (status === 424) {
+        throw new Error(
+          `Kavenegar OTP template "${template}" not found or not approved yet. Create it in the Kavenegar panel (Verify → Templates) with body: کد تأیید جیم‌فورمی: %token`,
+        );
+      }
+      throw new Error(`Kavenegar SMS failed (${status ?? res.status})`);
     }
   }
 
@@ -154,8 +171,7 @@ export class KavenegarSmsService extends SmsService {
     });
     if (this.sender) params.set('sender', this.sender);
 
-    const url = `https://api.kavenegar.com/v1/${this.apiKey}/sms/send.json`;
-    const res = await fetch(url, {
+    const res = await fetch(this.apiUrl('sms/send.json'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: params.toString(),

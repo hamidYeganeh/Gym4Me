@@ -1,10 +1,7 @@
 "use client";
 
-import { Button, Typography } from "@heroui/react";
-import { Building2 } from "@repo/icons/Building2";
-import { Calendar1 } from "@repo/icons/Calendar1";
-import { MapTrifold } from "@repo/icons/MapTrifold";
-import { Logo } from "@repo/ui/common/Logo";
+import { Button, Link, Typography } from "@heroui/react";
+import { ArrowRight } from "@repo/icons";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -36,31 +33,10 @@ export function WelcomeScreen({ className }: WelcomeScreenProps) {
     }
   }, [activeRole, isAuthenticated, isReady, router]);
 
-  const finishWelcome = (href: string) => {
+  const goSignIn = () => {
     markWelcomeSeen();
-    router.replace(href);
+    router.replace("/auth");
   };
-
-  const features = [
-    {
-      key: "discover",
-      icon: <MapTrifold aria-hidden size={20} />,
-      title: t("featureDiscoverTitle"),
-      body: t("featureDiscoverBody"),
-    },
-    {
-      key: "clubs",
-      icon: <Building2 aria-hidden size={20} />,
-      title: t("featureClubsTitle"),
-      body: t("featureClubsBody"),
-    },
-    {
-      key: "book",
-      icon: <Calendar1 aria-hidden size={20} />,
-      title: t("featureBookTitle"),
-      body: t("featureBookBody"),
-    },
-  ] as const;
 
   return (
     <main className={styles.root({ className })}>
@@ -75,56 +51,43 @@ export function WelcomeScreen({ className }: WelcomeScreenProps) {
       </div>
 
       <div className={styles.content()}>
-        <div className={styles.brand()}>
-          <div className={styles.brandRow()}>
-            <Logo size="lg" title={t("brandAriaLabel")} />
-            <span className={styles.brandName()}>{t("brand")}</span>
-          </div>
-          <Typography className={styles.title()} type="h1" weight="bold">
+        <div className={styles.copy()}>
+          <Typography
+            align="center"
+            className={styles.title()}
+            type="h1"
+            weight="bold"
+          >
             {t("title")}
           </Typography>
-          <Typography className={styles.subtitle()} type="body">
+          <Typography
+            align="center"
+            className={styles.subtitle()}
+            color="muted"
+            type="body"
+          >
             {t("subtitle")}
           </Typography>
         </div>
 
-        <ul className={styles.features()}>
-          {features.map((feature) => (
-            <li className={styles.feature()} key={feature.key}>
-              <span className={styles.featureIcon()}>{feature.icon}</span>
-              <div className={styles.featureCopy()}>
-                <Typography
-                  className={styles.featureTitle()}
-                  type="body-sm"
-                  weight="semibold"
-                >
-                  {feature.title}
-                </Typography>
-                <Typography className={styles.featureBody()} type="body-xs">
-                  {feature.body}
-                </Typography>
-              </div>
-            </li>
-          ))}
-        </ul>
-
         <div className={styles.actions()}>
           <Button
             className={styles.primary()}
-            onPress={() => finishWelcome("/home")}
+            fullWidth
+            onPress={() => router.push("/welcome/introduce")}
             size="lg"
             variant="primary"
           >
-            {t("ctaExplore")}
+            {t("ctaGetStarted")}
+            <ArrowRight aria-hidden className={styles.primaryIcon()} size={20} />
           </Button>
-          <Button
-            className={styles.secondary()}
-            onPress={() => finishWelcome("/auth")}
-            size="lg"
-            variant="secondary"
-          >
-            {t("ctaSignIn")}
-          </Button>
+
+          <p className={styles.footer()}>
+            <span>{t("alreadyHaveAccount")}</span>
+            <Link className={styles.signIn()} onPress={goSignIn}>
+              {t("ctaSignIn")}
+            </Link>
+          </p>
         </div>
       </div>
     </main>

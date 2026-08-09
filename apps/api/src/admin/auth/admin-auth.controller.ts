@@ -15,6 +15,7 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums';
+import { AUTH_THROTTLE } from '../../common/throttling/auth-throttle';
 import { AdminAuthService } from './admin-auth.service';
 import { AdminConfirmOtpDto } from './dto/admin-auth.dto';
 
@@ -24,7 +25,7 @@ export class AdminAuthController {
   constructor(private readonly auth: AdminAuthService) {}
 
   @Public()
-  @Throttle({ default: { limit: 3, ttl: 60_000 } })
+  @Throttle(AUTH_THROTTLE)
   @Post('otp')
   @HttpCode(200)
   @ApiOperation({ summary: 'Request OTP for admin phone login' })
@@ -42,7 +43,7 @@ export class AdminAuthController {
   }
 
   @Public()
-  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @Throttle(AUTH_THROTTLE)
   @Post('login')
   @HttpCode(200)
   @ApiOperation({ summary: 'Admin login with phone and password' })

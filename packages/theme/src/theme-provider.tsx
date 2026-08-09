@@ -5,10 +5,7 @@ import {
   type ThemeProviderProps,
 } from "@teispace/next-themes";
 
-export function ThemeProvider({
-  children,
-  ...props
-}: ThemeProviderProps) {
+export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
   return (
     <NextThemesProvider
       attribute={["class", "data-theme"]}

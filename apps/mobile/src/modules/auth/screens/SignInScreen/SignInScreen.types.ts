@@ -1,3 +1,5 @@
-import type { HTMLAttributes } from "react";
+export type SignInScreenProps = {
+  className?: string;
+};
 
-export type SignInScreenProps = HTMLAttributes<HTMLDivElement>;
+export type SignInMode = "password" | "otp";

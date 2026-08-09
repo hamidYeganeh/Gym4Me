@@ -13,10 +13,17 @@ import {
       provide: SmsService,
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
+        const debugRaw = config.get<string | boolean>('DEBUG_MODE', 'false');
+        const debugMode =
+          typeof debugRaw === 'boolean'
+            ? debugRaw
+            : String(debugRaw ?? 'false').trim().toLowerCase() === 'true';
         const provider = (
           config.get<string>('SMS_PROVIDER', 'mock') ?? 'mock'
         ).toLowerCase();
-        if (provider === 'kavenegar') {
+
+        // Production-like: never mock SMS when DEBUG_MODE is off.
+        if (!debugMode || provider === 'kavenegar') {
           return new KavenegarSmsService(config);
         }
         return new MockSmsService();

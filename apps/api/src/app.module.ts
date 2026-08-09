@@ -28,6 +28,11 @@ import { REDIS, RedisModule } from './common/redis/redis.module';
 import { SmsModule } from './common/sms/sms.module';
 import { PushModule } from './common/push/push.module';
 import { PaymentModule } from './common/payment/payment.module';
+import {
+  AUTH_THROTTLE_DAY,
+  AUTH_THROTTLE_MINUTE,
+  skipUnlessAuthThrottleNamed,
+} from './common/throttling/auth-throttle';
 import { MediaModule } from './media/media.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { SupportModule } from './support/support.module';
@@ -50,7 +55,21 @@ import { UsersModule } from './users/users.module';
     ThrottlerModule.forRootAsync({
       inject: [REDIS],
       useFactory: (redis: Redis) => ({
-        throttlers: [{ limit: 100, ttl: 60_000 }],
+        throttlers: [
+          { name: 'default', limit: 100, ttl: 60_000 },
+          {
+            name: AUTH_THROTTLE_MINUTE,
+            limit: 3,
+            ttl: 60_000,
+            skipIf: skipUnlessAuthThrottleNamed(AUTH_THROTTLE_MINUTE),
+          },
+          {
+            name: AUTH_THROTTLE_DAY,
+            limit: 7,
+            ttl: 86_400_000,
+            skipIf: skipUnlessAuthThrottleNamed(AUTH_THROTTLE_DAY),
+          },
+        ],
         storage: new ThrottlerStorageRedisService(redis),
       }),
     }),

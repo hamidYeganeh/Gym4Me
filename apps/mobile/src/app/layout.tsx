@@ -1,11 +1,19 @@
 import type { Metadata, Viewport } from "next";
 import { iranSansX } from "@repo/fonts/iran-sans-x";
 import { ThemeProvider } from "@repo/theme";
+import { Satisfy } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 import { CapacitorProvider } from "@/shared/components/capacitor-provider";
 import { AppProviders } from "@/shared/providers/AppProviders";
 import "./globals.css";
+
+const satisfy = Satisfy({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-satisfy-family",
+  display: "swap",
+});
 
 export const viewport: Viewport = {
   themeColor: [
@@ -70,7 +78,7 @@ export default async function RootLayout({
     <html
       lang={locale}
       dir="rtl"
-      className={`${iranSansX.variable} h-full`}
+      className={`${iranSansX.variable} ${satisfy.variable} h-full`}
       suppressHydrationWarning
     >
       <body

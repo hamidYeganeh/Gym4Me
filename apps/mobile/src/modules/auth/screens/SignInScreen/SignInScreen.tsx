@@ -4,13 +4,24 @@ import { useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Button,
+  Checkbox,
   Input,
   Label,
   Link,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  type Key,
 } from "@heroui/react";
 import { ApiError } from "@repo/api";
-import { ArrowRight, Eye, EyeSlash, Lock1, Telephone1 } from "@repo/icons";
+import {
+  ArrowRight,
+  CloseX,
+  Eye,
+  EyeSlash,
+  Lock1,
+  Telephone1,
+} from "@repo/icons";
 import {
   AuthLayout,
   type AuthLayoutLabels,
@@ -20,9 +31,7 @@ import { saveOtpPending } from "@/modules/auth/lib/otp-pending";
 import { roleHomePath } from "@/shared/lib/role-routes";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { signInScreenVariants } from "./SignInScreen.styles";
-import type { SignInScreenProps } from "./SignInScreen.types";
-
-const HERO_SRC = "/auth-hero.jpg";
+import type { SignInMode, SignInScreenProps } from "./SignInScreen.types";
 
 export function SignInScreen({ className }: SignInScreenProps) {
   const t = useTranslations("Mobile.Auth");
@@ -30,16 +39,15 @@ export function SignInScreen({ className }: SignInScreenProps) {
   const { login, requestOtp } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [mode, setMode] = useState<SignInMode>("password");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
-  const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isOtpPending, setIsOtpPending] = useState(false);
-  const [isPasswordPending, setIsPasswordPending] = useState(false);
+  const [isPending, setIsPending] = useState(false);
 
   const labels: AuthLayoutLabels = {
-    title: t("title"),
     subtitle: t("subtitle"),
     brandAriaLabel: t("brandAriaLabel"),
     heroAlt: t("heroAlt"),
@@ -49,6 +57,14 @@ export function SignInScreen({ className }: SignInScreenProps) {
     const next = searchParams.get("next");
     if (next && next.startsWith("/")) return next;
     return null;
+  };
+
+  const handleModeChange = (keys: Set<Key>) => {
+    const next = [...keys][0];
+    if (next === "password" || next === "otp") {
+      setError(null);
+      setMode(next);
+    }
   };
 
   const handleOtpLogin = async (event?: FormEvent) => {
@@ -61,7 +77,7 @@ export function SignInScreen({ className }: SignInScreenProps) {
       return;
     }
 
-    setIsOtpPending(true);
+    setIsPending(true);
     try {
       const result = await requestOtp(normalizedPhone);
       saveOtpPending({
@@ -84,7 +100,7 @@ export function SignInScreen({ className }: SignInScreenProps) {
         setError(t("errorOtpRequest"));
       }
     } finally {
-      setIsOtpPending(false);
+      setIsPending(false);
     }
   };
 
@@ -97,9 +113,11 @@ export function SignInScreen({ className }: SignInScreenProps) {
       return;
     }
 
-    setIsPasswordPending(true);
+    setIsPending(true);
     try {
       const session = await login(phone.trim(), password);
+      // remember flag reserved for longer refresh TTL once API supports it
+      void remember;
       router.replace(afterAuthPath() ?? roleHomePath(session.activeRole));
     } catch (err) {
       if (err instanceof ApiError) {
@@ -108,7 +126,7 @@ export function SignInScreen({ className }: SignInScreenProps) {
         setError(t("errorInvalid"));
       }
     } finally {
-      setIsPasswordPending(false);
+      setIsPending(false);
     }
   };
 
@@ -116,20 +134,45 @@ export function SignInScreen({ className }: SignInScreenProps) {
     <AuthLayout
       className={className}
       labels={labels}
-      heroSrc={HERO_SRC}
       footer={
         <p>
           {t("noAccount")}{" "}
-          <Link className={styles.forgot()} href="#support">
-            {t("contactSupport")}
+          <Link
+            className={styles.footerLink()}
+            href="#otp"
+            onPress={() => {
+              setError(null);
+              setMode("otp");
+            }}
+          >
+            {t("signUp")}
           </Link>
         </p>
       }
     >
       <form
         className={styles.form()}
-        onSubmit={showPasswordForm ? handlePasswordLogin : handleOtpLogin}
+        onSubmit={mode === "password" ? handlePasswordLogin : handleOtpLogin}
       >
+        <ToggleButtonGroup
+          aria-label={t("modeLabel")}
+          className={styles.modeGroup()}
+          disallowEmptySelection
+          fullWidth
+          selectedKeys={new Set([mode])}
+          selectionMode="single"
+          size="lg"
+          onSelectionChange={handleModeChange}
+        >
+          <ToggleButton className={styles.modeButton()} id="password">
+            {t("modePassword")}
+          </ToggleButton>
+          <ToggleButton className={styles.modeButton()} id="otp">
+            <ToggleButtonGroup.Separator />
+            {t("modeOtp")}
+          </ToggleButton>
+        </ToggleButtonGroup>
+
         <TextField
           className={styles.field()}
           fullWidth
@@ -141,7 +184,7 @@ export function SignInScreen({ className }: SignInScreenProps) {
         >
           <Label>{t("phoneLabel")}</Label>
           <div className={styles.inputWrap()}>
-            <Telephone1 className={styles.inputIcon()} size={24} />
+            <Telephone1 className={styles.inputIcon()} size={22} />
             <Input
               autoComplete="tel"
               className={styles.input()}
@@ -150,91 +193,91 @@ export function SignInScreen({ className }: SignInScreenProps) {
           </div>
         </TextField>
 
-        {showPasswordForm ? (
-          <TextField
-            className={styles.field()}
-            fullWidth
-            isRequired
-            name="password"
-            type={showPassword ? "text" : "password"}
-            value={password}
-            onChange={setPassword}
-          >
-            <Label>{t("passwordLabel")}</Label>
-            <div className={styles.inputWrap()}>
-              <Lock1 className={styles.inputIcon()} size={24} />
-              <Input
-                autoComplete="current-password"
-                className={`${styles.input()} ${styles.inputWithSuffix()}`}
-                placeholder={t("passwordPlaceholder")}
-              />
-              <Button
-                isIconOnly
-                size="lg"
-                type="button"
-                variant="ghost"
-                aria-label={
-                  showPassword ? t("hidePassword") : t("showPassword")
-                }
-                className={styles.suffixButton()}
-                onPress={() => setShowPassword((prev) => !prev)}
+        {mode === "password" ? (
+          <>
+            <TextField
+              className={styles.field()}
+              fullWidth
+              isRequired
+              name="password"
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={setPassword}
+            >
+              <Label>{t("passwordLabel")}</Label>
+              <div className={styles.inputWrap()}>
+                <Lock1 className={styles.inputIcon()} size={22} />
+                <Input
+                  autoComplete="current-password"
+                  className={`${styles.input()} ${styles.inputWithSuffix()}`}
+                  placeholder={t("passwordPlaceholder")}
+                />
+                <Button
+                  isIconOnly
+                  size="lg"
+                  type="button"
+                  variant="ghost"
+                  aria-label={
+                    showPassword ? t("hidePassword") : t("showPassword")
+                  }
+                  className={styles.suffixButton()}
+                  onPress={() => setShowPassword((prev) => !prev)}
+                >
+                  {showPassword ? <EyeSlash size={22} /> : <Eye size={22} />}
+                </Button>
+              </div>
+            </TextField>
+
+            <div className={styles.row()}>
+              <Checkbox
+                isSelected={remember}
+                name="remember"
+                onChange={setRemember}
               >
-                {showPassword ? <EyeSlash size={24} /> : <Eye size={24} />}
-              </Button>
+                <Checkbox.Content>
+                  <Checkbox.Control>
+                    <Checkbox.Indicator />
+                  </Checkbox.Control>
+                  <span className={styles.remember()}>{t("remember")}</span>
+                </Checkbox.Content>
+              </Checkbox>
+
+              <Link className={styles.forgot()} href="#support">
+                {t("forgotPassword")}
+              </Link>
             </div>
-          </TextField>
+          </>
         ) : null}
 
         {error ? (
-          <p className={styles.error()} role="alert">
-            {error}
-          </p>
+          <div className={styles.errorBanner()} role="alert">
+            <span>
+              {t("errorPrefix")} {error}
+            </span>
+            <Button
+              isIconOnly
+              size="lg"
+              type="button"
+              variant="ghost"
+              aria-label={t("dismissError")}
+              className={styles.errorDismiss()}
+              onPress={() => setError(null)}
+            >
+              <CloseX size={18} />
+            </Button>
+          </div>
         ) : null}
 
-        {showPasswordForm ? (
-          <Button
-            className={styles.submit()}
-            fullWidth
-            isPending={isPasswordPending}
-            size="lg"
-            type="submit"
-            variant="primary"
-          >
-            {t("passwordSubmit")}
-            <ArrowRight className={styles.submitIcon()} size={24} />
-          </Button>
-        ) : (
-          <Button
-            className={styles.submit()}
-            fullWidth
-            isPending={isOtpPending}
-            size="lg"
-            type="submit"
-            variant="primary"
-          >
-            <Telephone1 size={22} />
-            {t("otpSubmit")}
-          </Button>
-        )}
-
-        <div className={styles.divider()}>
-          <span className={styles.dividerLine()} />
-          <span>{t("or")}</span>
-          <span className={styles.dividerLine()} />
-        </div>
-
         <Button
-          className={styles.passwordSubmit()}
+          className={styles.submit()}
           fullWidth
+          isPending={isPending}
           size="lg"
-          type="button"
-          variant="secondary"
-          onPress={() => {
-            setError(null);
-            setShowPasswordForm((prev) => !prev);
-          }}
+          type="submit"
+          variant="primary"
         >
-          {showPasswordForm ? t("useOtpInstead") : t("usePasswordInstead")}
+          {mode === "password" ? t("passwordSubmit") : t("otpSubmit")}
+          <ArrowRight className={styles.submitIcon()} size={22} />
         </Button>
       </form>
     </AuthLayout>

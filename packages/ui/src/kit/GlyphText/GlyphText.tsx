@@ -15,11 +15,10 @@ import type { GlyphTextProps } from "./GlyphText.types";
 
 /** Theme-synced sweep palette (stats + brand accent). */
 const DEFAULT_COLORS = [
-  statsColors.purple,
   statsColors.red,
   statsColors.yellow,
+  statsColors.orange,
   "var(--accent)",
-  statsColors.blue,
 ];
 
 const BAND_HALF = 17;
@@ -216,12 +215,14 @@ export function GlyphText({
     stopRef.current = () => controls.stop();
   };
 
+  const shouldPlay = !startOnView || isInView;
+
   useEffect(() => {
     if (prefersReducedMotion) {
       sweepPos.set(SWEEP_END);
       return;
     }
-    if (startOnView && !isInView) return;
+    if (!shouldPlay) return;
     if (once && hasPlayedRef.current) return;
     hasPlayedRef.current = true;
     playRef.current();
@@ -229,8 +230,14 @@ export function GlyphText({
     return () => {
       stopRef.current?.();
       clearTimeout(timerRef.current);
+      // Effect re-runs (Strict Mode / dep churn) stop the sweep mid-flight.
+      // Text uses color:transparent + a gradient that starts fully transparent,
+      // so allow a restart unless the sweep already finished.
+      if (sweepPos.get() < SWEEP_END) {
+        hasPlayedRef.current = false;
+      }
     };
-  }, [isInView, startOnView, once, prefersReducedMotion, sweepPos]);
+  }, [shouldPlay, once, prefersReducedMotion, sweepPos]);
 
   const fixedW =
     isMulti && fixedWidth && measuredWidths.length > 0

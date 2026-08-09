@@ -20,7 +20,6 @@ import { useAuth } from "@/shared/providers/AuthProvider";
 import { otpScreenVariants } from "./OtpScreen.styles";
 import type { OtpScreenProps } from "./OtpScreen.types";
 
-const HERO_SRC = "/auth-hero.jpg";
 const OTP_LENGTH = 6;
 const OTP_PATTERN = "^[0-9۰-۹٠-٩]+$";
 
@@ -85,7 +84,6 @@ export function OtpScreen({ className }: OtpScreenProps) {
   if (!hydrated || !phone) return null;
 
   const labels: AuthLayoutLabels = {
-    title: t("title"),
     subtitle: t("subtitle"),
     brandAriaLabel: t("brandAriaLabel"),
     heroAlt: t("heroAlt"),
@@ -150,7 +148,6 @@ export function OtpScreen({ className }: OtpScreenProps) {
     <AuthLayout
       className={className}
       labels={labels}
-      heroSrc={HERO_SRC}
       footer={<p>{t("securityNote")}</p>}
     >
       <form className={styles.form()} onSubmit={handleSubmit}>

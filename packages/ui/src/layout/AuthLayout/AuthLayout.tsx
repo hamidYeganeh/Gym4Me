@@ -2,6 +2,7 @@
 
 import { Typography } from "@heroui/react";
 import { Logo } from "../../common/Logo";
+import { Gym4MeHelloEffect } from "../../kit/Gym4MeHelloEffect";
 import { authLayoutVariants } from "./AuthLayout.styles";
 import type { AuthLayoutProps } from "./AuthLayout.types";
 
@@ -17,16 +18,18 @@ export function AuthLayout({
 
   return (
     <div className={styles.shell({ className })} data-theme="dark">
-      <div aria-hidden className={styles.media()}>
-        <img
-          alt=""
-          className={styles.mediaImage()}
-          decoding="async"
-          src={heroSrc}
-        />
-        <div className={styles.mediaOverlay()} />
-        <div className={styles.mediaVignette()} />
-      </div>
+      {heroSrc ? (
+        <div aria-hidden className={styles.media()}>
+          <img
+            alt=""
+            className={styles.mediaImage()}
+            decoding="async"
+            src={heroSrc}
+          />
+          <div className={styles.mediaOverlay()} />
+          <div className={styles.mediaVignette()} />
+        </div>
+      ) : null}
 
       <section className={styles.panel()} aria-label={labels.heroAlt}>
         <div className={styles.brand()} aria-label={labels.brandAriaLabel}>
@@ -37,14 +40,22 @@ export function AuthLayout({
             size="3xl"
             title={labels.brandAriaLabel}
           />
-          <span className={styles.brandName()}>{labels.brandAriaLabel}</span>
+          <Gym4MeHelloEffect
+            className={styles.brandName()}
+            speed={1.8}
+          />
         </div>
 
         <header className={styles.header()}>
-          <Typography className={styles.title()} type="h1" weight="bold">
-            {labels.title}
-          </Typography>
-          <Typography className={styles.subtitle()} color="muted">
+          {labels.title ? (
+            <Typography className={styles.title()} type="h1" weight="bold">
+              {labels.title}
+            </Typography>
+          ) : null}
+          <Typography
+            className={styles.subtitle()}
+            {...(labels.title ? { color: "muted" as const } : {})}
+          >
             {labels.subtitle}
           </Typography>
         </header>

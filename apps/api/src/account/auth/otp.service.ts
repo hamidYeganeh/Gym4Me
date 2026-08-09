@@ -14,9 +14,13 @@ import { SmsService } from '../../common/sms/sms.service';
 import { randomOtpCode, sha256 } from '../../common/utils/hash.util';
 
 const OTP_TTL_SECONDS = 120;
-const RESEND_COOLDOWN_SECONDS = 90;
+/** Align with authMinute throttler (3/min) — allow a send about every 20s. */
+const RESEND_COOLDOWN_SECONDS = 20;
 const MAX_ATTEMPTS = 5;
 const OTP_DIGITS = 6;
+/** Max OTP SMS sends per phone per rolling 24h (all purposes). */
+const DAILY_OTP_LIMIT = 7;
+const DAILY_OTP_WINDOW_SECONDS = 86_400;
 
 @Injectable()
 export class OtpService {
@@ -46,6 +50,10 @@ export class OtpService {
     return `otp:cooldown:${purpose}:${phone}`;
   }
 
+  private dailyKey(phone: string) {
+    return `otp:daily:${phone}`;
+  }
+
   async request(
     phone: string,
     purpose: OtpPurpose,
@@ -54,6 +62,17 @@ export class OtpService {
     if (cooldownTtl > 0) {
       throw new HttpException(
         `OTP recently sent, retry in ${cooldownTtl}s`,
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
+    const dailyCount = await this.redis.incr(this.dailyKey(phone));
+    if (dailyCount === 1) {
+      await this.redis.expire(this.dailyKey(phone), DAILY_OTP_WINDOW_SECONDS);
+    }
+    if (dailyCount > DAILY_OTP_LIMIT) {
+      throw new HttpException(
+        'OTP daily limit reached, try again tomorrow',
         HttpStatus.TOO_MANY_REQUESTS,
       );
     }

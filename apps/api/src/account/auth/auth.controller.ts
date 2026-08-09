@@ -4,6 +4,7 @@ import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
+import { AUTH_THROTTLE } from '../../common/throttling/auth-throttle';
 import { AuthService } from './auth.service';
 import {
   ConfirmOtpDto,
@@ -24,7 +25,7 @@ export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
   @Public()
-  @Throttle({ default: { limit: 3, ttl: 60_000 } })
+  @Throttle(AUTH_THROTTLE)
   @Post('otp')
   @HttpCode(200)
   @ApiOperation({ summary: 'Request OTP for phone login / signup' })
@@ -42,7 +43,7 @@ export class AuthController {
   }
 
   @Public()
-  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @Throttle(AUTH_THROTTLE)
   @Post('login')
   @HttpCode(200)
   @ApiOperation({ summary: 'Login with phone and password' })

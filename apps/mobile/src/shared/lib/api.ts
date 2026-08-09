@@ -20,7 +20,7 @@ import {
   createArticlesApi,
 } from "@repo/api";
 import { getApiBaseUrl } from "./env";
-import { roleHomePath } from "./role-routes";
+import { roleAppPath } from "./role-routes";
 
 const storage = createLocalStorage(ACCOUNT_SESSION_KEY);
 
@@ -35,7 +35,7 @@ export const apiClient = createApiClient({
   },
   onKycRequired: () => {
     if (typeof window === "undefined") return;
-    const kycPath = `${roleHomePath(storage.get()?.activeRole)}/kyc`;
+    const kycPath = roleAppPath(storage.get()?.activeRole, "kyc");
     if (!window.location.pathname.startsWith(kycPath)) {
       window.location.assign(kycPath);
     }

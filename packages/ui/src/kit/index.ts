@@ -12,6 +12,7 @@ export * from "./FilterPanel";
 export * from "./FormStepper";
 export * from "./FractionalPicker";
 export * from "./GlyphText";
+export * from "./Gym4MeHelloEffect";
 export * from "./InputOTP";
 export * from "./LocationPickerMap";
 export * from "./MinimalCarousel";

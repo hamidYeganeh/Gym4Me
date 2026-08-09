@@ -2,28 +2,23 @@ import { tv } from "tailwind-variants";
 
 export const welcomeScreenVariants = tv({
   slots: {
-    root: "relative flex min-h-dvh flex-col overflow-hidden bg-background text-foreground",
+    root: "relative flex min-h-dvh flex-col overflow-hidden bg-black text-white",
     media: "pointer-events-none absolute inset-0",
-    mediaImage: "h-full w-full object-cover",
+    mediaImage: "h-full w-full object-cover object-center",
     mediaOverlay:
-      "absolute inset-0 bg-gradient-to-t from-background via-background/85 to-background/40",
+      "absolute inset-0 bg-gradient-to-t from-black via-black/75 to-black/30",
     content:
-      "relative z-10 flex min-h-dvh flex-col justify-end gap-8 px-screen pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(2rem,env(safe-area-inset-top))]",
-    brand: "flex flex-col items-start gap-3",
-    brandRow: "flex items-center gap-3",
-    brandName: "text-3xl font-bold tracking-tight text-foreground sm:text-4xl",
-    title: "max-w-[18ch] text-balance",
-    subtitle: "max-w-[34ch] text-pretty text-muted",
-    features: "flex flex-col gap-3",
-    feature:
-      "flex items-start gap-3 rounded-2xl border border-border/60 bg-surface/70 p-3 backdrop-blur-sm",
-    featureIcon:
-      "mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent/15 text-accent",
-    featureCopy: "flex min-w-0 flex-col gap-0.5",
-    featureTitle: "text-foreground",
-    featureBody: "text-muted",
-    actions: "flex flex-col gap-3",
-    primary: "w-full",
-    secondary: "w-full",
+      "relative z-10 flex min-h-dvh flex-col justify-end gap-6 px-screen pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-[max(2rem,env(safe-area-inset-top))]",
+    copy: "flex flex-col items-center gap-3 text-center",
+    title:
+      "max-w-[16ch] text-balance text-[1.75rem] leading-tight tracking-tight text-white sm:text-[2rem]",
+    subtitle: "max-w-[30ch] text-pretty text-[0.95rem] leading-relaxed text-white/55",
+    actions: "mt-2 flex flex-col items-center gap-5",
+    primary:
+      "min-h-14 w-full rounded-full text-base font-semibold text-accent-foreground",
+    primaryIcon: "ms-2 size-5",
+    footer: "flex flex-wrap items-center justify-center gap-x-1 text-sm text-white/55",
+    signIn:
+      "font-semibold text-accent underline underline-offset-4 outline-none data-[hovered=true]:opacity-80",
   },
 });

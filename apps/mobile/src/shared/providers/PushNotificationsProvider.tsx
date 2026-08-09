@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import type { DevicePlatform } from "@repo/api";
 import { registerDeviceToken } from "@/shared/lib/push";
-import { roleHomePath } from "@/shared/lib/role-routes";
+import { roleAppPath } from "@/shared/lib/role-routes";
 import { useAuth } from "./AuthProvider";
 
 /**
@@ -51,7 +51,7 @@ export function PushNotificationsProvider() {
         await PushNotifications.addListener(
           "pushNotificationActionPerformed",
           () => {
-            router.push(`${roleHomePath(activeRole)}/notifications`);
+            router.push(roleAppPath(activeRole, "notifications"));
           },
         ),
       );
