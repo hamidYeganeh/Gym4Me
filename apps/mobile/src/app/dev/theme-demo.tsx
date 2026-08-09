@@ -20,6 +20,7 @@ import { statsColors } from "@repo/theme";
 import {
   AchievementTag,
   type AchievementTagColor,
+  type AchievementTagSize,
   type AchievementTagVariant,
 } from "@repo/ui/cards/AchievementTag";
 import { CallToActionCard } from "@repo/ui/cards/CallToActionCard";
@@ -44,7 +45,11 @@ import { MetricHistoryItem } from "@repo/ui/cards/MetricHistoryItem";
 import { MetricInsightCard } from "@repo/ui/cards/MetricInsightCard";
 import { MetricPromoCard } from "@repo/ui/cards/MetricPromoCard";
 import { MetricReorderItem } from "@repo/ui/cards/MetricReorderItem";
-import { MuscleCard } from "@repo/ui/cards/MuscleCard";
+import {
+  BodyTypeCard,
+  BODY_TYPE_KINDS,
+} from "@repo/ui/cards/BodyTypeCard";
+import { MuscleCard, MUSCLE_ART_AREAS } from "@repo/ui/cards/MuscleCard";
 import { QuickActionCard } from "@repo/ui/cards/QuickActionCard";
 import { ReviewCard } from "@repo/ui/cards/ReviewCard";
 import { ScheduleWorkoutCard } from "@repo/ui/cards/ScheduleWorkoutCard";
@@ -95,6 +100,8 @@ const ACHIEVEMENT_VARIANTS: AchievementTagVariant[] = [
   "star1",
   "star2",
 ];
+
+const ACHIEVEMENT_SIZES: AchievementTagSize[] = ["sm", "md", "lg"];
 
 const AREA_CHART_DATA = [
   { label: "ش", value: 68.1 },
@@ -195,8 +202,7 @@ type ThemeDemoLabels = {
   metricReorderRemove: string;
   metricReorderDrag: string;
   muscleCardLabel: string;
-  muscleCardAbs: string;
-  muscleCardLowerLeg: string;
+  bodyTypeCardLabel: string;
   reviewCardLabel: string;
   reviewCardTitle: string;
   reviewCardContent: string;
@@ -484,6 +490,8 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
     { href: "#demo-club-card", label: labels.clubCardLabel },
     { href: "#demo-coach-cards", label: labels.coachFeatureCardLabel },
     { href: "#demo-call-to-action", label: labels.callToActionLabel },
+    { href: "#demo-muscle-card", label: labels.muscleCardLabel },
+    { href: "#demo-body-type-card", label: labels.bodyTypeCardLabel },
     { href: "#demo-kit", label: labels.adaptiveSliderLabel },
   ] as const;
 
@@ -1057,6 +1065,15 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
         <h2 className="text-lg font-medium text-foreground">
           {labels.achievementCardLabel}
         </h2>
+        <div className="flex flex-wrap items-end gap-4 pb-2">
+          {ACHIEVEMENT_SIZES.map((size) => (
+            <AchievementTag
+              key={size}
+              aria-label={`${labels.achievementCardAria} ${size}`}
+              size={size}
+            />
+          ))}
+        </div>
         <div className="flex flex-col gap-3 pb-2">
           {ACHIEVEMENT_VARIANTS.map((variant) => (
             <div className="flex flex-wrap items-end gap-4" key={variant}>
@@ -1544,16 +1561,75 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
         />
       </section>
 
-      <section className="flex flex-col gap-3">
+      <section className="flex flex-col gap-3" id="demo-muscle-card">
         <h2 className="text-lg font-medium text-foreground">
           {labels.muscleCardLabel}
         </h2>
-        <div className="flex flex-wrap gap-4">
-          <MuscleCard actionLabel={labels.muscleCardAbs} bodyArea="abs" />
-          <MuscleCard
-            actionLabel={labels.muscleCardLowerLeg}
-            bodyArea="lower-leg"
-          />
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-muted">male · tap to toggle accent</p>
+            <div className="flex flex-wrap gap-3">
+              {MUSCLE_ART_AREAS.map((area, index) => (
+                <MuscleCard
+                  key={`male-${area}`}
+                  actionLabel={area}
+                  bodyArea={area}
+                  defaultSelected={index % 3 === 0}
+                  gender="male"
+                />
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-muted">female · tap to toggle accent</p>
+            <div className="flex flex-wrap gap-3">
+              {MUSCLE_ART_AREAS.map((area, index) => (
+                <MuscleCard
+                  key={`female-${area}`}
+                  actionLabel={area}
+                  bodyArea={area}
+                  defaultSelected={index % 3 === 1}
+                  gender="female"
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-3" id="demo-body-type-card">
+        <h2 className="text-lg font-medium text-foreground">
+          {labels.bodyTypeCardLabel}
+        </h2>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-muted">male · tap to toggle accent</p>
+            <div className="flex flex-wrap gap-4">
+              {BODY_TYPE_KINDS.map((kind, index) => (
+                <BodyTypeCard
+                  key={`male-${kind}`}
+                  actionLabel={kind}
+                  bodyType={kind}
+                  defaultSelected={index === 1}
+                  gender="male"
+                />
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-muted">female · tap to toggle accent</p>
+            <div className="flex flex-wrap gap-4">
+              {BODY_TYPE_KINDS.map((kind, index) => (
+                <BodyTypeCard
+                  key={`female-${kind}`}
+                  actionLabel={kind}
+                  bodyType={kind}
+                  defaultSelected={index === 0}
+                  gender="female"
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 

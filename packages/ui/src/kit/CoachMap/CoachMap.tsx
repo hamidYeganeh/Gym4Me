@@ -17,6 +17,7 @@ import type {
   Marker,
   TileLayer,
 } from "leaflet";
+import { mapLocationPinHtml } from "../shared/map-location-pin";
 import { coachMapVariants } from "./CoachMap.styles";
 import type {
   CoachMapLatLng,
@@ -39,8 +40,6 @@ const DEFAULT_MAX_ZOOM = 18;
 
 type MapThemeColors = {
   accent: string;
-  muted: string;
-  surface: string;
 };
 
 function resolveCssColor(variable: string, fallback: string) {
@@ -59,8 +58,6 @@ function resolveCssColor(variable: string, fallback: string) {
 function resolveMapThemeColors(): MapThemeColors {
   return {
     accent: resolveCssColor("--accent", "oklch(87.43% 0.2460 148.26)"),
-    muted: resolveCssColor("--muted", "oklch(55.17% 0.0000 148.26)"),
-    surface: resolveCssColor("--surface", "oklch(100% 0 0)"),
   };
 }
 
@@ -90,44 +87,18 @@ function midpoint(markers: readonly CoachMapMarker[]): CoachMapLatLng {
   };
 }
 
-function pinHtml(options: {
-  fill: string;
-  surface: string;
-  active: boolean;
-  size: number;
-}) {
-  const { fill, surface, active, size } = options;
-  const height = Math.round(size * 1.22);
-  const r = Math.round(size * 0.22);
-  const cy = Math.round(size * 0.38);
-  const tipY = height - 2;
-  const path = `M${size / 2} ${tipY} C${size * 0.12} ${size * 0.72} 2 ${size * 0.42} 2 ${size * 0.36} C2 ${size * 0.14} ${size * 0.22} 2 ${size / 2} 2 C${size * 0.78} 2 ${size - 2} ${size * 0.14} ${size - 2} ${size * 0.36} C${size - 2} ${size * 0.42} ${size * 0.88} ${size * 0.72} ${size / 2} ${tipY} Z`;
-  const dot = active
-    ? `<span style="display:block;margin:2px auto 0;width:8px;height:8px;border-radius:9999px;background:${fill};box-shadow:0 0 0 3px color-mix(in oklab,${fill} 35%,transparent)"></span>`
-    : "";
-
-  return `<div style="transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;pointer-events:auto;cursor:pointer;user-select:none;filter:drop-shadow(0 4px 10px color-mix(in oklab, ${surface} 35%, transparent))">
-    <svg width="${size}" height="${height}" viewBox="0 0 ${size} ${height}" aria-hidden="true">
-      <path d="${path}" fill="${fill}"/>
-      <circle cx="${size / 2}" cy="${cy}" r="${r}" fill="${surface}"/>
-    </svg>
-    ${dot}
-  </div>`;
-}
-
 function markerIcon(
   L: typeof import("leaflet"),
   colors: MapThemeColors,
   active: boolean,
+  imageUrl?: string | null,
 ): DivIcon {
-  const size = active ? 40 : 32;
   return L.divIcon({
     className: "coach-map-pin",
-    html: pinHtml({
-      fill: active ? colors.accent : colors.muted,
-      surface: colors.surface,
+    html: mapLocationPinHtml({
+      accent: colors.accent,
+      imageUrl,
       active,
-      size,
     }),
     iconSize: [0, 0],
     iconAnchor: [0, 0],
@@ -163,8 +134,12 @@ export function CoachMap({
   const [mapReady, setMapReady] = useState(false);
   const [zoom, setZoom] = useState(defaultZoom);
 
-  const markersKey = markers.map((m) => `${m.id}:${m.lat},${m.lng}`).join("|");
+  const markersKey = markers
+    .map((m) => `${m.id}:${m.lat},${m.lng}:${m.image ?? ""}`)
+    .join("|");
   const selectedMarker = markers.find((m) => m.id === selectedId);
+  const markersByIdRef = useRef(new Map<string, CoachMapMarker>());
+  markersByIdRef.current = new Map(markers.map((m) => [m.id, m]));
   const mapCenter =
     center ??
     (selectedMarker
@@ -231,7 +206,7 @@ export function CoachMap({
       for (const item of markers) {
         const active = item.id === selectedId;
         const marker = L.marker([item.lat, item.lng], {
-          icon: markerIcon(L, colors, active),
+          icon: markerIcon(L, colors, active, item.image),
           keyboard: true,
           riseOnHover: true,
         }).addTo(map);
@@ -283,7 +258,10 @@ export function CoachMap({
     const colors = resolveMapThemeColors();
 
     markersRef.current.forEach((marker, id) => {
-      marker.setIcon(markerIcon(L, colors, id === selectedId));
+      const item = markersByIdRef.current.get(id);
+      marker.setIcon(
+        markerIcon(L, colors, id === selectedId, item?.image),
+      );
     });
 
     if (selectedMarker) {
@@ -308,7 +286,10 @@ export function CoachMap({
 
       tileRef.current?.setUrl(url);
       markersRef.current.forEach((marker, id) => {
-        marker.setIcon(markerIcon(L, colors, id === selectedId));
+        const item = markersByIdRef.current.get(id);
+        marker.setIcon(
+          markerIcon(L, colors, id === selectedId, item?.image),
+        );
       });
     };
 

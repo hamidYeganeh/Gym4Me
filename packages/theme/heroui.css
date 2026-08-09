@@ -48,6 +48,21 @@
   --warning-foreground: var(--accent-foreground);
 
   /*
+   * Map basemap palette (Figma map SVG roles → theme tokens)
+   * Light = inverted roles of the dark SVG (#212121 land / #E5E5E5 roads).
+   * Tailwind: bg-map-land, text-map-road, …
+   */
+  --map-land: var(--background);
+  --map-feature: var(--default);
+  --map-building: var(--surface-tertiary);
+  --map-building-elevated: var(--border);
+  --map-road: var(--foreground);
+  --map-road-muted: var(--muted);
+  --map-highlight: var(--surface-foreground);
+  /* Neutralize Carto Voyager toward the monochrome SVG look */
+  --map-tile-filter: grayscale(1) contrast(0.94) brightness(1.06);
+
+  /*
    * Stats / chart palette (exact hex from design)
    * Tailwind: bg-stats-red, text-stats-blue, …
    */
@@ -131,6 +146,20 @@
   --warning: var(--accent);
   --warning-foreground: var(--accent-foreground);
 
+  /*
+   * Map basemap palette — dark SVG: #212121 land, #181818 feature,
+   * #2A2A2A / #3C3C3C buildings, #E5E5E5 / #DADADA / #F5F5F5 roads.
+   */
+  --map-land: var(--surface-secondary);
+  --map-feature: var(--surface);
+  --map-building: var(--default);
+  --map-building-elevated: var(--border);
+  --map-road: color-mix(in oklab, var(--foreground) 92%, var(--background));
+  --map-road-muted: color-mix(in oklab, var(--foreground) 86%, var(--background));
+  --map-highlight: var(--foreground);
+  /* Strip Carto Dark Matter blue cast → neutral SVG greys */
+  --map-tile-filter: grayscale(1) brightness(0.92) contrast(1.06);
+
   /* Stats / chart palette (same in dark — saturated cards stay vivid) */
   --stats-red: #dc2626;
   --stats-blue: #2563eb;
@@ -148,6 +177,14 @@
   --color-stats-purple: var(--stats-purple);
   --color-stats-orange: var(--stats-orange);
   --color-stats-foreground: var(--stats-foreground);
+
+  --color-map-land: var(--map-land);
+  --color-map-feature: var(--map-feature);
+  --color-map-building: var(--map-building);
+  --color-map-building-elevated: var(--map-building-elevated);
+  --color-map-road: var(--map-road);
+  --color-map-road-muted: var(--map-road-muted);
+  --color-map-highlight: var(--map-highlight);
 
   /* px-screen / mx-screen / p-screen → 24px page margins */
   --spacing-screen: var(--screen-margin);

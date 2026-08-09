@@ -1,15 +1,12 @@
 import { tv } from "tailwind-variants";
 
-/** Introduce shell — lifted atmosphere so slides aren’t pitch black. */
+/** Introduce shell — surface→accent wash + elevated footer sheet (light & dark). */
 export const welcomeIntroduceScreenVariants = tv({
   slots: {
-    root: [
-      "relative flex min-h-dvh flex-col overflow-hidden text-foreground",
-      "bg-[color-mix(in_oklch,var(--background)_35%,var(--surface)_65%)]",
-    ],
+    root: "relative flex min-h-dvh flex-col overflow-hidden bg-background text-foreground",
     glow: [
       "pointer-events-none absolute inset-0",
-      "bg-[radial-gradient(150%_100%_at_50%_-15%,color-mix(in_oklch,var(--surface)_85%,transparent)_0%,transparent_60%),radial-gradient(125%_75%_at_50%_110%,color-mix(in_oklch,var(--accent)_30%,transparent)_0%,transparent_62%)]",
+      "bg-[linear-gradient(to_bottom,var(--background)_0%,var(--background)_38%,color-mix(in_oklch,var(--accent)_26%,var(--background))_100%)]",
     ],
     content:
       "relative z-10 flex min-h-dvh flex-col pt-[max(1.5rem,env(safe-area-inset-top))]",

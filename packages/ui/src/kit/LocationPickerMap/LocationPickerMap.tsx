@@ -17,6 +17,7 @@ import type {
   Marker,
   TileLayer,
 } from "leaflet";
+import { mapLocationPinHtml } from "../shared/map-location-pin";
 import { locationPickerMapVariants } from "./LocationPickerMap.styles";
 import type {
   LocationPickerLatLng,
@@ -39,7 +40,6 @@ const DEFAULT_CENTER: LocationPickerLatLng = { lat: 35.6892, lng: 51.389 };
 
 type MapThemeColors = {
   accent: string;
-  surface: string;
 };
 
 function resolveCssColor(variable: string, fallback: string) {
@@ -58,7 +58,6 @@ function resolveCssColor(variable: string, fallback: string) {
 function resolveMapThemeColors(): MapThemeColors {
   return {
     accent: resolveCssColor("--accent", "oklch(87.43% 0.2460 148.26)"),
-    surface: resolveCssColor("--surface", "oklch(100% 0 0)"),
   };
 }
 
@@ -73,27 +72,18 @@ function isDarkTheme() {
   );
 }
 
-function pinHtml(options: { fill: string; surface: string; size: number }) {
-  const { fill, surface, size } = options;
-  const height = Math.round(size * 1.22);
-  return `
-    <svg width="${size}" height="${height}" viewBox="0 0 40 49" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path d="M20 48C20 48 38 30.5 38 18.5C38 8.835 29.165 1 20 1C10.835 1 2 8.835 2 18.5C2 30.5 20 48 20 48Z" fill="${fill}" stroke="${surface}" stroke-width="2"/>
-      <circle cx="20" cy="18" r="7" fill="${surface}"/>
-    </svg>
-  `;
-}
-
 function markerIcon(
   L: typeof import("leaflet"),
   colors: MapThemeColors,
 ): DivIcon {
-  const size = 36;
   return L.divIcon({
     className: "location-picker-pin",
-    html: pinHtml({ fill: colors.accent, surface: colors.surface, size }),
-    iconSize: [size, Math.round(size * 1.22)],
-    iconAnchor: [size / 2, Math.round(size * 1.22)],
+    html: mapLocationPinHtml({
+      accent: colors.accent,
+      active: true,
+    }),
+    iconSize: [0, 0],
+    iconAnchor: [0, 0],
   });
 }
 

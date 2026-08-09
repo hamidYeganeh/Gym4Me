@@ -24,9 +24,11 @@ export type AchievementTagColor =
   | "yellow"
   | "purple";
 
+export type AchievementTagSize = "sm" | "md" | "lg";
+
 export type AchievementTagProps = Omit<
   CardProps,
-  "children" | "title" | "variant" | "color"
+  "children" | "title" | "variant" | "color" | "size"
 > & {
   /** Shape / layout style. Defaults to `polygon`. */
   variant?: AchievementTagVariant;
@@ -37,6 +39,13 @@ export type AchievementTagProps = Omit<
    * Defaults to `accent`.
    */
   color?: AchievementTagColor;
+  /**
+   * Tag size. Scales frame + icon together.
+   * - `sm` — 75% of default
+   * - `md` — default (~49×54 for polygon)
+   * - `lg` — 135% of default
+   */
+  size?: AchievementTagSize;
   /** Central achievement icon. Defaults to BarbellDiagonal. */
   icon?: ReactNode;
   /** Icon pinned to the bottom. Defaults to the app Logo. */

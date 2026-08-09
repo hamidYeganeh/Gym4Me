@@ -52,11 +52,7 @@ export function WelcomeWorkoutCard({
         <div className={styles.stats()}>
           <div className={styles.stat()}>
             <span className={styles.statRow()}>
-              <Clock
-                aria-hidden
-                className={`${styles.statIcon()} text-white`}
-                size={16}
-              />
+              <Clock aria-hidden className={styles.statIcon()} size={16} />
               <span className={styles.statValue()}>{durationValue}</span>
             </span>
             <span className={styles.statUnit()}>{durationUnit}</span>

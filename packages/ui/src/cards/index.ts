@@ -30,6 +30,7 @@ export * from "./MetricHistoryItem";
 export * from "./MetricInsightCard";
 export * from "./MetricPromoCard";
 export * from "./MetricReorderItem";
+export * from "./BodyTypeCard";
 export * from "./MuscleCard";
 export * from "./NotificationCard";
 export * from "./QuickActionCard";

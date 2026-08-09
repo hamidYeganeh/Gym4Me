@@ -1,5 +1,6 @@
 import type { VariantProps } from "tailwind-variants";
 import { tv } from "tailwind-variants";
+import { mapLeafletThemeClasses } from "../../kit/shared/map-leaflet-theme";
 
 export const clubRouteMapCardVariants = tv({
   slots: {
@@ -8,11 +9,10 @@ export const clubRouteMapCardVariants = tv({
       "border border-border/70 text-default-foreground shadow-sm",
       "bg-linear-to-b from-surface via-default to-[color-mix(in_oklch,var(--accent)_12%,var(--default))]",
     ].join(" "),
-    mapShell: "relative w-full overflow-hidden bg-surface-tertiary p-0",
+    mapShell: "relative w-full overflow-hidden bg-map-land p-0",
     mapCanvas: [
       "absolute inset-0 z-0 size-full",
-      "[&_.leaflet-control-attribution]:!bg-transparent [&_.leaflet-control-attribution]:!text-[9px]",
-      "[&_.leaflet-control-attribution]:!text-muted [&_.leaflet-control-attribution]:!m-1",
+      mapLeafletThemeClasses,
       "[&_.club-route-map-tip]:!bg-transparent [&_.club-route-map-tip]:!border-0",
     ].join(" "),
     mapSkeleton: "absolute inset-0 z-[1] rounded-none",

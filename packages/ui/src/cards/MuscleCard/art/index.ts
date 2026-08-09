@@ -1,12 +1,27 @@
-export { AbsMuscleSvg } from "./abs";
-export { LowerLegMuscleSvg } from "./lower-leg";
-export type { MuscleArtArea } from "./types";
+export type { MuscleArtArea, MuscleGender } from "./types";
+export { MUSCLE_ART_AREAS } from "./types";
+export { maleMuscleArtByArea } from "./male";
+export { femaleMuscleArtByArea } from "./female";
 
-import { AbsMuscleSvg } from "./abs";
-import { LowerLegMuscleSvg } from "./lower-leg";
-import type { MuscleArtArea } from "./types";
+import { femaleMuscleArtByArea } from "./female";
+import { maleMuscleArtByArea } from "./male";
+import type { MuscleArtArea, MuscleGender } from "./types";
 
-export const muscleArtByArea: Record<MuscleArtArea, string> = {
-  abs: AbsMuscleSvg,
-  "lower-leg": LowerLegMuscleSvg,
+/** Built-in anatomy art by gender. */
+export const muscleArtByGender: Record<
+  MuscleGender,
+  Record<MuscleArtArea, string>
+> = {
+  male: maleMuscleArtByArea,
+  female: femaleMuscleArtByArea,
 };
+
+export function getMuscleArt(
+  bodyArea: MuscleArtArea,
+  gender: MuscleGender = "male",
+): string {
+  return muscleArtByGender[gender][bodyArea];
+}
+
+/** @deprecated Prefer `getMuscleArt(area, gender)`. */
+export const muscleArtByArea = maleMuscleArtByArea;

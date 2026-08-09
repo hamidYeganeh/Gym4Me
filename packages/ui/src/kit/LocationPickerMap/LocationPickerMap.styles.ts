@@ -1,13 +1,13 @@
 import type { VariantProps } from "tailwind-variants";
 import { tv } from "tailwind-variants";
+import { mapLeafletThemeClasses } from "../shared/map-leaflet-theme";
 
 export const locationPickerMapVariants = tv({
   slots: {
-    root: "relative size-full min-h-[240px] overflow-hidden rounded-2xl bg-surface-secondary",
+    root: "relative size-full min-h-[240px] overflow-hidden rounded-2xl bg-map-land",
     mapCanvas: [
       "absolute inset-0 z-0 size-full",
-      "[&_.leaflet-control-attribution]:!bg-transparent [&_.leaflet-control-attribution]:!text-[9px]",
-      "[&_.leaflet-control-attribution]:!text-muted [&_.leaflet-control-attribution]:!m-1",
+      mapLeafletThemeClasses,
       "[&_.location-picker-pin]:!bg-transparent [&_.location-picker-pin]:!border-0",
       "[&_.leaflet-container]:cursor-crosshair",
     ].join(" "),

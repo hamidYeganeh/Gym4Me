@@ -10,6 +10,7 @@ import {
   MoodsChart,
   RangeChart,
   RingsChart,
+  StackedChart,
 } from "./MetricCard.charts";
 import { metricCardVariants } from "./MetricCard.styles";
 import type { MetricCardChart, MetricCardProps } from "./MetricCard.types";
@@ -22,9 +23,12 @@ function defaultAccent(chart: MetricCardChart): string {
       return "var(--stats-red)";
     case "bars":
       return "var(--stats-orange)";
+    case "stacked":
+      return "var(--stats-blue)";
     case "range":
-    case "rings":
       return "var(--stats-purple)";
+    case "rings":
+      return "var(--stats-orange)";
     case "dots":
       return "var(--success)";
     case "moods":
@@ -54,6 +58,8 @@ function ChartView({
       return <LineChart accent={accent} chart={chart} slots={slots} />;
     case "bars":
       return <BarsChart accent={accent} chart={chart} slots={slots} />;
+    case "stacked":
+      return <StackedChart accent={accent} chart={chart} slots={slots} />;
     case "range":
       return <RangeChart accent={accent} chart={chart} slots={slots} />;
     case "rings":
@@ -78,11 +84,12 @@ export function MetricCard({
   periodLabel = "Today",
   dayLabels = DEFAULT_DAY_LABELS,
   chart,
+  variant = "horizontal",
   color,
   onPress,
   className,
 }: MetricCardProps) {
-  const slots = metricCardVariants();
+  const slots = metricCardVariants({ variant });
   const accent = color ?? chartColor(chart) ?? defaultAccent(chart);
   const rootStyle = {
     ["--metric-accent" as string]: accent,
@@ -100,6 +107,7 @@ export function MetricCard({
           <span aria-hidden className={slots.icon()}>
             {icon}
           </span>
+          {/* Vertical hides the title visually (sr-only); keep for a11y. */}
           <Card.Title className={slots.title()}>{title}</Card.Title>
         </div>
 
@@ -109,7 +117,7 @@ export function MetricCard({
             <ChevronRight
               aria-hidden
               className={slots.periodIcon()}
-              size={14}
+              size={12}
             />
           </Button>
         ) : (
@@ -118,7 +126,7 @@ export function MetricCard({
             <ChevronRight
               aria-hidden
               className={slots.periodIcon()}
-              size={14}
+              size={12}
             />
           </span>
         )}
@@ -126,9 +134,14 @@ export function MetricCard({
 
       <Card.Content className={slots.body()}>
         <div className={slots.meta()}>
-          {/* Keep value + unit in reading order in RTL locales */}
-          <div className={slots.valueRow()} dir="ltr">
-            <Typography className={slots.value()}>{value}</Typography>
+          {/*
+            Horizontal: value + unit on one LTR row.
+            Vertical: unit stacks under value (dir only on the value itself).
+          */}
+          <div className={slots.valueRow()}>
+            <Typography className={slots.value()} dir="ltr">
+              {value}
+            </Typography>
             {unit != null && unit !== "" ? (
               <Typography className={slots.unit()}>{unit}</Typography>
             ) : null}
@@ -142,7 +155,9 @@ export function MetricCard({
 
         {/* Charts + weekday labels stay LTR (Mon → Sun) */}
         <div className={slots.chart()} dir="ltr">
-          <ChartView accent={accent} chart={chart} slots={slots} />
+          <div className={slots.plot()}>
+            <ChartView accent={accent} chart={chart} slots={slots} />
+          </div>
           <div className={slots.days()}>
             {dayLabels.map((label, index) => (
               <Typography

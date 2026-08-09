@@ -2,14 +2,14 @@
 
 import { Button, Typography } from "@heroui/react";
 import { ChevronDown } from "@repo/icons/ChevronDown";
+import { ForkKnife } from "@repo/icons/ForkKnife";
+import { Heart } from "@repo/icons/Heart";
 import { HeartEcg } from "@repo/icons/HeartEcg";
-import { Leaf } from "@repo/icons/Leaf";
 import { ListTwoSquare } from "@repo/icons/ListTwoSquare";
 import { SleepZzz } from "@repo/icons/SleepZzz";
 import { SmileHappy } from "@repo/icons/SmileHappy";
 import { StepSneaker } from "@repo/icons/StepSneaker";
 import { WaterDrop } from "@repo/icons/WaterDrop";
-import { WaterGlassMedium } from "@repo/icons/WaterGlassMedium";
 import { WeightScale } from "@repo/icons/WeightScale";
 import { MetricCard } from "@repo/ui/cards/MetricCard";
 import type { ReactNode } from "react";
@@ -37,7 +37,7 @@ function metricCopy(
         status: labels.heartRateStatus,
         unit: labels.heartRateUnit,
         value: labels.heartRateValue,
-        icon: <HeartEcg size={18} />,
+        icon: <Heart size={18} />,
       };
     case "weight":
       return {
@@ -53,7 +53,7 @@ function metricCopy(
         status: labels.hydrationStatus,
         unit: labels.hydrationUnit,
         value: labels.hydrationValue,
-        icon: <WaterGlassMedium size={18} />,
+        icon: <WaterDrop size={18} />,
       };
     case "blood-pressure":
       return {
@@ -61,7 +61,7 @@ function metricCopy(
         status: labels.bloodPressureStatus,
         unit: labels.bloodPressureUnit,
         value: labels.bloodPressureValue,
-        icon: <WaterDrop size={18} />,
+        icon: <HeartEcg size={18} />,
       };
     case "sleep":
       return {
@@ -77,7 +77,7 @@ function metricCopy(
         status: labels.nutritionStatus,
         unit: labels.nutritionUnit,
         value: labels.nutritionValue,
-        icon: <Leaf size={18} />,
+        icon: <ForkKnife size={18} />,
       };
     case "mood":
       return {

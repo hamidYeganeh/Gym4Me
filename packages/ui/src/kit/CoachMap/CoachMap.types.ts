@@ -8,6 +8,8 @@ export type CoachMapLatLng = {
 
 export type CoachMapMarker = CoachMapLatLng & {
   id: string;
+  /** Optional avatar / logo shown inside the location pin. */
+  image?: string | null;
 };
 
 export type CoachMapProps = Omit<

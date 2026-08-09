@@ -4,5 +4,6 @@ export type { AchievementTagVariantProps } from "./AchievementTag.styles";
 export type {
   AchievementTagColor,
   AchievementTagProps,
+  AchievementTagSize,
   AchievementTagVariant,
 } from "./AchievementTag.types";

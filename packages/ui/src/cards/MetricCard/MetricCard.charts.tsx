@@ -1,7 +1,6 @@
 "use client";
 
 import { Check } from "@repo/icons/Check";
-import { CloseX } from "@repo/icons/CloseX";
 import { SmileDepressed } from "@repo/icons/SmileDepressed";
 import { SmileHappy } from "@repo/icons/SmileHappy";
 import { SmileNeutral } from "@repo/icons/SmileNeutral";
@@ -28,16 +27,18 @@ import type {
   MetricCardMoodsChart,
   MetricCardRangeChart,
   MetricCardRingsChart,
+  MetricCardStackedChart,
   MetricMood,
 } from "./MetricCard.types";
 
 type Slots = ReturnType<typeof metricCardVariants>;
 
 const CHART_MARGIN = { top: 0, right: 0, bottom: 0, left: 0 };
-const BAR_SIZE = 12;
+const BAR_SIZE = 10;
 const BAR_RADIUS = 999;
 const TRACK_FILL = "var(--surface-secondary)";
 const RING_TRACK = "var(--default)";
+const DEFAULT_STACK_OPACITIES = [1, 0.72, 0.45] as const;
 
 function accentStyle(color: string): CSSProperties {
   return { ["--metric-accent" as string]: color };
@@ -79,6 +80,7 @@ export function LineChart({
   const min = series.length > 0 ? Math.min(...series) * 0.92 : 0;
   const max = series.length > 0 ? Math.max(...series) * 1.05 : 1;
   const data = series.map((value, index) => ({ index, value }));
+  const curve = chart.curve ?? "monotone";
 
   return (
     <div className={slots.linePlot()} style={accentStyle(color)}>
@@ -102,7 +104,7 @@ export function LineChart({
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth={2.25}
-            type="monotone"
+            type={curve === "step" ? "stepAfter" : "monotone"}
           />
         </AreaChart>
       </ResponsiveContainer>
@@ -153,6 +155,95 @@ export function BarsChart({
   );
 }
 
+export function StackedChart({
+  chart,
+  accent,
+  slots,
+}: {
+  chart: MetricCardStackedChart;
+  accent: string;
+  slots: Omit<Slots, "day">;
+}) {
+  const reactId = useId();
+  const color = chart.color ?? accent;
+  const opacities = chart.opacities ?? DEFAULT_STACK_OPACITIES;
+  const maxSegments = Math.max(
+    1,
+    ...chart.series.map((segments) => Math.min(3, segments.length)),
+  );
+
+  const data = chart.series.map((segments, index) => {
+    const row: Record<string, number> = { index };
+    for (let i = 0; i < maxSegments; i += 1) {
+      row[`s${i}`] = Math.max(segments[i] ?? 0, 0);
+    }
+    return row;
+  });
+
+  return (
+    <div
+      aria-hidden
+      className={slots.chartPlot()}
+      style={accentStyle(color)}
+    >
+      <div className="h-full min-w-0 flex-1">
+        <ResponsiveContainer height="100%" width="100%">
+          <BarChart data={data} margin={CHART_MARGIN}>
+            <defs>
+              {Array.from({ length: maxSegments }, (_, segmentIndex) => {
+                const opacity =
+                  opacities[Math.min(segmentIndex, opacities.length - 1)] ?? 1;
+                const id = `metric-stack-${reactId.replace(/:/g, "")}-${segmentIndex}`;
+                return (
+                  <linearGradient
+                    id={id}
+                    key={id}
+                    x1="0"
+                    x2="0"
+                    y1="1"
+                    y2="0"
+                  >
+                    <stop offset="0%" stopColor={color} stopOpacity={opacity} />
+                    <stop
+                      offset="100%"
+                      stopColor={color}
+                      stopOpacity={Math.min(1, opacity + 0.08)}
+                    />
+                  </linearGradient>
+                );
+              })}
+            </defs>
+            <XAxis dataKey="index" hide />
+            <YAxis hide type="number" />
+            {Array.from({ length: maxSegments }, (_, segmentIndex) => {
+              const id = `metric-stack-${reactId.replace(/:/g, "")}-${segmentIndex}`;
+              const isTop = segmentIndex === maxSegments - 1;
+              const isBottom = segmentIndex === 0;
+              const radius: [number, number, number, number] = isTop
+                ? [BAR_RADIUS, BAR_RADIUS, 0, 0]
+                : isBottom
+                  ? [0, 0, BAR_RADIUS, BAR_RADIUS]
+                  : [0, 0, 0, 0];
+
+              return (
+                <Bar
+                  barSize={BAR_SIZE}
+                  dataKey={`s${segmentIndex}`}
+                  fill={`url(#${id})`}
+                  isAnimationActive={false}
+                  key={`s${segmentIndex}`}
+                  radius={radius}
+                  stackId="hydration"
+                />
+              );
+            })}
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
+
 export function RangeChart({
   chart,
   accent,
@@ -162,6 +253,8 @@ export function RangeChart({
   accent: string;
   slots: Omit<Slots, "day">;
 }) {
+  const reactId = useId();
+  const gradientId = `metric-range-${reactId.replace(/:/g, "")}`;
   const color = chart.color ?? accent;
   const lows = chart.series.map((item) => item.low);
   const highs = chart.series.map((item) => item.high);
@@ -188,6 +281,12 @@ export function RangeChart({
       <div className="h-full min-w-0 flex-1">
         <ResponsiveContainer height="100%" width="100%">
           <BarChart data={data} margin={CHART_MARGIN}>
+            <defs>
+              <linearGradient id={gradientId} x1="0" x2="0" y1="1" y2="0">
+                <stop offset="0%" stopColor={color} stopOpacity={0.55} />
+                <stop offset="100%" stopColor={color} stopOpacity={1} />
+              </linearGradient>
+            </defs>
             <XAxis dataKey="index" hide />
             <YAxis domain={[0, span]} hide type="number" />
             <Bar
@@ -201,7 +300,7 @@ export function RangeChart({
             <Bar
               barSize={BAR_SIZE}
               dataKey="mid"
-              fill={color}
+              fill={`url(#${gradientId})`}
               isAnimationActive={false}
               radius={BAR_RADIUS}
               stackId="range"
@@ -216,16 +315,17 @@ export function RangeChart({
 function RingProgress({
   value,
   color,
+  size,
   className,
 }: {
   value: number;
   color: string;
+  size: number;
   className?: string;
 }) {
-  const size = 28;
-  const stroke = 3;
+  const stroke = size >= 24 ? 3 : 2.25;
   const outerRadius = size / 2;
-  const innerRadius = outerRadius - stroke;
+  const innerRadius = Math.max(outerRadius - stroke, 1);
   const progress = Math.min(1, Math.max(0, value));
   const data = [
     { key: "value", value: progress },
@@ -277,6 +377,8 @@ export function RingsChart({
   slots: Omit<Slots, "day">;
 }) {
   const color = chart.color ?? accent;
+  // Match ringCol slot sizes: vertical 18px, horizontal 20px.
+  const ringSize = 18;
 
   return (
     <div aria-hidden className={slots.rings()} style={accentStyle(color)}>
@@ -285,26 +387,21 @@ export function RingsChart({
 
         return (
           <div className={slots.ringCol()} key={`${index}-${item.value}`}>
-            <span className={slots.ringStatus()}>
-              {met ? (
-                <Check
-                  className={slots.ringStatusIcon()}
-                  color="var(--stats-blue)"
-                  size={10}
-                />
-              ) : (
-                <CloseX
-                  className={slots.ringStatusIcon()}
-                  color="var(--muted)"
-                  size={10}
-                />
-              )}
-            </span>
             <RingProgress
               className={slots.ringSvg()}
               color={color}
+              size={ringSize}
               value={item.value}
             />
+            {met ? (
+              <span className={slots.ringStatus()}>
+                <Check
+                  className={slots.ringStatusIcon()}
+                  color={color}
+                  size={8}
+                />
+              </span>
+            ) : null}
           </div>
         );
       })}
@@ -369,7 +466,7 @@ export function MoodsChart({
         const Icon = MOOD_ICONS[mood];
         return (
           <span className={slots.moodIcon()} key={`${index}-${mood}`}>
-            {Icon({ className: slots.moodIcon(), size: 20 })}
+            {Icon({ className: slots.moodIcon(), size: 14 })}
           </span>
         );
       })}

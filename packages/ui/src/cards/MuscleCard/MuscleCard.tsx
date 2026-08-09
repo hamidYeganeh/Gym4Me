@@ -2,13 +2,13 @@
 
 import { ToggleButton } from "@heroui/react";
 import { MediaImage } from "../../common/MediaImage";
-import { muscleArtByArea } from "./art";
-import { muscleArtCrops } from "./MuscleCard.crops";
+import { getMuscleArt } from "./art";
 import { muscleCardVariants } from "./MuscleCard.styles";
 import type { MuscleCardProps } from "./MuscleCard.types";
 
 export function MuscleCard({
   bodyArea = "abs",
+  gender = "male",
   image,
   actionLabel,
   className,
@@ -17,8 +17,7 @@ export function MuscleCard({
 }: MuscleCardProps) {
   const slots = muscleCardVariants();
   const hasCustomImage = image != null && image !== "";
-  const artSvg = !hasCustomImage ? muscleArtByArea[bodyArea] : null;
-  const artCrop = !hasCustomImage ? muscleArtCrops[bodyArea] : undefined;
+  const artSvg = !hasCustomImage ? getMuscleArt(bodyArea, gender) : null;
 
   return (
     <ToggleButton
@@ -52,7 +51,6 @@ export function MuscleCard({
             dangerouslySetInnerHTML={
               artSvg != null ? { __html: artSvg } : undefined
             }
-            style={artCrop}
           />
         )}
       </span>

@@ -1061,21 +1061,29 @@ const FRAME_BY_VARIANT: Record<
   star2: Star2Frame,
 };
 
+const ICON_SIZE_PX = {
+  sm: 15,
+  md: 20,
+  lg: 27,
+} as const;
+
 export function AchievementTag({
   variant = "polygon",
   color = "accent",
+  size = "md",
   icon,
   // badgeIcon,
   className,
   ...props
 }: AchievementTagProps) {
-  const slots = achievementTagVariants({ variant, color });
+  const slots = achievementTagVariants({ variant, color, size });
   const Frame = FRAME_BY_VARIANT[variant];
 
   return (
     <Card
       className={slots.root({ className })}
       data-color={color}
+      data-size={size}
       data-variant={variant}
       variant="transparent"
       {...props}
@@ -1083,7 +1091,9 @@ export function AchievementTag({
       <Frame className={slots.frame()} />
 
       <span aria-hidden className={slots.iconWrap()}>
-        {icon ?? <BarbellDiagonal className={slots.icon()} size={20} />}
+        {icon ?? (
+          <BarbellDiagonal className={slots.icon()} size={ICON_SIZE_PX[size]} />
+        )}
       </span>
 
       {/* <span aria-hidden className={slots.badge()}>

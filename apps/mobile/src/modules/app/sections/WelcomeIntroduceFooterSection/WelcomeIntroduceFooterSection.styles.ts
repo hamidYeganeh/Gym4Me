@@ -3,8 +3,8 @@ import { tv } from "tailwind-variants";
 export const welcomeIntroduceFooterSectionVariants = tv({
   slots: {
     root: [
-      "shrink-0 bg-transparent text-foreground",
-      "px-screen pt-8 pb-[max(1.75rem,env(safe-area-inset-bottom))]",
+      "shrink-0 rounded-t-[2.75rem] bg-surface text-foreground",
+      "px-screen pt-7 pb-[max(1.75rem,env(safe-area-inset-bottom))]",
     ],
     row: "flex items-center justify-between gap-6",
     navButton: [
@@ -14,8 +14,7 @@ export const welcomeIntroduceFooterSectionVariants = tv({
       "[&_svg]:size-6",
     ],
     dots: "relative flex h-3 items-center justify-center gap-1.5",
-    dot: "relative size-1.5 rounded-full bg-background-inverse",
-
+    dot: "relative size-1.5 rounded-full bg-default",
     dotActive: "relative h-1.5 w-5 rounded-full bg-accent",
   },
 });

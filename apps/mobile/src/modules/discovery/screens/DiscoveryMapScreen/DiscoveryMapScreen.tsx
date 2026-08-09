@@ -27,6 +27,7 @@ export function DiscoveryMapScreen({
         id: coach.id,
         lat: coach.lat,
         lng: coach.lng,
+        image: coach.image,
       })),
     [coaches],
   );

@@ -1,13 +1,13 @@
 import type { VariantProps } from "tailwind-variants";
 import { tv } from "tailwind-variants";
+import { mapLeafletThemeClasses } from "../shared/map-leaflet-theme";
 
 export const coachMapVariants = tv({
   slots: {
-    root: "relative size-full min-h-0 overflow-hidden bg-surface-secondary",
+    root: "relative size-full min-h-0 overflow-hidden bg-map-land",
     mapCanvas: [
       "absolute inset-0 z-0 size-full",
-      "[&_.leaflet-control-attribution]:!bg-transparent [&_.leaflet-control-attribution]:!text-[9px]",
-      "[&_.leaflet-control-attribution]:!text-muted [&_.leaflet-control-attribution]:!m-1",
+      mapLeafletThemeClasses,
       "[&_.coach-map-pin]:!bg-transparent [&_.coach-map-pin]:!border-0",
     ].join(" "),
     mapSkeleton: "absolute inset-0 z-[1] rounded-none",

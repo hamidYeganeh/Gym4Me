@@ -7,11 +7,19 @@ export type MetricMood =
   | "sad"
   | "depressed";
 
+export type MetricCardLayout = "horizontal" | "vertical";
+
 export type MetricCardLineChart = {
   type: "line";
   /** Daily values (typically 7). */
   series: number[];
   color?: string;
+  /**
+   * Area curve.
+   * - `monotone` — smooth weight-style line (default)
+   * - `step` — stepped heart-rate style
+   */
+  curve?: "monotone" | "step";
 };
 
 export type MetricCardBarsChart = {
@@ -21,6 +29,18 @@ export type MetricCardBarsChart = {
   color?: string;
   /** Background track color. Defaults to theme `bg-default`. */
   trackColor?: string;
+};
+
+export type MetricCardStackedChart = {
+  type: "stacked";
+  /**
+   * Per day: segment values bottom → top (typically 3).
+   * Values are relative heights within the day column.
+   */
+  series: number[][];
+  color?: string;
+  /** Per-segment opacity from bottom → top. Defaults to `[1, 0.72, 0.45]`. */
+  opacities?: number[];
 };
 
 export type MetricCardRangeChart = {
@@ -33,7 +53,7 @@ export type MetricCardRangeChart = {
 
 export type MetricCardRingsChart = {
   type: "rings";
-  /** Daily progress 0–1. `met` drives the check / x above each ring. */
+  /** Daily progress 0–1. `met` drives the check inside each ring. */
   series: Array<{ value: number; met?: boolean }>;
   color?: string;
 };
@@ -53,6 +73,7 @@ export type MetricCardMoodsChart = {
 export type MetricCardChart =
   | MetricCardLineChart
   | MetricCardBarsChart
+  | MetricCardStackedChart
   | MetricCardRangeChart
   | MetricCardRingsChart
   | MetricCardDotsChart
@@ -71,6 +92,12 @@ export type MetricCardProps = {
   /** Weekday labels under the chart. Defaults to M T W T F S S. */
   dayLabels?: readonly string[];
   chart: MetricCardChart;
+  /**
+   * Layout variant.
+   * - `horizontal` — wide card, meta left / chart right (default)
+   * - `vertical` — tall card, meta above / chart full-width below
+   */
+  variant?: MetricCardLayout;
   /**
    * Accent for icon badge + chart fills.
    * Prefer theme tokens (`statsColors.*` / `var(--stats-orange)`).

@@ -1,9 +1,11 @@
 import type { ToggleButtonProps } from "@heroui/react";
 import type { ReactNode } from "react";
-import type { MuscleArtArea } from "./art";
+import type { MuscleArtArea, MuscleGender } from "./art";
 
 /** Body areas with built-in anatomy art. */
 export type MuscleBodyArea = MuscleArtArea;
+
+export type { MuscleGender };
 
 export type MuscleCardProps = Omit<
   ToggleButtonProps,
@@ -14,6 +16,11 @@ export type MuscleCardProps = Omit<
    * Ignored when `image` is provided.
    */
   bodyArea?: MuscleBodyArea;
+  /**
+   * Anatomy art gender. Female falls back to male until dedicated assets ship.
+   * @default "male"
+   */
+  gender?: MuscleGender;
   /**
    * Custom illustration — a URL string or React node.
    * Takes precedence over `bodyArea`.

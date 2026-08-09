@@ -18,8 +18,18 @@ export type AthleteMetricDefinition = {
   chart: MetricCardChart;
 };
 
-/** Bar heights matched to the design mock. */
-const WEIGHT_SERIES = [0.5, 0.3, 0.7, 0.85, 0.45, 0.25, 0.4];
+/** Series matched to the MetricsCard reference mock. */
+const WEIGHT_LINE = [64.8, 65.9, 65.2, 66.4, 65.1, 66.1, 65.7];
+const HEART_STEP = [68, 74, 70, 78, 72, 80, 72.5];
+const HYDRATION_STACKED = [
+  [2, 2, 1],
+  [3, 2, 2],
+  [2, 1, 1],
+  [3, 3, 2],
+  [2, 2, 2],
+  [3, 2, 1],
+  [3, 3, 2],
+];
 
 export const METRICS_PROMO_IMAGE = "/demo/metrics-promo.png";
 
@@ -30,7 +40,8 @@ export const ATHLETE_METRICS: AthleteMetricDefinition[] = [
     color: statsColors.red,
     chart: {
       type: "line",
-      series: [68, 74, 70, 78, 72, 80, 72],
+      series: HEART_STEP,
+      curve: "step",
     },
   },
   {
@@ -38,8 +49,9 @@ export const ATHLETE_METRICS: AthleteMetricDefinition[] = [
     href: "/athlete/metrics/weight",
     color: statsColors.orange,
     chart: {
-      type: "bars",
-      series: WEIGHT_SERIES,
+      type: "line",
+      series: WEIGHT_LINE,
+      curve: "monotone",
     },
   },
   {
@@ -47,8 +59,8 @@ export const ATHLETE_METRICS: AthleteMetricDefinition[] = [
     href: "/athlete/metrics",
     color: statsColors.blue,
     chart: {
-      type: "bars",
-      series: [0.55, 0.7, 0.45, 0.85, 0.6, 0.9, 0.75],
+      type: "stacked",
+      series: HYDRATION_STACKED,
     },
   },
   {
@@ -64,24 +76,24 @@ export const ATHLETE_METRICS: AthleteMetricDefinition[] = [
         { low: 74, high: 120 },
         { low: 79, high: 128 },
         { low: 77, high: 124 },
-        { low: 80, high: 128 },
+        { low: 80, high: 120 },
       ],
     },
   },
   {
     id: "sleep",
     href: "/athlete/metrics",
-    color: statsColors.purple,
+    color: statsColors.orange,
     chart: {
       type: "rings",
       series: [
-        { value: 0.9, met: true },
-        { value: 0.85, met: true },
-        { value: 0.4, met: false },
         { value: 0.95, met: true },
-        { value: 0.35, met: false },
         { value: 0.88, met: true },
-        { value: 0.3, met: false },
+        { value: 0.4, met: false },
+        { value: 0.92, met: true },
+        { value: 0.35, met: false },
+        { value: 0.9, met: true },
+        { value: 0.28, met: false },
       ],
     },
   },
@@ -101,12 +113,12 @@ export const ATHLETE_METRICS: AthleteMetricDefinition[] = [
     chart: {
       type: "moods",
       series: [
-        "happy",
-        "overjoyed",
+        "sad",
         "neutral",
         "happy",
-        "sad",
+        "overjoyed",
         "happy",
+        "neutral",
         "overjoyed",
       ],
     },

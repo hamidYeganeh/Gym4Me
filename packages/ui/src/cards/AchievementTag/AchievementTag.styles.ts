@@ -4,55 +4,65 @@ import { tv } from "tailwind-variants";
 export const achievementTagVariants = tv({
   slots: {
     root: [
-      "relative inline-flex shrink-0 items-center justify-center",
+      // Neutralize HeroUI Card defaults (flex-col / gap-3 / p-4) that fight badge layout.
+      "relative inline-flex shrink-0 flex-row items-center justify-center gap-0",
       "overflow-visible border-0 bg-transparent p-0 shadow-none",
       "text-[var(--achievement)]",
       "[--tag-outer:color-mix(in_oklch,var(--achievement)_42%,#a1a1aa)]",
       "[--tag-inner:color-mix(in_oklch,var(--achievement)_62%,#3f3f46)]",
     ].join(" "),
     frame: "pointer-events-none absolute inset-0 size-full",
-    iconWrap: ["relative z-[1] flex items-center justify-center"].join(" "),
-    icon: "size-5 shrink-0 text-white",
+    // Frame SVGs reserve bottom space for drop shadows, so the painted badge sits
+    // ~2px above the box center — nudge the icon to match that visual center.
+    iconWrap: [
+      "pointer-events-none absolute inset-0 z-[1]",
+      "flex items-center justify-center",
+      "translate-y-[calc(-2px*var(--tag-scale))]",
+      "[&_svg]:shrink-0 [&_svg]:text-white",
+      "[&_svg]:!size-[length:var(--tag-icon-size)]",
+    ].join(" "),
+    icon: "shrink-0 text-white",
     badge:
       "absolute bottom-0 left-1/2 z-[2] -translate-x-1/2 flex items-center justify-center text-white",
-    badgeIcon: "size-3 shrink-0",
+    badgeIcon:
+      "shrink-0 [&_svg]:!size-[length:var(--tag-badge-size)]",
   },
   variants: {
     variant: {
       polygon: {
-        root: "h-[54px] w-[49px]",
+        root: "h-[calc(54px*var(--tag-scale))] w-[calc(49px*var(--tag-scale))]",
         badge: "translate-y-[30%]",
       },
       circular: {
-        root: "h-[52px] w-[51px]",
+        root: "h-[calc(52px*var(--tag-scale))] w-[calc(51px*var(--tag-scale))]",
         badge: "translate-y-[18%]",
       },
       wavy: {
-        root: "h-[52px] w-[52px]",
+        root: "h-[calc(52px*var(--tag-scale))] w-[calc(52px*var(--tag-scale))]",
         badge: "translate-y-[20%]",
       },
       shield1: {
-        root: "h-[53px] w-[48px]",
+        root: "h-[calc(53px*var(--tag-scale))] w-[calc(48px*var(--tag-scale))]",
         badge: "translate-y-[28%]",
       },
       shield2: {
-        root: "h-[53px] w-[49px]",
+        root: "h-[calc(53px*var(--tag-scale))] w-[calc(49px*var(--tag-scale))]",
         badge: "translate-y-[28%]",
       },
       octagon: {
-        root: "h-[51px] w-[49px]",
+        root: "h-[calc(51px*var(--tag-scale))] w-[calc(49px*var(--tag-scale))]",
         badge: "translate-y-[18%]",
       },
       diamond: {
-        root: "h-[58px] w-[58px]",
+        root: "h-[calc(58px*var(--tag-scale))] w-[calc(58px*var(--tag-scale))]",
         badge: "translate-y-[12%]",
       },
       star1: {
-        root: "h-[56px] w-[50px]",
+        root: "h-[calc(56px*var(--tag-scale))] w-[calc(50px*var(--tag-scale))]",
         badge: "translate-y-[18%]",
       },
       star2: {
-        root: "h-[55px] w-[55px]",
+        root: "h-[calc(55px*var(--tag-scale))] w-[calc(55px*var(--tag-scale))]",
         badge: "translate-y-[14%]",
       },
     },
@@ -67,10 +77,22 @@ export const achievementTagVariants = tv({
       yellow: { root: "[--achievement:var(--stats-yellow)]" },
       purple: { root: "[--achievement:var(--stats-purple)]" },
     },
+    size: {
+      sm: {
+        root: "[--tag-scale:0.75] [--tag-icon-size:15px] [--tag-badge-size:9px]",
+      },
+      md: {
+        root: "[--tag-scale:1] [--tag-icon-size:20px] [--tag-badge-size:12px]",
+      },
+      lg: {
+        root: "[--tag-scale:1.35] [--tag-icon-size:27px] [--tag-badge-size:16px]",
+      },
+    },
   },
   defaultVariants: {
     variant: "polygon",
     color: "accent",
+    size: "md",
   },
 });
 
