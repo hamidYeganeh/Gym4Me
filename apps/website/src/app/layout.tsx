@@ -3,6 +3,7 @@ import { iranSansX } from "@repo/fonts/iran-sans-x";
 import { ThemeProvider } from "@repo/theme";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
+import { AppProviders } from "@/shared/providers/AppProviders";
 import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -114,7 +115,9 @@ export default async function RootLayout({
         className={`${iranSansX.className} antialiased`}
       >
         <ThemeProvider>
-          <NextIntlClientProvider>{children}</NextIntlClientProvider>
+          <NextIntlClientProvider>
+            <AppProviders>{children}</AppProviders>
+          </NextIntlClientProvider>
         </ThemeProvider>
       </body>
     </html>

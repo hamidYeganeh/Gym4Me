@@ -3,6 +3,7 @@
 import { Button } from "@heroui/react";
 import { FaceId } from "@repo/icons";
 import { useState } from "react";
+import { authenticateBiometric } from "@/shared/lib/biometric";
 
 export type BiometricAuthButtonLabels = {
   action: string;
@@ -16,13 +17,6 @@ export type BiometricAuthButtonLabels = {
 };
 
 type AuthStatus = "idle" | "success" | "unavailable" | "failed";
-
-function getErrorCode(error: unknown): string | undefined {
-  if (error && typeof error === "object" && "code" in error) {
-    return String((error as { code: unknown }).code);
-  }
-  return undefined;
-}
 
 export function BiometricAuthButton({
   labels,
@@ -45,56 +39,20 @@ export function BiometricAuthButton({
     setIsAuthenticating(true);
     setStatus("idle");
 
-    try {
-      const { AndroidBiometryStrength, BiometricAuth, BiometryType } =
-        await import("@aparajita/capacitor-biometric-auth");
-      const { Capacitor } = await import("@capacitor/core");
+    const result = await authenticateBiometric({
+      reason: labels.reason,
+      cancel: labels.cancel,
+      androidTitle: labels.androidTitle,
+      androidSubtitle: labels.androidSubtitle,
+    });
 
-      // Web plugin starts with no biometry; enable a Face ID simulation for local demos.
-      if (!Capacitor.isNativePlatform()) {
-        await BiometricAuth.setBiometryType(BiometryType.faceId);
-        await BiometricAuth.setBiometryIsEnrolled(true);
-        await BiometricAuth.setDeviceIsSecure(true);
-      }
-
-      const availability = await BiometricAuth.checkBiometry();
-      if (!availability.isAvailable && !availability.deviceIsSecure) {
-        setStatus("unavailable");
-        return;
-      }
-
-      await BiometricAuth.authenticate({
-        reason: labels.reason,
-        cancelTitle: labels.cancel,
-        allowDeviceCredential: true,
-        androidTitle: labels.androidTitle,
-        androidSubtitle: labels.androidSubtitle,
-        androidConfirmationRequired: false,
-        androidBiometryStrength: AndroidBiometryStrength.weak,
-      });
-
+    if (result.ok) {
       setStatus("success");
-    } catch (error) {
-      const code = getErrorCode(error);
-
-      if (
-        code === "userCancel" ||
-        code === "systemCancel" ||
-        code === "appCancel"
-      ) {
-        return;
-      }
-
-      const unavailable =
-        code === "biometryNotAvailable" ||
-        code === "biometryNotEnrolled" ||
-        code === "noDeviceCredential" ||
-        code === "passcodeNotSet";
-
-      setStatus(unavailable ? "unavailable" : "failed");
-    } finally {
-      setIsAuthenticating(false);
+    } else if (result.reason !== "cancel") {
+      setStatus(result.reason);
     }
+
+    setIsAuthenticating(false);
   }
 
   return (

@@ -64,6 +64,14 @@ export function SecuritySettingsScreen({
 
         <div className={styles.stack()}>
           <ProfileMenuRow
+            hint={t("setPasswordHint")}
+            icon={<Lock1 size={ICON} />}
+            label={t("setPassword")}
+            onPress={() =>
+              router.push(`/${roleSegment}/profile/security/password`)
+            }
+          />
+          <ProfileMenuRow
             hint={t("pinHint")}
             icon={<Key1 size={ICON} />}
             label={t("enablePin")}
@@ -91,7 +99,7 @@ export function SecuritySettingsScreen({
             icon={<Door size={ICON} />}
             label={t("logoutAll")}
             onPress={async () => {
-              await logout();
+              await logout({ revoke: true });
               router.replace("/auth");
             }}
           />

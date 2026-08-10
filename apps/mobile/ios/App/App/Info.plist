@@ -54,6 +54,10 @@
 	<string>UIStatusBarStyleDarkContent</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>برای ورود امن به حساب کاربری از Face ID استفاده می‌شود</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Gym4Me برای احراز هویت و ثبت عکس پیشرفت به دوربین دسترسی نیاز دارد.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Gym4Me موقعیت شما را برای پیشنهاد باشگاه‌ها و مربیان نزدیک استفاده می‌کند.</string>
 	<key>NSHealthShareUsageDescription</key>
 	<string>Gym4Me داده‌های سلامت شما (از جمله داده‌های همگام‌شده از ساعت هوشمند) را می‌خواند تا معیارهای تناسب اندام را نمایش دهد.</string>
 	<key>NSHealthUpdateUsageDescription</key>

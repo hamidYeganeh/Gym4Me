@@ -62,7 +62,6 @@ import { WorkoutCard } from "@repo/ui/cards/WorkoutCard";
 import { LogoMark, PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { AreaLineChart } from "@repo/ui/kit/AreaLineChart";
 import { GlyphText } from "@repo/ui/kit/GlyphText";
-import { Gym4MeHelloEffect } from "@repo/ui/kit/Gym4MeHelloEffect";
 import { Header } from "@repo/ui/layout/Header";
 import type { ReactNode } from "react";
 import { AnimatedThemeToggler } from "@/shared/components/animated-theme-toggler";
@@ -565,7 +564,9 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
       </div>
 
       <GlyphText text={["تمرین کن", "بازیابی کن"]} repeat fixedWidth />
-      <Gym4MeHelloEffect className="text-foreground" speed={1.4} />
+      <h1 className="font-satisfy flex items-center justify-center text-5xl font-normal tracking-normal text-foreground sm:text-6xl">
+        Gym4Me
+      </h1>
 
       <section className="flex w-full flex-col gap-3" id="demo-components-nav">
         <h2 className="text-lg font-medium text-foreground">

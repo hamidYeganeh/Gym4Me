@@ -150,6 +150,7 @@ export { BillMedical } from "./icons/BillMedical";
 export { Bill } from "./icons/Bill";
 export { Binocular } from "./icons/Binocular";
 export { Biohazard } from "./icons/Biohazard";
+export { BiometricFrame } from "./icons/BiometricFrame";
 export { Blender1 } from "./icons/Blender1";
 export { Blender2 } from "./icons/Blender2";
 export { BloodCells1 } from "./icons/BloodCells1";

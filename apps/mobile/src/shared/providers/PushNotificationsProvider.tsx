@@ -3,15 +3,19 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import type { DevicePlatform } from "@repo/api";
-import { registerDeviceToken } from "@/shared/lib/push";
+import {
+  hasPushPermissionBeenPrompted,
+  registerDeviceToken,
+} from "@/shared/lib/push";
 import { roleAppPath } from "@/shared/lib/role-routes";
 import { useAuth } from "./AuthProvider";
 
 /**
  * Native push registration lifecycle:
- * once authenticated on a native platform, request permission, register the
- * device token with the API, and deep-link into the inbox when a
- * notification is tapped. No-op in regular browsers.
+ * once authenticated on a native platform, register the device token when
+ * permission is already granted (prompted during onboarding), and deep-link
+ * into the inbox when a notification is tapped. No-op in regular browsers.
+ * Does not re-prompt if the user already saw / skipped the onboarding sheet.
  */
 export function PushNotificationsProvider() {
   const { isAuthenticated, activeRole } = useAuth();
@@ -31,11 +35,17 @@ export function PushNotificationsProvider() {
         "@capacitor/push-notifications"
       );
 
-      let permission = await PushNotifications.checkPermissions();
-      if (permission.receive === "prompt") {
-        permission = await PushNotifications.requestPermissions();
+      const permission = await PushNotifications.checkPermissions();
+      if (permission.receive === "prompt" && hasPushPermissionBeenPrompted()) {
+        return;
       }
-      if (permission.receive !== "granted" || cancelled) return;
+      if (permission.receive === "prompt") {
+        // Legacy path for sessions that never saw the onboarding sheet.
+        const next = await PushNotifications.requestPermissions();
+        if (next.receive !== "granted" || cancelled) return;
+      } else if (permission.receive !== "granted" || cancelled) {
+        return;
+      }
 
       const platform = Capacitor.getPlatform() as DevicePlatform;
 

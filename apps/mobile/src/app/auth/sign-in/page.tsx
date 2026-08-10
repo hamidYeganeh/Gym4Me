@@ -4,7 +4,7 @@ type SignInPageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
-/** Legacy path — prefer `/auth`. */
+/** Legacy path — prefer `/auth/login`. */
 export default async function SignInRedirectPage({
   searchParams,
 }: SignInPageProps) {
@@ -12,7 +12,7 @@ export default async function SignInRedirectPage({
   const next = params.next;
   const nextValue = Array.isArray(next) ? next[0] : next;
   if (nextValue && nextValue.startsWith("/")) {
-    redirect(`/auth?next=${encodeURIComponent(nextValue)}`);
+    redirect(`/auth/login?next=${encodeURIComponent(nextValue)}`);
   }
-  redirect("/auth");
+  redirect("/auth/login");
 }

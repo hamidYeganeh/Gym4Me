@@ -14,7 +14,7 @@ export const articleCardVariants = tv({
       "data-[hovered=true]:bg-transparent data-[pressed=true]:bg-transparent",
       "data-[pressed=true]:scale-[0.99]",
     ].join(" "),
-    cover: "shrink-0 overflow-hidden bg-background",
+    cover: "relative shrink-0 overflow-hidden bg-background",
     coverImage: "size-full object-cover",
     body: "flex min-w-0 flex-1 flex-col",
     meta: "flex flex-wrap items-center gap-x-1.5 text-sm text-muted",

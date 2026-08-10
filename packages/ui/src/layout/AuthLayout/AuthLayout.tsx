@@ -2,29 +2,42 @@
 
 import { Typography } from "@heroui/react";
 import { Logo } from "../../common/Logo";
-import { Gym4MeHelloEffect } from "../../kit/Gym4MeHelloEffect";
+import { MediaImage } from "../../common/MediaImage";
 import { authLayoutVariants } from "./AuthLayout.styles";
-import type { AuthLayoutProps } from "./AuthLayout.types";
+import type { AuthLayoutProps, AuthLayoutTone } from "./AuthLayout.types";
 
 export function AuthLayout({
   children,
   labels,
   heroSrc,
+  tone: toneProp,
+  showBrand = true,
+  topStart,
+  figure,
   footer,
   belowForm,
   className,
 }: AuthLayoutProps) {
-  const styles = authLayoutVariants();
+  const tone: AuthLayoutTone = heroSrc
+    ? (toneProp ?? "hero")
+    : (toneProp ?? "plain");
+  const styles = authLayoutVariants({ tone });
+  const showBrandName = showBrand && !labels.title;
 
   return (
-    <div className={styles.shell({ className })} data-theme="dark">
+    <div
+      className={styles.shell({ className })}
+      {...(tone === "dark" ? { "data-theme": "dark" as const } : {})}
+    >
       {heroSrc ? (
         <div aria-hidden className={styles.media()}>
-          <img
+          <MediaImage
             alt=""
+            aria-hidden
             className={styles.mediaImage()}
-            decoding="async"
-            src={heroSrc}
+            image={heroSrc}
+            priority
+            sizes="100vw"
           />
           <div className={styles.mediaOverlay()} />
           <div className={styles.mediaVignette()} />
@@ -32,43 +45,59 @@ export function AuthLayout({
       ) : null}
 
       <section className={styles.panel()} aria-label={labels.heroAlt}>
-        <div className={styles.brand()} aria-label={labels.brandAriaLabel}>
-          <span className={styles.brandGlow()} />
-          <Logo
-            className={styles.brandMark()}
-            shadow
-            size="3xl"
-            title={labels.brandAriaLabel}
-          />
-          <Gym4MeHelloEffect
-            className={styles.brandName()}
-            speed={1.8}
-          />
-        </div>
+        {topStart ? <div className={styles.topBar()}>{topStart}</div> : null}
 
-        <header className={styles.header()}>
-          {labels.title ? (
-            <Typography className={styles.title()} type="h1" weight="bold">
-              {labels.title}
-            </Typography>
-          ) : null}
-          <Typography
-            className={styles.subtitle()}
-            {...(labels.title ? { color: "muted" as const } : {})}
-          >
-            {labels.subtitle}
-          </Typography>
-        </header>
+        {showBrand ? (
+          <div className={styles.brand()} aria-label={labels.brandAriaLabel}>
+            <span className={styles.brandGlow()} />
+            <Logo
+              className={styles.brandMark()}
+              shadow
+              size={tone === "hero" ? "3xl" : "2xl"}
+              title={labels.brandAriaLabel}
+            />
+            {showBrandName ? (
+              <h1 className={styles.brandName()}>{labels.brandAriaLabel}</h1>
+            ) : null}
+          </div>
+        ) : null}
 
-        <div className={styles.spacer()} aria-hidden />
+        {labels.title || labels.subtitle ? (
+          <header className={styles.header()}>
+            {labels.title ? (
+              <Typography className={styles.title()} type="h1" weight="bold">
+                {labels.title}
+              </Typography>
+            ) : null}
+            {labels.subtitle ? (
+              <Typography
+                className={styles.subtitle()}
+                {...(tone === "dark" || tone === "hero" ? {} : { color: "muted" as const })}
+              >
+                {labels.subtitle}
+              </Typography>
+            ) : null}
+          </header>
+        ) : null}
+
+        {figure ? <div className={styles.figure()}>{figure}</div> : null}
+
+        {tone === "hero" ? (
+          <div className={styles.spacer()} aria-hidden />
+        ) : null}
 
         <div className={styles.body()}>
           <div className={styles.formSlot()}>{children}</div>
           {belowForm ? (
             <div className={styles.belowForm()}>{belowForm}</div>
           ) : null}
-          {footer ? <div className={styles.footer()}>{footer}</div> : null}
         </div>
+
+        {tone === "plain" || tone === "dark" ? (
+          <div className={styles.spacer()} aria-hidden />
+        ) : null}
+
+        {footer ? <div className={styles.footer()}>{footer}</div> : null}
       </section>
     </div>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { gym4MeScoreCardVariants } from "./Gym4MeScoreCard.styles";
 import type { Gym4MeScoreCardProps } from "./Gym4MeScoreCard.types";
 
@@ -17,12 +18,13 @@ export function Gym4MeScoreCard({
 
   return (
     <div className={styles.root({ className })}>
-      <img
+      <Image
         alt={alt}
         className={styles.image()}
-        decoding="async"
         draggable={false}
+        height={294}
         src={SCORE_CARD_SRC}
+        width={375}
       />
     </div>
   );

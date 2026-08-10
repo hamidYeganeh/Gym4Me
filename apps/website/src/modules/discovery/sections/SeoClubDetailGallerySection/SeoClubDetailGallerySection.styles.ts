@@ -9,7 +9,7 @@ export const seoClubDetailGallerySectionStyles = {
     "group relative aspect-[4/3] overflow-hidden rounded-2xl",
     "bg-surface-secondary",
   ].join(" "),
-  image: "size-full object-cover transition-transform duration-300 group-hover:scale-[1.03]",
+  image: "object-cover transition-transform duration-300 group-hover:scale-[1.03]",
   caption: [
     "absolute inset-x-0 bottom-0",
     "bg-linear-to-t from-background/90 via-background/50 to-transparent",

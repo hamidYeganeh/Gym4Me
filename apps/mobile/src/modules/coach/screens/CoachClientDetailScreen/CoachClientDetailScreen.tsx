@@ -8,6 +8,7 @@ import { AreaLineChart } from "@repo/ui/kit/AreaLineChart";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type {
   CoachClientEngagement,
@@ -77,10 +78,12 @@ export function CoachClientDetailScreen({
     >
       <div className={styles.content}>
         <section className={styles.hero}>
-          <img
+          <Image
             alt={client.name}
             className={styles.heroAvatar}
+            height={96}
             src={client.avatar}
+            width={96}
           />
           <Typography className={styles.heroName} type="h1" weight="bold">
             {client.name}

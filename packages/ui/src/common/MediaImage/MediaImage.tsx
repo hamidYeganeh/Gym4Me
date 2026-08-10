@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { PLACEHOLDER_IMAGE } from "../placeholder";
+import { useMediaImageAdapter } from "./MediaImage.adapter";
 import type { MediaImageProps } from "./MediaImage.types";
 
 function resolveImageSrc(image: MediaImageProps["image"]) {
@@ -12,16 +13,18 @@ function resolveImageSrc(image: MediaImageProps["image"]) {
 
 /**
  * Framework-agnostic media image.
- * Uses a plain `<img>` so Vite (admin) and Next (mobile/website) share one implementation.
- * Parents that need fill behavior should wrap with `relative` and pass size classes.
+ * Next apps wrap the tree with `MediaImageProvider` + `next/image`.
+ * Without a provider (e.g. Vite admin), falls back to a plain `<img>`.
  */
 export function MediaImage({
   image,
   alt = "",
   className,
+  sizes,
   "aria-hidden": ariaHidden,
   priority,
 }: MediaImageProps) {
+  const Adapter = useMediaImageAdapter();
   const resolvedSrc = resolveImageSrc(image) ?? PLACEHOLDER_IMAGE;
   const [src, setSrc] = useState(resolvedSrc);
 
@@ -40,6 +43,26 @@ export function MediaImage({
     );
   }
 
+  const handleError = () => {
+    if (src !== PLACEHOLDER_IMAGE) {
+      setSrc(PLACEHOLDER_IMAGE);
+    }
+  };
+
+  if (Adapter) {
+    return (
+      <Adapter
+        alt={alt}
+        aria-hidden={ariaHidden}
+        className={className}
+        priority={priority}
+        sizes={sizes}
+        src={src}
+        onError={handleError}
+      />
+    );
+  }
+
   return (
     <img
       alt={alt}
@@ -47,12 +70,8 @@ export function MediaImage({
       className={className}
       decoding="async"
       loading={priority ? "eager" : "lazy"}
-      onError={() => {
-        if (src !== PLACEHOLDER_IMAGE) {
-          setSrc(PLACEHOLDER_IMAGE);
-        }
-      }}
       src={src}
+      onError={handleError}
     />
   );
 }

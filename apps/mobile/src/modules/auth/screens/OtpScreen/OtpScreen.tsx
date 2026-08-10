@@ -1,93 +1,126 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button, InputOTP } from "@heroui/react";
+import { Button, Link } from "@heroui/react";
 import { ApiError } from "@repo/api";
-import { ArrowLeft, ArrowRight } from "@repo/icons";
+import type { ConfirmOtpInput, RequestOtpInput } from "@repo/api";
+import { ChevronLeft, Lock1 } from "@repo/icons";
 import {
   AuthLayout,
   type AuthLayoutLabels,
 } from "@repo/ui/layout/AuthLayout";
 import { useTranslations } from "next-intl";
+import { AuthLoginOtpForm } from "@/modules/auth/components/AuthLoginOtpForm";
+import { AuthLoginOtpRequestForm } from "@/modules/auth/components/AuthLoginOtpRequestForm";
 import {
   clearOtpPending,
   readOtpPending,
+  saveOtpPending,
+  type OtpPendingState,
 } from "@/modules/auth/lib/otp-pending";
-import { authHref } from "@/shared/lib/auth-redirect";
+import { withAuthNext } from "@/shared/lib/auth-redirect";
 import { roleHomePath } from "@/shared/lib/role-routes";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { otpScreenVariants } from "./OtpScreen.styles";
 import type { OtpScreenProps } from "./OtpScreen.types";
 
-const OTP_LENGTH = 6;
-const OTP_PATTERN = "^[0-9۰-۹٠-٩]+$";
+const HERO_SRC = "/auth-hero.jpg";
 
-function normalizeDigits(value: string) {
-  return value
-    .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
-    .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
-    .replace(/\D/g, "")
-    .slice(0, OTP_LENGTH);
+const subscribeOtpPending = () => () => {};
+
+function getOtpPendingSnapshot() {
+  return readOtpPending();
+}
+
+function getOtpPendingServerSnapshot(): OtpPendingState | null {
+  return null;
 }
 
 function maskPhone(phone: string) {
   if (phone.length < 8) return phone;
-  return `${phone.slice(0, 4)}***${phone.slice(-4)}`;
+  return `••${phone.slice(-4)}`;
 }
 
-function formatTimer(seconds: number) {
-  const minutes = Math.floor(seconds / 60);
-  const remainder = seconds % 60;
-  return `${minutes.toLocaleString("fa-IR")}:${remainder
-    .toLocaleString("fa-IR", { minimumIntegerDigits: 2 })
-    .replace(/\u200e/g, "")}`;
+type OtpSession = {
+  step: "request" | "verify";
+  phone: string;
+  remainingSeconds: number;
+  debugCode: string | null;
+};
+
+function sessionFromPending(pending: OtpPendingState | null): OtpSession {
+  if (pending?.phone) {
+    return {
+      step: "verify",
+      phone: pending.phone,
+      remainingSeconds: pending.expiresInSeconds,
+      debugCode: pending.debugCode ?? null,
+    };
+  }
+  return {
+    step: "request",
+    phone: "",
+    remainingSeconds: 0,
+    debugCode: null,
+  };
 }
 
 export function OtpScreen({ className }: OtpScreenProps) {
   const t = useTranslations("Mobile.Otp");
+  const tAuth = useTranslations("Mobile.Auth");
   const styles = otpScreenVariants();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { loginWithOtp, requestOtp } = useAuth();
-  const [hydrated, setHydrated] = useState(false);
-  const [phone, setPhone] = useState("");
-  const [code, setCode] = useState("");
-  const [remainingSeconds, setRemainingSeconds] = useState(0);
-  const [debugCode, setDebugCode] = useState<string | null>(null);
+
+  const storedPending = useSyncExternalStore(
+    subscribeOtpPending,
+    getOtpPendingSnapshot,
+    getOtpPendingServerSnapshot,
+  );
+
+  const [session, setSession] = useState<OtpSession | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
   const [isResending, setIsResending] = useState(false);
+  const [otpFormKey, setOtpFormKey] = useState(0);
+
+  // Prefer local session once the user interacts; otherwise mirror sessionStorage.
+  const active = session ?? sessionFromPending(storedPending);
+  const { step, phone, remainingSeconds, debugCode } = active;
+
+  const next = searchParams.get("next");
+  const loginHref = withAuthNext("/auth/login", next);
 
   useEffect(() => {
-    const pending = readOtpPending();
-    if (!pending?.phone) {
-      const next = searchParams.get("next");
-      router.replace(authHref(next));
-      return;
-    }
-    setPhone(pending.phone);
-    setRemainingSeconds(pending.expiresInSeconds);
-    setDebugCode(pending.debugCode ?? null);
-    setHydrated(true);
-  }, [router, searchParams]);
-
-  useEffect(() => {
-    if (!phone) return;
+    if (step !== "verify" || !phone) return;
     const timer = window.setInterval(() => {
-      setRemainingSeconds((current) => Math.max(0, current - 1));
+      setSession((current) => {
+        const base = current ?? sessionFromPending(readOtpPending());
+        if (base.step !== "verify" || base.remainingSeconds <= 0) return current ?? base;
+        return {
+          ...base,
+          remainingSeconds: Math.max(0, base.remainingSeconds - 1),
+        };
+      });
     }, 1000);
     return () => window.clearInterval(timer);
-  }, [phone]);
+  }, [phone, step]);
 
-  if (!hydrated || !phone) return null;
-
-  const labels: AuthLayoutLabels = {
-    subtitle: t("subtitle"),
-    brandAriaLabel: t("brandAriaLabel"),
-    heroAlt: t("heroAlt"),
-  };
+  const labels: AuthLayoutLabels =
+    step === "verify"
+      ? {
+          subtitle: t("sentToMasked", { phone: maskPhone(phone) }),
+          brandAriaLabel: t("brandAriaLabel"),
+          heroAlt: t("heroAlt"),
+        }
+      : {
+          subtitle: t("requestSubtitle"),
+          brandAriaLabel: t("brandAriaLabel"),
+          heroAlt: t("heroAlt"),
+        };
 
   const getErrorMessage = (err: unknown) => {
     if (err instanceof ApiError && err.status === 429) {
@@ -96,28 +129,44 @@ export function OtpScreen({ className }: OtpScreenProps) {
     if (err instanceof ApiError && err.message) {
       return err.message;
     }
-    return t("errorInvalid");
+    return step === "verify" ? t("errorInvalid") : tAuth("errorOtpRequest");
   };
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleRequest = async (payload: RequestOtpInput) => {
     setError(null);
     setNotice(null);
-
-    if (code.length !== OTP_LENGTH) {
-      setError(t("errorRequired"));
-      return;
-    }
-
     setIsPending(true);
     try {
-      const session = await loginWithOtp(phone, code);
+      const result = await requestOtp(payload.phone);
+      saveOtpPending({
+        phone: payload.phone,
+        expiresInSeconds: result.expiresInSeconds,
+        debugCode: result.debugCode,
+      });
+      setSession({
+        step: "verify",
+        phone: payload.phone,
+        remainingSeconds: result.expiresInSeconds,
+        debugCode: result.debugCode ?? null,
+      });
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  const handleVerify = async (payload: ConfirmOtpInput) => {
+    setError(null);
+    setNotice(null);
+    setIsPending(true);
+    try {
+      const authSession = await loginWithOtp(payload.phone, payload.code);
       clearOtpPending();
-      const next = searchParams.get("next");
       router.replace(
         next && next.startsWith("/")
           ? next
-          : roleHomePath(session.activeRole),
+          : roleHomePath(authSession.activeRole),
       );
     } catch (err) {
       setError(getErrorMessage(err));
@@ -133,10 +182,19 @@ export function OtpScreen({ className }: OtpScreenProps) {
     setIsResending(true);
     try {
       const result = await requestOtp(phone);
-      setRemainingSeconds(result.expiresInSeconds);
-      setDebugCode(result.debugCode ?? null);
-      setCode("");
+      setSession({
+        step: "verify",
+        phone,
+        remainingSeconds: result.expiresInSeconds,
+        debugCode: result.debugCode ?? null,
+      });
       setNotice(t("resent"));
+      setOtpFormKey((current) => current + 1);
+      saveOtpPending({
+        phone,
+        expiresInSeconds: result.expiresInSeconds,
+        debugCode: result.debugCode,
+      });
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -144,117 +202,100 @@ export function OtpScreen({ className }: OtpScreenProps) {
     }
   };
 
+  const goBack = () => {
+    if (step === "verify") {
+      clearOtpPending();
+      setSession({
+        step: "request",
+        phone,
+        remainingSeconds: 0,
+        debugCode: null,
+      });
+      setError(null);
+      setNotice(null);
+      return;
+    }
+    router.replace(withAuthNext("/auth", next));
+  };
+
   return (
     <AuthLayout
       className={className}
-      labels={labels}
-      footer={<p>{t("securityNote")}</p>}
-    >
-      <form className={styles.form()} onSubmit={handleSubmit}>
-        <div className={styles.codeArea()}>
-          <p className={styles.phone()}>
-            {t("sentTo")}{" "}
-            <b className={styles.phoneValue()}>{maskPhone(phone)}</b>
-          </p>
-
-          <InputOTP
-            autoFocus
-            className={styles.otp()}
-            inputMode="numeric"
-            maxLength={OTP_LENGTH}
-            pattern={OTP_PATTERN}
-            value={code}
-            onChange={(value) => setCode(normalizeDigits(value))}
-          >
-            <InputOTP.Group className={styles.otpGroup()}>
-              {Array.from({ length: OTP_LENGTH }, (_, index) => (
-                <InputOTP.Slot
-                  className={styles.otpSlot()}
-                  index={index}
-                  key={index}
-                />
-              ))}
-            </InputOTP.Group>
-          </InputOTP>
-        </div>
-
-        {debugCode ? (
-          <aside className={styles.debugPanel()}>
-            <div className={styles.debugCopy()}>
-              <span className={styles.debugLabel()}>{t("debugLabel")}</span>
-              <code className={styles.debugCode()}>{debugCode}</code>
+      belowForm={
+        step === "request" ? (
+          <div className={styles.altBlock()}>
+            <div className={styles.divider()}>
+              <span className={styles.dividerLine()} />
+              <span className={styles.dividerLabel()}>{tAuth("orSignInWith")}</span>
+              <span className={styles.dividerLine()} />
             </div>
             <Button
-              className={styles.debugAction()}
-              size="sm"
+              className={styles.altButton()}
+              fullWidth
+              size="lg"
               type="button"
-              variant="ghost"
-              onPress={() => setCode(debugCode)}
+              variant="secondary"
+              onPress={() => router.push(loginHref)}
             >
-              {t("useDebugCode")}
+              <Lock1 aria-hidden className={styles.altIcon()} size={20} />
+              {tAuth("usePasswordInstead")}
             </Button>
-          </aside>
-        ) : null}
-
-        {error ? (
-          <p className={styles.error()} role="alert">
-            {error}
+          </div>
+        ) : null
+      }
+      footer={
+        step === "verify" ? (
+          <p>
+            <Link
+              className={styles.footerLink()}
+              onPress={() => router.push(loginHref)}
+            >
+              <Lock1 size={18} />
+              {tAuth("usePasswordInstead")}
+            </Link>
           </p>
-        ) : null}
-        {notice ? (
-          <p className={styles.notice()} role="status">
-            {notice}
-          </p>
-        ) : null}
-
+        ) : null
+      }
+      heroSrc={HERO_SRC}
+      labels={labels}
+      tone="plain"
+      topStart={
         <Button
-          className={styles.submit()}
-          fullWidth
-          isDisabled={code.length !== OTP_LENGTH}
-          isPending={isPending}
+          aria-label={t("back")}
+          className={styles.backButton()}
+          isIconOnly
           size="lg"
-          type="submit"
-          variant="primary"
-        >
-          {t("submit")}
-          <ArrowRight className={styles.submitIcon()} size={24} />
-        </Button>
-
-        <div className={styles.resendRow()}>
-          {remainingSeconds > 0 ? (
-            <>
-              <span>{t("resendIn")}</span>
-              <span className={styles.timer()}>
-                {formatTimer(remainingSeconds)}
-              </span>
-            </>
-          ) : (
-            <Button
-              className={styles.resend()}
-              isPending={isResending}
-              size="sm"
-              type="button"
-              variant="ghost"
-              onPress={handleResend}
-            >
-              {t("resend")}
-            </Button>
-          )}
-        </div>
-
-        <Button
-          className={styles.back()}
           type="button"
           variant="ghost"
-          onPress={() => {
-            clearOtpPending();
-            router.replace(authHref(searchParams.get("next")));
-          }}
+          onPress={goBack}
         >
-          <ArrowLeft size={18} />
-          {t("back")}
+          <ChevronLeft size={22} />
         </Button>
-      </form>
+      }
+    >
+      {step === "request" ? (
+        <AuthLoginOtpRequestForm
+          defaultPhone={phone}
+          error={error}
+          isPending={isPending}
+          onDismissError={() => setError(null)}
+          onSubmit={handleRequest}
+        />
+      ) : (
+        <AuthLoginOtpForm
+          key={otpFormKey}
+          debugCode={debugCode}
+          error={error}
+          isPending={isPending}
+          isResending={isResending}
+          notice={notice}
+          phone={phone}
+          remainingSeconds={remainingSeconds}
+          onDismissError={() => setError(null)}
+          onResend={() => void handleResend()}
+          onSubmit={handleVerify}
+        />
+      )}
     </AuthLayout>
   );
 }

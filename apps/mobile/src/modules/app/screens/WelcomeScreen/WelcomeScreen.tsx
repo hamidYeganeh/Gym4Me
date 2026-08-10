@@ -1,7 +1,11 @@
 "use client";
 
-import { Button, Link, Typography } from "@heroui/react";
+import { Button, Link } from "@heroui/react";
 import { ArrowRight } from "@repo/icons";
+import {
+  AuthLayout,
+  type AuthLayoutLabels,
+} from "@repo/ui/layout/AuthLayout";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -38,58 +42,37 @@ export function WelcomeScreen({ className }: WelcomeScreenProps) {
     router.replace("/auth");
   };
 
+  const labels: AuthLayoutLabels = {
+    title: t("title"),
+    subtitle: t("subtitle"),
+    brandAriaLabel: t("brandAriaLabel"),
+    heroAlt: t("heroAlt"),
+  };
+
   return (
-    <main className={styles.root({ className })}>
-      <div aria-hidden className={styles.media()}>
-        <img
-          alt=""
-          className={styles.mediaImage()}
-          decoding="async"
-          src={HERO_SRC}
-        />
-        <div className={styles.mediaOverlay()} />
-      </div>
-
-      <div className={styles.content()}>
-        <div className={styles.copy()}>
-          <Typography
-            align="center"
-            className={styles.title()}
-            type="h1"
-            weight="bold"
-          >
-            {t("title")}
-          </Typography>
-          <Typography
-            align="center"
-            className={styles.subtitle()}
-            color="muted"
-            type="body"
-          >
-            {t("subtitle")}
-          </Typography>
-        </div>
-
-        <div className={styles.actions()}>
-          <Button
-            className={styles.primary()}
-            fullWidth
-            onPress={() => router.push("/welcome/introduce")}
-            size="lg"
-            variant="primary"
-          >
-            {t("ctaGetStarted")}
-            <ArrowRight aria-hidden className={styles.primaryIcon()} size={20} />
-          </Button>
-
-          <p className={styles.footer()}>
-            <span>{t("alreadyHaveAccount")}</span>
-            <Link className={styles.signIn()} onPress={goSignIn}>
-              {t("ctaSignIn")}
-            </Link>
-          </p>
-        </div>
-      </div>
-    </main>
+    <AuthLayout
+      className={className}
+      footer={
+        <p className={styles.footer()}>
+          <span>{t("alreadyHaveAccount")}</span>{" "}
+          <Link className={styles.signIn()} onPress={goSignIn}>
+            {t("ctaSignIn")}
+          </Link>
+        </p>
+      }
+      heroSrc={HERO_SRC}
+      labels={labels}
+    >
+      <Button
+        className={styles.primary()}
+        fullWidth
+        onPress={() => router.push("/welcome/introduce")}
+        size="lg"
+        variant="primary"
+      >
+        {t("ctaGetStarted")}
+        <ArrowRight aria-hidden className={styles.primaryIcon()} size={20} />
+      </Button>
+    </AuthLayout>
   );
 }

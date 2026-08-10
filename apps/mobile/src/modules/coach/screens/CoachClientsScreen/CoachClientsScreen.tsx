@@ -14,6 +14,7 @@ import { FilterChip, FilterChipBar } from "@repo/ui/kit/FilterChip";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { CoachClientEngagement } from "../../lib/coach-clients-data";
 import { coachClientsScreenStyles as styles } from "./CoachClientsScreen.styles";
@@ -129,10 +130,12 @@ export function CoachClientsScreen({ clients }: CoachClientsScreenProps) {
                   onPress={() => router.push(`/coach/clients/${client.id}`)}
                   variant="ghost"
                 >
-                  <img
+                  <Image
                     alt={client.name}
                     className={styles.avatar}
+                    height={48}
                     src={client.avatar}
+                    width={48}
                   />
                   <span className={styles.rowBody}>
                     <span className={styles.rowTop}>

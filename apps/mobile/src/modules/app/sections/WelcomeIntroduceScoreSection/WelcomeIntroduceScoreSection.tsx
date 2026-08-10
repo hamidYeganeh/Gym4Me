@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
+import Image from "next/image";
 import { Gym4MeScoreCard } from "@/modules/app/components/Gym4MeScoreCard";
 import { welcomeIntroduceStageItemVariants } from "@/modules/app/lib/welcome-introduce-motion";
 import { welcomeIntroduceScoreSectionVariants } from "./WelcomeIntroduceScoreSection.styles";
@@ -28,10 +29,11 @@ export function WelcomeIntroduceScoreSection({
     >
       <div className={styles.phoneWrap()}>
         <div aria-hidden className={styles.phoneScreen()} />
-        <img
+        <Image
           alt=""
           className={styles.phoneFrame()}
-          decoding="async"
+          fill
+          sizes="260px"
           src={PHONE_FRAME_SRC}
         />
       </div>

@@ -8,6 +8,7 @@ import { Chat } from "@repo/icons/Chat";
 import { Eye } from "@repo/icons/Eye";
 import { Heart } from "@repo/icons/Heart";
 import { PlayCircle } from "@repo/icons/PlayCircle";
+import { MediaImage } from "../../common/MediaImage";
 import { articleCardVariants } from "./ArticleCard.styles";
 import type { ArticleCardProps } from "./ArticleCard.types";
 
@@ -75,8 +76,12 @@ export function ArticleCard({
         {!isFeed ? (
           <div className={slots.cover()}>
             {coverSrc ? (
-              // eslint-disable-next-line @next/next/no-img-element -- shared package; URL may be absolute API media
-              <img alt="" className={slots.coverImage()} src={coverSrc} />
+              <MediaImage
+                alt=""
+                className={slots.coverImage()}
+                image={coverSrc}
+                sizes="(max-width: 768px) 100vw, 420px"
+              />
             ) : null}
           </div>
         ) : null}

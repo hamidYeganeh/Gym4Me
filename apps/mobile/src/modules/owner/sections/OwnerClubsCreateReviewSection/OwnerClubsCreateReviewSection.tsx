@@ -5,6 +5,7 @@ import { Button, Typography } from "@heroui/react";
 import { FileItem, type FileItemStatus } from "@repo/ui/kit/FileItem";
 import { Uploader } from "@repo/ui/kit/Uploader";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import { mediaFileUrl } from "@/shared/lib/api";
 import { ownerClubsCreateReviewSectionVariants } from "./OwnerClubsCreateReviewSection.styles";
 import type { OwnerClubsCreateReviewSectionProps } from "./OwnerClubsCreateReviewSection.types";
@@ -143,11 +144,15 @@ export function OwnerClubsCreateReviewSection({
                     return (
                       <div className={styles.mediaCard()} key={item.key}>
                         {url ? (
-                          <img
-                            alt={item.label || item.fileName}
-                            className={styles.mediaImage()}
-                            src={url}
-                          />
+                          <div className="relative aspect-[4/3] w-full">
+                            <Image
+                              alt={item.label || item.fileName}
+                              className="object-cover"
+                              fill
+                              sizes="(max-width: 768px) 50vw, 200px"
+                              src={url}
+                            />
+                          </div>
                         ) : null}
                         <p className={styles.mediaCaption()}>
                           {item.label

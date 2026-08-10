@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Avatar, Typography } from "@heroui/react";
 import { ArticleCard } from "@repo/ui/cards/ArticleCard";
 import { useTranslations } from "next-intl";
@@ -60,7 +61,14 @@ export function ArticleDetailScreen({
 
         {coverUrl ? (
           <div className={styles.cover}>
-            <img alt="" className={styles.coverImage} src={coverUrl} />
+            <Image
+              alt=""
+              className={styles.coverImage}
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, 960px"
+              src={coverUrl}
+            />
           </div>
         ) : null}
 

@@ -7,6 +7,7 @@ import { ApiError } from "@repo/api";
 import { FileItem, type FileItemStatus } from "@repo/ui/kit/FileItem";
 import { Uploader } from "@repo/ui/kit/Uploader";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import { mediaApi, mediaFileUrl } from "@/shared/lib/api";
 import { ownerClubsCreateMediaSectionVariants } from "./OwnerClubsCreateMediaSection.styles";
 import type { OwnerClubsCreateMediaSectionProps } from "./OwnerClubsCreateMediaSection.types";
@@ -138,10 +139,12 @@ export function OwnerClubsCreateMediaSection({
                 {showItem && displayName ? (
                   <>
                     {previewUrl && coverUpload?.status !== "uploading" ? (
-                      <div className={styles.preview()}>
-                        <img
+                      <div className={`${styles.preview()} aspect-[16/9] w-full`}>
+                        <Image
                           alt=""
                           className={styles.image()}
+                          fill
+                          sizes="100vw"
                           src={previewUrl}
                         />
                       </div>
@@ -342,8 +345,14 @@ export function OwnerClubsCreateMediaSection({
             return (
               <div className={styles.stack()} key={item.id}>
                 {previewUrl ? (
-                  <div className={styles.preview()}>
-                    <img alt="" className={styles.image()} src={previewUrl} />
+                  <div className={`${styles.preview()} aspect-[16/9] w-full`}>
+                    <Image
+                      alt=""
+                      className={styles.image()}
+                      fill
+                      sizes="100vw"
+                      src={previewUrl}
+                    />
                   </div>
                 ) : null}
                 <FileItem
