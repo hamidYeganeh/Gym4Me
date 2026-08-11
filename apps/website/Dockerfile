@@ -45,9 +45,9 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN groupadd --system --gid 1001 nodejs \
   && useradd --system --uid 1001 --gid nodejs nextjs
 
-COPY --from=builder --chown=nextjs:nodejs /app/apps/website/public ./apps/website/public
 COPY --from=builder --chown=nextjs:nodejs /app/apps/website/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/apps/website/.next/static ./apps/website/.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/apps/website/public ./apps/website/public
 
 USER nextjs
 EXPOSE 8080
