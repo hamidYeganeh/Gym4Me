@@ -1,21 +1,17 @@
 "use client";
 
-import {
-  Button,
-  Label,
-  Radio,
-  RadioGroup,
-  Typography,
-} from "@heroui/react";
+import { Button, Link, Typography } from "@heroui/react";
 import { BarbellHorizontal } from "@repo/icons/BarbellHorizontal";
 import { Building2 } from "@repo/icons/Building2";
 import { Calendar1 } from "@repo/icons/Calendar1";
-import { Check } from "@repo/icons/Check";
+import { Clock } from "@repo/icons/Clock";
+import { Handshake } from "@repo/icons/Handshake";
 import { ListTwoCheck } from "@repo/icons/ListTwoCheck";
 import { Medal } from "@repo/icons/Medal";
 import { Sparkle1 } from "@repo/icons/Sparkle1";
 import { StarFull } from "@repo/icons/StarFull";
 import { Target1 } from "@repo/icons/Target1";
+import { ThumbsUp } from "@repo/icons/ThumbsUp";
 import { UsersThree } from "@repo/icons/UsersThree";
 import { UsersTwo } from "@repo/icons/UsersTwo";
 import { Video } from "@repo/icons/Video";
@@ -23,9 +19,12 @@ import { Weight } from "@repo/icons/Weight";
 import { ClubAmenityCard } from "@repo/ui/cards/ClubAmenityCard";
 import { ClubBranchCard } from "@repo/ui/cards/ClubBranchCard";
 import { ClubCancellationPolicy } from "@repo/ui/cards/ClubCancellationPolicy";
-import { ClubSubscriptionCard } from "@repo/ui/cards/ClubSubscriptionCard";
+import { CoachAvailabilitySlots } from "@repo/ui/cards/CoachAvailabilitySlots";
+import { CoachConsultationType } from "@repo/ui/cards/CoachConsultationType";
 import { CoachFeatureCard } from "@repo/ui/cards/CoachFeatureCard";
 import { ReviewCard } from "@repo/ui/cards/ReviewCard";
+import { ReviewSummaryCard } from "@repo/ui/cards/ReviewSummaryCard";
+import { SocialMediaCard } from "@repo/ui/cards/SocialMediaCard";
 import { SportCard } from "@repo/ui/cards/SportCard";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { CarouselNavigation } from "@repo/ui/kit/CarouselNavigation";
@@ -34,13 +33,14 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import {
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
 } from "react";
 import type {
   CoachDetailClub,
-  CoachDetailPackage,
+  CoachDetailConsultationType,
   CoachDetailRelated,
   CoachDetailReview,
   CoachDetailService,
@@ -49,13 +49,14 @@ import type {
   CoachDetailStat,
   CoachDetailStatKey,
 } from "../../lib/coach-detail-data";
-import { getClubDetail } from "../../lib/club-detail-data";
-import { DiscoveryClubsDetailCalendarSection } from "../DiscoveryClubsDetailCalendarSection";
+import { buildCoachReviewSummary } from "../../lib/coach-review-summary";
+import { DiscoveryCoachesDetailExperienceSection } from "../DiscoveryCoachesDetailExperienceSection";
 import { DiscoveryGallerySection } from "../DiscoveryGallerySection";
 import { discoveryCoachesDetailBodySectionStyles as styles } from "./DiscoveryCoachesDetailBodySection.styles";
 import type { DiscoveryCoachesDetailBodySectionProps } from "./DiscoveryCoachesDetailBodySection.types";
 
 const SECTION_TITLE_ICON_SIZE = 18;
+const REVIEW_HIGHLIGHT_ICON_SIZE = 24;
 const REVIEW_PREVIEW_COUNT = 5;
 
 function formatPlanPrice(price: number) {
@@ -315,6 +316,39 @@ function SpecialtiesSection({
   );
 }
 
+function ConsultationTypesSection({
+  options,
+  selectedId,
+  onChange,
+}: {
+  options: CoachDetailConsultationType[];
+  selectedId?: string;
+  onChange: (optionId: string) => void;
+}) {
+  const t = useTranslations("CoachDetail");
+  if (options.length === 0) return null;
+
+  return (
+    <div className={styles.section}>
+      <CoachConsultationType
+        onOptionPress={(option) => onChange(option.id)}
+        options={options.map((option) => ({
+          id: option.id,
+          kind: option.kind,
+          title: t(option.titleKey),
+          status: option.status,
+          statusLabel: t(option.statusKey),
+          pricePrefix: t("consultationPricePrefix"),
+          price: formatPlanPrice(option.price),
+          priceSuffix: t("consultationPriceSuffix"),
+        }))}
+        selectedId={selectedId}
+        title={t("consultationTypeTitle")}
+      />
+    </div>
+  );
+}
+
 function ClubsSection({ clubs }: { clubs: CoachDetailClub[] }) {
   const t = useTranslations("CoachDetail");
   const router = useRouter();
@@ -345,82 +379,74 @@ function ClubsSection({ clubs }: { clubs: CoachDetailClub[] }) {
   );
 }
 
-function PackagesSection({
-  plans,
-  selectedId,
-  onChange,
-}: {
-  plans: CoachDetailPackage[];
-  selectedId: string;
-  onChange: (planId: string) => void;
-}) {
-  const t = useTranslations("CoachDetail");
-  if (plans.length === 0) return null;
-
-  return (
-    <div className={styles.section}>
-      <SectionTitle>{t("packagesTitle")}</SectionTitle>
-      <RadioGroup
-        aria-label={t("packagesLabel")}
-        className={styles.subscriptionGroup}
-        name="coach-package"
-        onChange={onChange}
-        value={selectedId}
-        variant="secondary"
-      >
-        <Label className="sr-only">{t("packagesLabel")}</Label>
-        {plans.map((plan) => (
-          <Radio
-            className={styles.subscriptionRadio}
-            key={plan.id}
-            value={plan.id}
-          >
-            {({ isSelected }) => (
-              <Radio.Content className={styles.subscriptionContent}>
-                <ClubSubscriptionCard
-                  badge={
-                    plan.badge
-                      ? t("packageBadgeOff", { value: plan.badge })
-                      : undefined
-                  }
-                  control={
-                    <Radio.Control className={styles.subscriptionControl}>
-                      <Radio.Indicator className={styles.subscriptionIndicator}>
-                        {({ isSelected: selected }) =>
-                          selected ? <Check size={18} /> : null
-                        }
-                      </Radio.Indicator>
-                    </Radio.Control>
-                  }
-                  description={t(plan.descriptionKey)}
-                  planName={t(plan.planNameKey)}
-                  price={formatPlanPrice(plan.price)}
-                  priceSuffix={
-                    plan.planNameKey === "packageMonthly"
-                      ? t("packagePriceSuffixMonthly")
-                      : plan.planNameKey === "packageTrial"
-                        ? ""
-                        : t("packagePriceSuffix")
-                  }
-                  selected={isSelected}
-                />
-              </Radio.Content>
-            )}
-          </Radio>
-        ))}
-      </RadioGroup>
-    </div>
-  );
+function formatAverage(value: number) {
+  return Number.isInteger(value) ? String(value) : value.toFixed(1);
 }
 
-function ReviewsPreviewSection({ reviews }: { reviews: CoachDetailReview[] }) {
+function formatCount(value: number) {
+  return value.toLocaleString("fa-IR");
+}
+
+function ReviewsPreviewSection({
+  coachId,
+  rating,
+  ratingCount,
+  reviews,
+}: {
+  coachId: string;
+  rating: number;
+  ratingCount: number;
+  reviews: CoachDetailReview[];
+}) {
   const t = useTranslations("CoachDetail");
+  const router = useRouter();
   const preview = reviews.slice(0, REVIEW_PREVIEW_COUNT);
   if (preview.length === 0) return null;
 
+  const summary = buildCoachReviewSummary(reviews, rating, ratingCount);
+  const reviewsPath = `/discovery/coaches/${coachId}/reviews`;
+
   return (
     <div className={styles.section}>
+      <ReviewSummaryCard
+        average={formatAverage(summary.average)}
+        averageLabel={t("avgRatingLabel")}
+        buckets={summary.buckets}
+        highlights={[
+          {
+            id: "recommended",
+            icon: <ThumbsUp size={REVIEW_HIGHLIGHT_ICON_SIZE} />,
+            title: t("reviewHighlightRecommendedTitle"),
+            description: t("reviewHighlightRecommendedDescription"),
+          },
+          {
+            id: "wait-time",
+            icon: <Clock size={REVIEW_HIGHLIGHT_ICON_SIZE} />,
+            title: t("reviewHighlightWaitTimeTitle"),
+            description: t("reviewHighlightWaitTimeDescription"),
+          },
+          {
+            id: "manner",
+            icon: <Handshake size={REVIEW_HIGHLIGHT_ICON_SIZE} />,
+            title: t("reviewHighlightMannerTitle"),
+            description: t("reviewHighlightMannerDescription"),
+          },
+        ]}
+        usersLabel={t("reviewUsers", {
+          count: formatCount(summary.total || ratingCount),
+        })}
+      />
+
       <SectionCarousel
+        action={
+          <Link
+            className={styles.seeAll}
+            href={reviewsPath}
+            onPress={() => router.push(reviewsPath)}
+          >
+            {t("seeAllReviews")}
+          </Link>
+        }
         aria-label={t("reviewsPreviewTitle")}
         icon={<StarFull size={SECTION_TITLE_ICON_SIZE} />}
         title={t("reviewsPreviewTitle")}
@@ -490,12 +516,37 @@ function RelatedCoachesSection({
 
 export function DiscoveryCoachesDetailBodySection({
   coach,
-  selectedPackageId,
-  onPackageChange,
 }: DiscoveryCoachesDetailBodySectionProps) {
   const t = useTranslations("CoachDetail");
-  const partnerClubId = coach.clubs[0]?.id ?? "heavenly";
-  const club = getClubDetail(partnerClubId);
+  const router = useRouter();
+  const defaultConsultationId =
+    coach.consultationTypes.find((option) => option.status === "available")
+      ?.id ?? coach.consultationTypes[0]?.id;
+  const [selectedConsultationId, setSelectedConsultationId] = useState(
+    defaultConsultationId,
+  );
+  const [selectedAvailabilitySlotId, setSelectedAvailabilitySlotId] = useState<
+    string | undefined
+  >(
+    coach.availabilityDays
+      .flatMap((day) => day.slots)
+      .find((slot) => slot.status === "available")?.id,
+  );
+
+  const availabilityDays = useMemo(
+    () =>
+      coach.availabilityDays.map((day) => ({
+        id: day.id,
+        label:
+          day.dayKey === "tomorrow" && day.dateLabel
+            ? t("slotsTomorrowWithDate", { date: day.dateLabel })
+            : day.dayKey === "tomorrow"
+              ? t("slotsTomorrow")
+              : t("slotsToday"),
+        slots: day.slots,
+      })),
+    [coach.availabilityDays, t],
+  );
 
   return (
     <section className={styles.root}>
@@ -508,8 +559,33 @@ export function DiscoveryCoachesDetailBodySection({
         </div>
       ) : null}
 
+      <DiscoveryCoachesDetailExperienceSection experience={coach.experience} />
+
       <ServicesSection services={coach.services} />
       <SpecialtiesSection specialties={coach.specialties} />
+
+      <ConsultationTypesSection
+        onChange={setSelectedConsultationId}
+        options={coach.consultationTypes}
+        selectedId={selectedConsultationId}
+      />
+
+      {availabilityDays.length > 0 ? (
+        <div className={styles.section}>
+          <CoachAvailabilitySlots
+            availableLabel={t("slotAvailable")}
+            days={availabilityDays}
+            onSeeAll={() => {
+              router.push(`/discovery/coaches/${coach.id}/slots`);
+            }}
+            onSlotPress={(slot) => setSelectedAvailabilitySlotId(slot.id)}
+            seeAllLabel={t("seeAllAvailabilitySlots")}
+            selectedSlotId={selectedAvailabilitySlotId}
+            title={t("availabilitySlotsTitle")}
+            unavailableLabel={t("slotUnavailable")}
+          />
+        </div>
+      ) : null}
 
       <DiscoveryGallerySection
         gallery={coach.gallery}
@@ -527,23 +603,6 @@ export function DiscoveryCoachesDetailBodySection({
       />
 
       <ClubsSection clubs={coach.clubs} />
-
-      {club ? (
-        <div className={styles.section}>
-          <DiscoveryClubsDetailCalendarSection
-            club={club}
-            coachId={coach.id}
-            seeAllHref={`/discovery/clubs/${club.id}/slots`}
-            title={t("calendarTitle")}
-          />
-        </div>
-      ) : null}
-
-      <PackagesSection
-        onChange={onPackageChange}
-        plans={coach.packages}
-        selectedId={selectedPackageId}
-      />
 
       <div className={styles.section}>
         <SectionTitle icon={<Calendar1 size={SECTION_TITLE_ICON_SIZE} />}>
@@ -580,8 +639,22 @@ export function DiscoveryCoachesDetailBodySection({
         />
       </div>
 
-      <ReviewsPreviewSection reviews={coach.reviews} />
+      <ReviewsPreviewSection
+        coachId={coach.id}
+        rating={coach.rating}
+        ratingCount={coach.ratingCount}
+        reviews={coach.reviews}
+      />
       <RelatedCoachesSection coaches={coach.related} />
+
+      <div className={styles.section}>
+        <SocialMediaCard
+          facebookLabel={t("socialFacebook")}
+          instagramLabel={t("socialInstagram")}
+          linkedinLabel={t("socialLinkedIn")}
+          title={t("socialTitle")}
+        />
+      </div>
     </section>
   );
 }

@@ -62,9 +62,8 @@ export function DiscoveryClubsDetailHeroSectionLightbox({
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "center",
-    containScroll: false,
+    containScroll: "trimSnaps",
     direction: "rtl",
-    dragFree: true,
     loop: imageCount > 1,
     startIndex: safeIndex,
   });
@@ -145,7 +144,7 @@ export function DiscoveryClubsDetailHeroSectionLightbox({
                 type="body"
                 weight="semibold"
               >
-                {headerTitle}
+                {`${headerTitle} (${imageCount})`}
               </Typography>
 
               <div className={styles.headerSide()}>
@@ -219,17 +218,32 @@ export function DiscoveryClubsDetailHeroSectionLightbox({
               ) : null}
 
               {canNavigate ? (
-                <div className={styles.controls()}>
-                  <Button
-                    aria-label={prevLabel}
-                    className={styles.navButton()}
-                    isIconOnly
-                    onPress={() => goBy(-1)}
-                    size="lg"
-                    variant="primary"
-                  >
-                    <ChevronRight rtlMirror={false} size={20} />
-                  </Button>
+                <>
+                  <div className={styles.navPrev()}>
+                    <Button
+                      aria-label={prevLabel}
+                      className={styles.navButton()}
+                      isIconOnly
+                      onPress={() => goBy(-1)}
+                      size="lg"
+                      variant="ghost"
+                    >
+                      <ChevronRight rtlMirror={false} size={20} />
+                    </Button>
+                  </div>
+
+                  <div className={styles.navNext()}>
+                    <Button
+                      aria-label={nextLabel}
+                      className={styles.navButton()}
+                      isIconOnly
+                      onPress={() => goBy(1)}
+                      size="lg"
+                      variant="ghost"
+                    >
+                      <ChevronLeft rtlMirror={false} size={20} />
+                    </Button>
+                  </div>
 
                   <div aria-hidden className={styles.dots()}>
                     {gallery.map((image, index) => (
@@ -244,18 +258,7 @@ export function DiscoveryClubsDetailHeroSectionLightbox({
                       />
                     ))}
                   </div>
-
-                  <Button
-                    aria-label={nextLabel}
-                    className={styles.navButton()}
-                    isIconOnly
-                    onPress={() => goBy(1)}
-                    size="lg"
-                    variant="primary"
-                  >
-                    <ChevronLeft rtlMirror={false} size={20} />
-                  </Button>
-                </div>
+                </>
               ) : null}
             </div>
 
@@ -285,10 +288,10 @@ export function DiscoveryClubsDetailHeroSectionLightbox({
                         alt={image.title ?? ""}
                         className={styles.thumbImage()}
                         draggable={false}
-                        height={160}
-                        sizes="72px"
+                        height={64}
+                        sizes="64px"
                         src={image.url || PLACEHOLDER_IMAGE}
-                        width={120}
+                        width={64}
                       />
                     </Button>
                   );

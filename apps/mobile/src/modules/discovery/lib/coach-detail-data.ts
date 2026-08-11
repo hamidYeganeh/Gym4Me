@@ -39,6 +39,41 @@ export type CoachDetailService = {
   iconKey: CoachDetailServiceIconKey;
 };
 
+export type CoachDetailAvailabilitySlotStatus = "available" | "unavailable";
+
+export type CoachDetailAvailabilitySlot = {
+  id: string;
+  timeLabel: string;
+  status: CoachDetailAvailabilitySlotStatus;
+};
+
+export type CoachDetailConsultationKind = "in-person" | "remote";
+
+export type CoachDetailConsultationAvailabilityStatus =
+  | "available"
+  | "unavailable";
+
+export type CoachDetailConsultationType = {
+  id: string;
+  kind: CoachDetailConsultationKind;
+  /** Translation key under CoachDetail for the title. */
+  titleKey: "consultationInPerson" | "consultationRemote";
+  status: CoachDetailConsultationAvailabilityStatus;
+  /** Translation key under CoachDetail for the status line. */
+  statusKey: "consultationAvailableToday" | "consultationNotAvailable";
+  /** Numeric price used for display formatting. */
+  price: number;
+};
+
+export type CoachDetailAvailabilityDay = {
+  id: string;
+  /** Relative day key — body section resolves the display label. */
+  dayKey: "today" | "tomorrow";
+  /** Optional short date for tomorrow labels, e.g. `۲ تیر`. */
+  dateLabel?: string;
+  slots: CoachDetailAvailabilitySlot[];
+};
+
 export type CoachDetailPackage = {
   id: string;
   /** Translation key under CoachDetail, e.g. `packageTrial`. */
@@ -47,8 +82,7 @@ export type CoachDetailPackage = {
   descriptionKey:
     | "packageTrialDescription"
     | "packageSingleDescription"
-    | "packageMonthlyDescription";
-  /** Numeric price used by NumberFlow in the reserve bar. */
+    | "packageMonthlyDescription";  /** Numeric price used by NumberFlow in the reserve bar. */
   price: number;
   /** Optional promo badge (e.g. "۲۰٪"). */
   badge?: string;
@@ -81,6 +115,18 @@ export type CoachDetailRelated = {
   yearsExperience: number;
 };
 
+export type CoachDetailExperienceMilestone = {
+  id: string;
+  year: string;
+  title: string;
+  description: string;
+};
+
+export type CoachDetailExperience = {
+  summary: string;
+  milestones: CoachDetailExperienceMilestone[];
+};
+
 export type CoachDetail = {
   id: string;
   name: string;
@@ -97,9 +143,12 @@ export type CoachDetail = {
   yearsExperience: number;
   stats: CoachDetailStat[];
   overview: string;
+  experience: CoachDetailExperience;
   services: CoachDetailService[];
   specialties: CoachDetailSpecialty[];
+  consultationTypes: CoachDetailConsultationType[];
   packages: CoachDetailPackage[];
+  availabilityDays: CoachDetailAvailabilityDay[];
   clubs: CoachDetailClub[];
   reviews: CoachDetailReview[];
   related: CoachDetailRelated[];
@@ -190,6 +239,25 @@ const DEFAULT_SPECIALTIES: CoachDetailSpecialty[] = [
   },
 ];
 
+const DEFAULT_CONSULTATION_TYPES: CoachDetailConsultationType[] = [
+  {
+    id: "in-person",
+    kind: "in-person",
+    titleKey: "consultationInPerson",
+    status: "available",
+    statusKey: "consultationAvailableToday",
+    price: 200_000,
+  },
+  {
+    id: "remote",
+    kind: "remote",
+    titleKey: "consultationRemote",
+    status: "unavailable",
+    statusKey: "consultationNotAvailable",
+    price: 100_000,
+  },
+];
+
 const DEFAULT_PACKAGES: CoachDetailPackage[] = [
   {
     id: "trial",
@@ -210,6 +278,32 @@ const DEFAULT_PACKAGES: CoachDetailPackage[] = [
     descriptionKey: "packageMonthlyDescription",
     price: 2_800_000,
     badge: "۱۵٪",
+  },
+];
+
+const DEFAULT_AVAILABILITY_DAYS: CoachDetailAvailabilityDay[] = [
+  {
+    id: "today",
+    dayKey: "today",
+    slots: [
+      { id: "today-10", timeLabel: "۱۰:۰۰", status: "available" },
+      { id: "today-11", timeLabel: "۱۱:۰۰", status: "unavailable" },
+      { id: "today-12", timeLabel: "۱۲:۰۰", status: "available" },
+      { id: "today-13", timeLabel: "۱۳:۰۰", status: "available" },
+      { id: "today-14", timeLabel: "۱۴:۰۰", status: "unavailable" },
+    ],
+  },
+  {
+    id: "tomorrow",
+    dayKey: "tomorrow",
+    dateLabel: "۲ تیر",
+    slots: [
+      { id: "tomorrow-10", timeLabel: "۱۰:۰۰", status: "available" },
+      { id: "tomorrow-11", timeLabel: "۱۱:۰۰", status: "unavailable" },
+      { id: "tomorrow-12", timeLabel: "۱۲:۰۰", status: "unavailable" },
+      { id: "tomorrow-13", timeLabel: "۱۳:۰۰", status: "available" },
+      { id: "tomorrow-15", timeLabel: "۱۵:۰۰", status: "available" },
+    ],
   },
 ];
 
@@ -278,6 +372,31 @@ const DEFAULT_REVIEWS: CoachDetailReview[] = [
 
 const DEFAULT_OVERVIEW =
   "مربی تأییدشده با تمرکز روی قدرت پایین‌تنه، هایپرتروفی و ریکاوری فعال. برنامه‌ها بر اساس سطح، تجهیزات در دسترس و هدف شما شخصی‌سازی می‌شن — حضوری در باشگاه‌های همکار یا آنلاین از خانه.";
+
+const DEFAULT_EXPERIENCE: CoachDetailExperience = {
+  summary:
+    "با بیش از ۱۵ سال تجربه، مربی آرنولد به مراجعانش در بدنسازی، رشد عضله و موارد بیشتر کمک کرده است.",
+  milestones: [
+    {
+      id: "harvard",
+      year: "۲۰۲۰",
+      title: "مدرسه تناسب‌اندام هاروارد",
+      description: "۷ سال تحصیل",
+    },
+    {
+      id: "united",
+      year: "۲۰۲۳",
+      title: "یونایتد فیتنس",
+      description: "سپس ۱۰ سال کار در باشگاه",
+    },
+    {
+      id: "own-gym",
+      year: "۲۰۲۶",
+      title: "افتتاح باشگاه شخصی",
+      description: "در نهایت افتتاح باشگاه خودم",
+    },
+  ],
+};
 
 type CoachSeed = {
   id: string;
@@ -455,9 +574,13 @@ function buildCoachDetail(seed: CoachSeed, seeds: CoachSeed[]): CoachDetail {
       ...DEFAULT_STATS.slice(1),
     ],
     overview: override.overview ?? DEFAULT_OVERVIEW,
+    experience: override.experience ?? DEFAULT_EXPERIENCE,
     services: override.services ?? DEFAULT_SERVICES,
     specialties: override.specialties ?? DEFAULT_SPECIALTIES,
+    consultationTypes:
+      override.consultationTypes ?? DEFAULT_CONSULTATION_TYPES,
     packages: override.packages ?? DEFAULT_PACKAGES,
+    availabilityDays: override.availabilityDays ?? DEFAULT_AVAILABILITY_DAYS,
     clubs: override.clubs ?? DEFAULT_CLUBS,
     reviews: override.reviews ?? DEFAULT_REVIEWS,
     related: override.related ?? relatedFor(seed.id, seeds),

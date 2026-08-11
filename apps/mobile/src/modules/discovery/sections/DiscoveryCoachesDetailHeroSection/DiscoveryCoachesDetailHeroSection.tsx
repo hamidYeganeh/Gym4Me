@@ -5,18 +5,45 @@ import { DotThreeHorizontal } from "@repo/icons/DotThreeHorizontal";
 import { MapPin1 } from "@repo/icons/MapPin1";
 import { SealCheck } from "@repo/icons/SealCheck";
 import { StarFull } from "@repo/icons/StarFull";
+import { spring } from "@repo/theme";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+} from "motion/react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { useCallback, useState } from "react";
+import {
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import type { GalleryMediaItem } from "../../lib/gallery-media";
 import { DiscoveryClubsDetailHeroSectionLightbox } from "../DiscoveryClubsDetailHeroSectionLightbox";
 import { DiscoveryClubsDetailHeroSectionPullToView } from "../DiscoveryClubsDetailHeroSectionPullToView";
-import { DiscoveryCoachesDetailHeroSectionHeader } from "../DiscoveryCoachesDetailHeroSectionHeader";
+import {
+  COACH_DETAIL_HEADER_SCROLL_RANGE,
+  DiscoveryCoachesDetailHeroSectionHeader,
+} from "../DiscoveryCoachesDetailHeroSectionHeader";
 import { discoveryCoachesDetailHeroSectionStyles as styles } from "./DiscoveryCoachesDetailHeroSection.styles";
 import type { DiscoveryCoachesDetailHeroSectionProps } from "./DiscoveryCoachesDetailHeroSection.types";
 
 const HERO_THUMB_PREVIEW_COUNT = 3;
+/** Approx collapsed control bar — used to decide when the hero has passed. */
+const STICKY_BAR_APPROX = 64;
+
+function clamp01(value: number) {
+  return Math.min(1, Math.max(0, value));
+}
+
+function smoothstep(t: number) {
+  const x = clamp01(t);
+  return x * x * (3 - 2 * x);
+}
 
 function formatRating(rating: number) {
   return Number.isInteger(rating) ? String(rating) : rating.toFixed(1);
@@ -27,8 +54,50 @@ export function DiscoveryCoachesDetailHeroSection({
   children,
 }: DiscoveryCoachesDetailHeroSectionProps) {
   const t = useTranslations("CoachDetail");
+  const reduceMotion = useReducedMotion();
   const [activeIndex, setActiveIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [morphStartY, setMorphStartY] = useState(Number.POSITIVE_INFINITY);
+  const heroRef = useRef<HTMLElement>(null);
+
+  useLayoutEffect(() => {
+    const el = heroRef.current;
+    if (!el) return;
+
+    const sync = () => {
+      // Morph begins once the hero has scrolled away and the sheet title
+      // reaches the sticky header zone (accounts for sheet `-mt-10` overlap).
+      const heroHeight = el.offsetHeight;
+      setMorphStartY(Math.max(0, heroHeight - STICKY_BAR_APPROX - 40));
+    };
+
+    sync();
+    const observer = new ResizeObserver(sync);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const { scrollY } = useScroll();
+  const rawProgress = useTransform(scrollY, (y) =>
+    clamp01((y - morphStartY) / COACH_DETAIL_HEADER_SCROLL_RANGE),
+  );
+  const smoothProgress = useSpring(rawProgress, spring.default);
+  const progress = reduceMotion ? rawProgress : smoothProgress;
+  const morph = useTransform(progress, (p) => smoothstep(p));
+
+  /** Sheet title yields to the header identity once the hero has passed. */
+  const sheetTitleOpacity = useTransform([scrollY, morph], ([y, p]) => {
+    const scroll = typeof y === "number" ? y : 0;
+    const morphP = typeof p === "number" ? p : 0;
+    if (scroll < morphStartY) return 1;
+    if (morphP < 0.2) return 1 - morphP / 0.2;
+    return 0;
+  });
+  const sheetTitleVisibility = useTransform([scrollY, morph], ([y, p]) => {
+    const scroll = typeof y === "number" ? y : 0;
+    const morphP = typeof p === "number" ? p : 0;
+    return scroll < morphStartY || morphP < 0.2 ? "visible" : "hidden";
+  });
 
   // Prefer coach photo URLs (`images` / avatar) for the hero — same role as
   // club venue photos — instead of the richer body `gallery` (which may mix media).
@@ -79,7 +148,12 @@ export function DiscoveryCoachesDetailHeroSection({
 
   return (
     <>
-      <DiscoveryCoachesDetailHeroSectionHeader isFavorite={coach.isFavorite} />
+      <DiscoveryCoachesDetailHeroSectionHeader
+        avatarSrc={coach.avatar}
+        isFavorite={coach.isFavorite}
+        morphStartY={morphStartY}
+        name={coach.name}
+      />
 
       <DiscoveryClubsDetailHeroSectionPullToView
         onPullOpen={() => setIsLightboxOpen(true)}
@@ -89,6 +163,7 @@ export function DiscoveryCoachesDetailHeroSection({
           aria-label={coach.name}
           aria-roledescription="carousel"
           className={styles.carousel}
+          ref={heroRef}
         >
           <Image
             alt=""
@@ -180,9 +255,17 @@ export function DiscoveryCoachesDetailHeroSection({
       >
         <div className={styles.sheetHeader}>
           <div className={styles.titleBlock}>
-            <Typography className={styles.title} type="h2" weight="bold">
-              {coach.name}
-            </Typography>
+            <motion.div
+              className={styles.titleWrap}
+              style={{
+                opacity: sheetTitleOpacity,
+                visibility: sheetTitleVisibility,
+              }}
+            >
+              <Typography className={styles.title} type="h2" weight="bold">
+                {coach.name}
+              </Typography>
+            </motion.div>
 
             {coach.location ? (
               <div className={styles.metaRow}>

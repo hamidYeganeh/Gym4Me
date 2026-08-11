@@ -42,9 +42,4 @@ export const discoveryCoachesDetailBodySectionStyles = {
   coachCard: "w-full",
   reviewSlide: "w-[min(20rem,calc(100vw-3.5rem))] min-w-0 shrink-0",
   reviewCard: "h-full",
-  subscriptionGroup: "flex flex-col gap-3",
-  subscriptionRadio: "w-full",
-  subscriptionContent: "w-full",
-  subscriptionControl: "shrink-0",
-  subscriptionIndicator: "flex items-center justify-center",
 } as const;

@@ -1,9 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Button, SearchField, Typography } from "@heroui/react";
-import { StarFull } from "@repo/icons/StarFull";
+import { SearchField, Typography } from "@heroui/react";
+import { Clock } from "@repo/icons/Clock";
+import { Handshake } from "@repo/icons/Handshake";
+import { ThumbsUp } from "@repo/icons/ThumbsUp";
 import { ReviewCard } from "@repo/ui/cards/ReviewCard";
+import { ReviewSummaryCard } from "@repo/ui/cards/ReviewSummaryCard";
 import { FilterChip } from "@repo/ui/kit/FilterChip";
 import { useTranslations } from "next-intl";
 import {
@@ -13,6 +16,8 @@ import {
 } from "../../lib/coach-review-summary";
 import { discoveryCoachesDetailReviewsSectionVariants } from "./DiscoveryCoachesDetailReviewsSection.styles";
 import type { DiscoveryCoachesDetailReviewsSectionProps } from "./DiscoveryCoachesDetailReviewsSection.types";
+
+const HIGHLIGHT_ICON_SIZE = 24;
 
 const FILTER_LABEL_KEY = {
   all: "reviewFilterAll",
@@ -24,6 +29,10 @@ const FILTER_LABEL_KEY = {
 
 function formatAverage(value: number) {
   return Number.isInteger(value) ? String(value) : value.toFixed(1);
+}
+
+function formatCount(value: number) {
+  return value.toLocaleString("fa-IR");
 }
 
 export function DiscoveryCoachesDetailReviewsSection({
@@ -68,45 +77,34 @@ export function DiscoveryCoachesDetailReviewsSection({
 
   return (
     <section className={styles.root({ className })} {...props}>
-      <div className={styles.sectionHeader()}>
-        <Typography className={styles.sectionTitle()} type="h4" weight="bold">
-          {t("reviewsTitle")}
-        </Typography>
-        <Button className={styles.seeAll()} size="sm" variant="ghost">
-          {t("seeAllReviews")}
-        </Button>
-      </div>
-
-      <div className={styles.summaryCard()}>
-        <div className={styles.summaryTop()}>
-          <div>
-            <Typography className={styles.average()} type="h2" weight="bold">
-              {t("averageRating", { value: formatAverage(summary.average) })}
-            </Typography>
-            <Typography className={styles.averageMeta()} type="body-sm">
-              {t("reviewUsers", { count: summary.total || coach.ratingCount })}
-            </Typography>
-          </div>
-        </div>
-
-        <div className={styles.bars()}>
-          {summary.buckets.map((bucket) => (
-            <div className={styles.barRow()} key={bucket.stars}>
-              <span className={styles.barStar()}>
-                <StarFull size={12} />
-                {bucket.stars}
-              </span>
-              <div className={styles.barTrack()}>
-                <div
-                  className={styles.barFill()}
-                  style={{ width: `${Math.round(bucket.ratio * 100)}%` }}
-                />
-              </div>
-              <span className={styles.barCount()}>{bucket.count}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      <ReviewSummaryCard
+        average={formatAverage(summary.average)}
+        averageLabel={t("avgRatingLabel")}
+        buckets={summary.buckets}
+        highlights={[
+          {
+            id: "recommended",
+            icon: <ThumbsUp size={HIGHLIGHT_ICON_SIZE} />,
+            title: t("reviewHighlightRecommendedTitle"),
+            description: t("reviewHighlightRecommendedDescription"),
+          },
+          {
+            id: "wait-time",
+            icon: <Clock size={HIGHLIGHT_ICON_SIZE} />,
+            title: t("reviewHighlightWaitTimeTitle"),
+            description: t("reviewHighlightWaitTimeDescription"),
+          },
+          {
+            id: "manner",
+            icon: <Handshake size={HIGHLIGHT_ICON_SIZE} />,
+            title: t("reviewHighlightMannerTitle"),
+            description: t("reviewHighlightMannerDescription"),
+          },
+        ]}
+        usersLabel={t("reviewUsers", {
+          count: formatCount(summary.total || coach.ratingCount),
+        })}
+      />
 
       <div className={styles.filtersBlock()}>
         <Typography className={styles.filtersTitle()} type="h4" weight="bold">

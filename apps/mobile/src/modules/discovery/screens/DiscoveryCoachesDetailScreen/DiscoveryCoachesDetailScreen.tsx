@@ -37,11 +37,7 @@ export function DiscoveryCoachesDetailScreen({
     <div className={styles.root}>
       <div className={styles.scroll}>
         <DiscoveryCoachesDetailHeroSection coach={coach}>
-          <DiscoveryCoachesDetailBodySection
-            coach={coach}
-            onPackageChange={setSelectedPackageId}
-            selectedPackageId={selectedPackageId}
-          />
+          <DiscoveryCoachesDetailBodySection coach={coach} />
         </DiscoveryCoachesDetailHeroSection>
       </div>
       <DiscoveryCoachesDetailActionsSection

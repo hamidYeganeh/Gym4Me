@@ -38,6 +38,10 @@ export const discoveryCoachesDetailHeroSectionStyles = {
     "px-5 pb-2 pt-6",
   ].join(" "),
   titleBlock: "min-w-0 flex-1",
+  titleWrap: [
+    "origin-top-left rtl:origin-top-right",
+    "w-max max-w-full",
+  ].join(" "),
   title:
     "text-balance text-[1.65rem] leading-tight tracking-tight text-foreground",
   metaRow: "mt-2 flex items-center gap-1.5 text-muted",
