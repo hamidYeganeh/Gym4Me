@@ -1,0 +1,78 @@
+"use client";
+
+import { Spinner } from "@heroui/react";
+import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { coachBookings } from "@/shared/lib/api";
+import { useAuth } from "@/shared/providers/AuthProvider";
+import { CoachBookingsScreen } from "../screens/CoachBookingsScreen";
+import {
+  mapApiBookingToCoachRequest,
+  type CoachBookingCopy,
+} from "./api-coach-bookings";
+import {
+  COACH_BOOKING_REQUESTS,
+  type CoachBookingAction,
+  type CoachBookingRequest,
+} from "./coach-bookings-data";
+
+/** Client gate: live coach bookings for signed-in coaches, fixtures otherwise. */
+export function CoachBookingsGate() {
+  const t = useTranslations("CoachBookings");
+  const { isAuthenticated, isReady, activeRole } = useAuth();
+  const isLive = isAuthenticated && activeRole === "coach";
+
+  const [bookings, setBookings] = useState<CoachBookingRequest[] | null>(null);
+
+  const copy = useMemo<CoachBookingCopy>(
+    () => ({
+      inPersonType: t("typeInPerson"),
+      remoteType: t("typeRemote"),
+    }),
+    [t],
+  );
+
+  const load = useCallback(async () => {
+    const result = await coachBookings.list({ page_size: 100 });
+    setBookings(
+      result.result.map((booking) =>
+        mapApiBookingToCoachRequest(booking, copy),
+      ),
+    );
+  }, [copy]);
+
+  useEffect(() => {
+    if (!isReady) return;
+    if (!isLive) {
+      setBookings(COACH_BOOKING_REQUESTS);
+      return;
+    }
+    load().catch(() => setBookings([]));
+  }, [isLive, isReady, load]);
+
+  const onAction = useCallback(
+    async (bookingId: string, action: CoachBookingAction) => {
+      if (action === "checkIn") await coachBookings.checkIn(bookingId);
+      else if (action === "complete") await coachBookings.complete(bookingId);
+      else if (action === "noShow") await coachBookings.markNoShow(bookingId);
+      else await coachBookings.cancel(bookingId);
+      await load();
+    },
+    [load],
+  );
+
+  if (!bookings) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
+
+  return (
+    <CoachBookingsScreen
+      bookings={bookings}
+      onAction={isLive ? onAction : undefined}
+    />
+  );
+}

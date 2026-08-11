@@ -5,6 +5,7 @@ import type {
   ClubCalendarResponse,
   ClubClass,
   ClubSlot,
+  ClubSpace,
 } from "./club-slots.dto";
 import { discoveryClubSlotsEndpoints as ep } from "./club-slots.endpoint";
 
@@ -26,6 +27,18 @@ export function createDiscoveryClubSlotsApi(client: ApiClient) {
 
     getClass(clubId: string, classId: string) {
       return client.request<ClubClass>(ep.classById(clubId, classId), {
+        public: true,
+      });
+    },
+
+    listSpaces(clubId: string) {
+      return client.request<ItemsResponse<ClubSpace>>(ep.spaces(clubId), {
+        public: true,
+      });
+    },
+
+    getSpace(clubId: string, spaceId: string) {
+      return client.request<ClubSpace>(ep.spaceById(clubId, spaceId), {
         public: true,
       });
     },

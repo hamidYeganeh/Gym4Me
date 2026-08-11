@@ -163,11 +163,16 @@ export function OtpScreen({ className }: OtpScreenProps) {
     try {
       const authSession = await loginWithOtp(payload.phone, payload.code);
       clearOtpPending();
-      router.replace(
+      const returnPath =
         next && next.startsWith("/")
           ? next
-          : roleHomePath(authSession.activeRole),
-      );
+          : roleHomePath(authSession.activeRole);
+      // New accounts go through profile onboarding before landing anywhere.
+      if (authSession.isNewUser) {
+        router.replace(`/onboarding?next=${encodeURIComponent(returnPath)}`);
+        return;
+      }
+      router.replace(returnPath);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {

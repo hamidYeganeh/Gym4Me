@@ -17,10 +17,14 @@ import type {
   ClubClassesList,
   ClubSlot,
   ClubSlotsList,
+  ClubSpace,
+  ClubSpacesList,
   CreateClubClassInput,
   CreateClubSlotInput,
+  CreateClubSpaceInput,
   UpdateClubClassInput,
   UpdateClubSlotInput,
+  UpdateClubSpaceInput,
 } from "./club-slots.dto";
 import { accountClubSlotsKeys } from "./club-slots.keys";
 
@@ -58,6 +62,89 @@ export function useAccountClubSlots(
     queryFn: () => api.listSlots(clubId),
     enabled: Boolean(clubId) && (options?.enabled ?? true),
     ...options,
+  });
+}
+
+export function useAccountClubSpaces(
+  clubId: string,
+  options?: Omit<
+    UseQueryOptions<ClubSpacesList, Error>,
+    "queryKey" | "queryFn"
+  >,
+) {
+  const api = useClubOwnerClubSlotsApi();
+  return useQuery({
+    queryKey: accountClubSlotsKeys.spaces(clubId),
+    queryFn: () => api.listSpaces(clubId),
+    enabled: Boolean(clubId) && (options?.enabled ?? true),
+    ...options,
+  });
+}
+
+export function useCreateAccountClubSpace(
+  options?: UseMutationOptions<
+    ClubSpace,
+    Error,
+    { clubId: string; input: CreateClubSpaceInput }
+  >,
+) {
+  const api = useClubOwnerClubSlotsApi();
+  const queryClient = useQueryClient();
+  const { onSuccess, ...rest } = options ?? {};
+  return useMutation({
+    ...rest,
+    mutationFn: ({ clubId, input }) => api.createSpace(clubId, input),
+    onSuccess: (data, vars, onMutateResult, context) => {
+      void queryClient.invalidateQueries({
+        queryKey: accountClubSlotsKeys.spaces(vars.clubId),
+      });
+      onSuccess?.(data, vars, onMutateResult, context);
+    },
+  });
+}
+
+export function useUpdateAccountClubSpace(
+  options?: UseMutationOptions<
+    ClubSpace,
+    Error,
+    { clubId: string; spaceId: string; input: UpdateClubSpaceInput }
+  >,
+) {
+  const api = useClubOwnerClubSlotsApi();
+  const queryClient = useQueryClient();
+  const { onSuccess, ...rest } = options ?? {};
+  return useMutation({
+    ...rest,
+    mutationFn: ({ clubId, spaceId, input }) =>
+      api.updateSpace(clubId, spaceId, input),
+    onSuccess: (data, vars, onMutateResult, context) => {
+      void queryClient.invalidateQueries({
+        queryKey: accountClubSlotsKeys.spaces(vars.clubId),
+      });
+      onSuccess?.(data, vars, onMutateResult, context);
+    },
+  });
+}
+
+export function useArchiveAccountClubSpace(
+  options?: UseMutationOptions<
+    ClubSpace,
+    Error,
+    { clubId: string; spaceId: string }
+  >,
+) {
+  const api = useClubOwnerClubSlotsApi();
+  const queryClient = useQueryClient();
+  const { onSuccess, ...rest } = options ?? {};
+  return useMutation({
+    ...rest,
+    mutationFn: ({ clubId, spaceId }) => api.archiveSpace(clubId, spaceId),
+    onSuccess: (data, vars, onMutateResult, context) => {
+      void queryClient.invalidateQueries({
+        queryKey: accountClubSlotsKeys.spaces(vars.clubId),
+      });
+      onSuccess?.(data, vars, onMutateResult, context);
+    },
   });
 }
 

@@ -16,6 +16,14 @@ export type ReserveSlot = {
   timeLabel: string;
   capacityLabel: string;
   state: ReserveSlotState;
+  /** Present when the slot is backed by the live API (club calendar occurrence). */
+  api?: {
+    slotId: string;
+    /** Occurrence date (YYYY-MM-DD). */
+    date: string;
+    /** Price per seat in toman. */
+    price: number;
+  };
 };
 
 export type ReservePlan = {
@@ -25,6 +33,11 @@ export type ReservePlan = {
   price: number;
   priceSuffix?: string;
   description: string;
+  /**
+   * API-backed plans: number of weekly occurrences to reserve.
+   * Effective price = slot price × sessionCount.
+   */
+  sessionCount?: number;
 };
 
 export const RESERVE_DAYS: ReserveDay[] = [

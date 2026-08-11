@@ -18,18 +18,23 @@
 apps/api/src/
   account/            # سرویس‌های نقش‌محور کاربر لاگین‌شده (activeRole-aware)
     auth/  profile/  kyc/  roles/  referral/
-    clubs/            # مدیریت باشگاه توسط owner (موجود)
-    club-slots/       # سانس‌ها (موجود)
-    coaches/          # پروفایل حرفه‌ای مربی (موجود)
-    memberships/      # پلن و عضویت باشگاه (فاز ۴)
-    staff/            # پرسنل و مجوز per-staff (فاز ۶)
-    coaching/         # همکاری، بسته جلسات، شاگردها، لید (فاز ۲–۶)
-    calendar/         # تقویم مربی: buffer، تعطیلی، تداخل (فاز ۳)
-  booking/            # موتور رزرو مشترک (فاز ۳)
-  finance/            # Ledger، کیف پول، پرداخت، تسویه، صندوق (فاز ۳ و ۶)
-  discovery/          # خواندنی عمومی: جست‌وجوی باشگاه/مربی (فاز ۲)
-  notifications/      # template تراکنشی + inbox + SMS fallback (فاز ۳)
-  admin/  basics/  media/  analytics/  audit/   # موجود
+    clubs/            # مدیریت باشگاه توسط owner
+    club-slots/       # سانس‌ها
+    coaches/          # پروفایل حرفه‌ای مربی
+    bookings/         # رزرو نقش‌محور (athlete/coach/owner/admin)
+    memberships/      # پلن و عضویت باشگاه + اشتراک پلتفرم
+    staff/            # پرسنل و مجوز per-staff
+    coaching/         # خدمات، بسته، شاگرد، لید، health assessment
+    calendar/         # بلاک تقویم باشگاه/مربی
+  finance/            # Ledger، کیف پول، پرداخت، تسویه، صندوق، بدهی
+  checkin/            # حضور QR/دستی + sync آفلاین
+  waitlist/           # صف انتظار با offer زمان‌دار
+  progress/           # بانک حرکت، برنامه تمرین، متریک، عکس پیشرفت
+  nutrition/          # meal plan
+  social/             # پست/کامنت/لایک
+  notifications/      # template تراکنشی + inbox + SMS fallback
+  banners/  articles/  gamification/  support/
+  admin/  basics/  media/  analytics/  audit/
 ```
 
 قاعدهٔ مرزبندی: «چه کسی خدمت را عرضه می‌کند» در `account/*` است، «موتورهای مشترک بین نقش‌ها» (رزرو، مالی، اعلان) ماژول top-level هستند و هیچ منطق نقش‌محوری داخل خودشان ندارند — سیاست نقش/مجوز در Guard و سرویس فراخوان اعمال می‌شود.

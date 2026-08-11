@@ -89,6 +89,63 @@ export class UpdateClubClassDto {
   status?: EntityStatus;
 }
 
+export class ClubSpaceMediaDto {
+  @IsOptional()
+  @IsMongoId()
+  coverMediaId?: string | null;
+}
+
+export class CreateClubSpaceDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(120)
+  title!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(4000)
+  description?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  sportId?: string | null;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ClubSpaceMediaDto)
+  media?: ClubSpaceMediaDto;
+
+  @IsOptional()
+  @IsEnum(EntityStatus)
+  status?: EntityStatus;
+}
+
+export class UpdateClubSpaceDto {
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(120)
+  title?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(4000)
+  description?: string | null;
+
+  @IsOptional()
+  @IsMongoId()
+  sportId?: string | null;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ClubSpaceMediaDto)
+  media?: ClubSpaceMediaDto;
+
+  @IsOptional()
+  @IsEnum(EntityStatus)
+  status?: EntityStatus;
+}
+
 export class SlotRecurrenceDto {
   @IsEnum(SlotRecurrenceType)
   type!: SlotRecurrenceType;
@@ -154,6 +211,10 @@ export class CreateClubSlotDto {
   @IsMongoId()
   classId?: string;
 
+  @ValidateIf((o: CreateClubSlotDto) => o.kind === SlotKind.SPACE)
+  @IsMongoId()
+  spaceId?: string;
+
   @IsOptional()
   @IsMongoId()
   coachId?: string | null;
@@ -163,6 +224,13 @@ export class CreateClubSlotDto {
   @Min(1)
   @Max(10_000)
   capacity!: number;
+
+  /** Price per seat per occurrence (Tomans); 0 = free. */
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  price?: number;
 
   @ValidateNested()
   @Type(() => SlotScheduleDto)
@@ -184,6 +252,10 @@ export class UpdateClubSlotDto {
 
   @IsOptional()
   @IsMongoId()
+  spaceId?: string | null;
+
+  @IsOptional()
+  @IsMongoId()
   coachId?: string | null;
 
   @IsOptional()
@@ -192,6 +264,12 @@ export class UpdateClubSlotDto {
   @Min(1)
   @Max(10_000)
   capacity?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  price?: number;
 
   @IsOptional()
   @ValidateNested()

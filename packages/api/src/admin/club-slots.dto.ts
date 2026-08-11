@@ -5,8 +5,12 @@ export type {
   ClubClassesList,
   ClubSlot,
   ClubSlotsList,
+  ClubSpace,
+  ClubSpaceMedia,
+  ClubSpacesList,
   CreateClubClassInput,
   CreateClubSlotInput,
+  CreateClubSpaceInput,
   EntityStatus,
   OccurrenceStatus,
   SlotException,
@@ -17,4 +21,5 @@ export type {
   SlotSchedule,
   UpdateClubClassInput,
   UpdateClubSlotInput,
+  UpdateClubSpaceInput,
 } from "../account/club-slots.dto";

@@ -9,18 +9,27 @@ import { join } from 'node:path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './account/auth/auth.module';
+import { BookingsModule } from './account/bookings/bookings.module';
+import { CalendarModule } from './account/calendar/calendar.module';
 import { ClubSlotsModule } from './account/club-slots/club-slots.module';
 import { ClubsModule } from './account/clubs/clubs.module';
 import { CoachesModule } from './account/coaches/coaches.module';
+import { CoachingModule } from './account/coaching/coaching.module';
 import { KycModule } from './account/kyc/kyc.module';
+import { MembershipsModule } from './account/memberships/memberships.module';
 import { ProfileModule } from './account/profile/profile.module';
 import { ReferralModule } from './account/referral/referral.module';
 import { RolesModule } from './account/roles/roles.module';
+import { StaffModule } from './account/staff/staff.module';
 import { AdminModule } from './admin/admin.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { AuditModule } from './audit/audit.module';
 import { BasicsModule } from './basics/basics.module';
 import { ArticlesModule } from './articles/articles.module';
+import { BannersModule } from './banners/banners.module';
+import { CheckinModule } from './checkin/checkin.module';
+import { FinanceModule } from './finance/finance.module';
+import { GamificationModule } from './gamification/gamification.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { KycGuard } from './common/guards/kyc.guard';
 import { RolesGuard } from './common/guards/roles.guard';
@@ -35,8 +44,13 @@ import {
 } from './common/throttling/auth-throttle';
 import { MediaModule } from './media/media.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { NutritionModule } from './nutrition/nutrition.module';
+import { OpsModule } from './ops/ops.module';
+import { ProgressModule } from './progress/progress.module';
+import { SocialModule } from './social/social.module';
 import { SupportModule } from './support/support.module';
 import { UsersModule } from './users/users.module';
+import { WaitlistModule } from './waitlist/waitlist.module';
 
 @Module({
   imports: [
@@ -88,10 +102,24 @@ import { UsersModule } from './users/users.module';
     ClubsModule,
     CoachesModule,
     ClubSlotsModule,
+    BookingsModule,
+    FinanceModule,
+    MembershipsModule,
+    CoachingModule,
+    StaffModule,
+    CalendarModule,
+    CheckinModule,
+    WaitlistModule,
+    ProgressModule,
+    NutritionModule,
+    OpsModule,
+    SocialModule,
     ReferralModule,
     KycModule,
     SupportModule,
+    GamificationModule,
     ArticlesModule,
+    BannersModule,
     AdminModule,
   ],
   controllers: [AppController],

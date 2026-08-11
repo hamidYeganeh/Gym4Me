@@ -24,6 +24,7 @@ export type {
   ClubCalendarResponse,
   ClubClass,
   ClubSlot,
+  ClubSpace,
 } from "./club-slots.dto";
 export { discoveryClubSlotsKeys } from "./club-slots.keys";
 
@@ -33,9 +34,23 @@ export {
 } from "./coaches.client";
 export { discoveryCoachesEndpoints } from "./coaches.endpoint";
 export type {
+  CoachConsultationPricing,
   DiscoveryCoach,
   DiscoveryCoachClub,
   DiscoveryCoachesQuery,
   DiscoveryCoachUser,
 } from "./coaches.dto";
 export { discoveryCoachesKeys } from "./coaches.keys";
+
+export {
+  createDiscoveryCoachSlotsApi,
+  type DiscoveryCoachSlotsApi,
+} from "./coach-slots.client";
+export { discoveryCoachSlotsEndpoints } from "./coach-slots.endpoint";
+export type {
+  CoachSlot,
+  CoachSlotClub,
+  CoachSlotsRangeQuery,
+  CoachSlotsResponse,
+} from "./coach-slots.dto";
+export { discoveryCoachSlotsKeys } from "./coach-slots.keys";

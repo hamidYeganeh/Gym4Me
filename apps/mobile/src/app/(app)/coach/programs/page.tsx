@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { COACH_PROGRAMS } from "@/modules/coach/lib/coach-programs-data";
-import { CoachProgramsScreen } from "@/modules/coach/screens/CoachProgramsScreen";
+import { CoachProgramsGate } from "@/modules/coach/lib/CoachProgramsGate";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("CoachPrograms");
@@ -9,5 +8,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function CoachProgramsPage() {
-  return <CoachProgramsScreen programs={COACH_PROGRAMS} />;
+  return <CoachProgramsGate />;
 }

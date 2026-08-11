@@ -157,6 +157,12 @@ export class DiscoveryCoachesService {
       serviceArea: {
         cityId: profile.serviceArea?.cityId?.toString() ?? null,
       },
+      pricing: {
+        consultation: {
+          inPerson: profile.pricing?.consultation?.inPerson ?? null,
+          remote: profile.pricing?.consultation?.remote ?? null,
+        },
+      },
       sportIds: profile.sportIds ?? [],
       specialtyKeys: profile.specialtyKeys ?? [],
       ...(clubs ? { clubs } : {}),

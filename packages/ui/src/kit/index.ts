@@ -1,5 +1,6 @@
 export * from "./AdaptiveSlider";
 export * from "./AreaLineChart";
+export * from "./BannerCarousel";
 export * from "./BusyHoursChart";
 export * from "./CarouselNavigation";
 export * from "./CoachMap";

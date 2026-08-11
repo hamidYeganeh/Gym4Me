@@ -1,16 +1,10 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
+import { DiscoveryClubReserveGate } from "@/modules/discovery/lib/DiscoveryClubReserveGate";
 import {
   getAllClubIds,
   getClubDetail,
 } from "@/modules/discovery/lib/club-detail-data";
-import {
-  RESERVE_DAYS,
-  RESERVE_PLANS,
-  RESERVE_SLOTS_BY_DAY,
-} from "@/modules/discovery/lib/reserve-data";
-import { DiscoveryClubsReserveScreen } from "@/modules/discovery/screens/DiscoveryClubsReserveScreen";
 
 type ReservePageProps = {
   params: Promise<{ clubId: string }>;
@@ -32,16 +26,6 @@ export async function generateMetadata({
 
 export default async function ClubReservePage({ params }: ReservePageProps) {
   const { clubId } = await params;
-  const club = getClubDetail(clubId);
 
-  return (
-    <DiscoveryClubsReserveScreen
-      clubImage={club?.images[0] ?? PLACEHOLDER_IMAGE}
-      clubLocation={club?.location}
-      clubTitle={club?.title ?? ""}
-      days={RESERVE_DAYS}
-      plans={RESERVE_PLANS}
-      slotsByDay={RESERVE_SLOTS_BY_DAY}
-    />
-  );
+  return <DiscoveryClubReserveGate clubId={clubId} />;
 }

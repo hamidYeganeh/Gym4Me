@@ -12,6 +12,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { Role } from '../common/enums';
 import { ArticlesService } from './articles.service';
 import { CreateArticleCommentDto } from './dto/article.dto';
 
@@ -36,9 +37,22 @@ export class AccountArticlesController {
   like(
     @Param('articleId') articleId: string,
     @CurrentUser('sub') userId: string,
+    @CurrentUser('activeRole') activeRole: Role,
     @Req() request: Request,
   ) {
-    return this.articles.like(articleId, userId, request);
+    return this.articles.like(articleId, userId, request, activeRole);
+  }
+
+  @Post(':articleId/read')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Mark an article as read by the viewer' })
+  read(
+    @Param('articleId') articleId: string,
+    @CurrentUser('sub') userId: string,
+    @CurrentUser('activeRole') activeRole: Role,
+    @Req() request: Request,
+  ) {
+    return this.articles.markRead(articleId, userId, request, activeRole);
   }
 
   @Delete(':articleId/like')

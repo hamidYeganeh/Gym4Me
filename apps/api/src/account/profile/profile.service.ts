@@ -79,6 +79,29 @@ export class ProfileService {
       user.markModified('demographics');
     }
 
+    if (dto.address) {
+      const address = dto.address;
+      if (address.provinceId !== undefined) {
+        user.address.provinceId = address.provinceId
+          ? new Types.ObjectId(address.provinceId)
+          : undefined;
+      }
+      if (address.city !== undefined) user.address.city = address.city;
+      if (address.street !== undefined) user.address.street = address.street;
+      if (address.apartment !== undefined) {
+        user.address.apartment = address.apartment;
+      }
+      if (address.postalCode !== undefined) {
+        user.address.postalCode = address.postalCode;
+      }
+      if (address.point !== undefined) {
+        user.address.point = address.point
+          ? { type: 'Point', coordinates: [address.point.lng, address.point.lat] }
+          : undefined;
+      }
+      user.markModified('address');
+    }
+
     if (dto.code !== undefined && dto.code !== user.code) {
       const taken = await this.users
         .findByCode(dto.code)
@@ -146,8 +169,53 @@ export class ProfileService {
       }
       profile.markModified('privacy');
     }
+    if (dto.metrics?.preferredKeys !== undefined) {
+      if (!profile.metrics) {
+        profile.metrics = { preferredKeys: [] };
+      }
+      profile.metrics.preferredKeys = dto.metrics.preferredKeys;
+      profile.markModified('metrics');
+    }
     if (dto.sportIds !== undefined) profile.sportIds = dto.sportIds;
     if (dto.goalKeys !== undefined) profile.goalKeys = dto.goalKeys;
+    if (dto.lifestyle) {
+      const lifestyle = dto.lifestyle;
+      if (lifestyle.bodyType !== undefined) {
+        profile.lifestyle.bodyType = lifestyle.bodyType;
+      }
+      if (lifestyle.experience !== undefined) {
+        profile.lifestyle.experience = lifestyle.experience;
+      }
+      if (lifestyle.sleepLevel !== undefined) {
+        profile.lifestyle.sleepLevel = lifestyle.sleepLevel;
+      }
+      if (lifestyle.mood !== undefined) profile.lifestyle.mood = lifestyle.mood;
+      if (lifestyle.diet !== undefined) profile.lifestyle.diet = lifestyle.diet;
+      if (lifestyle.dailyCalories !== undefined) {
+        profile.lifestyle.dailyCalories = lifestyle.dailyCalories ?? undefined;
+      }
+      if (lifestyle.activityKeys !== undefined) {
+        profile.lifestyle.activityKeys = lifestyle.activityKeys;
+      }
+      profile.markModified('lifestyle');
+    }
+    if (dto.health) {
+      const health = dto.health;
+      if (health.bloodType !== undefined) {
+        profile.health.bloodType = health.bloodType ?? undefined;
+      }
+      if (health.allergies !== undefined) {
+        profile.health.allergies = health.allergies;
+      }
+      if (health.conditions !== undefined) {
+        profile.health.conditions = health.conditions;
+      }
+      if (health.medications !== undefined) {
+        profile.health.medications = health.medications;
+      }
+      if (health.note !== undefined) profile.health.note = health.note;
+      profile.markModified('health');
+    }
 
     await profile.save();
     return this.toPublicAthlete(profile);
@@ -182,6 +250,17 @@ export class ProfileService {
     if (dto.sportIds !== undefined) profile.sportIds = dto.sportIds;
     if (dto.specialtyKeys !== undefined) {
       profile.specialtyKeys = dto.specialtyKeys;
+    }
+    if (dto.pricing?.consultation) {
+      const consultation = dto.pricing.consultation;
+      if (consultation.inPerson !== undefined) {
+        profile.pricing.consultation.inPerson =
+          consultation.inPerson ?? undefined;
+      }
+      if (consultation.remote !== undefined) {
+        profile.pricing.consultation.remote = consultation.remote ?? undefined;
+      }
+      profile.markModified('pricing');
     }
 
     await profile.save();
@@ -260,8 +339,32 @@ export class ProfileService {
         metrics: profile.privacy?.metrics,
         photos: profile.privacy?.photos,
       },
+      metrics: {
+        preferredKeys: profile.metrics?.preferredKeys ?? [],
+      },
       sportIds: profile.sportIds ?? [],
       goalKeys: profile.goalKeys ?? [],
+      lifestyle: {
+        bodyType: profile.lifestyle?.bodyType ?? null,
+        experience: profile.lifestyle?.experience ?? null,
+        sleepLevel: profile.lifestyle?.sleepLevel ?? null,
+        mood: profile.lifestyle?.mood ?? null,
+        diet: profile.lifestyle?.diet ?? null,
+        dailyCalories: profile.lifestyle?.dailyCalories ?? null,
+        activityKeys: profile.lifestyle?.activityKeys ?? [],
+      },
+      health: {
+        bloodType: profile.health?.bloodType
+          ? {
+              group: profile.health.bloodType.group,
+              rh: profile.health.bloodType.rh,
+            }
+          : null,
+        allergies: profile.health?.allergies ?? [],
+        conditions: profile.health?.conditions ?? null,
+        medications: profile.health?.medications ?? null,
+        note: profile.health?.note ?? null,
+      },
       createdAt: profile.createdAt,
       updatedAt: profile.updatedAt,
     };
@@ -287,6 +390,12 @@ export class ProfileService {
       },
       serviceArea: {
         cityId: profile.serviceArea?.cityId?.toString() ?? null,
+      },
+      pricing: {
+        consultation: {
+          inPerson: profile.pricing?.consultation?.inPerson ?? null,
+          remote: profile.pricing?.consultation?.remote ?? null,
+        },
       },
       sportIds: profile.sportIds ?? [],
       specialtyKeys: profile.specialtyKeys ?? [],

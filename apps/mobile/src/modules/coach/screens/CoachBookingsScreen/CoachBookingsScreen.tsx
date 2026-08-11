@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button, Chip, Typography } from "@heroui/react";
 import { Check } from "@repo/icons/Check";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
@@ -12,6 +12,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type {
   BookingStatus,
+  CoachBookingAction,
   CoachBookingRequest,
 } from "../../lib/coach-bookings-data";
 import { coachBookingsScreenStyles as styles } from "./CoachBookingsScreen.styles";
@@ -27,40 +28,60 @@ const TAB_LABEL_KEY: Record<BookingsTab, string> = {
   past: "tabPast",
 };
 
-const PAST_STATUSES: BookingStatus[] = ["COMPLETED", "NO_SHOW", "CANCELLED"];
-
 const STATUS_CHIP_COLOR: Partial<
   Record<BookingStatus, "success" | "warning" | "danger" | "default">
 > = {
   PENDING: "warning",
+  AWAITING_PAYMENT: "warning",
   CONFIRMED: "success",
+  CHECKED_IN: "success",
   COMPLETED: "success",
   NO_SHOW: "warning",
   CANCELLED: "danger",
   REJECTED: "danger",
+  REFUND_REQUESTED: "warning",
+  REFUNDED: "default",
 };
 
 const STATUS_LABEL_KEY: Partial<Record<BookingStatus, string>> = {
   PENDING: "statusPending",
+  AWAITING_PAYMENT: "statusAwaitingPayment",
   CONFIRMED: "statusConfirmed",
+  CHECKED_IN: "statusCheckedIn",
   COMPLETED: "statusCompleted",
   NO_SHOW: "statusNoShow",
   CANCELLED: "statusCancelled",
   REJECTED: "statusRejected",
+  REFUND_REQUESTED: "statusRefundRequested",
+  REFUNDED: "statusRefunded",
+};
+
+const ACTION_LABEL_KEY: Record<CoachBookingAction, string> = {
+  checkIn: "actionCheckIn",
+  complete: "actionComplete",
+  noShow: "actionNoShow",
+  cancel: "actionCancel",
 };
 
 function tabOf(status: BookingStatus): BookingsTab | undefined {
-  if (status === "PENDING") return "requests";
-  if (status === "CONFIRMED") return "upcoming";
-  if (PAST_STATUSES.includes(status)) return "past";
-  return undefined;
+  if (status === "PENDING" || status === "AWAITING_PAYMENT") return "requests";
+  if (status === "CONFIRMED" || status === "CHECKED_IN") return "upcoming";
+  return "past";
 }
 
-export function CoachBookingsScreen({ bookings }: CoachBookingsScreenProps) {
+export function CoachBookingsScreen({
+  bookings,
+  onAction,
+}: CoachBookingsScreenProps) {
   const t = useTranslations("CoachBookings");
   const router = useRouter();
   const [tab, setTab] = useState<BookingsTab>("requests");
   const [items, setItems] = useState<CoachBookingRequest[]>(bookings);
+  const [pendingId, setPendingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setItems(bookings);
+  }, [bookings]);
 
   const visibleItems = useMemo(
     () => items.filter((item) => tabOf(item.status) === tab),
@@ -71,6 +92,16 @@ export function CoachBookingsScreen({ bookings }: CoachBookingsScreenProps) {
     setItems((prev) =>
       prev.map((item) => (item.id === id ? { ...item, status } : item)),
     );
+  };
+
+  const runAction = async (id: string, action: CoachBookingAction) => {
+    if (!onAction) return;
+    setPendingId(id);
+    try {
+      await onAction(id, action);
+    } finally {
+      setPendingId(null);
+    }
   };
 
   return (
@@ -173,7 +204,34 @@ export function CoachBookingsScreen({ bookings }: CoachBookingsScreenProps) {
                   </Typography>
                 ) : null}
 
-                {booking.status === "PENDING" ? (
+                {booking.api && onAction && booking.api.actions.length > 0 ? (
+                  <div className={styles.actions}>
+                    {booking.api.actions.map((action) => (
+                      <Button
+                        className={
+                          action === "cancel" || action === "noShow"
+                            ? styles.rejectButton
+                            : styles.acceptButton
+                        }
+                        isPending={pendingId === booking.id}
+                        key={action}
+                        onPress={() => void runAction(booking.id, action)}
+                        variant={
+                          action === "cancel" || action === "noShow"
+                            ? "ghost"
+                            : "primary"
+                        }
+                      >
+                        {action === "cancel" || action === "noShow" ? (
+                          <CloseX size={18} />
+                        ) : (
+                          <Check size={18} />
+                        )}
+                        {t(ACTION_LABEL_KEY[action])}
+                      </Button>
+                    ))}
+                  </div>
+                ) : !booking.api && booking.status === "PENDING" ? (
                   <div className={styles.actions}>
                     <Button
                       className={styles.acceptButton}

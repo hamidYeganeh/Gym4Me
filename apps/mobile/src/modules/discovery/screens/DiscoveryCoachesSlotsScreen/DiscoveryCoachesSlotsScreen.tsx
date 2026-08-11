@@ -11,7 +11,7 @@ import { StickyBottomActions } from "@repo/ui/kit/StickyBottomActions";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useRequireAuthAction } from "@/shared/hooks/useRequireAuthAction";
 import {
@@ -23,11 +23,11 @@ import {
   weekdaySat0,
   weekRangeContaining,
 } from "../../lib/club-calendar-data";
-import {
-  getCoachSlotsWeek,
-  type CoachSlotsDay,
-  type CoachSlotsSlot,
-} from "../../lib/coach-slots-data";
+import type {
+  CoachSlotDayView,
+  CoachSlotView,
+} from "@/shared/hooks/useCoachSlotsWeek";
+import { useDiscoveryCoachSlotsWeek } from "../../lib/use-discovery-coach-slots";
 import { discoveryCoachesSlotsScreenStyles as styles } from "./DiscoveryCoachesSlotsScreen.styles";
 import type { DiscoveryCoachesSlotsScreenProps } from "./DiscoveryCoachesSlotsScreen.types";
 
@@ -47,15 +47,13 @@ export function DiscoveryCoachesSlotsScreen({
 }: DiscoveryCoachesSlotsScreenProps) {
   const t = useTranslations("CoachDetail");
   const router = useRouter();
-  const pathname = usePathname();
   const { runWithAuth } = useRequireAuthAction();
   const today = useMemo(() => todayIso(), []);
   const [anchor, setAnchor] = useState(today);
 
-  const days = useMemo(
-    () => getCoachSlotsWeek(coach.id, anchor),
-    [anchor, coach.id],
-  );
+  const range = weekRangeContaining(anchor);
+
+  const { days } = useDiscoveryCoachSlotsWeek(coach.id, range.from);
 
   const firstAvailableId = useMemo(() => {
     for (const day of days) {
@@ -81,13 +79,11 @@ export function DiscoveryCoachesSlotsScreen({
     return null;
   }, [days, selectedSlotId]);
 
-  const range = weekRangeContaining(anchor);
-
   const goWeek = (delta: number) => {
     setAnchor(addDaysIso(range.from, delta * 7));
   };
 
-  const dayLabel = (day: CoachSlotsDay) => {
+  const dayLabel = (day: CoachSlotDayView) => {
     const dateLabel = formatJalaliDateShort(day.date);
     if (day.date !== today) return dateLabel;
     const weekday = t(`slotsWeekday.${weekdayKey(weekdaySat0(day.date))}`);
@@ -101,14 +97,15 @@ export function DiscoveryCoachesSlotsScreen({
       })
     : t("slotsSelectPrompt");
 
-  const onSlotPress = (slot: CoachSlotsSlot) => {
+  const onSlotPress = (slot: CoachSlotView) => {
     if (slot.status === "unavailable") return;
     setSelectedSlotId(slot.id);
   };
 
   const onBook = () => {
     if (!selected) return;
-    runWithAuth(() => undefined, pathname);
+    const reserveHref = `/discovery/coaches/${coach.id}/reserve?slotId=${encodeURIComponent(selected.slot.id)}`;
+    runWithAuth(() => router.push(reserveHref), reserveHref);
   };
 
   const avatarSrc = coach.avatar?.trim() || PLACEHOLDER_IMAGE;

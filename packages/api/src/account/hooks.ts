@@ -31,13 +31,17 @@ export {
 export {
   useAccountClubClasses,
   useAccountClubSlots,
+  useAccountClubSpaces,
   useArchiveAccountClubClass,
   useArchiveAccountClubSlot,
+  useArchiveAccountClubSpace,
   useCancelAccountSlotOccurrence,
   useCreateAccountClubClass,
   useCreateAccountClubSlot,
+  useCreateAccountClubSpace,
   useUpdateAccountClubClass,
   useUpdateAccountClubSlot,
+  useUpdateAccountClubSpace,
 } from "./club-slots.hooks";
 export {
   useCloseSupportTicket,
@@ -48,6 +52,11 @@ export {
   useReplySupportTicket,
   useSupportContact,
 } from "./support.hooks";
+export {
+  useGamificationSummary,
+  useMyAchievements,
+  useMyPointTransactions,
+} from "./gamification.hooks";
 export {
   useMarkAllNotificationsRead,
   useMarkNotificationRead,

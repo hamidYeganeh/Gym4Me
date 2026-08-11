@@ -66,7 +66,11 @@ function StaggerSection({ children }: { children: ReactNode }) {
   return <motion.div variants={sectionVariants}>{children}</motion.div>;
 }
 
-export function OwnerHomeScreen({ stats, clubs }: OwnerHomeScreenProps) {
+export function OwnerHomeScreen({
+  stats,
+  clubs,
+  tasksNewCount = OWNER_HOME_TASKS_NEW_COUNT,
+}: OwnerHomeScreenProps) {
   const t = useTranslations("OwnerHome");
   const router = useRouter();
   const reduceMotion = useReducedMotion();
@@ -278,7 +282,7 @@ export function OwnerHomeScreen({ stats, clubs }: OwnerHomeScreenProps) {
             }}
             seeAllLabel={t("tasksOverviewSeeAll")}
             summary={t.rich("tasksOverviewSummary", {
-              count: OWNER_HOME_TASKS_NEW_COUNT,
+              count: tasksNewCount,
               bold: (chunks) => (
                 <span className="font-bold text-foreground">{chunks}</span>
               ),

@@ -13,7 +13,15 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
-import { Privacy } from '../../../common/enums';
+import {
+  AthleteBodyType,
+  AthleteDiet,
+  AthleteExperience,
+  AthleteMood,
+  BloodGroup,
+  Privacy,
+  RhFactor,
+} from '../../../common/enums';
 
 export class UpdateNameDto {
   @IsOptional()
@@ -44,6 +52,48 @@ export class UpdateDemographicsDto {
   birthDate?: string;
 }
 
+export class UpdateAddressGeoDto {
+  @IsNumber()
+  @Min(-90)
+  @Max(90)
+  lat!: number;
+
+  @IsNumber()
+  @Min(-180)
+  @Max(180)
+  lng!: number;
+}
+
+export class UpdateAddressDto {
+  @IsOptional()
+  @IsMongoId()
+  provinceId?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  city?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(300)
+  street?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(60)
+  apartment?: string;
+
+  @IsOptional()
+  @Matches(/^\d{10}$/, { message: 'postalCode must be 10 digits' })
+  postalCode?: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => UpdateAddressGeoDto)
+  point?: UpdateAddressGeoDto | null;
+}
+
 export class UpdateMeDto {
   @IsOptional()
   @ValidateNested()
@@ -59,6 +109,11 @@ export class UpdateMeDto {
   @ValidateNested()
   @Type(() => UpdateDemographicsDto)
   demographics?: UpdateDemographicsDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => UpdateAddressDto)
+  address?: UpdateAddressDto;
 
   /** Custom public handle, e.g. "mahdi-fit" */
   @IsOptional()
@@ -92,6 +147,84 @@ export class AthletePrivacyDto {
   photos?: Privacy;
 }
 
+export class AthleteMetricsPrefsDto {
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  preferredKeys?: string[];
+}
+
+export class AthleteLifestyleDto {
+  @IsOptional()
+  @IsEnum(AthleteBodyType)
+  bodyType?: AthleteBodyType;
+
+  @IsOptional()
+  @IsEnum(AthleteExperience)
+  experience?: AthleteExperience;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(5)
+  sleepLevel?: number;
+
+  @IsOptional()
+  @IsEnum(AthleteMood)
+  mood?: AthleteMood;
+
+  @IsOptional()
+  @IsEnum(AthleteDiet)
+  diet?: AthleteDiet;
+
+  /** null clears the value (user doesn't know their intake). */
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(20000)
+  dailyCalories?: number | null;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  activityKeys?: string[];
+}
+
+export class AthleteBloodTypeDto {
+  @IsEnum(BloodGroup)
+  group!: BloodGroup;
+
+  @IsEnum(RhFactor)
+  rh!: RhFactor;
+}
+
+export class AthleteHealthDto {
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => AthleteBloodTypeDto)
+  bloodType?: AthleteBloodTypeDto | null;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  allergies?: string[];
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  conditions?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  medications?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  note?: string;
+}
+
 export class UpdateAthleteProfileDto {
   @IsOptional()
   @IsString()
@@ -114,6 +247,11 @@ export class UpdateAthleteProfileDto {
   privacy?: AthletePrivacyDto;
 
   @IsOptional()
+  @ValidateNested()
+  @Type(() => AthleteMetricsPrefsDto)
+  metrics?: AthleteMetricsPrefsDto;
+
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
   sportIds?: string[];
@@ -122,6 +260,16 @@ export class UpdateAthleteProfileDto {
   @IsArray()
   @IsString({ each: true })
   goalKeys?: string[];
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => AthleteLifestyleDto)
+  lifestyle?: AthleteLifestyleDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => AthleteHealthDto)
+  health?: AthleteHealthDto;
 }
 
 export class CoachExperienceDto {
@@ -143,6 +291,25 @@ export class CoachServiceAreaDto {
   cityId?: string | null;
 }
 
+export class CoachConsultationPricingDto {
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  inPerson?: number | null;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  remote?: number | null;
+}
+
+export class CoachPricingDto {
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CoachConsultationPricingDto)
+  consultation?: CoachConsultationPricingDto;
+}
+
 export class UpdateCoachProfileDto {
   @IsOptional()
   @IsString()
@@ -158,6 +325,11 @@ export class UpdateCoachProfileDto {
   @ValidateNested()
   @Type(() => CoachServiceAreaDto)
   serviceArea?: CoachServiceAreaDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CoachPricingDto)
+  pricing?: CoachPricingDto;
 
   @IsOptional()
   @IsArray()

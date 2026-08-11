@@ -13,6 +13,7 @@ export const articlesEndpoints = {
 export const accountArticlesEndpoints = {
   state: (articleId: string) => `/account/articles/${articleId}/state`,
   like: (articleId: string) => `/account/articles/${articleId}/like`,
+  read: (articleId: string) => `/account/articles/${articleId}/read`,
   save: (articleId: string) => `/account/articles/${articleId}/save`,
   comments: (articleId: string) => `/account/articles/${articleId}/comments`,
 } as const;

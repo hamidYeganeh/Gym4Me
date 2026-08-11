@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, Chip, Typography } from "@heroui/react";
+import { Button, Chip, Input, Label, TextField, Typography } from "@heroui/react";
+import { ApiError } from "@repo/api";
 import { Check } from "@repo/icons/Check";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
@@ -8,7 +9,12 @@ import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import type { BookingStatus } from "../../lib/bookings-data";
+import { accountBookings } from "@/shared/lib/api";
+import {
+  BOOKING_CANCEL_REASON_KEYS,
+  type BookingCancelReasonKey,
+} from "../../lib/api-bookings";
+import { canManageBooking, type BookingStatus } from "../../lib/bookings-data";
 import { getBookingStatusColor } from "../AthleteBookingsScreen";
 import { athleteBookingDetailScreenStyles as styles } from "./AthleteBookingDetailScreen.styles";
 import type {
@@ -49,12 +55,66 @@ function getCurrentStepIndex(status: BookingStatus): number {
 
 export function AthleteBookingDetailScreen({
   booking,
+  onBookingChange,
 }: AthleteBookingDetailScreenProps) {
   const t = useTranslations("AthleteBookingDetail");
   const tBookings = useTranslations("AthleteBookings");
   const router = useRouter();
   const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
   const [isCancelRequested, setIsCancelRequested] = useState(false);
+  const [cancelReasonKey, setCancelReasonKey] =
+    useState<BookingCancelReasonKey | null>(null);
+  const [cancelNote, setCancelNote] = useState("");
+  const [isActing, setIsActing] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  const isApiBooking = Boolean(booking?.api);
+
+  const runAction = async (action: () => Promise<void>) => {
+    setIsActing(true);
+    setActionError(null);
+    try {
+      await action();
+    } catch (error) {
+      setActionError(
+        error instanceof ApiError ? error.message : t("actionError"),
+      );
+    } finally {
+      setIsActing(false);
+    }
+  };
+
+  const onPay = () => {
+    if (!booking) return;
+    if (!isApiBooking) {
+      router.push(`/athlete/payment/${booking.invoiceId}`);
+      return;
+    }
+    void runAction(async () => {
+      const payment = await accountBookings.pay(
+        booking.id,
+        `${window.location.origin}/athlete/bookings/${booking.id}`,
+      );
+      window.location.assign(payment.redirectUrl);
+    });
+  };
+
+  const onConfirmCancel = () => {
+    if (!booking) return;
+    if (!isApiBooking) {
+      setIsCancelConfirmOpen(false);
+      setIsCancelRequested(true);
+      return;
+    }
+    void runAction(async () => {
+      const next = await accountBookings.cancel(booking.id, {
+        reasonKey: cancelReasonKey ?? undefined,
+        note: cancelNote.trim() || undefined,
+      });
+      setIsCancelConfirmOpen(false);
+      onBookingChange?.(next);
+    });
+  };
 
   const backButton = (
     <Button
@@ -92,10 +152,14 @@ export function AthleteBookingDetailScreen({
     (booking.status === "CONFIRMED" || booking.status === "CHECKED_IN") &&
     Boolean(booking.checkInCode);
   const showPayAction =
-    booking.status === "AWAITING_PAYMENT" && Boolean(booking.invoiceId);
-  const showCancelAction =
-    (booking.status === "PENDING" || booking.status === "CONFIRMED") &&
-    !isCancelRequested;
+    booking.status === "AWAITING_PAYMENT" &&
+    (isApiBooking || Boolean(booking.invoiceId));
+  const showCancelAction = isApiBooking
+    ? canManageBooking(booking.status)
+    : (booking.status === "PENDING" || booking.status === "CONFIRMED") &&
+      !isCancelRequested;
+  const showRescheduleAction =
+    isApiBooking && canManageBooking(booking.status);
 
   const detailRows = [
     { key: "date", label: t("date"), value: booking.dateLabel },
@@ -224,14 +288,34 @@ export function AthleteBookingDetailScreen({
         ) : null}
 
         <div className={styles.actions}>
+          {actionError ? (
+            <Typography className={styles.errorText} type="body-sm">
+              {actionError}
+            </Typography>
+          ) : null}
+
           {showPayAction ? (
             <Button
               fullWidth
-              onPress={() => router.push(`/athlete/payment/${booking.invoiceId}`)}
+              isPending={isActing}
+              onPress={onPay}
               size="lg"
               variant="primary"
             >
               {t("payNow")}
+            </Button>
+          ) : null}
+
+          {showRescheduleAction ? (
+            <Button
+              fullWidth
+              onPress={() =>
+                router.push(`/athlete/bookings/${booking.id}/reschedule`)
+              }
+              size="lg"
+              variant="secondary"
+            >
+              {t("rescheduleBooking")}
             </Button>
           ) : null}
 
@@ -267,13 +351,68 @@ export function AthleteBookingDetailScreen({
               <Typography className={styles.cancelConfirmBody} type="body-sm">
                 {t("cancelConfirmBody")}
               </Typography>
+
+              {isApiBooking ? (
+                <>
+                  <div
+                    aria-label={t("cancelReasonTitle")}
+                    className={styles.cancelReasons}
+                    role="radiogroup"
+                  >
+                    {BOOKING_CANCEL_REASON_KEYS.map((reasonKey) => {
+                      const isSelected = cancelReasonKey === reasonKey;
+                      return (
+                        <button
+                          aria-checked={isSelected}
+                          className={`${styles.cancelReason} ${
+                            isSelected ? styles.cancelReasonSelected : ""
+                          }`}
+                          key={reasonKey}
+                          onClick={() => setCancelReasonKey(reasonKey)}
+                          role="radio"
+                          type="button"
+                        >
+                          <span
+                            aria-hidden
+                            className={`${styles.cancelReasonRadio} ${
+                              isSelected ? styles.cancelReasonRadioSelected : ""
+                            }`}
+                          >
+                            {isSelected ? (
+                              <span className={styles.cancelReasonDot} />
+                            ) : null}
+                          </span>
+                          <Typography
+                            className={styles.cancelReasonLabel}
+                            type="body-sm"
+                          >
+                            {t(`cancelReasons.${reasonKey}`)}
+                          </Typography>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {cancelReasonKey === "other" ? (
+                    <TextField
+                      fullWidth
+                      name="cancelNote"
+                      onChange={(value) => setCancelNote(value.slice(0, 300))}
+                      value={cancelNote}
+                    >
+                      <Label>{t("cancelNoteLabel")}</Label>
+                      <Input placeholder={t("cancelNotePlaceholder")} />
+                    </TextField>
+                  ) : null}
+                </>
+              ) : null}
+
               <div className={styles.cancelConfirmActions}>
                 <Button
                   fullWidth
-                  onPress={() => {
-                    setIsCancelConfirmOpen(false);
-                    setIsCancelRequested(true);
-                  }}
+                  isDisabled={isApiBooking && !cancelReasonKey}
+                  isPending={isActing}
+                  onPress={onConfirmCancel}
                   variant="danger"
                 >
                   {t("confirmCancel")}

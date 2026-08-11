@@ -83,11 +83,19 @@ export class ClubSlot {
   @Prop({ type: Types.ObjectId, ref: 'ClubClass', index: true })
   classId?: Types.ObjectId;
 
+  /** Required when kind=space. */
+  @Prop({ type: Types.ObjectId, ref: 'ClubSpace', index: true })
+  spaceId?: Types.ObjectId;
+
   @Prop({ type: Types.ObjectId, ref: User.name, index: true })
   coachId?: Types.ObjectId;
 
   @Prop({ required: true, min: 1 })
   capacity!: number;
+
+  /** Price per seat per occurrence (Tomans); 0 = free. */
+  @Prop({ min: 0, default: 0 })
+  price!: number;
 
   @Prop({ type: SlotScheduleSchema, required: true })
   schedule!: SlotSchedule;

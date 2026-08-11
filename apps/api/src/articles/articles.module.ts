@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { GamificationModule } from '../gamification/gamification.module';
 import { MediaModule } from '../media/media.module';
 import {
   ArticleComment,
@@ -19,6 +20,7 @@ import { ArticlesService } from './articles.service';
 @Module({
   imports: [
     MediaModule,
+    GamificationModule,
     MongooseModule.forFeature([
       { name: Article.name, schema: ArticleSchema },
       { name: ArticleComment.name, schema: ArticleCommentSchema },

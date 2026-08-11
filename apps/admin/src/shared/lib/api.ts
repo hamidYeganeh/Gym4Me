@@ -3,8 +3,10 @@ import {
   createAdminAuthApi,
   createAdminBasicsApi,
   createAdminArticlesApi,
+  createAdminBannersApi,
   createAdminClubsApi,
   createAdminClubSlotsApi,
+  createAdminGamificationApi,
   createAdminKycApi,
   createAdminSupportApi,
   createAdminUsersApi,
@@ -37,4 +39,6 @@ export const adminKyc = createAdminKycApi(apiClient);
 export const adminVerification = createAdminVerificationApi(apiClient);
 export const adminSupport = createAdminSupportApi(apiClient);
 export const adminArticles = createAdminArticlesApi(apiClient);
+export const adminBanners = createAdminBannersApi(apiClient);
+export const adminGamification = createAdminGamificationApi(apiClient);
 export const mediaApi = createMediaApi(apiClient);

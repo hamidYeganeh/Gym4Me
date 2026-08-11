@@ -28,6 +28,29 @@ export type VerificationStatus =
 
 export type Privacy = "public" | "followers" | "coach_only" | "private";
 
+/** Mirrors `AthleteBodyType` in apps/api. */
+export type AthleteBodyType = "endomorph" | "ectomorph" | "mesomorph";
+
+/** Mirrors `AthleteExperience` in apps/api. */
+export type AthleteExperience = "beginner" | "experienced";
+
+/** Mirrors `AthleteMood` in apps/api. */
+export type AthleteMood =
+  | "depressed"
+  | "sad"
+  | "neutral"
+  | "happy"
+  | "overjoyed";
+
+/** Mirrors `AthleteDiet` in apps/api. */
+export type AthleteDiet = "balanced" | "vegetarian" | "protein" | "gluten_free";
+
+/** Mirrors `BloodGroup` in apps/api. */
+export type BloodGroup = "A" | "B" | "AB" | "O";
+
+/** Mirrors `RhFactor` in apps/api. */
+export type RhFactor = "positive" | "negative";
+
 export type ClubLifecycleStatus =
   | "draft"
   | "pending_review"
@@ -49,6 +72,14 @@ export type PublicUser = {
   demographics: {
     gender: string | null;
     birthDate: string | null;
+  };
+  address: {
+    provinceId: string | null;
+    city: string | null;
+    street: string | null;
+    apartment: string | null;
+    postalCode: string | null;
+    point: { lat: number; lng: number } | null;
   };
   nationalId: string | null;
   roles: Role[];
@@ -220,6 +251,18 @@ export type FaqAudience = "all" | "athlete" | "coach" | "club_owner";
 /** Mirrors `PublishStatus` in apps/api. */
 export type PublishStatus = "draft" | "published" | "unpublished";
 
+/** Mirrors `BannerPlacement` in apps/api. */
+export type BannerPlacement =
+  | "discovery_home"
+  | "discovery_clubs"
+  | "discovery_coaches"
+  | "athlete_home"
+  | "coach_home"
+  | "owner_home";
+
+/** Mirrors `BannerLinkKind` in apps/api. */
+export type BannerLinkKind = "none" | "internal" | "external";
+
 /** Mirrors `ArticleKind` in apps/api. */
 export type ArticleKind = "guide" | "news" | "tip" | "story" | "workout";
 
@@ -231,6 +274,31 @@ export type NotificationReadStatus = "unread" | "read" | "archived";
 
 /** Mirrors `DevicePlatform` in apps/api. */
 export type DevicePlatform = "ios" | "android" | "web";
+
+/** Mirrors `BookingStatus` in apps/api (locked product decision). */
+export type BookingStatus =
+  | "pending"
+  | "awaiting_payment"
+  | "confirmed"
+  | "checked_in"
+  | "completed"
+  | "cancelled"
+  | "no_show"
+  | "refund_requested"
+  | "refunded"
+  | "rejected";
+
+/** Mirrors `ConsultationKind` in apps/api. */
+export type ConsultationKind = "in_person" | "remote";
+
+/** Mirrors `CoachSlotStatus` in apps/api. */
+export type CoachSlotStatus = "open" | "booked" | "blocked";
+
+/** Mirrors `BookingActor` in apps/api. */
+export type BookingActor = "athlete" | "coach" | "club" | "admin";
+
+/** Mirrors `BookingResourceType` in apps/api (locked product decision). */
+export type BookingResourceType = "coach" | "session" | "class" | "space";
 
 /** Mirrors `RefService.toPublic`. */
 export type RefItem = {

@@ -12,6 +12,9 @@ export type BookingStatus =
   | "REFUNDED"
   | "REJECTED";
 
+/** Live coach actions on an API-backed booking. */
+export type CoachBookingAction = "checkIn" | "complete" | "noShow" | "cancel";
+
 export type CoachBookingRequest = {
   id: string;
   clientName: string;
@@ -22,6 +25,8 @@ export type CoachBookingRequest = {
   priceLabel: string;
   status: BookingStatus;
   checkInCode?: string;
+  /** Present when the booking is backed by the live API. */
+  api?: { actions: CoachBookingAction[] };
 };
 
 export const COACH_BOOKING_REQUESTS: CoachBookingRequest[] = [

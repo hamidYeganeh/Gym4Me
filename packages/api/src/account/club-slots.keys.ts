@@ -4,6 +4,10 @@ export const accountClubSlotsKeys = {
     [...accountClubSlotsKeys.all, "classes", clubId] as const,
   class: (clubId: string, classId: string) =>
     [...accountClubSlotsKeys.classes(clubId), classId] as const,
+  spaces: (clubId: string) =>
+    [...accountClubSlotsKeys.all, "spaces", clubId] as const,
+  space: (clubId: string, spaceId: string) =>
+    [...accountClubSlotsKeys.spaces(clubId), spaceId] as const,
   slots: (clubId: string) =>
     [...accountClubSlotsKeys.all, "slots", clubId] as const,
   slot: (clubId: string, slotId: string) =>

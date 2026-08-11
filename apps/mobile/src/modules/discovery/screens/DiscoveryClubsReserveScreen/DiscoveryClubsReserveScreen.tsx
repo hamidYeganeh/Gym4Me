@@ -24,7 +24,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRequireAuthAction } from "@/shared/hooks/useRequireAuthAction";
-import type { ReserveSlotState } from "../../lib/reserve-data";
+import type { ReservePlan, ReserveSlotState } from "../../lib/reserve-data";
 import { discoveryClubsReserveScreenStyles as styles } from "./DiscoveryClubsReserveScreen.styles";
 import type { DiscoveryClubsReserveScreenProps } from "./DiscoveryClubsReserveScreen.types";
 
@@ -58,6 +58,7 @@ export function DiscoveryClubsReserveScreen({
   days,
   slotsByDay,
   plans,
+  onConfirm,
 }: DiscoveryClubsReserveScreenProps) {
   const t = useTranslations("ReserveFlow");
   const router = useRouter();
@@ -74,6 +75,8 @@ export function DiscoveryClubsReserveScreen({
   );
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isReady || isAuthenticated) return;
@@ -94,14 +97,44 @@ export function DiscoveryClubsReserveScreen({
     [t],
   );
 
+  /** API-backed plans price per selected slot; static plans keep their price. */
+  const getPlanPrice = (plan: ReservePlan): number =>
+    plan.sessionCount != null && selectedSlot?.api
+      ? selectedSlot.api.price * plan.sessionCount
+      : plan.price;
+
   const canGoNext =
-    step === 0 ? Boolean(selectedSlot) : step === 1 ? Boolean(selectedPlan) : true;
+    step === 0
+      ? Boolean(selectedSlot)
+      : step === 1
+        ? Boolean(selectedPlan)
+        : !isSubmitting;
 
   const paymentHref = `/athlete/payment/${DEMO_INVOICE_ID}`;
 
+  const submitReservation = async () => {
+    if (!selectedSlot || !selectedPlan) return;
+    if (!onConfirm) {
+      router.push(paymentHref);
+      return;
+    }
+    setIsSubmitting(true);
+    setSubmitError(null);
+    try {
+      await onConfirm({ slot: selectedSlot, plan: selectedPlan });
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error && error.message
+          ? error.message
+          : t("submitError"),
+      );
+      setIsSubmitting(false);
+    }
+  };
+
   const goNext = () => {
     if (step === 2) {
-      runWithAuth(() => router.push(paymentHref), paymentHref);
+      runWithAuth(() => void submitReservation(), pathname);
       return;
     }
     stepDirection.current = 1;
@@ -129,7 +162,7 @@ export function DiscoveryClubsReserveScreen({
       } satisfies Variants)
     : stepSlideVariants;
 
-  const displayPrice = selectedPlan?.price ?? 0;
+  const displayPrice = selectedPlan ? getPlanPrice(selectedPlan) : 0;
   const priceSuffix = selectedPlan?.priceSuffix ?? t("priceSuffix");
   const ctaLabel = step < 2 ? t("nextStep") : t("cta");
 
@@ -364,7 +397,7 @@ export function DiscoveryClubsReserveScreen({
                               </Typography>
                               <span className={styles.planPriceRow}>
                                 <span className={styles.planPrice}>
-                                  {plan.price.toLocaleString("en-US")}
+                                  {getPlanPrice(plan).toLocaleString("en-US")}
                                 </span>
                                 {plan.priceSuffix ? (
                                   <span className={styles.planPriceSuffix}>
@@ -466,7 +499,7 @@ export function DiscoveryClubsReserveScreen({
                         weight="bold"
                       >
                         {selectedPlan
-                          ? `${selectedPlan.price.toLocaleString("en-US")} ${selectedPlan.priceSuffix ?? ""}`.trim()
+                          ? `${getPlanPrice(selectedPlan).toLocaleString("en-US")} ${selectedPlan.priceSuffix ?? ""}`.trim()
                           : t("notSelected")}
                       </Typography>
                     </div>
@@ -479,6 +512,11 @@ export function DiscoveryClubsReserveScreen({
       </div>
 
       <StickyBottomActions contentClassName={styles.footerRow}>
+        {submitError ? (
+          <Typography className="w-full text-danger" type="body-sm">
+            {submitError}
+          </Typography>
+        ) : null}
         <div className={styles.priceGroup}>
           <Typography className={styles.priceLabel} type="body-xs">
             {selectedPlan ? t("totalLabel") : t("selectPlanHint")}
@@ -504,6 +542,7 @@ export function DiscoveryClubsReserveScreen({
           aria-label={ctaLabel}
           className={styles.confirm}
           isDisabled={step < 2 ? !canGoNext : !selectedSlot || !selectedPlan}
+          isPending={isSubmitting}
           onPress={goNext}
           size="lg"
           variant="primary"

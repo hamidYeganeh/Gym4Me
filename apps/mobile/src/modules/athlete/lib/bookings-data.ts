@@ -35,6 +35,16 @@ export type AthleteBooking = {
   status: BookingStatus;
   checkInCode?: string;
   invoiceId?: string;
+  /** Present when the booking is backed by the live API (enables real actions). */
+  api?: {
+    resourceType: "coach" | "session" | "class" | "space";
+    /** Coach bookings only. */
+    coachUserId: string | null;
+    consultationKind: "in_person" | "remote" | null;
+    /** Club bookings only — occurrence date (YYYY-MM-DD). */
+    occurrenceDate: string | null;
+    recurringGroupId: string | null;
+  };
 };
 
 export const ATHLETE_BOOKINGS: AthleteBooking[] = [

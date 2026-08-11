@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import {
-  OWNER_HOME_CLUBS,
-  OWNER_HOME_STATS,
-} from "@/modules/owner/lib/owner-home-data";
-import { OwnerHomeScreen } from "@/modules/owner/screens/OwnerHomeScreen";
+import { OwnerHomeGate } from "@/modules/owner/lib/OwnerHomeGate";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("OwnerHome");
@@ -12,7 +8,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function OwnerHomePage() {
-  return (
-    <OwnerHomeScreen clubs={OWNER_HOME_CLUBS} stats={OWNER_HOME_STATS} />
-  );
+  return <OwnerHomeGate />;
 }

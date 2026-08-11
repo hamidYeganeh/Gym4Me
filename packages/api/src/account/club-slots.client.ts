@@ -5,10 +5,14 @@ import type {
   ClubClassesList,
   ClubSlot,
   ClubSlotsList,
+  ClubSpace,
+  ClubSpacesList,
   CreateClubClassInput,
   CreateClubSlotInput,
+  CreateClubSpaceInput,
   UpdateClubClassInput,
   UpdateClubSlotInput,
+  UpdateClubSpaceInput,
 } from "./club-slots.dto";
 import { accountClubSlotsEndpoints as ep } from "./club-slots.endpoint";
 
@@ -39,6 +43,34 @@ export function createClubOwnerClubSlotsApi(client: ApiClient) {
 
     archiveClass(clubId: string, classId: string) {
       return client.request<ClubClass>(ep.classById(clubId, classId), {
+        method: "DELETE",
+      });
+    },
+
+    listSpaces(clubId: string) {
+      return client.request<ClubSpacesList>(ep.spaces(clubId));
+    },
+
+    getSpace(clubId: string, spaceId: string) {
+      return client.request<ClubSpace>(ep.spaceById(clubId, spaceId));
+    },
+
+    createSpace(clubId: string, input: CreateClubSpaceInput) {
+      return client.request<ClubSpace>(ep.spaces(clubId), {
+        method: "POST",
+        body: input,
+      });
+    },
+
+    updateSpace(clubId: string, spaceId: string, input: UpdateClubSpaceInput) {
+      return client.request<ClubSpace>(ep.spaceById(clubId, spaceId), {
+        method: "PATCH",
+        body: input,
+      });
+    },
+
+    archiveSpace(clubId: string, spaceId: string) {
+      return client.request<ClubSpace>(ep.spaceById(clubId, spaceId), {
         method: "DELETE",
       });
     },

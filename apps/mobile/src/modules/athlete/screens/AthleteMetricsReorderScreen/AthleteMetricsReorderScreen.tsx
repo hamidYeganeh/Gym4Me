@@ -15,16 +15,26 @@ import type { AthleteMetricsReorderScreenProps } from "./AthleteMetricsReorderSc
 
 export function AthleteMetricsReorderScreen({
   initialMetrics,
+  onPersist,
 }: AthleteMetricsReorderScreenProps) {
   const t = useTranslations("FitnessMetricsReorder");
   const router = useRouter();
   const [metrics, setMetrics] = useState(initialMetrics);
+  const [saving, setSaving] = useState(false);
 
   const onRemove = (id: ReorderableMetric["id"]) => {
     setMetrics((current) => current.filter((metric) => metric.id !== id));
   };
 
-  const onSave = () => {
+  const onSave = async () => {
+    if (onPersist) {
+      setSaving(true);
+      try {
+        await onPersist(metrics);
+      } finally {
+        setSaving(false);
+      }
+    }
     router.push("/athlete/metrics");
   };
 
@@ -33,7 +43,13 @@ export function AthleteMetricsReorderScreen({
       className={styles.root}
       footer={
         <div className={styles.footer}>
-          <Button className={styles.saveButton} onPress={onSave}>
+          <Button
+            className={styles.saveButton}
+            isDisabled={saving}
+            onPress={() => {
+              void onSave();
+            }}
+          >
             {t("save")}
           </Button>
         </div>

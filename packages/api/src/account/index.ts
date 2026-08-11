@@ -4,9 +4,15 @@ export {
 } from "./profile.client";
 export { accountProfileEndpoints } from "./profile.endpoint";
 export type {
+  AthleteBloodType,
+  AthleteHealth,
+  AthleteLifestyle,
   AthleteProfile,
   CoachProfile,
   SubmitCoachVerificationInput,
+  UpdateAddressInput,
+  UpdateAthleteHealthInput,
+  UpdateAthleteLifestyleInput,
   UpdateAthleteProfileInput,
   UpdateCoachProfileInput,
   UpdateMeInput,
@@ -86,8 +92,12 @@ export type {
   ClubClassesList,
   ClubSlot,
   ClubSlotsList,
+  ClubSpace,
+  ClubSpaceMedia,
+  ClubSpacesList,
   CreateClubClassInput,
   CreateClubSlotInput,
+  CreateClubSpaceInput,
   EntityStatus,
   OccurrenceStatus,
   SlotException,
@@ -98,6 +108,7 @@ export type {
   SlotSchedule,
   UpdateClubClassInput,
   UpdateClubSlotInput,
+  UpdateClubSpaceInput,
 } from "./club-slots.dto";
 export { accountClubSlotsKeys } from "./club-slots.keys";
 
@@ -120,6 +131,23 @@ export type {
   SupportUserSummary,
 } from "./support.dto";
 export { accountSupportKeys } from "./support.keys";
+
+export {
+  createAccountGamificationApi,
+  type AccountGamificationApi,
+} from "./gamification.client";
+export { accountGamificationEndpoints } from "./gamification.endpoint";
+export type {
+  AchievementState,
+  GamificationSubjectType,
+  GamificationSummary,
+  ListMyPointTransactionsQuery,
+  MyAchievement,
+  PointsSummary,
+  PointTransactionItem,
+  PointTransactionReason,
+} from "./gamification.dto";
+export { accountGamificationKeys } from "./gamification.keys";
 
 export {
   createAccountNotificationsApi,

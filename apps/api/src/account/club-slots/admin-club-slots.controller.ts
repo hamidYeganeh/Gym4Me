@@ -19,8 +19,10 @@ import {
   CancelSlotOccurrenceDto,
   CreateClubClassDto,
   CreateClubSlotDto,
+  CreateClubSpaceDto,
   UpdateClubClassDto,
   UpdateClubSlotDto,
+  UpdateClubSpaceDto,
 } from './dto/club-slot.dto';
 
 @ApiTags('admin-club-slots')
@@ -79,6 +81,57 @@ export class AdminClubSlotsController {
     @Req() request: Request,
   ) {
     return this.slots.archiveClass(clubId, classId, user.sub, request);
+  }
+
+  // ── Spaces ────────────────────────────────────
+
+  @Get(':clubId/spaces')
+  @ApiOperation({ summary: 'List club spaces (admin)' })
+  listSpaces(@Param('clubId') clubId: string) {
+    return this.slots.listSpaces(clubId);
+  }
+
+  @Get(':clubId/spaces/:spaceId')
+  @ApiOperation({ summary: 'Get one club space (admin)' })
+  getSpace(
+    @Param('clubId') clubId: string,
+    @Param('spaceId') spaceId: string,
+  ) {
+    return this.slots.getSpace(clubId, spaceId);
+  }
+
+  @Post(':clubId/spaces')
+  @ApiOperation({ summary: 'Create a club space (admin)' })
+  createSpace(
+    @CurrentUser() user: JwtUser,
+    @Param('clubId') clubId: string,
+    @Body() dto: CreateClubSpaceDto,
+    @Req() request: Request,
+  ) {
+    return this.slots.createSpace(clubId, dto, user.sub, request);
+  }
+
+  @Patch(':clubId/spaces/:spaceId')
+  @ApiOperation({ summary: 'Update a club space (admin)' })
+  updateSpace(
+    @CurrentUser() user: JwtUser,
+    @Param('clubId') clubId: string,
+    @Param('spaceId') spaceId: string,
+    @Body() dto: UpdateClubSpaceDto,
+    @Req() request: Request,
+  ) {
+    return this.slots.updateSpace(clubId, spaceId, dto, user.sub, request);
+  }
+
+  @Delete(':clubId/spaces/:spaceId')
+  @ApiOperation({ summary: 'Archive a club space (admin)' })
+  archiveSpace(
+    @CurrentUser() user: JwtUser,
+    @Param('clubId') clubId: string,
+    @Param('spaceId') spaceId: string,
+    @Req() request: Request,
+  ) {
+    return this.slots.archiveSpace(clubId, spaceId, user.sub, request);
   }
 
   // ── Slots ─────────────────────────────────────

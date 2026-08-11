@@ -35,13 +35,25 @@ function scheduleLabel(slot: ClubSlot): string {
   return "هفتگی";
 }
 
+const KIND_TITLE_FA: Record<ClubSlot["kind"], string> = {
+  session: "جلسه خصوصی",
+  class: "کلاس باشگاه",
+  space: "رزرو فضا / سالن",
+};
+
+const KIND_CATEGORY_FA: Record<ClubSlot["kind"], string> = {
+  session: "جلسه",
+  class: "کلاس",
+  space: "فضا",
+};
+
 export function mapDiscoverySlotToListItem(slot: ClubSlot): ClubSlotListItem {
   const { startTime, endTime } = slot.schedule.recurrence;
   const isSession = slot.kind === "session";
   return {
     id: slot.id,
-    title: isSession ? "جلسه خصوصی" : "کلاس باشگاه",
-    category: isSession ? "جلسه" : "کلاس",
+    title: KIND_TITLE_FA[slot.kind],
+    category: KIND_CATEGORY_FA[slot.kind],
     coachName: "—",
     durationLabel: durationMinutes(startTime, endTime),
     timeLabel: timeRangeLabel(startTime, endTime),
@@ -69,7 +81,9 @@ export function mapDiscoverySlotToDetail(
     description:
       slot.kind === "session"
         ? "جلسه خصوصی با مربی باشگاه طبق زمان‌بندی تعریف‌شده."
-        : "کلاس گروهی باشگاه طبق زمان‌بندی تعریف‌شده.",
+        : slot.kind === "space"
+          ? "رزرو فضا / سالن باشگاه طبق زمان‌بندی تعریف‌شده."
+          : "کلاس گروهی باشگاه طبق زمان‌بندی تعریف‌شده.",
     image: PLACEHOLDER_IMAGE,
     coachName: list.coachName,
     coachId: slot.coachId ?? undefined,

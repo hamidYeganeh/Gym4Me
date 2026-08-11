@@ -65,6 +65,13 @@ export function createArticlesApi(client: ApiClient) {
       );
     },
 
+    markRead(articleId: string) {
+      return client.request<ArticleEngagementResponse>(
+        accountEp.read(articleId),
+        { method: "POST" },
+      );
+    },
+
     save(articleId: string) {
       return client.request<ArticleEngagementResponse>(
         accountEp.save(articleId),

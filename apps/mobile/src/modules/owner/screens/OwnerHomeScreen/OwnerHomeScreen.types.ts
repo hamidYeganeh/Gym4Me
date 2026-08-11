@@ -6,4 +6,5 @@ import type {
 export type OwnerHomeScreenProps = {
   stats: OwnerHomeStat[];
   clubs: OwnerHomeClub[];
+  tasksNewCount?: number;
 };

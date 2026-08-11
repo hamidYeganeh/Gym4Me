@@ -1,6 +1,7 @@
 import type {
   ClubClass,
   ClubSlot,
+  ClubSpace,
   OccurrenceStatus,
   SlotKind,
 } from "../account/club-slots.dto";
@@ -20,6 +21,11 @@ export type ClubCalendarOccurrence = {
     title: string;
     media: { coverMediaId: string | null };
   } | null;
+  space: {
+    id: string;
+    title: string;
+    media: { coverMediaId: string | null };
+  } | null;
   coach: {
     id: string;
     name: { first: string | null; last: string | null };
@@ -27,6 +33,10 @@ export type ClubCalendarOccurrence = {
   startTime: string;
   endTime: string;
   capacity: number;
+  /** Seats still available on this occurrence. */
+  remaining: number;
+  /** Price per seat (Tomans); 0 = free. */
+  price: number;
   occurrenceStatus: OccurrenceStatus;
 };
 
@@ -41,4 +51,4 @@ export type ClubCalendarResponse = {
   days: ClubCalendarDay[];
 };
 
-export type { ClubClass };
+export type { ClubClass, ClubSpace };

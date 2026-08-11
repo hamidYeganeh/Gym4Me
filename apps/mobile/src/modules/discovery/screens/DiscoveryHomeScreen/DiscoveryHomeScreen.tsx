@@ -27,6 +27,7 @@ import { CoachFeatureCard } from "@repo/ui/cards/CoachFeatureCard";
 import { QuickActionCard } from "@repo/ui/cards/QuickActionCard";
 import { SportCard } from "@repo/ui/cards/SportCard";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
+import { BannerCarousel } from "@repo/ui/kit/BannerCarousel";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
@@ -165,6 +166,7 @@ function ClubRailCard({
 }
 
 export function DiscoveryHomeScreen({
+  banners = [],
   features,
   cities,
   nearbyClubs,
@@ -190,6 +192,18 @@ export function DiscoveryHomeScreen({
     actionLabel: t("viewClub"),
     favoriteLabel: t("favoriteLabel"),
     shareLabel: t("shareLabel"),
+  };
+
+  const openBannerLink = (
+    linkKind: "none" | "internal" | "external",
+    linkUrl: string | null,
+  ) => {
+    if (!linkUrl) return;
+    if (linkKind === "internal") {
+      router.push(linkUrl);
+    } else if (linkKind === "external") {
+      window.open(linkUrl, "_blank", "noopener,noreferrer");
+    }
   };
 
   return (
@@ -238,6 +252,24 @@ export function DiscoveryHomeScreen({
             onPress={() => router.push("/discovery/coaches")}
           />
         </nav>
+
+        {banners.length > 0 ? (
+          <BannerCarousel
+            aria-label={t("bannersLabel")}
+            slideLabel={(current, total) =>
+              t("bannerSlideLabel", { current, total })
+            }
+            slides={banners.map((slide) => ({
+              id: slide.id,
+              imageUrl: slide.imageUrl,
+              alt: slide.alt,
+              onPress:
+                slide.linkKind !== "none" && slide.linkUrl
+                  ? () => openBannerLink(slide.linkKind, slide.linkUrl)
+                  : undefined,
+            }))}
+          />
+        ) : null}
 
         {isLoading ? (
           <div className="flex justify-center py-8">

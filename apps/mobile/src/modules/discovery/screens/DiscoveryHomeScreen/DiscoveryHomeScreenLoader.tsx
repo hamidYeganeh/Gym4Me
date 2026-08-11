@@ -4,6 +4,7 @@ import { ClubCardSkeleton } from "@repo/ui/cards/ClubCard";
 import { CoachExpertCardSkeleton } from "@repo/ui/cards/CoachExpertCard";
 import { SportCategoryCardSkeleton } from "@repo/ui/cards/SportCategoryCard";
 import { useDiscoveryHome } from "../../lib/use-discovery-home";
+import { usePlacementBanners } from "../../lib/use-placement-banners";
 import { DiscoveryHomeScreen } from "./DiscoveryHomeScreen";
 
 function DiscoveryHomePageSkeleton() {
@@ -41,6 +42,7 @@ function DiscoveryHomePageSkeleton() {
 
 export function DiscoveryHomeScreenLoader() {
   const home = useDiscoveryHome();
+  const banners = usePlacementBanners("discovery_home");
 
   if (
     home.isLoading &&
@@ -54,6 +56,7 @@ export function DiscoveryHomeScreenLoader() {
     <DiscoveryHomeScreen
       amenities={home.amenities}
       articles={home.articles}
+      banners={banners.slides}
       cities={home.cities}
       classes={home.classes}
       coachCityName={home.coachCityName}

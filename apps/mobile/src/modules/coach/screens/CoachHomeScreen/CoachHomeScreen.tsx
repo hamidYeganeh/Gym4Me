@@ -175,6 +175,15 @@ export function CoachHomeScreen() {
             variant="outlined"
           />
           <CallToActionCard
+            actionLabel={t("slotsLink")}
+            actionType="icon"
+            icon={<Calendar1 size={28} />}
+            onAction={() => router.push("/coach/slots")}
+            subtitle={t("slotsLinkDescription")}
+            title={t("slotsLink")}
+            variant="outlined"
+          />
+          <CallToActionCard
             actionLabel={t("programsLink")}
             actionType="icon"
             icon={<Note1 size={28} />}

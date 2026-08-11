@@ -1,18 +1,29 @@
-import { redirect } from "next/navigation";
+"use client";
 
-type SignInPageProps = {
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
-};
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect } from "react";
 
-/** Legacy path — prefer `/auth/login`. */
-export default async function SignInRedirectPage({
-  searchParams,
-}: SignInPageProps) {
-  const params = (await searchParams) ?? {};
-  const next = params.next;
-  const nextValue = Array.isArray(next) ? next[0] : next;
-  if (nextValue && nextValue.startsWith("/")) {
-    redirect(`/auth/login?next=${encodeURIComponent(nextValue)}`);
-  }
-  redirect("/auth/login");
+/** Legacy path — prefer `/auth/login`. Client redirect keeps static export happy. */
+function SignInRedirect() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const next = searchParams.get("next");
+    router.replace(
+      next && next.startsWith("/")
+        ? `/auth/login?next=${encodeURIComponent(next)}`
+        : "/auth/login",
+    );
+  }, [router, searchParams]);
+
+  return null;
+}
+
+export default function SignInRedirectPage() {
+  return (
+    <Suspense>
+      <SignInRedirect />
+    </Suspense>
+  );
 }

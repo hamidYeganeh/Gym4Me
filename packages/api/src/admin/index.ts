@@ -90,12 +90,24 @@ export type {
   ClubClassesList,
   ClubSlot,
   ClubSlotsList,
+  ClubSpace,
+  ClubSpacesList,
   CreateClubClassInput,
   CreateClubSlotInput,
+  CreateClubSpaceInput,
   UpdateClubClassInput,
   UpdateClubSlotInput,
+  UpdateClubSpaceInput,
 } from "./club-slots.dto";
 export { adminClubSlotsKeys } from "./club-slots.keys";
+
+export {
+  createAdminBookingsApi,
+  type AdminBookingsApi,
+} from "./bookings.client";
+export { adminBookingsEndpoints } from "./bookings.endpoint";
+export type { AdminBookingsListQuery } from "./bookings.dto";
+export { adminBookingsKeys } from "./bookings.keys";
 
 export {
   createAdminSupportApi,
@@ -124,3 +136,46 @@ export type {
   UpdateArticleInput,
 } from "./articles.dto";
 export { adminArticlesKeys } from "./articles.keys";
+
+export {
+  createAdminGamificationApi,
+  type AdminGamificationApi,
+} from "./gamification.client";
+export { adminGamificationEndpoints } from "./gamification.endpoint";
+export type {
+  AchievementGrantMode,
+  AchievementMetric,
+  AdjustPointsInput,
+  AdjustPointsResult,
+  AdminAchievement,
+  AdminAchievementGrant,
+  AdminPointRule,
+  CreateAchievementInput,
+  CreatePointRuleInput,
+  GamificationOverview,
+  GrantAchievementSubjectInput,
+  ListAdminAchievementsQuery,
+  ListAdminGrantsQuery,
+  ListAdminPointRulesQuery,
+  ListAdminPointTransactionsQuery,
+  PointRuleEvent,
+  PointRuleRepeat,
+  UpdateAchievementInput,
+  UpdatePointRuleInput,
+} from "./gamification.dto";
+export { adminGamificationKeys } from "./gamification.keys";
+
+export {
+  createAdminBannersApi,
+  type AdminBannersApi,
+} from "./banners.client";
+export { adminBannersEndpoints } from "./banners.endpoint";
+export type {
+  AdminBanner,
+  BannerScheduleInput,
+  BannerSlideInput,
+  CreateBannerInput,
+  ListAdminBannersQuery,
+  UpdateBannerInput,
+} from "./banners.dto";
+export { adminBannersKeys } from "./banners.keys";

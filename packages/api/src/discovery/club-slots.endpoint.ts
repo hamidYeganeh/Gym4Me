@@ -4,6 +4,9 @@ export const discoveryClubSlotsEndpoints = {
   classes: (clubId: string) => `/discovery/clubs/${clubId}/classes`,
   classById: (clubId: string, classId: string) =>
     `/discovery/clubs/${clubId}/classes/${classId}`,
+  spaces: (clubId: string) => `/discovery/clubs/${clubId}/spaces`,
+  spaceById: (clubId: string, spaceId: string) =>
+    `/discovery/clubs/${clubId}/spaces/${spaceId}`,
   slots: (clubId: string) => `/discovery/clubs/${clubId}/slots`,
   slotById: (clubId: string, slotId: string) =>
     `/discovery/clubs/${clubId}/slots/${slotId}`,

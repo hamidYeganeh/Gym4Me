@@ -84,4 +84,10 @@ export const DEFAULT_NOTIFICATION_TEMPLATES: DefaultNotificationTemplate[] = [
     body: 'تسویه دوره {period} به مبلغ {amount} تومان انجام شد.',
     channels: { push, inbox, sms: NotificationSmsSetting.DISABLED },
   },
+  {
+    key: NotificationTemplateKey.ACHIEVEMENT_UNLOCKED,
+    title: 'نشان جدید باز شد!',
+    body: 'تبریک! نشان «{achievementTitle}» را دریافت کردید{bonusSuffix}.',
+    channels: { push, inbox, sms: NotificationSmsSetting.DISABLED },
+  },
 ];

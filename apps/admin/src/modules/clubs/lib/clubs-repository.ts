@@ -322,7 +322,9 @@ export async function createClubSlot(
     kind: input.kind,
     classId: input.classId ?? null,
     coachId: input.coachId ?? null,
+    spaceId: input.spaceId ?? null,
     capacity: input.capacity,
+    price: input.price ?? 0,
     schedule: {
       recurrence: {
         type: input.schedule.recurrence.type,
@@ -363,7 +365,10 @@ export async function updateClubSlot(
       input.classId !== undefined ? (input.classId ?? null) : current.classId,
     coachId:
       input.coachId !== undefined ? (input.coachId ?? null) : current.coachId,
+    spaceId:
+      input.spaceId !== undefined ? (input.spaceId ?? null) : current.spaceId,
     capacity: input.capacity ?? current.capacity,
+    price: input.price ?? current.price,
     schedule: input.schedule
       ? {
           recurrence: {

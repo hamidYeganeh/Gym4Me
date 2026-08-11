@@ -1,13 +1,17 @@
-# Gym4Me API — production image
+# Gym4Me API — production image (NestJS)
 FROM node:22-bookworm-slim AS deps
 WORKDIR /app
 
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends python3 make g++ \
+  && rm -rf /var/lib/apt/lists/*
+
 COPY package.json package-lock.json ./
 COPY apps/api/package.json apps/api/
-# Keep workspace graph resolvable for npm ci
 COPY apps/admin/package.json apps/admin/
 COPY apps/mobile/package.json apps/mobile/
 COPY apps/website/package.json apps/website/
+COPY packages/api/package.json packages/api/
 COPY packages/eslint-config/package.json packages/eslint-config/
 COPY packages/fonts/package.json packages/fonts/
 COPY packages/i18n/package.json packages/i18n/
@@ -23,9 +27,8 @@ WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/api/node_modules ./apps/api/node_modules
-COPY package.json package-lock.json ./
+COPY package.json package-lock.json turbo.json ./
 COPY apps/api ./apps/api
-COPY turbo.json ./
 
 RUN npm run build --workspace=api
 

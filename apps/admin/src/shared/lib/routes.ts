@@ -21,4 +21,8 @@ export const routes = {
   support: "/dashboard/support",
   supportFaq: "/dashboard/support/faq",
   articles: "/dashboard/articles",
+  banners: "/dashboard/banners",
+  gamification: "/dashboard/gamification",
+  gamificationRules: "/dashboard/gamification/rules",
+  gamificationLedger: "/dashboard/gamification/ledger",
 } as const;

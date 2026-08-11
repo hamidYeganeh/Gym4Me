@@ -25,6 +25,9 @@
     "docker:up": "docker compose up -d mongo redis",
     "docker:down": "docker compose down",
     "docker:api": "docker compose up -d --build api",
+    "docker:prod": "docker compose --env-file .env.production -f docker-compose.production.yml up -d --build",
+    "docker:prod:down": "docker compose --env-file .env.production -f docker-compose.production.yml down",
+    "docker:prod:logs": "docker compose --env-file .env.production -f docker-compose.production.yml logs -f --tail=200",
     "docker:android:aab": "bash scripts/docker-android-release.sh aab",
     "docker:android:apk": "bash scripts/docker-android-release.sh apk:release"
   },

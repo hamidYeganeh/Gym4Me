@@ -1,0 +1,80 @@
+"use client";
+
+import { Spinner } from "@heroui/react";
+import type { CoachStudent } from "@repo/api";
+import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
+import { useEffect, useState } from "react";
+import { accountCoaching } from "@/shared/lib/api";
+import { useAuth } from "@/shared/providers/AuthProvider";
+import { CoachClientsScreen } from "../screens/CoachClientsScreen";
+import {
+  COACH_CLIENTS,
+  type CoachClient,
+  type CoachClientEngagement,
+} from "./coach-clients-data";
+
+function mapEngagement(
+  student: CoachStudent,
+): CoachClientEngagement {
+  if (student.status === "paused") return "paused";
+  if (student.engagement.level === "at_risk") return "at-risk";
+  if (student.engagement.level === "quiet") return "paused";
+  return "active";
+}
+
+function mapStudent(student: CoachStudent): CoachClient {
+  return {
+    id: student.id,
+    name: student.athleteUserId.slice(-6),
+    avatar: PLACEHOLDER_IMAGE,
+    goalLabel: student.coaching.goalKey ?? "—",
+    levelLabel: student.coaching.levelKey ?? "—",
+    lastSessionLabel: student.engagement.lastSessionAt
+      ? new Date(student.engagement.lastSessionAt).toLocaleDateString("fa-IR")
+      : "—",
+    progressPercent: student.engagement.progressPercent ?? 0,
+    engagement: mapEngagement(student),
+  };
+}
+
+export function CoachClientsGate() {
+  const { isAuthenticated, isReady } = useAuth();
+  const [clients, setClients] = useState<CoachClient[] | null>(null);
+
+  useEffect(() => {
+    if (!isReady) return;
+    if (!isAuthenticated) {
+      setClients(COACH_CLIENTS);
+      return;
+    }
+
+    let cancelled = false;
+    accountCoaching
+      .listStudents({ page_size: 100 })
+      .then((page) => {
+        if (cancelled) return;
+        setClients(
+          page.result.length > 0
+            ? page.result.map(mapStudent)
+            : COACH_CLIENTS,
+        );
+      })
+      .catch(() => {
+        if (!cancelled) setClients(COACH_CLIENTS);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, isReady]);
+
+  if (!clients) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
+
+  return <CoachClientsScreen clients={clients} />;
+}

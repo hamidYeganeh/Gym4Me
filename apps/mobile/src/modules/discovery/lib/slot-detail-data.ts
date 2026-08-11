@@ -16,7 +16,7 @@ export type SlotDetail = {
   id: string;
   clubId: string;
   clubTitle: string;
-  kind: "class" | "session";
+  kind: "class" | "session" | "space";
   title: string;
   category: string;
   description: string;
@@ -49,7 +49,7 @@ export type ClubSlotListItem = {
   capacity: number;
   intensity: ClubCalendarSlotIntensity;
   image?: string;
-  kind: "class" | "session";
+  kind: "class" | "session" | "space";
 };
 
 const WEEKDAY_FA = [
@@ -64,7 +64,7 @@ const WEEKDAY_FA = [
 
 type SlotSeed = {
   idSuffix: string;
-  kind: "class" | "session";
+  kind: "class" | "session" | "space";
   title: string;
   category: string;
   coachName: string;

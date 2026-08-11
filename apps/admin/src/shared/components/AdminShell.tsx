@@ -23,6 +23,8 @@ export type UsersSectionTabId = "users" | "kyc" | "coach" | "clubs";
 
 export type SupportSectionTabId = "tickets" | "faq";
 
+export type GamificationSectionTabId = "achievements" | "rules" | "ledger";
+
 export type AnalyticsSectionPeriodId = "week" | "month" | "quarter";
 
 const ANALYTICS_PERIODS: AnalyticsSectionPeriodId[] = [
@@ -63,6 +65,10 @@ type AdminShellProps = {
     activeTabId: SupportSectionTabId;
   };
   articlesSection?: SectionSearch;
+  bannersSection?: SectionSearch;
+  gamificationSection?: SectionSearch & {
+    activeTabId: GamificationSectionTabId;
+  };
 };
 
 export function AdminShell({
@@ -78,6 +84,8 @@ export function AdminShell({
   analyticsSection,
   supportSection,
   articlesSection,
+  bannersSection,
+  gamificationSection,
 }: AdminShellProps) {
   const t = useTranslations("Admin");
   const { logout } = useAuth();
@@ -102,6 +110,8 @@ export function AdminShell({
         choices: t("nav.choices"),
         refs: t("nav.refs"),
         articles: t("nav.articles"),
+        banners: t("nav.banners"),
+        gamification: t("nav.gamification"),
         support: t("nav.support"),
         calendar: t("nav.calendar"),
         profile: t("nav.profile"),
@@ -170,6 +180,21 @@ export function AdminShell({
     faq: routes.supportFaq,
   };
 
+  const gamificationTabs = useMemo<AdminSectionHeaderTab[]>(
+    () => [
+      { id: "achievements", label: t("Gamification.tabs.achievements") },
+      { id: "rules", label: t("Gamification.tabs.rules") },
+      { id: "ledger", label: t("Gamification.tabs.ledger") },
+    ],
+    [t],
+  );
+
+  const gamificationTabPath: Record<GamificationSectionTabId, string> = {
+    achievements: routes.gamification,
+    rules: routes.gamificationRules,
+    ledger: routes.gamificationLedger,
+  };
+
   const refTabs = useMemo<AdminSectionHeaderTab[]>(
     () =>
       REF_TYPES.map((type) => ({
@@ -195,6 +220,8 @@ export function AdminShell({
       choices: routes.choices,
       refs: routes.refs(),
       articles: routes.articles,
+      banners: routes.banners,
+      gamification: routes.gamification,
       support: routes.support,
       analytics: routes.analytics,
     };
@@ -323,6 +350,36 @@ export function AdminShell({
         searchValue={articlesSection.searchValue}
         onFilterPress={articlesSection.onFilterPress}
         onSearchChange={articlesSection.onSearchChange}
+      />
+    );
+  } else if (bannersSection) {
+    header = (
+      <AdminSectionHeader
+        filtersAriaLabel={t("filtersAriaLabel")}
+        searchAriaLabel={t("Banners.searchAriaLabel")}
+        searchPlaceholder={t("Banners.searchPlaceholder")}
+        searchValue={bannersSection.searchValue}
+        onFilterPress={bannersSection.onFilterPress}
+        onSearchChange={bannersSection.onSearchChange}
+      />
+    );
+  } else if (gamificationSection) {
+    header = (
+      <AdminSectionHeader
+        activeTabId={gamificationSection.activeTabId}
+        filtersAriaLabel={t("filtersAriaLabel")}
+        searchAriaLabel={t("Gamification.searchAriaLabel")}
+        searchPlaceholder={t("Gamification.searchPlaceholder")}
+        searchValue={gamificationSection.searchValue}
+        tabs={gamificationTabs}
+        onFilterPress={gamificationSection.onFilterPress}
+        onSearchChange={gamificationSection.onSearchChange}
+        onTabPress={(id) =>
+          navigate(
+            gamificationTabPath[id as GamificationSectionTabId] ??
+              routes.gamification,
+          )
+        }
       />
     );
   } else if (choicesSection) {

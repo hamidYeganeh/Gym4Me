@@ -27,6 +27,12 @@ export type DiscoveryCoachClub = {
   address: string | null;
 };
 
+/** Consultation prices in Tomans; null means the kind is not offered. */
+export type CoachConsultationPricing = {
+  inPerson: number | null;
+  remote: number | null;
+};
+
 export type DiscoveryCoach = {
   id: string;
   userId: string;
@@ -38,6 +44,7 @@ export type DiscoveryCoach = {
     reviewedAt: string | null;
   };
   serviceArea: { cityId: string | null };
+  pricing: { consultation: CoachConsultationPricing };
   sportIds: string[];
   specialtyKeys: string[];
   clubs?: DiscoveryCoachClub[];

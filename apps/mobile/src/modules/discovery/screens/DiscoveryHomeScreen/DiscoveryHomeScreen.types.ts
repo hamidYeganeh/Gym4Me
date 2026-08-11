@@ -1,5 +1,6 @@
 import type { BrowseClub } from "../../lib/clubs-browse-data";
 import type { FeaturedCoach } from "../../lib/coaches-browse-data";
+import type { PlacementBannerSlide } from "../../lib/use-placement-banners";
 import type {
   HomeAmenityItem,
   HomeArticleItem,
@@ -11,6 +12,7 @@ import type {
 } from "../../lib/home-browse-data";
 
 export type DiscoveryHomeScreenProps = {
+  banners?: PlacementBannerSlide[];
   features: HomeFeatureItem[];
   cities: HomeLocationItem[];
   nearbyClubs: BrowseClub[];

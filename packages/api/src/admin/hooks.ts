@@ -1,4 +1,22 @@
 export {
+  useAdjustAdminPoints,
+  useAdminAchievement,
+  useAdminAchievementGrants,
+  useAdminAchievements,
+  useAdminGamificationOverview,
+  useAdminPointRule,
+  useAdminPointRules,
+  useAdminPointTransactions,
+  useArchiveAdminAchievement,
+  useArchiveAdminPointRule,
+  useCreateAdminAchievement,
+  useCreateAdminPointRule,
+  useGrantAdminAchievement,
+  useRevokeAdminAchievement,
+  useUpdateAdminAchievement,
+  useUpdateAdminPointRule,
+} from "./gamification.hooks";
+export {
   useActivateAdminUser,
   useAdminUser,
   useAdminUsersList,
@@ -52,14 +70,24 @@ export {
 export {
   useAdminClubClasses,
   useAdminClubSlots,
+  useAdminClubSpaces,
   useArchiveAdminClubClass,
   useArchiveAdminClubSlot,
+  useArchiveAdminClubSpace,
   useCancelAdminSlotOccurrence,
   useCreateAdminClubClass,
   useCreateAdminClubSlot,
+  useCreateAdminClubSpace,
   useUpdateAdminClubClass,
   useUpdateAdminClubSlot,
+  useUpdateAdminClubSpace,
 } from "./club-slots.hooks";
+export {
+  useAdminBooking,
+  useAdminBookingsList,
+  useAdminCancelBooking,
+  useAdminRefundBooking,
+} from "./bookings.hooks";
 export {
   useAdminFaqList,
   useAdminSupportTicket,
@@ -78,3 +106,10 @@ export {
   useDeleteAdminArticle,
   useUpdateAdminArticle,
 } from "./articles.hooks";
+export {
+  useAdminBanner,
+  useAdminBanners,
+  useCreateAdminBanner,
+  useDeleteAdminBanner,
+  useUpdateAdminBanner,
+} from "./banners.hooks";

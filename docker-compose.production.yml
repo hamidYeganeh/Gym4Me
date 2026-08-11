@@ -1,0 +1,170 @@
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    volumes:
+      - gym4me_mongodata:/data/db
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mongosh --quiet --eval \"try { rs.status().ok } catch (e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}).ok }\"",
+        ]
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      start_period: 10s
+    networks:
+      - backend
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - gym4me_redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - backend
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: "8088"
+      MONGODB_URI: mongodb://mongo:27017/gym4me?replicaSet=rs0
+      REDIS_URL: redis://redis:6379
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?JWT_ACCESS_SECRET is required}
+      JWT_PASSWORD_RESET_SECRET: ${JWT_PASSWORD_RESET_SECRET:?JWT_PASSWORD_RESET_SECRET is required}
+      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-900s}
+      JWT_REFRESH_TTL_DAYS: ${JWT_REFRESH_TTL_DAYS:-30}
+      CORS_ORIGINS: ${CORS_ORIGINS:?CORS_ORIGINS is required}
+      API_BASE_URL: ${PUBLIC_URL:?PUBLIC_URL is required}
+      ENABLE_SWAGGER: ${ENABLE_SWAGGER:-false}
+      DEBUG_MODE: ${DEBUG_MODE:-false}
+      SMS_PROVIDER: ${SMS_PROVIDER:-kavenegar}
+      KAVENEGAR_API_KEY: ${KAVENEGAR_API_KEY:?KAVENEGAR_API_KEY is required}
+      KAVENEGAR_OTP_TEMPLATE: ${KAVENEGAR_OTP_TEMPLATE:-verify}
+      KAVENEGAR_INVITE_TEMPLATE: ${KAVENEGAR_INVITE_TEMPLATE:-}
+      KAVENEGAR_SENDER: ${KAVENEGAR_SENDER:-}
+      PAYMENT_PROVIDER: ${PAYMENT_PROVIDER:-mock}
+      ZARINPAL_MERCHANT_ID: ${ZARINPAL_MERCHANT_ID:-}
+      ZARINPAL_SANDBOX: ${ZARINPAL_SANDBOX:-true}
+      PUSH_PROVIDER: ${PUSH_PROVIDER:-mock}
+      FCM_SERVICE_ACCOUNT: ${FCM_SERVICE_ACCOUNT:-}
+      KYC_PROVIDER: ${KYC_PROVIDER:-mock}
+      FINNOTECH_BASE_URL: ${FINNOTECH_BASE_URL:-https://api.finnotech.ir}
+      FINNOTECH_CLIENT_ID: ${FINNOTECH_CLIENT_ID:-}
+      FINNOTECH_CLIENT_SECRET: ${FINNOTECH_CLIENT_SECRET:-}
+      FINNOTECH_CLIENT_NATIONAL_ID: ${FINNOTECH_CLIENT_NATIONAL_ID:-}
+      SUPPORT_PHONE: ${SUPPORT_PHONE:-}
+      SUPPORT_EMAIL: ${SUPPORT_EMAIL:-}
+      SUPPORT_TELEGRAM: ${SUPPORT_TELEGRAM:-}
+      SUPPORT_WORKING_HOURS: ${SUPPORT_WORKING_HOURS:-}
+      UPLOAD_DIR: /app/uploads
+    volumes:
+      - gym4me_uploads:/app/uploads
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:8088/api/v1').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - backend
+      - frontend
+
+  website:
+    build:
+      context: .
+      dockerfile: apps/website/Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${PUBLIC_URL:?PUBLIC_URL is required}/api/v1
+        NEXT_PUBLIC_SITE_URL: ${PUBLIC_URL:?PUBLIC_URL is required}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      INTERNAL_API_BASE_URL: http://api:8088/api/v1
+      NEXT_PUBLIC_API_BASE_URL: ${PUBLIC_URL:?PUBLIC_URL is required}/api/v1
+      NEXT_PUBLIC_SITE_URL: ${PUBLIC_URL:?PUBLIC_URL is required}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:8080').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - frontend
+
+  admin:
+    build:
+      context: .
+      dockerfile: apps/admin/Dockerfile
+      args:
+        VITE_API_BASE_URL: ${PUBLIC_URL:?PUBLIC_URL is required}/api/v1
+        VITE_BASE_PATH: /admin/
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - frontend
+
+  gateway:
+    image: nginx:1.28-alpine
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+      website:
+        condition: service_healthy
+      admin:
+        condition: service_healthy
+    ports:
+      - "80:80"
+    volumes:
+      - ./deploy/gateway.nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - frontend
+
+networks:
+  backend:
+    internal: true
+  frontend:
+
+volumes:
+  gym4me_mongodata:
+  gym4me_redisdata:
+  gym4me_uploads:

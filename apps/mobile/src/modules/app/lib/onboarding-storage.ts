@@ -1,4 +1,4 @@
-const ONBOARDING_DONE_KEY = "gym4me.onboarding.profileDone";
+import { FLAG_KEYS, readFlag, writeFlag } from "@/shared/lib/flag-storage";
 
 export type OnboardingDraft = {
   fullName: string;
@@ -8,12 +8,10 @@ export type OnboardingDraft = {
 
 /** Whether the profile onboarding wizard has been finished or skipped. */
 export function hasCompletedOnboarding(): boolean {
-  if (typeof window === "undefined") return false;
-  return window.localStorage.getItem(ONBOARDING_DONE_KEY) === "1";
+  return readFlag(FLAG_KEYS.onboardingProfileDone) === "1";
 }
 
 /** Persist that the user finished (or skipped) profile onboarding. */
 export function markOnboardingDone(): void {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(ONBOARDING_DONE_KEY, "1");
+  writeFlag(FLAG_KEYS.onboardingProfileDone, "1");
 }

@@ -2,7 +2,9 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { hasCompletedOnboarding } from "@/modules/app/lib/onboarding-storage";
 import { hasSeenWelcome } from "@/modules/app/lib/welcome-storage";
+import { hydrateFlags } from "@/shared/lib/flag-storage";
 import { roleHomePath } from "@/shared/lib/role-routes";
 import { useAuth } from "@/shared/providers/AuthProvider";
 
@@ -16,25 +18,41 @@ type SplashContinueProps = {
 /** Soft-continues past splash based on session + first-visit welcome. */
 export function SplashContinue({ guestHref = "/home" }: SplashContinueProps) {
   const router = useRouter();
-  const { isAuthenticated, activeRole, isReady } = useAuth();
+  const { isAuthenticated, activeRole, session, isReady } = useAuth();
 
   useEffect(() => {
     if (!isReady) return;
 
+    let cancelled = false;
+
     const timer = window.setTimeout(() => {
-      if (isAuthenticated) {
-        router.replace(roleHomePath(activeRole));
-        return;
-      }
-      if (!hasSeenWelcome()) {
-        router.replace("/welcome");
-        return;
-      }
-      router.replace(guestHref);
+      void (async () => {
+        // Restore native-persisted flags before routing on them.
+        await hydrateFlags();
+        if (cancelled) return;
+
+        if (isAuthenticated) {
+          // Freshly registered users resume profile onboarding if they quit mid-flow.
+          if (session?.isNewUser && !hasCompletedOnboarding()) {
+            router.replace("/onboarding");
+            return;
+          }
+          router.replace(roleHomePath(activeRole));
+          return;
+        }
+        if (!hasSeenWelcome()) {
+          router.replace("/welcome");
+          return;
+        }
+        router.replace(guestHref);
+      })();
     }, CONTINUE_DELAY_MS);
 
-    return () => window.clearTimeout(timer);
-  }, [activeRole, guestHref, isAuthenticated, isReady, router]);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [activeRole, guestHref, isAuthenticated, isReady, router, session]);
 
   return null;
 }

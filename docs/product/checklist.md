@@ -20,25 +20,25 @@
 | C1–C2 جست‌وجوی باشگاه | ✅ + Q11 filters | 🟡 API + mock + فیلترها + نقشه geo | — | 🟡 SEO /clubs |
 | C3–C4 جست‌وجوی مربی | ✅ | 🟡 API + mock fallback | — | 🟡 SEO /coaches |
 | C5 صفحات SEO | — | — | — | 🟡 JSON-LD + sitemap + robots |
-| D1–D9 رزروها | 🟡 schema | ❌ | ❌ | — |
-| D10 check-in | 🟡 schema | ❌ | — | — |
-| D11 تأیید مربی | 🟡 schema | ❌ | — | — |
-| SYS-D12/13 قفل/TTL | ❌ | — | — | — |
-| E1–E4 عضویت باشگاه | 🟡 schema | ❌ | ❌ | — |
-| F1–F3 اشتراک پلتفرم | 🟡 schema | ❌ | ❌ | ❌ |
-| G1 بانک حرکات | 🟡 schema | — | ❌ | — |
-| G2–G8 برنامه تمرینی | 🟡 schema | ❌ | — | — |
-| H1–H5 متریک/پیشرفت | 🟡 schema | 🟡 UI mock | — | — |
-| H6 MetricType | 🟡 schema | — | ❌ | — |
-| I1–I3 تغذیه | 🟡 schema | ❌ | ❌ | — |
-| J1–J6 اجتماعی | 🟡 schema | ❌ | ❌ | — |
+| D1–D9 رزروها | 🟡 API + verify ledger | 🟡 بخشی UI | ❌ | — |
+| D10 check-in | 🟡 API | ❌ | — | — |
+| D11 تأیید مربی | 🟡 API | ❌ | — | — |
+| SYS-D12/13 قفل/TTL | 🟡 جزئی در booking | — | — | — |
+| E1–E4 عضویت باشگاه | 🟡 API | ❌ | ❌ | — |
+| F1–F3 اشتراک پلتفرم | 🟡 API | ❌ | 🟡 admin plans | ❌ |
+| G1 بانک حرکات | 🟡 API | — | 🟡 admin | — |
+| G2–G8 برنامه تمرینی | 🟡 WorkoutPlan + WorkoutProgram template | 🟡 programs UI←API | — | — |
+| H1–H5 متریک/پیشرفت | 🟡 API | 🟡 UI + catalog/order API | — | — |
+| H6 MetricType | ✅ MetricType catalog + seed | 🟡 reorder prefs | 🟡 admin CRUD | — |
+| I1–I3 تغذیه | 🟡 API | ❌ | ❌ | — |
+| J1–J6 اجتماعی | 🟡 API | ❌ | ❌ | — |
 | K1 فضا/سانس | ✅ class/slot + calendar | 🟡 API برای clubId واقعی + mock برای slug | ✅ CRUD/edit/cancel occurrence | — |
-| K2 پرسنل + مجوز | 🟡 schema | ❌ | — | — |
+| K2 پرسنل + مجوز | 🟡 API staff grants | ❌ | — | — |
 | K3–K8 عملیات باشگاه | 🟡 K3 assign (نقش coach الزامی) | 🟡 owner club coaches UI | 🟡 assign + audience در فرم | — |
-| L1 زرین‌پال | 🟡 gateway stub | ❌ | — | — |
-| L2 کیف پول | 🟡 schema | ❌ | ❌ | — |
-| L3 Ledger | 🟡 schema | — | — | — |
-| L4–L8 کمیسیون/تسویه | 🟡 schema | ❌ | ❌ | — |
+| L1 زرین‌پال | 🟡 gateway + booking verify→ledger | 🟡 invoice UI←API | — | — |
+| L2 کیف پول | 🟡 API wallet + overview | 🟡 wallet UI←API | ❌ | — |
+| L3 Ledger | 🟡 API immutable | — | 🟡 admin list | — |
+| L4–L8 کمیسیون/تسویه | 🟡 API payout/compensation/debt/shift | ❌ | 🟡 admin settle | — |
 | M1 CRUD کاربران | ✅ | — | ✅ | — |
 | M2 تأیید KYC | ✅ | — | ✅ | — |
 | M3 دادهٔ مرجع | ✅ | — | ✅ | — |
@@ -52,9 +52,9 @@
 | N2 کاوه‌نگار | ✅ درایور | — | — | — |
 | N3 inbox | ✅ (`/account/notifications` + device tokens) | ✅ صفحه اعلان‌ها متصل به API | — | — |
 | N4 پیام مربی-شاگرد | 🟡 schema | ❌ | — | — |
-| O1 پرداخت حضوری/ترکیبی | ❌ | — | ❌ | — |
-| O2–O15 عملیات واقعی باشگاه | ❌ | ❌ | ❌ | — |
-| P1–P12 کسب‌وکار/کیفیت مربی | ❌ | ❌ | ❌ | — |
+| O1 پرداخت حضوری/ترکیبی | 🟡 API manual payment | — | ❌ | — |
+| O2–O15 عملیات واقعی باشگاه | 🟡 API جزئی + OwnerTask | 🟡 home tasks badge | ❌ | — |
+| P1–P12 کسب‌وکار/کیفیت مربی | 🟡 API coaching + engagement + analytics | 🟡 clients/programs/analytics UI←API | ❌ | — |
 | Q1–Q12 اعتماد/سلامت ورزشکار | 🟡 Q11 audience روی Club + discovery filters | 🟡 Q2/Q3 + فیلترهای Q11 در لیست باشگاه | ❌ | 🟡 SEO جزئیات باشگاه audience |
 | R1–R2 event/attribution | ✅ | ✅ کلاینت attribution | — | ❌ |
 | R3–R7 lifecycle delivery | ❌ | ❌ | ❌ | — |

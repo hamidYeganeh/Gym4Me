@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { KycStatus, Role, UserStatus } from '../common/enums';
 import { IR_PHONE } from '../common/utils/phone.util';
+import { GeoPoint, GeoPointSchema } from './location.schema';
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -38,6 +39,31 @@ export class UserDemographics {
 export const UserDemographicsSchema =
   SchemaFactory.createForClass(UserDemographics);
 
+/** Self-declared home address (onboarding / profile). */
+@Schema({ _id: false })
+export class UserAddress {
+  @Prop({ type: Types.ObjectId, ref: 'Location' })
+  provinceId?: Types.ObjectId;
+
+  @Prop({ trim: true })
+  city?: string;
+
+  @Prop({ trim: true })
+  street?: string;
+
+  @Prop({ trim: true })
+  apartment?: string;
+
+  @Prop({ trim: true, match: /^\d{10}$/ })
+  postalCode?: string;
+
+  /** GeoJSON [lng, lat] */
+  @Prop({ type: GeoPointSchema })
+  point?: GeoPoint;
+}
+
+export const UserAddressSchema = SchemaFactory.createForClass(UserAddress);
+
 @Schema({ timestamps: true, collection: 'users' })
 export class User {
   /** E.164 Iran mobile — kept top-level for unique index. */
@@ -56,6 +82,9 @@ export class User {
 
   @Prop({ type: UserDemographicsSchema, default: () => ({}) })
   demographics!: UserDemographics;
+
+  @Prop({ type: UserAddressSchema, default: () => ({}) })
+  address!: UserAddress;
 
   @Prop({ unique: true, sparse: true, match: /^\d{10}$/ })
   nationalId?: string;

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { GamificationModule } from '../../gamification/gamification.module';
 import { UsersModule } from '../../users/users.module';
 import {
   Achievement,
@@ -25,6 +26,7 @@ import { OwnerClubsController } from './owner-clubs.controller';
 @Module({
   imports: [
     UsersModule,
+    GamificationModule,
     MongooseModule.forFeature([
       { name: Club.name, schema: ClubSchema },
       { name: ClubClass.name, schema: ClubClassSchema },

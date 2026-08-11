@@ -161,6 +161,26 @@ export function useUnlikeArticle(
   });
 }
 
+export function useMarkArticleRead(
+  options?: UseMutationOptions<
+    ArticleEngagementResponse,
+    Error,
+    { articleId: string; slug?: string }
+  >,
+) {
+  const api = useArticlesApi();
+  const invalidate = useInvalidateArticleEngagement();
+  const { onSuccess, ...rest } = options ?? {};
+  return useMutation({
+    ...rest,
+    mutationFn: ({ articleId }) => api.markRead(articleId),
+    onSuccess: (data, vars, onMutateResult, context) => {
+      invalidate(vars.articleId, vars.slug);
+      onSuccess?.(data, vars, onMutateResult, context);
+    },
+  });
+}
+
 export function useSaveArticle(
   options?: UseMutationOptions<
     ArticleEngagementResponse,

@@ -11,6 +11,7 @@ import { InfoCircle } from "@repo/icons/InfoCircle";
 import { Moon } from "@repo/icons/Moon";
 import { Pencil1 } from "@repo/icons/Pencil1";
 import { ShieldCheck } from "@repo/icons/ShieldCheck";
+import { Trophy1 } from "@repo/icons/Trophy1";
 import { UsersTwo } from "@repo/icons/UsersTwo";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
@@ -63,6 +64,13 @@ export function SettingsScreen({
       label: t("roles"),
       hint: t("rolesHint"),
       onPress: () => router.push(`/${roleSegment}/roles`),
+    },
+    {
+      key: "achievements",
+      icon: <Trophy1 size={ROW_ICON_SIZE} />,
+      label: t("achievements"),
+      hint: t("achievementsHint"),
+      onPress: () => router.push(`/${roleSegment}/achievements`),
     },
   ];
 

@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { VerificationStatus } from '../common/enums';
 import { Media } from './media.schema';
+import { PointsSummary, PointsSummarySchema } from './point-transaction.schema';
 import { User } from './user.schema';
 
 export type CoachProfileDocument = HydratedDocument<CoachProfile>;
@@ -47,6 +48,28 @@ export class CoachVerification {
 export const CoachVerificationSchema =
   SchemaFactory.createForClass(CoachVerification);
 
+/** Consultation prices in Tomans; absence means the kind is not offered. */
+@Schema({ _id: false })
+export class CoachConsultationPricing {
+  @Prop({ min: 0 })
+  inPerson?: number;
+
+  @Prop({ min: 0 })
+  remote?: number;
+}
+
+export const CoachConsultationPricingSchema = SchemaFactory.createForClass(
+  CoachConsultationPricing,
+);
+
+@Schema({ _id: false })
+export class CoachPricing {
+  @Prop({ type: CoachConsultationPricingSchema, default: () => ({}) })
+  consultation!: CoachConsultationPricing;
+}
+
+export const CoachPricingSchema = SchemaFactory.createForClass(CoachPricing);
+
 @Schema({ _id: false })
 export class CoachServiceArea {
   @Prop({ type: Types.ObjectId })
@@ -85,11 +108,18 @@ export class CoachProfile {
   @Prop({ type: CoachServiceAreaSchema, default: () => ({}) })
   serviceArea!: CoachServiceArea;
 
+  @Prop({ type: CoachPricingSchema, default: () => ({ consultation: {} }) })
+  pricing!: CoachPricing;
+
   @Prop({ type: [String], default: [] })
   sportIds!: string[];
 
   @Prop({ type: [String], default: [] })
   specialtyKeys!: string[];
+
+  /** Derived cache of the points ledger. */
+  @Prop({ type: PointsSummarySchema, default: () => ({ balance: 0, lifetime: 0 }) })
+  points!: PointsSummary;
 
   createdAt!: Date;
   updatedAt!: Date;

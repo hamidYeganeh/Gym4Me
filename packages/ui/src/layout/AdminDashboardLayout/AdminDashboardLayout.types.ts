@@ -9,6 +9,8 @@ export type AdminDashboardNavId =
   | "choices"
   | "refs"
   | "articles"
+  | "banners"
+  | "gamification"
   | "support"
   | "calendar"
   | "profile"

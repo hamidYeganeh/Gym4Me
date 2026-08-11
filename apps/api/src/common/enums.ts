@@ -26,6 +26,48 @@ export enum VerificationStatus {
   REJECTED = 'rejected',
 }
 
+/** Somatotype selected during athlete onboarding. */
+export enum AthleteBodyType {
+  ENDOMORPH = 'endomorph',
+  ECTOMORPH = 'ectomorph',
+  MESOMORPH = 'mesomorph',
+}
+
+/** Prior training background — enum, not a boolean. */
+export enum AthleteExperience {
+  BEGINNER = 'beginner',
+  EXPERIENCED = 'experienced',
+}
+
+/** Self-reported baseline mood captured during onboarding. */
+export enum AthleteMood {
+  DEPRESSED = 'depressed',
+  SAD = 'sad',
+  NEUTRAL = 'neutral',
+  HAPPY = 'happy',
+  OVERJOYED = 'overjoyed',
+}
+
+/** Dietary preference captured during onboarding. */
+export enum AthleteDiet {
+  BALANCED = 'balanced',
+  VEGETARIAN = 'vegetarian',
+  PROTEIN = 'protein',
+  GLUTEN_FREE = 'gluten_free',
+}
+
+export enum BloodGroup {
+  A = 'A',
+  B = 'B',
+  AB = 'AB',
+  O = 'O',
+}
+
+export enum RhFactor {
+  POSITIVE = 'positive',
+  NEGATIVE = 'negative',
+}
+
 export enum Privacy {
   PUBLIC = 'public',
   FOLLOWERS = 'followers',
@@ -147,6 +189,7 @@ export enum OperatingHourAudience {
 export enum SlotKind {
   CLASS = 'class',
   SESSION = 'session',
+  SPACE = 'space',
 }
 
 export enum SlotRecurrenceType {
@@ -163,6 +206,56 @@ export enum OccurrenceStatus {
   CANCELLED = 'cancelled',
 }
 
+/** Coach availability slot lifecycle. */
+export enum CoachSlotStatus {
+  OPEN = 'open',
+  BOOKED = 'booked',
+  BLOCKED = 'blocked',
+}
+
+/** Athlete ↔ coach booking lifecycle (locked product decision). */
+export enum BookingStatus {
+  PENDING = 'pending',
+  AWAITING_PAYMENT = 'awaiting_payment',
+  CONFIRMED = 'confirmed',
+  CHECKED_IN = 'checked_in',
+  COMPLETED = 'completed',
+  CANCELLED = 'cancelled',
+  NO_SHOW = 'no_show',
+  REFUND_REQUESTED = 'refund_requested',
+  REFUNDED = 'refunded',
+  REJECTED = 'rejected',
+}
+
+/** How a coaching session is delivered. */
+export enum ConsultationKind {
+  IN_PERSON = 'in_person',
+  REMOTE = 'remote',
+}
+
+/**
+ * What a booking reserves (locked product decision: independent
+ * calendars/capacity for space, session, coach, class).
+ */
+export enum BookingResourceType {
+  /** Athlete ↔ coach consultation on a CoachSlot. */
+  COACH = 'coach',
+  /** Club open session occurrence (ClubSlot kind=session). */
+  SESSION = 'session',
+  /** Group class occurrence (ClubSlot kind=class). */
+  CLASS = 'class',
+  /** Space / court / hall occurrence (ClubSlot kind=space). */
+  SPACE = 'space',
+}
+
+export enum BookingActor {
+  ATHLETE = 'athlete',
+  COACH = 'coach',
+  /** Club owner / staff acting for the venue. */
+  CLUB = 'club',
+  ADMIN = 'admin',
+}
+
 export enum RulePolicy {
   ALLOWED = 'allowed',
   FORBIDDEN = 'forbidden',
@@ -171,6 +264,53 @@ export enum RulePolicy {
 export enum AchievementGrantMode {
   AUTOMATIC = 'automatic',
   MANUAL = 'manual',
+}
+
+/** Entity kinds that can earn points and achievements. */
+export enum GamificationSubjectType {
+  ATHLETE = 'athlete',
+  COACH = 'coach',
+  CLUB = 'club',
+}
+
+/** Domain events the points engine can award on (admin picks one per rule). */
+export enum PointRuleEvent {
+  BOOKING_COMPLETED = 'booking_completed',
+  ARTICLE_READ = 'article_read',
+  ARTICLE_LIKED = 'article_liked',
+  ARTICLE_COMMENTED = 'article_commented',
+  CLUB_REVIEW_APPROVED = 'club_review_approved',
+  REFERRAL_JOINED = 'referral_joined',
+  PROFILE_COMPLETED = 'profile_completed',
+}
+
+/** How often the same rule may award the same subject. */
+export enum PointRuleRepeat {
+  /** Every matching event awards points (subject to dailyCap). */
+  UNLIMITED = 'unlimited',
+  /** Once per target entity (e.g. per article, per booking). */
+  ONCE_PER_TARGET = 'once_per_target',
+  /** At most once ever per subject. */
+  ONCE = 'once',
+}
+
+export enum PointTransactionReason {
+  RULE_AWARD = 'rule_award',
+  ACHIEVEMENT_BONUS = 'achievement_bonus',
+  ADMIN_ADJUSTMENT = 'admin_adjustment',
+  REDEMPTION = 'redemption',
+  EXPIRY = 'expiry',
+}
+
+/** Metrics the automatic achievement engine can evaluate against a threshold. */
+export enum AchievementMetric {
+  LIFETIME_POINTS = 'lifetime_points',
+  BOOKINGS_COUNT = 'bookings_count',
+  ARTICLES_READ_COUNT = 'articles_read_count',
+  ARTICLES_LIKED_COUNT = 'articles_liked_count',
+  REVIEWS_COUNT = 'reviews_count',
+  REVIEWS_AVERAGE = 'reviews_average',
+  BRANCHES_COUNT = 'branches_count',
 }
 
 /** Rough city-area orientation for club location filters. */
@@ -203,6 +343,11 @@ export enum AnalyticsEventName {
   CLUB_SUBMITTED_FOR_REVIEW = 'club_submitted_for_review',
   CLUB_REVIEWED = 'club_reviewed',
   ATTRIBUTION_CAPTURED = 'attribution_captured',
+  BOOKING_COMPLETED = 'booking_completed',
+  ARTICLE_READ = 'article_read',
+  ARTICLE_LIKED = 'article_liked',
+  POINTS_AWARDED = 'points_awarded',
+  ACHIEVEMENT_UNLOCKED = 'achievement_unlocked',
 }
 
 /** Lifecycle of a mock-gateway payment session (dev/test only). */
@@ -270,6 +415,7 @@ export enum NotificationTemplateKey {
   MEMBERSHIP_EXPIRING = 'membership.expiring',
   COACH_VERIFICATION_RESULT = 'coach.verification_result',
   PAYOUT_SETTLED = 'payout.settled',
+  ACHIEVEMENT_UNLOCKED = 'gamification.achievement_unlocked',
 }
 
 export enum SupportTicketCategory {
@@ -322,6 +468,23 @@ export enum PublishStatus {
   DRAFT = 'draft',
   PUBLISHED = 'published',
   UNPUBLISHED = 'unpublished',
+}
+
+/** Named app slot a promo banner renders in. */
+export enum BannerPlacement {
+  DISCOVERY_HOME = 'discovery_home',
+  DISCOVERY_CLUBS = 'discovery_clubs',
+  DISCOVERY_COACHES = 'discovery_coaches',
+  ATHLETE_HOME = 'athlete_home',
+  COACH_HOME = 'coach_home',
+  OWNER_HOME = 'owner_home',
+}
+
+/** How a banner slide's link should be resolved by the client. */
+export enum BannerLinkKind {
+  NONE = 'none',
+  INTERNAL = 'internal',
+  EXTERNAL = 'external',
 }
 
 /** Editorial format / type of an article. */
@@ -399,4 +562,404 @@ export enum AuditAction {
   ARTICLE_SAVED = 'article.saved',
   ARTICLE_UNSAVED = 'article.unsaved',
   ARTICLE_COMMENT_CREATED = 'article.comment_created',
+  BANNER_CREATED = 'banner.created',
+  BANNER_UPDATED = 'banner.updated',
+  BANNER_DELETED = 'banner.deleted',
+  GAMIFICATION_ACHIEVEMENT_CREATED = 'gamification.achievement_created',
+  GAMIFICATION_ACHIEVEMENT_UPDATED = 'gamification.achievement_updated',
+  GAMIFICATION_ACHIEVEMENT_DELETED = 'gamification.achievement_deleted',
+  GAMIFICATION_ACHIEVEMENT_GRANTED = 'gamification.achievement_granted',
+  GAMIFICATION_ACHIEVEMENT_REVOKED = 'gamification.achievement_revoked',
+  GAMIFICATION_POINT_RULE_CREATED = 'gamification.point_rule_created',
+  GAMIFICATION_POINT_RULE_UPDATED = 'gamification.point_rule_updated',
+  GAMIFICATION_POINT_RULE_DELETED = 'gamification.point_rule_deleted',
+  GAMIFICATION_POINTS_ADJUSTED = 'gamification.points_adjusted',
+  FINANCE_PAYMENT_RECORDED = 'finance.payment_recorded',
+  FINANCE_LEDGER_POSTED = 'finance.ledger_posted',
+  FINANCE_WALLET_TOPUP = 'finance.wallet_topup',
+  FINANCE_SHIFT_CLOSED = 'finance.shift_closed',
+  FINANCE_PAYOUT_CREATED = 'finance.payout_created',
+  FINANCE_PAYOUT_SETTLED = 'finance.payout_settled',
+  MEMBERSHIP_PLAN_CREATED = 'membership.plan_created',
+  MEMBERSHIP_PLAN_UPDATED = 'membership.plan_updated',
+  MEMBERSHIP_SOLD = 'membership.sold',
+  MEMBERSHIP_FROZEN = 'membership.frozen',
+  MEMBERSHIP_UNFROZEN = 'membership.unfrozen',
+  MEMBERSHIP_TRANSFERRED = 'membership.transferred',
+  MEMBERSHIP_CANCELLED = 'membership.cancelled',
+  COACHING_SERVICE_UPSERTED = 'coaching.service_upserted',
+  COACHING_AVAILABILITY_UPDATED = 'coaching.availability_updated',
+  COACHING_PACKAGE_CREATED = 'coaching.package_created',
+  COACHING_PACKAGE_CONSUMED = 'coaching.package_consumed',
+  COACHING_LEAD_UPSERTED = 'coaching.lead_upserted',
+  COACHING_STUDENT_LINKED = 'coaching.student_linked',
+  STAFF_MEMBER_UPSERTED = 'staff.member_upserted',
+  STAFF_MEMBER_REVOKED = 'staff.member_revoked',
+  CHECKIN_RECORDED = 'checkin.recorded',
+  WAITLIST_JOINED = 'waitlist.joined',
+  WAITLIST_OFFERED = 'waitlist.offered',
+  WAITLIST_CLAIMED = 'waitlist.claimed',
+  CALENDAR_BLOCK_UPSERTED = 'calendar.block_upserted',
+  HEALTH_ASSESSMENT_UPSERTED = 'health.assessment_upserted',
+  WORKOUT_PLAN_UPSERTED = 'workout.plan_upserted',
+  WORKOUT_PROGRAM_UPSERTED = 'workout.program_upserted',
+  METRIC_TYPE_UPSERTED = 'progress.metric_type_upserted',
+  INVOICE_ISSUED = 'finance.invoice_issued',
+  OWNER_TASK_UPSERTED = 'ops.owner_task_upserted',
+  MEAL_PLAN_UPSERTED = 'nutrition.meal_plan_upserted',
+  SOCIAL_POST_UPSERTED = 'social.post_upserted',
+}
+
+/** Staff permission keys (locked product decision). */
+export enum StaffPermissionKey {
+  BOOKINGS_CREATE = 'bookings.create',
+  BOOKINGS_READ = 'bookings.read',
+  BOOKINGS_CHECKIN = 'bookings.checkin',
+  FINANCE_READ = 'finance.read',
+  FINANCE_SETTLE = 'finance.settle',
+  MEMBERS_CHECKIN = 'members.checkin',
+  MEMBERS_MANAGE = 'members.manage',
+  STAFF_MANAGE = 'staff.manage',
+  SESSIONS_MANAGE = 'sessions.manage',
+  REPORTS_READ = 'reports.read',
+}
+
+/** Named staff role presets — grants are still per-member. */
+export enum StaffRolePreset {
+  RECEPTION = 'reception',
+  ACCOUNTANT = 'accountant',
+  MANAGER = 'manager',
+  CUSTOM = 'custom',
+}
+
+export enum ClubStaffStatus {
+  ACTIVE = 'active',
+  SUSPENDED = 'suspended',
+  REVOKED = 'revoked',
+}
+
+export enum PaymentChannel {
+  ZARINPAL = 'zarinpal',
+  CASH = 'cash',
+  POS = 'pos',
+  CARD_TO_CARD = 'card_to_card',
+  WALLET = 'wallet',
+  MIXED = 'mixed',
+}
+
+export enum PaymentStatus {
+  PENDING = 'pending',
+  AUTHORIZED = 'authorized',
+  CAPTURED = 'captured',
+  FAILED = 'failed',
+  REFUNDED = 'refunded',
+  PARTIALLY_REFUNDED = 'partially_refunded',
+  CANCELLED = 'cancelled',
+}
+
+export enum PaymentPurpose {
+  BOOKING = 'booking',
+  MEMBERSHIP = 'membership',
+  WALLET_TOPUP = 'wallet_topup',
+  PACKAGE = 'package',
+  PLATFORM_SUBSCRIPTION = 'platform_subscription',
+  MANUAL = 'manual',
+}
+
+/** Double-entry ledger account kinds. */
+export enum LedgerAccount {
+  CASH = 'cash',
+  POS = 'pos',
+  GATEWAY_CLEARING = 'gateway_clearing',
+  WALLET_LIABILITY = 'wallet_liability',
+  PLATFORM_REVENUE = 'platform_revenue',
+  PROVIDER_PAYABLE = 'provider_payable',
+  TAX_PAYABLE = 'tax_payable',
+  DISCOUNT_EXPENSE = 'discount_expense',
+}
+
+export enum LedgerEntryKind {
+  PAYMENT = 'payment',
+  REFUND = 'refund',
+  PAYOUT = 'payout',
+  ADJUSTMENT = 'adjustment',
+  WALLET_TOPUP = 'wallet_topup',
+  WALLET_SPEND = 'wallet_spend',
+}
+
+export enum WalletOwnerType {
+  USER = 'user',
+  CLUB = 'club',
+  COACH = 'coach',
+}
+
+export enum MembershipPlanKind {
+  DURATION = 'duration',
+  SESSIONS = 'sessions',
+  ENTRIES = 'entries',
+}
+
+export enum MembershipTransferPolicy {
+  ALLOWED = 'allowed',
+  FORBIDDEN = 'forbidden',
+}
+
+export enum MembershipStatus {
+  ACTIVE = 'active',
+  FROZEN = 'frozen',
+  EXPIRED = 'expired',
+  TRANSFERRED = 'transferred',
+  CANCELLED = 'cancelled',
+}
+
+export enum MembershipEventType {
+  SOLD = 'sold',
+  RENEWED = 'renewed',
+  FROZEN = 'frozen',
+  UNFROZEN = 'unfrozen',
+  TRANSFERRED = 'transferred',
+  CANCELLED = 'cancelled',
+  CREDIT_CONSUMED = 'credit_consumed',
+  EXPIRED = 'expired',
+}
+
+/** Who performed a membership lifecycle mutation. */
+export enum MembershipActorKind {
+  OWNER = 'owner',
+  STAFF = 'staff',
+  ATHLETE = 'athlete',
+  ADMIN = 'admin',
+  SYSTEM = 'system',
+}
+
+export enum PlatformSubscriptionStatus {
+  TRIALING = 'trialing',
+  ACTIVE = 'active',
+  PAST_DUE = 'past_due',
+  CANCELLED = 'cancelled',
+  EXPIRED = 'expired',
+}
+
+/** Nested renewal preference — not a boolean. */
+export enum SubscriptionRenewalMode {
+  AUTO = 'auto',
+  MANUAL = 'manual',
+}
+
+export enum CoachAffiliationType {
+  INDEPENDENT = 'independent',
+  EMPLOYED = 'employed',
+  REVENUE_SHARE = 'revenue_share',
+}
+
+export enum CoachServiceDeliveryMode {
+  IN_PERSON = 'in_person',
+  ONLINE = 'online',
+  HOME = 'home',
+}
+
+export enum CoachServiceStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  ARCHIVED = 'archived',
+}
+
+export enum SessionPackageStatus {
+  ACTIVE = 'active',
+  FROZEN = 'frozen',
+  EXHAUSTED = 'exhausted',
+  EXPIRED = 'expired',
+  CANCELLED = 'cancelled',
+}
+
+export enum CoachLeadStage {
+  NEW = 'new',
+  CONTACTED = 'contacted',
+  TRIAL = 'trial',
+  CONVERTED = 'converted',
+  LOST = 'lost',
+}
+
+export enum CoachStudentStatus {
+  ACTIVE = 'active',
+  PAUSED = 'paused',
+  ENDED = 'ended',
+}
+
+/** Engagement health of a coach↔athlete relationship (orthogonal to status). */
+export enum CoachStudentEngagementLevel {
+  HEALTHY = 'healthy',
+  AT_RISK = 'at_risk',
+  QUIET = 'quiet',
+}
+
+export enum CalendarBlockReason {
+  HOLIDAY = 'holiday',
+  MAINTENANCE = 'maintenance',
+  COACH_TIME_OFF = 'coach_time_off',
+  SERVICE = 'service',
+  OTHER = 'other',
+}
+
+export enum CalendarResourceType {
+  CLUB = 'club',
+  SPACE = 'space',
+  SLOT = 'slot',
+  COACH = 'coach',
+  CLASS = 'class',
+}
+
+export enum CheckInMethod {
+  QR = 'qr',
+  BARCODE = 'barcode',
+  MANUAL = 'manual',
+}
+
+export enum CheckInSyncMode {
+  ONLINE = 'online',
+  OFFLINE = 'offline',
+}
+
+export enum WaitlistEntryStatus {
+  WAITING = 'waiting',
+  OFFERED = 'offered',
+  CLAIMED = 'claimed',
+  EXPIRED = 'expired',
+  CANCELLED = 'cancelled',
+}
+
+export enum DebtStatus {
+  OPEN = 'open',
+  PARTIAL = 'partial',
+  SETTLED = 'settled',
+  WRITTEN_OFF = 'written_off',
+}
+
+export enum InstallmentStatus {
+  SCHEDULED = 'scheduled',
+  DUE = 'due',
+  PAID = 'paid',
+  OVERDUE = 'overdue',
+  CANCELLED = 'cancelled',
+}
+
+export enum CashShiftStatus {
+  OPEN = 'open',
+  CLOSED = 'closed',
+}
+
+export enum PayoutStatus {
+  PENDING = 'pending',
+  PROCESSING = 'processing',
+  SETTLED = 'settled',
+  DISPUTED = 'disputed',
+  CANCELLED = 'cancelled',
+}
+
+export enum PayoutRecipientType {
+  CLUB = 'club',
+  COACH = 'coach',
+}
+
+export enum CompensationBasis {
+  PER_SESSION = 'per_session',
+  ATTENDANCE = 'attendance',
+  REVENUE_PERCENT = 'revenue_percent',
+  FIXED = 'fixed',
+}
+
+export enum SpaceAvailability {
+  ACTIVE = 'active',
+  MAINTENANCE = 'maintenance',
+  RETIRED = 'retired',
+}
+
+export enum HealthAssessmentStatus {
+  DRAFT = 'draft',
+  SUBMITTED = 'submitted',
+  REVIEWED = 'reviewed',
+}
+
+export enum WorkoutPlanStatus {
+  DRAFT = 'draft',
+  ACTIVE = 'active',
+  COMPLETED = 'completed',
+  ARCHIVED = 'archived',
+}
+
+export enum MealPlanStatus {
+  DRAFT = 'draft',
+  ACTIVE = 'active',
+  ARCHIVED = 'archived',
+}
+
+export enum SocialPostStatus {
+  DRAFT = 'draft',
+  PUBLISHED = 'published',
+  HIDDEN = 'hidden',
+  DELETED = 'deleted',
+}
+
+export enum ExerciseStatus {
+  ACTIVE = 'active',
+  ARCHIVED = 'archived',
+}
+
+/** Who authored an exercise in the bank. */
+export enum ExerciseOriginKind {
+  SYSTEM = 'system',
+  ADMIN = 'admin',
+  COACH = 'coach',
+}
+
+/** Catalog value shape for MetricType (H6). */
+export enum MetricValueKind {
+  NUMBER = 'number',
+  PAIR = 'pair',
+  RANGE = 'range',
+  RATIO = 'ratio',
+  TEXT = 'text',
+}
+
+export enum MetricTypeStatus {
+  ACTIVE = 'active',
+  ARCHIVED = 'archived',
+}
+
+/** Reusable coach/admin workout program template (distinct from assigned WorkoutPlan). */
+export enum WorkoutProgramStatus {
+  DRAFT = 'draft',
+  PUBLISHED = 'published',
+  ARCHIVED = 'archived',
+}
+
+export enum WorkoutProgramOwnerType {
+  COACH = 'coach',
+  ADMIN = 'admin',
+  SYSTEM = 'system',
+}
+
+export enum InvoiceStatus {
+  ISSUED = 'issued',
+  VOID = 'void',
+}
+
+export enum OwnerTaskStatus {
+  OPEN = 'open',
+  IN_PROGRESS = 'in_progress',
+  DONE = 'done',
+  CANCELLED = 'cancelled',
+}
+
+export enum OwnerTaskPriority {
+  LOW = 'low',
+  NORMAL = 'normal',
+  HIGH = 'high',
+}
+
+/** Analytics dashboard period for owner/coach KPI overviews. */
+export enum AnalyticsPeriod {
+  WEEK = 'week',
+  MONTH = 'month',
+  QUARTER = 'quarter',
 }

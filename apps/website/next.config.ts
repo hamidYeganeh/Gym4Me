@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
+const appDir = path.dirname(fileURLToPath(import.meta.url));
 
 function apiRemotePattern(): {
   protocol: "http" | "https";
@@ -31,6 +34,9 @@ function apiRemotePattern(): {
 }
 
 const nextConfig: NextConfig = {
+  output: "standalone",
+  // Trace workspace packages from the monorepo root (required for Docker).
+  outputFileTracingRoot: path.join(appDir, "../.."),
   reactCompiler: true,
   images: {
     remotePatterns: [apiRemotePattern()],

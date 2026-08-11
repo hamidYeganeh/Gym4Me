@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useRequireAuthAction } from "@/shared/hooks/useRequireAuthAction";
 import { DiscoveryCoachesDetailActionsSection } from "../../sections/DiscoveryCoachesDetailActionsSection";
@@ -15,6 +15,7 @@ export function DiscoveryCoachesDetailScreen({
 }: DiscoveryCoachesDetailScreenProps) {
   const t = useTranslations("CoachDetail");
   const pathname = usePathname();
+  const router = useRouter();
   const { runWithAuth } = useRequireAuthAction();
   const defaultPackageId =
     coach.packages.find((plan) => plan.price > 0)?.id ??
@@ -25,6 +26,14 @@ export function DiscoveryCoachesDetailScreen({
   const selectedPackage =
     coach.packages.find((plan) => plan.id === selectedPackageId) ??
     coach.packages[0];
+
+  // API coaches have no demo packages — quote the cheapest consultation type.
+  const consultationFallbackPrice =
+    coach.packages.length === 0 && coach.consultationTypes.length > 0
+      ? Math.min(...coach.consultationTypes.map((option) => option.price))
+      : null;
+
+  const reserveHref = `/discovery/coaches/${coach.id}/reserve`;
 
   const priceSuffix =
     selectedPackage?.planNameKey === "packageMonthly"
@@ -41,10 +50,22 @@ export function DiscoveryCoachesDetailScreen({
         </DiscoveryCoachesDetailHeroSection>
       </div>
       <DiscoveryCoachesDetailActionsSection
-        onBook={() => runWithAuth(() => undefined, pathname)}
-        price={selectedPackage?.price ?? 0}
-        pricePrefix={selectedPackage ? coach.pricePrefix : undefined}
-        priceSuffix={selectedPackage ? priceSuffix : undefined}
+        onBook={() =>
+          runWithAuth(() => router.push(reserveHref), reserveHref)
+        }
+        price={selectedPackage?.price ?? consultationFallbackPrice ?? 0}
+        pricePrefix={
+          selectedPackage || consultationFallbackPrice !== null
+            ? coach.pricePrefix
+            : undefined
+        }
+        priceSuffix={
+          selectedPackage
+            ? priceSuffix
+            : consultationFallbackPrice !== null
+              ? coach.priceSuffix || t("packagePriceSuffix")
+              : undefined
+        }
       />
     </div>
   );

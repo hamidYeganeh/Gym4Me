@@ -11,4 +11,12 @@ export type DiscoveryClubsReserveScreenProps = {
   days: ReserveDay[];
   slotsByDay: Record<string, ReserveSlot[]>;
   plans: ReservePlan[];
+  /**
+   * API-backed flow: called on final confirm instead of the demo payment
+   * redirect. Should reject with an Error whose message is user-displayable.
+   */
+  onConfirm?: (selection: {
+    slot: ReserveSlot;
+    plan: ReservePlan;
+  }) => Promise<void>;
 };

@@ -23,6 +23,10 @@ export class ArticleUserState {
   @Prop({ type: Date })
   savedAt?: Date;
 
+  /** First time the viewer read the article (drives read-based points). */
+  @Prop({ type: Date })
+  readAt?: Date;
+
   createdAt!: Date;
   updatedAt!: Date;
 }

@@ -17,12 +17,15 @@ import {
   ClubOperationalStatus,
   ClubUserReviewStatus,
   EntityStatus,
+  GamificationSubjectType,
   OperatingHourAudience,
+  PointRuleEvent,
   RefType,
   Role,
   UserStatus,
   WeekdayStatus,
 } from '../../common/enums';
+import { GamificationService } from '../../gamification/gamification.service';
 import type { JwtUser } from '../../common/types';
 import {
   asSinglePageResult,
@@ -89,6 +92,7 @@ export class ClubsService {
     private readonly users: UsersService,
     private readonly audit: AuditService,
     private readonly events: EventWriterService,
+    private readonly gamification: GamificationService,
   ) {}
 
   // ── Owner ──────────────────────────────────────
@@ -774,6 +778,24 @@ export class ClubsService {
       request,
     });
 
+    if (dto.status === ClubUserReviewStatus.APPROVED) {
+      void this.gamification.handleEvent({
+        event: PointRuleEvent.CLUB_REVIEW_APPROVED,
+        eventKey: reviewId,
+        subjects: [
+          {
+            type: GamificationSubjectType.ATHLETE,
+            id: review.authorId,
+          },
+          {
+            type: GamificationSubjectType.CLUB,
+            id: review.clubId,
+          },
+        ],
+        target: { type: 'club_review', id: reviewId },
+      });
+    }
+
     return this.toReviewPublic(review);
   }
 
@@ -785,7 +807,7 @@ export class ClubsService {
   ) {
     const club = await this.findClubOrFail(clubId);
     const achievement = await this.achievementModel.findById(dto.achievementId);
-    if (!achievement || !achievement.isActive) {
+    if (!achievement || achievement.status !== EntityStatus.ACTIVE) {
       throw new NotFoundException('Achievement not found');
     }
     const already = club.achievements.some(

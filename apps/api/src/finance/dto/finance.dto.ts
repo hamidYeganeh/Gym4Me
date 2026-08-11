@@ -1,0 +1,537 @@
+import { Type } from 'class-transformer';
+import {
+  IsDateString,
+  IsEnum,
+  IsInt,
+  IsMongoId,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+  MinLength,
+  ValidateNested,
+} from 'class-validator';
+import {
+  CompensationBasis,
+  DebtStatus,
+  EntityStatus,
+  InvoiceStatus,
+  LedgerEntryKind,
+  PaymentChannel,
+  PaymentPurpose,
+  PaymentStatus,
+  PayoutRecipientType,
+  PayoutStatus,
+  WalletOwnerType,
+  AnalyticsPeriod,
+} from '../../common/enums';
+
+export class PaginationQueryDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(200)
+  page_size?: number;
+}
+
+// ── Shared nested DTOs ────────────────────────────────────────────────────
+
+export class PaymentAmountSplitDto {
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  gross!: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  discount?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  tax?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  providerShare?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  platformFee?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  gatewayFee?: number;
+
+  /** If omitted, computed as gross − discount − tax − providerShare − platformFee − gatewayFee. */
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  net?: number;
+}
+
+export class PaymentGuestDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(120)
+  name!: string;
+
+  @IsString()
+  @MinLength(5)
+  @MaxLength(20)
+  phone!: string;
+}
+
+export class PaymentPayerDto {
+  @IsOptional()
+  @IsMongoId()
+  userId?: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => PaymentGuestDto)
+  guest?: PaymentGuestDto;
+}
+
+export class PaymentRelatedDto {
+  @IsOptional()
+  @IsMongoId()
+  bookingId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  membershipId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  packageId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  clubId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  coachUserId?: string;
+}
+
+export class PaymentReferenceDto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(120)
+  orderId!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  authority?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  gatewayRefId?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  externalRef?: string;
+}
+
+// ── Payments ──────────────────────────────────────────────────────────────
+
+export class RecordPaymentDto {
+  @IsEnum(PaymentPurpose)
+  purpose!: PaymentPurpose;
+
+  @IsEnum(PaymentChannel)
+  channel!: PaymentChannel;
+
+  @IsOptional()
+  @IsEnum(PaymentStatus)
+  status?: PaymentStatus;
+
+  @ValidateNested()
+  @Type(() => PaymentAmountSplitDto)
+  amount!: PaymentAmountSplitDto;
+
+  @ValidateNested()
+  @Type(() => PaymentReferenceDto)
+  reference!: PaymentReferenceDto;
+
+  @ValidateNested()
+  @Type(() => PaymentPayerDto)
+  payer!: PaymentPayerDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => PaymentRelatedDto)
+  related?: PaymentRelatedDto;
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(200)
+  idempotencyKey!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  note?: string;
+
+  /** Operator note for desk flows (operator userId set by service). */
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  operatorNote?: string;
+}
+
+export class RecordManualPaymentDto {
+  @IsEnum(PaymentPurpose)
+  purpose!: PaymentPurpose;
+
+  @IsEnum(PaymentChannel)
+  channel!: PaymentChannel;
+
+  @ValidateNested()
+  @Type(() => PaymentAmountSplitDto)
+  amount!: PaymentAmountSplitDto;
+
+  @ValidateNested()
+  @Type(() => PaymentReferenceDto)
+  reference!: PaymentReferenceDto;
+
+  @ValidateNested()
+  @Type(() => PaymentPayerDto)
+  payer!: PaymentPayerDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => PaymentRelatedDto)
+  related?: PaymentRelatedDto;
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(200)
+  idempotencyKey!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  operatorNote?: string;
+}
+
+export class ListPaymentsQueryDto extends PaginationQueryDto {
+  @IsOptional()
+  @IsEnum(PaymentStatus)
+  status?: PaymentStatus;
+
+  @IsOptional()
+  @IsEnum(PaymentChannel)
+  channel?: PaymentChannel;
+
+  @IsOptional()
+  @IsEnum(PaymentPurpose)
+  purpose?: PaymentPurpose;
+
+  @IsOptional()
+  @IsMongoId()
+  clubId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  payerUserId?: string;
+}
+
+// ── Wallet ────────────────────────────────────────────────────────────────
+
+export class TopUpWalletDto {
+  @Type(() => Number)
+  @IsInt()
+  @Min(1000)
+  amount!: number;
+
+  @IsOptional()
+  @IsEnum(PaymentChannel)
+  channel?: PaymentChannel;
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(200)
+  idempotencyKey!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  orderId?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  authority?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  gatewayRefId?: string;
+}
+
+export class WalletOwnerDto {
+  @IsEnum(WalletOwnerType)
+  type!: WalletOwnerType;
+
+  @IsMongoId()
+  id!: string;
+}
+
+// ── Ledger ────────────────────────────────────────────────────────────────
+
+export class ListLedgerQueryDto extends PaginationQueryDto {
+  @IsOptional()
+  @IsEnum(LedgerEntryKind)
+  kind?: LedgerEntryKind;
+
+  @IsOptional()
+  @IsMongoId()
+  clubId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  paymentId?: string;
+
+  @IsOptional()
+  @IsDateString()
+  from?: string;
+
+  @IsOptional()
+  @IsDateString()
+  to?: string;
+}
+
+// ── Cash shifts ───────────────────────────────────────────────────────────
+
+export class CashShiftTotalsDto {
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  cash!: number;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  pos!: number;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  cardToCard!: number;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  other!: number;
+}
+
+export class CloseCashShiftDto {
+  @ValidateNested()
+  @Type(() => CashShiftTotalsDto)
+  counted!: CashShiftTotalsDto;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  varianceNote?: string;
+}
+
+// ── Payouts ───────────────────────────────────────────────────────────────
+
+export class CreatePayoutDto {
+  @IsEnum(PayoutRecipientType)
+  recipientType!: PayoutRecipientType;
+
+  @IsMongoId()
+  recipientId!: string;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  amount!: number;
+
+  @IsDateString()
+  periodFrom!: string;
+
+  @IsDateString()
+  periodTo!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  note?: string;
+}
+
+export class ListPayoutsQueryDto extends PaginationQueryDto {
+  @IsOptional()
+  @IsEnum(PayoutStatus)
+  status?: PayoutStatus;
+
+  @IsOptional()
+  @IsEnum(PayoutRecipientType)
+  recipientType?: PayoutRecipientType;
+
+  @IsOptional()
+  @IsMongoId()
+  recipientId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  clubId?: string;
+}
+
+export class SettlePayoutDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  note?: string;
+}
+
+// ── Compensation ──────────────────────────────────────────────────────────
+
+export class UpsertCompensationRuleDto {
+  @IsOptional()
+  @IsMongoId()
+  id?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  coachUserId?: string;
+
+  @IsEnum(CompensationBasis)
+  basis!: CompensationBasis;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  rate!: number;
+
+  @IsOptional()
+  @IsEnum(EntityStatus)
+  status?: EntityStatus;
+
+  @IsDateString()
+  effectiveFrom!: string;
+
+  @IsOptional()
+  @IsDateString()
+  effectiveTo?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  note?: string;
+}
+
+export class ListCompensationRulesQueryDto extends PaginationQueryDto {
+  @IsOptional()
+  @IsMongoId()
+  coachUserId?: string;
+
+  @IsOptional()
+  @IsEnum(EntityStatus)
+  status?: EntityStatus;
+}
+
+// ── Debts ─────────────────────────────────────────────────────────────────
+
+export class CreateDebtDto {
+  @ValidateNested()
+  @Type(() => PaymentPayerDto)
+  holder!: PaymentPayerDto;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  principal!: number;
+
+  @IsDateString()
+  dueAt!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  note?: string;
+
+  /** Optional installment schedule: equal splits by count. */
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(60)
+  installmentCount?: number;
+}
+
+export class RecordDebtPaymentDto {
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  amount!: number;
+
+  @IsEnum(PaymentChannel)
+  channel!: PaymentChannel;
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(200)
+  idempotencyKey!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  orderId?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  operatorNote?: string;
+}
+
+export class ListDebtsQueryDto extends PaginationQueryDto {
+  @IsOptional()
+  @IsEnum(DebtStatus)
+  status?: DebtStatus;
+}
+
+// ── Invoices ──────────────────────────────────────────────────────────────
+
+export class IssueInvoiceFromPaymentDto {
+  @IsMongoId()
+  paymentId!: string;
+}
+
+export class ListInvoicesQueryDto extends PaginationQueryDto {
+  @IsOptional()
+  @IsEnum(InvoiceStatus)
+  status?: InvoiceStatus;
+}
+
+export class AnalyticsPeriodQueryDto {
+  @IsOptional()
+  @IsEnum(AnalyticsPeriod)
+  period?: AnalyticsPeriod;
+}

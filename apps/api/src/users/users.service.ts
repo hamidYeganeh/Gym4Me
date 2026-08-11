@@ -32,6 +32,14 @@ export interface PublicUser {
   name: { first: string | null; last: string | null };
   avatar: { mediaId: string | null };
   demographics: { gender: string | null; birthDate: Date | null };
+  address: {
+    provinceId: string | null;
+    city: string | null;
+    street: string | null;
+    apartment: string | null;
+    postalCode: string | null;
+    point: { lat: number; lng: number } | null;
+  };
   nationalId: string | null;
   roles: Role[];
   code: string | null;
@@ -196,6 +204,19 @@ export class UsersService {
       demographics: {
         gender: user.demographics?.gender ?? null,
         birthDate: user.demographics?.birthDate ?? null,
+      },
+      address: {
+        provinceId: user.address?.provinceId?.toString() ?? null,
+        city: user.address?.city ?? null,
+        street: user.address?.street ?? null,
+        apartment: user.address?.apartment ?? null,
+        postalCode: user.address?.postalCode ?? null,
+        point: user.address?.point
+          ? {
+              lat: user.address.point.coordinates[1],
+              lng: user.address.point.coordinates[0],
+            }
+          : null,
       },
       nationalId:
         opts?.revealNationalId && nationalId

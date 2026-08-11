@@ -8,12 +8,17 @@ import type { Request } from 'express';
 import { Model, Types } from 'mongoose';
 import type { QueryFilter } from 'mongoose';
 import { AuditService } from '../audit/audit.service';
+import { EventWriterService } from '../analytics/event-writer.service';
 import {
+  AnalyticsEventName,
   ArticleAudience,
   ArticleKind,
   AuditAction,
+  PointRuleEvent,
   PublishStatus,
+  Role,
 } from '../common/enums';
+import { GamificationService } from '../gamification/gamification.service';
 import {
   paginatedResult,
   resolvePageSize,
@@ -84,6 +89,8 @@ export class ArticlesService {
     private readonly userModel: Model<UserDocument>,
     private readonly media: MediaService,
     private readonly audit: AuditService,
+    private readonly events: EventWriterService,
+    private readonly gamification: GamificationService,
   ) {}
 
   async listPublished(query: ListArticlesQueryDto) {
@@ -384,7 +391,12 @@ export class ArticlesService {
     };
   }
 
-  async like(articleId: string, userId: string, request: Request) {
+  async like(
+    articleId: string,
+    userId: string,
+    request: Request,
+    activeRole?: Role,
+  ) {
     const article = await this.assertPublishedArticle(articleId);
     const state = await this.getOrCreateState(articleId, userId);
     if (state.likedAt) {
@@ -402,8 +414,54 @@ export class ArticlesService {
       metadata: { articleId },
       request,
     });
+    void this.events.track({
+      eventName: AnalyticsEventName.ARTICLE_LIKED,
+      eventId: `article_liked:${articleId}:${userId}`,
+      actor: { userId, activeRole },
+      properties: { articleId },
+    });
+    if (activeRole) {
+      void this.gamification.handleUserEvent(userId, activeRole, {
+        event: PointRuleEvent.ARTICLE_LIKED,
+        eventKey: `${articleId}:${userId}`,
+        target: { type: 'article', id: articleId },
+      });
+    }
     const refreshed = await this.assertPublishedArticle(articleId);
     return this.engagementResponse(refreshed, state);
+  }
+
+  /**
+   * Idempotently mark an article as read by the viewer.
+   * Only the first read per article emits analytics/points events.
+   */
+  async markRead(
+    articleId: string,
+    userId: string,
+    request: Request,
+    activeRole?: Role,
+  ) {
+    const article = await this.assertPublishedArticle(articleId);
+    const state = await this.getOrCreateState(articleId, userId);
+    if (state.readAt) {
+      return this.engagementResponse(article, state);
+    }
+    state.readAt = new Date();
+    await state.save();
+    void this.events.track({
+      eventName: AnalyticsEventName.ARTICLE_READ,
+      eventId: `article_read:${articleId}:${userId}`,
+      actor: { userId, activeRole },
+      properties: { articleId },
+    });
+    if (activeRole) {
+      void this.gamification.handleUserEvent(userId, activeRole, {
+        event: PointRuleEvent.ARTICLE_READ,
+        eventKey: `${articleId}:${userId}`,
+        target: { type: 'article', id: articleId },
+      });
+    }
+    return this.engagementResponse(article, state);
   }
 
   async unlike(articleId: string, userId: string, request: Request) {
@@ -574,6 +632,7 @@ export class ArticlesService {
       viewer: {
         liked: Boolean(state.likedAt),
         saved: Boolean(state.savedAt),
+        read: Boolean(state.readAt),
       },
     };
   }

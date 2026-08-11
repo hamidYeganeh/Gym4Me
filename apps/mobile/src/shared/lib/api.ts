@@ -2,8 +2,13 @@ import {
   ACCOUNT_SESSION_KEY,
   createAccountAuthApi,
   createAccountClubsApi,
+  createAccountCoachingApi,
+  createAccountFinanceApi,
+  createAccountGamificationApi,
   createAccountKycApi,
+  createAccountOpsApi,
   createAccountProfileApi,
+  createAccountProgressApi,
   createAccountReferralApi,
   createAccountRolesApi,
   createAnalyticsApi,
@@ -11,13 +16,18 @@ import {
   createBasicsLocationsApi,
   createBasicsRefsApi,
   createBasicsSportsApi,
+  createAccountBookingsApi,
+  createCoachBookingsApi,
+  createCoachSlotsApi,
   createDiscoveryClubsApi,
   createDiscoveryClubSlotsApi,
   createDiscoveryCoachesApi,
+  createDiscoveryCoachSlotsApi,
   createLocalStorage,
   createMediaApi,
   createAccountNotificationsApi,
   createArticlesApi,
+  createBannersApi,
 } from "@repo/api";
 import { getApiBaseUrl } from "./env";
 import { roleAppPath } from "./role-routes";
@@ -49,15 +59,25 @@ export const accountRoles = createAccountRolesApi(apiClient);
 export const accountReferral = createAccountReferralApi(apiClient);
 export const accountClubs = createAccountClubsApi(apiClient);
 export const accountNotifications = createAccountNotificationsApi(apiClient);
+export const accountGamification = createAccountGamificationApi(apiClient);
+export const accountProgress = createAccountProgressApi(apiClient);
+export const accountFinance = createAccountFinanceApi(apiClient);
+export const accountCoaching = createAccountCoachingApi(apiClient);
+export const accountOps = createAccountOpsApi(apiClient);
 export const discoveryClubs = createDiscoveryClubsApi(apiClient);
 export const discoveryClubSlots = createDiscoveryClubSlotsApi(apiClient);
 export const discoveryCoaches = createDiscoveryCoachesApi(apiClient);
+export const discoveryCoachSlots = createDiscoveryCoachSlotsApi(apiClient);
+export const accountBookings = createAccountBookingsApi(apiClient);
+export const coachBookings = createCoachBookingsApi(apiClient);
+export const coachSlots = createCoachSlotsApi(apiClient);
 export const basicsLocations = createBasicsLocationsApi(apiClient);
 export const basicsSports = createBasicsSportsApi(apiClient);
 export const basicsRefs = createBasicsRefsApi(apiClient);
 export const analyticsApi = createAnalyticsApi(apiClient);
 export const mediaApi = createMediaApi(apiClient);
 export const articlesApi = createArticlesApi(apiClient);
+export const bannersApi = createBannersApi(apiClient);
 
 export function mediaFileUrl(mediaId: string | null | undefined): string | null {
   if (!mediaId) return null;

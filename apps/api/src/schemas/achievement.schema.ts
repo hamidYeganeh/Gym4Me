@@ -1,15 +1,19 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-import { AchievementGrantMode } from '../common/enums';
+import {
+  AchievementGrantMode,
+  AchievementMetric,
+  EntityStatus,
+  GamificationSubjectType,
+} from '../common/enums';
 import { Media } from './media.schema';
 
 export type AchievementDocument = HydratedDocument<Achievement>;
 
 @Schema({ _id: false })
 export class AchievementGrantRule {
-  /** bookings_count | followers_count | branches_count | reviews_average | … */
-  @Prop({ required: true, trim: true })
-  metric!: string;
+  @Prop({ type: String, enum: AchievementMetric, required: true })
+  metric!: AchievementMetric;
 
   @Prop({ required: true })
   threshold!: number;
@@ -46,11 +50,30 @@ export class Achievement {
   @Prop({ type: Types.ObjectId, ref: Media.name })
   badgeMediaId?: Types.ObjectId;
 
+  /** Which subject kinds can earn this achievement. */
+  @Prop({
+    type: [String],
+    enum: GamificationSubjectType,
+    required: true,
+    default: [],
+    index: true,
+  })
+  audience!: GamificationSubjectType[];
+
+  /** Bonus points credited to the ledger when unlocked (0 = badge only). */
+  @Prop({ default: 0, min: 0 })
+  bonusPoints!: number;
+
   @Prop({ type: AchievementGrantConfigSchema, required: true })
   grant!: AchievementGrantConfig;
 
-  @Prop({ default: true, index: true })
-  isActive!: boolean;
+  @Prop({
+    type: String,
+    enum: EntityStatus,
+    default: EntityStatus.ACTIVE,
+    index: true,
+  })
+  status!: EntityStatus;
 
   @Prop({ default: 0 })
   order!: number;

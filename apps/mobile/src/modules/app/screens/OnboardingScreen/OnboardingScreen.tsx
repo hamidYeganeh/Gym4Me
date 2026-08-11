@@ -5,7 +5,7 @@ import { ArrowRight, CloseX } from "@repo/icons";
 import useEmblaCarousel from "embla-carousel-react";
 import { useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ONBOARDING_ACTIVITIES,
@@ -78,7 +78,19 @@ import { OnboardingSleepSection } from "@/modules/app/sections/OnboardingSleepSe
 import { OnboardingSlideShell } from "@/modules/app/sections/OnboardingSlideShell";
 import { OnboardingWeightSection } from "@/modules/app/sections/OnboardingWeightSection";
 import { toGregorian } from "@/shared/lib/jalali";
-import { basicsLocations, mediaApi, mediaFileUrl } from "@/shared/lib/api";
+import {
+  accountProfile,
+  basicsLocations,
+  isDiscoveryApiId,
+  mediaApi,
+  mediaFileUrl,
+} from "@/shared/lib/api";
+import { useAuth } from "@/shared/providers/AuthProvider";
+import type {
+  UpdateAddressInput,
+  UpdateAthleteProfileInput,
+  UpdateMeInput,
+} from "@repo/api";
 import {
   ONBOARDING_PERMISSION_ORDER,
   requestDevicePermission,
@@ -138,6 +150,8 @@ export function OnboardingScreen({ className }: OnboardingScreenProps) {
   const t = useTranslations("Mobile.Onboarding");
   const styles = onboardingScreenVariants();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { isAuthenticated } = useAuth();
   const reduceMotion = useReducedMotion();
   const [textDirection] = useState<"rtl" | "ltr">(readDocumentDirection);
   const [slide, setSlide] = useState(0);
@@ -519,50 +533,68 @@ export function OnboardingScreen({ className }: OnboardingScreenProps) {
       (step === "identity" && fullName.trim().length > 1) ||
       step === "avatar");
 
+  const buildMeInput = (): UpdateMeInput => {
+    const trimmedName = fullName.trim();
+    const [first = "", ...rest] = trimmedName.split(/\s+/);
+    const last = rest.join(" ");
+
+    const address: UpdateAddressInput = {};
+    if (provinceId && isDiscoveryApiId(provinceId)) {
+      address.provinceId = provinceId;
+    }
+    if (city.trim()) address.city = city.trim();
+    if (street.trim()) address.street = street.trim();
+    if (apartment.trim()) address.apartment = apartment.trim();
+    if (/^\d{10}$/.test(postalCode.trim())) {
+      address.postalCode = postalCode.trim();
+    }
+    if (mapPoint) address.point = { lat: mapPoint.lat, lng: mapPoint.lng };
+
+    const input: UpdateMeInput = {};
+    if (first) input.name = { first, last };
+    if (gender) {
+      input.demographics = {
+        gender,
+        birthDate: birthdateToIso(birthdate),
+      };
+    }
+    if (avatar.mediaId) input.avatar = { mediaId: avatar.mediaId };
+    if (Object.keys(address).length > 0) input.address = address;
+    return input;
+  };
+
+  const buildAthleteInput = (): UpdateAthleteProfileInput => ({
+    body: { heightCm, weightKg },
+    goalKeys: goals,
+    lifestyle: {
+      bodyType,
+      ...(experience ? { experience } : {}),
+      sleepLevel: sleep,
+      mood,
+      diet: diet === "glutenFree" ? "gluten_free" : diet,
+      dailyCalories: caloriesKnown && calories > 0 ? calories : null,
+      activityKeys: activities,
+    },
+    health: {
+      bloodType: { group: bloodGroup, rh: bloodRh },
+      allergies,
+      conditions: conditions.trim(),
+      medications: medications.trim(),
+      note: healthNote.trim(),
+    },
+  });
+
   const completeOnboarding = () => {
     markOnboardingDone();
-    void {
-      fullName: fullName.trim(),
-      gender,
-      genderOther: gender === "other" ? genderOther.trim() : "",
-      goals,
-      bodyType,
-      experience,
-      sleep,
-      mood,
-      activities,
-      diet,
-      calories: caloriesKnown
-        ? { status: "known" as const, kcal: calories }
-        : { status: "unknown" as const },
-      birthdateIso: birthdateToIso(birthdate),
-      body: { heightCm, weightKg },
-      bloodType: `${bloodGroup}${bloodRh === "positive" ? "+" : "-"}`,
-      identity: {
-        nationalId: nationalId.trim(),
-        phone: phone.trim(),
-        address: {
-          provinceId,
-          provinceName,
-          street: street.trim(),
-          apartment: apartment.trim(),
-          city: city.trim(),
-          postalCode: postalCode.trim(),
-          mapPoint,
-        },
-        health: {
-          allergies,
-          conditions: conditions.trim(),
-          medications: medications.trim(),
-          note: healthNote.trim(),
-        },
-      },
-      avatar: {
-        mediaId: avatar.mediaId,
-        previewUrl: avatar.previewUrl,
-      },
-    };
-    router.replace("/home");
+    // Persist best-effort: onboarding is optional, never block navigation.
+    if (isAuthenticated) {
+      void Promise.allSettled([
+        accountProfile.updateMe(buildMeInput()),
+        accountProfile.updateAthlete(buildAthleteInput()),
+      ]);
+    }
+    const next = searchParams.get("next");
+    router.replace(next && next.startsWith("/") ? next : "/home");
   };
 
   const activePermissionKind: DevicePermissionKind | null =

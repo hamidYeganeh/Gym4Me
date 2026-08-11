@@ -11,6 +11,10 @@ import { ClubDetailScreen } from "@/modules/clubs/screens/ClubDetailScreen";
 import { ClubsListScreen } from "@/modules/clubs/screens/ClubsListScreen";
 import { DashboardHomeScreen } from "@/modules/dashboard/screens/DashboardHomeScreen";
 import { ArticlesListScreen } from "@/modules/articles/screens/ArticlesListScreen";
+import { BannersListScreen } from "@/modules/banners/screens/BannersListScreen";
+import { AchievementsListScreen } from "@/modules/gamification/screens/AchievementsListScreen";
+import { PointRulesListScreen } from "@/modules/gamification/screens/PointRulesListScreen";
+import { PointsLedgerScreen } from "@/modules/gamification/screens/PointsLedgerScreen";
 import { FaqListScreen } from "@/modules/support/screens/FaqListScreen";
 import { SupportTicketsScreen } from "@/modules/support/screens/SupportTicketsScreen";
 import { ClubReviewsScreen } from "@/modules/users/screens/ClubReviewsScreen";
@@ -53,8 +57,10 @@ function RefsRoute() {
 }
 
 export function AppRouter() {
+  const basename = import.meta.env.BASE_URL.replace(/\/$/, "") || "/";
+
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={basename}>
       <AuthProvider>
         <AdminDocumentMeta />
         <Routes>
@@ -135,6 +141,22 @@ export function AppRouter() {
             <Route
               element={<ArticlesListScreen />}
               path="/dashboard/articles"
+            />
+            <Route
+              element={<BannersListScreen />}
+              path="/dashboard/banners"
+            />
+            <Route
+              element={<AchievementsListScreen />}
+              path="/dashboard/gamification"
+            />
+            <Route
+              element={<PointRulesListScreen />}
+              path="/dashboard/gamification/rules"
+            />
+            <Route
+              element={<PointsLedgerScreen />}
+              path="/dashboard/gamification/ledger"
             />
           </Route>
           <Route

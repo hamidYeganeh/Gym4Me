@@ -19,8 +19,10 @@ import {
   CancelSlotOccurrenceDto,
   CreateClubClassDto,
   CreateClubSlotDto,
+  CreateClubSpaceDto,
   UpdateClubClassDto,
   UpdateClubSlotDto,
+  UpdateClubSpaceDto,
 } from './dto/club-slot.dto';
 
 @ApiTags('club-owner-slots')
@@ -92,6 +94,71 @@ export class OwnerClubSlotsController {
   ) {
     return this.slots.requireOwned(user, clubId).then(() =>
       this.slots.archiveClass(clubId, classId, user.sub, request),
+    );
+  }
+
+  // ── Spaces ────────────────────────────────────
+
+  @Get(':clubId/spaces')
+  @ApiOperation({ summary: 'List club spaces' })
+  listSpaces(
+    @CurrentUser() user: JwtUser,
+    @Param('clubId') clubId: string,
+  ) {
+    return this.slots.requireOwned(user, clubId).then(() =>
+      this.slots.listSpaces(clubId),
+    );
+  }
+
+  @Get(':clubId/spaces/:spaceId')
+  @ApiOperation({ summary: 'Get one club space' })
+  getSpace(
+    @CurrentUser() user: JwtUser,
+    @Param('clubId') clubId: string,
+    @Param('spaceId') spaceId: string,
+  ) {
+    return this.slots.requireOwned(user, clubId).then(() =>
+      this.slots.getSpace(clubId, spaceId),
+    );
+  }
+
+  @Post(':clubId/spaces')
+  @ApiOperation({ summary: 'Create a club space' })
+  createSpace(
+    @CurrentUser() user: JwtUser,
+    @Param('clubId') clubId: string,
+    @Body() dto: CreateClubSpaceDto,
+    @Req() request: Request,
+  ) {
+    return this.slots.requireOwned(user, clubId).then(() =>
+      this.slots.createSpace(clubId, dto, user.sub, request),
+    );
+  }
+
+  @Patch(':clubId/spaces/:spaceId')
+  @ApiOperation({ summary: 'Update a club space' })
+  updateSpace(
+    @CurrentUser() user: JwtUser,
+    @Param('clubId') clubId: string,
+    @Param('spaceId') spaceId: string,
+    @Body() dto: UpdateClubSpaceDto,
+    @Req() request: Request,
+  ) {
+    return this.slots.requireOwned(user, clubId).then(() =>
+      this.slots.updateSpace(clubId, spaceId, dto, user.sub, request),
+    );
+  }
+
+  @Delete(':clubId/spaces/:spaceId')
+  @ApiOperation({ summary: 'Archive a club space' })
+  archiveSpace(
+    @CurrentUser() user: JwtUser,
+    @Param('clubId') clubId: string,
+    @Param('spaceId') spaceId: string,
+    @Req() request: Request,
+  ) {
+    return this.slots.requireOwned(user, clubId).then(() =>
+      this.slots.archiveSpace(clubId, spaceId, user.sub, request),
     );
   }
 

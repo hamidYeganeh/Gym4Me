@@ -26,10 +26,18 @@ import {
 } from '../../schemas/club-class.schema';
 import { Club, ClubDocument } from '../../schemas/club.schema';
 import {
+  ClubSlotOccupancy,
+  ClubSlotOccupancyDocument,
+} from '../../schemas/club-slot-occupancy.schema';
+import {
   ClubSlot,
   ClubSlotDocument,
   SlotRecurrence,
 } from '../../schemas/club-slot.schema';
+import {
+  ClubSpace,
+  ClubSpaceDocument,
+} from '../../schemas/club-space.schema';
 import { User, UserDocument } from '../../schemas/user.schema';
 import { UsersService } from '../../users/users.service';
 import {
@@ -37,8 +45,10 @@ import {
   ClubCalendarQueryDto,
   CreateClubClassDto,
   CreateClubSlotDto,
+  CreateClubSpaceDto,
   UpdateClubClassDto,
   UpdateClubSlotDto,
+  UpdateClubSpaceDto,
 } from './dto/club-slot.dto';
 
 const MAX_CALENDAR_DAYS = 31;
@@ -52,6 +62,10 @@ export class ClubSlotsService {
     private readonly classModel: Model<ClubClassDocument>,
     @InjectModel(ClubSlot.name)
     private readonly slotModel: Model<ClubSlotDocument>,
+    @InjectModel(ClubSpace.name)
+    private readonly spaceModel: Model<ClubSpaceDocument>,
+    @InjectModel(ClubSlotOccupancy.name)
+    private readonly occupancyModel: Model<ClubSlotOccupancyDocument>,
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     private readonly users: UsersService,
     private readonly audit: AuditService,
@@ -206,6 +220,107 @@ export class ClubSlotsService {
     );
   }
 
+  // ── Spaces ────────────────────────────────────
+
+  async listSpaces(clubId: string) {
+    await this.findClubOrFail(clubId);
+    const items = await this.spaceModel
+      .find({
+        clubId: new Types.ObjectId(clubId),
+        status: { $ne: EntityStatus.ARCHIVED },
+      })
+      .sort({ createdAt: -1 });
+    return asSinglePageResult(items.map((s) => this.toSpacePublic(s)));
+  }
+
+  async getSpace(clubId: string, spaceId: string) {
+    const doc = await this.findSpaceOrFail(clubId, spaceId);
+    return this.toSpacePublic(doc);
+  }
+
+  async createSpace(
+    clubId: string,
+    dto: CreateClubSpaceDto,
+    actorId: string,
+    request: Request,
+  ) {
+    await this.findClubOrFail(clubId);
+    const doc = await this.spaceModel.create({
+      clubId: new Types.ObjectId(clubId),
+      title: dto.title,
+      description: dto.description,
+      sportId: dto.sportId ? new Types.ObjectId(dto.sportId) : undefined,
+      media: {
+        coverMediaId: dto.media?.coverMediaId
+          ? new Types.ObjectId(dto.media.coverMediaId)
+          : undefined,
+      },
+      status: dto.status ?? EntityStatus.ACTIVE,
+    });
+
+    this.audit.log({
+      action: AuditAction.CLUB_UPDATED,
+      actorId,
+      metadata: { clubId, createSpaceId: doc._id.toString() },
+      request,
+    });
+
+    return this.toSpacePublic(doc);
+  }
+
+  async updateSpace(
+    clubId: string,
+    spaceId: string,
+    dto: UpdateClubSpaceDto,
+    actorId: string,
+    request: Request,
+  ) {
+    const doc = await this.findSpaceOrFail(clubId, spaceId);
+
+    if (dto.title !== undefined) doc.title = dto.title;
+    if (dto.description !== undefined) {
+      doc.description = dto.description ?? undefined;
+    }
+    if (dto.sportId !== undefined) {
+      doc.sportId = dto.sportId ? new Types.ObjectId(dto.sportId) : undefined;
+    }
+    if (dto.media !== undefined) {
+      doc.media = {
+        coverMediaId: dto.media.coverMediaId
+          ? new Types.ObjectId(dto.media.coverMediaId)
+          : undefined,
+      };
+      doc.markModified('media');
+    }
+    if (dto.status !== undefined) doc.status = dto.status;
+
+    await doc.save();
+
+    this.audit.log({
+      action: AuditAction.CLUB_UPDATED,
+      actorId,
+      metadata: { clubId, updateSpaceId: spaceId },
+      request,
+    });
+
+    return this.toSpacePublic(doc);
+  }
+
+  async archiveSpace(
+    clubId: string,
+    spaceId: string,
+    actorId: string,
+    request: Request,
+  ) {
+    return this.updateSpace(
+      clubId,
+      spaceId,
+      { status: EntityStatus.ARCHIVED },
+      actorId,
+      request,
+    );
+  }
+
   // ── Slots ─────────────────────────────────────
 
   async listSlots(clubId: string) {
@@ -240,13 +355,21 @@ export class ClubSlotsService {
       }
       await this.findClassOrFail(clubId, dto.classId);
     }
+    if (dto.kind === SlotKind.SPACE) {
+      if (!dto.spaceId) {
+        throw new BadRequestException('spaceId is required for space slots');
+      }
+      await this.findSpaceOrFail(clubId, dto.spaceId);
+    }
 
     const doc = await this.slotModel.create({
       clubId: new Types.ObjectId(clubId),
       kind: dto.kind,
       classId: dto.classId ? new Types.ObjectId(dto.classId) : undefined,
+      spaceId: dto.spaceId ? new Types.ObjectId(dto.spaceId) : undefined,
       coachId: dto.coachId ? new Types.ObjectId(dto.coachId) : undefined,
       capacity: dto.capacity,
+      price: dto.price ?? 0,
       schedule: {
         recurrence: this.normalizeRecurrence(dto.schedule.recurrence),
         exceptions: (dto.schedule.exceptions ?? []).map((e) => ({
@@ -289,12 +412,24 @@ export class ClubSlotsService {
     if (nextKind === SlotKind.CLASS && !doc.classId) {
       throw new BadRequestException('classId is required for class slots');
     }
+    if (dto.spaceId !== undefined) {
+      if (dto.spaceId) {
+        await this.findSpaceOrFail(clubId, dto.spaceId);
+        doc.spaceId = new Types.ObjectId(dto.spaceId);
+      } else {
+        doc.spaceId = undefined;
+      }
+    }
+    if (nextKind === SlotKind.SPACE && !doc.spaceId) {
+      throw new BadRequestException('spaceId is required for space slots');
+    }
     if (dto.coachId !== undefined) {
       doc.coachId = dto.coachId
         ? new Types.ObjectId(dto.coachId)
         : undefined;
     }
     if (dto.capacity !== undefined) doc.capacity = dto.capacity;
+    if (dto.price !== undefined) doc.price = dto.price;
     if (dto.schedule !== undefined) {
       this.assertValidSchedule(dto.schedule.recurrence);
       doc.schedule = {
@@ -396,6 +531,20 @@ export class ClubSlotsService {
         })
       : ([] as ClubClassDocument[]);
 
+    const spaceIds = [
+      ...new Set(
+        slots
+          .filter((s) => s.spaceId)
+          .map((s) => s.spaceId!.toString()),
+      ),
+    ];
+
+    const spaces = spaceIds.length
+      ? await this.spaceModel.find({
+          _id: { $in: spaceIds.map((id) => new Types.ObjectId(id)) },
+        })
+      : ([] as ClubSpaceDocument[]);
+
     const coachIds = [
       ...new Set([
         ...slots
@@ -414,7 +563,20 @@ export class ClubSlotsService {
       : ([] as UserDocument[]);
 
     const classById = new Map(classes.map((c) => [c._id.toString(), c]));
+    const spaceById = new Map(spaces.map((s) => [s._id.toString(), s]));
     const coachById = new Map(coaches.map((u) => [u._id.toString(), u]));
+
+    const occupancies = slots.length
+      ? await this.occupancyModel
+          .find({
+            slotId: { $in: slots.map((s) => s._id) },
+            date: { $gte: days[0], $lte: days[days.length - 1] },
+          })
+          .lean()
+      : [];
+    const reservedByKey = new Map(
+      occupancies.map((o) => [`${o.slotId.toString()}:${o.date}`, o.reserved]),
+    );
 
     const byDate = new Map<
       string,
@@ -442,9 +604,14 @@ export class ClubSlotsService {
         const classDoc = slot.classId
           ? classById.get(slot.classId.toString())
           : undefined;
+        const spaceDoc = slot.spaceId
+          ? spaceById.get(slot.spaceId.toString())
+          : undefined;
         const coachId =
           slot.coachId?.toString() ?? classDoc?.coachId?.toString();
         const coach = coachId ? coachById.get(coachId) : undefined;
+        const reserved =
+          reservedByKey.get(`${slot._id.toString()}:${occ.date}`) ?? 0;
 
         day.items.push({
           slotId: slot._id.toString(),
@@ -456,6 +623,16 @@ export class ClubSlotsService {
                 media: {
                   coverMediaId:
                     classDoc.media?.coverMediaId?.toString() ?? null,
+                },
+              }
+            : null,
+          space: spaceDoc
+            ? {
+                id: spaceDoc._id.toString(),
+                title: spaceDoc.title,
+                media: {
+                  coverMediaId:
+                    spaceDoc.media?.coverMediaId?.toString() ?? null,
                 },
               }
             : null,
@@ -473,6 +650,8 @@ export class ClubSlotsService {
           startTime: occ.startTime,
           endTime: occ.endTime,
           capacity: slot.capacity,
+          remaining: Math.max(0, slot.capacity - reserved),
+          price: slot.price ?? 0,
           occurrenceStatus: occ.status,
         });
       }
@@ -499,6 +678,94 @@ export class ClubSlotsService {
     });
     if (!doc) throw new NotFoundException('Class not found');
     return doc;
+  }
+
+  private async findSpaceOrFail(clubId: string, spaceId: string) {
+    if (!Types.ObjectId.isValid(spaceId)) {
+      throw new NotFoundException('Space not found');
+    }
+    const doc = await this.spaceModel.findOne({
+      _id: new Types.ObjectId(spaceId),
+      clubId: new Types.ObjectId(clubId),
+    });
+    if (!doc) throw new NotFoundException('Space not found');
+    return doc;
+  }
+
+  /**
+   * Resolve one bookable occurrence of an active club slot for the
+   * reservation flow. Throws if the date does not match the recurrence,
+   * the occurrence is cancelled, or the slot is inactive.
+   */
+  async resolveBookableOccurrence(slotId: string, date: string) {
+    if (!Types.ObjectId.isValid(slotId) || !DATE_RE.test(date)) {
+      throw new NotFoundException('Slot occurrence not found');
+    }
+    const slot = await this.slotModel.findOne({
+      _id: new Types.ObjectId(slotId),
+      status: EntityStatus.ACTIVE,
+    });
+    if (!slot) throw new NotFoundException('Slot not found');
+
+    const [occurrence] = this.expandSlot(slot, [date]);
+    if (!occurrence) {
+      throw new BadRequestException('Slot has no occurrence on that date');
+    }
+    if (occurrence.status === OccurrenceStatus.CANCELLED) {
+      throw new BadRequestException('This occurrence has been cancelled');
+    }
+    return {
+      slot,
+      occurrence: {
+        date,
+        startTime: occurrence.startTime,
+        endTime: occurrence.endTime,
+      },
+    };
+  }
+
+  /** Bulk lookup for booking projections (no status filter — history safe). */
+  async findSlotsByIds(slotIds: string[]): Promise<ClubSlotDocument[]> {
+    const valid = slotIds.filter((id) => Types.ObjectId.isValid(id));
+    if (!valid.length) return [];
+    return this.slotModel.find({
+      _id: { $in: valid.map((id) => new Types.ObjectId(id)) },
+    });
+  }
+
+  /**
+   * Atomically reserve seats on an occurrence. Returns false when the
+   * occurrence is already at capacity (never oversells under concurrency).
+   */
+  async occupyOccurrence(
+    slotId: Types.ObjectId,
+    date: string,
+    seats: number,
+    capacity: number,
+  ): Promise<boolean> {
+    try {
+      const updated = await this.occupancyModel.findOneAndUpdate(
+        { slotId, date, reserved: { $lte: capacity - seats } },
+        { $inc: { reserved: seats } },
+        { upsert: true, new: true },
+      );
+      return Boolean(updated);
+    } catch (error: unknown) {
+      // Duplicate key = doc exists but failed the capacity filter → full.
+      if ((error as { code?: number }).code === 11000) return false;
+      throw error;
+    }
+  }
+
+  async releaseOccurrence(
+    slotId: Types.ObjectId,
+    date: string,
+    seats: number,
+  ): Promise<void> {
+    await this.occupancyModel.updateOne(
+      { slotId, date, reserved: { $gte: seats } },
+      { $inc: { reserved: -seats } },
+    );
   }
 
   private async findSlotOrFail(clubId: string, slotId: string) {
@@ -663,14 +930,32 @@ export class ClubSlotsService {
     };
   }
 
+  toSpacePublic(doc: ClubSpaceDocument) {
+    return {
+      id: doc._id.toString(),
+      clubId: doc.clubId.toString(),
+      title: doc.title,
+      description: doc.description ?? null,
+      sportId: doc.sportId?.toString() ?? null,
+      media: {
+        coverMediaId: doc.media?.coverMediaId?.toString() ?? null,
+      },
+      status: doc.status,
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt,
+    };
+  }
+
   async toSlotPublic(doc: ClubSlotDocument) {
     return {
       id: doc._id.toString(),
       clubId: doc.clubId.toString(),
       kind: doc.kind,
       classId: doc.classId?.toString() ?? null,
+      spaceId: doc.spaceId?.toString() ?? null,
       coachId: doc.coachId?.toString() ?? null,
       capacity: doc.capacity,
+      price: doc.price ?? 0,
       schedule: {
         recurrence: {
           type: doc.schedule.recurrence.type,

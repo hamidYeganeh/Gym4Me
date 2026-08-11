@@ -27,6 +27,7 @@ export type ArticleEngagement = {
 export type ArticleViewerState = {
   liked: boolean;
   saved: boolean;
+  read: boolean;
 };
 
 export type ArticleSummary = {

@@ -1,10 +1,49 @@
-import type { Privacy, VerificationStatus } from "../types";
+import type {
+  AthleteBodyType,
+  AthleteDiet,
+  AthleteExperience,
+  AthleteMood,
+  BloodGroup,
+  Privacy,
+  RhFactor,
+  VerificationStatus,
+} from "../types";
+
+export type UpdateAddressInput = {
+  provinceId?: string | null;
+  city?: string;
+  street?: string;
+  apartment?: string;
+  postalCode?: string;
+  point?: { lat: number; lng: number } | null;
+};
 
 export type UpdateMeInput = {
   name?: { first?: string; last?: string };
   avatar?: { mediaId?: string | null };
   demographics?: { gender?: string; birthDate?: string };
+  address?: UpdateAddressInput;
   code?: string;
+};
+
+export type AthleteLifestyle = {
+  bodyType: AthleteBodyType | null;
+  experience: AthleteExperience | null;
+  sleepLevel: number | null;
+  mood: AthleteMood | null;
+  diet: AthleteDiet | null;
+  dailyCalories: number | null;
+  activityKeys: string[];
+};
+
+export type AthleteBloodType = { group: BloodGroup; rh: RhFactor };
+
+export type AthleteHealth = {
+  bloodType: AthleteBloodType | null;
+  allergies: string[];
+  conditions: string | null;
+  medications: string | null;
+  note: string | null;
 };
 
 export type AthleteProfile = {
@@ -14,10 +53,32 @@ export type AthleteProfile = {
   levelKey: string | null;
   body: { heightCm: number | null; weightKg: number | null };
   privacy: { metrics?: Privacy; photos?: Privacy };
+  metrics: { preferredKeys: string[] };
   sportIds: string[];
   goalKeys: string[];
+  lifestyle: AthleteLifestyle;
+  health: AthleteHealth;
   createdAt: string;
   updatedAt: string;
+};
+
+export type UpdateAthleteLifestyleInput = {
+  bodyType?: AthleteBodyType;
+  experience?: AthleteExperience;
+  sleepLevel?: number;
+  mood?: AthleteMood;
+  diet?: AthleteDiet;
+  /** null clears the value (user doesn't know their intake). */
+  dailyCalories?: number | null;
+  activityKeys?: string[];
+};
+
+export type UpdateAthleteHealthInput = {
+  bloodType?: AthleteBloodType | null;
+  allergies?: string[];
+  conditions?: string;
+  medications?: string;
+  note?: string;
 };
 
 export type UpdateAthleteProfileInput = {
@@ -25,8 +86,11 @@ export type UpdateAthleteProfileInput = {
   levelKey?: string;
   body?: { heightCm?: number; weightKg?: number };
   privacy?: { metrics?: Privacy; photos?: Privacy };
+  metrics?: { preferredKeys?: string[] };
   sportIds?: string[];
   goalKeys?: string[];
+  lifestyle?: UpdateAthleteLifestyleInput;
+  health?: UpdateAthleteHealthInput;
 };
 
 export type CoachProfile = {

@@ -11,6 +11,7 @@ import {
 import { GeoPoint, GeoPointSchema } from './location.schema';
 import { Location } from './location.schema';
 import { Media } from './media.schema';
+import { PointsSummary, PointsSummarySchema } from './point-transaction.schema';
 import { RefItem } from './ref-item.schema';
 import { Sport } from './sport.schema';
 import { User } from './user.schema';
@@ -446,6 +447,10 @@ export class Club {
 
   @Prop({ type: [ClubAchievementRefSchema], default: [] })
   achievements!: ClubAchievementRef[];
+
+  /** Derived cache of the points ledger. */
+  @Prop({ type: PointsSummarySchema, default: () => ({ balance: 0, lifetime: 0 }) })
+  points!: PointsSummary;
 
   @Prop({ type: [ClubRuleSchema], default: [] })
   rules!: ClubRule[];

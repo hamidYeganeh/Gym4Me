@@ -780,6 +780,8 @@
       "kycHint": "تأیید هویت برای فعالیت‌های حساس",
       "roles": "نقش‌های من",
       "rolesHint": "افزودن نقش مربی یا باشگاه‌دار",
+      "achievements": "امتیازها و نشان‌ها",
+      "achievementsHint": "امتیازهای شما و نشان‌های کسب‌شده",
       "preferencesGroup": "ترجیحات",
       "notifications": "اعلان‌ها",
       "notificationsHint": "دریافت یادآوری و خبرهای مهم",
@@ -794,6 +796,32 @@
       "about": "نسخه برنامه",
       "versionValue": "۱.۰.۰",
       "logout": "خروج از حساب"
+    },
+    "Achievements": {
+      "title": "امتیازها و نشان‌ها",
+      "subtitle": "امتیازهای شما، نشان‌های کسب‌شده و تاریخچه امتیازها.",
+      "back": "بازگشت",
+      "loading": "در حال بارگذاری...",
+      "error": "بارگذاری اطلاعات ناموفق بود.",
+      "retry": "تلاش دوباره",
+      "empty": "هنوز نشانی تعریف نشده است.",
+      "balance": "امتیاز قابل استفاده",
+      "lifetime": "مجموع امتیاز",
+      "unlockedCount": "نشان‌ها",
+      "unlockedSection": "نشان‌های کسب‌شده",
+      "lockedSection": "نشان‌های بعدی",
+      "locked": "قفل",
+      "bonusPoints": "{points}+ امتیاز",
+      "progress": "{current} از {threshold}",
+      "historySection": "تاریخچه امتیازها",
+      "historyEmpty": "هنوز امتیازی ثبت نشده است.",
+      "reasons": {
+        "rule_award": "امتیاز فعالیت",
+        "achievement_bonus": "پاداش نشان",
+        "admin_adjustment": "اصلاح توسط پشتیبانی",
+        "redemption": "خرج امتیاز",
+        "expiry": "انقضای امتیاز"
+      }
     },
     "Kyc": {
       "title": "احراز هویت",
@@ -1144,6 +1172,8 @@
       "choices": "گزینه‌ها",
       "refs": "اقلام مرجع",
       "articles": "مقالات",
+      "banners": "بنرها",
+      "gamification": "امتیازها",
       "support": "پشتیبانی",
       "calendar": "تقویم",
       "profile": "پروفایل",
@@ -1224,6 +1254,258 @@
         "delete": "حذف",
         "deleteTitle": "حذف مقاله",
         "deleteBody": "این مقاله برای همیشه حذف می‌شود. مطمئن هستید؟"
+      }
+    },
+    "Banners": {
+      "title": "بنرها",
+      "subtitle": "مدیریت بنرهای تبلیغاتی صفحات مختلف اپلیکیشن.",
+      "empty": "بنری ثبت نشده است.",
+      "filterAll": "همه",
+      "searchPlaceholder": "جستجو در عنوان بنر...",
+      "searchAriaLabel": "جستجوی بنرها",
+      "loading": "در حال بارگذاری...",
+      "loadingMore": "در حال بارگذاری بیشتر...",
+      "refresh": "بازنشانی",
+      "cancel": "انصراف",
+      "errorLoad": "بارگذاری بنرها ناموفق بود.",
+      "actionError": "عملیات ناموفق بود.",
+      "infinite": {
+        "summary": "{loaded} از {total} بنر"
+      },
+      "publishStatus": {
+        "draft": "پیش‌نویس",
+        "published": "منتشرشده",
+        "unpublished": "لغو انتشار"
+      },
+      "placements": {
+        "discovery_home": "خانه اکتشاف",
+        "discovery_clubs": "لیست باشگاه‌ها",
+        "discovery_coaches": "لیست مربی‌ها",
+        "athlete_home": "خانه ورزشکار",
+        "coach_home": "خانه مربی",
+        "owner_home": "خانه باشگاه‌دار"
+      },
+      "linkKinds": {
+        "none": "بدون لینک",
+        "internal": "داخل اپ",
+        "external": "لینک خارجی"
+      },
+      "columns": {
+        "title": "عنوان",
+        "placement": "جایگاه",
+        "slides": "اسلایدها",
+        "publishStatus": "وضعیت",
+        "order": "ترتیب",
+        "actions": "عملیات"
+      },
+      "fields": {
+        "title": "عنوان",
+        "titleHint": "فقط برای مدیریت — به کاربر نمایش داده نمی‌شود",
+        "placement": "جایگاه نمایش",
+        "slides": "اسلایدها",
+        "slidesHint": "تصاویر بنر را آپلود کنید و برای هر کدام لینک مقصد تعیین کنید.",
+        "slidesEmpty": "هنوز تصویری اضافه نشده است.",
+        "linkKind": "نوع لینک",
+        "linkUrl": "آدرس لینک",
+        "linkUrlInternalHint": "/discovery/clubs/…",
+        "linkUrlExternalHint": "https://example.com",
+        "alt": "متن جایگزین تصویر",
+        "publishStatus": "وضعیت انتشار",
+        "startsAt": "شروع نمایش",
+        "endsAt": "پایان نمایش",
+        "order": "ترتیب"
+      },
+      "uploader": {
+        "title": "آپلود تصویر بنر",
+        "description": "JPG، PNG یا WebP — نسبت پیشنهادی ۲:۱",
+        "button": "انتخاب تصویر",
+        "error": "آپلود تصویر ناموفق بود."
+      },
+      "actions": {
+        "create": "بنر جدید",
+        "createTitle": "ایجاد بنر",
+        "edit": "ویرایش",
+        "editTitle": "ویرایش بنر",
+        "save": "ذخیره",
+        "delete": "حذف",
+        "deleteTitle": "حذف بنر",
+        "deleteBody": "این بنر برای همیشه حذف می‌شود. مطمئن هستید؟",
+        "removeSlide": "حذف اسلاید"
+      }
+    },
+    "Gamification": {
+      "searchPlaceholder": "جستجو...",
+      "searchAriaLabel": "جستجو در امتیازها",
+      "tabs": {
+        "achievements": "نشان‌ها",
+        "rules": "قوانین امتیاز",
+        "ledger": "دفتر امتیازها"
+      },
+      "loading": "در حال بارگذاری...",
+      "loadingMore": "در حال بارگذاری بیشتر...",
+      "refresh": "بازنشانی",
+      "cancel": "انصراف",
+      "filterAll": "همه",
+      "filterAllReasons": "همه دلایل",
+      "unlimited": "نامحدود",
+      "errorLoad": "بارگذاری اطلاعات ناموفق بود.",
+      "actionError": "عملیات ناموفق بود.",
+      "infinite": {
+        "summary": "{loaded} از {total} مورد"
+      },
+      "subjects": {
+        "athlete": "ورزشکار",
+        "coach": "مربی",
+        "club": "باشگاه"
+      },
+      "grantModes": {
+        "automatic": "خودکار",
+        "manual": "دستی"
+      },
+      "statuses": {
+        "active": "فعال",
+        "inactive": "غیرفعال",
+        "archived": "بایگانی‌شده"
+      },
+      "metrics": {
+        "lifetime_points": "مجموع امتیاز کل",
+        "bookings_count": "تعداد رزروها",
+        "articles_read_count": "تعداد مقالات خوانده‌شده",
+        "articles_liked_count": "تعداد مقالات لایک‌شده",
+        "reviews_count": "تعداد نظرات",
+        "reviews_average": "میانگین امتیاز نظرات",
+        "branches_count": "تعداد شعبه‌ها"
+      },
+      "events": {
+        "booking_completed": "تکمیل رزرو",
+        "article_read": "خواندن مقاله",
+        "article_liked": "لایک مقاله",
+        "article_commented": "ثبت دیدگاه مقاله",
+        "club_review_approved": "تأیید نظر باشگاه",
+        "referral_joined": "پیوستن با معرفی",
+        "profile_completed": "تکمیل پروفایل"
+      },
+      "repeats": {
+        "unlimited": "نامحدود",
+        "once_per_target": "یک بار برای هر مورد",
+        "once": "فقط یک بار"
+      },
+      "reasons": {
+        "rule_award": "قانون امتیاز",
+        "achievement_bonus": "پاداش نشان",
+        "admin_adjustment": "اصلاح دستی ادمین",
+        "redemption": "خرج امتیاز",
+        "expiry": "انقضا"
+      },
+      "actions": {
+        "save": "ذخیره",
+        "edit": "ویرایش",
+        "archive": "بایگانی",
+        "grant": "اعطا"
+      },
+      "achievements": {
+        "title": "نشان‌ها",
+        "subtitle": "تعریف و مدیریت نشان‌هایی که به ورزشکاران، مربی‌ها و باشگاه‌ها اعطا می‌شود.",
+        "empty": "نشانی تعریف نشده است.",
+        "columns": {
+          "title": "عنوان",
+          "audience": "مخاطب",
+          "grant": "نحوه اعطا",
+          "bonusPoints": "امتیاز پاداش",
+          "grantsCount": "تعداد اعطا",
+          "status": "وضعیت",
+          "actions": "عملیات"
+        },
+        "fields": {
+          "title": "عنوان",
+          "titleHint": "مثلاً «مربی برتر»",
+          "description": "توضیحات",
+          "icon": "آیکون",
+          "iconHint": "نام آیکون یا آدرس تصویر",
+          "audience": "مخاطبان",
+          "grantMode": "نحوه اعطا",
+          "metric": "معیار",
+          "threshold": "حد نصاب",
+          "bonusPoints": "امتیاز پاداش",
+          "order": "ترتیب",
+          "subjectType": "نوع دریافت‌کننده",
+          "subjectId": "شناسه دریافت‌کننده",
+          "subjectIdHint": "شناسه‌ی پروفایل ورزشکار / مربی / باشگاه"
+        },
+        "actions": {
+          "create": "نشان جدید",
+          "createTitle": "ایجاد نشان",
+          "editTitle": "ویرایش نشان",
+          "archiveTitle": "بایگانی نشان",
+          "archiveBody": "این نشان بایگانی می‌شود و دیگر به کسی اعطا نخواهد شد. مطمئن هستید؟",
+          "grantTitle": "اعطای دستی نشان",
+          "grantDone": "نشان با موفقیت اعطا شد."
+        }
+      },
+      "rules": {
+        "title": "قوانین امتیاز",
+        "subtitle": "تعریف قوانین خودکار اعطای امتیاز بر اساس رویدادهای اپلیکیشن.",
+        "empty": "قانونی تعریف نشده است.",
+        "dailyCapShort": "سقف روزانه: {cap}",
+        "columns": {
+          "title": "عنوان",
+          "event": "رویداد",
+          "awards": "امتیازها",
+          "limits": "محدودیت‌ها",
+          "status": "وضعیت",
+          "actions": "عملیات"
+        },
+        "fields": {
+          "title": "عنوان",
+          "titleHint": "مثلاً «امتیاز رزرو»",
+          "description": "توضیحات",
+          "event": "رویداد",
+          "awards": "امتیازها",
+          "awardsHint": "برای هر نقش، مقدار امتیاز را مشخص کنید. مقدار ۰ یعنی بدون امتیاز.",
+          "repeat": "تکرار",
+          "dailyCap": "سقف روزانه",
+          "dailyCapHint": "حداکثر دفعات اعطا در روز — خالی یعنی نامحدود",
+          "effectiveFrom": "شروع اعتبار",
+          "effectiveTo": "پایان اعتبار"
+        },
+        "actions": {
+          "create": "قانون جدید",
+          "createTitle": "ایجاد قانون امتیاز",
+          "editTitle": "ویرایش قانون امتیاز",
+          "archiveTitle": "بایگانی قانون",
+          "archiveBody": "این قانون بایگانی می‌شود و دیگر امتیازی اعطا نمی‌کند. مطمئن هستید؟"
+        }
+      },
+      "ledger": {
+        "title": "دفتر امتیازها",
+        "subtitle": "تاریخچه تراکنش‌های امتیاز، آمار کلی و اصلاح دستی امتیازها.",
+        "empty": "تراکنشی ثبت نشده است.",
+        "byReason": "بر اساس دلیل",
+        "byRule": "بر اساس قانون",
+        "emptyBreakdown": "داده‌ای موجود نیست.",
+        "stats": {
+          "earned": "امتیاز کسب‌شده",
+          "spent": "امتیاز خرج‌شده",
+          "transactions": "تراکنش‌ها",
+          "grants": "نشان‌های اعطاشده"
+        },
+        "columns": {
+          "subject": "دریافت‌کننده",
+          "amount": "امتیاز",
+          "reason": "دلیل",
+          "note": "یادداشت",
+          "occurredAt": "زمان"
+        },
+        "fields": {
+          "amount": "مقدار امتیاز",
+          "amountHint": "عدد مثبت برای افزایش، منفی برای کاهش",
+          "note": "یادداشت",
+          "noteHint": "دلیل اصلاح را بنویسید"
+        },
+        "actions": {
+          "adjust": "اصلاح دستی امتیاز",
+          "adjustTitle": "اصلاح دستی امتیاز"
+        }
       }
     },
     "Support": {
@@ -1714,7 +1996,6 @@
         "unnamed": "بدون نام"
       }
     },
-
     "Clubs": {
       "title": "باشگاه‌ها",
       "subtitle": "مدیریت باشگاه‌ها، شعبه‌ها و وضعیت عملیاتی.",
@@ -1887,7 +2168,6 @@
         }
       }
     },
-
     "Basics": {
       "title": "دادهٔ مرجع",
       "subtitle": "مدیریت گزینه‌ها، مکان‌ها، رشته‌ها و اقلام مرجع پلتفرم.",
@@ -2537,7 +2817,6 @@
     "bottomNavSchedule": "برنامه",
     "bottomNavPrograms": "برنامه‌ها",
     "bottomNavMessages": "پیام‌ها",
-    "bottomNavAnalytics": "آمار",
     "bottomNavClubs": "باشگاه‌ها",
     "bottomNavStaff": "پرسنل",
     "bottomNavClasses": "کلاس‌ها",
@@ -2599,11 +2878,21 @@
     "tabUpcoming": "پیش رو",
     "tabPast": "گذشته",
     "statusPending": "در انتظار",
+    "statusAwaitingPayment": "در انتظار پرداخت",
     "statusConfirmed": "تایید‌شده",
+    "statusCheckedIn": "حاضر شده",
     "statusCompleted": "انجام‌شده",
     "statusNoShow": "غیبت",
     "statusCancelled": "لغو‌شده",
     "statusRejected": "رد‌شده",
+    "statusRefundRequested": "درخواست استرداد",
+    "statusRefunded": "مسترد‌شده",
+    "typeInPerson": "مشاوره حضوری",
+    "typeRemote": "مشاوره آنلاین",
+    "actionCheckIn": "ثبت حضور",
+    "actionComplete": "پایان جلسه",
+    "actionNoShow": "ثبت غیبت",
+    "actionCancel": "لغو جلسه",
     "checkInHint": "کد ورود شاگرد: {code}",
     "accept": "پذیرش",
     "reject": "رد کردن",
@@ -3045,6 +3334,9 @@
       "cancelled": "رزرو لغوشده‌ای ندارید."
     },
     "exploreCoaches": "کشف مربیان",
+    "coachSessionInPerson": "جلسه حضوری با مربی",
+    "coachSessionRemote": "مشاوره آنلاین با مربی",
+    "remoteLocation": "جلسه آنلاین",
     "status": {
       "PENDING": "در انتظار تأیید",
       "AWAITING_PAYMENT": "در انتظار پرداخت",
@@ -3083,7 +3375,154 @@
     "cancelConfirmTitle": "رزرو لغو شود؟",
     "cancelConfirmBody": "با لغو رزرو، ظرفیت شما آزاد می‌شود. این عملیات در نسخه نمایشی اعمال نمی‌شود.",
     "confirmCancel": "بله، لغو کن",
-    "keepBooking": "انصراف"
+    "keepBooking": "انصراف",
+    "actionError": "انجام عملیات ممکن نشد. دوباره تلاش کنید.",
+    "rescheduleBooking": "تغییر زمان جلسه",
+    "cancelReasonTitle": "دلیل لغو",
+    "cancelReasons": {
+      "schedule_conflict": "تداخل زمانی دارم",
+      "personal": "دلایل شخصی",
+      "coach_changed": "می‌خواهم مربی را عوض کنم",
+      "price": "هزینه جلسه",
+      "other": "دلیل دیگر"
+    },
+    "cancelNoteLabel": "توضیح (اختیاری)",
+    "cancelNotePlaceholder": "دلیل لغو را بنویسید…"
+  },
+  "AthleteBookingReschedule": {
+    "pageTitle": "تغییر زمان رزرو",
+    "back": "بازگشت",
+    "title": "تغییر زمان جلسه",
+    "subtitle": "زمان جدیدی از نوبت‌های خالی مربی انتخاب کنید.",
+    "currentSlot": "زمان فعلی جلسه",
+    "loadError": "اطلاعات رزرو دریافت نشد.",
+    "submitError": "تغییر زمان ممکن نشد. دوباره تلاش کنید.",
+    "today": "امروز",
+    "weekday": {
+      "saturday": "شنبه",
+      "sunday": "یکشنبه",
+      "monday": "دوشنبه",
+      "tuesday": "سه‌شنبه",
+      "wednesday": "چهارشنبه",
+      "thursday": "پنجشنبه",
+      "friday": "جمعه"
+    },
+    "prevWeek": "هفته قبل",
+    "nextWeek": "هفته بعد",
+    "slotsTitle": "نوبت‌های خالی",
+    "slotAvailable": "آزاد",
+    "slotUnavailable": "پر",
+    "slotsLoading": "در حال دریافت نوبت‌ها…",
+    "slotsEmpty": "برای این هفته نوبت خالی ثبت نشده است.",
+    "selectedSummary": "زمان جدید: {date}، ساعت {time}",
+    "selectPrompt": "یک نوبت جدید انتخاب کنید",
+    "confirm": "ثبت زمان جدید"
+  },
+  "CoachReserve": {
+    "pageTitle": "رزرو مشاوره",
+    "back": "بازگشت",
+    "stepperLabel": "مراحل رزرو",
+    "stepInfo": "اطلاعات",
+    "stepTime": "زمان",
+    "stepPayment": "پرداخت",
+    "infoTitle": "اطلاعات شما",
+    "fullName": "نام و نام خانوادگی",
+    "phone": "شماره موبایل",
+    "conditionsTitle": "سابقه پزشکی",
+    "conditionsHint": "در صورت داشتن هر یک از موارد زیر، انتخاب کنید تا مربی در جریان باشد.",
+    "conditions": {
+      "heart": "بیماری قلبی",
+      "bloodPressure": "فشار خون",
+      "diabetes": "دیابت",
+      "asthma": "آسم",
+      "injury": "آسیب‌دیدگی"
+    },
+    "supplementsTitle": "مکمل‌های مصرفی",
+    "supplements": {
+      "protein": "پروتئین",
+      "creatine": "کراتین",
+      "vitamins": "ویتامین",
+      "preWorkout": "پمپ / پیش تمرین"
+    },
+    "noteLabel": "توضیح برای مربی (اختیاری)",
+    "notePlaceholder": "هدف یا نکته‌ای که مربی باید بداند…",
+    "noteCount": "{count} از {max}",
+    "consultationTitle": "نوع مشاوره",
+    "consultationInPerson": "حضوری",
+    "consultationRemote": "آنلاین",
+    "consultationAvailable": "موجود",
+    "consultationUnavailable": "ناموجود",
+    "priceSuffix": "تومان",
+    "prevWeek": "هفته قبل",
+    "nextWeek": "هفته بعد",
+    "today": "امروز",
+    "weekday": {
+      "saturday": "شنبه",
+      "sunday": "یکشنبه",
+      "monday": "دوشنبه",
+      "tuesday": "سه‌شنبه",
+      "wednesday": "چهارشنبه",
+      "thursday": "پنجشنبه",
+      "friday": "جمعه"
+    },
+    "slotsTitle": "نوبت‌های خالی",
+    "slotAvailable": "آزاد",
+    "slotUnavailable": "پر",
+    "slotsLoading": "در حال دریافت نوبت‌ها…",
+    "slotsEmpty": "برای این هفته نوبت خالی ثبت نشده است.",
+    "remoteHint": "لینک جلسه آنلاین پس از تأیید رزرو برای شما ارسال می‌شود.",
+    "locationTitle": "محل برگزاری: {club}",
+    "paymentMethodTitle": "روش پرداخت",
+    "paymentGateway": "درگاه پرداخت آنلاین",
+    "paymentGatewayHint": "پرداخت امن از طریق درگاه زرین‌پال",
+    "couponLabel": "کد تخفیف",
+    "couponPlaceholder": "کد تخفیف را وارد کنید",
+    "couponApply": "اعمال",
+    "couponApplied": "اعمال شد",
+    "summaryTitle": "خلاصه رزرو",
+    "summaryConsultation": "نوع مشاوره",
+    "summarySlot": "زمان جلسه",
+    "summaryLocation": "محل برگزاری",
+    "summaryPrice": "مبلغ جلسه",
+    "summaryDiscount": "تخفیف",
+    "summaryTotal": "مبلغ قابل پرداخت",
+    "notSelected": "انتخاب نشده",
+    "totalLabel": "مبلغ",
+    "nextStep": "ادامه",
+    "submitting": "در حال ثبت…",
+    "payAndReserve": "پرداخت و رزرو",
+    "submitError": "ثبت رزرو ممکن نشد. دوباره تلاش کنید."
+  },
+  "CoachSlotsManage": {
+    "pageTitle": "مدیریت نوبت‌ها",
+    "back": "بازگشت",
+    "title": "نوبت‌های من",
+    "subtitle": "زمان‌های خالی خود را باز کنید تا شاگردان بتوانند جلسه رزرو کنند.",
+    "newSlotTitle": "نوبت جدید",
+    "dayLabel": "روز",
+    "timeLabel": "ساعت شروع",
+    "durationLabel": "مدت جلسه",
+    "durationMinutes": "{minutes} دقیقه",
+    "venueLabel": "محل برگزاری",
+    "venueRemote": "آنلاین / بدون باشگاه",
+    "noClubsHint": "برای نوبت حضوری، ابتدا باید عضو یک باشگاه باشید.",
+    "createSlot": "افزودن نوبت",
+    "createError": "ثبت نوبت ممکن نشد. دوباره تلاش کنید.",
+    "removeSlot": "حذف نوبت",
+    "removeError": "حذف نوبت ممکن نشد.",
+    "loadError": "دریافت نوبت‌ها ممکن نشد.",
+    "prevWeek": "هفته قبل",
+    "nextWeek": "هفته بعد",
+    "emptyDay": "نوبتی ثبت نشده است.",
+    "weekday": {
+      "saturday": "شنبه",
+      "sunday": "یکشنبه",
+      "monday": "دوشنبه",
+      "tuesday": "سه‌شنبه",
+      "wednesday": "چهارشنبه",
+      "thursday": "پنجشنبه",
+      "friday": "جمعه"
+    }
   },
   "ReserveFlow": {
     "pageTitle": "رزرو در {club}",
@@ -3116,7 +3555,13 @@
     "selectPlanHint": "طرح را انتخاب کنید",
     "pricePrefix": "از",
     "priceSuffix": "تومان",
-    "cta": "تأیید رزرو"
+    "cta": "تأیید رزرو",
+    "loadError": "دریافت برنامه باشگاه ممکن نشد. دوباره تلاش کنید.",
+    "submitError": "ثبت رزرو ناموفق بود. دوباره تلاش کنید.",
+    "planSingleTitle": "تک‌جلسه",
+    "planSingleDescription": "یک جلسه استفاده از سانس انتخابی بدون تعهد بلندمدت.",
+    "planPackTitle": "بسته {count} جلسه‌ای",
+    "planPackDescription": "{count} جلسه هفتگی در همین سانس و همین روز هفته."
   },
   "Payment": {
     "pageTitle": "پرداخت",
@@ -3210,6 +3655,8 @@
     "title": "کشف کنید",
     "subtitle": "بر اساس ویژگی، شهر، فاصله، مربی، کلاس و امکانات، گزینه مناسب خود را پیدا کنید.",
     "back": "بازگشت",
+    "bannersLabel": "بنرهای تبلیغاتی",
+    "bannerSlideLabel": "اسلاید {current} از {total}",
     "quickNavLabel": "دسترسی سریع",
     "quickMap": "نقشه",
     "quickClubs": "باشگاه‌ها",
@@ -3582,7 +4029,6 @@
     "statOccupancyUnit": "٪",
     "statCopy": "کپی",
     "statEdit": "ویرایش",
-
     "createClubTitle": "باشگاه جدید",
     "createClubSubtitle": "نسخه آزمایشی",
     "createClubMeta": "۲ باشگاه باقی‌مانده",
@@ -3651,6 +4097,8 @@
     "clientsLinkDescription": "فهرست شاگردان و روند پیشرفت آن‌ها.",
     "bookingsLink": "درخواست‌های رزرو",
     "bookingsLinkDescription": "پذیرش یا رد درخواست‌ها و جلسات پیش رو.",
+    "slotsLink": "نوبت‌های خالی",
+    "slotsLinkDescription": "زمان‌های آزاد خود را برای رزرو شاگردان باز کنید.",
     "programsLink": "برنامه‌ها",
     "programsLinkDescription": "ساخت و مدیریت برنامه‌های تمرینی.",
     "earningsLink": "درآمد",
@@ -3931,7 +4379,13 @@
       "ctaPrimary": "شروع کنید",
       "ctaSecondary": "بیشتر بدانید",
       "attrs": [
-        ["npm", "npm install", "npm install gym4me", "npm install", "npm"],
+        [
+          "npm",
+          "npm install",
+          "npm install gym4me",
+          "npm install",
+          "npm"
+        ],
         [
           "gym4me",
           "gym4me app",
@@ -3940,8 +4394,20 @@
           "gym4me",
           "باشگاه"
         ],
-        ["داده", "رزرو", "کلاس", "مربی", "ورزشکار"],
-        ["باشگاه", "اشتراک", "آمار", "برنامه", "پروفایل"]
+        [
+          "داده",
+          "رزرو",
+          "کلاس",
+          "مربی",
+          "ورزشکار"
+        ],
+        [
+          "باشگاه",
+          "اشتراک",
+          "آمار",
+          "برنامه",
+          "پروفایل"
+        ]
       ]
     }
   },
