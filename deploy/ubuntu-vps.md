@@ -1,13 +1,15 @@
 # Ubuntu VPS deployment
 
-This stack serves:
+This stack serves subdomain hosts (point DNS A records to `185.105.239.140`):
 
-- Website: `http://185.105.239.140/`
-- Admin: `http://185.105.239.140/admin/`
-- API: `http://185.105.239.140/api/v1`
+| Host | App |
+|------|-----|
+| `http://gym4me.ir` | Website |
+| `http://app.gym4me.ir` | Mobile (web) |
+| `http://admin.gym4me.ir` | Admin |
+| `http://api.gym4me.ir/api/v1` | API |
 
-The native mobile app is distributed separately, but its production API URL should be
-`http://185.105.239.140/api/v1` until a domain and HTTPS are configured.
+Native mobile builds should use `API_PUBLIC_URL` + `/api/v1` (same as the web app).
 
 ## 1. Prepare Ubuntu
 
@@ -28,7 +30,21 @@ ufw allow 80/tcp
 ufw --force enable
 ```
 
-## 2. Get the project
+## 2. DNS
+
+At your registrar / DNS panel, create A records:
+
+```text
+@       → 185.105.239.140
+www     → 185.105.239.140
+app     → 185.105.239.140
+admin   → 185.105.239.140
+api     → 185.105.239.140
+```
+
+Wait until `dig +short api.gym4me.ir` returns the VPS IP before relying on hosts.
+
+## 3. Get the project
 
 ```bash
 mkdir -p /opt/gym4me
@@ -44,7 +60,7 @@ rsync -az --exclude node_modules --exclude .git \
   ./ root@185.105.239.140:/opt/gym4me/
 ```
 
-## 3. Configure secrets
+## 4. Configure secrets
 
 ```bash
 cd /opt/gym4me
@@ -55,11 +71,16 @@ nano .env.production
 chmod 600 .env.production
 ```
 
-Put the two generated values into `JWT_ACCESS_SECRET` and
-`JWT_PASSWORD_RESET_SECRET`, and set `KAVENEGAR_API_KEY`. The API intentionally
-does not allow mock SMS while running with `NODE_ENV=production`.
+Set:
 
-## 4. Build and start
+- `WEBSITE_URL`, `APP_URL`, `ADMIN_URL`, `API_PUBLIC_URL`, `CORS_ORIGINS`
+- `JWT_ACCESS_SECRET` and `JWT_PASSWORD_RESET_SECRET` (the two generated values)
+- `KAVENEGAR_API_KEY`
+
+The API intentionally does not allow mock SMS while running with `NODE_ENV=production`
+and `DEBUG_MODE=false`.
+
+## 5. Build and start
 
 ```bash
 cd /opt/gym4me
@@ -70,11 +91,14 @@ docker compose --env-file .env.production \
   -f docker-compose.production.yml ps
 ```
 
-Check the deployment:
+Check the deployment (from the VPS, Host header required for subdomain routing):
 
 ```bash
 curl -f http://127.0.0.1/health
-curl -f http://127.0.0.1/api/v1
+curl -f -H 'Host: gym4me.ir' http://127.0.0.1/
+curl -f -H 'Host: app.gym4me.ir' http://127.0.0.1/
+curl -f -H 'Host: admin.gym4me.ir' http://127.0.0.1/
+curl -f -H 'Host: api.gym4me.ir' http://127.0.0.1/api/v1
 ```
 
 View logs:
@@ -111,7 +135,24 @@ docker run --rm \
 
 ## HTTPS
 
-Do not keep authentication or payment traffic on plain HTTP. Point a domain's DNS
-record to `185.105.239.140`, change `PUBLIC_URL` and `CORS_ORIGINS` to the HTTPS
-domain, then add a TLS reverse proxy such as Caddy or Certbot-managed Nginx. Open
-port `443/tcp` only after TLS is configured.
+Do not keep authentication or payment traffic on plain HTTP.
+
+1. Open TLS: `ufw allow 443/tcp`
+2. Issue certificates (Certbot or Caddy) for `gym4me.ir`, `www.gym4me.ir`,
+   `app.gym4me.ir`, `admin.gym4me.ir`, and `api.gym4me.ir`
+3. Switch every URL in `.env.production` to `https://…` and rebuild so
+   baked-in client `NEXT_PUBLIC_*` / `VITE_*` values match:
+
+```bash
+# Example after TLS is live:
+WEBSITE_URL=https://gym4me.ir
+APP_URL=https://app.gym4me.ir
+ADMIN_URL=https://admin.gym4me.ir
+API_PUBLIC_URL=https://api.gym4me.ir
+CORS_ORIGINS=https://gym4me.ir,https://www.gym4me.ir,https://app.gym4me.ir,https://admin.gym4me.ir
+```
+
+```bash
+docker compose --env-file .env.production \
+  -f docker-compose.production.yml up -d --build
+```

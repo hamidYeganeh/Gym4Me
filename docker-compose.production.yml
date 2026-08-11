@@ -52,7 +52,7 @@ services:
       JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-900s}
       JWT_REFRESH_TTL_DAYS: ${JWT_REFRESH_TTL_DAYS:-30}
       CORS_ORIGINS: ${CORS_ORIGINS:?CORS_ORIGINS is required}
-      API_BASE_URL: ${PUBLIC_URL:?PUBLIC_URL is required}
+      API_BASE_URL: ${API_PUBLIC_URL:?API_PUBLIC_URL is required}
       ENABLE_SWAGGER: ${ENABLE_SWAGGER:-false}
       DEBUG_MODE: ${DEBUG_MODE:-false}
       SMS_PROVIDER: ${SMS_PROVIDER:-kavenegar}
@@ -98,14 +98,14 @@ services:
       context: .
       dockerfile: apps/website/Dockerfile
       args:
-        NEXT_PUBLIC_API_BASE_URL: ${PUBLIC_URL:?PUBLIC_URL is required}/api/v1
-        NEXT_PUBLIC_SITE_URL: ${PUBLIC_URL:?PUBLIC_URL is required}
+        NEXT_PUBLIC_API_BASE_URL: ${API_PUBLIC_URL:?API_PUBLIC_URL is required}/api/v1
+        NEXT_PUBLIC_SITE_URL: ${WEBSITE_URL:?WEBSITE_URL is required}
     restart: unless-stopped
     environment:
       NODE_ENV: production
       INTERNAL_API_BASE_URL: http://api:8088/api/v1
-      NEXT_PUBLIC_API_BASE_URL: ${PUBLIC_URL:?PUBLIC_URL is required}/api/v1
-      NEXT_PUBLIC_SITE_URL: ${PUBLIC_URL:?PUBLIC_URL is required}
+      NEXT_PUBLIC_API_BASE_URL: ${API_PUBLIC_URL:?API_PUBLIC_URL is required}/api/v1
+      NEXT_PUBLIC_SITE_URL: ${WEBSITE_URL:?WEBSITE_URL is required}
     healthcheck:
       test:
         [
@@ -121,13 +121,28 @@ services:
     networks:
       - frontend
 
+  mobile:
+    build:
+      context: .
+      dockerfile: apps/mobile/Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${API_PUBLIC_URL:?API_PUBLIC_URL is required}/api/v1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - frontend
+
   admin:
     build:
       context: .
       dockerfile: apps/admin/Dockerfile
       args:
-        VITE_API_BASE_URL: ${PUBLIC_URL:?PUBLIC_URL is required}/api/v1
-        VITE_BASE_PATH: /admin/
+        VITE_API_BASE_URL: ${API_PUBLIC_URL:?API_PUBLIC_URL is required}/api/v1
+        VITE_BASE_PATH: /
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1/health"]
@@ -144,6 +159,8 @@ services:
       api:
         condition: service_healthy
       website:
+        condition: service_healthy
+      mobile:
         condition: service_healthy
       admin:
         condition: service_healthy

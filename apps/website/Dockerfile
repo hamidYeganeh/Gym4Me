@@ -2,7 +2,7 @@
 FROM node:22-bookworm-slim AS deps
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+COPY package.json package-lock.json .npmrc ./
 COPY apps/api/package.json apps/api/
 COPY apps/admin/package.json apps/admin/
 COPY apps/mobile/package.json apps/mobile/
@@ -16,7 +16,7 @@ COPY packages/theme/package.json packages/theme/
 COPY packages/typescript-config/package.json packages/typescript-config/
 COPY packages/ui/package.json packages/ui/
 
-RUN npm ci
+RUN npm ci --workspace=website --include-workspace-root
 
 FROM node:22-bookworm-slim AS builder
 WORKDIR /app

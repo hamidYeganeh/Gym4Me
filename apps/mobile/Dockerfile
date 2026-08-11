@@ -1,8 +1,8 @@
-# Gym4Me Admin — Vite static build served by nginx
+# Gym4Me Mobile — Next.js static export served by nginx (same artifact as Capacitor webDir)
 FROM node:22-bookworm-slim AS deps
 WORKDIR /app
 
-COPY package.json package-lock.json .npmrc ./
+COPY package.json package-lock.json ./
 COPY apps/api/package.json apps/api/
 COPY apps/admin/package.json apps/admin/
 COPY apps/mobile/package.json apps/mobile/
@@ -16,25 +16,25 @@ COPY packages/theme/package.json packages/theme/
 COPY packages/typescript-config/package.json packages/typescript-config/
 COPY packages/ui/package.json packages/ui/
 
-RUN npm ci --workspace=admin --include-workspace-root
+RUN npm ci
 
 FROM node:22-bookworm-slim AS builder
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY package.json package-lock.json turbo.json ./
-COPY apps/admin ./apps/admin
+COPY apps/mobile ./apps/mobile
 COPY packages ./packages
 
-ARG VITE_API_BASE_URL
-ARG VITE_BASE_PATH=/
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
-ENV VITE_BASE_PATH=$VITE_BASE_PATH
+ARG NEXT_PUBLIC_API_BASE_URL
+ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN npm run build --workspace=admin
+RUN npm run build --workspace=mobile
 
 FROM nginx:1.28-alpine AS runner
-COPY deploy/admin.nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=builder /app/apps/admin/dist /usr/share/nginx/html
+COPY deploy/mobile.nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/apps/mobile/out /usr/share/nginx/html
 
 EXPOSE 80
