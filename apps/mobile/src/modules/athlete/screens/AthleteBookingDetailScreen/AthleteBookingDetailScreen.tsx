@@ -1,7 +1,14 @@
 "use client";
 
-import { Button, Chip, Input, Label, TextField, Typography } from "@heroui/react";
-import { ApiError } from "@repo/api";
+import {
+  Button,
+  Chip,
+  Input,
+  Label,
+  TextField,
+  Typography,
+} from "@heroui/react";
+import { ApiError, type BookingCancellationPreview } from "@repo/api";
 import { Check } from "@repo/icons/Check";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
@@ -24,6 +31,7 @@ import type {
 
 const TIMELINE_STEPS: BookingTimelineStepId[] = [
   "created",
+  "approval",
   "payment",
   "confirm",
   "attend",
@@ -33,13 +41,13 @@ const TIMELINE_STEPS: BookingTimelineStepId[] = [
 function getCurrentStepIndex(status: BookingStatus): number {
   switch (status) {
     case "AWAITING_PAYMENT":
-      return 1;
-    case "PENDING":
       return 2;
+    case "PENDING":
+      return 1;
     case "CONFIRMED":
-      return 3;
-    case "CHECKED_IN":
       return 4;
+    case "CHECKED_IN":
+      return 5;
     case "COMPLETED":
     case "REFUND_REQUESTED":
     case "REFUNDED":
@@ -47,7 +55,7 @@ function getCurrentStepIndex(status: BookingStatus): number {
     case "CANCELLED":
     case "REJECTED":
     case "NO_SHOW":
-      return 2;
+      return 3;
     default:
       return 0;
   }
@@ -67,6 +75,8 @@ export function AthleteBookingDetailScreen({
   const [cancelNote, setCancelNote] = useState("");
   const [isActing, setIsActing] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [cancellationPreview, setCancellationPreview] =
+    useState<BookingCancellationPreview | null>(null);
 
   const isApiBooking = Boolean(booking?.api);
 
@@ -116,6 +126,18 @@ export function AthleteBookingDetailScreen({
     });
   };
 
+  const openCancelPreview = () => {
+    if (!booking || !isApiBooking) {
+      setIsCancelConfirmOpen(true);
+      return;
+    }
+    void runAction(async () => {
+      const preview = await accountBookings.cancellationPreview(booking.id);
+      setCancellationPreview(preview);
+      setIsCancelConfirmOpen(true);
+    });
+  };
+
   const backButton = (
     <Button
       aria-label={t("back")}
@@ -132,13 +154,15 @@ export function AthleteBookingDetailScreen({
     return (
       <AppLayout
         className={styles.root}
-        header={
-          <Header startContent={backButton} />
-        }
+        header={<Header startContent={backButton} />}
       >
         <div className={styles.content}>
           <div className={styles.empty}>
-            <Typography className={styles.emptyTitle} type="h4" weight="semibold">
+            <Typography
+              className={styles.emptyTitle}
+              type="h4"
+              weight="semibold"
+            >
               {t("notFound")}
             </Typography>
           </div>
@@ -158,8 +182,7 @@ export function AthleteBookingDetailScreen({
     ? canManageBooking(booking.status)
     : (booking.status === "PENDING" || booking.status === "CONFIRMED") &&
       !isCancelRequested;
-  const showRescheduleAction =
-    isApiBooking && canManageBooking(booking.status);
+  const showRescheduleAction = isApiBooking && canManageBooking(booking.status);
 
   const detailRows = [
     { key: "date", label: t("date"), value: booking.dateLabel },
@@ -171,9 +194,7 @@ export function AthleteBookingDetailScreen({
   return (
     <AppLayout
       className={styles.root}
-      header={
-        <Header startContent={backButton} />
-      }
+      header={<Header startContent={backButton} />}
     >
       <div className={styles.content}>
         <section className={styles.hero}>
@@ -214,7 +235,9 @@ export function AthleteBookingDetailScreen({
                             : styles.timelineDotPending
                       }`}
                     >
-                      {state === "done" ? <Check aria-hidden size={14} /> : null}
+                      {state === "done" ? (
+                        <Check aria-hidden size={14} />
+                      ) : null}
                     </span>
                     {!isLast ? (
                       <span
@@ -277,7 +300,11 @@ export function AthleteBookingDetailScreen({
 
         {showCheckIn ? (
           <section className={styles.checkInCard}>
-            <Typography className={styles.checkInTitle} type="h4" weight="semibold">
+            <Typography
+              className={styles.checkInTitle}
+              type="h4"
+              weight="semibold"
+            >
               {t("checkInTitle")}
             </Typography>
             <span className={styles.checkInCode}>{booking.checkInCode}</span>
@@ -331,7 +358,8 @@ export function AthleteBookingDetailScreen({
             <Button
               className="text-danger"
               fullWidth
-              onPress={() => setIsCancelConfirmOpen(true)}
+              isPending={isActing}
+              onPress={openCancelPreview}
               size="lg"
               variant="ghost"
             >
@@ -349,7 +377,17 @@ export function AthleteBookingDetailScreen({
                 {t("cancelConfirmTitle")}
               </Typography>
               <Typography className={styles.cancelConfirmBody} type="body-sm">
-                {t("cancelConfirmBody")}
+                {cancellationPreview
+                  ? t("cancelRefundPreview", {
+                      refund:
+                        cancellationPreview.refundAmount.toLocaleString(
+                          "fa-IR",
+                        ),
+                      fee: cancellationPreview.feeAmount.toLocaleString(
+                        "fa-IR",
+                      ),
+                    })
+                  : t("cancelConfirmBody")}
               </Typography>
 
               {isApiBooking ? (

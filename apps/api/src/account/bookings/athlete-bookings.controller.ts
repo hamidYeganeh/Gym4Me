@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -69,6 +62,15 @@ export class AthleteBookingsController {
   @ApiOperation({ summary: 'One of my bookings' })
   get(@CurrentUser('sub') userId: string, @Param('id') id: string) {
     return this.bookings.getForAthlete(userId, id);
+  }
+
+  @Get(':id/cancellation-preview')
+  @ApiOperation({ summary: 'Preview cancellation fee and refund' })
+  cancellationPreview(
+    @CurrentUser('sub') userId: string,
+    @Param('id') id: string,
+  ) {
+    return this.bookings.cancellationPreviewForAthlete(userId, id);
   }
 
   @Post(':id/pay')

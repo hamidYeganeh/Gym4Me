@@ -65,7 +65,7 @@ export class StaffService {
 
   /**
    * Owner of the club always passes. Active staff must hold `key` in
-   * their grants array. Full StaffPermissionGuard can wrap this later.
+   * their grants array. Prefer StaffPermissionGuard on controllers.
    */
   async assertStaffPermission(
     clubId: string,

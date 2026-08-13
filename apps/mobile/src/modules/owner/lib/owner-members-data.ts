@@ -9,6 +9,9 @@ export type OwnerMembershipState =
 
 export type OwnerMember = {
   id: string;
+  /** Present for app-account holders (needed for desk check-in). */
+  holderUserId?: string;
+  clubId?: string;
   name: string;
   avatar: string;
   planName: string;

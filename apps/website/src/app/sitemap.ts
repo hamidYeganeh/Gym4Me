@@ -6,8 +6,7 @@ import {
 } from "@/shared/lib/api";
 
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-  "https://gym4me.ir";
+  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https://gym4me.ir";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
@@ -21,6 +20,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 0.8,
     },
+    ...[
+      "/clubs",
+      "/coaches",
+      "/pricing",
+      "/for-clubs",
+      "/for-coaches",
+      "/for-athletes",
+    ].map((path) => ({
+      url: `${SITE_URL}${path}`,
+      changeFrequency: "weekly" as const,
+      priority: path === "/clubs" || path === "/coaches" ? 0.9 : 0.75,
+    })),
   ];
 
   let clubRoutes: MetadataRoute.Sitemap = [];
@@ -28,8 +39,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let articleRoutes: MetadataRoute.Sitemap = [];
 
   try {
-    const clubs = await discoveryClubs.list({ page_size: 100 });
-    clubRoutes = clubs.result.map((club) => ({
+    const items: Awaited<ReturnType<typeof discoveryClubs.list>>["result"] = [];
+    let page = 1;
+    while (page) {
+      const clubs = await discoveryClubs.list({ page, page_size: 200 });
+      items.push(...clubs.result);
+      page = clubs.pagination.next ?? 0;
+    }
+    clubRoutes = items.map((club) => ({
       url: `${SITE_URL}/clubs/${club.id}`,
       lastModified: club.updatedAt ? new Date(club.updatedAt) : undefined,
       changeFrequency: "weekly" as const,
@@ -40,8 +57,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   try {
-    const coaches = await discoveryCoaches.list({ page_size: 100 });
-    coachRoutes = coaches.result.map((coach) => ({
+    const items: Awaited<ReturnType<typeof discoveryCoaches.list>>["result"] =
+      [];
+    let page = 1;
+    while (page) {
+      const coaches = await discoveryCoaches.list({ page, page_size: 200 });
+      items.push(...coaches.result);
+      page = coaches.pagination.next ?? 0;
+    }
+    coachRoutes = items.map((coach) => ({
       url: `${SITE_URL}/coaches/${coach.userId}`,
       lastModified: coach.updatedAt ? new Date(coach.updatedAt) : undefined,
       changeFrequency: "weekly" as const,
@@ -52,8 +76,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   try {
-    const articles = await articlesApi.list({ page_size: 100 });
-    articleRoutes = articles.result.map((article) => ({
+    const items: Awaited<ReturnType<typeof articlesApi.list>>["result"] = [];
+    let page = 1;
+    while (page) {
+      const articles = await articlesApi.list({ page, page_size: 200 });
+      items.push(...articles.result);
+      page = articles.pagination.next ?? 0;
+    }
+    articleRoutes = items.map((article) => ({
       url: `${SITE_URL}/articles/${article.slug}`,
       lastModified: article.updatedAt ? new Date(article.updatedAt) : undefined,
       changeFrequency: "weekly" as const,

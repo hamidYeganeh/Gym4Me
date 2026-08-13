@@ -16,6 +16,9 @@ import {
   MembershipPlanKind,
   MembershipStatus,
   MembershipTransferPolicy,
+  PaymentChannel,
+  PaymentPurpose,
+  PaymentStatus,
   PlatformSubscriptionStatus,
   PublishStatus,
   SubscriptionRenewalMode,
@@ -24,6 +27,9 @@ import {
   paginatedResult,
   resolvePageSize,
 } from '../../common/utils/pagination.util';
+import { normalizeIranPhone } from '../../common/utils/phone.util';
+import { CouponsService } from '../../coupons/coupons.service';
+import { FinanceService } from '../../finance/finance.service';
 import { Club, ClubDocument } from '../../schemas/club.schema';
 import {
   ClubMembershipPlan,
@@ -45,6 +51,7 @@ import {
   PlatformSubscription,
   PlatformSubscriptionDocument,
 } from '../../schemas/platform-subscription.schema';
+import { User, UserDocument } from '../../schemas/user.schema';
 import {
   CancelMembershipDto,
   CancelPlatformSubscriptionDto,
@@ -52,11 +59,13 @@ import {
   CreateMembershipPlanDto,
   CreatePlatformPlanDto,
   FreezeMembershipDto,
+  ImportMembershipsDto,
   ListClubMembershipsQueryDto,
   ListMembershipPlansQueryDto,
   ListMyMembershipsQueryDto,
   ListPlatformPlansQueryDto,
   ListPlatformSubscriptionsQueryDto,
+  PaginationQueryDto,
   SelfPurchaseMembershipDto,
   SellMembershipDto,
   SubscribePlatformDto,
@@ -86,7 +95,11 @@ export class MembershipsService {
     private readonly platformPlanModel: Model<PlatformPlanDocument>,
     @InjectModel(PlatformSubscription.name)
     private readonly platformSubModel: Model<PlatformSubscriptionDocument>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
     private readonly audit: AuditService,
+    private readonly finance: FinanceService,
+    private readonly coupons: CouponsService,
   ) {}
 
   // ── Access ──────────────────────────────────────────────────────────────
@@ -171,8 +184,7 @@ export class MembershipsService {
           dto.rules.transferPolicy ??
           plan.rules?.transferPolicy ??
           MembershipTransferPolicy.FORBIDDEN,
-        guestPassCount:
-          dto.rules.guestPassCount ?? plan.rules?.guestPassCount,
+        guestPassCount: dto.rules.guestPassCount ?? plan.rules?.guestPassCount,
       };
     }
     if (dto.durationDays !== undefined) plan.durationDays = dto.durationDays;
@@ -231,6 +243,46 @@ export class MembershipsService {
     return this.toPlanPublic(plan);
   }
 
+  /** Public (unauthenticated) catalog: only active + published plans. */
+  async listPublicPlans(clubId: string, query: PaginationQueryDto) {
+    if (!Types.ObjectId.isValid(clubId)) {
+      throw new NotFoundException('Club not found');
+    }
+    const filter: QueryFilter<ClubMembershipPlanDocument> = {
+      clubId: new Types.ObjectId(clubId),
+      status: EntityStatus.ACTIVE,
+      publishStatus: PublishStatus.PUBLISHED,
+    };
+
+    const { page, pageSize } = resolvePageSize(query);
+    const [items, total] = await Promise.all([
+      this.planModel
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize),
+      this.planModel.countDocuments(filter),
+    ]);
+
+    return paginatedResult(
+      items.map((p) => this.toPlanPublic(p)),
+      total,
+      page,
+      pageSize,
+    );
+  }
+
+  async getPublicPlan(clubId: string, planId: string) {
+    const plan = await this.findPlanOrFail(clubId, planId);
+    if (
+      plan.status !== EntityStatus.ACTIVE ||
+      plan.publishStatus !== PublishStatus.PUBLISHED
+    ) {
+      throw new NotFoundException('Membership plan not found');
+    }
+    return this.toPlanPublic(plan);
+  }
+
   // ── Sell / list memberships ─────────────────────────────────────────────
 
   async sellMembership(
@@ -238,22 +290,166 @@ export class MembershipsService {
     dto: SellMembershipDto,
     actor: ActorRef,
     request?: Request,
+    options?: {
+      skipPayment?: boolean;
+      importSource?: { batchKey: string; rowKey: string };
+    },
   ) {
+    if (dto.idempotencyKey) {
+      const existing = await this.membershipModel.findOne({
+        clubId: new Types.ObjectId(clubId),
+        idempotencyKey: dto.idempotencyKey,
+      });
+      if (existing) {
+        const [enriched] = await this.toMembershipPublicMany([existing]);
+        return enriched;
+      }
+    }
+
     const holder = this.normalizeHolder(dto.holder);
     const plan = await this.findSellablePlan(clubId, dto.planId);
     const credit = this.buildCreditFromPlan(plan);
 
-    const membership = await this.membershipModel.create({
-      clubId: new Types.ObjectId(clubId),
-      planId: plan._id,
-      holder,
-      status: MembershipStatus.ACTIVE,
-      credit,
-      soldBy: new Types.ObjectId(actor.userId),
-      paymentId: dto.paymentId
-        ? new Types.ObjectId(dto.paymentId)
-        : undefined,
-    });
+    let membership: ClubMembershipDocument;
+    try {
+      membership = await this.membershipModel.create({
+        clubId: new Types.ObjectId(clubId),
+        planId: plan._id,
+        holder,
+        status: MembershipStatus.ACTIVE,
+        credit,
+        soldBy: new Types.ObjectId(actor.userId),
+        paymentId: dto.paymentId
+          ? new Types.ObjectId(dto.paymentId)
+          : undefined,
+        idempotencyKey: dto.idempotencyKey,
+        importSource: options?.importSource,
+      });
+    } catch (error) {
+      if (dto.idempotencyKey && (error as { code?: number }).code === 11000) {
+        const existing = await this.membershipModel.findOne({
+          clubId: new Types.ObjectId(clubId),
+          idempotencyKey: dto.idempotencyKey,
+        });
+        if (existing) {
+          const [enriched] = await this.toMembershipPublicMany([existing]);
+          return enriched;
+        }
+      }
+      throw error;
+    }
+
+    let paymentId = dto.paymentId;
+    let debtId: string | undefined;
+    const gross = plan.pricing?.amount ?? 0;
+    try {
+      if (!paymentId && gross > 0 && !options?.skipPayment) {
+        const channel = dto.channel ?? PaymentChannel.CASH;
+        const idempotencyKey =
+          dto.idempotencyKey ??
+          `membership-sell:${clubId}:${plan._id.toString()}:${membership._id.toString()}`;
+
+        // Coupon redemption is idempotent per membership id (safe on retry).
+        let discount = 0;
+        if (dto.couponCode) {
+          const redeemed = await this.coupons.redeem(dto.couponCode, {
+            userId: holder.userId?.toString(),
+            clubId,
+            amount: gross,
+            contextKey: `membership:${membership._id.toString()}`,
+          });
+          discount = redeemed.discount;
+        }
+
+        const payable = Math.max(0, gross - discount);
+        const collected = dto.paidAmount ?? payable;
+        if (collected > payable) {
+          throw new BadRequestException(
+            'paidAmount cannot exceed the membership payable amount',
+          );
+        }
+
+        if (collected > 0) {
+          const isFullPayment = collected === payable;
+          const recorded = await this.finance.recordPayment(
+            {
+              purpose: PaymentPurpose.MEMBERSHIP,
+              channel,
+              status: PaymentStatus.CAPTURED,
+              amount: isFullPayment
+                ? {
+                    gross,
+                    discount,
+                    tax: plan.pricing?.tax ?? 0,
+                  }
+                : { gross: collected },
+              reference: {
+                orderId: `mem_${membership._id.toString()}`,
+                externalRef: dto.externalRef,
+              },
+              payer: {
+                userId: holder.userId?.toString(),
+                guest: holder.guest
+                  ? {
+                      name: holder.guest.name,
+                      phone: holder.guest.phone,
+                    }
+                  : undefined,
+              },
+              tenders: dto.tenders,
+              related: {
+                membershipId: membership._id.toString(),
+                clubId,
+              },
+              idempotencyKey,
+              operatorNote: `Desk/self membership sell by ${actor.userId}`,
+            },
+            {
+              actorId: actor.userId,
+              operatorUserId: actor.userId,
+              request,
+            },
+          );
+          paymentId =
+            (recorded.payment as { _id?: Types.ObjectId })._id?.toString() ??
+            String((recorded.payment as { id?: string }).id ?? '');
+          if (paymentId) {
+            membership.paymentId = new Types.ObjectId(paymentId);
+            await membership.save();
+          }
+        }
+
+        const outstanding = payable - collected;
+        if (outstanding > 0) {
+          const defaultDueAt = new Date();
+          defaultDueAt.setDate(defaultDueAt.getDate() + 30);
+          const created = await this.finance.createDebt(clubId, {
+            holder: {
+              userId: holder.userId?.toString(),
+              guest: holder.guest,
+            },
+            membershipId: membership._id.toString(),
+            principal: outstanding,
+            dueAt: dto.debt?.dueAt ?? defaultDueAt.toISOString(),
+            installmentCount: dto.debt?.installmentCount,
+            note:
+              dto.debt?.note ??
+              `Outstanding membership balance ${membership._id.toString()}`,
+          });
+          debtId = (created.debt as { _id: Types.ObjectId })._id.toString();
+        }
+      }
+    } catch (error) {
+      membership.status = MembershipStatus.CANCELLED;
+      await membership.save();
+      await this.appendEvent({
+        membershipId: membership._id,
+        type: MembershipEventType.CANCELLED,
+        actor,
+        payload: { reason: 'sale_finance_failed' },
+      });
+      throw error;
+    }
 
     await this.appendEvent({
       membershipId: membership._id,
@@ -262,7 +458,9 @@ export class MembershipsService {
       payload: {
         planId: plan._id.toString(),
         clubId,
-        paymentId: dto.paymentId,
+        paymentId,
+        debtId,
+        importSource: options?.importSource,
       },
     });
 
@@ -274,11 +472,111 @@ export class MembershipsService {
         clubId,
         membershipId: membership._id.toString(),
         planId: plan._id.toString(),
+        paymentId,
+        debtId,
       },
       request,
     });
 
-    return this.toMembershipPublic(membership);
+    const [enriched] = await this.toMembershipPublicMany([membership]);
+    return enriched;
+  }
+
+  /** Validate or commit members parsed by the client from a CSV file. */
+  async importMemberships(
+    clubId: string,
+    dto: ImportMembershipsDto,
+    actor: ActorRef,
+    request?: Request,
+  ) {
+    const results: Array<{
+      rowKey: string;
+      status: 'valid' | 'imported' | 'skipped' | 'error';
+      membershipId?: string;
+      message?: string;
+    }> = [];
+
+    for (const row of dto.rows) {
+      try {
+        const planId = row.planId ?? dto.defaultPlanId;
+        if (!planId) {
+          throw new BadRequestException('planId is required');
+        }
+        const plan = await this.findSellablePlan(clubId, planId);
+        const phone = normalizeIranPhone(row.phone);
+        const user = await this.userModel.findOne({ phone }).select({ _id: 1 });
+        const holder = user
+          ? { userId: user._id }
+          : { guest: { name: row.name.trim(), phone } };
+        const duplicate = await this.membershipModel.findOne({
+          clubId: new Types.ObjectId(clubId),
+          planId: plan._id,
+          status: {
+            $in: [MembershipStatus.ACTIVE, MembershipStatus.FROZEN],
+          },
+          ...(user
+            ? { 'holder.userId': user._id }
+            : { 'holder.guest.phone': phone }),
+        });
+        if (duplicate) {
+          results.push({
+            rowKey: row.rowKey,
+            status: 'skipped',
+            membershipId: duplicate._id.toString(),
+            message: 'Active membership already exists',
+          });
+          continue;
+        }
+        if (dto.dryRun) {
+          results.push({ rowKey: row.rowKey, status: 'valid' });
+          continue;
+        }
+
+        const idempotencyKey = `membership-import:${clubId}:${dto.batchKey}:${row.rowKey}`;
+        const membership = await this.sellMembership(
+          clubId,
+          {
+            planId,
+            holder: user
+              ? { userId: user._id.toString() }
+              : { guest: { name: row.name.trim(), phone } },
+            idempotencyKey,
+          },
+          actor,
+          request,
+          {
+            skipPayment: true,
+            importSource: { batchKey: dto.batchKey, rowKey: row.rowKey },
+          },
+        );
+        results.push({
+          rowKey: row.rowKey,
+          status: 'imported',
+          membershipId: membership.id,
+        });
+      } catch (error) {
+        results.push({
+          rowKey: row.rowKey,
+          status: 'error',
+          message:
+            error instanceof Error ? error.message : 'Unknown import error',
+        });
+      }
+    }
+
+    const summary = results.reduce(
+      (acc, result) => {
+        acc[result.status] += 1;
+        return acc;
+      },
+      { valid: 0, imported: 0, skipped: 0, error: 0 },
+    );
+    return {
+      batchKey: dto.batchKey,
+      dryRun: dto.dryRun ?? false,
+      summary,
+      results,
+    };
   }
 
   /** Athlete self-purchase of a published active plan. */
@@ -306,6 +604,9 @@ export class MembershipsService {
         planId: dto.planId,
         holder: { userId },
         paymentId: dto.paymentId,
+        channel: dto.channel ?? PaymentChannel.ZARINPAL,
+        idempotencyKey: dto.idempotencyKey,
+        couponCode: dto.couponCode,
       },
       { userId, kind: MembershipActorKind.ATHLETE },
       request,
@@ -336,7 +637,7 @@ export class MembershipsService {
     ]);
 
     return paginatedResult(
-      items.map((m) => this.toMembershipPublic(m)),
+      await this.toMembershipPublicMany(items),
       total,
       page,
       pageSize,
@@ -361,7 +662,7 @@ export class MembershipsService {
     ]);
 
     return paginatedResult(
-      items.map((m) => this.toMembershipPublic(m)),
+      await this.toMembershipPublicMany(items),
       total,
       page,
       pageSize,
@@ -370,7 +671,8 @@ export class MembershipsService {
 
   async getClubMembership(clubId: string, membershipId: string) {
     const membership = await this.findMembershipOrFail(membershipId, clubId);
-    return this.toMembershipPublic(membership);
+    const [enriched] = await this.toMembershipPublicMany([membership]);
+    return enriched;
   }
 
   async getMyMembership(userId: string, membershipId: string) {
@@ -378,7 +680,8 @@ export class MembershipsService {
     if (membership.holder.userId?.toString() !== userId) {
       throw new ForbiddenException('Not your membership');
     }
-    return this.toMembershipPublic(membership);
+    const [enriched] = await this.toMembershipPublicMany([membership]);
+    return enriched;
   }
 
   // ── Lifecycle mutations ─────────────────────────────────────────────────
@@ -944,6 +1247,14 @@ export class MembershipsService {
     };
   }
 
+  /** Subscriber-facing catalog: active plans only. */
+  async listActivePlatformPlans() {
+    const items = await this.platformPlanModel
+      .find({ status: EntityStatus.ACTIVE })
+      .sort({ 'pricing.amount': 1 });
+    return { result: items.map((p) => this.toPlatformPlanPublic(p)) };
+  }
+
   // ── Internals ───────────────────────────────────────────────────────────
 
   private assertPlanKindFields(input: {
@@ -991,9 +1302,7 @@ export class MembershipsService {
       throw new BadRequestException('Invalid holder userId');
     }
     return {
-      userId: holder.userId
-        ? new Types.ObjectId(holder.userId)
-        : undefined,
+      userId: holder.userId ? new Types.ObjectId(holder.userId) : undefined,
       guest: holder.guest
         ? { name: holder.guest.name, phone: holder.guest.phone }
         : undefined,
@@ -1156,6 +1465,84 @@ export class MembershipsService {
       createdAt: m.createdAt,
       updatedAt: m.updatedAt,
     };
+  }
+
+  /** Batch-enrich memberships with club/plan names and holder display name. */
+  private async toMembershipPublicMany(items: ClubMembershipDocument[]) {
+    if (items.length === 0) return [];
+
+    const planIds = [...new Set(items.map((m) => m.planId.toString()))].map(
+      (id) => new Types.ObjectId(id),
+    );
+    const clubIds = [...new Set(items.map((m) => m.clubId.toString()))].map(
+      (id) => new Types.ObjectId(id),
+    );
+    const userIds = [
+      ...new Set(
+        items
+          .map((m) => m.holder.userId?.toString())
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ].map((id) => new Types.ObjectId(id));
+
+    type UserLite = {
+      _id: Types.ObjectId;
+      name?: { first?: string; last?: string };
+      phone?: string;
+    };
+
+    const [plans, clubs, users] = await Promise.all([
+      this.planModel.find({ _id: { $in: planIds } }).lean(),
+      this.clubModel.find({ _id: { $in: clubIds } }).lean(),
+      userIds.length
+        ? (this.userModel
+            .find({ _id: { $in: userIds } })
+            .select({ name: 1, phone: 1 })
+            .lean() as Promise<UserLite[]>)
+        : Promise.resolve([] as UserLite[]),
+    ]);
+
+    const planById = new Map(plans.map((p) => [p._id.toString(), p]));
+    const clubById = new Map(clubs.map((c) => [c._id.toString(), c]));
+    const userById = new Map(users.map((u) => [u._id.toString(), u]));
+
+    return items.map((m) => {
+      const base = this.toMembershipPublic(m);
+      const plan = planById.get(m.planId.toString());
+      const club = clubById.get(m.clubId.toString());
+      const user = m.holder.userId
+        ? userById.get(m.holder.userId.toString())
+        : undefined;
+      const holderName = m.holder.guest?.name
+        ? m.holder.guest.name
+        : [user?.name?.first, user?.name?.last]
+            .filter(Boolean)
+            .join(' ')
+            .trim() ||
+          user?.phone ||
+          undefined;
+
+      return {
+        ...base,
+        clubName: club?.identity?.name,
+        planName: plan?.name,
+        planKind: plan?.kind,
+        sessionsTotal: plan?.sessionsTotal,
+        entriesTotal: plan?.entriesTotal,
+        durationDays: plan?.durationDays,
+        pricing: plan
+          ? {
+              amount: plan.pricing.amount,
+              tax: plan.pricing.tax,
+              currency: plan.pricing.currency,
+            }
+          : undefined,
+        holder: {
+          ...base.holder,
+          displayName: holderName,
+        },
+      };
+    });
   }
 
   private toEventPublic(e: MembershipEventDocument) {

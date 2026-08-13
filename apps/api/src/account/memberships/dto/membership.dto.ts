@@ -1,5 +1,9 @@
 import { Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  IsArray,
+  IsBoolean,
   IsDateString,
   IsEnum,
   IsInt,
@@ -20,6 +24,7 @@ import {
   MembershipPlanKind,
   MembershipStatus,
   MembershipTransferPolicy,
+  PaymentChannel,
   PlatformSubscriptionStatus,
   PublishStatus,
   SubscriptionRenewalMode,
@@ -101,6 +106,38 @@ export class MembershipHolderDto {
   guest?: MembershipGuestHolderDto;
 }
 
+export class MembershipPaymentTenderDto {
+  @IsEnum(PaymentChannel)
+  channel!: PaymentChannel;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  amount!: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  externalRef?: string;
+}
+
+export class MembershipDebtDto {
+  @IsDateString()
+  dueAt!: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(60)
+  installmentCount?: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  note?: string;
+}
+
 export class PlatformPlanPricingDto {
   @Type(() => Number)
   @IsNumber()
@@ -155,19 +192,25 @@ export class CreateMembershipPlanDto {
   @Type(() => MembershipPlanRulesDto)
   rules?: MembershipPlanRulesDto;
 
-  @ValidateIf((o: CreateMembershipPlanDto) => o.kind === MembershipPlanKind.DURATION)
+  @ValidateIf(
+    (o: CreateMembershipPlanDto) => o.kind === MembershipPlanKind.DURATION,
+  )
   @Type(() => Number)
   @IsInt()
   @Min(1)
   durationDays?: number;
 
-  @ValidateIf((o: CreateMembershipPlanDto) => o.kind === MembershipPlanKind.SESSIONS)
+  @ValidateIf(
+    (o: CreateMembershipPlanDto) => o.kind === MembershipPlanKind.SESSIONS,
+  )
   @Type(() => Number)
   @IsInt()
   @Min(1)
   sessionsTotal?: number;
 
-  @ValidateIf((o: CreateMembershipPlanDto) => o.kind === MembershipPlanKind.ENTRIES)
+  @ValidateIf(
+    (o: CreateMembershipPlanDto) => o.kind === MembershipPlanKind.ENTRIES,
+  )
   @Type(() => Number)
   @IsInt()
   @Min(1)
@@ -258,6 +301,88 @@ export class SellMembershipDto {
   @IsOptional()
   @IsMongoId()
   paymentId?: string;
+
+  /** Desk payment channel when creating Ledger on sell (default cash). */
+  @IsOptional()
+  @IsEnum(PaymentChannel)
+  channel?: PaymentChannel;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  idempotencyKey?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  couponCode?: string;
+
+  /** Amount collected now. Omit for a fully-paid sale. */
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  paidAmount?: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  externalRef?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(2)
+  @ValidateNested({ each: true })
+  @Type(() => MembershipPaymentTenderDto)
+  tenders?: MembershipPaymentTenderDto[];
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => MembershipDebtDto)
+  debt?: MembershipDebtDto;
+}
+
+export class ImportMembershipRowDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(200)
+  rowKey!: string;
+
+  @IsString()
+  @MinLength(2)
+  @MaxLength(120)
+  name!: string;
+
+  @IsString()
+  @MinLength(5)
+  @MaxLength(32)
+  phone!: string;
+
+  @IsOptional()
+  @IsMongoId()
+  planId?: string;
+}
+
+export class ImportMembershipsDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(200)
+  batchKey!: string;
+
+  @IsOptional()
+  @IsMongoId()
+  defaultPlanId?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  dryRun?: boolean;
+
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(500)
+  @ValidateNested({ each: true })
+  @Type(() => ImportMembershipRowDto)
+  rows!: ImportMembershipRowDto[];
 }
 
 export class FreezeMembershipDto {
@@ -444,6 +569,20 @@ export class SelfPurchaseMembershipDto {
   @IsOptional()
   @IsMongoId()
   paymentId?: string;
+
+  @IsOptional()
+  @IsEnum(PaymentChannel)
+  channel?: PaymentChannel;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  idempotencyKey?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  couponCode?: string;
 }
 
 export class MembershipReasonDto {

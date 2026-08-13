@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -33,6 +26,21 @@ export class CoachBookingsController {
   @ApiOperation({ summary: 'One booking on my calendar' })
   get(@CurrentUser('sub') userId: string, @Param('id') id: string) {
     return this.bookings.getForCoach(userId, id);
+  }
+
+  @Get(':id/cancellation-preview')
+  @ApiOperation({ summary: 'Preview the athlete refund before coach cancel' })
+  cancellationPreview(
+    @CurrentUser('sub') userId: string,
+    @Param('id') id: string,
+  ) {
+    return this.bookings.cancellationPreviewForCoach(userId, id);
+  }
+
+  @Post(':id/accept')
+  @ApiOperation({ summary: 'Accept a pending consultation request' })
+  accept(@CurrentUser('sub') userId: string, @Param('id') id: string) {
+    return this.bookings.acceptByCoach(userId, id);
   }
 
   @Post(':id/cancel')

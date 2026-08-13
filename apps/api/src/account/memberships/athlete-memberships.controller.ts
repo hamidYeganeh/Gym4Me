@@ -56,6 +56,21 @@ export class AthleteMembershipsController {
   }
 }
 
+/** Active platform plan catalog for subscribers (owners). */
+@ApiTags('account-platform-subscriptions')
+@ApiBearerAuth('access-token')
+@Roles(Role.CLUB_OWNER)
+@Controller('account/platform-plans')
+export class AccountPlatformPlansController {
+  constructor(private readonly memberships: MembershipsService) {}
+
+  @Get()
+  @ApiOperation({ summary: 'Active platform plans available to subscribe' })
+  list() {
+    return this.memberships.listActivePlatformPlans();
+  }
+}
+
 /** Platform SaaS subscription (separate from club memberships). */
 @ApiTags('account-platform-subscriptions')
 @ApiBearerAuth('access-token')

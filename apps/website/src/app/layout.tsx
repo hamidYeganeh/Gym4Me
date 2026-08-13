@@ -8,8 +8,11 @@ import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("MarketingLanding");
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https://gym4me.ir";
 
   return {
+    metadataBase: new URL(siteUrl),
     title: {
       default: t("metaTitle"),
       template: "%s | Gym4Me",

@@ -5,7 +5,7 @@ import { ApiError, type ClubCalendarResponse } from "@repo/api";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   accountBookings,
   discoveryClubSlots,
@@ -96,6 +96,7 @@ type Props = {
  * static demo clubs (screen keeps pure props per the mocks-replaceable rule).
  */
 export function DiscoveryClubReserveGate({ clubId }: Props) {
+  const bookingAttemptKey = useRef<string | null>(null);
   const t = useTranslations("ReserveFlow");
   const router = useRouter();
   const isApi = isDiscoveryApiId(clubId);
@@ -196,11 +197,17 @@ export function DiscoveryClubReserveGate({ clubId }: Props) {
       addDaysIso(slot.api!.date, index * 7),
     );
     try {
+      const idempotencyKey =
+        bookingAttemptKey.current ??
+        `club-booking:${globalThis.crypto?.randomUUID?.() ?? Date.now()}`;
+      bookingAttemptKey.current = idempotencyKey;
       const result = await accountBookings.createClub({
         clubId,
         slotId: slot.api.slotId,
         dates,
+        idempotencyKey,
       });
+      bookingAttemptKey.current = null;
       const booking = result.bookings[0];
       if (!booking) throw new Error(t("submitError"));
       if (booking.status === "awaiting_payment") {

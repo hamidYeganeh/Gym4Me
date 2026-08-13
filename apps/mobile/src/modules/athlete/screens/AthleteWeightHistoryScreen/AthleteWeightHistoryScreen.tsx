@@ -10,11 +10,14 @@ import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
-import { formatTimeFa, formatWeightKg, toPersianDigits } from "@/modules/athlete/lib/weight/format";
+import {
+  formatTimeFa,
+  formatWeightKg,
+  toPersianDigits,
+} from "@/modules/athlete/lib/weight/format";
 import {
   formatHistoryDateLabel,
   groupWeightHistoryByDate,
-  WEIGHT_HISTORY,
   type WeightHistoryEntry,
 } from "@/modules/athlete/lib/weight/weight-history-data";
 import type { AthleteWeightHistoryScreenProps } from "./AthleteWeightHistoryScreen.types";
@@ -32,13 +35,16 @@ function entrySubtitle(
   return labels.stepsLeft(toPersianDigits(entry.stepsLeft ?? 0));
 }
 
-export function AthleteWeightHistoryScreen({ metric }: AthleteWeightHistoryScreenProps) {
+export function AthleteWeightHistoryScreen({
+  metric,
+  entries,
+  onDelete,
+}: AthleteWeightHistoryScreenProps) {
   const t = useTranslations("WeightHistory");
   const tMetrics = useTranslations("WeightMetrics");
   const router = useRouter();
   const unit = tMetrics("unit");
 
-  const [entries, setEntries] = useState(WEIGHT_HISTORY);
   const [openId, setOpenId] = useState<string | null>(null);
 
   const groups = useMemo(() => {
@@ -53,10 +59,13 @@ export function AthleteWeightHistoryScreen({ metric }: AthleteWeightHistoryScree
     }));
   }, [entries, t]);
 
-  const handleDelete = useCallback((id: string) => {
-    setEntries((current) => current.filter((entry) => entry.id !== id));
-    setOpenId(null);
-  }, []);
+  const handleDelete = useCallback(
+    (id: string) => {
+      void onDelete?.(id);
+      setOpenId(null);
+    },
+    [onDelete],
+  );
 
   return (
     <AppLayout
@@ -97,52 +106,63 @@ export function AthleteWeightHistoryScreen({ metric }: AthleteWeightHistoryScree
           </Button>
         </section>
 
-        <div className="flex flex-col gap-5">
-          {groups.map((group) => (
-            <section className="flex flex-col gap-2.5" key={group.dateKey}>
-              <Typography
-                className="text-muted"
-                type="body-sm"
-                weight="medium"
-              >
-                {group.dateLabel}
-              </Typography>
+        {groups.length === 0 ? (
+          <div className="flex flex-col items-center gap-2 rounded-[24px] border border-border bg-surface px-6 py-10 text-center">
+            <Typography type="h4" weight="semibold">
+              {t("emptyTitle")}
+            </Typography>
+            <Typography className="text-muted" type="body-sm">
+              {t("emptyBody")}
+            </Typography>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-5">
+            {groups.map((group) => (
+              <section className="flex flex-col gap-2.5" key={group.dateKey}>
+                <Typography
+                  className="text-muted"
+                  type="body-sm"
+                  weight="medium"
+                >
+                  {group.dateLabel}
+                </Typography>
 
-              <div className="flex flex-col gap-2.5">
-                {group.entries.map((entry) => {
-                  const value = formatWeightKg(entry.kg, unit);
-                  return (
-                    <MetricHistoryItem
-                      alert={
-                        entry.showAlert ? t("alertHeavier") : undefined
-                      }
-                      aria-label={`${t("entryLabel")}: ${value}`}
-                      deleteLabel={t("deleteEntry")}
-                      isOpen={openId === entry.id}
-                      key={entry.id}
-                      onDelete={() => handleDelete(entry.id)}
-                      onOpenChange={(open) =>
-                        setOpenId(open ? entry.id : null)
-                      }
-                      onPress={() =>
-                        router.push(
-                          `/athlete/metrics/${metric}/${entry.id}`,
-                        )
-                      }
-                      subtitle={entrySubtitle(entry, {
-                        goalCompleted: t("statusGoalCompleted"),
-                        stepsLeft: (count) =>
-                          t("statusStepsLeft", { count }),
-                      })}
-                      time={formatTimeFa(entry.hours, entry.minutes)}
-                      value={value}
-                    />
-                  );
-                })}
-              </div>
-            </section>
-          ))}
-        </div>
+                <div className="flex flex-col gap-2.5">
+                  {group.entries.map((entry) => {
+                    const value = formatWeightKg(entry.kg, unit);
+                    return (
+                      <MetricHistoryItem
+                        alert={
+                          entry.showAlert ? t("alertHeavier") : undefined
+                        }
+                        aria-label={`${t("entryLabel")}: ${value}`}
+                        deleteLabel={t("deleteEntry")}
+                        isOpen={openId === entry.id}
+                        key={entry.id}
+                        onDelete={() => handleDelete(entry.id)}
+                        onOpenChange={(open) =>
+                          setOpenId(open ? entry.id : null)
+                        }
+                        onPress={() =>
+                          router.push(
+                            `/athlete/metrics/${metric}/${entry.id}`,
+                          )
+                        }
+                        subtitle={entrySubtitle(entry, {
+                          goalCompleted: t("statusGoalCompleted"),
+                          stepsLeft: (count) =>
+                            t("statusStepsLeft", { count }),
+                        })}
+                        time={formatTimeFa(entry.hours, entry.minutes)}
+                        value={value}
+                      />
+                    );
+                  })}
+                </div>
+              </section>
+            ))}
+          </div>
+        )}
       </div>
     </AppLayout>
   );

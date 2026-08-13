@@ -1,7 +1,7 @@
 "use client";
 
 import { Typography } from "@heroui/react";
-import { Calendar1, ChartBar2, HeartEcg, House1, Ticket, User, Wallet } from "@repo/icons";
+import { Calendar1, ChartBar2, HeartEcg, House1, Ticket, User, Wallet, Scan1, BarbellHorizontal, Gift, Leaf, UsersTwo } from "@repo/icons";
 import { CallToActionCard } from "@repo/ui/cards/CallToActionCard";
 import { QuickActionCard } from "@repo/ui/cards/QuickActionCard";
 import { Logo } from "@repo/ui/common/Logo";
@@ -139,6 +139,35 @@ export function AthleteHomeScreen() {
               icon={<Ticket size={ICON_SIZE} />}
               label={t("membershipsTitle")}
               onPress={() => router.push("/athlete/memberships")}
+            />
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <QuickActionCard
+              icon={<Scan1 size={ICON_SIZE} />}
+              label={t("checkInsTitle")}
+              onPress={() => router.push("/athlete/check-ins")}
+            />
+            <QuickActionCard
+              icon={<BarbellHorizontal size={ICON_SIZE} />}
+              label={t("workoutsTitle")}
+              onPress={() => router.push("/athlete/workouts")}
+            />
+            <QuickActionCard
+              icon={<Gift size={ICON_SIZE} />}
+              label={t("referralTitle")}
+              onPress={() => router.push("/athlete/referral")}
+            />
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <QuickActionCard
+              icon={<UsersTwo size={ICON_SIZE} />}
+              label={t("socialTitle")}
+              onPress={() => router.push("/athlete/social")}
+            />
+            <QuickActionCard
+              icon={<Leaf size={ICON_SIZE} />}
+              label={t("nutritionTitle")}
+              onPress={() => router.push("/athlete/nutrition")}
             />
           </div>
           <CallToActionCard

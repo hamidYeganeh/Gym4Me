@@ -99,6 +99,23 @@ export class ClubMembership {
   @Prop({ type: Types.ObjectId })
   paymentId?: Types.ObjectId;
 
+  /**
+   * Client-generated key for a desk sale/import row. It prevents duplicate
+   * memberships when a weak connection retries the same request.
+   */
+  @Prop({ trim: true, maxlength: 200 })
+  idempotencyKey?: string;
+
+  /** Optional import metadata for reconciliation with the source CSV. */
+  @Prop({
+    type: {
+      batchKey: { type: String, trim: true, maxlength: 200 },
+      rowKey: { type: String, trim: true, maxlength: 200 },
+    },
+    _id: false,
+  })
+  importSource?: { batchKey: string; rowKey: string };
+
   createdAt!: Date;
   updatedAt!: Date;
 }
@@ -109,3 +126,10 @@ export const ClubMembershipSchema =
 ClubMembershipSchema.index({ clubId: 1, status: 1, createdAt: -1 });
 ClubMembershipSchema.index({ 'holder.userId': 1, status: 1 });
 ClubMembershipSchema.index({ planId: 1, status: 1 });
+ClubMembershipSchema.index(
+  { clubId: 1, idempotencyKey: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { idempotencyKey: { $type: 'string' } },
+  },
+);

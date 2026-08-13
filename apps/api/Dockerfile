@@ -20,7 +20,14 @@ COPY packages/theme/package.json packages/theme/
 COPY packages/typescript-config/package.json packages/typescript-config/
 COPY packages/ui/package.json packages/ui/
 
-RUN npm ci --workspace=api --include-workspace-root
+# Lockfile pins registry.npmjs.org; project .npmrc mirror rewrites hosts and can 404.
+RUN printf '%s\n' \
+  'registry=https://registry.npmjs.org/' \
+  'fetch-retries=8' \
+  'fetch-retry-mintimeout=20000' \
+  'fetch-retry-maxtimeout=180000' \
+  > .npmrc \
+  && npm ci --workspace=api --include-workspace-root
 
 FROM node:22-bookworm-slim AS builder
 WORKDIR /app

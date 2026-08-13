@@ -5,10 +5,21 @@ export {
 export { accountCoachingEndpoints } from "./coaching.endpoint";
 export type {
   CoachAnalyticsOverview,
+  CoachMessage,
   CoachStudent,
   CoachStudentEngagementLevel,
   CoachStudentStatus,
+  CoachThread,
+  ListPackagesQuery,
   ListStudentsQuery,
+  ListThreadMessagesQuery,
+  ListThreadsQuery,
+  SendCoachMessageInput,
+  SessionPackage,
+  SessionPackagesPage,
+  SessionPackageStatus,
   StudentsPage,
+  ThreadMessagesPage,
+  ThreadsPage,
 } from "./coaching.dto";
 export { accountCoachingKeys } from "./coaching.keys";

@@ -4,6 +4,7 @@ import type {
   ClubClass,
   ClubUserReview,
 } from "@repo/api/discovery";
+import type { ClubMembershipPlan } from "@repo/api";
 import { mediaFileUrl } from "@/shared/lib/api";
 import type {
   ClubDetail,
@@ -15,6 +16,7 @@ import type {
   ClubDetailGalleryItem,
   ClubDetailReview,
   ClubDetailSport,
+  ClubDetailSubscription,
 } from "./club-detail-data";
 import { withGalleryCardDefaults } from "./gallery-media";
 import { mapDiscoveryClassToPreview } from "./map-discovery-class";
@@ -318,6 +320,7 @@ export function mapDiscoveryClubToDetail(input: {
   classes?: ClubClass[];
   calendar?: ClubCalendarResponse | null;
   reviews?: ClubUserReview[];
+  membershipPlans?: ClubMembershipPlan[];
 }): ClubDetail {
   const { club } = input;
   const gallery = mapGallery(club);
@@ -338,6 +341,27 @@ export function mapDiscoveryClubToDetail(input: {
     club.location?.address ||
     [province, city, neighborhood].filter(Boolean).join("، ") ||
     "موقعیت نامشخص";
+
+  const subscriptions: ClubDetailSubscription[] = (
+    input.membershipPlans ?? []
+  ).map((plan) => ({
+    id: plan.id,
+    planName: plan.name,
+    description:
+      plan.description ??
+      (plan.sessionsTotal
+        ? `${plan.sessionsTotal} جلسه`
+        : plan.entriesTotal
+          ? `${plan.entriesTotal} ورود`
+          : plan.durationDays
+            ? `${plan.durationDays} روز`
+            : undefined),
+    price: plan.pricing?.amount ?? 0,
+  }));
+
+  const cheapest = subscriptions
+    .filter((plan) => plan.price > 0)
+    .sort((a, b) => a.price - b.price)[0];
 
   const point = club.location?.point;
   const route = point
@@ -373,9 +397,9 @@ export function mapDiscoveryClubToDetail(input: {
     ],
     overview: club.identity.description ?? "",
     pricePrefix: "از",
-    price: "—",
+    price: cheapest ? String(cheapest.price) : "—",
     priceSuffix: "تومان",
-    subscriptions: [],
+    subscriptions,
     amenities: mapAmenities(club.amenities),
     sports: mapSports(club.sports),
     equipment: mapEquipment(club.equipments),

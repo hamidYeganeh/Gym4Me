@@ -41,3 +41,28 @@ export interface RegisterDeviceResult {
   id: string;
   status: string;
 }
+
+/** Per-user notification channel preferences. */
+export interface NotificationPreferences {
+  userId: string;
+  channels: {
+    push: boolean;
+    sms: boolean;
+    inApp: boolean;
+    email: boolean;
+    marketing: boolean;
+  };
+  quietHours: {
+    start: string;
+    end: string;
+    timezone: string;
+  };
+  marketingDailyCap: number;
+  updatedAt: string;
+}
+
+export type UpdateNotificationPreferencesInput = {
+  channels?: Partial<NotificationPreferences["channels"]>;
+  quietHours?: Partial<NotificationPreferences["quietHours"]>;
+  marketingDailyCap?: number;
+};

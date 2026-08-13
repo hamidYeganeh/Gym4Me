@@ -24,11 +24,15 @@ import {
   CreateSessionPackageDto,
   FreezePackageDto,
   LinkStudentDto,
+  ListCoachMessagesQueryDto,
   ListCoachServicesQueryDto,
+  ListCoachThreadsQueryDto,
   ListLeadsQueryDto,
   ListPackagesQueryDto,
   ListStudentsQueryDto,
+  OpenCoachThreadDto,
   ReviewHealthAssessmentDto,
+  SendCoachMessageDto,
   UpdateAffiliationDto,
   UpdateCoachServiceDto,
   UpdateLeadDto,
@@ -317,6 +321,55 @@ export class CoachCoachingController {
     return this.coaching.reviewHealthAssessment(
       userId,
       athleteUserId,
+      dto,
+      request,
+    );
+  }
+
+  // ── Messaging ───────────────────────────────────────────────────────────
+
+  @Get('messages/threads')
+  @ApiOperation({ summary: 'List my coach↔athlete message threads' })
+  listThreads(
+    @CurrentUser('sub') userId: string,
+    @Query() query: ListCoachThreadsQueryDto,
+  ) {
+    return this.coaching.listThreadsForCoach(userId, query);
+  }
+
+  @Post('messages/threads')
+  @ApiOperation({ summary: 'Open or get a thread with a linked athlete' })
+  openThread(
+    @CurrentUser('sub') userId: string,
+    @Body() dto: OpenCoachThreadDto,
+  ) {
+    return this.coaching.openOrGetThreadAsCoach(userId, dto);
+  }
+
+  @Get('messages/threads/:threadId')
+  @ApiOperation({ summary: 'List messages in a thread' })
+  listMessages(
+    @CurrentUser('sub') userId: string,
+    @CurrentUser('activeRole') activeRole: Role,
+    @Param('threadId') threadId: string,
+    @Query() query: ListCoachMessagesQueryDto,
+  ) {
+    return this.coaching.listMessages(threadId, userId, activeRole, query);
+  }
+
+  @Post('messages/threads/:threadId')
+  @ApiOperation({ summary: 'Send a message in a thread' })
+  sendMessage(
+    @CurrentUser('sub') userId: string,
+    @CurrentUser('activeRole') activeRole: Role,
+    @Param('threadId') threadId: string,
+    @Body() dto: SendCoachMessageDto,
+    @Req() request: Request,
+  ) {
+    return this.coaching.sendMessage(
+      threadId,
+      userId,
+      activeRole,
       dto,
       request,
     );

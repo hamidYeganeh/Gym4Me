@@ -2,7 +2,7 @@
 
 import { Spinner } from "@heroui/react";
 import type { WorkoutProgram } from "@repo/api";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { accountProgress } from "@/shared/lib/api";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { CoachProgramsScreen } from "../screens/CoachProgramsScreen";
@@ -32,6 +32,15 @@ function mapProgram(program: WorkoutProgram): CoachProgram {
 export function CoachProgramsGate() {
   const { isAuthenticated, isReady } = useAuth();
   const [programs, setPrograms] = useState<CoachProgram[] | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    const page = await accountProgress.listWorkoutPrograms({ page_size: 100 });
+    setPrograms(
+      page.result.length > 0 ? page.result.map(mapProgram) : COACH_PROGRAMS,
+    );
+  }, []);
 
   useEffect(() => {
     if (!isReady) return;
@@ -41,24 +50,56 @@ export function CoachProgramsGate() {
     }
 
     let cancelled = false;
-    accountProgress
-      .listWorkoutPrograms({ page_size: 100 })
-      .then((page) => {
-        if (cancelled) return;
-        setPrograms(
-          page.result.length > 0
-            ? page.result.map(mapProgram)
-            : COACH_PROGRAMS,
-        );
-      })
-      .catch(() => {
-        if (!cancelled) setPrograms(COACH_PROGRAMS);
-      });
+    load().catch(() => {
+      if (!cancelled) setPrograms(COACH_PROGRAMS);
+    });
 
     return () => {
       cancelled = true;
     };
-  }, [isAuthenticated, isReady]);
+  }, [isAuthenticated, isReady, load]);
+
+  const onCreateProgram = useCallback(
+    async (input: {
+      title: string;
+      focusLabel?: string;
+      weekCount?: number;
+      sessionsPerWeek?: number;
+    }) => {
+      if (!isAuthenticated) return;
+      setCreating(true);
+      setCreateError(null);
+      try {
+        await accountProgress.createWorkoutProgram({
+          title: input.title.trim(),
+          status: "draft",
+          meta: {
+            focusLabel: input.focusLabel?.trim() || undefined,
+            weekCount: input.weekCount,
+            sessionsPerWeek: input.sessionsPerWeek,
+          },
+        });
+        await load();
+      } catch {
+        setCreateError("createError");
+        throw new Error("create failed");
+      } finally {
+        setCreating(false);
+      }
+    },
+    [isAuthenticated, load],
+  );
+
+  const onPublishProgram = useCallback(
+    async (programId: string) => {
+      if (!isAuthenticated) return;
+      await accountProgress.updateWorkoutProgram(programId, {
+        status: "published",
+      });
+      await load();
+    },
+    [isAuthenticated, load],
+  );
 
   if (!programs) {
     return (
@@ -68,5 +109,13 @@ export function CoachProgramsGate() {
     );
   }
 
-  return <CoachProgramsScreen programs={programs} />;
+  return (
+    <CoachProgramsScreen
+      createError={createError}
+      creating={creating}
+      onCreateProgram={isAuthenticated ? onCreateProgram : undefined}
+      onPublishProgram={isAuthenticated ? onPublishProgram : undefined}
+      programs={programs}
+    />
+  );
 }

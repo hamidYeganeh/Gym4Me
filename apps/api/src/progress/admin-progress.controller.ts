@@ -20,6 +20,7 @@ import {
   CreateMetricTypeDto,
   ListExercisesQueryDto,
   ListMetricTypesQueryDto,
+  ReviewExerciseVerificationDto,
   UpdateExerciseDto,
   UpdateMetricTypeDto,
 } from './dto/progress.dto';
@@ -63,6 +64,17 @@ export class AdminProgressController {
     @Req() request: Request,
   ) {
     return this.progress.adminUpdateExercise(id, dto, adminId, request);
+  }
+
+  @Post(':id/verify')
+  @ApiOperation({ summary: 'Approve or reject a coach-submitted exercise' })
+  verify(
+    @Param('id') id: string,
+    @Body() dto: ReviewExerciseVerificationDto,
+    @CurrentUser('sub') adminId: string,
+    @Req() request: Request,
+  ) {
+    return this.progress.adminReviewExercise(id, dto, adminId, request);
   }
 
   @Delete(':id')

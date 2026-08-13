@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { JsonLd } from "@/modules/discovery/lib/JsonLd";
 import { SeoClubDetailScreen } from "@/modules/discovery/screens/SeoClubDetailScreen";
-import { discoveryClubs, mediaFileUrl } from "@/shared/lib/api";
+import {
+  PublicSiteFooter,
+  PublicSiteHeader,
+} from "@/modules/discovery/components/PublicSiteHeader";
+import { discoveryClubs, mediaFileUrl, membershipsApi } from "@/shared/lib/api";
 
 type Props = {
   params: Promise<{ clubId: string }>;
@@ -34,7 +38,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ClubSeoPage({ params }: Props) {
   const { clubId } = await params;
   try {
-    const club = await discoveryClubs.get(clubId);
+    const [club, reviewsPage, plansPage] = await Promise.all([
+      discoveryClubs.get(clubId),
+      discoveryClubs.listReviews(clubId, { page_size: 10 }).catch(() => null),
+      membershipsApi
+        .listPublicClubPlans(clubId, { page_size: 20 })
+        .catch(() => null),
+    ]);
     const image =
       mediaFileUrl(club.identity.coverMediaId) ??
       mediaFileUrl(club.gallery[0]?.mediaId) ??
@@ -42,6 +52,7 @@ export default async function ClubSeoPage({ params }: Props) {
 
     return (
       <>
+        <PublicSiteHeader />
         <JsonLd
           data={{
             "@context": "https://schema.org",
@@ -73,7 +84,12 @@ export default async function ClubSeoPage({ params }: Props) {
             url: `/clubs/${club.id}`,
           }}
         />
-        <SeoClubDetailScreen club={club as never} />
+        <SeoClubDetailScreen
+          club={club}
+          plans={plansPage?.result ?? []}
+          reviews={reviewsPage?.result ?? []}
+        />
+        <PublicSiteFooter />
       </>
     );
   } catch {

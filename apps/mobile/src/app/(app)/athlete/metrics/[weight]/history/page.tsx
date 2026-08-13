@@ -6,7 +6,7 @@ import {
   normalizeMetricSlug,
   SUPPORTED_METRICS,
 } from "@/modules/athlete/lib/weight/metrics";
-import { AthleteWeightHistoryScreen } from "@/modules/athlete/screens/AthleteWeightHistoryScreen";
+import { AthleteWeightHistoryGate } from "@/modules/athlete/lib/AthleteWeightHistoryGate";
 
 type WeightHistoryPageProps = {
   params: Promise<{ weight: string }>;
@@ -38,5 +38,5 @@ export default async function WeightHistoryPage({
     notFound();
   }
 
-  return <AthleteWeightHistoryScreen metric={slug} />;
+  return <AthleteWeightHistoryGate metric={slug} />;
 }

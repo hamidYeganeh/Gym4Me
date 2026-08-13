@@ -2,8 +2,17 @@ import type { ApiClient } from "../client";
 import type { AnalyticsPeriod } from "../finance/finance.dto";
 import type {
   CoachAnalyticsOverview,
+  CoachMessage,
+  CoachThread,
+  ListPackagesQuery,
   ListStudentsQuery,
+  ListThreadMessagesQuery,
+  ListThreadsQuery,
+  SendCoachMessageInput,
+  SessionPackagesPage,
   StudentsPage,
+  ThreadMessagesPage,
+  ThreadsPage,
 } from "./coaching.dto";
 import { accountCoachingEndpoints as ep } from "./coaching.endpoint";
 
@@ -16,6 +25,74 @@ export function createAccountCoachingApi(client: ApiClient) {
     analyticsOverview(period?: AnalyticsPeriod) {
       return client.request<CoachAnalyticsOverview>(ep.analyticsOverview, {
         query: period ? { period } : undefined,
+      });
+    },
+
+    // ── Coach messaging ─────────────────────────────────────────────────────
+
+    listCoachThreads(query: ListThreadsQuery = {}) {
+      return client.request<ThreadsPage>(ep.coachThreads, { query });
+    },
+
+    openCoachThread(athleteUserId: string) {
+      return client.request<CoachThread>(ep.coachThreads, {
+        method: "POST",
+        body: { athleteUserId },
+      });
+    },
+
+    listCoachThreadMessages(
+      threadId: string,
+      query: ListThreadMessagesQuery = {},
+    ) {
+      return client.request<ThreadMessagesPage>(ep.coachThread(threadId), {
+        query,
+      });
+    },
+
+    sendCoachThreadMessage(threadId: string, input: SendCoachMessageInput) {
+      return client.request<CoachMessage>(ep.coachThread(threadId), {
+        method: "POST",
+        body: input,
+      });
+    },
+
+    // ── Athlete coaching ────────────────────────────────────────────────────
+
+    listMyCoaches(query: ListStudentsQuery = {}) {
+      return client.request<StudentsPage>(ep.athleteCoaches, { query });
+    },
+
+    listMyPackages(query: ListPackagesQuery = {}) {
+      return client.request<SessionPackagesPage>(ep.athletePackages, {
+        query,
+      });
+    },
+
+    listAthleteThreads(query: ListThreadsQuery = {}) {
+      return client.request<ThreadsPage>(ep.athleteThreads, { query });
+    },
+
+    openAthleteThread(coachUserId: string) {
+      return client.request<CoachThread>(ep.athleteThreads, {
+        method: "POST",
+        body: { coachUserId },
+      });
+    },
+
+    listAthleteThreadMessages(
+      threadId: string,
+      query: ListThreadMessagesQuery = {},
+    ) {
+      return client.request<ThreadMessagesPage>(ep.athleteThread(threadId), {
+        query,
+      });
+    },
+
+    sendAthleteThreadMessage(threadId: string, input: SendCoachMessageInput) {
+      return client.request<CoachMessage>(ep.athleteThread(threadId), {
+        method: "POST",
+        body: input,
       });
     },
   };

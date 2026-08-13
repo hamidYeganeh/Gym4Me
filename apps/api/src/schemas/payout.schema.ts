@@ -1,6 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-import { PayoutRecipientType, PayoutStatus } from '../common/enums';
+import {
+  PayoutDisputeStatus,
+  PayoutRecipientType,
+  PayoutStatus,
+} from '../common/enums';
 import { LedgerEntry } from './ledger-entry.schema';
 
 export type PayoutDocument = HydratedDocument<Payout>;
@@ -30,19 +34,24 @@ export const PayoutPeriodSchema = SchemaFactory.createForClass(PayoutPeriod);
 
 @Schema({ _id: false })
 export class PayoutDispute {
-  /** open | resolved | rejected */
   @Prop({
     type: String,
-    enum: ['open', 'resolved', 'rejected'],
+    enum: PayoutDisputeStatus,
     required: true,
   })
-  status!: 'open' | 'resolved' | 'rejected';
+  status!: PayoutDisputeStatus;
 
   @Prop({ required: true, trim: true })
   reason!: string;
 
   @Prop({ required: true })
   openedAt!: Date;
+
+  @Prop()
+  resolvedAt?: Date;
+
+  @Prop({ trim: true })
+  resolutionNote?: string;
 }
 
 export const PayoutDisputeSchema = SchemaFactory.createForClass(PayoutDispute);

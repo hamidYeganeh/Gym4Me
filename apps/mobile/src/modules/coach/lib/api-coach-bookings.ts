@@ -27,6 +27,7 @@ function actionsFor(booking: Booking): CoachBookingAction[] {
     case "checked_in":
       return ["complete"];
     case "pending":
+      return ["accept", "cancel"];
     case "awaiting_payment":
       return ["cancel"];
     default:
@@ -41,8 +42,7 @@ export function mapApiBookingToCoachRequest(
   return {
     id: booking.id,
     clientName: booking.athlete ? bookingUserName(booking.athlete) : "—",
-    avatar:
-      mediaFileUrl(booking.athlete?.avatar.mediaId) ?? PLACEHOLDER_IMAGE,
+    avatar: mediaFileUrl(booking.athlete?.avatar.mediaId) ?? PLACEHOLDER_IMAGE,
     typeLabel:
       booking.consultationKind === "remote"
         ? copy.remoteType

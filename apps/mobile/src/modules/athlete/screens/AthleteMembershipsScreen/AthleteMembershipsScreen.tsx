@@ -9,10 +9,10 @@ import { useRouter } from "next/navigation";
 import { athleteMembershipsScreenStyles as styles } from "./AthleteMembershipsScreen.styles";
 import type { AthleteMembershipsScreenProps } from "./AthleteMembershipsScreen.types";
 
-const DEMO_INVOICE_ID = "inv-demo";
-
 export function AthleteMembershipsScreen({
   memberships,
+  pending = false,
+  onRenew,
 }: AthleteMembershipsScreenProps) {
   const t = useTranslations("AthleteMemberships");
   const router = useRouter();
@@ -134,15 +134,18 @@ export function AthleteMembershipsScreen({
                       >
                         {membership.priceLabel}
                       </Typography>
-                      <Button
-                        onPress={() =>
-                          router.push(`/athlete/payment/${DEMO_INVOICE_ID}`)
-                        }
-                        size="sm"
-                        variant="primary"
-                      >
-                        {t("renew")}
-                      </Button>
+                      {onRenew && membership.clubId && membership.planId ? (
+                        <Button
+                          isDisabled={pending}
+                          onPress={() => {
+                            void onRenew(membership);
+                          }}
+                          size="sm"
+                          variant="primary"
+                        >
+                          {t("renew")}
+                        </Button>
+                      ) : null}
                     </div>
                   </div>
                 );
@@ -188,6 +191,19 @@ export function AthleteMembershipsScreen({
                   <Typography className={styles.pastMeta} type="body-sm">
                     {membership.expiresLabel}
                   </Typography>
+                  {onRenew && membership.clubId && membership.planId ? (
+                    <Button
+                      className="mt-2"
+                      isDisabled={pending}
+                      onPress={() => {
+                        void onRenew(membership);
+                      }}
+                      size="sm"
+                      variant="secondary"
+                    >
+                      {t("purchase")}
+                    </Button>
+                  ) : null}
                 </div>
               ))}
             </div>

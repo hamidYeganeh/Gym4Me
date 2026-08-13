@@ -254,6 +254,8 @@ export enum BookingActor {
   /** Club owner / staff acting for the venue. */
   CLUB = 'club',
   ADMIN = 'admin',
+  /** Automated jobs (TTL expire, etc.). */
+  SYSTEM = 'system',
 }
 
 export enum RulePolicy {
@@ -337,6 +339,7 @@ export enum AnalyticsEventName {
   KYC_IDENTITY_SUBMITTED = 'kyc_identity_submitted',
   KYC_DOCUMENT_SUBMITTED = 'kyc_document_submitted',
   REFERRAL_INVITE_SENT = 'referral_invite_sent',
+  REFERRAL_QUALIFIED = 'referral_qualified',
   COACH_VERIFICATION_SUBMITTED = 'coach_verification_submitted',
   COACH_VERIFICATION_REVIEWED = 'coach_verification_reviewed',
   CLUB_DRAFT_CREATED = 'club_draft_created',
@@ -408,11 +411,14 @@ export enum NotificationTemplateKey {
   PAYMENT_SUCCEEDED = 'payment.succeeded',
   PAYMENT_FAILED = 'payment.failed',
   BOOKING_CONFIRMED = 'booking.confirmed',
+  BOOKING_APPROVED_PAYMENT_REQUIRED = 'booking.approved_payment_required',
   BOOKING_REJECTED = 'booking.rejected',
   BOOKING_REMINDER = 'booking.reminder',
   BOOKING_CANCELLED_BY_PROVIDER = 'booking.cancelled_by_provider',
   WAITLIST_OFFER = 'waitlist.offer',
   MEMBERSHIP_EXPIRING = 'membership.expiring',
+  LIFECYCLE_LOW_CREDITS = 'lifecycle.low_credits',
+  LIFECYCLE_WIN_BACK = 'lifecycle.win_back',
   COACH_VERIFICATION_RESULT = 'coach.verification_result',
   PAYOUT_SETTLED = 'payout.settled',
   ACHIEVEMENT_UNLOCKED = 'gamification.achievement_unlocked',
@@ -607,7 +613,22 @@ export enum AuditAction {
   INVOICE_ISSUED = 'finance.invoice_issued',
   OWNER_TASK_UPSERTED = 'ops.owner_task_upserted',
   MEAL_PLAN_UPSERTED = 'nutrition.meal_plan_upserted',
+  FOOD_ITEM_UPSERTED = 'nutrition.food_item_upserted',
+  MEAL_ADHERENCE_LOGGED = 'nutrition.meal_adherence_logged',
   SOCIAL_POST_UPSERTED = 'social.post_upserted',
+  SOCIAL_FOLLOW_CHANGED = 'social.follow_changed',
+  SOCIAL_SAVE_TOGGLED = 'social.save_toggled',
+  SOCIAL_REPORT_CREATED = 'social.report_created',
+  SOCIAL_REPORT_RESOLVED = 'social.report_resolved',
+  WORKOUT_LOG_UPSERTED = 'workout.log_upserted',
+  PERSONAL_RECORD_UPSERTED = 'progress.personal_record_upserted',
+  EXERCISE_SUBMITTED = 'progress.exercise_submitted',
+  EXERCISE_VERIFIED = 'progress.exercise_verified',
+  COACH_MESSAGE_SENT = 'coaching.message_sent',
+  FINANCE_PAYOUT_DISPUTED = 'finance.payout_disputed',
+  FINANCE_PAYOUT_DISPUTE_RESOLVED = 'finance.payout_dispute_resolved',
+  ADMIN_IMPERSONATION_STARTED = 'admin.impersonation_started',
+  ADMIN_IMPERSONATION_ENDED = 'admin.impersonation_ended',
 }
 
 /** Staff permission keys (locked product decision). */
@@ -828,6 +849,26 @@ export enum WaitlistEntryStatus {
   CANCELLED = 'cancelled',
 }
 
+/** Transactional outbox delivery lifecycle (R3). */
+export enum OutboxMessageStatus {
+  PENDING = 'pending',
+  PROCESSING = 'processing',
+  PUBLISHED = 'published',
+  FAILED = 'failed',
+}
+
+/** Referral dual-reward lifecycle (R8–R9). */
+export enum ReferralRewardStatus {
+  PENDING = 'pending',
+  QUALIFIED = 'qualified',
+  CLAWED_BACK = 'clawed_back',
+}
+
+export enum ReferralQualifyTrigger {
+  PAYMENT = 'payment',
+  CHECKIN = 'checkin',
+}
+
 export enum DebtStatus {
   OPEN = 'open',
   PARTIAL = 'partial',
@@ -962,4 +1003,56 @@ export enum AnalyticsPeriod {
   WEEK = 'week',
   MONTH = 'month',
   QUARTER = 'quarter',
+}
+
+/** Athlete workout session log completion. */
+export enum WorkoutLogStatus {
+  COMPLETED = 'completed',
+  SKIPPED = 'skipped',
+}
+
+/** Payout dispute lifecycle (never mutate past ledger — reverse only). */
+export enum PayoutDisputeStatus {
+  OPEN = 'open',
+  RESOLVED = 'resolved',
+  REJECTED = 'rejected',
+}
+
+/** Admin impersonation session lifecycle. */
+export enum ImpersonationSessionStatus {
+  ACTIVE = 'active',
+  ENDED = 'ended',
+}
+
+/** Social follow target kind. */
+export enum SocialFolloweeKind {
+  USER = 'user',
+  CLUB = 'club',
+}
+
+/** Social report moderation. */
+export enum SocialReportStatus {
+  OPEN = 'open',
+  RESOLVED = 'resolved',
+  REJECTED = 'rejected',
+}
+
+export enum SocialReportTargetKind {
+  POST = 'post',
+  COMMENT = 'comment',
+  USER = 'user',
+}
+
+/** Food bank item lifecycle. */
+export enum FoodItemStatus {
+  ACTIVE = 'active',
+  ARCHIVED = 'archived',
+}
+
+/** Meal plan adherence for a planned meal slot. */
+export enum MealAdherenceStatus {
+  FOLLOWED = 'followed',
+  PARTIAL = 'partial',
+  SKIPPED = 'skipped',
+  SUBSTITUTED = 'substituted',
 }

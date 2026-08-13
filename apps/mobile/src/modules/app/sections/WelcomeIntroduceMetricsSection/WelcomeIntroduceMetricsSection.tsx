@@ -25,8 +25,16 @@ export function WelcomeIntroduceMetricsSection({
     >
       {WELCOME_INTRODUCE_METRIC_CARDS.map((card) => {
         const copy = cards[card.id];
+        const isPressure = card.tone === "pressure";
+
         return (
-          <motion.div key={card.id} variants={welcomeIntroduceStageItemVariants}>
+          <motion.div
+            className={
+              isPressure ? styles.itemPressure() : styles.item()
+            }
+            key={card.id}
+            variants={welcomeIntroduceStageItemVariants}
+          >
             <WelcomeMetricCard
               animationKey={`metrics-${card.id}-${isActive}`}
               icon={card.icon}

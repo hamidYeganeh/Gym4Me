@@ -51,6 +51,8 @@ const SESSION_STATUS_LABEL_KEY: Record<CoachClientSession["status"], string> = {
 
 export function CoachClientDetailScreen({
   client,
+  messaging = false,
+  onSendMessage,
 }: CoachClientDetailScreenProps) {
   const t = useTranslations("CoachClientDetail");
   const router = useRouter();
@@ -236,8 +238,15 @@ export function CoachClientDetailScreen({
           >
             {sessionLogged ? t("logSessionDone") : t("logSession")}
           </Button>
-          <Button fullWidth onPress={() => undefined} variant="ghost">
-            {t("sendMessage")}
+          <Button
+            fullWidth
+            isDisabled={messaging}
+            onPress={() => {
+              void onSendMessage?.();
+            }}
+            variant="ghost"
+          >
+            {messaging ? t("sendMessagePending") : t("sendMessage")}
           </Button>
         </section>
       </div>

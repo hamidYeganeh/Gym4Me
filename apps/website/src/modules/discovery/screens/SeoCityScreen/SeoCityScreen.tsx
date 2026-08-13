@@ -1,4 +1,3 @@
-import { Typography } from "@heroui/react";
 import { seoCityScreenStyles as styles } from "./SeoCityScreen.styles";
 import type { SeoCityScreenProps } from "./SeoCityScreen.types";
 
@@ -7,12 +6,8 @@ export function SeoCityScreen({ cityName, clubs }: SeoCityScreenProps) {
     <main className={styles.root}>
       <header className={styles.header}>
         <p className={styles.eyebrow}>شهر</p>
-        <Typography className={styles.title} type="h1" weight="bold">
-          باشگاه‌های {cityName}
-        </Typography>
-        <Typography className={styles.meta} type="body">
-          {clubs.length} باشگاه تأییدشده
-        </Typography>
+        <h1 className={styles.title}>باشگاه‌های {cityName}</h1>
+        <p className={styles.meta}>{clubs.length} باشگاه تأییدشده</p>
       </header>
       <ul className={styles.list}>
         {clubs.map((club) => (

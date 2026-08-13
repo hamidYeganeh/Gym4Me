@@ -1,5 +1,3 @@
-"use client";
-
 import { PaymentInvoiceGate } from "@/modules/athlete/lib/PaymentInvoiceGate";
 import { getAllInvoiceIds } from "@/modules/athlete/lib/payment-data";
 

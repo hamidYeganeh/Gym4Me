@@ -5,7 +5,6 @@ import { MarketingFooterSection } from "../../sections/MarketingFooterSection";
 import { MarketingHeaderSection } from "../../sections/MarketingHeaderSection";
 import { MarketingHeroSection } from "../../sections/MarketingHeroSection";
 import { MarketingPerksSection } from "../../sections/MarketingPerksSection";
-import { MarketingShowcaseSection } from "../../sections/MarketingShowcaseSection";
 import { MarketingToolsSection } from "../../sections/MarketingToolsSection";
 import { useMarketingScroll } from "../../lib/scroll";
 
@@ -25,7 +24,6 @@ export function HomeScreen() {
             <MarketingPerksSection />
             <MarketingToolsSection />
             <MarketingFeaturesSection />
-            <MarketingShowcaseSection />
             <MarketingFooterSection />
           </main>
         </div>

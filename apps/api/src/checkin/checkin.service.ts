@@ -6,13 +6,17 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types, type QueryFilter } from 'mongoose';
+import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import type { Request } from 'express';
 import { AuditService } from '../audit/audit.service';
+import { MembershipsService } from '../account/memberships/memberships.service';
 import {
   AuditAction,
   BookingStatus,
   CheckInMethod,
   CheckInSyncMode,
+  MembershipActorKind,
+  MembershipStatus,
   StaffPermissionKey,
 } from '../common/enums';
 import {
@@ -21,12 +25,22 @@ import {
 } from '../common/utils/pagination.util';
 import { Booking, BookingDocument } from '../schemas/booking.schema';
 import { CheckIn, CheckInDocument } from '../schemas/check-in.schema';
+import {
+  CheckinDevice,
+  CheckinDeviceDocument,
+} from '../schemas/checkin-device.schema';
+import {
+  ClubMembership,
+  ClubMembershipDocument,
+} from '../schemas/club-membership.schema';
 import { StaffService } from '../account/staff/staff.service';
 import {
   CheckInByBookingCodeDto,
   CheckInByMembershipDto,
+  HardwareCheckinEventDto,
   ListCheckInsQueryDto,
   OfflineCheckInItemDto,
+  ProvisionCheckinDeviceDto,
   SyncOfflineBatchDto,
 } from './dto/checkin.dto';
 
@@ -37,7 +51,12 @@ export class CheckinService {
     private readonly checkInModel: Model<CheckInDocument>,
     @InjectModel(Booking.name)
     private readonly bookingModel: Model<BookingDocument>,
+    @InjectModel(ClubMembership.name)
+    private readonly membershipModel: Model<ClubMembershipDocument>,
+    @InjectModel(CheckinDevice.name)
+    private readonly deviceModel: Model<CheckinDeviceDocument>,
     private readonly staff: StaffService,
+    private readonly memberships: MembershipsService,
     private readonly audit: AuditService,
   ) {}
 
@@ -116,6 +135,12 @@ export class CheckinService {
       if (existing) return this.toPublic(existing);
     }
 
+    await this.assertMembershipCheckInEligible({
+      clubId,
+      membershipId: dto.membershipId,
+      userId: dto.userId,
+    });
+
     const doc = await this.checkInModel.create({
       clubId: new Types.ObjectId(clubId),
       membershipId: new Types.ObjectId(dto.membershipId),
@@ -129,6 +154,17 @@ export class CheckinService {
       recordedBy: new Types.ObjectId(actorId),
       occurredAt: dto.occurredAt ? new Date(dto.occurredAt) : new Date(),
     });
+
+    try {
+      await this.consumeMembershipCreditAfterCheckIn({
+        clubId,
+        membershipId: dto.membershipId,
+        actorId,
+      });
+    } catch (err) {
+      await this.checkInModel.deleteOne({ _id: doc._id });
+      throw err;
+    }
 
     this.audit.log({
       action: AuditAction.CHECKIN_RECORDED,
@@ -193,9 +229,7 @@ export class CheckinService {
     if (query.from || query.to) {
       filter.occurredAt = {};
       if (query.from) {
-        (filter.occurredAt as Record<string, Date>).$gte = new Date(
-          query.from,
-        );
+        (filter.occurredAt as Record<string, Date>).$gte = new Date(query.from);
       }
       if (query.to) {
         (filter.occurredAt as Record<string, Date>).$lte = new Date(query.to);
@@ -228,9 +262,7 @@ export class CheckinService {
     if (query.from || query.to) {
       filter.occurredAt = {};
       if (query.from) {
-        (filter.occurredAt as Record<string, Date>).$gte = new Date(
-          query.from,
-        );
+        (filter.occurredAt as Record<string, Date>).$gte = new Date(query.from);
       }
       if (query.to) {
         (filter.occurredAt as Record<string, Date>).$lte = new Date(query.to);
@@ -256,15 +288,152 @@ export class CheckinService {
     );
   }
 
+  async provisionDevice(
+    clubId: string,
+    actorId: string,
+    dto: ProvisionCheckinDeviceDto,
+  ) {
+    await this.assertMembersCheckin(clubId, actorId);
+    const secret = this.generateDeviceSecret();
+    const device = await this.deviceModel.create({
+      clubId: new Types.ObjectId(clubId),
+      name: dto.name.trim(),
+      provider: dto.provider?.trim() || 'generic',
+      keyHash: this.hashDeviceSecret(secret),
+      operatorUserId: new Types.ObjectId(actorId),
+      status: 'active',
+    });
+    return { device: this.toDevicePublic(device), secret };
+  }
+
+  async listDevices(clubId: string, actorId: string) {
+    await this.assertMembersCheckin(clubId, actorId);
+    const devices = await this.deviceModel
+      .find({ clubId: new Types.ObjectId(clubId) })
+      .sort({ createdAt: -1 });
+    return { result: devices.map((device) => this.toDevicePublic(device)) };
+  }
+
+  async rotateDeviceSecret(clubId: string, deviceId: string, actorId: string) {
+    await this.assertMembersCheckin(clubId, actorId);
+    if (!Types.ObjectId.isValid(deviceId)) {
+      throw new NotFoundException('Check-in device not found');
+    }
+    const secret = this.generateDeviceSecret();
+    const device = await this.deviceModel.findOneAndUpdate(
+      {
+        _id: new Types.ObjectId(deviceId),
+        clubId: new Types.ObjectId(clubId),
+        status: 'active',
+      },
+      { $set: { keyHash: this.hashDeviceSecret(secret) } },
+      { new: true },
+    );
+    if (!device) throw new NotFoundException('Check-in device not found');
+    return { device: this.toDevicePublic(device), secret };
+  }
+
+  async ingestHardwareEvent(
+    deviceId: string,
+    secret: string | undefined,
+    dto: HardwareCheckinEventDto,
+    request?: Request,
+  ) {
+    const device = await this.authenticateDevice(deviceId, secret);
+    const clubId = device.clubId.toString();
+    const actorId = device.operatorUserId.toString();
+    const eventHash = createHash('sha256')
+      .update(dto.externalEventId)
+      .digest('hex')
+      .slice(0, 32);
+    const idempotencyKey = `hardware:${deviceId}:${eventHash}`;
+    const method = dto.method ?? CheckInMethod.BARCODE;
+
+    let result;
+    if (dto.bookingCode) {
+      result = await this.checkInByBookingCode(
+        clubId,
+        actorId,
+        {
+          code: dto.bookingCode,
+          method,
+          clientIdempotencyKey: idempotencyKey,
+          occurredAt: dto.occurredAt,
+        },
+        request,
+      );
+    } else if (dto.membershipId && dto.userId) {
+      result = await this.checkInByMembership(
+        clubId,
+        actorId,
+        {
+          membershipId: dto.membershipId,
+          userId: dto.userId,
+          method,
+          clientIdempotencyKey: idempotencyKey,
+          occurredAt: dto.occurredAt,
+        },
+        request,
+      );
+    } else {
+      throw new BadRequestException(
+        'Hardware event needs bookingCode or membershipId+userId',
+      );
+    }
+
+    await this.deviceModel.updateOne(
+      { _id: device._id },
+      { $set: { lastSeenAt: new Date() } },
+    );
+    return { deviceId, externalEventId: dto.externalEventId, checkIn: result };
+  }
+
+  private async authenticateDevice(deviceId: string, secret?: string) {
+    if (!Types.ObjectId.isValid(deviceId) || !secret) {
+      throw new NotFoundException('Check-in device not found');
+    }
+    const device = await this.deviceModel
+      .findOne({ _id: new Types.ObjectId(deviceId), status: 'active' })
+      .select('+keyHash');
+    if (!device) throw new NotFoundException('Check-in device not found');
+    const expected = Buffer.from(device.keyHash, 'hex');
+    const actual = Buffer.from(this.hashDeviceSecret(secret), 'hex');
+    if (
+      expected.length !== actual.length ||
+      !timingSafeEqual(expected, actual)
+    ) {
+      throw new NotFoundException('Check-in device not found');
+    }
+    return device;
+  }
+
+  private generateDeviceSecret() {
+    return `g4m_dev_${randomBytes(32).toString('base64url')}`;
+  }
+
+  private hashDeviceSecret(secret: string) {
+    return createHash('sha256').update(secret).digest('hex');
+  }
+
+  private toDevicePublic(device: CheckinDeviceDocument) {
+    return {
+      id: device._id.toString(),
+      clubId: device.clubId.toString(),
+      name: device.name,
+      provider: device.provider,
+      status: device.status,
+      lastSeenAt: device.lastSeenAt?.toISOString() ?? null,
+      createdAt: device.createdAt.toISOString(),
+    };
+  }
+
   private async syncOneOfflineItem(
     clubId: string,
     actorId: string,
     item: OfflineCheckInItemDto,
     request?: Request,
   ) {
-    const existing = await this.findByIdempotencyKey(
-      item.clientIdempotencyKey,
-    );
+    const existing = await this.findByIdempotencyKey(item.clientIdempotencyKey);
     if (existing) {
       return {
         clientIdempotencyKey: item.clientIdempotencyKey,
@@ -308,6 +477,11 @@ export class CheckinService {
         actorId,
         StaffPermissionKey.MEMBERS_CHECKIN,
       );
+      await this.assertMembershipCheckInEligible({
+        clubId,
+        membershipId: item.membershipId,
+        userId: item.userId,
+      });
       const doc = await this.checkInModel.create({
         clubId: new Types.ObjectId(clubId),
         membershipId: new Types.ObjectId(item.membershipId),
@@ -321,6 +495,16 @@ export class CheckinService {
         recordedBy: new Types.ObjectId(actorId),
         occurredAt: new Date(item.occurredAt),
       });
+      try {
+        await this.consumeMembershipCreditAfterCheckIn({
+          clubId,
+          membershipId: item.membershipId,
+          actorId,
+        });
+      } catch (err) {
+        await this.checkInModel.deleteOne({ _id: doc._id });
+        throw err;
+      }
       this.audit.log({
         action: AuditAction.CHECKIN_RECORDED,
         actorId,
@@ -423,6 +607,57 @@ export class CheckinService {
     });
 
     return this.toPublic(doc);
+  }
+
+  private async assertMembershipCheckInEligible(args: {
+    clubId: string;
+    membershipId: string;
+    userId: string;
+  }) {
+    const { clubId, membershipId, userId } = args;
+    if (!Types.ObjectId.isValid(membershipId)) {
+      throw new BadRequestException('Invalid membershipId');
+    }
+    const membership = await this.membershipModel.findById(membershipId);
+    if (!membership || membership.clubId.toString() !== clubId) {
+      throw new NotFoundException('Membership not found for this club');
+    }
+    if (membership.status !== MembershipStatus.ACTIVE) {
+      throw new BadRequestException(
+        `Membership is not active (${membership.status})`,
+      );
+    }
+    if (
+      !membership.holder.userId ||
+      membership.holder.userId.toString() !== userId
+    ) {
+      throw new BadRequestException('Membership holder does not match userId');
+    }
+  }
+
+  private async consumeMembershipCreditAfterCheckIn(args: {
+    clubId: string;
+    membershipId: string;
+    actorId: string;
+  }) {
+    const { clubId, membershipId, actorId } = args;
+    try {
+      await this.memberships.consumeCredit(
+        membershipId,
+        { amount: 1, reason: 'check_in' },
+        { userId: actorId, kind: MembershipActorKind.STAFF },
+        clubId,
+      );
+    } catch (err) {
+      // Duration memberships do not burn session/entry credit.
+      if (
+        err instanceof BadRequestException &&
+        String(err.message).includes('Duration memberships')
+      ) {
+        return;
+      }
+      throw err;
+    }
   }
 
   private async findByIdempotencyKey(key: string) {

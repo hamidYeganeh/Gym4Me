@@ -236,7 +236,15 @@ export function BaseProfileScreen({
             </Typography>
           </div>
           <div className={styles.postsFooter()}>
-            <Button className={styles.createPost()} variant="ghost">
+            <Button
+              className={styles.createPost()}
+              onPress={() => {
+                if (roleSegment === "athlete") {
+                  router.push("/athlete/social/create");
+                }
+              }}
+              variant="ghost"
+            >
               {t("createPost")}
               <Plus size={16} />
             </Button>

@@ -4,70 +4,76 @@
 
 > رانتایم فعلی هویت/ادمین/basics/analytics روی MongoDB است. موبایل به API احراز هویت/پروفایل/KYC وصل شده؛ discovery باشگاه/مربی روی API با fallback به mock برای slugهای دمو است.
 >
-> **Seed دمو:** `npm run db:seed:all -w api` — کاربران همهٔ نقش‌ها (رمز `Gym4Me!123`)، باشگاه‌های تأییدشده/در انتظار/پیش‌نویس، کلاس/سانس، KYC و نظرات. تست فلوها: `apps/api/test/smoke-flows.sh` (نیازمند API در حال اجرا + `DEBUG_MODE=true`). ادمین به‌صورت پیش‌فرض کلاب‌ها را از API واقعی می‌خواند (`VITE_CLUBS_USE_MOCK=true` فقط برای دموی آفلاین).
+> **Seed دمو:** `npm run db:seed:all -w api` — کاربران همهٔ نقش‌ها (رمز `Gym4Me!123`)، باشگاه‌های تأییدشده/در انتظار/پیش‌نویس، کلاس/سانس، KYC و نظرات. تست فلوها: `apps/api/test/smoke-flows.sh` (+ `smoke-booking.sh` / `smoke-membership.sh` / `integrity-flows.sh`) نیازمند API در حال اجرا + `DEBUG_MODE=true`. ادمین به‌صورت پیش‌فرض کلاب‌ها را از API واقعی می‌خواند (`VITE_CLUBS_USE_MOCK=true` فقط برای دموی آفلاین).
+>
+> **ابزار پایه:** CI (`.github/workflows/ci.yml`: lint + check-types + build api)، `check-types` در api/`@repo/api`، و README بازنویسی‌شده با gates کیفیت و smokes.
 
-| استوری | api | mobile | admin | website |
-|--------|-----|--------|-------|---------|
-| A1 ورود OTP | ✅ | ✅ | — | — |
-| A2 رمز عبور | ✅ | 🟡 ورود با رمز | ✅ | — |
-| A3 پروفایل پایه | ✅ | ✅ | — | — |
-| A4 سوئیچ نقش + توکن | ✅ | ✅ | — | — |
-| A5 KYC | ✅ | ✅ | ✅ | — |
-| A6 دعوت با کد معرف | ✅ | 🟡 کلاینت API | — | — |
-| B1 پروفایل ورزشکار | ✅ | ✅ | — | — |
-| B2–B3 پروفایل/تأیید مربی | ✅ | ✅ | ✅ | — |
-| B4–B5 ساخت باشگاه/مدارک | ✅ | ✅ | ✅ | — |
-| C1–C2 جست‌وجوی باشگاه | ✅ + Q11 filters | 🟡 API + mock + فیلترها + نقشه geo | — | 🟡 SEO /clubs |
-| C3–C4 جست‌وجوی مربی | ✅ | 🟡 API + mock fallback | — | 🟡 SEO /coaches |
-| C5 صفحات SEO | — | — | — | 🟡 JSON-LD + sitemap + robots |
-| D1–D9 رزروها | 🟡 API + verify ledger | 🟡 بخشی UI | ❌ | — |
-| D10 check-in | 🟡 API | ❌ | — | — |
-| D11 تأیید مربی | 🟡 API | ❌ | — | — |
-| SYS-D12/13 قفل/TTL | 🟡 جزئی در booking | — | — | — |
-| E1–E4 عضویت باشگاه | 🟡 API | ❌ | ❌ | — |
-| F1–F3 اشتراک پلتفرم | 🟡 API | ❌ | 🟡 admin plans | ❌ |
-| G1 بانک حرکات | 🟡 API | — | 🟡 admin | — |
-| G2–G8 برنامه تمرینی | 🟡 WorkoutPlan + WorkoutProgram template | 🟡 programs UI←API | — | — |
-| H1–H5 متریک/پیشرفت | 🟡 API | 🟡 UI + catalog/order API | — | — |
-| H6 MetricType | ✅ MetricType catalog + seed | 🟡 reorder prefs | 🟡 admin CRUD | — |
-| I1–I3 تغذیه | 🟡 API | ❌ | ❌ | — |
-| J1–J6 اجتماعی | 🟡 API | ❌ | ❌ | — |
-| K1 فضا/سانس | ✅ class/slot + calendar | 🟡 API برای clubId واقعی + mock برای slug | ✅ CRUD/edit/cancel occurrence | — |
-| K2 پرسنل + مجوز | 🟡 API staff grants | ❌ | — | — |
-| K3–K8 عملیات باشگاه | 🟡 K3 assign (نقش coach الزامی) | 🟡 owner club coaches UI | 🟡 assign + audience در فرم | — |
-| L1 زرین‌پال | 🟡 gateway + booking verify→ledger | 🟡 invoice UI←API | — | — |
-| L2 کیف پول | 🟡 API wallet + overview | 🟡 wallet UI←API | ❌ | — |
-| L3 Ledger | 🟡 API immutable | — | 🟡 admin list | — |
-| L4–L8 کمیسیون/تسویه | 🟡 API payout/compensation/debt/shift | ❌ | 🟡 admin settle | — |
-| M1 CRUD کاربران | ✅ | — | ✅ | — |
-| M2 تأیید KYC | ✅ | — | ✅ | — |
-| M3 دادهٔ مرجع | ✅ | — | ✅ | — |
-| M4 تأیید UGC | 🟡 schema | — | ❌ | — |
-| M5 impersonation | 🟡 schema | — | ❌ | — |
-| M6 AuditLog نمایش | ✅ ثبت | — | ❌ | — |
-| M7 FAQ | ✅ (`/support/faq` عمومی + CRUD ادمین) | ❌ نمایش موبایل | ✅ | ❌ نمایش سایت |
-| M8–M9 اعلان/گزارش | 🟡 schema | — | ❌ | — |
-| M10 تیکت پشتیبانی | ✅ (ticket + thread + resolve/close + audit) | ❌ UI موبایل (hooks آماده) | ✅ | — |
-| N1 اعلان تراکنشی | ✅ dispatch (template + push + SMS fallback + FCM driver) | 🟡 پوش native نصب شد؛ نیاز به Firebase config | ❌ مدیریت قالب | — |
-| N2 کاوه‌نگار | ✅ درایور | — | — | — |
-| N3 inbox | ✅ (`/account/notifications` + device tokens) | ✅ صفحه اعلان‌ها متصل به API | — | — |
-| N4 پیام مربی-شاگرد | 🟡 schema | ❌ | — | — |
-| O1 پرداخت حضوری/ترکیبی | 🟡 API manual payment | — | ❌ | — |
-| O2–O15 عملیات واقعی باشگاه | 🟡 API جزئی + OwnerTask | 🟡 home tasks badge | ❌ | — |
-| P1–P12 کسب‌وکار/کیفیت مربی | 🟡 API coaching + engagement + analytics | 🟡 clients/programs/analytics UI←API | ❌ | — |
-| Q1–Q12 اعتماد/سلامت ورزشکار | 🟡 Q11 audience روی Club + discovery filters | 🟡 Q2/Q3 + فیلترهای Q11 در لیست باشگاه | ❌ | 🟡 SEO جزئیات باشگاه audience |
-| R1–R2 event/attribution | ✅ | ✅ کلاینت attribution | — | ❌ |
-| R3–R7 lifecycle delivery | ❌ | ❌ | ❌ | — |
-| R8–R9 referral reward | ❌ (invite بدون reward ✅) | ❌ | ❌ | ❌ |
-| R10–R12 analytics/expansion | ❌ | ❌ | ❌ | — |
+| استوری                      | api                                                                                     | mobile                                                         | admin                                | website                                                           |
+| --------------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------ | ----------------------------------------------------------------- |
+| A1 ورود OTP                 | ✅                                                                                      | ✅                                                             | —                                    | —                                                                 |
+| A2 رمز عبور                 | ✅                                                                                      | 🟡 ورود با رمز                                                 | ✅                                   | —                                                                 |
+| A3 پروفایل پایه             | ✅                                                                                      | ✅                                                             | —                                    | —                                                                 |
+| A4 سوئیچ نقش + توکن         | ✅                                                                                      | ✅                                                             | —                                    | —                                                                 |
+| A5 KYC                      | ✅                                                                                      | ✅                                                             | ✅                                   | —                                                                 |
+| A6 دعوت با کد معرف          | ✅                                                                                      | ✅ ReferralGate + screen                                       | —                                    | —                                                                 |
+| B1 پروفایل ورزشکار          | ✅                                                                                      | ✅                                                             | —                                    | —                                                                 |
+| B2–B3 پروفایل/تأیید مربی    | ✅                                                                                      | ✅                                                             | ✅                                   | —                                                                 |
+| B4–B5 ساخت باشگاه/مدارک     | ✅                                                                                      | ✅                                                             | ✅                                   | —                                                                 |
+| C1–C2 جست‌وجوی باشگاه       | ✅ + Q11 filters                                                                        | 🟡 API + mock + فیلترها + نقشه geo                             | —                                    | ✅ دایرکتوری واقعی `/clubs` + جست‌وجو + JSON-LD                   |
+| C3–C4 جست‌وجوی مربی         | ✅                                                                                      | 🟡 API + mock fallback                                         | —                                    | ✅ دایرکتوری واقعی `/coaches` + جست‌وجو + JSON-LD                 |
+| C5 صفحات SEO                | —                                                                                       | —                                                              | —                                    | ✅ جزئیات غنی، metadata/canonical، sitemap صفحه‌بندی‌شده و robots |
+| D1–D9 رزروها                | 🟡 API + cancel preview/policy + idempotency + outbox؛ `@repo/api` waitlist             | 🟡 پرداخت/جزئیات/لغو با پیش‌نمایش                              | 🟡 لیست رزرو                         | —                                                                 |
+| D10 check-in                | 🟡 API + consume membership credit + `syncOfflineBatch`؛ `@repo/api` checkin            | ✅ athlete history + owner desk gates                          | —                                    | —                                                                 |
+| D11 تأیید مربی              | ✅ pending approval → accept → payment TTL                                              | ✅ پذیرش/رد و timeline پرداخت پس از تأیید                      | —                                    | —                                                                 |
+| SYS-D12/13 قفل/TTL          | 🟡 idempotency رزرو + انقضای approval/payment و آزادسازی ظرفیت؛ قفل تراکنشی سراسری جزئی | —                                                              | —                                    | —                                                                 |
+| E1–E4 عضویت باشگاه          | ✅ فروش idempotent، import، پرداخت جزئی/ترکیبی، بدهی، Ledger و مصرف اعتبار              | ✅ خرید ورزشکار + فروش/CSV/بدهی/check-in پذیرش                 | 🟡 admin platform plans              | —                                                                 |
+| F1–F3 اشتراک پلتفرم         | 🟡 API                                                                                  | 🟡 owner subscriptions client                                  | ✅ admin plans CRUD                  | ✅ کاتالوگ عمومی پلن‌های فعال در `/pricing`                       |
+| G1 بانک حرکات               | 🟡 API                                                                                  | —                                                              | ✅ admin exercises catalog           | —                                                                 |
+| G2–G8 برنامه تمرینی         | 🟡 WorkoutPlan/Program + WorkoutLog schema/API                                          | ✅ athlete workouts + coach programs UI←API                    | —                                    | —                                                                 |
+| H1–H5 متریک/پیشرفت          | 🟡 API + PersonalRecord                                                                 | ✅ metrics/history gates←API                                   | —                                    | —                                                                 |
+| H6 MetricType               | ✅ MetricType catalog + seed                                                            | 🟡 reorder prefs                                               | ✅ admin CRUD                        | —                                                                 |
+| I1–I3 تغذیه                 | 🟡 API + FoodItem (+ meal adherence)                                                    | ✅ meal plans + food log gates                                 | ✅ admin food bank                   | —                                                                 |
+| J1–J6 اجتماعی               | 🟡 API + SocialFollow (+ save/report)                                                   | ✅ feed/post/create gates                                      | ✅ social reports moderation         | —                                                                 |
+| K1 فضا/سانس                 | ✅ class/slot + calendar                                                                | 🟡 API برای clubId واقعی + mock برای slug                      | ✅ CRUD/edit/cancel occurrence       | —                                                                 |
+| K2 پرسنل + مجوز             | 🟡 API staff grants + `StaffPermissionGuard`                                            | ✅ OwnerStaffGate                                              | —                                    | —                                                                 |
+| K3–K8 عملیات باشگاه         | 🟡 K3 assign (نقش coach الزامی)                                                         | 🟡 owner club coaches UI                                       | 🟡 assign + audience در فرم          | —                                                                 |
+| L1 زرین‌پال                 | 🟡 gateway + booking verify→ledger                                                      | ✅ booking pay + invoice receipt←API                           | —                                    | —                                                                 |
+| L2 کیف پول                  | 🟡 API wallet + overview + topup + payments list                                        | ✅ wallet UI←API (balance/series/transactions/topup)           | ❌                                   | —                                                                 |
+| L3 Ledger                   | 🟡 API immutable (+ membership sell)                                                    | —                                                              | ✅ admin ledger screen               | —                                                                 |
+| L4–L8 کمیسیون/تسویه         | 🟡 API payout/compensation/debt/shift                                                   | 🟡 owner finance gate                                          | ✅ admin payments/payouts/refunds    | —                                                                 |
+| M1 CRUD کاربران             | ✅                                                                                      | —                                                              | ✅                                   | —                                                                 |
+| M2 تأیید KYC                | ✅                                                                                      | —                                                              | ✅                                   | —                                                                 |
+| M3 دادهٔ مرجع               | ✅                                                                                      | —                                                              | ✅                                   | —                                                                 |
+| M4 تأیید UGC                | 🟡 schema + exercises verify                                                            | —                                                              | ✅ exercises verification UI         | —                                                                 |
+| M5 impersonation            | ✅ JWT claim wiring + sessions                                                          | —                                                              | ✅ AuditLogsScreen start/end         | —                                                                 |
+| M6 AuditLog نمایش           | ✅ ثبت                                                                                  | —                                                              | ✅ AuditLogsScreen                   | —                                                                 |
+| M7 FAQ                      | ✅ (`/support/faq` عمومی + CRUD ادمین)                                                  | 🟡 FaqGate + FaqScreen (نقش‌ها)                                | ✅                                   | ❌ نمایش سایت                                                     |
+| M8–M9 اعلان/گزارش           | 🟡 schema + templates CRUD                                                              | ✅ notification prefs gate                                     | ✅ templates + social reports        | —                                                                 |
+| M10 تیکت پشتیبانی           | ✅ (ticket + thread + resolve/close + audit)                                            | 🟡 SupportTicketsGate + screen                                 | ✅                                   | —                                                                 |
+| N1 اعلان تراکنشی            | ✅ dispatch (template + push + SMS fallback + FCM)؛ outbox publish→NotificationsService | 🟡 پوش native؛ نیاز به Firebase config                         | ✅ مدیریت قالب                       | —                                                                 |
+| N2 کاوه‌نگار                | ✅ درایور                                                                               | —                                                              | —                                    | —                                                                 |
+| N3 inbox                    | ✅ (`/account/notifications` + device tokens)                                           | ✅ صفحه اعلان‌ها متصل به API                                   | —                                    | —                                                                 |
+| N4 پیام مربی-شاگرد          | ✅ CoachThread/Message API                                                              | ✅ coach messages/thread UI                                    | —                                    | —                                                                 |
+| O1 پرداخت حضوری/ترکیبی      | ✅ tenderهای نقد/POS/کارت‌به‌کارت، جمع کنترل‌شده و Ledger                               | ✅ فرم پذیرش با پرداخت کامل/جزئی/ترکیبی                        | ❌                                   | —                                                                 |
+| O2–O15 عملیات واقعی باشگاه  | 🟡 import عضو، دستگاه check-in امن، بدهی/صندوق + OwnerTask/lifecycle؛ آفلاین کامل جزئی  | ✅ clubs/staff/lifecycle/tasks/check-in/finance/members/import | 🟡 admin ops                         | —                                                                 |
+| P1–P12 کسب‌وکار/کیفیت مربی  | 🟡 API coaching + engagement + analytics                                                | ✅ clients/detail/programs/earnings/calendar/chat UI←API       | 🟡 admin coaching lists              | —                                                                 |
+| Q1–Q12 اعتماد/سلامت ورزشکار | 🟡 Q11 audience روی Club + discovery filters                                            | 🟡 Q2/Q3 + فیلترهای Q11 در لیست باشگاه                         | ❌                                   | 🟡 SEO جزئیات باشگاه audience                                     |
+| R1–R2 event/attribution     | ✅                                                                                      | ✅ کلاینت attribution                                          | —                                    | ❌                                                                |
+| R3–R7 lifecycle delivery    | ✅ outbox dispatch + notification preferences (R4) + LifecycleModule + worker (R5–R7)   | ✅ owner lifecycle gate                                        | 🟡 admin analytics overview          | —                                                                 |
+| R8–R9 referral reward       | ✅ `qualifyReferral` + clawback ledger reversal                                         | ✅ athlete referral screen                                     | ❌                                   | ❌                                                                |
+| R10–R12 analytics/expansion | 🟡 admin analytics overview endpoint                                                    | —                                                              | ✅ dashboard + analytics screens←API | —                                                                 |
 
 ## شکاف‌های فوری فاز ۱
 
 1. ~~اتصال `apps/mobile` به API احراز هویت~~ ✅
 2. ~~UI پنل ادمین برای کاربران/KYC/basics~~ ✅
-3. فعال‌سازی واقعی `SMS_PROVIDER=kavenegar` در محیط staging
+3. قراردادن credentialهای staging برای Kavenegar/Zarinpal/FCM؛ production اکنون با provider mock یا credential ناقص fail-fast می‌شود
 4. ~~تکمیل پروفایل‌های نقش (B) روی API رانتایم + UI~~ ✅ (سطح پایه)
 5. ~~ثبت attribution کلاینت~~ ✅ (پوشش event سروری جزئی؛ taxonomy کامل later)
-6. تست دستی end-to-end: OTP → پروفایل → KYC → تأیید ادمین
+6. ~~تست دستی end-to-end: OTP → عضویت → رزرو → حضور → مربی~~ ✅ (`apps/api/test/e2e-scenario.sh` + smokes؛ صف ادمین پس از `db:seed:all`)
 
+> **ابزار پایه:** CI، `check-types`، و smokeهای فازبندی‌شده (`smoke-flows` / `smoke-booking` / `smoke-membership` / `integrity-flows` / `e2e-scenario`) سبز هستند (با `SMS_PROVIDER=mock` و `THROTTLE_DISABLED=true` در dev).
+>
 > دیتابیس: فقط MongoDB — مهاجرت به PostgreSQL در محدوده نیست.
+>
+> آخرین بستن شکاف‌ها (۲۰۲۶-۰۸-۱۳): فروش و import پذیرش با پرداخت جزئی/ترکیبی و بدهی، چرخهٔ approval مربی و TTL رزرو، device API امن check-in، readiness سرویس‌های واقعی و صفحات دایرکتوری/قیمت‌گذاری/SEO وب‌سایت.

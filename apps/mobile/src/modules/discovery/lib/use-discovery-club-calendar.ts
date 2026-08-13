@@ -46,7 +46,7 @@ export function useDiscoveryClubCalendar(
         setIsLoading(false);
       } catch {
         if (cancelled) return;
-        setData(getMockClubCalendar(clubId || "club", range.from, range.to));
+        setData({ timezone: "Asia/Tehran", days: [] });
         setIsLoading(false);
         setIsError(true);
       }

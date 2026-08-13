@@ -1,16 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Switch, Typography } from "@heroui/react";
-import { BarbellHorizontal } from "@repo/icons/BarbellHorizontal";
 import { Bell1 } from "@repo/icons/Bell1";
-import { ChartTrendUp } from "@repo/icons/ChartTrendUp";
+import { Chat } from "@repo/icons/Chat";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
-import { ExclamationMarkCircle } from "@repo/icons/ExclamationMarkCircle";
-import { GridFour } from "@repo/icons/GridFour";
-import { Leaf } from "@repo/icons/Leaf";
-import { WaterDrop } from "@repo/icons/WaterDrop";
+import { Envelope1 } from "@repo/icons/Envelope1";
+import { Megaphone } from "@repo/icons/Megaphone";
+import { Telephone1 } from "@repo/icons/Telephone1";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
@@ -20,19 +17,23 @@ import type { NotificationSettingsScreenProps } from "./NotificationSettingsScre
 
 const ICON = 22;
 
+type ChannelKey = keyof NotificationSettingsScreenProps["preferences"]["channels"];
+
 export function NotificationSettingsScreen({
   className,
   roleSegment = "athlete",
+  preferences,
+  pending = false,
+  error = null,
+  onUpdate,
 }: NotificationSettingsScreenProps) {
   const t = useTranslations("Mobile.NotificationSettings");
   const styles = notificationSettingsScreenVariants();
   const router = useRouter();
-  const [activity, setActivity] = useState(false);
-  const [workout, setWorkout] = useState(true);
-  const [hydration, setHydration] = useState(true);
-  const [nutrition, setNutrition] = useState(true);
-  const [progressTips, setProgressTips] = useState(false);
-  const [weekly, setWeekly] = useState(false);
+
+  const toggleChannel = (key: ChannelKey, value: boolean) => {
+    void onUpdate?.({ channels: { [key]: value } });
+  };
 
   return (
     <AppLayout
@@ -61,61 +62,29 @@ export function NotificationSettingsScreen({
           <Typography className={styles.introSubtitle()} type="body">
             {t("subtitle")}
           </Typography>
+          {error ? (
+            <Typography className="text-danger" type="body-sm">
+              {t("errorSave")}
+            </Typography>
+          ) : null}
         </section>
 
         <section className={styles.group()}>
           <Typography className={styles.groupTitle()} type="body-sm">
-            {t("healthGroup")}
+            {t("channelsGroup")}
           </Typography>
           <div className={styles.stack()}>
             <ProfileMenuRow
-              hint={t("activityHint")}
-              icon={<Bell1 size={ICON} />}
-              label={t("activityReminder")}
-              showChevron={false}
-              trailing={
-                <Switch
-                  aria-label={t("activityReminder")}
-                  isSelected={activity}
-                  onChange={setActivity}
-                >
-                  <Switch.Control>
-                    <Switch.Thumb />
-                  </Switch.Control>
-                </Switch>
-              }
-            />
-            <ProfileMenuRow
-              icon={<BarbellHorizontal size={ICON} />}
-              label={t("workoutReminder")}
-              showChevron={false}
-              trailing={
-                <Switch
-                  aria-label={t("workoutReminder")}
-                  isSelected={workout}
-                  onChange={setWorkout}
-                >
-                  <Switch.Control>
-                    <Switch.Thumb />
-                  </Switch.Control>
-                </Switch>
-              }
-            />
-            <ProfileMenuRow
               hint={t("pushHint")}
-              icon={<ExclamationMarkCircle size={ICON} />}
-              label={t("pushNotification")}
-              onPress={() => router.push(`/${roleSegment}/notifications`)}
-            />
-            <ProfileMenuRow
-              icon={<WaterDrop size={ICON} />}
-              label={t("hydrationReminder")}
+              icon={<Bell1 size={ICON} />}
+              label={t("push")}
               showChevron={false}
               trailing={
                 <Switch
-                  aria-label={t("hydrationReminder")}
-                  isSelected={hydration}
-                  onChange={setHydration}
+                  aria-label={t("push")}
+                  isDisabled={pending}
+                  isSelected={preferences.channels.push}
+                  onChange={(value) => toggleChannel("push", value)}
                 >
                   <Switch.Control>
                     <Switch.Thumb />
@@ -124,14 +93,70 @@ export function NotificationSettingsScreen({
               }
             />
             <ProfileMenuRow
-              icon={<Leaf size={ICON} />}
-              label={t("nutritionReminder")}
+              hint={t("smsHint")}
+              icon={<Telephone1 size={ICON} />}
+              label={t("sms")}
               showChevron={false}
               trailing={
                 <Switch
-                  aria-label={t("nutritionReminder")}
-                  isSelected={nutrition}
-                  onChange={setNutrition}
+                  aria-label={t("sms")}
+                  isDisabled={pending}
+                  isSelected={preferences.channels.sms}
+                  onChange={(value) => toggleChannel("sms", value)}
+                >
+                  <Switch.Control>
+                    <Switch.Thumb />
+                  </Switch.Control>
+                </Switch>
+              }
+            />
+            <ProfileMenuRow
+              hint={t("inAppHint")}
+              icon={<Chat size={ICON} />}
+              label={t("inApp")}
+              showChevron={false}
+              trailing={
+                <Switch
+                  aria-label={t("inApp")}
+                  isDisabled={pending}
+                  isSelected={preferences.channels.inApp}
+                  onChange={(value) => toggleChannel("inApp", value)}
+                >
+                  <Switch.Control>
+                    <Switch.Thumb />
+                  </Switch.Control>
+                </Switch>
+              }
+            />
+            <ProfileMenuRow
+              hint={t("emailHint")}
+              icon={<Envelope1 size={ICON} />}
+              label={t("email")}
+              showChevron={false}
+              trailing={
+                <Switch
+                  aria-label={t("email")}
+                  isDisabled={pending}
+                  isSelected={preferences.channels.email}
+                  onChange={(value) => toggleChannel("email", value)}
+                >
+                  <Switch.Control>
+                    <Switch.Thumb />
+                  </Switch.Control>
+                </Switch>
+              }
+            />
+            <ProfileMenuRow
+              hint={t("marketingHint")}
+              icon={<Megaphone size={ICON} />}
+              label={t("marketing")}
+              showChevron={false}
+              trailing={
+                <Switch
+                  aria-label={t("marketing")}
+                  isDisabled={pending}
+                  isSelected={preferences.channels.marketing}
+                  onChange={(value) => toggleChannel("marketing", value)}
                 >
                   <Switch.Control>
                     <Switch.Thumb />
@@ -144,41 +169,14 @@ export function NotificationSettingsScreen({
 
         <section className={styles.group()}>
           <Typography className={styles.groupTitle()} type="body-sm">
-            {t("insightGroup")}
+            {t("inboxGroup")}
           </Typography>
           <div className={styles.stack()}>
             <ProfileMenuRow
-              icon={<ChartTrendUp size={ICON} />}
-              label={t("progressTips")}
-              showChevron={false}
-              trailing={
-                <Switch
-                  aria-label={t("progressTips")}
-                  isSelected={progressTips}
-                  onChange={setProgressTips}
-                >
-                  <Switch.Control>
-                    <Switch.Thumb />
-                  </Switch.Control>
-                </Switch>
-              }
-            />
-            <ProfileMenuRow
-              hint={t("weeklyHint")}
-              icon={<GridFour size={ICON} />}
-              label={t("weeklyInsight")}
-              showChevron={false}
-              trailing={
-                <Switch
-                  aria-label={t("weeklyInsight")}
-                  isSelected={weekly}
-                  onChange={setWeekly}
-                >
-                  <Switch.Control>
-                    <Switch.Thumb />
-                  </Switch.Control>
-                </Switch>
-              }
+              hint={t("inboxHint")}
+              icon={<Bell1 size={ICON} />}
+              label={t("openInbox")}
+              onPress={() => router.push(`/${roleSegment}/notifications`)}
             />
           </div>
         </section>

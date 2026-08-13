@@ -1,8 +1,7 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { ApiError } from "@repo/api";
 import {
+  accountMemberships,
   discoveryClubSlots,
   discoveryClubs,
   isDiscoveryApiId,
@@ -48,21 +47,30 @@ export function useDiscoveryClubDetail(clubId: string): DiscoveryClubDetailState
     }
 
     let cancelled = false;
-    setState((prev) => ({ ...prev, isLoading: true, isError: false, source: "api" }));
+    setState((prev) => ({
+      ...prev,
+      isLoading: true,
+      isError: false,
+      source: "api",
+    }));
 
     void (async () => {
       try {
         const from = todayIso();
         const to = addDaysIso(from, 13);
-        const [club, branches, classes, reviews, calendar] = await Promise.all([
-          discoveryClubs.get(clubId),
-          discoveryClubs.listBranches(clubId),
-          discoveryClubSlots.listClasses(clubId),
-          discoveryClubs.listReviews(clubId, { page_size: 20 }),
-          discoveryClubSlots
-            .getCalendar(clubId, { from, to })
-            .catch(() => null),
-        ]);
+        const [club, branches, classes, reviews, calendar, plansPage] =
+          await Promise.all([
+            discoveryClubs.get(clubId),
+            discoveryClubs.listBranches(clubId),
+            discoveryClubSlots.listClasses(clubId),
+            discoveryClubs.listReviews(clubId, { page_size: 20 }),
+            discoveryClubSlots
+              .getCalendar(clubId, { from, to })
+              .catch(() => null),
+            accountMemberships
+              .listPublicClubPlans(clubId, { page_size: 50 })
+              .catch(() => ({ result: [] as never[] })),
+          ]);
         if (cancelled) return;
         setState({
           club: mapDiscoveryClubToDetail({
@@ -71,6 +79,7 @@ export function useDiscoveryClubDetail(clubId: string): DiscoveryClubDetailState
             classes: classes.result,
             calendar,
             reviews: reviews.result,
+            membershipPlans: plansPage.result,
           }),
           isLoading: false,
           isError: false,
@@ -78,12 +87,12 @@ export function useDiscoveryClubDetail(clubId: string): DiscoveryClubDetailState
         });
       } catch (error) {
         if (cancelled) return;
-        const fallback = getClubDetail(clubId) ?? null;
+        // Live Mongo ids must not silently fall back to demo fixtures.
         setState({
-          club: fallback,
+          club: null,
           isLoading: false,
-          isError: !(error instanceof ApiError && error.status === 404) && !fallback,
-          source: fallback ? "mock" : "api",
+          isError: !(error instanceof ApiError && error.status === 404),
+          source: "api",
         });
       }
     })();

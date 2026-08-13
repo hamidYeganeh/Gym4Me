@@ -888,8 +888,14 @@ function SubscriptionsSection({
                       </Radio.Indicator>
                     </Radio.Control>
                   }
-                  description={t(plan.descriptionKey)}
-                  planName={t(plan.planNameKey)}
+                  description={
+                    plan.description ??
+                    (plan.descriptionKey ? t(plan.descriptionKey) : "")
+                  }
+                  planName={
+                    plan.planName ??
+                    (plan.planNameKey ? t(plan.planNameKey) : plan.id)
+                  }
                   price={formatPlanPrice(plan.price)}
                   priceSuffix={t("planPriceSuffix")}
                   selected={isSelected}

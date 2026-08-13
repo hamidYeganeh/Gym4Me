@@ -7,6 +7,7 @@ import {
   ClubWaitlistController,
 } from './waitlist.controller';
 import { WaitlistService } from './waitlist.service';
+import { WaitlistWorker } from './waitlist.worker';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { WaitlistService } from './waitlist.service';
     ]),
   ],
   controllers: [AccountWaitlistController, ClubWaitlistController],
-  providers: [WaitlistService],
+  providers: [WaitlistService, WaitlistWorker],
   exports: [WaitlistService],
 })
 export class WaitlistModule {}

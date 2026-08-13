@@ -17,4 +17,6 @@ export const coachProgramsScreenStyles = {
     "flex flex-col items-center gap-2 rounded-[24px] border border-border bg-surface px-6 py-10 text-center",
   emptyTitle: "text-foreground",
   emptyBody: "text-muted",
+  form: "flex flex-col gap-3 rounded-[24px] border border-border bg-surface p-4",
+  formActions: "mt-1 flex gap-2",
 } as const;

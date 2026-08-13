@@ -5,6 +5,7 @@ export {
 export { accountBookingsEndpoints } from "./bookings.endpoint";
 export type {
   Booking,
+  BookingCancellationPreview,
   BookingCancellation,
   BookingClubRef,
   BookingIntake,
@@ -40,10 +41,7 @@ export {
 export { coachBookingsEndpoints } from "./coach-bookings.endpoint";
 export { coachBookingsKeys } from "./coach-bookings.keys";
 
-export {
-  createCoachSlotsApi,
-  type CoachSlotsApi,
-} from "./coach-slots.client";
+export { createCoachSlotsApi, type CoachSlotsApi } from "./coach-slots.client";
 export { coachSlotsEndpoints } from "./coach-slots.endpoint";
 export type {
   CoachSlotInput,

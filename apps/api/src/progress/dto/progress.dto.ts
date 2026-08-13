@@ -19,6 +19,8 @@ import {
   MetricTypeStatus,
   MetricValueKind,
   Privacy,
+  VerificationStatus,
+  WorkoutLogStatus,
   WorkoutPlanStatus,
   WorkoutProgramStatus,
 } from '../../common/enums';
@@ -537,4 +539,120 @@ export class AssignWorkoutProgramDto {
   @ValidateNested()
   @Type(() => WorkoutPlanPeriodDto)
   period?: WorkoutPlanPeriodDto;
+}
+
+// ── Coach exercise submit / admin review ──────────────────────────────────
+
+export class ReviewExerciseVerificationDto {
+  @IsEnum(VerificationStatus)
+  status!: VerificationStatus.APPROVED | VerificationStatus.REJECTED;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  rejectionReason?: string;
+}
+
+export class ListPendingExercisesQueryDto extends PaginationQueryDto {
+  @IsOptional()
+  @IsEnum(VerificationStatus)
+  verification?: VerificationStatus;
+}
+
+// ── Workout logs ──────────────────────────────────────────────────────────
+
+export class WorkoutLogSetDto {
+  @IsMongoId()
+  exerciseId!: string;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  reps!: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  weightKg?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  @Max(10)
+  rpe?: number;
+}
+
+export class CreateWorkoutLogDto {
+  @IsMongoId()
+  planId!: string;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  sessionIndex!: number;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => WorkoutLogSetDto)
+  sets!: WorkoutLogSetDto[];
+
+  @IsEnum(WorkoutLogStatus)
+  status!: WorkoutLogStatus;
+
+  @IsOptional()
+  @IsDateString()
+  loggedAt?: string;
+}
+
+export class ListWorkoutLogsQueryDto extends PaginationQueryDto {
+  @IsOptional()
+  @IsMongoId()
+  planId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  athleteId?: string;
+
+  @IsOptional()
+  @IsEnum(WorkoutLogStatus)
+  status?: WorkoutLogStatus;
+}
+
+// ── Personal records ──────────────────────────────────────────────────────
+
+export class CreatePersonalRecordDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(80)
+  metricTypeKey!: string;
+
+  @Type(() => Number)
+  @IsNumber()
+  value!: number;
+
+  @IsOptional()
+  @IsDateString()
+  achievedAt?: string;
+
+  @IsOptional()
+  @IsEnum(Privacy)
+  privacy?: Privacy;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  note?: string;
+}
+
+export class ListPersonalRecordsQueryDto extends PaginationQueryDto {
+  @IsOptional()
+  @IsMongoId()
+  athleteId?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  metricTypeKey?: string;
 }

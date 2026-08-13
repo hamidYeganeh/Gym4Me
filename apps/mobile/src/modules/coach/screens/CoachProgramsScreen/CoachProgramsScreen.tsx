@@ -1,7 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Button, Chip, Typography } from "@heroui/react";
+import {
+  Button,
+  Chip,
+  Input,
+  Label,
+  TextField,
+  Typography,
+} from "@heroui/react";
 import { Calendar1 } from "@repo/icons/Calendar1";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { Clock } from "@repo/icons/Clock";
@@ -42,10 +49,20 @@ const STATE_LABEL_KEY: Record<CoachProgramState, string> = {
   archived: "stateArchived",
 };
 
-export function CoachProgramsScreen({ programs }: CoachProgramsScreenProps) {
+export function CoachProgramsScreen({
+  programs,
+  creating = false,
+  createError = null,
+  onCreateProgram,
+  onPublishProgram,
+}: CoachProgramsScreenProps) {
   const t = useTranslations("CoachPrograms");
   const router = useRouter();
   const [filter, setFilter] = useState<ProgramFilter>("all");
+  const [showForm, setShowForm] = useState(false);
+  const [title, setTitle] = useState("");
+  const [focusLabel, setFocusLabel] = useState("");
+  const [publishingId, setPublishingId] = useState<string | null>(null);
 
   const visiblePrograms = useMemo(
     () =>
@@ -87,11 +104,74 @@ export function CoachProgramsScreen({ programs }: CoachProgramsScreenProps) {
         <CallToActionCard
           actionLabel={t("createAction")}
           actionType="plus"
-          onAction={() => undefined}
+          onAction={() => {
+            if (!onCreateProgram) return;
+            setShowForm(true);
+          }}
           subtitle={t("createSubtitle")}
           title={t("createTitle")}
           variant="primary"
         />
+
+        {showForm && onCreateProgram ? (
+          <form
+            className={styles.form}
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (!title.trim()) return;
+              void Promise.resolve(
+                onCreateProgram({
+                  title: title.trim(),
+                  focusLabel: focusLabel.trim() || undefined,
+                  weekCount: 4,
+                  sessionsPerWeek: 3,
+                }),
+              ).then(() => {
+                setTitle("");
+                setFocusLabel("");
+                setShowForm(false);
+              });
+            }}
+          >
+            <TextField>
+              <Label>{t("createTitleLabel")}</Label>
+              <Input
+                onChange={(event) => setTitle(event.target.value)}
+                placeholder={t("createTitlePlaceholder")}
+                value={title}
+              />
+            </TextField>
+            <TextField>
+              <Label>{t("createFocusLabel")}</Label>
+              <Input
+                onChange={(event) => setFocusLabel(event.target.value)}
+                placeholder={t("createFocusPlaceholder")}
+                value={focusLabel}
+              />
+            </TextField>
+            {createError ? (
+              <Typography className="text-danger" type="body-sm">
+                {t("createError")}
+              </Typography>
+            ) : null}
+            <div className={styles.formActions}>
+              <Button
+                isDisabled={creating}
+                onPress={() => setShowForm(false)}
+                variant="ghost"
+              >
+                {t("createCancel")}
+              </Button>
+              <Button
+                isDisabled={creating || !title.trim()}
+                type="submit"
+                variant="primary"
+              >
+                {creating ? t("creating") : t("createSubmit")}
+              </Button>
+            </div>
+          </form>
+        ) : null}
 
         <FilterChipBar aria-label={t("filtersLabel")}>
           {FILTERS.map((item) => (
@@ -151,6 +231,23 @@ export function CoachProgramsScreen({ programs }: CoachProgramsScreenProps) {
                 <Typography className={styles.updated} type="body-sm">
                   {program.updatedLabel}
                 </Typography>
+                {program.state === "draft" && onPublishProgram ? (
+                  <Button
+                    fullWidth
+                    isDisabled={publishingId === program.id}
+                    onPress={() => {
+                      setPublishingId(program.id);
+                      void Promise.resolve(onPublishProgram(program.id)).finally(
+                        () => setPublishingId(null),
+                      );
+                    }}
+                    variant="secondary"
+                  >
+                    {publishingId === program.id
+                      ? t("publishing")
+                      : t("publishAction")}
+                  </Button>
+                ) : null}
               </article>
             ))}
           </div>

@@ -43,6 +43,12 @@ export const DEFAULT_NOTIFICATION_TEMPLATES: DefaultNotificationTemplate[] = [
     channels: { push, inbox, sms: NotificationSmsSetting.CRITICAL_FALLBACK },
   },
   {
+    key: NotificationTemplateKey.BOOKING_APPROVED_PAYMENT_REQUIRED,
+    title: 'درخواست رزرو تأیید شد',
+    body: 'مربی درخواست شما را تأیید کرد. برای حفظ نوبت تا {deadline} پرداخت را انجام دهید.',
+    channels: { push, inbox, sms: NotificationSmsSetting.ALWAYS },
+  },
+  {
     key: NotificationTemplateKey.BOOKING_REJECTED,
     title: 'رزرو رد شد',
     body: 'رزرو شما برای {subject} تأیید نشد. مبلغ پرداختی طبق سیاست لغو بازگردانده می‌شود.',
@@ -70,6 +76,18 @@ export const DEFAULT_NOTIFICATION_TEMPLATES: DefaultNotificationTemplate[] = [
     key: NotificationTemplateKey.MEMBERSHIP_EXPIRING,
     title: 'عضویت رو به پایان',
     body: 'عضویت شما در {clubName} تا {daysLeft} روز دیگر به پایان می‌رسد. برای تمدید اقدام کنید.',
+    channels: { push, inbox, sms: NotificationSmsSetting.DISABLED },
+  },
+  {
+    key: NotificationTemplateKey.LIFECYCLE_LOW_CREDITS,
+    title: 'جلسات رو به اتمام',
+    body: 'تنها {remaining} جلسه از عضویت شما در {clubName} باقی مانده است. برای شارژ مجدد اقدام کنید.',
+    channels: { push, inbox, sms: NotificationSmsSetting.DISABLED },
+  },
+  {
+    key: NotificationTemplateKey.LIFECYCLE_WIN_BACK,
+    title: 'دلمان برایتان تنگ شده!',
+    body: 'مدتی است به {clubName} سر نزده‌اید. برنامه‌های جدید منتظر شماست — همین امروز برگردید.',
     channels: { push, inbox, sms: NotificationSmsSetting.DISABLED },
   },
   {

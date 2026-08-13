@@ -1,0 +1,23 @@
+export type WelcomeIntroduceSleepSectionProps = {
+  className?: string;
+  isActive: boolean;
+  breakdownTitle: string;
+  remLabel: string;
+  lightLabel: string;
+  deepLabel: string;
+  awakeLabel: string;
+  remDuration: string;
+  remPercent: string;
+  lightDuration: string;
+  lightPercent: string;
+  deepDuration: string;
+  deepPercent: string;
+  awakeDuration: string;
+  awakePercent: string;
+  qualityTitle: string;
+  qualityScore: string;
+  qualityStatus: string;
+  streakTitle: string;
+  streakValue: string;
+  insight: string;
+};

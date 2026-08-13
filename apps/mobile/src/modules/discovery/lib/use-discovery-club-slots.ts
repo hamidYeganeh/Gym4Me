@@ -51,10 +51,10 @@ export function useDiscoveryClubSlots(clubId: string): State {
       } catch {
         if (cancelled) return;
         setState({
-          slots: getClubSlots(clubId),
+          slots: [],
           isLoading: false,
           isError: true,
-          source: "mock",
+          source: "api",
         });
       }
     })();

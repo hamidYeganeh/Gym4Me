@@ -2,7 +2,7 @@
 FROM node:22-bookworm-slim AS deps
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+COPY package.json package-lock.json .npmrc ./
 COPY apps/api/package.json apps/api/
 COPY apps/admin/package.json apps/admin/
 COPY apps/mobile/package.json apps/mobile/
@@ -16,12 +16,26 @@ COPY packages/theme/package.json packages/theme/
 COPY packages/typescript-config/package.json packages/typescript-config/
 COPY packages/ui/package.json packages/ui/
 
-RUN npm ci
+# Lockfile pins registry.npmjs.org; project .npmrc mirror rewrites hosts and can 404.
+RUN --mount=type=cache,target=/root/.npm printf '%s\n' \
+  'registry=https://registry.npmjs.org/' \
+  'fetch-retries=8' \
+  'fetch-retry-mintimeout=20000' \
+  'fetch-retry-maxtimeout=180000' \
+  > .npmrc \
+  && npm ci --workspace=mobile --include-workspace-root --omit=dev --ignore-scripts \
+  && npm install --no-save --ignore-scripts --workspaces=false \
+    typescript@5.9.2 \
+    @types/node@20 \
+    @types/react@19 \
+    @types/react-dom@19 \
+    babel-plugin-react-compiler@1.0.0
 
 FROM node:22-bookworm-slim AS builder
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/mobile/node_modules ./apps/mobile/node_modules
 COPY package.json package-lock.json turbo.json ./
 COPY apps/mobile ./apps/mobile
 COPY packages ./packages

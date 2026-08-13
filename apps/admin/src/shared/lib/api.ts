@@ -1,13 +1,23 @@
 import {
   ADMIN_SESSION_KEY,
+  createAdminAnalyticsApi,
+  createAdminAuditApi,
   createAdminAuthApi,
   createAdminBasicsApi,
   createAdminArticlesApi,
   createAdminBannersApi,
+  createAdminBookingsApi,
   createAdminClubsApi,
   createAdminClubSlotsApi,
+  createAdminCoachingApi,
+  createAdminFinanceApi,
   createAdminGamificationApi,
   createAdminKycApi,
+  createAdminMembershipsApi,
+  createAdminNotificationTemplatesApi,
+  createAdminNutritionApi,
+  createAdminProgressApi,
+  createAdminSocialApi,
   createAdminSupportApi,
   createAdminUsersApi,
   createAdminVerificationApi,
@@ -41,4 +51,15 @@ export const adminSupport = createAdminSupportApi(apiClient);
 export const adminArticles = createAdminArticlesApi(apiClient);
 export const adminBanners = createAdminBannersApi(apiClient);
 export const adminGamification = createAdminGamificationApi(apiClient);
+export const adminBookings = createAdminBookingsApi(apiClient);
+export const adminFinance = createAdminFinanceApi(apiClient);
+export const adminAnalytics = createAdminAnalyticsApi(apiClient);
+export const adminAudit = createAdminAuditApi(apiClient);
+export const adminSocial = createAdminSocialApi(apiClient);
+export const adminNutrition = createAdminNutritionApi(apiClient);
+export const adminProgress = createAdminProgressApi(apiClient);
+export const adminCoaching = createAdminCoachingApi(apiClient);
+export const adminMemberships = createAdminMembershipsApi(apiClient);
+export const adminNotificationTemplates =
+  createAdminNotificationTemplatesApi(apiClient);
 export const mediaApi = createMediaApi(apiClient);

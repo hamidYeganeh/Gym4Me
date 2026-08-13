@@ -1,4 +1,10 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+  OnModuleInit,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import {
@@ -388,5 +394,112 @@ export class NotificationsService implements OnModuleInit {
       { token, userId: new Types.ObjectId(userId) },
       { status: DeviceTokenStatus.REVOKED },
     );
+  }
+
+  // ------------------------------------------------- admin template CRUD
+
+  async listTemplates(query: { status?: EntityStatus; search?: string }) {
+    const filter: Record<string, unknown> = {};
+    if (query.status) filter.status = query.status;
+    if (query.search) {
+      const rx = new RegExp(
+        query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+        'i',
+      );
+      filter.$or = [{ key: rx }, { title: rx }, { body: rx }];
+    }
+    const items = await this.templateModel.find(filter).sort({ key: 1 }).lean();
+    return { items: items.map((t) => this.templateToPublic(t)) };
+  }
+
+  async getTemplate(key: string) {
+    const template = await this.templateModel.findOne({ key }).lean();
+    if (!template) throw new NotFoundException('Template not found');
+    return this.templateToPublic(template);
+  }
+
+  async createTemplate(dto: {
+    key: string;
+    title: string;
+    body: string;
+    channels?: Partial<NotificationTemplate['channels']>;
+    smsTemplateKey?: string;
+  }) {
+    const existing = await this.templateModel.exists({ key: dto.key });
+    if (existing) {
+      throw new ConflictException('Template key already exists');
+    }
+    const created = await this.templateModel.create({
+      key: dto.key,
+      title: dto.title,
+      body: dto.body,
+      channels: {
+        push: dto.channels?.push ?? NotificationChannelSetting.ENABLED,
+        sms: dto.channels?.sms ?? NotificationSmsSetting.DISABLED,
+        inbox: dto.channels?.inbox ?? NotificationChannelSetting.ENABLED,
+      },
+      smsTemplateKey: dto.smsTemplateKey,
+      status: EntityStatus.ACTIVE,
+    });
+    return this.templateToPublic(created.toObject());
+  }
+
+  async updateTemplate(
+    key: string,
+    dto: {
+      title?: string;
+      body?: string;
+      channels?: Partial<NotificationTemplate['channels']>;
+      smsTemplateKey?: string;
+      status?: EntityStatus;
+    },
+  ) {
+    const template = await this.templateModel.findOne({ key });
+    if (!template) throw new NotFoundException('Template not found');
+
+    if (dto.title !== undefined) template.title = dto.title;
+    if (dto.body !== undefined) template.body = dto.body;
+    if (dto.smsTemplateKey !== undefined) {
+      template.smsTemplateKey = dto.smsTemplateKey;
+    }
+    if (dto.status !== undefined) template.status = dto.status;
+    if (dto.channels) {
+      template.channels = {
+        push: dto.channels.push ?? template.channels.push,
+        sms: dto.channels.sms ?? template.channels.sms,
+        inbox: dto.channels.inbox ?? template.channels.inbox,
+      };
+      template.markModified('channels');
+    }
+    await template.save();
+    return this.templateToPublic(template.toObject());
+  }
+
+  private templateToPublic(t: {
+    _id: Types.ObjectId;
+    key: string;
+    title: string;
+    body: string;
+    channels: NotificationTemplate['channels'];
+    smsTemplateKey?: string;
+    status: EntityStatus;
+    createdAt?: Date;
+    updatedAt?: Date;
+  }) {
+    return {
+      id: t._id.toString(),
+      key: t.key,
+      title: t.title,
+      body: t.body,
+      channels: {
+        push: t.channels.push,
+        sms: t.channels.sms,
+        inbox: t.channels.inbox,
+      },
+      smsTemplateKey: t.smsTemplateKey ?? null,
+      status: t.status,
+      createdAt: t.createdAt ?? null,
+      updatedAt: t.updatedAt ?? null,
+    };
   }
 }

@@ -1,6 +1,6 @@
 export const MARKETING_CTA = {
-  primaryHref: "#features",
-  secondaryHref: "#showcase",
+  primaryHref: "/for-clubs",
+  secondaryHref: "/clubs",
 } as const;
 
 export const MARKETING_CASCADE_COUNT = 8;

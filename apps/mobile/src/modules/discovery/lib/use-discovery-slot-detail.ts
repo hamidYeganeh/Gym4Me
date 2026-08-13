@@ -77,13 +77,11 @@ export function useDiscoverySlotDetail(
         });
       } catch (error) {
         if (cancelled) return;
-        const fallback = getSlotDetail(clubId, slotId) ?? null;
         setState({
-          slotDetail: fallback,
+          slotDetail: null,
           isLoading: false,
-          isError:
-            !(error instanceof ApiError && error.status === 404) && !fallback,
-          source: fallback ? "mock" : "api",
+          isError: !(error instanceof ApiError && error.status === 404),
+          source: "api",
         });
       }
     })();

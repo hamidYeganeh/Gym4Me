@@ -1,10 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-import {
-  PaymentChannel,
-  PaymentPurpose,
-  PaymentStatus,
-} from '../common/enums';
+import { PaymentChannel, PaymentPurpose, PaymentStatus } from '../common/enums';
 import { User } from './user.schema';
 
 export type PaymentDocument = HydratedDocument<Payment>;
@@ -93,6 +89,20 @@ export const PaymentOperatorSchema =
   SchemaFactory.createForClass(PaymentOperator);
 
 @Schema({ _id: false })
+export class PaymentTender {
+  @Prop({ type: String, enum: PaymentChannel, required: true })
+  channel!: PaymentChannel;
+
+  @Prop({ required: true, min: 1 })
+  amount!: number;
+
+  @Prop({ trim: true, maxlength: 120 })
+  externalRef?: string;
+}
+
+export const PaymentTenderSchema = SchemaFactory.createForClass(PaymentTender);
+
+@Schema({ _id: false })
 export class PaymentRelated {
   @Prop({ type: Types.ObjectId })
   bookingId?: Types.ObjectId;
@@ -152,6 +162,10 @@ export class Payment {
   /** Desk / reception operator for manual channels. */
   @Prop({ type: PaymentOperatorSchema })
   operator?: PaymentOperator;
+
+  /** Exact channel breakdown for mixed desk payments. */
+  @Prop({ type: [PaymentTenderSchema], default: undefined })
+  tenders?: PaymentTender[];
 
   @Prop({ type: PaymentRelatedSchema, default: () => ({}) })
   related!: PaymentRelated;

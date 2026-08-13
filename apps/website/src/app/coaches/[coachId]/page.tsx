@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { JsonLd } from "@/modules/discovery/lib/JsonLd";
 import { SeoCoachDetailScreen } from "@/modules/discovery/screens/SeoCoachDetailScreen";
+import {
+  PublicSiteFooter,
+  PublicSiteHeader,
+} from "@/modules/discovery/components/PublicSiteHeader";
 import { discoveryCoaches, mediaFileUrl } from "@/shared/lib/api";
 
 type Props = {
@@ -45,6 +49,7 @@ export default async function CoachSeoPage({ params }: Props) {
 
     return (
       <>
+        <PublicSiteHeader />
         <JsonLd
           data={{
             "@context": "https://schema.org",
@@ -62,6 +67,7 @@ export default async function CoachSeoPage({ params }: Props) {
           }}
         />
         <SeoCoachDetailScreen coach={coach} />
+        <PublicSiteFooter />
       </>
     );
   } catch {

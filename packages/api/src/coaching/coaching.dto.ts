@@ -54,3 +54,78 @@ export type CoachAnalyticsOverview = {
 };
 
 export type StudentsPage = Paginated<CoachStudent>;
+
+// ── Coach ↔ athlete messaging ───────────────────────────────────────────────
+
+export type CoachThread = {
+  id: string;
+  coachUserId: string;
+  athleteUserId: string;
+  status: string;
+  lastMessageAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CoachMessage = {
+  id: string;
+  threadId: string;
+  senderUserId: string;
+  senderRole: "coach" | "athlete" | string;
+  body: string;
+  sentAt: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ListThreadsQuery = {
+  page?: number;
+  page_size?: number;
+};
+
+export type ListThreadMessagesQuery = {
+  page?: number;
+  page_size?: number;
+};
+
+export type SendCoachMessageInput = {
+  body: string;
+};
+
+export type ThreadsPage = Paginated<CoachThread>;
+export type ThreadMessagesPage = Paginated<CoachMessage>;
+
+// ── Session packages (athlete view) ─────────────────────────────────────────
+
+export type SessionPackageStatus =
+  | "active"
+  | "frozen"
+  | "exhausted"
+  | "expired"
+  | "cancelled";
+
+export type SessionPackage = {
+  id: string;
+  coachUserId: string;
+  athleteUserId: string;
+  serviceId: string | null;
+  sessions: { total: number; used: number };
+  validity: {
+    expiresAt: string;
+    freeze: { frozenAt: string; unfreezeAt: string | null } | null;
+  };
+  status: SessionPackageStatus | string;
+  pricing: unknown;
+  paymentId: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ListPackagesQuery = {
+  page?: number;
+  page_size?: number;
+  status?: SessionPackageStatus;
+  coachUserId?: string;
+};
+
+export type SessionPackagesPage = Paginated<SessionPackage>;

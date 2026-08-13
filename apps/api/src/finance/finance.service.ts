@@ -2,13 +2,17 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  Inject,
   Injectable,
+  Logger,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import type { Request } from 'express';
 import { Model, Types } from 'mongoose';
 import type { QueryFilter } from 'mongoose';
+import { ReferralService } from '../account/referral/referral.service';
 import {
   AuditAction,
   CashShiftStatus,
@@ -23,15 +27,18 @@ import {
   PaymentChannel,
   PaymentPurpose,
   PaymentStatus,
+  PayoutDisputeStatus,
   PayoutRecipientType,
   PayoutStatus,
   WalletOwnerType,
+  CompensationBasis,
 } from '../common/enums';
 import {
   paginatedResult,
   resolvePageSize,
 } from '../common/utils/pagination.util';
 import { AuditService } from '../audit/audit.service';
+import { User, UserDocument } from '../schemas/user.schema';
 import {
   CashShift,
   CashShiftDocument,
@@ -63,6 +70,7 @@ import {
   PaymentAmountSplit,
   PaymentDocument,
   PaymentRelated,
+  PaymentTender,
 } from '../schemas/payment.schema';
 import { Payout, PayoutDocument } from '../schemas/payout.schema';
 import { Wallet, WalletDocument } from '../schemas/wallet.schema';
@@ -99,6 +107,8 @@ const MANUAL_CHANNELS = new Set<PaymentChannel>([
 
 @Injectable()
 export class FinanceService {
+  private readonly logger = new Logger(FinanceService.name);
+
   constructor(
     @InjectModel(Wallet.name)
     private readonly walletModel: Model<WalletDocument>,
@@ -122,7 +132,11 @@ export class FinanceService {
     private readonly invoiceModel: Model<InvoiceDocument>,
     @InjectModel(ClubMembership.name)
     private readonly membershipModel: Model<ClubMembershipDocument>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
     private readonly audit: AuditService,
+    @Inject(forwardRef(() => ReferralService))
+    private readonly referral: ReferralService,
   ) {}
 
   // ── Club scope ──────────────────────────────────────────────────────────
@@ -179,11 +193,7 @@ export class FinanceService {
     };
   }
 
-  async topUpWallet(
-    userId: string,
-    dto: TopUpWalletDto,
-    request?: Request,
-  ) {
+  async topUpWallet(userId: string, dto: TopUpWalletDto, request?: Request) {
     const channel = dto.channel ?? PaymentChannel.ZARINPAL;
     if (
       channel !== PaymentChannel.ZARINPAL &&
@@ -209,7 +219,8 @@ export class FinanceService {
           net: dto.amount,
         },
         reference: {
-          orderId: dto.orderId ?? `wallet-topup:${userId}:${dto.idempotencyKey}`,
+          orderId:
+            dto.orderId ?? `wallet-topup:${userId}:${dto.idempotencyKey}`,
           authority: dto.authority,
           gatewayRefId: dto.gatewayRefId,
         },
@@ -217,7 +228,11 @@ export class FinanceService {
         related: {},
         idempotencyKey: dto.idempotencyKey,
       },
-      { actorId: userId, request, walletOwner: { type: WalletOwnerType.USER, id: userId } },
+      {
+        actorId: userId,
+        request,
+        walletOwner: { type: WalletOwnerType.USER, id: userId },
+      },
     );
   }
 
@@ -246,9 +261,6 @@ export class FinanceService {
       return { payment: existing, ledger, idempotent: true as const };
     }
 
-    const split = this.normalizeSplit(dto.amount);
-    this.assertSplitIdentity(split);
-
     if (!dto.payer.userId && !dto.payer.guest) {
       throw new BadRequestException('payer.userId or payer.guest is required');
     }
@@ -256,6 +268,16 @@ export class FinanceService {
     const status = dto.status ?? PaymentStatus.CAPTURED;
     const now = new Date();
     const related = this.mapRelated(dto.related);
+    const split = await this.normalizeSplitWithCompensation(
+      dto.amount,
+      related,
+    );
+    this.assertSplitIdentity(split);
+    const tenders = this.normalizeTenders(
+      dto.channel,
+      dto.tenders,
+      split.gross - split.discount,
+    );
     const walletOwner =
       opts?.walletOwner ??
       (dto.payer.userId
@@ -269,7 +291,9 @@ export class FinanceService {
       dto.purpose !== PaymentPurpose.WALLET_TOPUP
     ) {
       if (!walletOwner) {
-        throw new BadRequestException('Wallet owner required for wallet payments');
+        throw new BadRequestException(
+          'Wallet owner required for wallet payments',
+        );
       }
       const wallet = await this.getOrCreateWallet(walletOwner);
       const paid = split.gross - split.discount;
@@ -296,6 +320,7 @@ export class FinanceService {
             note: dto.operatorNote,
           }
         : undefined,
+      tenders,
       related,
       idempotencyKey: dto.idempotencyKey,
       capturedAt: status === PaymentStatus.CAPTURED ? now : undefined,
@@ -323,6 +348,7 @@ export class FinanceService {
         related,
         dto.purpose,
         opts?.walletOwner,
+        tenders,
       );
       this.assertBalanced(lines);
 
@@ -346,7 +372,11 @@ export class FinanceService {
           const againLedger = again
             ? await this.ledgerModel.findOne({ paymentId: again._id }).lean()
             : null;
-          return { payment: again ?? paymentDoc.toObject(), ledger: againLedger, idempotent: true as const };
+          return {
+            payment: again ?? paymentDoc.toObject(),
+            ledger: againLedger,
+            idempotent: true as const,
+          };
         }
         throw err;
       }
@@ -431,7 +461,10 @@ export class FinanceService {
       filter['related.clubId'] = this.toObjectId(query.clubId, 'clubId');
     }
     if (query.payerUserId) {
-      filter['payer.userId'] = this.toObjectId(query.payerUserId, 'payerUserId');
+      filter['payer.userId'] = this.toObjectId(
+        query.payerUserId,
+        'payerUserId',
+      );
     }
 
     const { page, pageSize } = resolvePageSize(query);
@@ -579,7 +612,9 @@ export class FinanceService {
       throw new ForbiddenException('Not your payment');
     }
     if (payment.status !== PaymentStatus.CAPTURED) {
-      throw new BadRequestException('Payment must be captured to issue invoice');
+      throw new BadRequestException(
+        'Payment must be captured to issue invoice',
+      );
     }
     return this.issueInvoiceFromPaymentInternal(payment, {
       actorId: userId,
@@ -636,8 +671,7 @@ export class FinanceService {
       activeMembers + cancelledMembers === 0
         ? 0
         : Math.round(
-            (cancelledMembers /
-              Math.max(activeMembers + cancelledMembers, 1)) *
+            (cancelledMembers / Math.max(activeMembers + cancelledMembers, 1)) *
               100,
           );
 
@@ -901,7 +935,9 @@ export class FinanceService {
       })
       .lean();
     if (existing) {
-      throw new ConflictException('An open cash shift already exists for this club');
+      throw new ConflictException(
+        'An open cash shift already exists for this club',
+      );
     }
 
     const shift = await this.cashShiftModel.create({
@@ -954,7 +990,10 @@ export class FinanceService {
     return shift.toObject();
   }
 
-  async listCashShifts(clubId: string, query: { page?: number; page_size?: number }) {
+  async listCashShifts(
+    clubId: string,
+    query: { page?: number; page_size?: number },
+  ) {
     const filter = { clubId: this.toObjectId(clubId, 'clubId') };
     const { page, pageSize } = resolvePageSize(query);
     const [items, total] = await Promise.all([
@@ -1037,7 +1076,9 @@ export class FinanceService {
       payout.status !== PayoutStatus.PENDING &&
       payout.status !== PayoutStatus.PROCESSING
     ) {
-      throw new BadRequestException(`Cannot settle payout in status ${payout.status}`);
+      throw new BadRequestException(
+        `Cannot settle payout in status ${payout.status}`,
+      );
     }
 
     const now = new Date();
@@ -1085,7 +1126,11 @@ export class FinanceService {
       if ((err as { code?: number }).code === 11000) {
         const existing = await this.ledgerModel.findOne({ dedupeKey }).lean();
         const refreshed = await this.payoutModel.findById(payoutId).lean();
-        return { payout: refreshed, ledger: existing, idempotent: true as const };
+        return {
+          payout: refreshed,
+          ledger: existing,
+          idempotent: true as const,
+        };
       }
       throw err;
     }
@@ -1120,7 +1165,10 @@ export class FinanceService {
     if (query.clubId) filter.clubId = this.toObjectId(query.clubId, 'clubId');
     if (query.recipientType) filter['recipient.type'] = query.recipientType;
     if (query.recipientId) {
-      filter['recipient.id'] = this.toObjectId(query.recipientId, 'recipientId');
+      filter['recipient.id'] = this.toObjectId(
+        query.recipientId,
+        'recipientId',
+      );
     }
 
     const { page, pageSize } = resolvePageSize(query);
@@ -1136,12 +1184,193 @@ export class FinanceService {
     return paginatedResult(items, total, page, pageSize);
   }
 
+  /**
+   * Draft a payout by summing net PROVIDER_PAYABLE credits for the recipient
+   * over the period (instead of only accepting a manual DTO amount).
+   */
+  async draftPeriodPayout(
+    clubId: string | undefined,
+    dto: {
+      recipientType: PayoutRecipientType;
+      recipientId: string;
+      periodFrom: string;
+      periodTo: string;
+      note?: string;
+    },
+    actorId: string,
+    request?: Request,
+  ) {
+    if (new Date(dto.periodTo) < new Date(dto.periodFrom)) {
+      throw new BadRequestException('periodTo must be >= periodFrom');
+    }
+
+    const partyType =
+      dto.recipientType === PayoutRecipientType.CLUB
+        ? WalletOwnerType.CLUB
+        : WalletOwnerType.COACH;
+    const partyId = this.toObjectId(dto.recipientId, 'recipientId');
+    const from = new Date(dto.periodFrom);
+    const to = new Date(dto.periodTo);
+
+    const entries = await this.ledgerModel
+      .find({
+        occurredAt: { $gte: from, $lte: to },
+        'lines.account': LedgerAccount.PROVIDER_PAYABLE,
+        'lines.party.type': partyType,
+        'lines.party.id': partyId,
+      })
+      .lean();
+
+    let amount = 0;
+    for (const entry of entries) {
+      for (const line of entry.lines) {
+        if (
+          line.account === LedgerAccount.PROVIDER_PAYABLE &&
+          line.party?.type === partyType &&
+          line.party.id.toString() === partyId.toString()
+        ) {
+          amount += (line.credit ?? 0) - (line.debit ?? 0);
+        }
+      }
+    }
+    if (amount <= 0) {
+      throw new BadRequestException(
+        'No positive provider_payable balance for period',
+      );
+    }
+
+    return this.createPayout(
+      clubId,
+      {
+        recipientType: dto.recipientType,
+        recipientId: dto.recipientId,
+        amount,
+        periodFrom: dto.periodFrom,
+        periodTo: dto.periodTo,
+        note: dto.note ?? `Draft from ledger ${dto.periodFrom}–${dto.periodTo}`,
+      },
+      actorId,
+      request,
+    );
+  }
+
+  async openPayoutDispute(
+    payoutId: string,
+    reason: string,
+    actorId: string,
+    request?: Request,
+  ) {
+    const payout = await this.findPayoutOrFail(payoutId);
+    if (
+      payout.status === PayoutStatus.CANCELLED ||
+      payout.status === PayoutStatus.DISPUTED
+    ) {
+      throw new BadRequestException(
+        `Cannot dispute payout in status ${payout.status}`,
+      );
+    }
+    payout.status = PayoutStatus.DISPUTED;
+    payout.dispute = {
+      status: PayoutDisputeStatus.OPEN,
+      reason: reason.trim(),
+      openedAt: new Date(),
+    };
+    await payout.save();
+
+    this.audit.log({
+      action: AuditAction.FINANCE_PAYOUT_DISPUTED,
+      actorId,
+      metadata: { payoutId, reason },
+      request,
+    });
+    return payout.toObject();
+  }
+
+  /**
+   * Resolve a payout dispute by posting reversing ledger entries only —
+   * never mutate past ledger documents.
+   */
+  async resolvePayoutDispute(
+    payoutId: string,
+    opts: {
+      resolution: PayoutDisputeStatus.RESOLVED | PayoutDisputeStatus.REJECTED;
+      note?: string;
+      reverseSettledAmount?: boolean;
+    },
+    actorId: string,
+    request?: Request,
+  ) {
+    const payout = await this.findPayoutOrFail(payoutId);
+    if (payout.status !== PayoutStatus.DISPUTED || !payout.dispute) {
+      throw new BadRequestException('Payout is not in dispute');
+    }
+
+    let reverseLedger: LedgerEntryDocument | null = null;
+    if (
+      opts.resolution === PayoutDisputeStatus.RESOLVED &&
+      opts.reverseSettledAmount !== false &&
+      payout.ledgerEntryId &&
+      payout.settledAt
+    ) {
+      const original = await this.ledgerModel.findById(payout.ledgerEntryId);
+      if (original) {
+        const reverseLines = original.lines.map((line) => ({
+          account: line.account,
+          debit: line.credit,
+          credit: line.debit,
+          party: line.party,
+        }));
+        this.assertBalanced(reverseLines);
+        reverseLedger = await this.ledgerModel.create({
+          kind: LedgerEntryKind.ADJUSTMENT,
+          lines: reverseLines,
+          split: original.split,
+          related: original.related,
+          dedupeKey: `payout-dispute-reverse:${payout._id.toString()}`,
+          occurredAt: new Date(),
+          note: opts.note ?? `Dispute resolve reverse for payout ${payoutId}`,
+        });
+      }
+    }
+
+    payout.dispute.status = opts.resolution;
+    payout.dispute.resolvedAt = new Date();
+    payout.dispute.resolutionNote = opts.note;
+    payout.status =
+      opts.resolution === PayoutDisputeStatus.RESOLVED
+        ? PayoutStatus.CANCELLED
+        : PayoutStatus.PENDING;
+    await payout.save();
+
+    this.audit.log({
+      action: AuditAction.FINANCE_PAYOUT_DISPUTE_RESOLVED,
+      actorId,
+      metadata: {
+        payoutId,
+        resolution: opts.resolution,
+        reverseLedgerId: reverseLedger?._id.toString(),
+      },
+      request,
+    });
+
+    return {
+      payout: payout.toObject(),
+      reverseLedger: reverseLedger?.toObject() ?? null,
+    };
+  }
+
+  private async findPayoutOrFail(payoutId: string) {
+    if (!Types.ObjectId.isValid(payoutId)) {
+      throw new NotFoundException('Payout not found');
+    }
+    const payout = await this.payoutModel.findById(payoutId);
+    if (!payout) throw new NotFoundException('Payout not found');
+    return payout;
+  }
+
   // ── Compensation rules ──────────────────────────────────────────────────
 
-  async upsertCompensationRule(
-    clubId: string,
-    dto: UpsertCompensationRuleDto,
-  ) {
+  async upsertCompensationRule(clubId: string, dto: UpsertCompensationRuleDto) {
     const payload = {
       clubId: this.toObjectId(clubId, 'clubId'),
       coachUserId: dto.coachUserId
@@ -1208,11 +1437,16 @@ export class FinanceService {
 
   async createDebt(clubId: string, dto: CreateDebtDto) {
     if (!dto.holder.userId && !dto.holder.guest) {
-      throw new BadRequestException('holder.userId or holder.guest is required');
+      throw new BadRequestException(
+        'holder.userId or holder.guest is required',
+      );
     }
 
     const debt = await this.debtModel.create({
       clubId: this.toObjectId(clubId, 'clubId'),
+      membershipId: dto.membershipId
+        ? this.toObjectId(dto.membershipId, 'membershipId')
+        : undefined,
       holder: {
         userId: dto.holder.userId
           ? this.toObjectId(dto.holder.userId, 'holder.userId')
@@ -1280,7 +1514,10 @@ export class FinanceService {
     if (dto.amount > debt.remaining) {
       throw new BadRequestException('Amount exceeds remaining balance');
     }
-    if (!MANUAL_CHANNELS.has(dto.channel) && dto.channel !== PaymentChannel.WALLET) {
+    if (
+      !MANUAL_CHANNELS.has(dto.channel) &&
+      dto.channel !== PaymentChannel.WALLET
+    ) {
       throw new BadRequestException('Unsupported debt payment channel');
     }
 
@@ -1401,6 +1638,60 @@ export class FinanceService {
     };
   }
 
+  /**
+   * Best-effort: when providerShare is omitted and a club CompensationRule
+   * (REVENUE_PERCENT) exists for the coach/club, compute providerShare.
+   */
+  private async normalizeSplitWithCompensation(
+    input: RecordPaymentDto['amount'],
+    related: { clubId?: Types.ObjectId; coachUserId?: Types.ObjectId },
+  ): Promise<PaymentAmountSplit> {
+    if (input.providerShare !== undefined && input.providerShare !== null) {
+      return this.normalizeSplit(input);
+    }
+    if (!related.clubId) {
+      return this.normalizeSplit(input);
+    }
+
+    const now = new Date();
+    const coachMatch = related.coachUserId
+      ? {
+          $or: [
+            { coachUserId: related.coachUserId },
+            { coachUserId: { $exists: false } },
+            { coachUserId: null },
+          ],
+        }
+      : {};
+
+    const rule = await this.compensationModel
+      .findOne({
+        clubId: related.clubId,
+        status: EntityStatus.ACTIVE,
+        basis: CompensationBasis.REVENUE_PERCENT,
+        'effective.from': { $lte: now },
+        $and: [
+          {
+            $or: [
+              { 'effective.to': { $exists: false } },
+              { 'effective.to': null },
+              { 'effective.to': { $gte: now } },
+            ],
+          },
+          ...(related.coachUserId ? [coachMatch] : []),
+        ],
+      })
+      .sort({ coachUserId: -1, 'effective.from': -1 })
+      .lean();
+
+    if (!rule) {
+      return this.normalizeSplit(input);
+    }
+
+    const providerShare = Math.round((input.gross * rule.rate) / 100);
+    return this.normalizeSplit({ ...input, providerShare });
+  }
+
   private assertSplitIdentity(split: PaymentAmountSplit) {
     const expected =
       split.gross -
@@ -1415,8 +1706,128 @@ export class FinanceService {
       );
     }
     if (split.net < 0) {
-      throw new BadRequestException('Invalid amount split: net cannot be negative');
+      throw new BadRequestException(
+        'Invalid amount split: net cannot be negative',
+      );
     }
+  }
+
+  private normalizeTenders(
+    channel: PaymentChannel,
+    input: RecordPaymentDto['tenders'],
+    paid: number,
+  ): PaymentTender[] | undefined {
+    if (channel !== PaymentChannel.MIXED) {
+      if (input?.length) {
+        throw new BadRequestException(
+          'tenders are only allowed when channel is mixed',
+        );
+      }
+      return undefined;
+    }
+
+    if (!input || input.length < 2) {
+      throw new BadRequestException(
+        'Mixed payments require at least two tender rows',
+      );
+    }
+
+    const allowed = new Set<PaymentChannel>([
+      PaymentChannel.CASH,
+      PaymentChannel.POS,
+      PaymentChannel.CARD_TO_CARD,
+    ]);
+    const seen = new Set<PaymentChannel>();
+    let total = 0;
+    for (const tender of input) {
+      if (!allowed.has(tender.channel)) {
+        throw new BadRequestException(
+          'Mixed tender channel must be cash, pos, or card_to_card',
+        );
+      }
+      if (seen.has(tender.channel)) {
+        throw new BadRequestException('Mixed tender channels must be unique');
+      }
+      seen.add(tender.channel);
+      total += tender.amount;
+    }
+    if (total !== paid) {
+      throw new BadRequestException(
+        `Mixed tender total must equal collected amount (${paid})`,
+      );
+    }
+    return input.map((tender) => ({ ...tender }));
+  }
+
+  /**
+   * Post a reversing ADJUSTMENT for a wallet top-up located by the original
+   * payment `idempotencyKey`, and pull the amount back out of the wallet
+   * cache (balance may go negative — clawback becomes wallet debt).
+   * Idempotent per `dedupeKey`. Returns null when no original entry exists.
+   */
+  async reverseWalletTopUp(
+    originalIdempotencyKey: string,
+    opts: { dedupeKey: string; note?: string },
+  ): Promise<{ ledgerId: string; idempotent: boolean } | null> {
+    const payment = await this.paymentModel
+      .findOne({ idempotencyKey: originalIdempotencyKey })
+      .lean();
+    if (!payment) return null;
+    const original = await this.ledgerModel
+      .findOne({ paymentId: payment._id })
+      .lean();
+    if (!original) return null;
+
+    const reverseLines = original.lines.map((line) => ({
+      account: line.account,
+      debit: line.credit,
+      credit: line.debit,
+      party: line.party,
+    }));
+    this.assertBalanced(reverseLines);
+
+    let reversal: LedgerEntryDocument;
+    try {
+      reversal = await this.ledgerModel.create({
+        kind: LedgerEntryKind.ADJUSTMENT,
+        paymentId: payment._id,
+        lines: reverseLines,
+        split: original.split,
+        related: original.related,
+        dedupeKey: opts.dedupeKey,
+        occurredAt: new Date(),
+        note: opts.note,
+      });
+    } catch (err) {
+      if ((err as { code?: number }).code === 11000) {
+        const existing = await this.ledgerModel
+          .findOne({ dedupeKey: opts.dedupeKey })
+          .lean();
+        return existing
+          ? { ledgerId: existing._id.toString(), idempotent: true }
+          : null;
+      }
+      throw err;
+    }
+
+    const walletLine = original.lines.find(
+      (line) =>
+        line.account === LedgerAccount.WALLET_LIABILITY &&
+        line.credit > 0 &&
+        line.party,
+    );
+    if (walletLine?.party) {
+      const wallet = await this.getOrCreateWallet({
+        type: walletLine.party.type,
+        id: walletLine.party.id,
+      });
+      await this.walletModel.updateOne(
+        { _id: wallet._id },
+        { $inc: { balance: -walletLine.credit } },
+      );
+    }
+
+    return { ledgerId: reversal._id.toString(), idempotent: false };
   }
 
   /**
@@ -1430,6 +1841,7 @@ export class FinanceService {
     related: PaymentRelated,
     purpose: PaymentPurpose,
     walletOwner?: WalletOwnerRef,
+    tenders?: PaymentTender[],
   ): LedgerLine[] {
     const paid = split.gross - split.discount;
     const lines: LedgerLine[] = [];
@@ -1467,13 +1879,13 @@ export class FinanceService {
           : undefined,
       });
     } else if (channel === PaymentChannel.MIXED) {
-      // Mixed desk payments land in cash for the full paid amount;
-      // finer channel breakdown can be recorded via operator note / future split DTO.
-      lines.push({
-        account: LedgerAccount.CASH,
-        debit: paid,
-        credit: 0,
-      });
+      for (const tender of tenders ?? []) {
+        lines.push({
+          account: this.channelDebitAccount(tender.channel),
+          debit: tender.amount,
+          credit: 0,
+        });
+      }
     } else {
       lines.push({
         account: this.channelDebitAccount(channel),
@@ -1584,7 +1996,8 @@ export class FinanceService {
       );
       this.audit.log({
         action: AuditAction.FINANCE_WALLET_TOPUP,
-        targetUserId: owner.type === WalletOwnerType.USER ? owner.id : undefined,
+        targetUserId:
+          owner.type === WalletOwnerType.USER ? owner.id : undefined,
         metadata: {
           ownerType: owner.type,
           ownerId: owner.id.toString(),
@@ -1610,9 +2023,7 @@ export class FinanceService {
     }
   }
 
-  private mapRelated(
-    related?: RecordPaymentDto['related'],
-  ): PaymentRelated {
+  private mapRelated(related?: RecordPaymentDto['related']): PaymentRelated {
     if (!related) return {};
     return {
       bookingId: related.bookingId
@@ -1675,19 +2086,28 @@ export class FinanceService {
       }
     }
 
-    // Card-to-card posts to CASH; approximate from payments in window.
+    // Card-to-card posts to CASH; separate it for shift reconciliation.
     const cardPayments = await this.paymentModel
       .find({
         'related.clubId': clubOid,
-        channel: PaymentChannel.CARD_TO_CARD,
+        channel: {
+          $in: [PaymentChannel.CARD_TO_CARD, PaymentChannel.MIXED],
+        },
         status: PaymentStatus.CAPTURED,
         capturedAt: { $gte: from, $lte: to },
       })
       .lean();
     for (const p of cardPayments) {
-      const paid = p.amount.gross - p.amount.discount;
-      totals.cardToCard += paid;
-      totals.cash = Math.max(0, totals.cash - paid);
+      const cardAmount =
+        p.channel === PaymentChannel.CARD_TO_CARD
+          ? p.amount.gross - p.amount.discount
+          : (p.tenders ?? [])
+              .filter(
+                (tender) => tender.channel === PaymentChannel.CARD_TO_CARD,
+              )
+              .reduce((sum, tender) => sum + tender.amount, 0);
+      totals.cardToCard += cardAmount;
+      totals.cash = Math.max(0, totals.cash - cardAmount);
     }
 
     return totals;
@@ -1717,7 +2137,10 @@ export class FinanceService {
     return debt;
   }
 
-  private toObjectId(id: string | Types.ObjectId, label: string): Types.ObjectId {
+  private toObjectId(
+    id: string | Types.ObjectId,
+    label: string,
+  ): Types.ObjectId {
     if (id instanceof Types.ObjectId) return id;
     if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestException(`Invalid ${label}`);

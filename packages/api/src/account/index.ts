@@ -158,7 +158,9 @@ export type {
   ListNotificationsQuery,
   NotificationInbox,
   NotificationItem,
+  NotificationPreferences,
   RegisterDeviceInput,
   RegisterDeviceResult,
+  UpdateNotificationPreferencesInput,
 } from "./notifications.dto";
 export { accountNotificationsKeys } from "./notifications.keys";

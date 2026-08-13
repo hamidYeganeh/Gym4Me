@@ -5,6 +5,7 @@ import {
   Get,
   NotFoundException,
   Param,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
@@ -15,7 +16,9 @@ import {
   ListNotificationsQueryDto,
   RegisterDeviceDto,
   TestDispatchDto,
+  UpdateNotificationPreferenceDto,
 } from './dto/notifications.dto';
+import { NotificationPreferencesService } from './notification-preferences.service';
 import { NotificationsService } from './notifications.service';
 
 @ApiTags('notifications')
@@ -24,6 +27,7 @@ import { NotificationsService } from './notifications.service';
 export class NotificationsController {
   constructor(
     private readonly notifications: NotificationsService,
+    private readonly preferences: NotificationPreferencesService,
     private readonly config: ConfigService,
   ) {}
 
@@ -34,6 +38,21 @@ export class NotificationsController {
     @Query() query: ListNotificationsQueryDto,
   ) {
     return this.notifications.list(userId, query);
+  }
+
+  @Get('preferences')
+  @ApiOperation({ summary: 'Channel consent + quiet hours (R4)' })
+  getPreferences(@CurrentUser('sub') userId: string) {
+    return this.preferences.getOrCreate(userId);
+  }
+
+  @Patch('preferences')
+  @ApiOperation({ summary: 'Update channel consent + quiet hours' })
+  updatePreferences(
+    @CurrentUser('sub') userId: string,
+    @Body() dto: UpdateNotificationPreferenceDto,
+  ) {
+    return this.preferences.update(userId, dto);
   }
 
   @Post('read-all')

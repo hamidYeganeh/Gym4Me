@@ -4,6 +4,8 @@ export type CoachClientEngagement = "active" | "at-risk" | "paused";
 
 export type CoachClient = {
   id: string;
+  /** Athlete account id — used for messaging / live APIs. */
+  athleteUserId?: string;
   name: string;
   avatar: string;
   goalLabel: string;

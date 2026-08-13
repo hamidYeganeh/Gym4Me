@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { Ltr } from "../../lib/marketing-bidi";
 import { MarketingThemeToggle } from "../../lib/marketing-theme-toggle";
 
@@ -16,30 +17,24 @@ export function MarketingHeaderSection() {
         <p className="c-text -body-regular || u-hidden-md">{t("version")}</p>
       </div>
       <div className="c-header_col  || -center">
-        <a
+        <Link
           className="c-text -body-regular || u-hover-underline"
-          href="https://github.com/locomotivemtl/locomotive-scroll"
+          href="/clubs"
           data-load="false"
         >
-          <span>{t("github")}</span>
-          <span className="u-external-icon" aria-hidden={true}>
-            ↗
-          </span>
-        </a>
+          <span>{t("directory")}</span>
+        </Link>
       </div>
       <div className="c-header_col">
         <div className="c-header_actions">
           <MarketingThemeToggle />
-          <a
+          <Link
             className="c-text -body-regular || u-hover-underline"
-            href="#features"
+            href="/pricing"
             data-load="false"
           >
-            <span>{t("docs")}</span>
-            <span className="u-external-icon" aria-hidden={true}>
-              ↗
-            </span>
-          </a>
+            <span>{t("pricing")}</span>
+          </Link>
         </div>
         <p className="u-hidden-md">
           <Ltr>{t("copyright")}</Ltr>

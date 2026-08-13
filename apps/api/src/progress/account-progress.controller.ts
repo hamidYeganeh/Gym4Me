@@ -18,13 +18,18 @@ import { Role } from '../common/enums';
 import {
   CreateProgressMetricDto,
   CreateProgressPhotoDto,
+  CreatePersonalRecordDto,
+  CreateWorkoutLogDto,
   CreateWorkoutPlanDto,
   CreateWorkoutProgramDto,
   AssignWorkoutProgramDto,
+  CreateExerciseDto,
   ListExercisesQueryDto,
   ListMetricTypesQueryDto,
+  ListPersonalRecordsQueryDto,
   ListProgressMetricsQueryDto,
   ListProgressPhotosQueryDto,
+  ListWorkoutLogsQueryDto,
   ListWorkoutPlansQueryDto,
   ListWorkoutProgramsQueryDto,
   UpdateProgressMetricDto,
@@ -47,6 +52,19 @@ export class AccountProgressController {
   @ApiOperation({ summary: 'List active exercises (workout bank)' })
   listExercises(@Query() query: ListExercisesQueryDto) {
     return this.progress.listExercises(query);
+  }
+
+  @Post('exercises')
+  @Roles(Role.COACH)
+  @ApiOperation({
+    summary: 'Submit a custom exercise (pending admin verification)',
+  })
+  submitExercise(
+    @Body() dto: CreateExerciseDto,
+    @CurrentUser('sub') userId: string,
+    @Req() request: Request,
+  ) {
+    return this.progress.coachSubmitExercise(dto, userId, request);
   }
 
   // ── Metric types (catalog) ──────────────────────────────────────────────
@@ -299,5 +317,55 @@ export class AccountProgressController {
     @Req() request: Request,
   ) {
     return this.progress.deletePhoto(id, userId, activeRole, request);
+  }
+
+  // ── Workout logs ────────────────────────────────────────────────────────
+
+  @Get('workout-logs')
+  @Roles(Role.ATHLETE, Role.COACH, Role.ADMIN)
+  @ApiOperation({
+    summary: 'List workout session logs (athlete own / coach for students)',
+  })
+  listWorkoutLogs(
+    @CurrentUser('sub') userId: string,
+    @CurrentUser('activeRole') activeRole: Role,
+    @Query() query: ListWorkoutLogsQueryDto,
+  ) {
+    return this.progress.listWorkoutLogs(userId, activeRole, query);
+  }
+
+  @Post('workout-logs')
+  @Roles(Role.ATHLETE)
+  @ApiOperation({ summary: 'Log a completed or skipped workout session' })
+  createWorkoutLog(
+    @Body() dto: CreateWorkoutLogDto,
+    @CurrentUser('sub') userId: string,
+    @Req() request: Request,
+  ) {
+    return this.progress.createWorkoutLog(dto, userId, request);
+  }
+
+  // ── Personal records ────────────────────────────────────────────────────
+
+  @Get('personal-records')
+  @Roles(Role.ATHLETE, Role.COACH, Role.ADMIN)
+  @ApiOperation({ summary: 'List personal records' })
+  listPersonalRecords(
+    @CurrentUser('sub') userId: string,
+    @CurrentUser('activeRole') activeRole: Role,
+    @Query() query: ListPersonalRecordsQueryDto,
+  ) {
+    return this.progress.listPersonalRecords(userId, activeRole, query);
+  }
+
+  @Post('personal-records')
+  @Roles(Role.ATHLETE)
+  @ApiOperation({ summary: 'Record a personal record (default privacy PRIVATE)' })
+  createPersonalRecord(
+    @Body() dto: CreatePersonalRecordDto,
+    @CurrentUser('sub') userId: string,
+    @Req() request: Request,
+  ) {
+    return this.progress.createPersonalRecord(dto, userId, request);
   }
 }

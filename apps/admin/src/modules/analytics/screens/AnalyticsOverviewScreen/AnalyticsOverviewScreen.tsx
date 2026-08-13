@@ -1,7 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Typography } from "@heroui/react";
+import type { AdminAnalyticsOverview } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { AdminShell } from "@/shared/components";
+import { adminAnalytics } from "@/shared/lib/api";
+import { overviewToDataset } from "../../lib/analytics-adapter";
 import {
   ANALYTICS_DATA,
   type AnalyticsPeriod,
@@ -22,8 +25,28 @@ export function AnalyticsOverviewScreen({
   const t = useTranslations("Admin.Analytics");
   const styles = analyticsOverviewScreenVariants();
   const [period, setPeriod] = useState<AnalyticsPeriod>("week");
+  const [overview, setOverview] = useState<AdminAnalyticsOverview | null>(
+    null,
+  );
 
-  const dataset = ANALYTICS_DATA[period];
+  useEffect(() => {
+    let cancelled = false;
+    adminAnalytics
+      .overview()
+      .then((data) => {
+        if (!cancelled) setOverview(data);
+      })
+      .catch(() => {
+        // keep sample dataset when the endpoint is unavailable
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const dataset = overview
+    ? overviewToDataset(overview, period, ANALYTICS_DATA[period])
+    : ANALYTICS_DATA[period];
 
   return (
     <AdminShell

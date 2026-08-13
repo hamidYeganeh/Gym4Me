@@ -110,6 +110,7 @@ export function DiscoveryCoachesReserveScreen({
   const { runWithAuth, isAuthenticated, isReady } = useRequireAuthAction();
   const reduceMotion = useReducedMotion();
   const stepDirection = useRef(1);
+  const bookingAttemptKey = useRef<string | null>(null);
   const isApi = isDiscoveryApiId(coach.id);
 
   const [step, setStep] = useState<ReserveStep>(0);
@@ -160,9 +161,10 @@ export function DiscoveryCoachesReserveScreen({
     void accountProfile
       .getMe()
       .then((me) => {
-        setFullName((prev) =>
-          prev ||
-          [me.name?.first, me.name?.last].filter(Boolean).join(" ").trim(),
+        setFullName(
+          (prev) =>
+            prev ||
+            [me.name?.first, me.name?.last].filter(Boolean).join(" ").trim(),
         );
         setPhone((prev) => prev || (me.phone ?? ""));
       })
@@ -226,6 +228,10 @@ export function DiscoveryCoachesReserveScreen({
     setIsSubmitting(true);
     setError(null);
     try {
+      const idempotencyKey =
+        bookingAttemptKey.current ??
+        `coach-booking:${globalThis.crypto?.randomUUID?.() ?? Date.now()}`;
+      bookingAttemptKey.current = idempotencyKey;
       const booking = await accountBookings.create({
         coachUserId: coach.id,
         slotId: selectedSlot.id,
@@ -237,8 +243,10 @@ export function DiscoveryCoachesReserveScreen({
           supplementKeys,
         },
         couponCode: appliedCoupon ?? undefined,
+        idempotencyKey,
       });
-      if (booking.status === "confirmed") {
+      bookingAttemptKey.current = null;
+      if (booking.status === "confirmed" || booking.status === "pending") {
         router.replace(`/athlete/bookings/${booking.id}`);
         return;
       }
@@ -283,7 +291,11 @@ export function DiscoveryCoachesReserveScreen({
     : stepSlideVariants;
 
   const ctaLabel =
-    step < 2 ? t("nextStep") : isSubmitting ? t("submitting") : t("payAndReserve");
+    step < 2
+      ? t("nextStep")
+      : isSubmitting
+        ? t("submitting")
+        : t("payAndReserve");
 
   if (!isReady || !isAuthenticated) {
     return (
@@ -551,7 +563,11 @@ export function DiscoveryCoachesReserveScreen({
                         type="body"
                         weight="semibold"
                       >
-                        <MapPin1 aria-hidden className="me-1 inline" size={16} />
+                        <MapPin1
+                          aria-hidden
+                          className="me-1 inline"
+                          size={16}
+                        />
                         {t("locationTitle", { club: selectedSlot.clubName })}
                       </Typography>
                       {selectedSlot.clubAddress ? (
@@ -586,11 +602,18 @@ export function DiscoveryCoachesReserveScreen({
                         >
                           {t("paymentGateway")}
                         </Typography>
-                        <Typography className={styles.methodHint} type="body-sm">
+                        <Typography
+                          className={styles.methodHint}
+                          type="body-sm"
+                        >
                           {t("paymentGatewayHint")}
                         </Typography>
                       </div>
-                      <Check aria-hidden className={styles.methodCheck} size={20} />
+                      <Check
+                        aria-hidden
+                        className={styles.methodCheck}
+                        size={20}
+                      />
                     </div>
                   </section>
 
@@ -630,7 +653,10 @@ export function DiscoveryCoachesReserveScreen({
                     </Typography>
                     <div className={styles.summaryCard}>
                       <div className={styles.summaryRow}>
-                        <Typography className={styles.summaryLabel} type="body-sm">
+                        <Typography
+                          className={styles.summaryLabel}
+                          type="body-sm"
+                        >
                           {t("summaryConsultation")}
                         </Typography>
                         <Typography
@@ -648,7 +674,10 @@ export function DiscoveryCoachesReserveScreen({
                         </Typography>
                       </div>
                       <div className={styles.summaryRow}>
-                        <Typography className={styles.summaryLabel} type="body-sm">
+                        <Typography
+                          className={styles.summaryLabel}
+                          type="body-sm"
+                        >
                           {t("summarySlot")}
                         </Typography>
                         <Typography
@@ -680,7 +709,10 @@ export function DiscoveryCoachesReserveScreen({
                         </div>
                       ) : null}
                       <div className={styles.summaryRow}>
-                        <Typography className={styles.summaryLabel} type="body-sm">
+                        <Typography
+                          className={styles.summaryLabel}
+                          type="body-sm"
+                        >
                           {t("summaryPrice")}
                         </Typography>
                         <Typography
@@ -692,7 +724,10 @@ export function DiscoveryCoachesReserveScreen({
                         </Typography>
                       </div>
                       <div className={styles.summaryRow}>
-                        <Typography className={styles.summaryLabel} type="body-sm">
+                        <Typography
+                          className={styles.summaryLabel}
+                          type="body-sm"
+                        >
                           {t("summaryDiscount")}
                         </Typography>
                         <Typography
@@ -706,7 +741,10 @@ export function DiscoveryCoachesReserveScreen({
                       <div
                         className={`${styles.summaryRow} ${styles.summaryTotalRow}`}
                       >
-                        <Typography className={styles.summaryLabel} type="body-sm">
+                        <Typography
+                          className={styles.summaryLabel}
+                          type="body-sm"
+                        >
                           {t("summaryTotal")}
                         </Typography>
                         <Typography

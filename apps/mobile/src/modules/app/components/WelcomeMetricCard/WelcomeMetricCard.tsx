@@ -18,16 +18,16 @@ const HEART_STEP =
   "M2 40 H18 V28 H34 V34 H50 V12 H66 V22 H82 V30 H98 V18 H114 V26 H118";
 const HEART_FILL = `${HEART_STEP} V56 H2 Z`;
 
-/** Dual pill bars per weekday (systolic/diastolic demo). */
+/** Dual capsule bars per weekday (systolic / diastolic demo). */
 const PRESSURE_BARS: { x: number; top: number; mid: number; bottom: number }[] =
   [
-    { x: 8, top: 10, mid: 28, bottom: 48 },
-    { x: 24, top: 16, mid: 30, bottom: 46 },
-    { x: 40, top: 8, mid: 26, bottom: 50 },
-    { x: 56, top: 14, mid: 32, bottom: 44 },
-    { x: 72, top: 20, mid: 34, bottom: 48 },
-    { x: 88, top: 12, mid: 28, bottom: 46 },
-    { x: 104, top: 18, mid: 30, bottom: 50 },
+    { x: 6, top: 8, mid: 26, bottom: 50 },
+    { x: 22, top: 14, mid: 28, bottom: 48 },
+    { x: 38, top: 6, mid: 24, bottom: 52 },
+    { x: 54, top: 12, mid: 30, bottom: 46 },
+    { x: 70, top: 18, mid: 32, bottom: 50 },
+    { x: 86, top: 10, mid: 26, bottom: 48 },
+    { x: 102, top: 16, mid: 28, bottom: 52 },
   ];
 
 function MetricChart({
@@ -51,22 +51,22 @@ function MetricChart({
           {PRESSURE_BARS.map((bar, index) => (
             <g key={bar.x}>
               <rect
-                className="fill-stats-purple/90 opacity-0 motion-safe:animate-[welcome-score-fade_0.55s_var(--ease-app)_forwards]"
+                className="fill-stats-purple opacity-0 motion-safe:animate-[welcome-score-fade_0.55s_var(--ease-app)_forwards]"
                 height={bar.mid - bar.top}
-                rx={2.5}
+                rx={3}
                 style={{ animationDelay: `${0.12 + index * 0.05}s` }}
-                width={8}
+                width={7}
                 x={bar.x}
                 y={bar.top}
               />
               <rect
-                className="fill-stats-purple/45 opacity-0 motion-safe:animate-[welcome-score-fade_0.55s_var(--ease-app)_forwards]"
-                height={bar.bottom - bar.mid - 4}
-                rx={2.5}
+                className="fill-stats-purple/70 opacity-0 motion-safe:animate-[welcome-score-fade_0.55s_var(--ease-app)_forwards]"
+                height={bar.bottom - bar.mid - 5}
+                rx={3}
                 style={{ animationDelay: `${0.18 + index * 0.05}s` }}
-                width={8}
+                width={7}
                 x={bar.x}
-                y={bar.mid + 4}
+                y={bar.mid + 5}
               />
             </g>
           ))}
@@ -122,25 +122,33 @@ function MetricChart({
         key={animationKey}
         viewBox="0 0 120 56"
       >
-        <defs>
-          <linearGradient id="welcome-weight-fill" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.35" />
-            <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        <path
-          className="opacity-0 motion-safe:animate-[welcome-score-fade_0.7s_var(--ease-app)_0.4s_forwards]"
-          d={WEIGHT_FILL}
-          fill="url(#welcome-weight-fill)"
-        />
-        <path
-          className="fill-none stroke-2 stroke-accent/40 [stroke-linecap:round] [stroke-linejoin:round] [stroke-dasharray:200] [stroke-dashoffset:200] motion-safe:animate-[welcome-score-draw_1s_var(--ease-app)_0.1s_forwards]"
-          d="M2 42 C 14 30, 22 44, 34 36 S 54 16, 68 28 S 90 48, 118 24"
-        />
-        <path
-          className="fill-none stroke-accent stroke-[2.25] [stroke-linecap:round] [stroke-linejoin:round] [stroke-dasharray:200] [stroke-dashoffset:200] motion-safe:animate-[welcome-score-draw_1.1s_var(--ease-app)_0.25s_forwards]"
-          d={WEIGHT_PATH}
-        />
+          <defs>
+            <linearGradient id="welcome-weight-fill" x1="0" x2="0" y1="0" y2="1">
+              <stop
+                offset="0%"
+                stopColor="var(--stats-orange)"
+                stopOpacity="0.4"
+              />
+              <stop
+                offset="100%"
+                stopColor="var(--stats-orange)"
+                stopOpacity="0"
+              />
+            </linearGradient>
+          </defs>
+          <path
+            className="opacity-0 motion-safe:animate-[welcome-score-fade_0.7s_var(--ease-app)_0.4s_forwards]"
+            d={WEIGHT_FILL}
+            fill="url(#welcome-weight-fill)"
+          />
+          <path
+            className="fill-none stroke-2 stroke-stats-orange/45 [stroke-linecap:round] [stroke-linejoin:round] [stroke-dasharray:200] [stroke-dashoffset:200] motion-safe:animate-[welcome-score-draw_1s_var(--ease-app)_0.1s_forwards]"
+            d="M2 42 C 14 30, 22 44, 34 36 S 54 16, 68 28 S 90 48, 118 24"
+          />
+          <path
+            className="fill-none stroke-stats-orange stroke-[2.25] [stroke-linecap:round] [stroke-linejoin:round] [stroke-dasharray:200] [stroke-dashoffset:200] motion-safe:animate-[welcome-score-draw_1.1s_var(--ease-app)_0.25s_forwards]"
+            d={WEIGHT_PATH}
+          />
       </svg>
     </div>
   );
@@ -174,7 +182,7 @@ export function WelcomeMetricCard({
           {trailing === "warning" ? (
             <ExclamationMarkTriangle
               aria-hidden
-              className={`${styles.periodIcon()} text-danger`}
+              className={styles.periodIcon()}
               size={14}
             />
           ) : (

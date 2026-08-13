@@ -9,6 +9,7 @@ import {
   IsOptional,
   IsString,
   MaxLength,
+  MinLength,
   ValidateNested,
 } from 'class-validator';
 import { CheckInMethod } from '../../common/enums';
@@ -104,4 +105,44 @@ export class ListCheckInsQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsDateString()
   to?: string;
+}
+
+export class ProvisionCheckinDeviceDto {
+  @IsString()
+  @MinLength(2)
+  @MaxLength(120)
+  name!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  provider?: string;
+}
+
+export class HardwareCheckinEventDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(120)
+  externalEventId!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  bookingCode?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  membershipId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  userId?: string;
+
+  @IsOptional()
+  @IsEnum(CheckInMethod)
+  method?: CheckInMethod;
+
+  @IsOptional()
+  @IsDateString()
+  occurredAt?: string;
 }

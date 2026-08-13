@@ -9,7 +9,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "mongosh --quiet --eval \"try { rs.status().ok } catch (e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}).ok }\"",
+          'mongosh --quiet --eval "try { rs.status().ok } catch (e) { rs.initiate({_id:''rs0'',members:[{_id:0,host:''mongo:27017''}]}).ok }"',
         ]
       interval: 5s
       timeout: 10s
@@ -51,6 +51,9 @@ services:
       JWT_PASSWORD_RESET_SECRET: ${JWT_PASSWORD_RESET_SECRET:?JWT_PASSWORD_RESET_SECRET is required}
       JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-900s}
       JWT_REFRESH_TTL_DAYS: ${JWT_REFRESH_TTL_DAYS:-30}
+      BOOKING_PAYMENT_TTL_MINUTES: ${BOOKING_PAYMENT_TTL_MINUTES:-15}
+      BOOKING_COACH_APPROVAL_TTL_MINUTES: ${BOOKING_COACH_APPROVAL_TTL_MINUTES:-1440}
+      REFERRAL_REWARD_AMOUNT: ${REFERRAL_REWARD_AMOUNT:-50000}
       CORS_ORIGINS: ${CORS_ORIGINS:?CORS_ORIGINS is required}
       API_BASE_URL: ${API_PUBLIC_URL:?API_PUBLIC_URL is required}
       ENABLE_SWAGGER: ${ENABLE_SWAGGER:-false}
@@ -60,11 +63,11 @@ services:
       KAVENEGAR_OTP_TEMPLATE: ${KAVENEGAR_OTP_TEMPLATE:-verify}
       KAVENEGAR_INVITE_TEMPLATE: ${KAVENEGAR_INVITE_TEMPLATE:-}
       KAVENEGAR_SENDER: ${KAVENEGAR_SENDER:-}
-      PAYMENT_PROVIDER: ${PAYMENT_PROVIDER:-mock}
-      ZARINPAL_MERCHANT_ID: ${ZARINPAL_MERCHANT_ID:-}
-      ZARINPAL_SANDBOX: ${ZARINPAL_SANDBOX:-true}
-      PUSH_PROVIDER: ${PUSH_PROVIDER:-mock}
-      FCM_SERVICE_ACCOUNT: ${FCM_SERVICE_ACCOUNT:-}
+      PAYMENT_PROVIDER: ${PAYMENT_PROVIDER:-zarinpal}
+      ZARINPAL_MERCHANT_ID: ${ZARINPAL_MERCHANT_ID:?ZARINPAL_MERCHANT_ID is required}
+      ZARINPAL_SANDBOX: ${ZARINPAL_SANDBOX:-false}
+      PUSH_PROVIDER: ${PUSH_PROVIDER:-fcm}
+      FCM_SERVICE_ACCOUNT: ${FCM_SERVICE_ACCOUNT:?FCM_SERVICE_ACCOUNT is required}
       KYC_PROVIDER: ${KYC_PROVIDER:-mock}
       FINNOTECH_BASE_URL: ${FINNOTECH_BASE_URL:-https://api.finnotech.ir}
       FINNOTECH_CLIENT_ID: ${FINNOTECH_CLIENT_ID:-}
@@ -83,7 +86,7 @@ services:
           "CMD",
           "node",
           "-e",
-          "fetch('http://127.0.0.1:8088/api/v1').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+          "fetch('http://127.0.0.1:8088/api/v1/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
         ]
       interval: 10s
       timeout: 5s

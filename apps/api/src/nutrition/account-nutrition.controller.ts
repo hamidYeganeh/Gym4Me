@@ -16,7 +16,10 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '../common/enums';
 import {
+  CreateMealAdherenceDto,
   CreateMealPlanDto,
+  ListFoodItemsQueryDto,
+  ListMealAdherenceQueryDto,
   ListMealPlansQueryDto,
   UpdateMealPlanDto,
 } from './dto/nutrition.dto';
@@ -94,5 +97,33 @@ export class AccountNutritionController {
     @Req() request: Request,
   ) {
     return this.nutrition.deleteMealPlan(id, userId, activeRole, request);
+  }
+
+  @Get('food-items')
+  @Roles(Role.ATHLETE, Role.COACH, Role.ADMIN)
+  @ApiOperation({ summary: 'List active food bank items' })
+  listFoodItems(@Query() query: ListFoodItemsQueryDto) {
+    return this.nutrition.listFoodItems(query);
+  }
+
+  @Get('adherence')
+  @Roles(Role.ATHLETE)
+  @ApiOperation({ summary: 'List my meal adherence logs' })
+  listAdherence(
+    @CurrentUser('sub') userId: string,
+    @Query() query: ListMealAdherenceQueryDto,
+  ) {
+    return this.nutrition.listMealAdherence(userId, query);
+  }
+
+  @Post('adherence')
+  @Roles(Role.ATHLETE)
+  @ApiOperation({ summary: 'Log meal plan adherence (privacy PRIVATE)' })
+  createAdherence(
+    @CurrentUser('sub') userId: string,
+    @Body() dto: CreateMealAdherenceDto,
+    @Req() request: Request,
+  ) {
+    return this.nutrition.createMealAdherence(userId, dto, request);
   }
 }

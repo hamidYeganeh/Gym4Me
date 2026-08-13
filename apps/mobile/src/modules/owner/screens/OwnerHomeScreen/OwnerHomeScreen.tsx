@@ -125,6 +125,12 @@ export function OwnerHomeScreen({
                 href: "/owner/members",
               },
               {
+                key: "lifecycle",
+                label: t("lifecycle"),
+                icon: <UsersTwo size={ACTION_ICON_SIZE} />,
+                href: "/owner/lifecycle",
+              },
+              {
                 key: "analytics",
                 label: t("analytics"),
                 icon: <ChartBar2 size={ACTION_ICON_SIZE} />,

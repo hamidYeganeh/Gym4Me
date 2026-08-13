@@ -4,6 +4,8 @@ export type MembershipState = "active" | "expiring" | "expired";
 
 export type AthleteMembership = {
   id: string;
+  clubId?: string;
+  planId?: string;
   clubName: string;
   planName: string;
   image: string;

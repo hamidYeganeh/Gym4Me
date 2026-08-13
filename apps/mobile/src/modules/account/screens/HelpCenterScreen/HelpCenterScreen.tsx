@@ -57,7 +57,7 @@ export function HelpCenterScreen({
             hint={t("faqHint")}
             icon={<QuestionMark size={ICON} />}
             label={t("faq")}
-            onPress={() => undefined}
+            onPress={() => router.push(`/${roleSegment}/profile/help/faq`)}
           />
           <ProfileMenuRow
             hint={t("chatHint")}
@@ -71,7 +71,9 @@ export function HelpCenterScreen({
             hint={t("feedbackHint")}
             icon={<FaceHappy size={ICON} />}
             label={t("feedback")}
-            onPress={() => undefined}
+            onPress={() =>
+              router.push(`/${roleSegment}/profile/help/tickets`)
+            }
           />
         </div>
       </div>

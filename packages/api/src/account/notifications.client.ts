@@ -2,8 +2,10 @@ import type { ApiClient } from "../client";
 import type {
   ListNotificationsQuery,
   NotificationInbox,
+  NotificationPreferences,
   RegisterDeviceInput,
   RegisterDeviceResult,
+  UpdateNotificationPreferencesInput,
 } from "./notifications.dto";
 import { accountNotificationsEndpoints as ep } from "./notifications.endpoint";
 
@@ -12,6 +14,17 @@ export function createAccountNotificationsApi(client: ApiClient) {
   return {
     list(query: ListNotificationsQuery = {}) {
       return client.request<NotificationInbox>(ep.list, { query });
+    },
+
+    getPreferences() {
+      return client.request<NotificationPreferences>(ep.preferences);
+    },
+
+    updatePreferences(input: UpdateNotificationPreferencesInput) {
+      return client.request<NotificationPreferences>(ep.preferences, {
+        method: "PATCH",
+        body: input,
+      });
     },
 
     markRead(id: string) {

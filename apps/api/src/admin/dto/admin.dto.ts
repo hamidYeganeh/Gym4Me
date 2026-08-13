@@ -176,3 +176,14 @@ export class ListAuditLogsQueryDto extends PaginationQueryDto {
   @IsString()
   targetUserId?: string;
 }
+
+export class StartImpersonationDto {
+  @IsString()
+  @MinLength(1)
+  targetUserId!: string;
+
+  @IsString()
+  @MinLength(3)
+  @MaxLength(1000)
+  reason!: string;
+}

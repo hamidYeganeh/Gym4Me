@@ -180,13 +180,17 @@ export type ClubDetailOwner = {
 
 export type ClubDetailSubscription = {
   id: string;
-  /** Translation key under ClubDetail, e.g. `planFree`. */
-  planNameKey: "planFree" | "planBasic" | "planPremium";
-  /** Translation key under ClubDetail for the plan blurb. */
-  descriptionKey:
+  /** Translation key under ClubDetail, e.g. `planFree` (demo fixtures). */
+  planNameKey?: "planFree" | "planBasic" | "planPremium";
+  /** Literal plan name from the API (preferred when present). */
+  planName?: string;
+  /** Translation key under ClubDetail for the plan blurb (demo fixtures). */
+  descriptionKey?:
     | "planFreeDescription"
     | "planBasicDescription"
     | "planPremiumDescription";
+  /** Literal plan description from the API. */
+  description?: string;
   /** Numeric price used by NumberFlow in the reserve bar. */
   price: number;
   /** Optional promo badge (e.g. "۵۰٪"). */

@@ -44,11 +44,10 @@ login_token() {
 echo "── A1: OTP register/login (new user) ──"
 OTP_PHONE="09125$(date +%s | tail -c 6)1"
 OTP_RES=$(jpost /account/auth/otp "{\"phone\":\"$OTP_PHONE\"}")
-DEBUG_CODE=$(echo "$OTP_RES" | jq -r '.debugCode // empty')
-check "otp request returns debugCode" "5" "${#DEBUG_CODE}"
-CONFIRM=$(jpost /account/auth/otp/confirm "{\"phone\":\"$OTP_PHONE\",\"code\":\"$DEBUG_CODE\"}")
-NEW_TOKEN=$(echo "$CONFIRM" | token_of)
-check "otp confirm returns accessToken" "true" "$([ -n "$NEW_TOKEN" ] && echo true || echo false)"
+# debugCode is intentionally NOT returned over HTTP (logged server-side when DEBUG_MODE=true).
+check "otp request accepted" "true" "$(echo "$OTP_RES" | jq -r '(.expiresInSeconds // 0) > 0')"
+# Password login covers auth; OTP confirm requires reading server debug logs when DEBUG_MODE=true.
+echo "  note: OTP confirm skipped in smoke (no debugCode in HTTP response)"
 
 echo "── A2: password login (seeded athlete) ──"
 ATH_TOKEN=$(login_token /account/auth/login "{\"phone\":\"09124000001\",\"password\":\"$PASS\"}")

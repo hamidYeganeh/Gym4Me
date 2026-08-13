@@ -617,3 +617,26 @@ export class AdminListCoachingQueryDto extends PaginationQueryDto {
   @IsMongoId()
   athleteUserId?: string;
 }
+
+// ── Direct messaging (N4) ─────────────────────────────────────────────────
+
+export class ListCoachThreadsQueryDto extends PaginationQueryDto {}
+
+export class ListCoachMessagesQueryDto extends PaginationQueryDto {}
+
+export class SendCoachMessageDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(4000)
+  body!: string;
+}
+
+export class OpenCoachThreadDto {
+  @IsMongoId()
+  athleteUserId!: string;
+}
+
+export class OpenAthleteThreadDto {
+  @IsMongoId()
+  coachUserId!: string;
+}

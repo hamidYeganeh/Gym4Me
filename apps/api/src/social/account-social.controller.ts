@@ -17,7 +17,10 @@ import { Role } from '../common/enums';
 import {
   CreateSocialCommentDto,
   CreateSocialPostDto,
+  CreateSocialReportDto,
+  FollowInputDto,
   ListSocialCommentsQueryDto,
+  ListSocialFollowsQueryDto,
   ListSocialPostsQueryDto,
   UpdateSocialPostDto,
 } from './dto/social.dto';
@@ -130,5 +133,74 @@ export class AccountSocialController {
     @Req() request: Request,
   ) {
     return this.social.toggleLike(id, userId, request);
+  }
+
+  @Post('posts/:id/save')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Toggle bookmark/save on a post' })
+  toggleSave(
+    @Param('id') id: string,
+    @CurrentUser('sub') userId: string,
+    @Req() request: Request,
+  ) {
+    return this.social.toggleSave(id, userId, request);
+  }
+
+  @Get('saves')
+  @ApiOperation({ summary: 'List my saved posts' })
+  listSaves(
+    @CurrentUser('sub') userId: string,
+    @Query() query: ListSocialPostsQueryDto,
+  ) {
+    return this.social.listSaves(userId, query);
+  }
+
+  @Post('follow')
+  @ApiOperation({ summary: 'Follow a user or club' })
+  follow(
+    @CurrentUser('sub') userId: string,
+    @Body() dto: FollowInputDto,
+    @Req() request: Request,
+  ) {
+    return this.social.follow(userId, dto, request);
+  }
+
+  @Post('unfollow')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Unfollow a user or club' })
+  unfollow(
+    @CurrentUser('sub') userId: string,
+    @Body() dto: FollowInputDto,
+    @Req() request: Request,
+  ) {
+    return this.social.unfollow(userId, dto, request);
+  }
+
+  @Get('following')
+  @ApiOperation({ summary: 'List who I follow' })
+  listFollowing(
+    @CurrentUser('sub') userId: string,
+    @Query() query: ListSocialFollowsQueryDto,
+  ) {
+    return this.social.listFollowing(userId, query);
+  }
+
+  @Get('followers')
+  @ApiOperation({ summary: 'List my followers' })
+  listFollowers(
+    @CurrentUser('sub') userId: string,
+    @Query() query: ListSocialFollowsQueryDto,
+  ) {
+    return this.social.listFollowers(userId, query);
+  }
+
+  @Post('reports')
+  @ApiOperation({ summary: 'Report a post, comment, or user' })
+  report(
+    @CurrentUser('sub') userId: string,
+    @Body() dto: CreateSocialReportDto,
+    @Req() request: Request,
+  ) {
+    return this.social.createReport(userId, dto, request);
   }
 }

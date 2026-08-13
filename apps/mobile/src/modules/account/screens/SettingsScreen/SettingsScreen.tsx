@@ -1,23 +1,28 @@
 "use client";
 
-import { Button, Switch, Typography } from "@heroui/react";
+import { Button, Typography } from "@heroui/react";
 import { Bell1 } from "@repo/icons/Bell1";
+import { BarbellHorizontal } from "@repo/icons/BarbellHorizontal";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { ChevronRight } from "@repo/icons/ChevronRight";
 import { Door } from "@repo/icons/Door";
+import { Gift } from "@repo/icons/Gift";
 import { Globe } from "@repo/icons/Globe";
 import { Headset1 } from "@repo/icons/Headset1";
 import { InfoCircle } from "@repo/icons/InfoCircle";
+import { Leaf } from "@repo/icons/Leaf";
 import { Moon } from "@repo/icons/Moon";
 import { Pencil1 } from "@repo/icons/Pencil1";
+import { Scan1 } from "@repo/icons/Scan1";
 import { ShieldCheck } from "@repo/icons/ShieldCheck";
 import { Trophy1 } from "@repo/icons/Trophy1";
 import { UsersTwo } from "@repo/icons/UsersTwo";
+import { Chat } from "@repo/icons/Chat";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { AnimatedThemeToggler } from "@/shared/components/animated-theme-toggler";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { settingsScreenVariants } from "./SettingsScreen.styles";
@@ -41,7 +46,6 @@ export function SettingsScreen({
   const styles = settingsScreenVariants();
   const router = useRouter();
   const { logout } = useAuth();
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
   const accountRows: NavRow[] = [
     {
@@ -72,6 +76,45 @@ export function SettingsScreen({
       hint: t("achievementsHint"),
       onPress: () => router.push(`/${roleSegment}/achievements`),
     },
+    ...(roleSegment === "athlete"
+      ? [
+          {
+            key: "check-ins",
+            icon: <Scan1 size={ROW_ICON_SIZE} />,
+            label: t("checkIns"),
+            hint: t("checkInsHint"),
+            onPress: () => router.push("/athlete/check-ins"),
+          },
+          {
+            key: "workouts",
+            icon: <BarbellHorizontal size={ROW_ICON_SIZE} />,
+            label: t("workouts"),
+            hint: t("workoutsHint"),
+            onPress: () => router.push("/athlete/workouts"),
+          },
+          {
+            key: "social",
+            icon: <Chat size={ROW_ICON_SIZE} />,
+            label: t("social"),
+            hint: t("socialHint"),
+            onPress: () => router.push("/athlete/social"),
+          },
+          {
+            key: "nutrition",
+            icon: <Leaf size={ROW_ICON_SIZE} />,
+            label: t("nutrition"),
+            hint: t("nutritionHint"),
+            onPress: () => router.push("/athlete/nutrition"),
+          },
+          {
+            key: "referral",
+            icon: <Gift size={ROW_ICON_SIZE} />,
+            label: t("referral"),
+            hint: t("referralHint"),
+            onPress: () => router.push("/athlete/referral"),
+          },
+        ]
+      : []),
   ];
 
   const supportRows: NavRow[] = [
@@ -161,7 +204,14 @@ export function SettingsScreen({
             {t("preferencesGroup")}
           </Typography>
           <div className={styles.groupCard()}>
-            <div className={styles.row()}>
+            <Button
+              className={styles.rowPressable({ className: styles.row() })}
+              fullWidth
+              onPress={() =>
+                router.push(`/${roleSegment}/profile/notification-settings`)
+              }
+              variant="ghost"
+            >
               <span aria-hidden className={styles.rowIcon()}>
                 <Bell1 size={ROW_ICON_SIZE} />
               </span>
@@ -177,16 +227,8 @@ export function SettingsScreen({
                   {t("notificationsHint")}
                 </Typography>
               </span>
-              <Switch
-                aria-label={t("notifications")}
-                isSelected={notificationsEnabled}
-                onChange={setNotificationsEnabled}
-              >
-                <Switch.Control>
-                  <Switch.Thumb />
-                </Switch.Control>
-              </Switch>
-            </div>
+              <ChevronRight className={styles.rowChevron()} size={18} />
+            </Button>
 
             <div aria-hidden className={styles.divider()} />
 

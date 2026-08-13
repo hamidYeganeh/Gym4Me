@@ -119,6 +119,31 @@ export class TokenService {
     return { accessToken, refreshToken };
   }
 
+  /**
+   * Short-lived access token for an admin acting as `user` (M5).
+   * No refresh token — the admin restarts the session when it expires;
+   * the JWT strategy also rejects it as soon as the session ends.
+   */
+  async issueImpersonationToken(
+    user: UserDocument,
+    impersonation: { sessionId: string; adminId: string },
+  ): Promise<{ accessToken: string; expiresInSeconds: number }> {
+    const role = pickDefaultActiveRole(user.roles);
+    const payload: JwtUser = {
+      sub: user._id.toString(),
+      phone: user.phone,
+      roles: user.roles,
+      activeRole: role,
+      impersonation,
+    };
+    const expiresInSeconds = 900;
+    const accessToken = await this.jwt.signAsync(payload, {
+      algorithm: 'HS256',
+      expiresIn: `${expiresInSeconds}s`,
+    });
+    return { accessToken, expiresInSeconds };
+  }
+
   /** Rotates the refresh token; detects reuse and kills the whole session family. */
   async rotate(
     user: UserDocument,

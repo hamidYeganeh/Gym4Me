@@ -1,6 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-import { ExerciseOriginKind, ExerciseStatus } from '../common/enums';
+import {
+  ExerciseOriginKind,
+  ExerciseStatus,
+  VerificationStatus,
+} from '../common/enums';
 import { Media } from './media.schema';
 import { User } from './user.schema';
 
@@ -22,6 +26,31 @@ export class ExerciseOrigin {
 
 export const ExerciseOriginSchema =
   SchemaFactory.createForClass(ExerciseOrigin);
+
+@Schema({ _id: false })
+export class ExerciseVerification {
+  @Prop({
+    type: String,
+    enum: VerificationStatus,
+    required: true,
+    default: VerificationStatus.APPROVED,
+    index: true,
+  })
+  status!: VerificationStatus;
+
+  @Prop({ type: Types.ObjectId, ref: User.name })
+  reviewedBy?: Types.ObjectId;
+
+  @Prop()
+  reviewedAt?: Date;
+
+  @Prop({ trim: true, maxlength: 500 })
+  rejectionReason?: string;
+}
+
+export const ExerciseVerificationSchema = SchemaFactory.createForClass(
+  ExerciseVerification,
+);
 
 @Schema({ timestamps: true, collection: 'exercises' })
 export class Exercise {
@@ -50,6 +79,16 @@ export class Exercise {
 
   @Prop({ type: ExerciseOriginSchema, required: true })
   origin!: ExerciseOrigin;
+
+  /**
+   * Coach-submitted exercises start PENDING; system/admin are APPROVED.
+   * Public bank lists only ACTIVE + APPROVED.
+   */
+  @Prop({
+    type: ExerciseVerificationSchema,
+    default: () => ({ status: VerificationStatus.APPROVED }),
+  })
+  verification!: ExerciseVerification;
 
   createdAt!: Date;
   updatedAt!: Date;

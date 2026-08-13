@@ -1,4 +1,3 @@
-import { Typography } from "@heroui/react";
 import Image from "next/image";
 import { seoClubDetailGallerySectionStyles as styles } from "./SeoClubDetailGallerySection.styles";
 import type { SeoClubDetailGallerySectionProps } from "./SeoClubDetailGallerySection.types";
@@ -10,21 +9,17 @@ export function SeoClubDetailGallerySection({
   if (items.length === 0) {
     return (
       <section aria-label="گالری باشگاه" className={styles.root}>
-        <Typography className={styles.title} type="h2" weight="semibold">
-          گالری باشگاه
-        </Typography>
-        <Typography className={styles.empty} type="body">
+        <h2 className={styles.title}>گالری باشگاه</h2>
+        <p className={styles.empty}>
           هنوز رسانه‌ای برای این باشگاه ثبت نشده است.
-        </Typography>
+        </p>
       </section>
     );
   }
 
   return (
     <section aria-label="گالری باشگاه" className={styles.root}>
-      <Typography className={styles.title} type="h2" weight="semibold">
-        گالری باشگاه
-      </Typography>
+      <h2 className={styles.title}>گالری باشگاه</h2>
       <ul className={styles.grid}>
         {items.map((item, index) => {
           const alt = item.title ?? `${clubName} — تصویر ${index + 1}`;

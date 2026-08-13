@@ -3,6 +3,7 @@ import type { Paginated } from "../types";
 import { accountBookingsEndpoints as ep } from "./bookings.endpoint";
 import type {
   Booking,
+  BookingCancellationPreview,
   BookingsListQuery,
   CancelBookingInput,
   CancelBookingSeriesInput,
@@ -37,6 +38,12 @@ export function createAccountBookingsApi(client: ApiClient) {
 
     get(id: string) {
       return client.request<Booking>(ep.byId(id));
+    },
+
+    cancellationPreview(id: string) {
+      return client.request<BookingCancellationPreview>(
+        ep.cancellationPreview(id),
+      );
     },
 
     pay(id: string, callbackUrl: string) {

@@ -64,6 +64,10 @@ export type Booking = {
   id: string;
   code: string;
   status: BookingStatus;
+  /** Unpaid-booking auto-cancel deadline (SYS-D13); null once paid/free. */
+  paymentExpiresAt: string | null;
+  /** Coach decision deadline for pending consultation requests. */
+  approvalExpiresAt: string | null;
   resource: BookingResource;
   /** Coach bookings only. */
   consultationKind: ConsultationKind | null;
@@ -110,6 +114,7 @@ export type CreateBookingInput = {
     supplementKeys?: string[];
   };
   couponCode?: string;
+  idempotencyKey?: string;
 };
 
 export type CreateClubBookingInput = {
@@ -125,6 +130,17 @@ export type CreateClubBookingInput = {
     supplementKeys?: string[];
   };
   couponCode?: string;
+  idempotencyKey?: string;
+};
+
+export type BookingCancellationPreview = {
+  bookingId: string;
+  paid: boolean;
+  total: number;
+  feePercent: number;
+  feeAmount: number;
+  refundAmount: number;
+  currency: "IRT";
 };
 
 export type CreateClubBookingResult = {

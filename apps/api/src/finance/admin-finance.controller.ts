@@ -14,9 +14,12 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '../common/enums';
 import {
   CreatePayoutDto,
+  DraftPeriodPayoutDto,
   ListLedgerQueryDto,
   ListPaymentsQueryDto,
   ListPayoutsQueryDto,
+  OpenPayoutDisputeDto,
+  ResolvePayoutDisputeDto,
   SettlePayoutDto,
 } from './dto/finance.dto';
 import { FinanceService } from './finance.service';
@@ -62,6 +65,18 @@ export class AdminFinanceController {
     return this.finance.createPayout(undefined, dto, adminId, request);
   }
 
+  @Post('payouts/draft-period')
+  @ApiOperation({
+    summary: 'Draft payout amount from ledger provider_payable for a period',
+  })
+  draftPeriodPayout(
+    @CurrentUser('sub') adminId: string,
+    @Body() dto: DraftPeriodPayoutDto,
+    @Req() request: Request,
+  ) {
+    return this.finance.draftPeriodPayout(undefined, dto, adminId, request);
+  }
+
   @Post('payouts/:id/settle')
   @ApiOperation({ summary: 'Settle a payout and post ledger entry' })
   settlePayout(
@@ -71,5 +86,38 @@ export class AdminFinanceController {
     @Req() request: Request,
   ) {
     return this.finance.settlePayout(id, adminId, dto.note, request);
+  }
+
+  @Post('payouts/:id/dispute')
+  @ApiOperation({ summary: 'Open a payout dispute' })
+  openDispute(
+    @CurrentUser('sub') adminId: string,
+    @Param('id') id: string,
+    @Body() dto: OpenPayoutDisputeDto,
+    @Req() request: Request,
+  ) {
+    return this.finance.openPayoutDispute(id, dto.reason, adminId, request);
+  }
+
+  @Post('payouts/:id/dispute/resolve')
+  @ApiOperation({
+    summary: 'Resolve dispute via reverse ledger entries (never mutate past)',
+  })
+  resolveDispute(
+    @CurrentUser('sub') adminId: string,
+    @Param('id') id: string,
+    @Body() dto: ResolvePayoutDisputeDto,
+    @Req() request: Request,
+  ) {
+    return this.finance.resolvePayoutDispute(
+      id,
+      {
+        resolution: dto.resolution,
+        note: dto.note,
+        reverseSettledAmount: dto.reverseSettledAmount,
+      },
+      adminId,
+      request,
+    );
   }
 }

@@ -7,17 +7,25 @@ import {
   Post,
   Query,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { MembershipActorKind, Role } from '../../common/enums';
+import { RequireStaffPermission } from '../../common/decorators/require-staff-permission.decorator';
+import { StaffPermissionGuard } from '../../common/guards/staff-permission.guard';
+import {
+  MembershipActorKind,
+  Role,
+  StaffPermissionKey,
+} from '../../common/enums';
 import {
   CancelMembershipDto,
   ConsumeMembershipCreditDto,
   CreateMembershipPlanDto,
   FreezeMembershipDto,
+  ImportMembershipsDto,
   ListClubMembershipsQueryDto,
   ListMembershipPlansQueryDto,
   SellMembershipDto,
@@ -27,9 +35,21 @@ import {
 } from './dto/membership.dto';
 import { MembershipsService } from './memberships.service';
 
+function membershipActor(userId: string, activeRole: Role) {
+  return {
+    userId,
+    kind:
+      activeRole === Role.CLUB_STAFF
+        ? MembershipActorKind.STAFF
+        : MembershipActorKind.OWNER,
+  };
+}
+
 @ApiTags('club-owner-membership-plans')
 @ApiBearerAuth('access-token')
-@Roles(Role.CLUB_OWNER)
+@Roles(Role.CLUB_OWNER, Role.CLUB_STAFF)
+@UseGuards(StaffPermissionGuard)
+@RequireStaffPermission(StaffPermissionKey.MEMBERS_MANAGE)
 @Controller('account/clubs/:clubId/membership-plans')
 export class OwnerMembershipPlansController {
   constructor(private readonly memberships: MembershipsService) {}
@@ -41,7 +61,6 @@ export class OwnerMembershipPlansController {
     @Param('clubId') clubId: string,
     @Query() query: ListMembershipPlansQueryDto,
   ) {
-    await this.memberships.requireOwnedClub(userId, clubId);
     return this.memberships.listPlans(clubId, query);
   }
 
@@ -52,7 +71,6 @@ export class OwnerMembershipPlansController {
     @Param('clubId') clubId: string,
     @Param('planId') planId: string,
   ) {
-    await this.memberships.requireOwnedClub(userId, clubId);
     return this.memberships.getPlan(clubId, planId);
   }
 
@@ -64,7 +82,6 @@ export class OwnerMembershipPlansController {
     @Body() dto: CreateMembershipPlanDto,
     @Req() request: Request,
   ) {
-    await this.memberships.requireOwnedClub(userId, clubId);
     return this.memberships.createPlan(clubId, dto, userId, request);
   }
 
@@ -77,14 +94,15 @@ export class OwnerMembershipPlansController {
     @Body() dto: UpdateMembershipPlanDto,
     @Req() request: Request,
   ) {
-    await this.memberships.requireOwnedClub(userId, clubId);
     return this.memberships.updatePlan(clubId, planId, dto, userId, request);
   }
 }
 
 @ApiTags('club-owner-memberships')
 @ApiBearerAuth('access-token')
-@Roles(Role.CLUB_OWNER)
+@Roles(Role.CLUB_OWNER, Role.CLUB_STAFF)
+@UseGuards(StaffPermissionGuard)
+@RequireStaffPermission(StaffPermissionKey.MEMBERS_MANAGE)
 @Controller('account/clubs/:clubId/memberships')
 export class OwnerMembershipsController {
   constructor(private readonly memberships: MembershipsService) {}
@@ -96,7 +114,6 @@ export class OwnerMembershipsController {
     @Param('clubId') clubId: string,
     @Query() query: ListClubMembershipsQueryDto,
   ) {
-    await this.memberships.requireOwnedClub(userId, clubId);
     return this.memberships.listClubMemberships(clubId, query);
   }
 
@@ -107,7 +124,6 @@ export class OwnerMembershipsController {
     @Param('clubId') clubId: string,
     @Param('membershipId') membershipId: string,
   ) {
-    await this.memberships.requireOwnedClub(userId, clubId);
     return this.memberships.getClubMembership(clubId, membershipId);
   }
 
@@ -118,8 +134,24 @@ export class OwnerMembershipsController {
     @Param('clubId') clubId: string,
     @Param('membershipId') membershipId: string,
   ) {
-    await this.memberships.requireOwnedClub(userId, clubId);
     return this.memberships.listMembershipEvents(membershipId, clubId);
+  }
+
+  @Post('import')
+  @ApiOperation({ summary: 'Validate or import members parsed from CSV' })
+  import(
+    @CurrentUser('sub') userId: string,
+    @CurrentUser('activeRole') activeRole: Role,
+    @Param('clubId') clubId: string,
+    @Body() dto: ImportMembershipsDto,
+    @Req() request: Request,
+  ) {
+    return this.memberships.importMemberships(
+      clubId,
+      dto,
+      membershipActor(userId, activeRole),
+      request,
+    );
   }
 
   @Post()
@@ -128,15 +160,15 @@ export class OwnerMembershipsController {
   })
   async sell(
     @CurrentUser('sub') userId: string,
+    @CurrentUser('activeRole') activeRole: Role,
     @Param('clubId') clubId: string,
     @Body() dto: SellMembershipDto,
     @Req() request: Request,
   ) {
-    await this.memberships.requireOwnedClub(userId, clubId);
     return this.memberships.sellMembership(
       clubId,
       dto,
-      { userId, kind: MembershipActorKind.OWNER },
+      membershipActor(userId, activeRole),
       request,
     );
   }
@@ -145,16 +177,16 @@ export class OwnerMembershipsController {
   @ApiOperation({ summary: 'Freeze an active membership' })
   async freeze(
     @CurrentUser('sub') userId: string,
+    @CurrentUser('activeRole') activeRole: Role,
     @Param('clubId') clubId: string,
     @Param('membershipId') membershipId: string,
     @Body() dto: FreezeMembershipDto,
     @Req() request: Request,
   ) {
-    await this.memberships.requireOwnedClub(userId, clubId);
     return this.memberships.freeze(
       membershipId,
       dto,
-      { userId, kind: MembershipActorKind.OWNER },
+      membershipActor(userId, activeRole),
       clubId,
       request,
     );
@@ -164,16 +196,16 @@ export class OwnerMembershipsController {
   @ApiOperation({ summary: 'Unfreeze a membership (extends expiry)' })
   async unfreeze(
     @CurrentUser('sub') userId: string,
+    @CurrentUser('activeRole') activeRole: Role,
     @Param('clubId') clubId: string,
     @Param('membershipId') membershipId: string,
     @Body() dto: UnfreezeMembershipDto,
     @Req() request: Request,
   ) {
-    await this.memberships.requireOwnedClub(userId, clubId);
     return this.memberships.unfreeze(
       membershipId,
       dto,
-      { userId, kind: MembershipActorKind.OWNER },
+      membershipActor(userId, activeRole),
       clubId,
       request,
     );
@@ -183,16 +215,16 @@ export class OwnerMembershipsController {
   @ApiOperation({ summary: 'Transfer membership to another holder' })
   async transfer(
     @CurrentUser('sub') userId: string,
+    @CurrentUser('activeRole') activeRole: Role,
     @Param('clubId') clubId: string,
     @Param('membershipId') membershipId: string,
     @Body() dto: TransferMembershipDto,
     @Req() request: Request,
   ) {
-    await this.memberships.requireOwnedClub(userId, clubId);
     return this.memberships.transfer(
       membershipId,
       dto,
-      { userId, kind: MembershipActorKind.OWNER },
+      membershipActor(userId, activeRole),
       clubId,
       request,
     );
@@ -202,34 +234,35 @@ export class OwnerMembershipsController {
   @ApiOperation({ summary: 'Cancel a club membership' })
   async cancel(
     @CurrentUser('sub') userId: string,
+    @CurrentUser('activeRole') activeRole: Role,
     @Param('clubId') clubId: string,
     @Param('membershipId') membershipId: string,
     @Body() dto: CancelMembershipDto,
     @Req() request: Request,
   ) {
-    await this.memberships.requireOwnedClub(userId, clubId);
     return this.memberships.cancel(
       membershipId,
       dto,
-      { userId, kind: MembershipActorKind.OWNER },
+      membershipActor(userId, activeRole),
       clubId,
       request,
     );
   }
 
   @Post(':membershipId/consume')
+  @RequireStaffPermission(StaffPermissionKey.MEMBERS_CHECKIN)
   @ApiOperation({ summary: 'Consume session/entry credit (desk check-in)' })
   async consume(
     @CurrentUser('sub') userId: string,
+    @CurrentUser('activeRole') activeRole: Role,
     @Param('clubId') clubId: string,
     @Param('membershipId') membershipId: string,
     @Body() dto: ConsumeMembershipCreditDto,
   ) {
-    await this.memberships.requireOwnedClub(userId, clubId);
     return this.memberships.consumeCredit(
       membershipId,
       dto,
-      { userId, kind: MembershipActorKind.OWNER },
+      membershipActor(userId, activeRole),
       clubId,
     );
   }

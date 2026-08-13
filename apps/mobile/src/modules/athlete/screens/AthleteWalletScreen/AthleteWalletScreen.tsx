@@ -23,6 +23,8 @@ export function AthleteWalletScreen({
   incomeSeries,
   spendSeries,
   transactionGroups,
+  topUpPending = false,
+  onTopUp,
 }: AthleteWalletScreenProps) {
   const t = useTranslations("AthleteWallet");
   const router = useRouter();
@@ -64,11 +66,18 @@ export function AthleteWalletScreen({
 
         <Button
           fullWidth
-          onPress={() => router.push(`/athlete/payment/${DEMO_INVOICE_ID}`)}
+          isDisabled={topUpPending}
+          onPress={() => {
+            if (onTopUp) {
+              onTopUp();
+              return;
+            }
+            router.push(`/athlete/payment/${DEMO_INVOICE_ID}`);
+          }}
           size="lg"
           variant="primary"
         >
-          {t("topUp")}
+          {topUpPending ? t("topUpPending") : t("topUp")}
         </Button>
 
         <div className={styles.statsGrid}>

@@ -11,6 +11,8 @@ import type { QueryFilter } from 'mongoose';
 import { AuditService } from '../audit/audit.service';
 import {
   AuditAction,
+  FoodItemStatus,
+  MealAdherenceStatus,
   MealPlanStatus,
   Privacy,
   Role,
@@ -19,11 +21,24 @@ import {
   paginatedResult,
   resolvePageSize,
 } from '../common/utils/pagination.util';
+import {
+  FoodItem,
+  FoodItemDocument,
+} from '../schemas/food-item.schema';
+import {
+  MealAdherence,
+  MealAdherenceDocument,
+} from '../schemas/meal-adherence.schema';
 import { MealPlan, MealPlanDocument } from '../schemas/meal-plan.schema';
 import {
+  CreateFoodItemDto,
+  CreateMealAdherenceDto,
   CreateMealPlanDto,
+  ListFoodItemsQueryDto,
+  ListMealAdherenceQueryDto,
   ListMealPlansQueryDto,
   MealPlanDayDto,
+  UpdateFoodItemDto,
   UpdateMealPlanDto,
 } from './dto/nutrition.dto';
 
@@ -32,6 +47,10 @@ export class NutritionService {
   constructor(
     @InjectModel(MealPlan.name)
     private readonly mealPlanModel: Model<MealPlanDocument>,
+    @InjectModel(FoodItem.name)
+    private readonly foodItemModel: Model<FoodItemDocument>,
+    @InjectModel(MealAdherence.name)
+    private readonly adherenceModel: Model<MealAdherenceDocument>,
     private readonly audit: AuditService,
   ) {}
 
@@ -224,6 +243,9 @@ export class NutritionService {
         name: meal.name.trim(),
         items: (meal.items ?? []).map((item) => ({
           title: item.title.trim(),
+          foodItemId: item.foodItemId
+            ? new Types.ObjectId(item.foodItemId)
+            : undefined,
           calories: item.calories,
           proteinG: item.proteinG,
           carbsG: item.carbsG,
@@ -269,6 +291,7 @@ export class NutritionService {
           name: meal.name,
           items: (meal.items ?? []).map((item) => ({
             title: item.title,
+            foodItemId: (item as { foodItemId?: Types.ObjectId }).foodItemId?.toString() ?? null,
             calories: item.calories ?? null,
             proteinG: item.proteinG ?? null,
             carbsG: item.carbsG ?? null,
@@ -276,6 +299,211 @@ export class NutritionService {
           })),
         })),
       })),
+      createdAt: doc.createdAt.toISOString(),
+      updatedAt: doc.updatedAt.toISOString(),
+    };
+  }
+
+  // ── Food bank ───────────────────────────────────────────────────────────
+
+  async listFoodItems(query: ListFoodItemsQueryDto) {
+    const filter: QueryFilter<FoodItemDocument> = {
+      status: query.status ?? FoodItemStatus.ACTIVE,
+    };
+    if (query.search) {
+      filter.name = new RegExp(
+        query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+        'i',
+      );
+    }
+    const { page, pageSize } = resolvePageSize(query);
+    const [items, total] = await Promise.all([
+      this.foodItemModel
+        .find(filter)
+        .sort({ name: 1 })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .lean(),
+      this.foodItemModel.countDocuments(filter),
+    ]);
+    return paginatedResult(
+      items.map((i) => this.toFoodItem(i)),
+      total,
+      page,
+      pageSize,
+    );
+  }
+
+  async adminCreateFoodItem(
+    dto: CreateFoodItemDto,
+    adminId: string,
+    request: Request,
+  ) {
+    const item = await this.foodItemModel.create({
+      name: dto.name.trim(),
+      categoryKey: dto.categoryKey?.trim(),
+      macros: dto.macros ?? {},
+      servingLabel: dto.servingLabel?.trim(),
+      status: dto.status ?? FoodItemStatus.ACTIVE,
+    });
+    this.audit.log({
+      action: AuditAction.FOOD_ITEM_UPSERTED,
+      actorId: adminId,
+      metadata: { foodItemId: item._id.toString() },
+      request,
+    });
+    return this.toFoodItem(item.toObject());
+  }
+
+  async adminUpdateFoodItem(
+    id: string,
+    dto: UpdateFoodItemDto,
+    adminId: string,
+    request: Request,
+  ) {
+    if (!Types.ObjectId.isValid(id)) throw new NotFoundException('Food item not found');
+    const item = await this.foodItemModel.findById(id);
+    if (!item) throw new NotFoundException('Food item not found');
+    if (dto.name !== undefined) item.name = dto.name.trim();
+    if (dto.categoryKey !== undefined) item.categoryKey = dto.categoryKey?.trim();
+    if (dto.macros !== undefined) item.macros = dto.macros;
+    if (dto.servingLabel !== undefined) item.servingLabel = dto.servingLabel?.trim();
+    if (dto.status !== undefined) item.status = dto.status;
+    await item.save();
+    this.audit.log({
+      action: AuditAction.FOOD_ITEM_UPSERTED,
+      actorId: adminId,
+      metadata: { foodItemId: id },
+      request,
+    });
+    return this.toFoodItem(item.toObject());
+  }
+
+  async adminArchiveFoodItem(id: string, adminId: string, request: Request) {
+    if (!Types.ObjectId.isValid(id)) throw new NotFoundException('Food item not found');
+    const item = await this.foodItemModel.findById(id);
+    if (!item) throw new NotFoundException('Food item not found');
+    item.status = FoodItemStatus.ARCHIVED;
+    await item.save();
+    this.audit.log({
+      action: AuditAction.FOOD_ITEM_UPSERTED,
+      actorId: adminId,
+      metadata: { kind: 'archive', foodItemId: id },
+      request,
+    });
+    return this.toFoodItem(item.toObject());
+  }
+
+  // ── Adherence ───────────────────────────────────────────────────────────
+
+  async createMealAdherence(
+    athleteUserId: string,
+    dto: CreateMealAdherenceDto,
+    request: Request,
+  ) {
+    const plan = await this.findMealPlan(dto.mealPlanId);
+    if (plan.athleteUserId.toString() !== athleteUserId) {
+      throw new ForbiddenException('Not your meal plan');
+    }
+    const item = await this.adherenceModel.create({
+      athleteUserId: new Types.ObjectId(athleteUserId),
+      mealPlanId: plan._id,
+      slot: dto.slot,
+      status: dto.status,
+      loggedAt: dto.loggedAt ? new Date(dto.loggedAt) : new Date(),
+      privacy: Privacy.PRIVATE,
+      note: dto.note?.trim(),
+    });
+    this.audit.log({
+      action: AuditAction.MEAL_ADHERENCE_LOGGED,
+      actorId: athleteUserId,
+      metadata: { adherenceId: item._id.toString(), mealPlanId: dto.mealPlanId },
+      request,
+    });
+    return this.toAdherence(item.toObject());
+  }
+
+  async listMealAdherence(
+    athleteUserId: string,
+    query: ListMealAdherenceQueryDto,
+  ) {
+    const filter: QueryFilter<MealAdherenceDocument> = {
+      athleteUserId: new Types.ObjectId(athleteUserId),
+    };
+    if (query.mealPlanId) {
+      filter.mealPlanId = new Types.ObjectId(query.mealPlanId);
+    }
+    const { page, pageSize } = resolvePageSize(query);
+    const [items, total] = await Promise.all([
+      this.adherenceModel
+        .find(filter)
+        .sort({ loggedAt: -1 })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .lean(),
+      this.adherenceModel.countDocuments(filter),
+    ]);
+    return paginatedResult(
+      items.map((i) => this.toAdherence(i)),
+      total,
+      page,
+      pageSize,
+    );
+  }
+
+  private toFoodItem(doc: {
+    _id: Types.ObjectId;
+    name: string;
+    categoryKey?: string;
+    macros: {
+      calories?: number;
+      proteinG?: number;
+      carbsG?: number;
+      fatG?: number;
+    };
+    servingLabel?: string;
+    status: FoodItemStatus;
+    createdAt: Date;
+    updatedAt: Date;
+  }) {
+    return {
+      id: doc._id.toString(),
+      name: doc.name,
+      categoryKey: doc.categoryKey ?? null,
+      macros: {
+        calories: doc.macros?.calories ?? null,
+        proteinG: doc.macros?.proteinG ?? null,
+        carbsG: doc.macros?.carbsG ?? null,
+        fatG: doc.macros?.fatG ?? null,
+      },
+      servingLabel: doc.servingLabel ?? null,
+      status: doc.status,
+      createdAt: doc.createdAt.toISOString(),
+      updatedAt: doc.updatedAt.toISOString(),
+    };
+  }
+
+  private toAdherence(doc: {
+    _id: Types.ObjectId;
+    athleteUserId: Types.ObjectId;
+    mealPlanId: Types.ObjectId;
+    slot: { dayIndex: number; mealIndex: number };
+    status: MealAdherenceStatus;
+    loggedAt: Date;
+    privacy: Privacy;
+    note?: string;
+    createdAt: Date;
+    updatedAt: Date;
+  }) {
+    return {
+      id: doc._id.toString(),
+      athleteUserId: doc.athleteUserId.toString(),
+      mealPlanId: doc.mealPlanId.toString(),
+      slot: doc.slot,
+      status: doc.status,
+      loggedAt: doc.loggedAt.toISOString(),
+      privacy: doc.privacy,
+      note: doc.note ?? null,
       createdAt: doc.createdAt.toISOString(),
       updatedAt: doc.updatedAt.toISOString(),
     };

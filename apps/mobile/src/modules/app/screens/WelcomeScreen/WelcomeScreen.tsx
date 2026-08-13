@@ -18,7 +18,7 @@ import { useAuth } from "@/shared/providers/AuthProvider";
 import { welcomeScreenVariants } from "./WelcomeScreen.styles";
 import type { WelcomeScreenProps } from "./WelcomeScreen.types";
 
-const HERO_SRC = "/auth-hero.jpg";
+const HERO_SRC = "/welcome/hero-athletes.png";
 
 export function WelcomeScreen({ className }: WelcomeScreenProps) {
   const t = useTranslations("Mobile.Welcome");
@@ -62,6 +62,8 @@ export function WelcomeScreen({ className }: WelcomeScreenProps) {
       }
       heroSrc={HERO_SRC}
       labels={labels}
+      showBrand={false}
+      tone="hero"
     >
       <Button
         className={styles.primary()}

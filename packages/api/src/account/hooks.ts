@@ -60,7 +60,9 @@ export {
 export {
   useMarkAllNotificationsRead,
   useMarkNotificationRead,
+  useNotificationPreferences,
   useNotificationsInbox,
   useRegisterDevice,
   useRevokeDevice,
+  useUpdateNotificationPreferences,
 } from "./notifications.hooks";

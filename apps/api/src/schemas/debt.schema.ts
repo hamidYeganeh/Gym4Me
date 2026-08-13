@@ -38,6 +38,10 @@ export class Debt {
   @Prop({ type: DebtHolderSchema, required: true })
   holder!: DebtHolder;
 
+  /** Membership that originated this receivable, when applicable. */
+  @Prop({ type: Types.ObjectId, ref: 'ClubMembership', index: true })
+  membershipId?: Types.ObjectId;
+
   @Prop({
     type: String,
     enum: DebtStatus,

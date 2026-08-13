@@ -18,6 +18,7 @@ import { AuditService } from '../audit/audit.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role, UserStatus } from '../common/enums';
+import { AdminImpersonationService } from './admin-impersonation.service';
 import { AdminKycService } from './admin-kyc.service';
 import { AdminUsersService } from './admin-users.service';
 import { AdminVerificationService } from './admin-verification.service';
@@ -28,6 +29,7 @@ import {
   ListKycRequestsQueryDto,
   ListUsersQueryDto,
   ReviewKycDto,
+  StartImpersonationDto,
   UpdateUserRolesDto,
   UpdateUserStatusDto,
   UserActivationDto,
@@ -46,6 +48,7 @@ export class AdminController {
     private readonly adminUsers: AdminUsersService,
     private readonly adminKyc: AdminKycService,
     private readonly adminVerification: AdminVerificationService,
+    private readonly impersonation: AdminImpersonationService,
     private readonly audit: AuditService,
   ) {}
 
@@ -208,5 +211,35 @@ export class AdminController {
   @ApiOperation({ summary: 'List audit logs' })
   listAuditLogs(@Query() query: ListAuditLogsQueryDto) {
     return this.audit.find(query);
+  }
+
+  // ── Impersonation ──────────────────────────────
+
+  @Post('impersonation')
+  @ApiOperation({
+    summary:
+      'Start impersonation session (reason required). Returns session id; JWT claim wiring deferred to AuthService.',
+  })
+  startImpersonation(
+    @CurrentUser('sub') adminId: string,
+    @Body() dto: StartImpersonationDto,
+    @Req() request: Request,
+  ) {
+    return this.impersonation.start(
+      adminId,
+      dto.targetUserId,
+      dto.reason,
+      request,
+    );
+  }
+
+  @Post('impersonation/:sessionId/end')
+  @ApiOperation({ summary: 'End an impersonation session' })
+  endImpersonation(
+    @CurrentUser('sub') adminId: string,
+    @Param('sessionId') sessionId: string,
+    @Req() request: Request,
+  ) {
+    return this.impersonation.end(adminId, sessionId, request);
   }
 }

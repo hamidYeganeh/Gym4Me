@@ -25,6 +25,17 @@ export type SupportSectionTabId = "tickets" | "faq";
 
 export type GamificationSectionTabId = "achievements" | "rules" | "ledger";
 
+export type FinanceSectionTabId = "ledger" | "payments" | "payouts" | "refunds";
+
+export type CatalogSectionTabId =
+  | "plans"
+  | "food"
+  | "exercises"
+  | "metrics"
+  | "coaching";
+
+export type OpsSectionTabId = "social" | "audit" | "templates";
+
 export type AnalyticsSectionPeriodId = "week" | "month" | "quarter";
 
 const ANALYTICS_PERIODS: AnalyticsSectionPeriodId[] = [
@@ -69,6 +80,15 @@ type AdminShellProps = {
   gamificationSection?: SectionSearch & {
     activeTabId: GamificationSectionTabId;
   };
+  financeSection?: SectionSearch & {
+    activeTabId: FinanceSectionTabId;
+  };
+  catalogSection?: SectionSearch & {
+    activeTabId: CatalogSectionTabId;
+  };
+  opsSection?: SectionSearch & {
+    activeTabId: OpsSectionTabId;
+  };
 };
 
 export function AdminShell({
@@ -86,6 +106,9 @@ export function AdminShell({
   articlesSection,
   bannersSection,
   gamificationSection,
+  financeSection,
+  catalogSection,
+  opsSection,
 }: AdminShellProps) {
   const t = useTranslations("Admin");
   const { logout } = useAuth();
@@ -105,6 +128,10 @@ export function AdminShell({
         home: t("nav.home"),
         users: t("nav.users"),
         clubs: t("nav.clubs"),
+        bookings: t("nav.bookings"),
+        finance: t("nav.finance"),
+        catalogs: t("nav.catalogs"),
+        ops: t("nav.ops"),
         locations: t("nav.locations"),
         sports: t("nav.sports"),
         choices: t("nav.choices"),
@@ -204,6 +231,57 @@ export function AdminShell({
     [t],
   );
 
+  const financeTabs = useMemo<AdminSectionHeaderTab[]>(
+    () => [
+      { id: "ledger", label: t("Finance.tabs.ledger") },
+      { id: "payments", label: t("Finance.tabs.payments") },
+      { id: "payouts", label: t("Finance.tabs.payouts") },
+      { id: "refunds", label: t("Finance.tabs.refunds") },
+    ],
+    [t],
+  );
+
+  const financeTabPath: Record<FinanceSectionTabId, string> = {
+    ledger: routes.financeLedger,
+    payments: routes.financePayments,
+    payouts: routes.financePayouts,
+    refunds: routes.financeRefunds,
+  };
+
+  const catalogTabs = useMemo<AdminSectionHeaderTab[]>(
+    () => [
+      { id: "plans", label: t("Catalog.tabs.plans") },
+      { id: "food", label: t("Catalog.tabs.food") },
+      { id: "exercises", label: t("Catalog.tabs.exercises") },
+      { id: "metrics", label: t("Catalog.tabs.metrics") },
+      { id: "coaching", label: t("Catalog.tabs.coaching") },
+    ],
+    [t],
+  );
+
+  const catalogTabPath: Record<CatalogSectionTabId, string> = {
+    plans: routes.catalogPlans,
+    food: routes.catalogFood,
+    exercises: routes.catalogExercises,
+    metrics: routes.catalogMetrics,
+    coaching: routes.catalogCoaching,
+  };
+
+  const opsTabs = useMemo<AdminSectionHeaderTab[]>(
+    () => [
+      { id: "social", label: t("Ops.tabs.social") },
+      { id: "audit", label: t("Ops.tabs.audit") },
+      { id: "templates", label: t("Ops.tabs.templates") },
+    ],
+    [t],
+  );
+
+  const opsTabPath: Record<OpsSectionTabId, string> = {
+    social: routes.opsSocial,
+    audit: routes.opsAudit,
+    templates: routes.opsTemplates,
+  };
+
   const handleNav = async (id: AdminDashboardNavId) => {
     if (id === "logout") {
       await logout();
@@ -215,6 +293,10 @@ export function AdminShell({
       home: routes.dashboard,
       users: routes.users,
       clubs: routes.clubs,
+      bookings: routes.bookings,
+      finance: routes.financeLedger,
+      catalogs: routes.catalogPlans,
+      ops: routes.opsSocial,
       locations: routes.locations(),
       sports: routes.sports(),
       choices: routes.choices,
@@ -379,6 +461,58 @@ export function AdminShell({
             gamificationTabPath[id as GamificationSectionTabId] ??
               routes.gamification,
           )
+        }
+      />
+    );
+  } else if (financeSection) {
+    header = (
+      <AdminSectionHeader
+        activeTabId={financeSection.activeTabId}
+        filtersAriaLabel={t("filtersAriaLabel")}
+        searchAriaLabel={t("Finance.searchAriaLabel")}
+        searchPlaceholder={t("Finance.searchPlaceholder")}
+        searchValue={financeSection.searchValue}
+        tabs={financeTabs}
+        onFilterPress={financeSection.onFilterPress}
+        onSearchChange={financeSection.onSearchChange}
+        onTabPress={(id) =>
+          navigate(
+            financeTabPath[id as FinanceSectionTabId] ?? routes.financeLedger,
+          )
+        }
+      />
+    );
+  } else if (catalogSection) {
+    header = (
+      <AdminSectionHeader
+        activeTabId={catalogSection.activeTabId}
+        filtersAriaLabel={t("filtersAriaLabel")}
+        searchAriaLabel={t("Catalog.searchAriaLabel")}
+        searchPlaceholder={t("Catalog.searchPlaceholder")}
+        searchValue={catalogSection.searchValue}
+        tabs={catalogTabs}
+        onFilterPress={catalogSection.onFilterPress}
+        onSearchChange={catalogSection.onSearchChange}
+        onTabPress={(id) =>
+          navigate(
+            catalogTabPath[id as CatalogSectionTabId] ?? routes.catalogPlans,
+          )
+        }
+      />
+    );
+  } else if (opsSection) {
+    header = (
+      <AdminSectionHeader
+        activeTabId={opsSection.activeTabId}
+        filtersAriaLabel={t("filtersAriaLabel")}
+        searchAriaLabel={t("Ops.searchAriaLabel")}
+        searchPlaceholder={t("Ops.searchPlaceholder")}
+        searchValue={opsSection.searchValue}
+        tabs={opsTabs}
+        onFilterPress={opsSection.onFilterPress}
+        onSearchChange={opsSection.onSearchChange}
+        onTabPress={(id) =>
+          navigate(opsTabPath[id as OpsSectionTabId] ?? routes.opsSocial)
         }
       />
     );

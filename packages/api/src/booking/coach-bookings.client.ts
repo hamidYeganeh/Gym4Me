@@ -3,6 +3,7 @@ import type { Paginated } from "../types";
 import { coachBookingsEndpoints as ep } from "./coach-bookings.endpoint";
 import type {
   Booking,
+  BookingCancellationPreview,
   BookingsListQuery,
   CancelBookingInput,
 } from "./bookings.dto";
@@ -16,6 +17,16 @@ export function createCoachBookingsApi(client: ApiClient) {
 
     get(id: string) {
       return client.request<Booking>(ep.byId(id));
+    },
+
+    cancellationPreview(id: string) {
+      return client.request<BookingCancellationPreview>(
+        ep.cancellationPreview(id),
+      );
+    },
+
+    accept(id: string) {
+      return client.request<Booking>(ep.accept(id), { method: "POST" });
     },
 
     cancel(id: string, input: CancelBookingInput = {}) {

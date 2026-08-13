@@ -72,6 +72,23 @@ export class AuditService {
       this.auditModel.countDocuments(filter),
     ]);
 
-    return paginatedResult(items, total, page, cappedSize);
+    return paginatedResult(
+      items.map((row) => ({
+        id: row._id.toString(),
+        action: row.action,
+        actorId: row.actorId?.toString() ?? null,
+        targetUserId: row.targetUserId?.toString() ?? null,
+        ip: row.ip ?? null,
+        userAgent: row.userAgent ?? null,
+        metadata: row.metadata ?? null,
+        createdAt:
+          row.createdAt instanceof Date
+            ? row.createdAt.toISOString()
+            : row.createdAt,
+      })),
+      total,
+      page,
+      cappedSize,
+    );
   }
 }

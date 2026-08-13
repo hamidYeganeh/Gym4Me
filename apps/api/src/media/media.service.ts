@@ -7,10 +7,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { createHash } from 'crypto';
 import { Model, Types } from 'mongoose';
 import type { Request } from 'express';
-import { createReadStream, existsSync, readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { AuditService } from '../audit/audit.service';
 import { AuditAction, MediaVisibility, Role } from '../common/enums';
+import { StorageService } from '../common/storage/storage.service';
 import type { JwtUser } from '../common/types';
 import { Media, MediaDocument } from '../schemas/media.schema';
 
@@ -19,6 +20,7 @@ export class MediaService {
   constructor(
     @InjectModel(Media.name) private readonly mediaModel: Model<MediaDocument>,
     private readonly audit: AuditService,
+    private readonly storage: StorageService,
   ) {}
 
   async create(
@@ -31,10 +33,17 @@ export class MediaService {
       originalName?: string;
     },
   ) {
-    const absolute = join(process.env.UPLOAD_DIR || './uploads', file.filename);
-    const hash = existsSync(absolute)
-      ? createHash('sha256').update(readFileSync(absolute)).digest('hex')
+    const staged = join(process.env.UPLOAD_DIR || './uploads', file.filename);
+    const hash = existsSync(staged)
+      ? createHash('sha256').update(readFileSync(staged)).digest('hex')
       : undefined;
+
+    // Persist to the configured backend (no-op move for local provider).
+    await this.storage.put(
+      staged,
+      file.filename,
+      opts?.mimeType ?? file.mimetype,
+    );
 
     const media = await this.mediaModel.create({
       path: file.filename,
@@ -89,13 +98,15 @@ export class MediaService {
   async openFile(id: string, user?: JwtUser | null) {
     const media = await this.findById(id);
     this.assertCanRead(media, user);
-    const absolute = join(process.env.UPLOAD_DIR || './uploads', media.path);
-    if (!existsSync(absolute)) throw new NotFoundException('File missing on disk');
+    if (!(await this.storage.exists(media.path))) {
+      throw new NotFoundException('File missing in storage');
+    }
+    const opened = await this.storage.open(media.path);
     return {
-      stream: createReadStream(absolute),
+      stream: opened.stream,
       mimeType: media.mimeType,
       originalName: media.originalName,
-      size: media.size,
+      size: opened.size ?? media.size,
       visibility: media.visibility ?? MediaVisibility.PUBLIC,
     };
   }

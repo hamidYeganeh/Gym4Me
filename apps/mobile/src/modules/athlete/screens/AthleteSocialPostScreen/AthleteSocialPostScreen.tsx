@@ -1,0 +1,179 @@
+"use client";
+
+import { useState } from "react";
+import {
+  Button,
+  Label,
+  TextArea,
+  TextField,
+  Typography,
+} from "@heroui/react";
+import { Bookmark } from "@repo/icons/Bookmark";
+import { ChevronLeft } from "@repo/icons/ChevronLeft";
+import { Flag1 } from "@repo/icons/Flag1";
+import { Heart } from "@repo/icons/Heart";
+import { Image1 } from "@repo/icons/Image1";
+import { AppLayout } from "@repo/ui/layout/AppLayout";
+import { Header } from "@repo/ui/layout/Header";
+import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { toPersianDigits } from "@/modules/athlete/lib/weight/format";
+import { athleteSocialPostScreenVariants } from "./AthleteSocialPostScreen.styles";
+import type { AthleteSocialPostScreenProps } from "./AthleteSocialPostScreen.types";
+
+export function AthleteSocialPostScreen({
+  detail,
+  pending = false,
+  commentPending = false,
+  onLike,
+  onSave,
+  onComment,
+  onReport,
+  className,
+}: AthleteSocialPostScreenProps) {
+  const t = useTranslations("AthleteSocial");
+  const styles = athleteSocialPostScreenVariants();
+  const router = useRouter();
+  const [draft, setDraft] = useState("");
+
+  return (
+    <AppLayout
+      className={styles.root({ className })}
+      header={
+        <Header
+          startContent={
+            <Button
+              aria-label={t("back")}
+              isIconOnly
+              onPress={() => router.back()}
+              size="lg"
+              variant="ghost"
+            >
+              <ChevronLeft className="text-foreground" size={22} />
+            </Button>
+          }
+        />
+      }
+    >
+      <div className={styles.content()}>
+        <section className={styles.intro()}>
+          <Typography className={styles.author()} type="h1" weight="bold">
+            {detail.authorLabel}
+          </Typography>
+          <Typography className={styles.meta()} type="body-sm">
+            {detail.createdLabel}
+          </Typography>
+          <Typography className={styles.body()} type="body">
+            {detail.body}
+          </Typography>
+          {detail.mediaCount > 0 ? (
+            <div className={styles.media()}>
+              <Image1 size={28} />
+              <Typography type="body-sm">
+                {t("mediaPlaceholder", {
+                  count: toPersianDigits(detail.mediaCount),
+                })}
+              </Typography>
+            </div>
+          ) : null}
+          <div className={styles.actions()}>
+            <Button
+              isDisabled={pending}
+              isIconOnly
+              onPress={() => void onLike()}
+              size="lg"
+              variant="ghost"
+            >
+              <Heart
+                className={detail.liked ? "text-danger" : "text-foreground"}
+                size={20}
+              />
+            </Button>
+            <Typography className={styles.meta()} type="body-sm">
+              {toPersianDigits(detail.likeCount)}
+            </Typography>
+            <Button
+              isDisabled={pending}
+              isIconOnly
+              onPress={() => void onSave()}
+              size="lg"
+              variant="ghost"
+            >
+              <Bookmark
+                className={detail.saved ? "text-accent" : "text-foreground"}
+                size={20}
+              />
+            </Button>
+            {onReport ? (
+              <Button
+                isIconOnly
+                onPress={() => void onReport()}
+                size="lg"
+                variant="ghost"
+              >
+                <Flag1 className="text-muted" size={18} />
+              </Button>
+            ) : null}
+          </div>
+        </section>
+
+        <section className={styles.compose()}>
+          <TextField>
+            <Label>{t("commentLabel")}</Label>
+            <TextArea
+              onChange={(event) => setDraft(event.target.value)}
+              placeholder={t("commentPlaceholder")}
+              rows={3}
+              value={draft}
+            />
+          </TextField>
+          <Button
+            fullWidth
+            isDisabled={commentPending || draft.trim().length === 0}
+            onPress={() => {
+              const body = draft.trim();
+              if (!body) return;
+              void onComment(body);
+              setDraft("");
+            }}
+            variant="primary"
+          >
+            {t("sendComment")}
+          </Button>
+        </section>
+
+        <section className="flex flex-col gap-3">
+          <Typography className={styles.sectionTitle()} type="body-sm">
+            {t("commentsTitle", {
+              count: toPersianDigits(detail.comments.length),
+            })}
+          </Typography>
+          {detail.comments.length === 0 ? (
+            <div className={styles.empty()}>
+              <Typography type="body" weight="semibold">
+                {t("commentsEmptyTitle")}
+              </Typography>
+              <Typography className={styles.meta()} type="body-sm">
+                {t("commentsEmptyBody")}
+              </Typography>
+            </div>
+          ) : (
+            <div className={styles.list()}>
+              {detail.comments.map((comment) => (
+                <article className={styles.commentCard()} key={comment.id}>
+                  <Typography type="body" weight="semibold">
+                    {comment.authorLabel}
+                  </Typography>
+                  <Typography type="body">{comment.body}</Typography>
+                  <Typography className={styles.meta()} type="body-sm">
+                    {comment.createdLabel}
+                  </Typography>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+    </AppLayout>
+  );
+}

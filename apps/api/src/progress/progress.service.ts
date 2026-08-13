@@ -11,12 +11,15 @@ import type { QueryFilter } from 'mongoose';
 import { AuditService } from '../audit/audit.service';
 import {
   AuditAction,
+  CoachStudentStatus,
   ExerciseOriginKind,
   ExerciseStatus,
   MetricTypeStatus,
   MetricValueKind,
   Privacy,
   Role,
+  VerificationStatus,
+  WorkoutLogStatus,
   WorkoutPlanStatus,
   WorkoutProgramOwnerType,
   WorkoutProgramStatus,
@@ -25,11 +28,19 @@ import {
   paginatedResult,
   resolvePageSize,
 } from '../common/utils/pagination.util';
+import {
+  CoachStudent,
+  CoachStudentDocument,
+} from '../schemas/coach-student.schema';
 import { Exercise, ExerciseDocument } from '../schemas/exercise.schema';
 import {
   MetricType,
   MetricTypeDocument,
 } from '../schemas/metric-type.schema';
+import {
+  PersonalRecord,
+  PersonalRecordDocument,
+} from '../schemas/personal-record.schema';
 import {
   ProgressMetric,
   ProgressMetricDocument,
@@ -38,6 +49,10 @@ import {
   ProgressPhoto,
   ProgressPhotoDocument,
 } from '../schemas/progress-photo.schema';
+import {
+  WorkoutLog,
+  WorkoutLogDocument,
+} from '../schemas/workout-log.schema';
 import {
   WorkoutPlan,
   WorkoutPlanDocument,
@@ -50,16 +65,21 @@ import {
   AssignWorkoutProgramDto,
   CreateExerciseDto,
   CreateMetricTypeDto,
+  CreatePersonalRecordDto,
   CreateProgressMetricDto,
   CreateProgressPhotoDto,
+  CreateWorkoutLogDto,
   CreateWorkoutPlanDto,
   CreateWorkoutProgramDto,
   ListExercisesQueryDto,
   ListMetricTypesQueryDto,
+  ListPersonalRecordsQueryDto,
   ListProgressMetricsQueryDto,
   ListProgressPhotosQueryDto,
+  ListWorkoutLogsQueryDto,
   ListWorkoutPlansQueryDto,
   ListWorkoutProgramsQueryDto,
+  ReviewExerciseVerificationDto,
   UpdateExerciseDto,
   UpdateMetricTypeDto,
   UpdateProgressMetricDto,
@@ -164,6 +184,12 @@ export class ProgressService {
     private readonly photoModel: Model<ProgressPhotoDocument>,
     @InjectModel(MetricType.name)
     private readonly metricTypeModel: Model<MetricTypeDocument>,
+    @InjectModel(WorkoutLog.name)
+    private readonly workoutLogModel: Model<WorkoutLogDocument>,
+    @InjectModel(PersonalRecord.name)
+    private readonly personalRecordModel: Model<PersonalRecordDocument>,
+    @InjectModel(CoachStudent.name)
+    private readonly coachStudentModel: Model<CoachStudentDocument>,
     private readonly audit: AuditService,
   ) {}
 
@@ -217,9 +243,10 @@ export class ProgressService {
         kind: ExerciseOriginKind.ADMIN,
         userId: new Types.ObjectId(adminId),
       },
+      verification: { status: VerificationStatus.APPROVED },
     });
     this.audit.log({
-      action: AuditAction.WORKOUT_PLAN_UPSERTED,
+      action: AuditAction.EXERCISE_VERIFIED,
       actorId: adminId,
       metadata: { kind: 'exercise', exerciseId: item._id.toString() },
       request,
@@ -269,10 +296,14 @@ export class ProgressService {
     return this.toExercise(item.toObject());
   }
 
-  /** Active exercise bank for coaches / athletes. */
+  /** Active + approved exercise bank for coaches / athletes. */
   async listExercises(query: ListExercisesQueryDto) {
     const filter: QueryFilter<ExerciseDocument> = {
       status: query.status ?? ExerciseStatus.ACTIVE,
+      $or: [
+        { 'verification.status': VerificationStatus.APPROVED },
+        { verification: { $exists: false } },
+      ],
     };
     if (query.search) {
       filter.name = new RegExp(
@@ -296,6 +327,71 @@ export class ProgressService {
       page,
       pageSize,
     );
+  }
+
+  async coachSubmitExercise(
+    dto: CreateExerciseDto,
+    coachId: string,
+    request: Request,
+  ) {
+    const item = await this.exerciseModel.create({
+      name: dto.name.trim(),
+      description: dto.description?.trim(),
+      muscleKeys: dto.muscleKeys ?? [],
+      equipmentKeys: dto.equipmentKeys ?? [],
+      mediaId: dto.mediaId ? new Types.ObjectId(dto.mediaId) : undefined,
+      status: ExerciseStatus.ACTIVE,
+      origin: {
+        kind: ExerciseOriginKind.COACH,
+        userId: new Types.ObjectId(coachId),
+      },
+      verification: { status: VerificationStatus.PENDING },
+    });
+    this.audit.log({
+      action: AuditAction.EXERCISE_SUBMITTED,
+      actorId: coachId,
+      metadata: { exerciseId: item._id.toString() },
+      request,
+    });
+    return this.toExercise(item.toObject());
+  }
+
+  async adminReviewExercise(
+    id: string,
+    dto: ReviewExerciseVerificationDto,
+    adminId: string,
+    request: Request,
+  ) {
+    const item = await this.findExercise(id);
+    if (
+      dto.status !== VerificationStatus.APPROVED &&
+      dto.status !== VerificationStatus.REJECTED
+    ) {
+      throw new BadRequestException('status must be approved or rejected');
+    }
+    item.verification = {
+      status: dto.status,
+      reviewedBy: new Types.ObjectId(adminId),
+      reviewedAt: new Date(),
+      rejectionReason:
+        dto.status === VerificationStatus.REJECTED
+          ? dto.rejectionReason?.trim()
+          : undefined,
+    };
+    if (dto.status === VerificationStatus.REJECTED) {
+      item.status = ExerciseStatus.ARCHIVED;
+    }
+    await item.save();
+    this.audit.log({
+      action: AuditAction.EXERCISE_VERIFIED,
+      actorId: adminId,
+      metadata: {
+        exerciseId: id,
+        verification: dto.status,
+      },
+      request,
+    });
+    return this.toExercise(item.toObject());
   }
 
   // ── Workout plans ───────────────────────────────────────────────────────
@@ -1082,6 +1178,12 @@ export class ProgressService {
     mediaId?: Types.ObjectId;
     status: ExerciseStatus;
     origin: { kind: ExerciseOriginKind; userId?: Types.ObjectId };
+    verification?: {
+      status: VerificationStatus;
+      reviewedBy?: Types.ObjectId;
+      reviewedAt?: Date;
+      rejectionReason?: string;
+    };
     createdAt: Date;
     updatedAt: Date;
   }) {
@@ -1096,6 +1198,12 @@ export class ProgressService {
       origin: {
         kind: doc.origin.kind,
         userId: doc.origin.userId?.toString() ?? null,
+      },
+      verification: {
+        status: doc.verification?.status ?? VerificationStatus.APPROVED,
+        reviewedBy: doc.verification?.reviewedBy?.toString() ?? null,
+        reviewedAt: doc.verification?.reviewedAt?.toISOString() ?? null,
+        rejectionReason: doc.verification?.rejectionReason ?? null,
       },
       createdAt: doc.createdAt.toISOString(),
       updatedAt: doc.updatedAt.toISOString(),
@@ -1290,6 +1398,225 @@ export class ProgressService {
       mediaId: doc.mediaId.toString(),
       privacy: doc.privacy,
       capturedAt: doc.capturedAt.toISOString(),
+      note: doc.note ?? null,
+      createdAt: doc.createdAt.toISOString(),
+      updatedAt: doc.updatedAt.toISOString(),
+    };
+  }
+
+  // ── Workout logs ────────────────────────────────────────────────────────
+
+  async createWorkoutLog(
+    dto: CreateWorkoutLogDto,
+    athleteId: string,
+    request: Request,
+  ) {
+    const plan = await this.workoutPlanModel.findById(dto.planId);
+    if (!plan) throw new NotFoundException('Workout plan not found');
+    if (plan.athleteUserId.toString() !== athleteId) {
+      throw new ForbiddenException('Not your workout plan');
+    }
+
+    const item = await this.workoutLogModel.create({
+      planId: new Types.ObjectId(dto.planId),
+      athleteId: new Types.ObjectId(athleteId),
+      sessionIndex: dto.sessionIndex,
+      sets: dto.sets.map((s) => ({
+        exerciseId: new Types.ObjectId(s.exerciseId),
+        reps: s.reps,
+        weightKg: s.weightKg,
+        rpe: s.rpe,
+      })),
+      status: dto.status,
+      loggedAt: dto.loggedAt ? new Date(dto.loggedAt) : new Date(),
+    });
+
+    this.audit.log({
+      action: AuditAction.WORKOUT_LOG_UPSERTED,
+      actorId: athleteId,
+      metadata: { workoutLogId: item._id.toString(), planId: dto.planId },
+      request,
+    });
+    return this.toWorkoutLog(item.toObject());
+  }
+
+  async listWorkoutLogs(
+    userId: string,
+    activeRole: Role,
+    query: ListWorkoutLogsQueryDto,
+  ) {
+    const filter: QueryFilter<WorkoutLogDocument> = {};
+    if (query.planId) filter.planId = new Types.ObjectId(query.planId);
+    if (query.status) filter.status = query.status;
+
+    if (activeRole === Role.ATHLETE) {
+      filter.athleteId = new Types.ObjectId(userId);
+    } else if (activeRole === Role.COACH) {
+      const athleteId = query.athleteId;
+      if (!athleteId) {
+        throw new BadRequestException('athleteId required for coach view');
+      }
+      await this.assertCoachStudent(userId, athleteId);
+      filter.athleteId = new Types.ObjectId(athleteId);
+    } else if (activeRole === Role.ADMIN) {
+      if (query.athleteId) {
+        filter.athleteId = new Types.ObjectId(query.athleteId);
+      }
+    } else {
+      throw new ForbiddenException('Not allowed');
+    }
+
+    const { page, pageSize } = resolvePageSize(query);
+    const [items, total] = await Promise.all([
+      this.workoutLogModel
+        .find(filter)
+        .sort({ loggedAt: -1 })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .lean(),
+      this.workoutLogModel.countDocuments(filter),
+    ]);
+    return paginatedResult(
+      items.map((item) => this.toWorkoutLog(item)),
+      total,
+      page,
+      pageSize,
+    );
+  }
+
+  // ── Personal records ────────────────────────────────────────────────────
+
+  async createPersonalRecord(
+    dto: CreatePersonalRecordDto,
+    athleteId: string,
+    request: Request,
+  ) {
+    const item = await this.personalRecordModel.create({
+      athleteId: new Types.ObjectId(athleteId),
+      metricTypeKey: dto.metricTypeKey.trim(),
+      value: dto.value,
+      achievedAt: dto.achievedAt ? new Date(dto.achievedAt) : new Date(),
+      privacy: dto.privacy ?? Privacy.PRIVATE,
+      note: dto.note?.trim(),
+    });
+    this.audit.log({
+      action: AuditAction.PERSONAL_RECORD_UPSERTED,
+      actorId: athleteId,
+      metadata: { personalRecordId: item._id.toString() },
+      request,
+    });
+    return this.toPersonalRecord(item.toObject());
+  }
+
+  async listPersonalRecords(
+    userId: string,
+    activeRole: Role,
+    query: ListPersonalRecordsQueryDto,
+  ) {
+    const filter: QueryFilter<PersonalRecordDocument> = {};
+    if (query.metricTypeKey) filter.metricTypeKey = query.metricTypeKey;
+
+    if (activeRole === Role.ATHLETE) {
+      filter.athleteId = new Types.ObjectId(userId);
+    } else if (activeRole === Role.COACH) {
+      const athleteId = query.athleteId;
+      if (!athleteId) {
+        throw new BadRequestException('athleteId required for coach view');
+      }
+      await this.assertCoachStudent(userId, athleteId);
+      filter.athleteId = new Types.ObjectId(athleteId);
+      filter.privacy = {
+        $in: [Privacy.PUBLIC, Privacy.FOLLOWERS, Privacy.COACH_ONLY],
+      };
+    } else if (activeRole === Role.ADMIN) {
+      if (query.athleteId) {
+        filter.athleteId = new Types.ObjectId(query.athleteId);
+      }
+    } else {
+      throw new ForbiddenException('Not allowed');
+    }
+
+    const { page, pageSize } = resolvePageSize(query);
+    const [items, total] = await Promise.all([
+      this.personalRecordModel
+        .find(filter)
+        .sort({ achievedAt: -1 })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .lean(),
+      this.personalRecordModel.countDocuments(filter),
+    ]);
+    return paginatedResult(
+      items.map((item) => this.toPersonalRecord(item)),
+      total,
+      page,
+      pageSize,
+    );
+  }
+
+  private async assertCoachStudent(coachId: string, athleteId: string) {
+    const link = await this.coachStudentModel.findOne({
+      coachUserId: new Types.ObjectId(coachId),
+      athleteUserId: new Types.ObjectId(athleteId),
+      status: CoachStudentStatus.ACTIVE,
+    });
+    if (!link) {
+      throw new ForbiddenException('Not an active coach–student relationship');
+    }
+  }
+
+  private toWorkoutLog(doc: {
+    _id: Types.ObjectId;
+    planId: Types.ObjectId;
+    athleteId: Types.ObjectId;
+    sessionIndex: number;
+    sets: {
+      exerciseId: Types.ObjectId;
+      reps: number;
+      weightKg?: number;
+      rpe?: number;
+    }[];
+    status: WorkoutLogStatus;
+    loggedAt: Date;
+    createdAt: Date;
+    updatedAt: Date;
+  }) {
+    return {
+      id: doc._id.toString(),
+      planId: doc.planId.toString(),
+      athleteId: doc.athleteId.toString(),
+      sessionIndex: doc.sessionIndex,
+      sets: doc.sets.map((s) => ({
+        exerciseId: s.exerciseId.toString(),
+        reps: s.reps,
+        weightKg: s.weightKg ?? null,
+        rpe: s.rpe ?? null,
+      })),
+      status: doc.status,
+      loggedAt: doc.loggedAt.toISOString(),
+      createdAt: doc.createdAt.toISOString(),
+      updatedAt: doc.updatedAt.toISOString(),
+    };
+  }
+
+  private toPersonalRecord(doc: {
+    _id: Types.ObjectId;
+    athleteId: Types.ObjectId;
+    metricTypeKey: string;
+    value: number;
+    achievedAt: Date;
+    privacy: Privacy;
+    note?: string;
+    createdAt: Date;
+    updatedAt: Date;
+  }) {
+    return {
+      id: doc._id.toString(),
+      athleteId: doc.athleteId.toString(),
+      metricTypeKey: doc.metricTypeKey,
+      value: doc.value,
+      achievedAt: doc.achievedAt.toISOString(),
+      privacy: doc.privacy,
       note: doc.note ?? null,
       createdAt: doc.createdAt.toISOString(),
       updatedAt: doc.updatedAt.toISOString(),

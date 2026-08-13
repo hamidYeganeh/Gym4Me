@@ -21,6 +21,7 @@ import {
   EntityStatus,
   HealthAssessmentStatus,
   Privacy,
+  Role,
   SessionPackageStatus,
   AnalyticsPeriod,
 } from '../../common/enums';
@@ -41,6 +42,10 @@ import {
   CoachLeadDocument,
 } from '../../schemas/coach-lead.schema';
 import {
+  CoachMessage,
+  CoachMessageDocument,
+} from '../../schemas/coach-message.schema';
+import {
   CoachService,
   CoachServiceDocument,
 } from '../../schemas/coach-service.schema';
@@ -48,6 +53,10 @@ import {
   CoachStudent,
   CoachStudentDocument,
 } from '../../schemas/coach-student.schema';
+import {
+  CoachThread,
+  CoachThreadDocument,
+} from '../../schemas/coach-thread.schema';
 import {
   HealthAssessment,
   HealthAssessmentDocument,
@@ -64,11 +73,16 @@ import {
   CreateSessionPackageDto,
   FreezePackageDto,
   LinkStudentDto,
+  ListCoachMessagesQueryDto,
   ListCoachServicesQueryDto,
+  ListCoachThreadsQueryDto,
   ListLeadsQueryDto,
   ListPackagesQueryDto,
   ListStudentsQueryDto,
+  OpenAthleteThreadDto,
+  OpenCoachThreadDto,
   ReviewHealthAssessmentDto,
+  SendCoachMessageDto,
   UpdateAffiliationDto,
   UpdateCoachServiceDto,
   UpdateLeadDto,
@@ -96,6 +110,10 @@ export class CoachingService {
     private readonly leadModel: Model<CoachLeadDocument>,
     @InjectModel(HealthAssessment.name)
     private readonly healthModel: Model<HealthAssessmentDocument>,
+    @InjectModel(CoachThread.name)
+    private readonly threadModel: Model<CoachThreadDocument>,
+    @InjectModel(CoachMessage.name)
+    private readonly messageModel: Model<CoachMessageDocument>,
     private readonly audit: AuditService,
   ) {}
 
@@ -1452,6 +1470,250 @@ export class CoachingService {
       status: item.status,
       reviewedByCoachUserId: item.reviewedByCoachUserId?.toString() ?? null,
       reviewedAt: item.reviewedAt ?? null,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+    };
+  }
+
+  // ── Direct messaging (N4) ───────────────────────────────────────────────
+
+  async listThreadsForCoach(coachUserId: string, query: ListCoachThreadsQueryDto) {
+    const filter: QueryFilter<CoachThreadDocument> = {
+      coachUserId: this.oid(coachUserId),
+      status: EntityStatus.ACTIVE,
+    };
+    const { page, pageSize } = resolvePageSize(query);
+    const [items, total] = await Promise.all([
+      this.threadModel
+        .find(filter)
+        .sort({ lastMessageAt: -1, updatedAt: -1 })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .lean(),
+      this.threadModel.countDocuments(filter),
+    ]);
+    return paginatedResult(
+      items.map((t) => this.toThread(t)),
+      total,
+      page,
+      pageSize,
+    );
+  }
+
+  async listThreadsForAthlete(
+    athleteUserId: string,
+    query: ListCoachThreadsQueryDto,
+  ) {
+    const filter: QueryFilter<CoachThreadDocument> = {
+      athleteUserId: this.oid(athleteUserId),
+      status: EntityStatus.ACTIVE,
+    };
+    const { page, pageSize } = resolvePageSize(query);
+    const [items, total] = await Promise.all([
+      this.threadModel
+        .find(filter)
+        .sort({ lastMessageAt: -1, updatedAt: -1 })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .lean(),
+      this.threadModel.countDocuments(filter),
+    ]);
+    return paginatedResult(
+      items.map((t) => this.toThread(t)),
+      total,
+      page,
+      pageSize,
+    );
+  }
+
+  async openOrGetThreadAsCoach(
+    coachUserId: string,
+    dto: OpenCoachThreadDto,
+  ) {
+    await this.assertActiveStudentLink(coachUserId, dto.athleteUserId);
+    return this.ensureThread(coachUserId, dto.athleteUserId);
+  }
+
+  async openOrGetThreadAsAthlete(
+    athleteUserId: string,
+    dto: OpenAthleteThreadDto,
+  ) {
+    await this.assertActiveStudentLink(dto.coachUserId, athleteUserId);
+    return this.ensureThread(dto.coachUserId, athleteUserId);
+  }
+
+  async listMessages(
+    threadId: string,
+    userId: string,
+    activeRole: Role,
+    query: ListCoachMessagesQueryDto,
+  ) {
+    const thread = await this.findThreadOrFail(threadId);
+    this.assertThreadParticipant(thread, userId, activeRole);
+    await this.assertActiveStudentLink(
+      thread.coachUserId.toString(),
+      thread.athleteUserId.toString(),
+    );
+
+    const filter: QueryFilter<CoachMessageDocument> = {
+      threadId: thread._id,
+    };
+    const { page, pageSize } = resolvePageSize(query);
+    const [items, total] = await Promise.all([
+      this.messageModel
+        .find(filter)
+        .sort({ sentAt: -1 })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .lean(),
+      this.messageModel.countDocuments(filter),
+    ]);
+    return paginatedResult(
+      items.map((m) => this.toMessage(m)),
+      total,
+      page,
+      pageSize,
+    );
+  }
+
+  async sendMessage(
+    threadId: string,
+    userId: string,
+    activeRole: Role,
+    dto: SendCoachMessageDto,
+    request?: Request,
+  ) {
+    if (activeRole !== Role.COACH && activeRole !== Role.ATHLETE) {
+      throw new ForbiddenException('Only coach or athlete can message');
+    }
+    const thread = await this.findThreadOrFail(threadId);
+    this.assertThreadParticipant(thread, userId, activeRole);
+    await this.assertActiveStudentLink(
+      thread.coachUserId.toString(),
+      thread.athleteUserId.toString(),
+    );
+
+    const now = new Date();
+    const message = await this.messageModel.create({
+      threadId: thread._id,
+      senderUserId: this.oid(userId),
+      senderRole: activeRole,
+      body: dto.body.trim(),
+      sentAt: now,
+    });
+    thread.lastMessageAt = now;
+    await thread.save();
+
+    this.audit.log({
+      action: AuditAction.COACH_MESSAGE_SENT,
+      actorId: userId,
+      metadata: {
+        threadId,
+        messageId: message._id.toString(),
+      },
+      request,
+    });
+
+    return this.toMessage(message.toObject());
+  }
+
+  private async ensureThread(coachUserId: string, athleteUserId: string) {
+    let thread = await this.threadModel.findOne({
+      coachUserId: this.oid(coachUserId),
+      athleteUserId: this.oid(athleteUserId),
+    });
+    if (!thread) {
+      thread = await this.threadModel.create({
+        coachUserId: this.oid(coachUserId),
+        athleteUserId: this.oid(athleteUserId),
+        status: EntityStatus.ACTIVE,
+      });
+    } else if (thread.status !== EntityStatus.ACTIVE) {
+      thread.status = EntityStatus.ACTIVE;
+      await thread.save();
+    }
+    return this.toThread(thread.toObject());
+  }
+
+  private async assertActiveStudentLink(
+    coachUserId: string,
+    athleteUserId: string,
+  ) {
+    const link = await this.studentModel.findOne({
+      coachUserId: this.oid(coachUserId),
+      athleteUserId: this.oid(athleteUserId),
+      status: CoachStudentStatus.ACTIVE,
+    });
+    if (!link) {
+      throw new ForbiddenException(
+        'Messaging requires an active coach–student relationship',
+      );
+    }
+  }
+
+  private async findThreadOrFail(threadId: string) {
+    if (!Types.ObjectId.isValid(threadId)) {
+      throw new NotFoundException('Thread not found');
+    }
+    const thread = await this.threadModel.findById(threadId);
+    if (!thread) throw new NotFoundException('Thread not found');
+    return thread;
+  }
+
+  private assertThreadParticipant(
+    thread: CoachThreadDocument,
+    userId: string,
+    activeRole: Role,
+  ) {
+    if (activeRole === Role.COACH && thread.coachUserId.toString() === userId) {
+      return;
+    }
+    if (
+      activeRole === Role.ATHLETE &&
+      thread.athleteUserId.toString() === userId
+    ) {
+      return;
+    }
+    throw new ForbiddenException('Not a participant of this thread');
+  }
+
+  private toThread(item: {
+    _id: Types.ObjectId;
+    coachUserId: Types.ObjectId;
+    athleteUserId: Types.ObjectId;
+    status: string;
+    lastMessageAt?: Date;
+    createdAt: Date;
+    updatedAt: Date;
+  }) {
+    return {
+      id: item._id.toString(),
+      coachUserId: item.coachUserId.toString(),
+      athleteUserId: item.athleteUserId.toString(),
+      status: item.status,
+      lastMessageAt: item.lastMessageAt?.toISOString() ?? null,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+    };
+  }
+
+  private toMessage(item: {
+    _id: Types.ObjectId;
+    threadId: Types.ObjectId;
+    senderUserId: Types.ObjectId;
+    senderRole: string;
+    body: string;
+    sentAt: Date;
+    createdAt: Date;
+    updatedAt: Date;
+  }) {
+    return {
+      id: item._id.toString(),
+      threadId: item.threadId.toString(),
+      senderUserId: item.senderUserId.toString(),
+      senderRole: item.senderRole,
+      body: item.body,
+      sentAt: item.sentAt.toISOString(),
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
     };

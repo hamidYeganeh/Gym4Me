@@ -77,13 +77,11 @@ export function useDiscoveryCoachDetail(
         });
       } catch (error) {
         if (cancelled) return;
-        const fallback = getCoachDetail(coachId) ?? null;
         setState({
-          coach: fallback,
+          coach: null,
           isLoading: false,
-          isError:
-            !(error instanceof ApiError && error.status === 404) && !fallback,
-          source: fallback ? "mock" : "api",
+          isError: !(error instanceof ApiError && error.status === 404),
+          source: "api",
         });
       }
     })();

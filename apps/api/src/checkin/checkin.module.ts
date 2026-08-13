@@ -1,22 +1,44 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { MembershipsModule } from '../account/memberships/memberships.module';
 import { StaffModule } from '../account/staff/staff.module';
+import { StaffPermissionGuard } from '../common/guards/staff-permission.guard';
 import { Booking, BookingSchema } from '../schemas/booking.schema';
 import { CheckIn, CheckInSchema } from '../schemas/check-in.schema';
+import {
+  CheckinDevice,
+  CheckinDeviceSchema,
+} from '../schemas/checkin-device.schema';
+import {
+  ClubMembership,
+  ClubMembershipSchema,
+} from '../schemas/club-membership.schema';
 import { AthleteCheckinController } from './athlete-checkin.controller';
 import { CheckinService } from './checkin.service';
-import { ClubCheckinController } from './club-checkin.controller';
+import {
+  ClubCheckinController,
+  ClubCheckinDevicesController,
+  HardwareCheckinController,
+} from './club-checkin.controller';
 
 @Module({
   imports: [
     StaffModule,
+    MembershipsModule,
     MongooseModule.forFeature([
       { name: CheckIn.name, schema: CheckInSchema },
+      { name: CheckinDevice.name, schema: CheckinDeviceSchema },
       { name: Booking.name, schema: BookingSchema },
+      { name: ClubMembership.name, schema: ClubMembershipSchema },
     ]),
   ],
-  controllers: [ClubCheckinController, AthleteCheckinController],
-  providers: [CheckinService],
+  controllers: [
+    ClubCheckinController,
+    ClubCheckinDevicesController,
+    HardwareCheckinController,
+    AthleteCheckinController,
+  ],
+  providers: [CheckinService, StaffPermissionGuard],
   exports: [CheckinService],
 })
 export class CheckinModule {}

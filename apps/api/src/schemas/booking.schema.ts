@@ -127,6 +127,10 @@ export class Booking {
   @Prop({ required: true, unique: true, trim: true })
   code!: string;
 
+  /** Client retry key, scoped to the athlete by a partial unique index. */
+  @Prop({ trim: true, maxlength: 240 })
+  idempotencyKey?: string;
+
   @Prop({ type: Types.ObjectId, ref: User.name, required: true, index: true })
   athleteId!: Types.ObjectId;
 
@@ -185,6 +189,14 @@ export class Booking {
   })
   status!: BookingStatus;
 
+  /** When AWAITING_PAYMENT must auto-cancel and release capacity (SYS-D13). */
+  @Prop({ index: true })
+  paymentExpiresAt?: Date;
+
+  /** Coach request decision deadline for PENDING consultations. */
+  @Prop({ index: true })
+  approvalExpiresAt?: Date;
+
   @Prop({ type: BookingCancellationSchema })
   cancellation?: BookingCancellation;
 
@@ -201,6 +213,22 @@ BookingSchema.index({ athleteId: 1, status: 1, startsAt: -1 });
 BookingSchema.index({ coachUserId: 1, startsAt: -1 });
 BookingSchema.index({ clubId: 1, startsAt: -1 });
 BookingSchema.index({ 'resource.refId': 1, 'occurrence.date': 1, status: 1 });
+BookingSchema.index(
+  { athleteId: 1, idempotencyKey: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { idempotencyKey: { $type: 'string' } },
+  },
+);
+BookingSchema.index(
+  { status: 1, paymentExpiresAt: 1 },
+  {
+    partialFilterExpression: {
+      status: BookingStatus.AWAITING_PAYMENT,
+      paymentExpiresAt: { $exists: true },
+    },
+  },
+);
 BookingSchema.index(
   { slotId: 1 },
   {

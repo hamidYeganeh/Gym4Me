@@ -1,0 +1,89 @@
+"use client";
+
+import { useState } from "react";
+import {
+  Button,
+  Label,
+  TextArea,
+  TextField,
+  Typography,
+} from "@heroui/react";
+import { ChevronLeft } from "@repo/icons/ChevronLeft";
+import { AppLayout } from "@repo/ui/layout/AppLayout";
+import { Header } from "@repo/ui/layout/Header";
+import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { athleteSocialCreateScreenVariants } from "./AthleteSocialCreateScreen.styles";
+import type { AthleteSocialCreateScreenProps } from "./AthleteSocialCreateScreen.types";
+
+export function AthleteSocialCreateScreen({
+  pending = false,
+  error = false,
+  onSubmit,
+  className,
+}: AthleteSocialCreateScreenProps) {
+  const t = useTranslations("AthleteSocial");
+  const styles = athleteSocialCreateScreenVariants();
+  const router = useRouter();
+  const [body, setBody] = useState("");
+
+  return (
+    <AppLayout
+      className={styles.root({ className })}
+      header={
+        <Header
+          startContent={
+            <Button
+              aria-label={t("back")}
+              isIconOnly
+              onPress={() => router.back()}
+              size="lg"
+              variant="ghost"
+            >
+              <ChevronLeft className="text-foreground" size={22} />
+            </Button>
+          }
+        />
+      }
+    >
+      <div className={styles.content()}>
+        <section className={styles.intro()}>
+          <Typography className={styles.introTitle()} type="h1" weight="bold">
+            {t("createTitle")}
+          </Typography>
+          <Typography className={styles.introSubtitle()} type="body">
+            {t("createSubtitle")}
+          </Typography>
+        </section>
+
+        <div className={styles.form()}>
+          <TextField>
+            <Label>{t("bodyLabel")}</Label>
+            <TextArea
+              onChange={(event) => setBody(event.target.value)}
+              placeholder={t("bodyPlaceholder")}
+              rows={6}
+              value={body}
+            />
+          </TextField>
+          <Typography className={styles.hint()} type="body-sm">
+            {t("mediaHint")}
+          </Typography>
+          {error ? (
+            <Typography className={styles.error()} type="body-sm">
+              {t("createError")}
+            </Typography>
+          ) : null}
+          <Button
+            fullWidth
+            isDisabled={pending || body.trim().length === 0}
+            onPress={() => void onSubmit(body)}
+            variant="primary"
+          >
+            {t("publish")}
+          </Button>
+        </div>
+      </div>
+    </AppLayout>
+  );
+}

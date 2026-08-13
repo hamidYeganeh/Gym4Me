@@ -91,6 +91,19 @@ docker compose --env-file .env.production \
   -f docker-compose.production.yml ps
 ```
 
+### Optional: seed demo data
+
+Idempotent catalog + demo graph (users, clubs, memberships, bookings, wallets…).
+Run from a machine that can reach Mongo with the API workspace checked out:
+
+```bash
+# Requires MONGODB_URI pointing at the target DB
+ALLOW_DEMO_SEED=true npm run db:seed:all -w api
+```
+
+Demo password defaults to `Gym4Me!123` (override with `SEED_DEMO_PASSWORD`).
+Production refuses the seed unless `ALLOW_DEMO_SEED=true`.
+
 Check the deployment (from the VPS, Host header required for subdomain routing):
 
 ```bash

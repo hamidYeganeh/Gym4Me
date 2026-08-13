@@ -18,14 +18,17 @@ import {
   CloseCashShiftDto,
   CreateDebtDto,
   CreatePayoutDto,
+  DraftPeriodPayoutDto,
   AnalyticsPeriodQueryDto,
   ListCompensationRulesQueryDto,
   ListDebtsQueryDto,
   ListPaymentsQueryDto,
   ListPayoutsQueryDto,
+  OpenPayoutDisputeDto,
   PaginationQueryDto,
   RecordDebtPaymentDto,
   RecordManualPaymentDto,
+  ResolvePayoutDisputeDto,
   UpsertCompensationRuleDto,
 } from './dto/finance.dto';
 import { FinanceService } from './finance.service';
@@ -161,6 +164,55 @@ export class OwnerFinanceController {
   ) {
     await this.finance.requireOwnedClub(userId, clubId);
     return this.finance.createPayout(clubId, dto, userId, request);
+  }
+
+  @Post('payouts/draft-period')
+  @ApiOperation({
+    summary: 'Draft payout from ledger provider_payable for a period',
+  })
+  async draftPeriodPayout(
+    @CurrentUser('sub') userId: string,
+    @Param('clubId') clubId: string,
+    @Body() dto: DraftPeriodPayoutDto,
+    @Req() request: Request,
+  ) {
+    await this.finance.requireOwnedClub(userId, clubId);
+    return this.finance.draftPeriodPayout(clubId, dto, userId, request);
+  }
+
+  @Post('payouts/:id/dispute')
+  @ApiOperation({ summary: 'Open a payout dispute' })
+  async openDispute(
+    @CurrentUser('sub') userId: string,
+    @Param('clubId') clubId: string,
+    @Param('id') id: string,
+    @Body() dto: OpenPayoutDisputeDto,
+    @Req() request: Request,
+  ) {
+    await this.finance.requireOwnedClub(userId, clubId);
+    return this.finance.openPayoutDispute(id, dto.reason, userId, request);
+  }
+
+  @Post('payouts/:id/dispute/resolve')
+  @ApiOperation({ summary: 'Resolve dispute with reverse ledger entries' })
+  async resolveDispute(
+    @CurrentUser('sub') userId: string,
+    @Param('clubId') clubId: string,
+    @Param('id') id: string,
+    @Body() dto: ResolvePayoutDisputeDto,
+    @Req() request: Request,
+  ) {
+    await this.finance.requireOwnedClub(userId, clubId);
+    return this.finance.resolvePayoutDispute(
+      id,
+      {
+        resolution: dto.resolution,
+        note: dto.note,
+        reverseSettledAmount: dto.reverseSettledAmount,
+      },
+      userId,
+      request,
+    );
   }
 
   // ── Debts ───────────────────────────────────────────────────────────────

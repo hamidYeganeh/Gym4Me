@@ -10,7 +10,8 @@ import {
   WeightScale,
 } from "@repo/icons";
 
-export const WELCOME_INTRODUCE_SLIDE_COUNT = 6;
+/** Introduce carousel slides (hero Get Started lives on `/welcome`). */
+export const WELCOME_INTRODUCE_SLIDE_COUNT = 11;
 
 export const WELCOME_INTRODUCE_ACHIEVEMENT_CARDS = [
   {
@@ -80,6 +81,16 @@ export const WELCOME_INTRODUCE_METRIC_CARDS = [
 
 export const WELCOME_INTRODUCE_WORKOUT_CARDS = [
   {
+    id: "jogging",
+    categoryTone: "accent" as const,
+    categoryKey: "workouts.cards.jogging.category",
+    titleKey: "workouts.cards.jogging.title",
+    coachKey: "workouts.cards.jogging.coach",
+    duration: "45",
+    rating: "4.6",
+    calories: "320",
+  },
+  {
     id: "backAbs",
     categoryTone: "blue" as const,
     categoryKey: "workouts.cards.backAbs.category",
@@ -90,21 +101,11 @@ export const WELCOME_INTRODUCE_WORKOUT_CARDS = [
     calories: "241",
   },
   {
-    id: "hiit",
-    categoryTone: "accent" as const,
-    categoryKey: "workouts.cards.hiit.category",
-    titleKey: "workouts.cards.hiit.title",
-    coachKey: "workouts.cards.hiit.coach",
-    duration: "35",
-    rating: "4.7",
-    calories: "310",
-  },
-  {
-    id: "mobility",
+    id: "yoga",
     categoryTone: "purple" as const,
-    categoryKey: "workouts.cards.mobility.category",
-    titleKey: "workouts.cards.mobility.title",
-    coachKey: "workouts.cards.mobility.coach",
+    categoryKey: "workouts.cards.yoga.category",
+    titleKey: "workouts.cards.yoga.title",
+    coachKey: "workouts.cards.yoga.coach",
     duration: "40",
     rating: "4.5",
     calories: "180",
@@ -118,7 +119,8 @@ export const WELCOME_INTRODUCE_ACTIVITY_CARDS = [
     toneKey: "activities.toneLight",
     icon: PersonBiking,
     tone: "light" as const,
-    rotate: 8,
+    /** Top-left card — slight CCW tilt (Sandow activities frame). */
+    rotate: -12,
     slot: "cycling" as const,
     float: { y: [0, -8, 0] as number[], duration: 4.4, delay: 0.55 },
   },
@@ -128,7 +130,8 @@ export const WELCOME_INTRODUCE_ACTIVITY_CARDS = [
     toneKey: "activities.toneCalm",
     icon: PersonKarate,
     tone: "calm" as const,
-    rotate: -10,
+    /** Bottom-left — CW tilt. */
+    rotate: 12,
     slot: "kickboxing" as const,
     float: { y: [0, -6, 0] as number[], duration: 5.1, delay: 0.85 },
   },
@@ -138,7 +141,8 @@ export const WELCOME_INTRODUCE_ACTIVITY_CARDS = [
     toneKey: "activities.toneIntense",
     icon: PersonSwimming,
     tone: "intense" as const,
-    rotate: 6,
+    /** Bottom-right — mild CCW tilt. */
+    rotate: -8,
     slot: "swimming" as const,
     float: { y: [0, -9, 0] as number[], duration: 4.7, delay: 0.7 },
   },

@@ -6,6 +6,7 @@ import {
   Calendar2,
   CalendarCheck,
   ChartTrendUp,
+  Chat,
   House1,
   Note1,
   User,
@@ -199,6 +200,15 @@ export function CoachHomeScreen() {
             onAction={() => router.push("/coach/earnings")}
             subtitle={t("earningsLinkDescription")}
             title={t("earningsLink")}
+            variant="outlined"
+          />
+          <CallToActionCard
+            actionLabel={t("messagesLink")}
+            actionType="icon"
+            icon={<Chat size={28} />}
+            onAction={() => router.push("/coach/messages")}
+            subtitle={t("messagesLinkDescription")}
+            title={t("messagesLink")}
             variant="outlined"
           />
           <CallToActionCard

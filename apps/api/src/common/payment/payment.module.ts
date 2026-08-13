@@ -30,6 +30,12 @@ import { ZarinpalPaymentGatewayService } from './zarinpal.service';
         if (provider === 'zarinpal') {
           return new ZarinpalPaymentGatewayService(config);
         }
+        const isProduction =
+          (config.get<string>('NODE_ENV', 'development') ?? 'development') ===
+          'production';
+        if (provider !== 'mock' || isProduction) {
+          throw new Error(`Unsupported PAYMENT_PROVIDER=${provider}`);
+        }
         return mock;
       },
     },

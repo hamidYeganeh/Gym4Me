@@ -1,5 +1,8 @@
 import { Type } from 'class-transformer';
 import {
+  ArrayMinSize,
+  IsArray,
+  IsBoolean,
   IsDateString,
   IsEnum,
   IsInt,
@@ -22,6 +25,7 @@ import {
   PaymentChannel,
   PaymentPurpose,
   PaymentStatus,
+  PayoutDisputeStatus,
   PayoutRecipientType,
   PayoutStatus,
   WalletOwnerType,
@@ -156,6 +160,21 @@ export class PaymentReferenceDto {
   externalRef?: string;
 }
 
+export class PaymentTenderDto {
+  @IsEnum(PaymentChannel)
+  channel!: PaymentChannel;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  amount!: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  externalRef?: string;
+}
+
 // ── Payments ──────────────────────────────────────────────────────────────
 
 export class RecordPaymentDto {
@@ -180,6 +199,13 @@ export class RecordPaymentDto {
   @ValidateNested()
   @Type(() => PaymentPayerDto)
   payer!: PaymentPayerDto;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(2)
+  @ValidateNested({ each: true })
+  @Type(() => PaymentTenderDto)
+  tenders?: PaymentTenderDto[];
 
   @IsOptional()
   @ValidateNested()
@@ -221,6 +247,13 @@ export class RecordManualPaymentDto {
   @ValidateNested()
   @Type(() => PaymentPayerDto)
   payer!: PaymentPayerDto;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(2)
+  @ValidateNested({ each: true })
+  @Type(() => PaymentTenderDto)
+  tenders?: PaymentTenderDto[];
 
   @IsOptional()
   @ValidateNested()
@@ -411,6 +444,46 @@ export class SettlePayoutDto {
   note?: string;
 }
 
+export class DraftPeriodPayoutDto {
+  @IsEnum(PayoutRecipientType)
+  recipientType!: PayoutRecipientType;
+
+  @IsMongoId()
+  recipientId!: string;
+
+  @IsDateString()
+  periodFrom!: string;
+
+  @IsDateString()
+  periodTo!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  note?: string;
+}
+
+export class OpenPayoutDisputeDto {
+  @IsString()
+  @MinLength(3)
+  @MaxLength(1000)
+  reason!: string;
+}
+
+export class ResolvePayoutDisputeDto {
+  @IsEnum(PayoutDisputeStatus)
+  resolution!: PayoutDisputeStatus.RESOLVED | PayoutDisputeStatus.REJECTED;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  note?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  reverseSettledAmount?: boolean;
+}
+
 // ── Compensation ──────────────────────────────────────────────────────────
 
 export class UpsertCompensationRuleDto {
@@ -463,6 +536,10 @@ export class CreateDebtDto {
   @ValidateNested()
   @Type(() => PaymentPayerDto)
   holder!: PaymentPayerDto;
+
+  @IsOptional()
+  @IsMongoId()
+  membershipId?: string;
 
   @Type(() => Number)
   @IsInt()

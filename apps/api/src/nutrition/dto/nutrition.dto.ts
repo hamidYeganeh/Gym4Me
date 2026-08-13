@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsDateString,
   IsEnum,
   IsInt,
   IsMongoId,
@@ -13,7 +14,12 @@ import {
   MinLength,
   ValidateNested,
 } from 'class-validator';
-import { MealPlanStatus, Privacy } from '../../common/enums';
+import {
+  FoodItemStatus,
+  MealAdherenceStatus,
+  MealPlanStatus,
+  Privacy,
+} from '../../common/enums';
 
 export class PaginationQueryDto {
   @IsOptional()
@@ -59,6 +65,10 @@ export class MealPlanItemDto {
   @IsNumber()
   @Min(0)
   fatG?: number;
+
+  @IsOptional()
+  @IsMongoId()
+  foodItemId?: string;
 }
 
 export class MealPlanMealDto {
@@ -141,4 +151,137 @@ export class ListMealPlansQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsMongoId()
   athleteUserId?: string;
+}
+
+// ── Food bank ─────────────────────────────────────────────────────────────
+
+export class FoodItemMacrosDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  calories?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  proteinG?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  carbsG?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  fatG?: number;
+}
+
+export class CreateFoodItemDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(200)
+  name!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  categoryKey?: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => FoodItemMacrosDto)
+  macros?: FoodItemMacrosDto;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  servingLabel?: string;
+
+  @IsOptional()
+  @IsEnum(FoodItemStatus)
+  status?: FoodItemStatus;
+}
+
+export class UpdateFoodItemDto {
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(200)
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  categoryKey?: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => FoodItemMacrosDto)
+  macros?: FoodItemMacrosDto;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  servingLabel?: string;
+
+  @IsOptional()
+  @IsEnum(FoodItemStatus)
+  status?: FoodItemStatus;
+}
+
+export class ListFoodItemsQueryDto extends PaginationQueryDto {
+  @IsOptional()
+  @IsEnum(FoodItemStatus)
+  status?: FoodItemStatus;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  search?: string;
+}
+
+// ── Meal adherence ────────────────────────────────────────────────────────
+
+export class MealAdherenceSlotDto {
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  dayIndex!: number;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  mealIndex!: number;
+}
+
+export class CreateMealAdherenceDto {
+  @IsMongoId()
+  mealPlanId!: string;
+
+  @ValidateNested()
+  @Type(() => MealAdherenceSlotDto)
+  slot!: MealAdherenceSlotDto;
+
+  @IsEnum(MealAdherenceStatus)
+  status!: MealAdherenceStatus;
+
+  @IsOptional()
+  @IsDateString()
+  loggedAt?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  note?: string;
+}
+
+export class ListMealAdherenceQueryDto extends PaginationQueryDto {
+  @IsOptional()
+  @IsMongoId()
+  mealPlanId?: string;
 }

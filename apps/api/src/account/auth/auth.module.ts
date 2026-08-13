@@ -4,6 +4,10 @@ import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
 import {
+  ImpersonationSession,
+  ImpersonationSessionSchema,
+} from '../../schemas/impersonation-session.schema';
+import {
   RefreshToken,
   RefreshTokenSchema,
 } from '../../schemas/refresh-token.schema';
@@ -29,6 +33,7 @@ import { TokenService } from './token.service';
     }),
     MongooseModule.forFeature([
       { name: RefreshToken.name, schema: RefreshTokenSchema },
+      { name: ImpersonationSession.name, schema: ImpersonationSessionSchema },
     ]),
     UsersModule,
   ],

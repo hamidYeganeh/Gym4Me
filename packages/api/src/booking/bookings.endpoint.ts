@@ -5,6 +5,8 @@ export const accountBookingsEndpoints = {
   seriesCancel: (groupId: string) =>
     `/account/bookings/series/${groupId}/cancel`,
   byId: (id: string) => `/account/bookings/${id}`,
+  cancellationPreview: (id: string) =>
+    `/account/bookings/${id}/cancellation-preview`,
   pay: (id: string) => `/account/bookings/${id}/pay`,
   payVerify: (id: string) => `/account/bookings/${id}/pay/verify`,
   reschedule: (id: string) => `/account/bookings/${id}/reschedule`,

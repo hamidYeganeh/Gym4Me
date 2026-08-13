@@ -19,14 +19,24 @@ export function CoachCalendarDailyScreen({
   days,
   slots,
   workouts: initialWorkouts,
+  workoutsByDayId,
   defaultDayId,
 }: CoachCalendarDailyScreenProps) {
   const t = useTranslations("CoachCalendarDaily");
   const router = useRouter();
   const [selectedDayId, setSelectedDayId] = useState(defaultDayId);
-  const [workouts, setWorkouts] =
-    useState<CoachCalendarDailyWorkout[]>(initialWorkouts);
+  const [workouts, setWorkouts] = useState<CoachCalendarDailyWorkout[]>(
+    () => workoutsByDayId?.[defaultDayId] ?? initialWorkouts,
+  );
   const [openWorkoutId, setOpenWorkoutId] = useState<string | null>(null);
+
+  const selectDay = (dayId: string) => {
+    setSelectedDayId(dayId);
+    setOpenWorkoutId(null);
+    if (workoutsByDayId) {
+      setWorkouts(workoutsByDayId[dayId] ?? []);
+    }
+  };
 
   return (
     <AppLayout
@@ -70,7 +80,7 @@ export function CoachCalendarDailyScreen({
             fri: t("dayFri"),
           }}
           days={days}
-          onSelectDay={setSelectedDayId}
+          onSelectDay={selectDay}
           selectedDayId={selectedDayId}
         />
 

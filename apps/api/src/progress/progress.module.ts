@@ -1,10 +1,18 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import {
+  CoachStudent,
+  CoachStudentSchema,
+} from '../schemas/coach-student.schema';
 import { Exercise, ExerciseSchema } from '../schemas/exercise.schema';
 import {
   MetricType,
   MetricTypeSchema,
 } from '../schemas/metric-type.schema';
+import {
+  PersonalRecord,
+  PersonalRecordSchema,
+} from '../schemas/personal-record.schema';
 import {
   ProgressMetric,
   ProgressMetricSchema,
@@ -13,6 +21,10 @@ import {
   ProgressPhoto,
   ProgressPhotoSchema,
 } from '../schemas/progress-photo.schema';
+import {
+  WorkoutLog,
+  WorkoutLogSchema,
+} from '../schemas/workout-log.schema';
 import {
   WorkoutPlan,
   WorkoutPlanSchema,
@@ -37,6 +49,9 @@ import { ProgressService } from './progress.service';
       { name: ProgressMetric.name, schema: ProgressMetricSchema },
       { name: ProgressPhoto.name, schema: ProgressPhotoSchema },
       { name: MetricType.name, schema: MetricTypeSchema },
+      { name: WorkoutLog.name, schema: WorkoutLogSchema },
+      { name: PersonalRecord.name, schema: PersonalRecordSchema },
+      { name: CoachStudent.name, schema: CoachStudentSchema },
     ]),
   ],
   controllers: [

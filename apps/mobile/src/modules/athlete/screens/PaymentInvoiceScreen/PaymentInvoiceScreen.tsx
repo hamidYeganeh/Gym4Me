@@ -21,6 +21,10 @@ const METHOD_ICON_SIZE = 22;
 export function PaymentInvoiceScreen({
   invoice,
   walletBalanceLabel,
+  alreadyPaid = false,
+  pending = false,
+  onPay,
+  onPaidContinue,
 }: PaymentInvoiceScreenProps) {
   const t = useTranslations("Payment");
   const router = useRouter();
@@ -93,6 +97,11 @@ export function PaymentInvoiceScreen({
           <Typography className={styles.introSubtitle} type="body">
             {invoice.title} — {invoice.clubName}
           </Typography>
+          {alreadyPaid ? (
+            <Typography className="mt-2 text-success" type="body-sm">
+              {t("alreadyPaid")}
+            </Typography>
+          ) : null}
         </section>
 
         <section className={styles.section}>
@@ -164,69 +173,83 @@ export function PaymentInvoiceScreen({
           </div>
         </section>
 
-        <section className={styles.section}>
-          <Typography className={styles.sectionTitle} type="body-sm">
-            {t("methodTitle")}
-          </Typography>
-          <div className={styles.methods}>
-            {methods.map((method) => {
-              const isSelected = selectedMethod === method.id;
+        {!alreadyPaid ? (
+          <section className={styles.section}>
+            <Typography className={styles.sectionTitle} type="body-sm">
+              {t("methodTitle")}
+            </Typography>
+            <div className={styles.methods}>
+              {methods.map((method) => {
+                const isSelected = selectedMethod === method.id;
 
-              return (
-                <Button
-                  className={`${styles.methodCard} ${
-                    isSelected ? styles.methodCardSelected : ""
-                  }`}
-                  key={method.id}
-                  onPress={() => setSelectedMethod(method.id)}
-                  size="lg"
-                  variant="ghost"
-                >
-                  <span aria-hidden className={styles.methodIcon}>
-                    {method.icon}
-                  </span>
-                  <span className={styles.methodBody}>
-                    <Typography
-                      className={styles.methodTitle}
-                      type="body"
-                      weight="semibold"
-                    >
-                      {method.title}
-                    </Typography>
-                    <Typography className={styles.methodHint} type="body-sm">
-                      {method.hint}
-                    </Typography>
-                  </span>
-                  <span
-                    aria-hidden
-                    className={`${styles.methodRadio} ${
-                      isSelected ? styles.methodRadioSelected : ""
+                return (
+                  <Button
+                    className={`${styles.methodCard} ${
+                      isSelected ? styles.methodCardSelected : ""
                     }`}
+                    key={method.id}
+                    onPress={() => setSelectedMethod(method.id)}
+                    size="lg"
+                    variant="ghost"
                   >
-                    {isSelected ? (
-                      <span className={styles.methodRadioDot} />
-                    ) : null}
-                  </span>
-                </Button>
-              );
-            })}
-          </div>
-        </section>
-
+                    <span aria-hidden className={styles.methodIcon}>
+                      {method.icon}
+                    </span>
+                    <span className={styles.methodBody}>
+                      <Typography
+                        className={styles.methodTitle}
+                        type="body"
+                        weight="semibold"
+                      >
+                        {method.title}
+                      </Typography>
+                      <Typography className={styles.methodHint} type="body-sm">
+                        {method.hint}
+                      </Typography>
+                    </span>
+                    <span
+                      aria-hidden
+                      className={`${styles.methodRadio} ${
+                        isSelected ? styles.methodRadioSelected : ""
+                      }`}
+                    >
+                      {isSelected ? (
+                        <span className={styles.methodRadioDot} />
+                      ) : null}
+                    </span>
+                  </Button>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
       </div>
 
       <StickyBottomActions>
         <Button
           className={styles.payCta}
-          onPress={() =>
+          isDisabled={pending}
+          onPress={() => {
+            if (alreadyPaid) {
+              if (onPaidContinue) {
+                onPaidContinue();
+                return;
+              }
+              router.push("/athlete/memberships");
+              return;
+            }
+            if (onPay) {
+              onPay(selectedMethod);
+              return;
+            }
             router.push(
               `/athlete/payment/result?status=success&invoice=${invoice.id}`,
-            )
-          }
+            );
+          }}
           size="lg"
           variant="primary"
         >
-          {t("payCta")}
+          {alreadyPaid ? t("paidCta") : t("payCta")}
         </Button>
       </StickyBottomActions>
     </AppLayout>

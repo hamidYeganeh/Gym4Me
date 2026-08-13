@@ -14,8 +14,10 @@ import {
 import type {
   ListNotificationsQuery,
   NotificationInbox,
+  NotificationPreferences,
   RegisterDeviceInput,
   RegisterDeviceResult,
+  UpdateNotificationPreferencesInput,
 } from "./notifications.dto";
 import { accountNotificationsKeys } from "./notifications.keys";
 
@@ -69,6 +71,42 @@ export function useMarkAllNotificationsRead(
     onSuccess: (data, vars, onMutateResult, context) => {
       void queryClient.invalidateQueries({
         queryKey: accountNotificationsKeys.all,
+      });
+      onSuccess?.(data, vars, onMutateResult, context);
+    },
+  });
+}
+
+export function useNotificationPreferences(
+  options?: Omit<
+    UseQueryOptions<NotificationPreferences, Error>,
+    "queryKey" | "queryFn"
+  >,
+) {
+  const api = useAccountNotificationsApi();
+  return useQuery({
+    queryKey: accountNotificationsKeys.preferences(),
+    queryFn: () => api.getPreferences(),
+    ...options,
+  });
+}
+
+export function useUpdateNotificationPreferences(
+  options?: UseMutationOptions<
+    NotificationPreferences,
+    Error,
+    UpdateNotificationPreferencesInput
+  >,
+) {
+  const api = useAccountNotificationsApi();
+  const queryClient = useQueryClient();
+  const { onSuccess, ...rest } = options ?? {};
+  return useMutation({
+    ...rest,
+    mutationFn: (input) => api.updatePreferences(input),
+    onSuccess: (data, vars, onMutateResult, context) => {
+      void queryClient.invalidateQueries({
+        queryKey: accountNotificationsKeys.preferences(),
       });
       onSuccess?.(data, vars, onMutateResult, context);
     },

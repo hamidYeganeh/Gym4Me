@@ -12,7 +12,13 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
-import { Privacy, SocialPostStatus } from '../../common/enums';
+import {
+  Privacy,
+  SocialFolloweeKind,
+  SocialPostStatus,
+  SocialReportStatus,
+  SocialReportTargetKind,
+} from '../../common/enums';
 
 export class PaginationQueryDto {
   @IsOptional()
@@ -84,3 +90,46 @@ export class CreateSocialCommentDto {
 }
 
 export class ListSocialCommentsQueryDto extends PaginationQueryDto {}
+
+export class FollowInputDto {
+  @IsMongoId()
+  followeeId!: string;
+
+  @IsEnum(SocialFolloweeKind)
+  followeeKind!: SocialFolloweeKind;
+}
+
+export class ListSocialFollowsQueryDto extends PaginationQueryDto {
+  @IsOptional()
+  @IsEnum(SocialFolloweeKind)
+  followeeKind?: SocialFolloweeKind;
+}
+
+export class CreateSocialReportDto {
+  @IsEnum(SocialReportTargetKind)
+  targetKind!: SocialReportTargetKind;
+
+  @IsMongoId()
+  targetId!: string;
+
+  @IsString()
+  @MinLength(3)
+  @MaxLength(1000)
+  reason!: string;
+}
+
+export class ListSocialReportsQueryDto extends PaginationQueryDto {
+  @IsOptional()
+  @IsEnum(SocialReportStatus)
+  status?: SocialReportStatus;
+}
+
+export class ResolveSocialReportDto {
+  @IsEnum(SocialReportStatus)
+  status!: SocialReportStatus.RESOLVED | SocialReportStatus.REJECTED;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  note?: string;
+}

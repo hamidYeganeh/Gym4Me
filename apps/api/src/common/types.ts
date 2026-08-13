@@ -7,6 +7,8 @@ export interface JwtUser {
   roles: Role[];
   /** Role used for authorization on this session. */
   activeRole: Role;
+  /** Present when an admin is acting as this user (M5). */
+  impersonation?: { sessionId: string; adminId: string };
 }
 
 export interface PasswordResetTokenPayload {

@@ -25,6 +25,7 @@ function mapEngagement(
 function mapStudent(student: CoachStudent): CoachClient {
   return {
     id: student.id,
+    athleteUserId: student.athleteUserId,
     name: student.athleteUserId.slice(-6),
     avatar: PLACEHOLDER_IMAGE,
     goalLabel: student.coaching.goalKey ?? "—",

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { NotificationSettingsScreen } from "@/modules/account/screens/NotificationSettingsScreen";
+import { NotificationSettingsGate } from "@/modules/account/lib/NotificationSettingsGate";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Mobile.NotificationSettings");
@@ -8,5 +8,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function Page() {
-  return <NotificationSettingsScreen roleSegment="athlete" />;
+  return <NotificationSettingsGate roleSegment="athlete" />;
 }

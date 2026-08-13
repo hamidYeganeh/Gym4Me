@@ -7,4 +7,6 @@ export type AthleteWalletScreenProps = {
   incomeSeries: number[];
   spendSeries: number[];
   transactionGroups: WalletTransactionGroup[];
+  topUpPending?: boolean;
+  onTopUp?: () => void;
 };

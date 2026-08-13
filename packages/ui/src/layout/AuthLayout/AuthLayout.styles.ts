@@ -61,19 +61,27 @@ export const authLayoutVariants = tv({
           "bg-[radial-gradient(140%_50%_at_50%_100%,black_0%,transparent_60%)]",
       },
       hero: {
-        shell: "bg-background",
+        /** Welcome hero — black stage; photo only in upper band. */
+        shell: "bg-black text-white",
         brand: "mb-1",
-        header: "mb-6",
-        brandName: "text-foreground",
-        title: "text-foreground",
-        subtitle: "text-muted",
-        spacer: "min-h-16 flex-1",
-        body: "text-white",
-        footer: "text-white/80",
+        header:
+          "mb-6 max-w-none self-stretch items-center gap-4 text-center",
+        brandName: "text-white",
+        title:
+          "max-w-[21.5rem] text-balance text-center text-[2rem] leading-[1.2] font-bold tracking-tight text-white",
+        subtitle:
+          "max-w-[21.5rem] text-pretty text-center text-[0.9375rem] leading-[1.4] text-white/70",
+        spacer: "min-h-[48dvh] flex-[1.35]",
+        body: "gap-0 text-white",
+        formSlot: "gap-0",
+        footer: "pt-5 text-center text-[0.875rem] text-white/70",
+        media: "pointer-events-none absolute inset-x-0 top-0 h-[58dvh]",
         mediaOverlay:
-          "bg-[linear-gradient(to_bottom,var(--background)_0%,var(--background)_14%,color-mix(in_oklch,var(--background)_72%,transparent)_34%,color-mix(in_oklch,black_45%,transparent)_58%,black_84%)]",
-        mediaVignette:
-          "bg-[radial-gradient(140%_50%_at_50%_100%,black_0%,transparent_60%)]",
+          "bg-[linear-gradient(to_bottom,transparent_0%,transparent_55%,rgba(0,0,0,0.65)_78%,#000_100%)]",
+        mediaVignette: "bg-transparent",
+        panel:
+          "relative z-10 mx-auto flex min-h-dvh w-full max-w-md flex-col px-4 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(0.5rem,env(safe-area-inset-top))] sm:max-w-lg",
+        mediaImage: "absolute inset-0 size-full object-cover object-top",
       },
     },
   },

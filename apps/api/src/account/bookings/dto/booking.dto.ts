@@ -61,6 +61,11 @@ export class CreateBookingDto {
   @IsString()
   @MaxLength(40)
   couponCode?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  idempotencyKey?: string;
 }
 
 export class CreateClubBookingDto {
@@ -99,6 +104,11 @@ export class CreateClubBookingDto {
   @IsString()
   @MaxLength(40)
   couponCode?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  idempotencyKey?: string;
 }
 
 export class CancelBookingSeriesDto {

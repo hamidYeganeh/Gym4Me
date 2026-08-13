@@ -52,13 +52,25 @@ export function CoachBookingsGate() {
 
   const onAction = useCallback(
     async (bookingId: string, action: CoachBookingAction) => {
-      if (action === "checkIn") await coachBookings.checkIn(bookingId);
+      if (action === "accept") await coachBookings.accept(bookingId);
+      else if (action === "checkIn") await coachBookings.checkIn(bookingId);
       else if (action === "complete") await coachBookings.complete(bookingId);
       else if (action === "noShow") await coachBookings.markNoShow(bookingId);
-      else await coachBookings.cancel(bookingId);
+      else {
+        const preview = await coachBookings.cancellationPreview(bookingId);
+        const confirmed = window.confirm(
+          t("cancelConfirm", {
+            amount: preview.refundAmount.toLocaleString("fa-IR"),
+          }),
+        );
+        if (!confirmed) return;
+        await coachBookings.cancel(bookingId, {
+          reasonKey: "coach_rejected_or_cancelled",
+        });
+      }
       await load();
     },
-    [load],
+    [load, t],
   );
 
   if (!bookings) {

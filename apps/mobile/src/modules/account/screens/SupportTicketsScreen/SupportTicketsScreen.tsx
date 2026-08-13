@@ -1,0 +1,143 @@
+"use client";
+
+import {
+  Button,
+  Input,
+  Label,
+  Spinner,
+  TextArea,
+  TextField,
+  Typography,
+} from "@heroui/react";
+import { ChevronLeft } from "@repo/icons/ChevronLeft";
+import { AppLayout } from "@repo/ui/layout/AppLayout";
+import { Header } from "@repo/ui/layout/Header";
+import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { formatJalaliDateTime } from "@/shared/lib/booking-view";
+import { supportTicketsScreenVariants } from "./SupportTicketsScreen.styles";
+import type { SupportTicketsScreenProps } from "./SupportTicketsScreen.types";
+
+export function SupportTicketsScreen({
+  className,
+  roleSegment = "athlete",
+  tickets,
+  loading,
+  creating,
+  error,
+  onCreate,
+}: SupportTicketsScreenProps) {
+  const t = useTranslations("Mobile.SupportTickets");
+  const styles = supportTicketsScreenVariants();
+  const router = useRouter();
+  const [subject, setSubject] = useState("");
+  const [body, setBody] = useState("");
+
+  return (
+    <AppLayout
+      className={styles.root({ className })}
+      header={
+        <Header
+          startContent={
+            <Button
+              aria-label={t("back")}
+              isIconOnly
+              onPress={() => router.push(`/${roleSegment}/profile/help`)}
+              size="lg"
+              variant="ghost"
+            >
+              <ChevronLeft className="text-foreground" size={22} />
+            </Button>
+          }
+        />
+      }
+    >
+      <div className={styles.content()}>
+        <section className={styles.intro()}>
+          <Typography className={styles.introTitle()} type="h1" weight="bold">
+            {t("title")}
+          </Typography>
+          <Typography className={styles.introSubtitle()} type="body">
+            {t("subtitle")}
+          </Typography>
+        </section>
+
+        {onCreate ? (
+          <form
+            className={styles.form()}
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (!subject.trim() || !body.trim()) return;
+              void Promise.resolve(
+                onCreate({ subject: subject.trim(), body: body.trim() }),
+              ).then(() => {
+                setSubject("");
+                setBody("");
+              });
+            }}
+          >
+            <Typography type="body" weight="semibold">
+              {t("newTitle")}
+            </Typography>
+            <TextField>
+              <Label>{t("subjectLabel")}</Label>
+              <Input
+                onChange={(e) => setSubject(e.target.value)}
+                placeholder={t("subjectPlaceholder")}
+                value={subject}
+              />
+            </TextField>
+            <TextField>
+              <Label>{t("bodyLabel")}</Label>
+              <TextArea
+                onChange={(e) => setBody(e.target.value)}
+                placeholder={t("bodyPlaceholder")}
+                rows={4}
+                value={body}
+              />
+            </TextField>
+            {error ? (
+              <Typography className="text-danger" type="body-sm">
+                {error}
+              </Typography>
+            ) : null}
+            <div className={styles.actions()}>
+              <Button
+                isDisabled={creating || !subject.trim() || !body.trim()}
+                type="submit"
+                variant="primary"
+              >
+                {creating ? t("submitting") : t("submit")}
+              </Button>
+            </div>
+          </form>
+        ) : null}
+
+        {loading ? (
+          <div className="flex justify-center py-16">
+            <Spinner size="lg" />
+          </div>
+        ) : tickets.length === 0 ? (
+          <Typography className={styles.empty()} type="body">
+            {t("empty")}
+          </Typography>
+        ) : (
+          <div className={styles.list()}>
+            {tickets.map((ticket) => (
+              <article className={styles.item()} key={ticket.id}>
+                <Typography type="body" weight="semibold">
+                  {ticket.subject}
+                </Typography>
+                <Typography className={styles.itemMeta()} type="body-sm">
+                  {ticket.ticketNumber} · {ticket.status} ·{" "}
+                  {formatJalaliDateTime(ticket.createdAt)}
+                </Typography>
+              </article>
+            ))}
+          </div>
+        )}
+      </div>
+    </AppLayout>
+  );
+}

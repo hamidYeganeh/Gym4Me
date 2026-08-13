@@ -1,13 +1,13 @@
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Card, Typography } from "@heroui/react";
+import { Button, Card, Spinner, Typography } from "@heroui/react";
+import type { AdminAnalyticsOverview } from "@repo/api";
+import { ApiError } from "@repo/api";
 import {
   ArrowForward2,
   ArrowRotateClockwise1,
-  ArrowTrendDown,
-  ArrowTrendUp,
   Building2,
   CalendarCheck,
-  CheckCircle,
   CreditCard,
   ExclamationMarkTriangle,
   ShieldCheck,
@@ -16,10 +16,14 @@ import {
 } from "@repo/icons";
 import { useTranslations } from "next-intl";
 import { AdminShell } from "@/shared/components";
+import { adminAnalytics } from "@/shared/lib/api";
+import { routes } from "@/shared/lib/routes";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { userDisplayName } from "@/shared/lib/user-format";
 import { dashboardHomeScreenVariants } from "./DashboardHomeScreen.styles";
 import type { DashboardHomeScreenProps } from "./DashboardHomeScreen.types";
+
+const faNumber = (value: number) => value.toLocaleString("fa-IR");
 
 export function DashboardHomeScreen({ className }: DashboardHomeScreenProps) {
   const t = useTranslations("Admin");
@@ -27,97 +31,136 @@ export function DashboardHomeScreen({ className }: DashboardHomeScreenProps) {
   const navigate = useNavigate();
   const styles = dashboardHomeScreenVariants();
 
+  const [overview, setOverview] = useState<AdminAnalyticsOverview | null>(
+    null,
+  );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      setOverview(await adminAnalytics.overview());
+    } catch (err) {
+      setError(
+        err instanceof ApiError ? err.message : t("Dashboard.errorLoad"),
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [t]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
   const displayName = user
     ? userDisplayName(user, t("Dashboard.defaultName"))
     : t("Dashboard.defaultName");
+
+  const totals = overview?.totals;
+  const queues = overview?.queues;
 
   const metrics = [
     {
       icon: <Building2 size={21} />,
       label: t("Dashboard.metrics.activeClubs"),
-      value: "۳۲۸",
-      trend: "۱۲٪",
-      direction: "up" as const,
+      value: totals ? faNumber(totals.activeClubs) : "—",
       tone: "accent" as const,
     },
     {
       icon: <UserCheck size={21} />,
       label: t("Dashboard.metrics.pendingKyc"),
-      value: "۱۸",
-      trend: "۴",
-      direction: "down" as const,
+      value: queues ? faNumber(queues.pendingKyc) : "—",
       tone: "warning" as const,
     },
     {
       icon: <CalendarCheck size={21} />,
       label: t("Dashboard.metrics.paidBookings"),
-      value: "۱٬۲۸۴",
-      trend: "۸٪",
-      direction: "up" as const,
+      value: totals ? faNumber(totals.bookings30d) : "—",
       tone: "success" as const,
     },
     {
       icon: <CreditCard size={21} />,
       label: t("Dashboard.metrics.gmv"),
-      value: "۸٫۴ میلیارد",
-      trend: "۱۶٪",
-      direction: "up" as const,
+      value: totals ? faNumber(totals.gmv30d) : "—",
       tone: "neutral" as const,
     },
   ];
 
-  const chartData = [
-    { day: t("Dashboard.days.saturday"), value: 48 },
-    { day: t("Dashboard.days.sunday"), value: 66 },
-    { day: t("Dashboard.days.monday"), value: 56 },
-    { day: t("Dashboard.days.tuesday"), value: 82 },
-    { day: t("Dashboard.days.wednesday"), value: 72 },
-    { day: t("Dashboard.days.thursday"), value: 92 },
-    { day: t("Dashboard.days.friday"), value: 64 },
-  ];
+  const revenueSeries = (overview?.series.revenueDaily ?? []).slice(-7);
+  const maxRevenue = revenueSeries.reduce(
+    (max, point) => Math.max(max, point.value),
+    0,
+  );
+  const chartData = revenueSeries.map((point) => ({
+    day: faNumber(Number.parseInt(point.date.slice(8), 10)),
+    value: maxRevenue > 0 ? Math.round((point.value / maxRevenue) * 100) : 0,
+  }));
+
+  const revenueTotal = revenueSeries.reduce(
+    (sum, point) => sum + point.value,
+    0,
+  );
 
   const reviewQueue = [
     {
       icon: <ShieldCheck size={20} />,
       title: t("Dashboard.queue.kycTitle"),
       description: t("Dashboard.queue.kycDescription"),
-      count: "۱۸",
+      count: queues ? faNumber(queues.pendingKyc) : "—",
       tone: "warning" as const,
     },
     {
       icon: <CreditCard size={20} />,
       title: t("Dashboard.queue.refundTitle"),
       description: t("Dashboard.queue.refundDescription"),
-      count: "۷",
+      count: queues ? faNumber(queues.refundRequests) : "—",
       tone: "danger" as const,
     },
     {
       icon: <ExclamationMarkTriangle size={20} />,
       title: t("Dashboard.queue.reportsTitle"),
       description: t("Dashboard.queue.reportsDescription"),
-      count: "۳",
+      count: queues ? faNumber(queues.openSocialReports) : "—",
       tone: "neutral" as const,
     },
   ];
 
-  const activity = [
+  const queueTotal = queues
+    ? queues.pendingKyc +
+      queues.pendingCoachVerifications +
+      queues.pendingClubReviews +
+      queues.openSupportTickets +
+      queues.openSocialReports +
+      queues.refundRequests
+    : 0;
+
+  const secondaryStats = [
     {
-      icon: <CheckCircle size={18} />,
-      title: t("Dashboard.activity.clubApproved"),
-      meta: t("Dashboard.activity.clubApprovedMeta"),
-      tone: "success" as const,
+      label: t("Dashboard.stats.users"),
+      value: totals ? faNumber(totals.users) : "—",
     },
     {
-      icon: <UsersThree size={18} />,
-      title: t("Dashboard.activity.coachJoined"),
-      meta: t("Dashboard.activity.coachJoinedMeta"),
-      tone: "accent" as const,
+      label: t("Dashboard.stats.usersNew30d"),
+      value: totals ? faNumber(totals.usersNew30d) : "—",
     },
     {
-      icon: <CreditCard size={18} />,
-      title: t("Dashboard.activity.settlementCreated"),
-      meta: t("Dashboard.activity.settlementCreatedMeta"),
-      tone: "neutral" as const,
+      label: t("Dashboard.stats.verifiedCoaches"),
+      value: totals ? faNumber(totals.verifiedCoaches) : "—",
+    },
+    {
+      label: t("Dashboard.stats.activeMemberships"),
+      value: totals ? faNumber(totals.activeMemberships) : "—",
+    },
+    {
+      label: t("Dashboard.stats.openTickets"),
+      value: queues ? faNumber(queues.openSupportTickets) : "—",
+    },
+    {
+      label: t("Dashboard.stats.pendingCoachVerifications"),
+      value: queues ? faNumber(queues.pendingCoachVerifications) : "—",
     },
   ];
 
@@ -135,19 +178,40 @@ export function DashboardHomeScreen({ className }: DashboardHomeScreenProps) {
           </div>
 
           <div className={styles.introActions()}>
-            <span className={styles.sampleLabel()}>
-              {t("Dashboard.sampleData")}
-            </span>
-            <Button variant="outline" onPress={() => navigate("/dashboard/users")}>
+            {loading ? <Spinner size="sm" /> : null}
+            <Button
+              variant="outline"
+              onPress={() => navigate(routes.users)}
+            >
               <UsersThree size={18} />
               {t("nav.users")}
             </Button>
-            <Button variant="outline">
+            <Button
+              variant="outline"
+              onPress={() => navigate(routes.financeLedger)}
+            >
+              <CreditCard size={18} />
+              {t("nav.finance")}
+            </Button>
+            <Button
+              variant="outline"
+              onPress={() => navigate(routes.bookings)}
+            >
+              <CalendarCheck size={18} />
+              {t("nav.bookings")}
+            </Button>
+            <Button variant="outline" onPress={() => void load()}>
               <ArrowRotateClockwise1 size={18} />
               {t("Dashboard.refresh")}
             </Button>
           </div>
         </section>
+
+        {error ? (
+          <p className="text-sm text-danger" role="alert">
+            {error}
+          </p>
+        ) : null}
 
         <Card className={styles.metricsRail()}>
           <Card.Content className={styles.metricsContent()}>
@@ -156,18 +220,6 @@ export function DashboardHomeScreen({ className }: DashboardHomeScreenProps) {
                 <div className={styles.metricTop()}>
                   <span className={styles.metricIcon({ tone: metric.tone })}>
                     {metric.icon}
-                  </span>
-                  <span
-                    className={styles.metricTrend({
-                      direction: metric.direction,
-                    })}
-                  >
-                    {metric.direction === "up" ? (
-                      <ArrowTrendUp size={15} />
-                    ) : (
-                      <ArrowTrendDown size={15} />
-                    )}
-                    {metric.trend}
                   </span>
                 </div>
                 <Typography className={styles.metricValue()} type="h2">
@@ -193,30 +245,41 @@ export function DashboardHomeScreen({ className }: DashboardHomeScreenProps) {
                 </Card.Description>
               </div>
               <div className={styles.revenueTotal()}>
-                <span className={styles.revenueValue()}>۲٫۱ میلیارد</span>
+                <span className={styles.revenueValue()}>
+                  {faNumber(revenueTotal)}
+                </span>
                 <span className={styles.revenueUnit()}>
                   {t("Dashboard.revenue.unit")}
                 </span>
               </div>
             </Card.Header>
             <Card.Content className={styles.chartContent()}>
-              <div
-                className={styles.chart()}
-                aria-label={t("Dashboard.revenue.chartAriaLabel")}
-                role="img"
-              >
-                {chartData.map((item) => (
-                  <div className={styles.chartColumn()} key={item.day}>
-                    <div className={styles.chartTrack()}>
-                      <span
-                        className={styles.chartBar()}
-                        style={{ height: `${item.value}%` }}
-                      />
+              {chartData.length > 0 ? (
+                <div
+                  className={styles.chart()}
+                  aria-label={t("Dashboard.revenue.chartAriaLabel")}
+                  role="img"
+                >
+                  {chartData.map((item, index) => (
+                    <div
+                      className={styles.chartColumn()}
+                      key={`${item.day}-${index}`}
+                    >
+                      <div className={styles.chartTrack()}>
+                        <span
+                          className={styles.chartBar()}
+                          style={{ height: `${Math.max(item.value, 4)}%` }}
+                        />
+                      </div>
+                      <span className={styles.chartDay()}>{item.day}</span>
                     </div>
-                    <span className={styles.chartDay()}>{item.day}</span>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <Typography className={styles.cardDescription()}>
+                  {t("Dashboard.revenue.empty")}
+                </Typography>
+              )}
             </Card.Content>
           </Card>
 
@@ -230,7 +293,9 @@ export function DashboardHomeScreen({ className }: DashboardHomeScreenProps) {
                   {t("Dashboard.queue.description")}
                 </Card.Description>
               </div>
-              <span className={styles.queueTotal()}>۲۸</span>
+              <span className={styles.queueTotal()}>
+                {faNumber(queueTotal)}
+              </span>
             </Card.Header>
             <Card.Content className={styles.queueContent()}>
               {reviewQueue.map((item) => (
@@ -249,7 +314,11 @@ export function DashboardHomeScreen({ className }: DashboardHomeScreenProps) {
               ))}
             </Card.Content>
             <Card.Footer className={styles.cardFooter()}>
-              <Button fullWidth variant="secondary">
+              <Button
+                fullWidth
+                variant="secondary"
+                onPress={() => navigate(routes.usersKyc)}
+              >
                 {t("Dashboard.queue.action")}
                 <ArrowForward2 size={17} />
               </Button>
@@ -257,67 +326,30 @@ export function DashboardHomeScreen({ className }: DashboardHomeScreenProps) {
           </Card>
         </div>
 
-        <div className={styles.secondaryGrid()}>
-          <Card className={styles.activityCard()}>
-            <Card.Header className={styles.cardHeader()}>
-              <div>
-                <Card.Title className={styles.cardTitle()}>
-                  {t("Dashboard.activity.title")}
-                </Card.Title>
-                <Card.Description className={styles.cardDescription()}>
-                  {t("Dashboard.activity.description")}
-                </Card.Description>
-              </div>
-            </Card.Header>
-            <Card.Content className={styles.activityContent()}>
-              {activity.map((item) => (
-                <div className={styles.activityItem()} key={item.title}>
-                  <span className={styles.activityIcon({ tone: item.tone })}>
-                    {item.icon}
-                  </span>
-                  <div className={styles.activityCopy()}>
-                    <span className={styles.activityTitle()}>{item.title}</span>
-                    <span className={styles.activityMeta()}>{item.meta}</span>
-                  </div>
-                </div>
-              ))}
-            </Card.Content>
-          </Card>
-
-          <Card className={styles.healthCard()} variant="tertiary">
-            <Card.Header className={styles.healthHeader()}>
-              <div>
-                <Card.Title className={styles.cardTitle()}>
-                  {t("Dashboard.health.title")}
-                </Card.Title>
-                <Card.Description className={styles.cardDescription()}>
-                  {t("Dashboard.health.description")}
-                </Card.Description>
-              </div>
-              <span className={styles.healthScore()}>۹۶٪</span>
-            </Card.Header>
-            <Card.Content className={styles.healthContent()}>
-              <div className={styles.healthRow()}>
-                <span>{t("Dashboard.health.api")}</span>
-                <span className={styles.healthStatus()}>
-                  {t("Dashboard.health.operational")}
-                </span>
-              </div>
-              <div className={styles.healthRow()}>
-                <span>{t("Dashboard.health.sms")}</span>
-                <span className={styles.healthStatus()}>
-                  {t("Dashboard.health.operational")}
-                </span>
-              </div>
-              <div className={styles.healthRow()}>
-                <span>{t("Dashboard.health.payment")}</span>
-                <span className={styles.healthStatus({ state: "warning" })}>
-                  {t("Dashboard.health.sandbox")}
-                </span>
-              </div>
-            </Card.Content>
-          </Card>
-        </div>
+        <Card className={styles.activityCard()}>
+          <Card.Header className={styles.cardHeader()}>
+            <div>
+              <Card.Title className={styles.cardTitle()}>
+                {t("Dashboard.stats.title")}
+              </Card.Title>
+              <Card.Description className={styles.cardDescription()}>
+                {t("Dashboard.stats.description")}
+              </Card.Description>
+            </div>
+          </Card.Header>
+          <Card.Content className={styles.metricsContent()}>
+            {secondaryStats.map((stat) => (
+              <article className={styles.metric()} key={stat.label}>
+                <Typography className={styles.metricValue()} type="h3">
+                  {stat.value}
+                </Typography>
+                <Typography className={styles.metricLabel()}>
+                  {stat.label}
+                </Typography>
+              </article>
+            ))}
+          </Card.Content>
+        </Card>
       </div>
     </AdminShell>
   );

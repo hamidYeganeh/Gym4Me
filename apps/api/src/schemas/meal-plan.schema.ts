@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { MealPlanStatus, Privacy } from '../common/enums';
+import { FoodItem } from './food-item.schema';
 import { User } from './user.schema';
 
 export type MealPlanDocument = HydratedDocument<MealPlan>;
@@ -9,6 +10,10 @@ export type MealPlanDocument = HydratedDocument<MealPlan>;
 export class MealPlanItem {
   @Prop({ required: true, trim: true, maxlength: 200 })
   title!: string;
+
+  /** Optional link into the admin FoodItem bank. */
+  @Prop({ type: Types.ObjectId, ref: FoodItem.name })
+  foodItemId?: Types.ObjectId;
 
   @Prop({ min: 0 })
   calories?: number;

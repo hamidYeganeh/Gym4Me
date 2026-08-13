@@ -80,13 +80,11 @@ export function useDiscoveryClassDetail(
         });
       } catch (error) {
         if (cancelled) return;
-        const fallback = getClassDetail(clubId, classId) ?? null;
         setState({
-          classDetail: fallback,
+          classDetail: null,
           isLoading: false,
-          isError:
-            !(error instanceof ApiError && error.status === 404) && !fallback,
-          source: fallback ? "mock" : "api",
+          isError: !(error instanceof ApiError && error.status === 404),
+          source: "api",
         });
       }
     })();

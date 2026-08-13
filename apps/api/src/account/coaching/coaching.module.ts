@@ -13,6 +13,10 @@ import {
   CoachLeadSchema,
 } from '../../schemas/coach-lead.schema';
 import {
+  CoachMessage,
+  CoachMessageSchema,
+} from '../../schemas/coach-message.schema';
+import {
   CoachService,
   CoachServiceSchema,
 } from '../../schemas/coach-service.schema';
@@ -20,6 +24,10 @@ import {
   CoachStudent,
   CoachStudentSchema,
 } from '../../schemas/coach-student.schema';
+import {
+  CoachThread,
+  CoachThreadSchema,
+} from '../../schemas/coach-thread.schema';
 import {
   HealthAssessment,
   HealthAssessmentSchema,
@@ -43,6 +51,8 @@ import { CoachingService } from './coaching.service';
       { name: CoachStudent.name, schema: CoachStudentSchema },
       { name: CoachLead.name, schema: CoachLeadSchema },
       { name: HealthAssessment.name, schema: HealthAssessmentSchema },
+      { name: CoachThread.name, schema: CoachThreadSchema },
+      { name: CoachMessage.name, schema: CoachMessageSchema },
     ]),
   ],
   controllers: [

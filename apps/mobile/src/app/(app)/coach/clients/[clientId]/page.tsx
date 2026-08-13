@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { CoachClientDetailGate } from "@/modules/coach/lib/CoachClientDetailGate";
 import {
   getAllCoachClientIds,
   getCoachClientDetail,
 } from "@/modules/coach/lib/coach-clients-data";
-import { CoachClientDetailScreen } from "@/modules/coach/screens/CoachClientDetailScreen";
 
 type CoachClientDetailPageProps = {
   params: Promise<{ clientId: string }>;
@@ -19,23 +18,12 @@ export async function generateMetadata({
 }: CoachClientDetailPageProps): Promise<Metadata> {
   const { clientId } = await params;
   const client = getCoachClientDetail(clientId);
-
-  if (!client) {
-    return { title: "Client" };
-  }
-
-  return { title: client.name };
+  return { title: client?.name ?? "Client" };
 }
 
 export default async function CoachClientDetailPage({
   params,
 }: CoachClientDetailPageProps) {
   const { clientId } = await params;
-  const client = getCoachClientDetail(clientId);
-
-  if (!client) {
-    notFound();
-  }
-
-  return <CoachClientDetailScreen client={client} />;
+  return <CoachClientDetailGate clientId={clientId} />;
 }

@@ -27,7 +27,9 @@ export function AuthLayout({
   return (
     <div
       className={styles.shell({ className })}
-      {...(tone === "dark" ? { "data-theme": "dark" as const } : {})}
+      {...(tone === "dark" || tone === "hero"
+        ? { "data-theme": "dark" as const }
+        : {})}
     >
       {heroSrc ? (
         <div aria-hidden className={styles.media()}>
@@ -62,6 +64,12 @@ export function AuthLayout({
           </div>
         ) : null}
 
+        {figure ? <div className={styles.figure()}>{figure}</div> : null}
+
+        {tone === "hero" ? (
+          <div className={styles.spacer()} aria-hidden />
+        ) : null}
+
         {labels.title || labels.subtitle ? (
           <header className={styles.header()}>
             {labels.title ? (
@@ -78,12 +86,6 @@ export function AuthLayout({
               </Typography>
             ) : null}
           </header>
-        ) : null}
-
-        {figure ? <div className={styles.figure()}>{figure}</div> : null}
-
-        {tone === "hero" ? (
-          <div className={styles.spacer()} aria-hidden />
         ) : null}
 
         <div className={styles.body()}>

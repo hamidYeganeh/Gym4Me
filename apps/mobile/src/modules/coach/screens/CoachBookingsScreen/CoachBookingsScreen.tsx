@@ -57,6 +57,7 @@ const STATUS_LABEL_KEY: Partial<Record<BookingStatus, string>> = {
 };
 
 const ACTION_LABEL_KEY: Record<CoachBookingAction, string> = {
+  accept: "actionAccept",
   checkIn: "actionCheckIn",
   complete: "actionComplete",
   noShow: "actionNoShow",

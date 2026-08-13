@@ -9,10 +9,16 @@ import {
   NotificationSchema,
 } from '../schemas/notification.schema';
 import {
+  NotificationPreference,
+  NotificationPreferenceSchema,
+} from '../schemas/notification-preference.schema';
+import {
   NotificationTemplate,
   NotificationTemplateSchema,
 } from '../schemas/notification-template.schema';
 import { UsersModule } from '../users/users.module';
+import { AdminNotificationTemplatesController } from './admin-notification-templates.controller';
+import { NotificationPreferencesService } from './notification-preferences.service';
 import {
   DevicesController,
   NotificationsController,
@@ -25,11 +31,19 @@ import { NotificationsService } from './notifications.service';
       { name: Notification.name, schema: NotificationSchema },
       { name: NotificationTemplate.name, schema: NotificationTemplateSchema },
       { name: DeviceToken.name, schema: DeviceTokenSchema },
+      {
+        name: NotificationPreference.name,
+        schema: NotificationPreferenceSchema,
+      },
     ]),
     UsersModule,
   ],
-  controllers: [NotificationsController, DevicesController],
-  providers: [NotificationsService],
-  exports: [NotificationsService],
+  controllers: [
+    NotificationsController,
+    DevicesController,
+    AdminNotificationTemplatesController,
+  ],
+  providers: [NotificationsService, NotificationPreferencesService],
+  exports: [NotificationsService, NotificationPreferencesService],
 })
 export class NotificationsModule {}

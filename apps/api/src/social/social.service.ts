@@ -13,7 +13,10 @@ import {
   AuditAction,
   Privacy,
   Role,
+  SocialFolloweeKind,
   SocialPostStatus,
+  SocialReportStatus,
+  SocialReportTargetKind,
 } from '../common/enums';
 import {
   paginatedResult,
@@ -23,13 +26,30 @@ import {
   SocialComment,
   SocialCommentDocument,
 } from '../schemas/social-comment.schema';
+import {
+  SocialFollow,
+  SocialFollowDocument,
+} from '../schemas/social-follow.schema';
 import { SocialLike, SocialLikeDocument } from '../schemas/social-like.schema';
 import { SocialPost, SocialPostDocument } from '../schemas/social-post.schema';
 import {
+  SocialReport,
+  SocialReportDocument,
+} from '../schemas/social-report.schema';
+import {
+  SocialSave,
+  SocialSaveDocument,
+} from '../schemas/social-save.schema';
+import {
   CreateSocialCommentDto,
   CreateSocialPostDto,
+  CreateSocialReportDto,
+  FollowInputDto,
   ListSocialCommentsQueryDto,
+  ListSocialFollowsQueryDto,
   ListSocialPostsQueryDto,
+  ListSocialReportsQueryDto,
+  ResolveSocialReportDto,
   UpdateSocialPostDto,
 } from './dto/social.dto';
 
@@ -42,6 +62,12 @@ export class SocialService {
     private readonly commentModel: Model<SocialCommentDocument>,
     @InjectModel(SocialLike.name)
     private readonly likeModel: Model<SocialLikeDocument>,
+    @InjectModel(SocialFollow.name)
+    private readonly followModel: Model<SocialFollowDocument>,
+    @InjectModel(SocialSave.name)
+    private readonly saveModel: Model<SocialSaveDocument>,
+    @InjectModel(SocialReport.name)
+    private readonly reportModel: Model<SocialReportDocument>,
     private readonly audit: AuditService,
   ) {}
 
@@ -58,19 +84,33 @@ export class SocialService {
   }
 
   /**
-   * Authenticated feed (v1 simplified): PUBLISHED + PUBLIC,
-   * plus the caller's own posts (any visibility/status except deleted).
+   * Authenticated feed: PUBLIC published posts, FOLLOWERS posts from people
+   * the viewer follows, plus the caller's own posts.
    */
   async listFeed(
     userId: string,
     _activeRole: Role,
     query: ListSocialPostsQueryDto,
   ) {
+    const following = await this.followModel
+      .find({
+        followerId: new Types.ObjectId(userId),
+        followeeKind: SocialFolloweeKind.USER,
+      })
+      .select('followeeId')
+      .lean();
+    const followeeIds = following.map((f) => f.followeeId);
+
     const filter: QueryFilter<SocialPostDocument> = {
       $or: [
         {
           status: SocialPostStatus.PUBLISHED,
           visibility: Privacy.PUBLIC,
+        },
+        {
+          status: SocialPostStatus.PUBLISHED,
+          visibility: Privacy.FOLLOWERS,
+          authorUserId: { $in: followeeIds },
         },
         {
           authorUserId: new Types.ObjectId(userId),
@@ -91,12 +131,25 @@ export class SocialService {
       throw new NotFoundException('Post not found');
     }
     const isAuthor = userId && item.authorUserId.toString() === userId;
-    if (
-      !isAuthor &&
-      (item.status !== SocialPostStatus.PUBLISHED ||
-        item.visibility !== Privacy.PUBLIC)
-    ) {
-      throw new ForbiddenException('Not allowed to view this post');
+    if (!isAuthor) {
+      if (item.status !== SocialPostStatus.PUBLISHED) {
+        throw new ForbiddenException('Not allowed to view this post');
+      }
+      if (item.visibility === Privacy.FOLLOWERS) {
+        if (!userId) {
+          throw new ForbiddenException('Not allowed to view this post');
+        }
+        const follows = await this.followModel.exists({
+          followerId: new Types.ObjectId(userId),
+          followeeId: item.authorUserId,
+          followeeKind: SocialFolloweeKind.USER,
+        });
+        if (!follows) {
+          throw new ForbiddenException('Not allowed to view this post');
+        }
+      } else if (item.visibility !== Privacy.PUBLIC) {
+        throw new ForbiddenException('Not allowed to view this post');
+      }
     }
     return this.toPost(item.toObject(), userId);
   }
@@ -446,6 +499,297 @@ export class SocialService {
       authorUserId: doc.authorUserId.toString(),
       body: doc.body,
       status: doc.status,
+      createdAt: doc.createdAt.toISOString(),
+      updatedAt: doc.updatedAt.toISOString(),
+    };
+  }
+
+  // ── Follow graph ────────────────────────────────────────────────────────
+
+  async follow(userId: string, dto: FollowInputDto, request: Request) {
+    if (
+      dto.followeeKind === SocialFolloweeKind.USER &&
+      dto.followeeId === userId
+    ) {
+      throw new BadRequestException('Cannot follow yourself');
+    }
+    try {
+      const row = await this.followModel.create({
+        followerId: new Types.ObjectId(userId),
+        followeeId: new Types.ObjectId(dto.followeeId),
+        followeeKind: dto.followeeKind,
+      });
+      this.audit.log({
+        action: AuditAction.SOCIAL_FOLLOW_CHANGED,
+        actorId: userId,
+        metadata: {
+          kind: 'follow',
+          followeeId: dto.followeeId,
+          followeeKind: dto.followeeKind,
+        },
+        request,
+      });
+      return this.toFollow(row.toObject());
+    } catch (err) {
+      if ((err as { code?: number }).code === 11000) {
+        const existing = await this.followModel
+          .findOne({
+            followerId: new Types.ObjectId(userId),
+            followeeId: new Types.ObjectId(dto.followeeId),
+            followeeKind: dto.followeeKind,
+          })
+          .lean();
+        return existing ? this.toFollow(existing) : null;
+      }
+      throw err;
+    }
+  }
+
+  async unfollow(userId: string, dto: FollowInputDto, request: Request) {
+    await this.followModel.deleteOne({
+      followerId: new Types.ObjectId(userId),
+      followeeId: new Types.ObjectId(dto.followeeId),
+      followeeKind: dto.followeeKind,
+    });
+    this.audit.log({
+      action: AuditAction.SOCIAL_FOLLOW_CHANGED,
+      actorId: userId,
+      metadata: {
+        kind: 'unfollow',
+        followeeId: dto.followeeId,
+        followeeKind: dto.followeeKind,
+      },
+      request,
+    });
+    return { unfollowed: true as const };
+  }
+
+  async listFollowing(userId: string, query: ListSocialFollowsQueryDto) {
+    const filter: QueryFilter<SocialFollowDocument> = {
+      followerId: new Types.ObjectId(userId),
+    };
+    if (query.followeeKind) filter.followeeKind = query.followeeKind;
+    const { page, pageSize } = resolvePageSize(query);
+    const [items, total] = await Promise.all([
+      this.followModel
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .lean(),
+      this.followModel.countDocuments(filter),
+    ]);
+    return paginatedResult(
+      items.map((i) => this.toFollow(i)),
+      total,
+      page,
+      pageSize,
+    );
+  }
+
+  async listFollowers(userId: string, query: ListSocialFollowsQueryDto) {
+    const filter: QueryFilter<SocialFollowDocument> = {
+      followeeId: new Types.ObjectId(userId),
+      followeeKind: SocialFolloweeKind.USER,
+    };
+    const { page, pageSize } = resolvePageSize(query);
+    const [items, total] = await Promise.all([
+      this.followModel
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .lean(),
+      this.followModel.countDocuments(filter),
+    ]);
+    return paginatedResult(
+      items.map((i) => this.toFollow(i)),
+      total,
+      page,
+      pageSize,
+    );
+  }
+
+  // ── Saves ───────────────────────────────────────────────────────────────
+
+  async toggleSave(postId: string, userId: string, request: Request) {
+    await this.findPost(postId);
+    const existing = await this.saveModel.findOne({
+      postId: new Types.ObjectId(postId),
+      userId: new Types.ObjectId(userId),
+    });
+    if (existing) {
+      await existing.deleteOne();
+      this.audit.log({
+        action: AuditAction.SOCIAL_SAVE_TOGGLED,
+        actorId: userId,
+        metadata: { kind: 'unsave', postId },
+        request,
+      });
+      return { saved: false as const };
+    }
+    await this.saveModel.create({
+      postId: new Types.ObjectId(postId),
+      userId: new Types.ObjectId(userId),
+    });
+    this.audit.log({
+      action: AuditAction.SOCIAL_SAVE_TOGGLED,
+      actorId: userId,
+      metadata: { kind: 'save', postId },
+      request,
+    });
+    return { saved: true as const };
+  }
+
+  async listSaves(userId: string, query: ListSocialPostsQueryDto) {
+    const { page, pageSize } = resolvePageSize(query);
+    const [saves, total] = await Promise.all([
+      this.saveModel
+        .find({ userId: new Types.ObjectId(userId) })
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .lean(),
+      this.saveModel.countDocuments({ userId: new Types.ObjectId(userId) }),
+    ]);
+    const posts = await this.postModel
+      .find({ _id: { $in: saves.map((s) => s.postId) } })
+      .lean();
+    const byId = new Map(posts.map((p) => [p._id.toString(), p]));
+    return paginatedResult(
+      saves
+        .map((s) => byId.get(s.postId.toString()))
+        .filter(Boolean)
+        .map((p) => this.toPost(p!, userId)),
+      total,
+      page,
+      pageSize,
+    );
+  }
+
+  // ── Reports ─────────────────────────────────────────────────────────────
+
+  async createReport(
+    userId: string,
+    dto: CreateSocialReportDto,
+    request: Request,
+  ) {
+    const report = await this.reportModel.create({
+      reporterId: new Types.ObjectId(userId),
+      target: {
+        kind: dto.targetKind,
+        id: new Types.ObjectId(dto.targetId),
+      },
+      reason: dto.reason.trim(),
+      status: SocialReportStatus.OPEN,
+    });
+    this.audit.log({
+      action: AuditAction.SOCIAL_REPORT_CREATED,
+      actorId: userId,
+      metadata: {
+        reportId: report._id.toString(),
+        targetKind: dto.targetKind,
+        targetId: dto.targetId,
+      },
+      request,
+    });
+    return this.toReport(report.toObject());
+  }
+
+  async adminListReports(query: ListSocialReportsQueryDto) {
+    const filter: QueryFilter<SocialReportDocument> = {};
+    if (query.status) filter.status = query.status;
+    const { page, pageSize } = resolvePageSize(query);
+    const [items, total] = await Promise.all([
+      this.reportModel
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .lean(),
+      this.reportModel.countDocuments(filter),
+    ]);
+    return paginatedResult(
+      items.map((i) => this.toReport(i)),
+      total,
+      page,
+      pageSize,
+    );
+  }
+
+  async adminResolveReport(
+    id: string,
+    adminId: string,
+    dto: ResolveSocialReportDto,
+    request: Request,
+  ) {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundException('Report not found');
+    }
+    const report = await this.reportModel.findById(id);
+    if (!report) throw new NotFoundException('Report not found');
+    report.status = dto.status;
+    report.resolution = {
+      resolvedBy: new Types.ObjectId(adminId),
+      resolvedAt: new Date(),
+      note: dto.note?.trim(),
+    };
+    await report.save();
+    this.audit.log({
+      action: AuditAction.SOCIAL_REPORT_RESOLVED,
+      actorId: adminId,
+      metadata: { reportId: id, status: dto.status },
+      request,
+    });
+    return this.toReport(report.toObject());
+  }
+
+  private toFollow(doc: {
+    _id: Types.ObjectId;
+    followerId: Types.ObjectId;
+    followeeId: Types.ObjectId;
+    followeeKind: SocialFolloweeKind;
+    createdAt: Date;
+  }) {
+    return {
+      id: doc._id.toString(),
+      followerId: doc.followerId.toString(),
+      followeeId: doc.followeeId.toString(),
+      followeeKind: doc.followeeKind,
+      createdAt: doc.createdAt.toISOString(),
+    };
+  }
+
+  private toReport(doc: {
+    _id: Types.ObjectId;
+    reporterId: Types.ObjectId;
+    target: { kind: SocialReportTargetKind; id: Types.ObjectId };
+    reason: string;
+    status: SocialReportStatus;
+    resolution?: {
+      resolvedBy: Types.ObjectId;
+      resolvedAt: Date;
+      note?: string;
+    };
+    createdAt: Date;
+    updatedAt: Date;
+  }) {
+    return {
+      id: doc._id.toString(),
+      reporterId: doc.reporterId.toString(),
+      target: {
+        kind: doc.target.kind,
+        id: doc.target.id.toString(),
+      },
+      reason: doc.reason,
+      status: doc.status,
+      resolution: doc.resolution
+        ? {
+            resolvedBy: doc.resolution.resolvedBy.toString(),
+            resolvedAt: doc.resolution.resolvedAt.toISOString(),
+            note: doc.resolution.note ?? null,
+          }
+        : null,
       createdAt: doc.createdAt.toISOString(),
       updatedAt: doc.updatedAt.toISOString(),
     };

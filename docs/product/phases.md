@@ -2,16 +2,16 @@
 
 قاعده: هر فاز فقط وقتی شروع شود که فاز قبلی end-to-end (API + UI + ادمین مربوطه) کار کند.
 
-| فاز | نام | Epic ها | خروجی قابل عرضه | وضعیت |
-|-----|------|---------|------------------|--------|
-| **۰** | زیرساخت | مونوریپو، UI kit، تم، i18n، schema دامنه | اسکلت پروژه | ✅ تقریباً انجام‌شده |
-| **۱** | هویت + اندازه‌گیری پایه | A، B، N2، M1–M2، Q2–Q3، R1–R2 | ثبت‌نام واقعی، KYC مرحله‌ای، سوئیچ نقش، attribution و event پایه | 🟡 در حال تکمیل |
-| **۲** | کاتالوگ و عرضه | C، K1، K3، M3، C5، O10، P1، P12، Q8، Q11 | باشگاه/مربی واقعی، تأییدشده و قابل جست‌وجو | 🟡 کشف + فیلتر Q11 + SEO + K3 شروع‌شده |
-| **۳** | رزرو و دریافت وجه | D، L1–L3، N1، N3، O1، O5–O7، P3–P4، P6، P9، Q1، R3–R4 | اولین تراکنش آنلاین/حضوری و حضور قابل اتکا — **هستهٔ MVP** | 🟡 API: booking+finance+checkin+waitlist+calendar؛ UI موبایل/ادمین ناقص |
-| **۴** | عضویت + lifecycle | E، F، L5، K4، O2، O8–O9، O11، O14، P2، Q5، Q12، R5–R9، R12 | فروش/مصرف/تمدید عضویت و جلوگیری از ریزش | 🟡 API memberships + platform plans؛ UI ❌ |
-| **۵** | مربیگری و پیشرفت | G، H، N4، P5، P10–P11، Q6–Q7 | برنامه، لاگ، متریک و بازخورد ایمن | 🟡 API progress/workout/health؛ UI ❌ |
-| **۶** | مالی و عملیات مقیاس‌پذیر | L4–L8، K2، K5–K8، M5–M6، M9، O3–O4، O12–O13، O15، P7–P8، Q4، Q10، R10–R11 | تسویه، صندوق، پرسنل، dispute، گزارش و experimentation | 🟡 API staff+cash shift+debt+payout+compensation+coaching leads؛ UI ❌ |
-| **۷** | اجتماعی و تغذیه | J، I، M7–M8 | شبکه اجتماعی، meal plan، CMS | 🟡 API social+nutrition؛ UI ❌ |
+| فاز   | نام                      | Epic ها                                                                   | خروجی قابل عرضه                                                  | وضعیت                                                                                                                 |
+| ----- | ------------------------ | ------------------------------------------------------------------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **۰** | زیرساخت                  | مونوریپو، UI kit، تم، i18n، schema دامنه                                  | اسکلت پروژه                                                      | ✅ تقریباً انجام‌شده (+ CI / check-types / README)                                                                    |
+| **۱** | هویت + اندازه‌گیری پایه  | A، B، N2، M1–M2، Q2–Q3، R1–R2                                             | ثبت‌نام واقعی، KYC مرحله‌ای، سوئیچ نقش، attribution و event پایه | 🟡 در حال تکمیل                                                                                                       |
+| **۲** | کاتالوگ و عرضه           | C، K1، K3، M3، C5، O10، P1، P12، Q8، Q11                                  | باشگاه/مربی واقعی، تأییدشده و قابل جست‌وجو                       | 🟡 discovery + فیلتر Q11؛ وب‌سایت `/clubs`، `/coaches`، جزئیات غنی، sitemap و JSON-LD تکمیل؛ K3 جزئی                  |
+| **۳** | رزرو و دریافت وجه        | D، L1–L3، N1، N3، O1، O5–O7، P3–P4، P6، P9، Q1، R3–R4                     | اولین تراکنش آنلاین/حضوری و حضور قابل اتکا — **هستهٔ MVP**       | 🟡 approval/TTL/idempotency/cancel preview + پرداخت ترکیبی و device check-in؛ credential واقعی Zarinpal/FCM مانده است |
+| **۴** | عضویت + lifecycle        | E، F، L5، K4، O2، O8–O9، O11، O14، P2، Q5، Q12، R5–R9، R12                | فروش/مصرف/تمدید عضویت و جلوگیری از ریزش                          | 🟡 فروش و import پذیرش، پرداخت جزئی/بدهی/Ledger و lifecycle تکمیل‌تر؛ pricing عمومی؛ enforcement اشتراک جزئی          |
+| **۵** | مربیگری و پیشرفت         | G، H، N4، P5، P10–P11، Q6–Q7                                              | برنامه، لاگ، متریک و بازخورد ایمن                                | 🟡 API progress؛ mobile workouts/metrics/coach programs/chat؛ admin catalogs                                          |
+| **۶** | مالی و عملیات مقیاس‌پذیر | L4–L8، K2، K5–K8، M5–M6، M9، O3–O4، O12–O13، O15، P7–P8، Q4، Q10، R10–R11 | تسویه، صندوق، پرسنل، dispute، گزارش و experimentation            | 🟡 API staff/payout/storage؛ mobile owner staff/finance؛ admin payments/payouts/refunds/audit/impersonation/analytics |
+| **۷** | اجتماعی و تغذیه          | J، I، M7–M8                                                               | شبکه اجتماعی، meal plan، CMS                                     | 🟡 API social/nutrition؛ mobile feed+nutrition؛ admin food/social reports/templates                                   |
 
 ## اولویت فنی موازی در هر فاز
 

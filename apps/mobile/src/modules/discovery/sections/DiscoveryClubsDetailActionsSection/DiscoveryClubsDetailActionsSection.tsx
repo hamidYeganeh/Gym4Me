@@ -12,6 +12,8 @@ export function DiscoveryClubsDetailActionsSection({
   pricePrefix,
   price,
   priceSuffix,
+  ctaLabel,
+  pending = false,
   onReserve,
 }: DiscoveryClubsDetailActionsSectionProps) {
   const t = useTranslations("ClubDetail");
@@ -40,8 +42,9 @@ export function DiscoveryClubsDetailActionsSection({
       </div>
 
       <Button
-        aria-label={t("confirmBooking")}
+        aria-label={ctaLabel ?? t("confirmBooking")}
         className={styles.confirm}
+        isDisabled={pending}
         onPress={onReserve}
         size="lg"
         variant="primary"
@@ -51,7 +54,7 @@ export function DiscoveryClubsDetailActionsSection({
           type="body"
           weight="semibold"
         >
-          {t("confirmBooking")}
+          {ctaLabel ?? t("confirmBooking")}
         </Typography>
         <ArrowForward2 aria-hidden className={styles.confirmIcon} size={18} />
       </Button>

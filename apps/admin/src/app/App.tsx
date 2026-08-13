@@ -15,6 +15,19 @@ import { BannersListScreen } from "@/modules/banners/screens/BannersListScreen";
 import { AchievementsListScreen } from "@/modules/gamification/screens/AchievementsListScreen";
 import { PointRulesListScreen } from "@/modules/gamification/screens/PointRulesListScreen";
 import { PointsLedgerScreen } from "@/modules/gamification/screens/PointsLedgerScreen";
+import { FinanceLedgerScreen } from "@/modules/finance/screens/FinanceLedgerScreen";
+import { PaymentsListScreen } from "@/modules/finance/screens/PaymentsListScreen";
+import { PayoutsListScreen } from "@/modules/finance/screens/PayoutsListScreen";
+import { RefundsListScreen } from "@/modules/finance/screens/RefundsListScreen";
+import { BookingsListScreen } from "@/modules/bookings/screens/BookingsListScreen";
+import { PlatformPlansScreen } from "@/modules/catalog/screens/PlatformPlansScreen";
+import { FoodItemsScreen } from "@/modules/catalog/screens/FoodItemsScreen";
+import { ExercisesCatalogScreen } from "@/modules/catalog/screens/ExercisesCatalogScreen";
+import { MetricTypesScreen } from "@/modules/catalog/screens/MetricTypesScreen";
+import { CoachingListsScreen } from "@/modules/catalog/screens/CoachingListsScreen";
+import { SocialReportsScreen } from "@/modules/ops/screens/SocialReportsScreen";
+import { AuditLogsScreen } from "@/modules/ops/screens/AuditLogsScreen";
+import { NotificationTemplatesScreen } from "@/modules/ops/screens/NotificationTemplatesScreen";
 import { FaqListScreen } from "@/modules/support/screens/FaqListScreen";
 import { SupportTicketsScreen } from "@/modules/support/screens/SupportTicketsScreen";
 import { ClubReviewsScreen } from "@/modules/users/screens/ClubReviewsScreen";
@@ -157,6 +170,55 @@ export function AppRouter() {
             <Route
               element={<PointsLedgerScreen />}
               path="/dashboard/gamification/ledger"
+            />
+            <Route
+              element={<FinanceLedgerScreen />}
+              path="/dashboard/finance/ledger"
+            />
+            <Route
+              element={<PaymentsListScreen />}
+              path="/dashboard/finance/payments"
+            />
+            <Route
+              element={<PayoutsListScreen />}
+              path="/dashboard/finance/payouts"
+            />
+            <Route
+              element={<RefundsListScreen />}
+              path="/dashboard/finance/refunds"
+            />
+            <Route
+              element={<BookingsListScreen />}
+              path="/dashboard/bookings"
+            />
+            <Route
+              element={<PlatformPlansScreen />}
+              path="/dashboard/catalog/plans"
+            />
+            <Route
+              element={<FoodItemsScreen />}
+              path="/dashboard/catalog/food"
+            />
+            <Route
+              element={<ExercisesCatalogScreen />}
+              path="/dashboard/catalog/exercises"
+            />
+            <Route
+              element={<MetricTypesScreen />}
+              path="/dashboard/catalog/metrics"
+            />
+            <Route
+              element={<CoachingListsScreen />}
+              path="/dashboard/catalog/coaching"
+            />
+            <Route
+              element={<SocialReportsScreen />}
+              path="/dashboard/ops/social"
+            />
+            <Route element={<AuditLogsScreen />} path="/dashboard/ops/audit" />
+            <Route
+              element={<NotificationTemplatesScreen />}
+              path="/dashboard/ops/templates"
             />
           </Route>
           <Route

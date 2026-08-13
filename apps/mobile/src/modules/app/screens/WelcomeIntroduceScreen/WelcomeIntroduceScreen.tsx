@@ -12,10 +12,15 @@ import {
 import { markWelcomeSeen } from "@/modules/app/lib/welcome-storage";
 import { WelcomeIntroduceAchievementsSection } from "@/modules/app/sections/WelcomeIntroduceAchievementsSection";
 import { WelcomeIntroduceActivitiesSection } from "@/modules/app/sections/WelcomeIntroduceActivitiesSection";
+import { WelcomeIntroduceChatSection } from "@/modules/app/sections/WelcomeIntroduceChatSection";
+import { WelcomeIntroduceCoachSection } from "@/modules/app/sections/WelcomeIntroduceCoachSection";
 import { WelcomeIntroduceCommunitySection } from "@/modules/app/sections/WelcomeIntroduceCommunitySection";
 import { WelcomeIntroduceFooterSection } from "@/modules/app/sections/WelcomeIntroduceFooterSection";
+import { WelcomeIntroduceMealsSection } from "@/modules/app/sections/WelcomeIntroduceMealsSection";
 import { WelcomeIntroduceMetricsSection } from "@/modules/app/sections/WelcomeIntroduceMetricsSection";
+import { WelcomeIntroduceNutritionSection } from "@/modules/app/sections/WelcomeIntroduceNutritionSection";
 import { WelcomeIntroduceScoreSection } from "@/modules/app/sections/WelcomeIntroduceScoreSection";
+import { WelcomeIntroduceSleepSection } from "@/modules/app/sections/WelcomeIntroduceSleepSection";
 import { WelcomeIntroduceSlideShell } from "@/modules/app/sections/WelcomeIntroduceSlideShell";
 import { WelcomeIntroduceWorkoutsSection } from "@/modules/app/sections/WelcomeIntroduceWorkoutsSection";
 import { roleHomePath } from "@/shared/lib/role-routes";
@@ -124,7 +129,7 @@ export function WelcomeIntroduceScreen({
           <div className={styles.track()}>
             {Array.from({ length: WELCOME_INTRODUCE_SLIDE_COUNT }, (_, index) => {
               const isActive = slide === index;
-              /** Mount stage only for nearby snaps so inactive copy cannot paint through the phone. */
+              /** Mount stage only for nearby snaps so inactive copy cannot paint through. */
               const mountStage = Math.abs(slide - index) <= 1;
 
               return (
@@ -188,6 +193,32 @@ export function WelcomeIntroduceScreen({
                   ) : null}
 
                   {mountStage && index === 3 ? (
+                    <WelcomeIntroduceChatSection
+                      aiMessage={t("chat.aiMessage")}
+                      aiTime={t("chat.aiTime")}
+                      isActive={isActive}
+                      userMessage={t("chat.userMessage")}
+                      userTime={t("chat.userTime")}
+                      widgetCta={t("chat.widgetCta")}
+                      widgetSubtitle={t("chat.widgetSubtitle")}
+                      widgetTitle={t("chat.widgetTitle")}
+                    />
+                  ) : null}
+
+                  {mountStage && index === 4 ? (
+                    <WelcomeIntroduceCoachSection
+                      availability={t("coach.availability")}
+                      distance={t("coach.distance")}
+                      isActive={isActive}
+                      name={t("coach.name")}
+                      price={t("coach.price")}
+                      rating={t("coach.rating")}
+                      reviews={t("coach.reviews")}
+                      specialty={t("coach.specialty")}
+                    />
+                  ) : null}
+
+                  {mountStage && index === 5 ? (
                     <WelcomeIntroduceWorkoutsSection
                       bookmarkLabel={t("workouts.bookmark")}
                       caloriesUnit={t("workouts.caloriesUnit")}
@@ -206,12 +237,60 @@ export function WelcomeIntroduceScreen({
                     />
                   ) : null}
 
-                  {mountStage && index === 4 ? (
+                  {mountStage && index === 6 ? (
+                    <WelcomeIntroduceNutritionSection
+                      badge={t("nutrition.badge")}
+                      carbsLabel={t("nutrition.carbsLabel")}
+                      carbsValue={t("nutrition.carbsValue")}
+                      cta={t("nutrition.cta")}
+                      fatLabel={t("nutrition.fatLabel")}
+                      fatValue={t("nutrition.fatValue")}
+                      isActive={isActive}
+                      proteinLabel={t("nutrition.proteinLabel")}
+                      proteinValue={t("nutrition.proteinValue")}
+                      tipBody={t("nutrition.tipBody")}
+                      tipTitle={t("nutrition.tipTitle")}
+                      title={t("nutrition.title")}
+                    />
+                  ) : null}
+
+                  {mountStage && index === 7 ? (
+                    <WelcomeIntroduceMealsSection isActive={isActive} />
+                  ) : null}
+
+                  {mountStage && index === 8 ? (
+                    <WelcomeIntroduceSleepSection
+                      awakeDuration={t("sleep.awakeDuration")}
+                      awakeLabel={t("sleep.awake")}
+                      awakePercent={t("sleep.awakePercent")}
+                      breakdownTitle={t("sleep.breakdownTitle")}
+                      deepDuration={t("sleep.deepDuration")}
+                      deepLabel={t("sleep.deep")}
+                      deepPercent={t("sleep.deepPercent")}
+                      insight={t("sleep.insight")}
+                      isActive={isActive}
+                      lightDuration={t("sleep.lightDuration")}
+                      lightLabel={t("sleep.light")}
+                      lightPercent={t("sleep.lightPercent")}
+                      qualityScore={t("sleep.qualityScore")}
+                      qualityStatus={t("sleep.qualityStatus")}
+                      qualityTitle={t("sleep.qualityTitle")}
+                      remDuration={t("sleep.remDuration")}
+                      remLabel={t("sleep.rem")}
+                      remPercent={t("sleep.remPercent")}
+                      streakTitle={t("sleep.streakTitle")}
+                      streakValue={t("sleep.streakValue")}
+                    />
+                  ) : null}
+
+                  {mountStage && index === 9 ? (
                     <WelcomeIntroduceCommunitySection
                       author={t("community.author")}
                       body={t("community.body")}
                       comments={t("community.comments")}
-                      hashtags={t("community.hashtags").split(/\s+/).filter(Boolean)}
+                      hashtags={t("community.hashtags")
+                        .split(/\s+/)
+                        .filter(Boolean)}
                       isActive={isActive}
                       likes={t("community.likes")}
                       menuLabel={t("community.menu")}
@@ -221,7 +300,7 @@ export function WelcomeIntroduceScreen({
                     />
                   ) : null}
 
-                  {mountStage && index === 5 ? (
+                  {mountStage && index === 10 ? (
                     <WelcomeIntroduceAchievementsSection
                       isActive={isActive}
                       titles={{

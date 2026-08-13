@@ -10,8 +10,4 @@ export type AthleteBookingDetailScreenProps = {
 export type BookingTimelineStepState = "done" | "current" | "pending";
 
 export type BookingTimelineStepId =
-  | "created"
-  | "payment"
-  | "confirm"
-  | "attend"
-  | "finish";
+  "created" | "approval" | "payment" | "confirm" | "attend" | "finish";

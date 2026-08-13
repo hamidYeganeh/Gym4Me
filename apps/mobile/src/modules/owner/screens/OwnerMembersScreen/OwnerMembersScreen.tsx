@@ -17,8 +17,12 @@ import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
-import type { OwnerMembershipState } from "../../lib/owner-members-data";
+import { useMemo, useRef, useState } from "react";
+import { parseMemberImportCsv } from "../../lib/member-import-csv";
+import type {
+  OwnerMember,
+  OwnerMembershipState,
+} from "../../lib/owner-members-data";
 import { ownerMembersScreenStyles as styles } from "./OwnerMembersScreen.styles";
 import type {
   OwnerMembersFilterId,
@@ -57,6 +61,13 @@ export function OwnerMembersScreen({
   members,
   stats,
   className,
+  plans = [],
+  pending = false,
+  onCheckIn,
+  onFreeze,
+  onUnfreeze,
+  onSell,
+  onImport,
 }: OwnerMembersScreenProps) {
   const t = useTranslations("OwnerMembers");
   const router = useRouter();
@@ -65,6 +76,52 @@ export function OwnerMembersScreen({
   const [checkedInIds, setCheckedInIds] = useState<Set<string>>(
     () => new Set(),
   );
+  const [pendingId, setPendingId] = useState<string | null>(null);
+  const [sellPlanId, setSellPlanId] = useState("");
+  const [sellName, setSellName] = useState("");
+  const [sellPhone, setSellPhone] = useState("");
+  const [sellChannel, setSellChannel] = useState<
+    "cash" | "pos" | "card_to_card" | "mixed"
+  >("cash");
+  const [sellPaidAmount, setSellPaidAmount] = useState("");
+  const [sellExternalRef, setSellExternalRef] = useState("");
+  const [cashTender, setCashTender] = useState("");
+  const [posTender, setPosTender] = useState("");
+  const [cardTender, setCardTender] = useState("");
+  const [debtDueAt, setDebtDueAt] = useState(() => {
+    const date = new Date();
+    date.setDate(date.getDate() + 30);
+    return date.toISOString().slice(0, 10);
+  });
+  const [installmentCount, setInstallmentCount] = useState("1");
+  const [importRows, setImportRows] = useState<
+    ReturnType<typeof parseMemberImportCsv>
+  >([]);
+  const [importSummary, setImportSummary] = useState<{
+    valid: number;
+    imported: number;
+    skipped: number;
+    error: number;
+  } | null>(null);
+  const [importMessage, setImportMessage] = useState<string | null>(null);
+  const [importPending, setImportPending] = useState(false);
+  const saleAttemptKey = useRef<string | null>(null);
+
+  const selectedPlan = plans.find((plan) => plan.id === sellPlanId);
+  const planAmount = selectedPlan?.pricing.amount ?? 0;
+  const collectedAmount = sellPaidAmount.trim()
+    ? Number(sellPaidAmount)
+    : planAmount;
+  const mixedTenders = [
+    { channel: "cash" as const, amount: Number(cashTender) },
+    { channel: "pos" as const, amount: Number(posTender) },
+    { channel: "card_to_card" as const, amount: Number(cardTender) },
+  ].filter((tender) => Number.isFinite(tender.amount) && tender.amount > 0);
+  const mixedIsValid =
+    sellChannel !== "mixed" ||
+    (mixedTenders.length >= 2 &&
+      mixedTenders.reduce((sum, tender) => sum + tender.amount, 0) ===
+        collectedAmount);
 
   const filteredMembers = useMemo(() => {
     const normalizedQuery = query.trim();
@@ -80,16 +137,94 @@ export function OwnerMembersScreen({
     });
   }, [members, query, activeFilter]);
 
-  const toggleCheckIn = (memberId: string) => {
-    setCheckedInIds((previous) => {
-      const next = new Set(previous);
-      if (next.has(memberId)) {
-        next.delete(memberId);
-      } else {
-        next.add(memberId);
+  const toggleCheckIn = async (member: OwnerMember) => {
+    if (checkedInIds.has(member.id) || pendingId) return;
+    if (onCheckIn) {
+      setPendingId(member.id);
+      try {
+        await onCheckIn(member);
+        setCheckedInIds((previous) => new Set(previous).add(member.id));
+      } catch {
+        // Keep UI unchanged on failure; gate may toast later.
+      } finally {
+        setPendingId(null);
       }
-      return next;
+      return;
+    }
+    setCheckedInIds((previous) => new Set(previous).add(member.id));
+  };
+
+  const submitSale = async () => {
+    if (!onSell || !selectedPlan) return;
+    const key =
+      saleAttemptKey.current ??
+      `desk-membership:${globalThis.crypto?.randomUUID?.() ?? Date.now()}`;
+    saleAttemptKey.current = key;
+    await onSell({
+      planId: selectedPlan.id,
+      guestName: sellName.trim(),
+      guestPhone: sellPhone.trim(),
+      idempotencyKey: key,
+      channel: sellChannel,
+      paidAmount:
+        sellPaidAmount.trim() && Number.isFinite(collectedAmount)
+          ? collectedAmount
+          : undefined,
+      externalRef: sellExternalRef.trim() || undefined,
+      tenders: sellChannel === "mixed" ? mixedTenders : undefined,
+      debt:
+        collectedAmount < planAmount
+          ? {
+              dueAt: new Date(`${debtDueAt}T23:59:59+03:30`).toISOString(),
+              installmentCount: Math.max(1, Number(installmentCount) || 1),
+            }
+          : undefined,
     });
+    saleAttemptKey.current = null;
+    setSellName("");
+    setSellPhone("");
+    setSellPaidAmount("");
+    setSellExternalRef("");
+    setCashTender("");
+    setPosTender("");
+    setCardTender("");
+  };
+
+  const validateImportFile = async (file: File) => {
+    if (!onImport) return;
+    setImportPending(true);
+    setImportMessage(null);
+    try {
+      const rows = parseMemberImportCsv(await file.text());
+      setImportRows(rows);
+      const result = await onImport(rows, sellPlanId || undefined, true);
+      setImportSummary(result.summary);
+    } catch (error) {
+      setImportRows([]);
+      setImportSummary(null);
+      setImportMessage(
+        error instanceof Error ? error.message : t("importError"),
+      );
+    } finally {
+      setImportPending(false);
+    }
+  };
+
+  const commitImport = async () => {
+    if (!onImport || importRows.length === 0) return;
+    setImportPending(true);
+    setImportMessage(null);
+    try {
+      const result = await onImport(importRows, sellPlanId || undefined, false);
+      setImportSummary(result.summary);
+      setImportMessage(t("importDone"));
+    } catch (error) {
+      setImportMessage(
+        error instanceof Error ? error.message : t("importError"),
+      );
+    } finally {
+      setImportPending(false);
+    }
   };
 
   return (
@@ -106,6 +241,15 @@ export function OwnerMembersScreen({
               variant="ghost"
             >
               <ChevronLeft className="text-foreground" size={22} />
+            </Button>
+          }
+          endContent={
+            <Button
+              onPress={() => router.push("/owner/check-in")}
+              size="sm"
+              variant="secondary"
+            >
+              {t("checkInDeskLink")}
             </Button>
           }
         />
@@ -143,6 +287,190 @@ export function OwnerMembersScreen({
             value={stats.weekValue}
           />
         </div>
+
+        {onSell && plans.length > 0 ? (
+          <section className={styles.groupCard}>
+            <div className="flex flex-col gap-3 p-4">
+              <Typography type="body" weight="semibold">
+                {t("sellTitle")}
+              </Typography>
+              <TextField>
+                <Label>{t("sellPlanLabel")}</Label>
+                <select
+                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm"
+                  onChange={(event) => setSellPlanId(event.target.value)}
+                  value={sellPlanId}
+                >
+                  <option value="">—</option>
+                  {plans.map((plan) => (
+                    <option key={plan.id} value={plan.id}>
+                      {plan.name}
+                    </option>
+                  ))}
+                </select>
+              </TextField>
+              {selectedPlan ? (
+                <Typography type="body-sm">
+                  {t("sellPlanPrice", {
+                    amount: selectedPlan.pricing.amount.toLocaleString("fa-IR"),
+                  })}
+                </Typography>
+              ) : null}
+              <TextField>
+                <Label>{t("sellNameLabel")}</Label>
+                <Input
+                  onChange={(event) => setSellName(event.target.value)}
+                  value={sellName}
+                />
+              </TextField>
+              <TextField>
+                <Label>{t("sellPhoneLabel")}</Label>
+                <Input
+                  onChange={(event) => setSellPhone(event.target.value)}
+                  value={sellPhone}
+                />
+              </TextField>
+              <TextField>
+                <Label>{t("sellChannelLabel")}</Label>
+                <select
+                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm"
+                  onChange={(event) =>
+                    setSellChannel(event.target.value as typeof sellChannel)
+                  }
+                  value={sellChannel}
+                >
+                  <option value="cash">{t("channelCash")}</option>
+                  <option value="pos">{t("channelPos")}</option>
+                  <option value="card_to_card">{t("channelCard")}</option>
+                  <option value="mixed">{t("channelMixed")}</option>
+                </select>
+              </TextField>
+              <TextField>
+                <Label>{t("sellPaidAmountLabel")}</Label>
+                <Input
+                  inputMode="numeric"
+                  onChange={(event) => setSellPaidAmount(event.target.value)}
+                  placeholder={planAmount ? String(planAmount) : undefined}
+                  value={sellPaidAmount}
+                />
+              </TextField>
+              {sellChannel === "mixed" ? (
+                <div className="grid grid-cols-3 gap-2">
+                  <TextField>
+                    <Label>{t("channelCash")}</Label>
+                    <Input
+                      inputMode="numeric"
+                      onChange={(event) => setCashTender(event.target.value)}
+                      value={cashTender}
+                    />
+                  </TextField>
+                  <TextField>
+                    <Label>{t("channelPos")}</Label>
+                    <Input
+                      inputMode="numeric"
+                      onChange={(event) => setPosTender(event.target.value)}
+                      value={posTender}
+                    />
+                  </TextField>
+                  <TextField>
+                    <Label>{t("channelCard")}</Label>
+                    <Input
+                      inputMode="numeric"
+                      onChange={(event) => setCardTender(event.target.value)}
+                      value={cardTender}
+                    />
+                  </TextField>
+                </div>
+              ) : null}
+              <TextField>
+                <Label>{t("sellReferenceLabel")}</Label>
+                <Input
+                  onChange={(event) => setSellExternalRef(event.target.value)}
+                  value={sellExternalRef}
+                />
+              </TextField>
+              {collectedAmount < planAmount ? (
+                <div className="grid grid-cols-2 gap-2">
+                  <TextField>
+                    <Label>{t("debtDueLabel")}</Label>
+                    <Input
+                      onChange={(event) => setDebtDueAt(event.target.value)}
+                      type="date"
+                      value={debtDueAt}
+                    />
+                  </TextField>
+                  <TextField>
+                    <Label>{t("installmentCountLabel")}</Label>
+                    <Input
+                      inputMode="numeric"
+                      onChange={(event) =>
+                        setInstallmentCount(event.target.value)
+                      }
+                      value={installmentCount}
+                    />
+                  </TextField>
+                </div>
+              ) : null}
+              <Button
+                isDisabled={
+                  pending ||
+                  !sellPlanId ||
+                  !sellName.trim() ||
+                  !sellPhone.trim() ||
+                  !Number.isFinite(collectedAmount) ||
+                  collectedAmount < 0 ||
+                  collectedAmount > planAmount ||
+                  !mixedIsValid
+                }
+                onPress={() => void submitSale()}
+                variant="primary"
+              >
+                {t("sellSubmit")}
+              </Button>
+            </div>
+          </section>
+        ) : null}
+
+        {onImport && plans.length > 0 ? (
+          <section className={styles.groupCard}>
+            <div className="flex flex-col gap-3 p-4">
+              <Typography type="body" weight="semibold">
+                {t("importTitle")}
+              </Typography>
+              <Typography type="body-sm">{t("importHint")}</Typography>
+              <input
+                accept=".csv,text/csv"
+                disabled={importPending}
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (file) void validateImportFile(file);
+                }}
+                type="file"
+              />
+              {importSummary ? (
+                <Typography type="body-sm">
+                  {t("importSummary", importSummary)}
+                </Typography>
+              ) : null}
+              {importMessage ? (
+                <Typography type="body-sm">{importMessage}</Typography>
+              ) : null}
+              <Button
+                isDisabled={
+                  importPending ||
+                  importRows.length === 0 ||
+                  !sellPlanId ||
+                  Boolean(importSummary?.error)
+                }
+                isPending={importPending}
+                onPress={() => void commitImport()}
+                variant="secondary"
+              >
+                {t("importCommit")}
+              </Button>
+            </div>
+          </section>
+        ) : null}
 
         <TextField className={styles.search}>
           <Label>{t("searchLabel")}</Label>
@@ -237,8 +565,11 @@ export function OwnerMembersScreen({
                     <div className={styles.rowEnd}>
                       <Button
                         aria-label={t("checkInAction", { name: member.name })}
+                        isDisabled={Boolean(pendingId) || pending}
                         isIconOnly
-                        onPress={() => toggleCheckIn(member.id)}
+                        onPress={() => {
+                          void toggleCheckIn(member);
+                        }}
                         size="lg"
                         variant="ghost"
                       >
@@ -249,6 +580,32 @@ export function OwnerMembersScreen({
                           size={22}
                         />
                       </Button>
+                      {member.membershipState === "frozen" && onUnfreeze ? (
+                        <Button
+                          isDisabled={pending}
+                          onPress={() => {
+                            void onUnfreeze(member);
+                          }}
+                          size="sm"
+                          variant="secondary"
+                        >
+                          {t("unfreezeAction")}
+                        </Button>
+                      ) : null}
+                      {member.membershipState !== "frozen" &&
+                      member.membershipState !== "expired" &&
+                      onFreeze ? (
+                        <Button
+                          isDisabled={pending}
+                          onPress={() => {
+                            void onFreeze(member);
+                          }}
+                          size="sm"
+                          variant="outline"
+                        >
+                          {t("freezeAction")}
+                        </Button>
+                      ) : null}
                     </div>
                   </div>
                   {index < filteredMembers.length - 1 ? (

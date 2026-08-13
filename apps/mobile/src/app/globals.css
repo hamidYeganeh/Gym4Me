@@ -7,7 +7,7 @@
 @theme inline {
   --font-sans:
     var(--font-iran-sans-x), Tahoma, ui-sans-serif, system-ui, sans-serif;
-  --font-satisfy: var(--font-satisfy-family), cursive;
+  --font-satisfy: "Brush Script MT", "Segoe Script", cursive;
   /* AdaptiveSlider sizing tokens */
   --spacing-13: 3.25rem;
   --container-xs: 20rem;
@@ -63,4 +63,3 @@ textarea,
     opacity: 1;
   }
 }
-

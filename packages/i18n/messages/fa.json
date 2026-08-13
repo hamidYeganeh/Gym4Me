@@ -87,10 +87,10 @@
       }
     },
     "Welcome": {
-      "title": "به Gym4Me خوش آمدید!",
-      "subtitle": "مسیر ورود خود را انتخاب کنید.",
+      "title": "به نهایت Gym4Me خوش آمدید!",
+      "subtitle": "تناسب‌اندام هوشمند برای رشد و تقویت استقامت، هر زمان و هر جا.",
       "brandAriaLabel": "Gym4Me",
-      "heroAlt": "فضای باشگاه و تمرین",
+      "heroAlt": "دو ورزشکار پشت‌به‌پشت در نور کنتراست بالا",
       "ctaGetStarted": "شروع کنید",
       "alreadyHaveAccount": "قبلاً حساب دارید؟",
       "ctaSignIn": "ورود"
@@ -137,33 +137,85 @@
           "status": "محدوده استراحت طبیعی"
         }
       },
+      "chat": {
+        "userMessage": "امروز چه تمرینی بهم پیشنهاد می‌کنی؟",
+        "userTime": "۱۰:۲۴",
+        "aiMessage": "با توجه به ریکاوری و هدفت، این جلسهٔ سبک رو پیشنهاد می‌کنم:",
+        "aiTime": "۱۰:۲۴",
+        "widgetTitle": "پیاده‌روی قدرتی ۲۰ دقیقه‌ای",
+        "widgetSubtitle": "شدت سبک · کالری تقریبی ۹۰",
+        "widgetCta": "شروع جلسه"
+      },
+      "coach": {
+        "name": "مربی آرنولد سوارزنیبل",
+        "price": "۱۰۰ تا ۲۵۰ دلار / جلسه",
+        "specialty": "متخصص HIIT",
+        "distance": "۵۰۰ متر",
+        "rating": "۴.۵",
+        "reviews": "۵۰۰",
+        "availability": "در دسترس از راه دور"
+      },
+      "nutrition": {
+        "badge": "پیشنهاد هوشمند",
+        "title": "نودل نخودی با ترب و بادام‌زمینی",
+        "proteinValue": "۶۱۲c",
+        "proteinLabel": "پروتئین",
+        "fatValue": "۱۲۵g",
+        "fatLabel": "چربی",
+        "carbsValue": "۷۷g",
+        "carbsLabel": "کربوهیدرات",
+        "cta": "مشاهده جزئیات",
+        "tipTitle": "نکتهٔ تغذیه",
+        "tipBody": "برای انرژی پایدار، پروتئین و فیبر را در هر وعده متعادل نگه دار."
+      },
+      "sleep": {
+        "breakdownTitle": "جزئیات",
+        "rem": "REM",
+        "light": "سبک",
+        "deep": "عمیق",
+        "awake": "بیداری",
+        "remDuration": "۶.۲س",
+        "remPercent": "۶۶٪",
+        "lightDuration": "۲.۲س",
+        "lightPercent": "۲۴٪",
+        "deepDuration": "۳۰د",
+        "deepPercent": "۱۱٪",
+        "awakeDuration": "۸د",
+        "awakePercent": "۵٪",
+        "qualityTitle": "کیفیت خواب",
+        "qualityScore": "۳",
+        "qualityStatus": "عادی",
+        "streakTitle": "استریک",
+        "streakValue": "۱۷ روز",
+        "insight": "نسبت به ماه قبل ۳۳٪ کمتر خوابیدی. بیا بیشترش کنیم! 👍"
+      },
       "workouts": {
         "bookmark": "نشان‌گذاری",
         "durationUnit": "دقیقه",
         "ratingUnit": "ستاره",
         "caloriesUnit": "kcal",
         "cards": {
+          "jogging": {
+            "category": "کاردیو",
+            "title": "برنامه دویدن نهایی",
+            "coach": "با مربی الکس رد"
+          },
           "backAbs": {
             "category": "بالاتنه",
             "title": "برنامه تمرین پشت و شکم",
             "coach": "با مربی روبی وایت"
           },
-          "hiit": {
-            "category": "HIIT",
-            "title": "تمرین تناوبی شدید تمام‌بدن",
-            "coach": "با مربی مایا لین"
-          },
-          "mobility": {
+          "yoga": {
             "category": "انعطاف",
-            "title": "جریان تحرک و ریکاوری",
-            "coach": "با مربی آدریان کول"
+            "title": "یوگای انعطاف ۱۰۱",
+            "coach": "با مربی رندی چن"
           }
         }
       },
       "community": {
         "author": "چارلز دی. اگزاویه",
         "postedAt": "۳ دقیقه پیش",
-        "body": "این هفته با مربی Sandow AI روی باسن کار کردم و حالم خیلی بهتره!\n\nپیشنهادهای شخصی‌سازی‌شده واقعاً فوق‌العاده‌ست!!",
+        "body": "این هفته با مربی Gym4Me AI روی باسن کار کردم و حالم خیلی بهتره!\n\nپیشنهادهای شخصی‌سازی‌شده واقعاً فوق‌العاده‌ست!!",
         "hashtags": "#glute4eva #letsgetfit",
         "views": "۵٬۸۷۴",
         "likes": "۲۱۵",
@@ -189,22 +241,42 @@
           "subtitle": "امتیازی متناسب با سلامت و سبک زندگی منحصربه‌فرد خودت بگیر."
         },
         "1": {
-          "title": "پیشنهاد فعالیت روزانه بگیر",
-          "subtitle": "نکته‌هایی متناسب با تو برای فعال و پرانرژی ماندن."
+          "title": "پیشنهاد فعالیت روزانه",
+          "subtitle": "پیشنهادهای مبتنی بر هوش مصنوعی برای بهینه‌سازی تمرین‌های روزانه‌ات دریافت کن."
         },
         "2": {
           "title": "متریک تناسب‌اندامی که تو را می‌فهمد.",
           "subtitle": "بینش‌هایی طراحی‌شده حول نیازهای منحصربه‌فرد و حرفه‌ای تناسب‌اندامت."
         },
         "3": {
+          "title": "پیشنهاد فعالیت روزانه بگیر",
+          "subtitle": "نکته‌هایی متناسب با تو برای فعال و پرانرژی ماندن."
+        },
+        "4": {
+          "title": "مربی تناسب‌اندام ایده‌آلت را پیدا کن.",
+          "subtitle": "با مربیان متخصصی که با سبک و اهداف تو هم‌خوانی دارند ارتباط بگیر."
+        },
+        "5": {
           "title": "کتابخانهٔ بی‌نظیر تمرین‌ها را ببین",
           "subtitle": "به مجموعهٔ گسترده‌ای از تمرین‌ها برای همه سطوح و اهداف دسترسی داشته باش."
         },
-        "4": {
+        "6": {
+          "title": "بینش و پیشنهاد تغذیه روزانه",
+          "subtitle": "هوشمندتر بخور، بهتر زندگی کن؛ با توصیه‌های شخصی‌سازی‌شده برای تو."
+        },
+        "7": {
+          "title": "مدیریت تغذیه و وعده برای تو",
+          "subtitle": "برنامهٔ غذایی و بینش تغذیه‌ای شخصی برای سوخت‌رسانی به پیشرفتت بگیر."
+        },
+        "8": {
+          "title": "کیفیت خوابت را رصد و تحلیل کن",
+          "subtitle": "الگوی خوابت را پایش کن و برای بهبود استراحت و ریکاوری بینش بگیر."
+        },
+        "9": {
           "title": "جامعه و منابع تناسب‌اندام را کشف کن",
           "subtitle": "به یک جامعهٔ پشتیبان بپیوند و به محتوای ارزشمند تناسب‌اندام دسترسی داشته باش."
         },
-        "5": {
+        "10": {
           "title": "دستاوردها و چالش‌های سلامت را باز کن",
           "subtitle": "با جوایز، چالش‌ها و دستاوردهای مرحله‌ای انگیزه‌ات را حفظ کن."
         }
@@ -742,20 +814,23 @@
     },
     "NotificationSettings": {
       "title": "تنظیمات اعلان",
-      "subtitle": "اعلان‌های خود را اینجا تغییر دهید.",
+      "subtitle": "کانال‌های دریافت اعلان را اینجا مدیریت کنید.",
       "back": "بازگشت",
-      "healthGroup": "یادآور سلامت",
-      "activityReminder": "یادآور فعالیت",
-      "activityHint": "یادآوری برای حرکت و فعالیت روزانه.",
-      "workoutReminder": "یادآور تمرین",
-      "pushNotification": "اعلان پوش",
-      "pushHint": "فعال‌سازی اعلان‌های فوری",
-      "hydrationReminder": "یادآور آب‌رسانی",
-      "nutritionReminder": "یادآور تغذیه",
-      "insightGroup": "بینش",
-      "progressTips": "نکات پیشرفت",
-      "weeklyInsight": "بینش هفتگی",
-      "weeklyHint": "خلاصه هفتگی پیشرفت و نکات."
+      "channelsGroup": "کانال‌ها",
+      "push": "اعلان پوش",
+      "pushHint": "اعلان‌های فوری روی دستگاه",
+      "sms": "پیامک",
+      "smsHint": "اعلان‌های مهم از طریق SMS",
+      "inApp": "درون‌برنامه",
+      "inAppHint": "نمایش در صندوق اعلان‌ها",
+      "email": "ایمیل",
+      "emailHint": "ارسال خلاصه و اعلان به ایمیل",
+      "marketing": "بازاریابی",
+      "marketingHint": "پیشنهادها و خبرهای تبلیغاتی",
+      "inboxGroup": "صندوق اعلان",
+      "openInbox": "مشاهده اعلان‌ها",
+      "inboxHint": "لیست اعلان‌های دریافتی",
+      "errorSave": "ذخیره تنظیمات ناموفق بود."
     },
     "HelpCenter": {
       "title": "مرکز راهنما",
@@ -768,6 +843,26 @@
       "feedback": "بازخورد",
       "feedbackHint": "نظر و پیشنهاد خود را ارسال کنید",
       "supportPhone": "+982100000000"
+    },
+    "Faq": {
+      "title": "سؤالات متداول",
+      "subtitle": "پاسخ پرسش‌های پرتکرار کاربران Gym4Me.",
+      "back": "بازگشت",
+      "empty": "هنوز سؤالی ثبت نشده است."
+    },
+    "SupportTickets": {
+      "title": "پشتیبانی",
+      "subtitle": "تیکت‌های خود را ببینید یا درخواست جدید ثبت کنید.",
+      "back": "بازگشت",
+      "empty": "تیکتی ندارید.",
+      "newTitle": "تیکت جدید",
+      "subjectLabel": "موضوع",
+      "subjectPlaceholder": "مثلاً مشکل پرداخت",
+      "bodyLabel": "توضیحات",
+      "bodyPlaceholder": "مشکل را با جزئیات بنویسید…",
+      "submit": "ارسال تیکت",
+      "submitting": "در حال ارسال…",
+      "create_failed": "ارسال تیکت ناموفق بود. دوباره تلاش کنید."
     },
     "Settings": {
       "title": "تنظیمات",
@@ -782,6 +877,16 @@
       "rolesHint": "افزودن نقش مربی یا باشگاه‌دار",
       "achievements": "امتیازها و نشان‌ها",
       "achievementsHint": "امتیازهای شما و نشان‌های کسب‌شده",
+      "checkIns": "تاریخچه ورود",
+      "checkInsHint": "ورودهای ثبت‌شده به باشگاه",
+      "workouts": "برنامه‌های تمرینی",
+      "workoutsHint": "برنامه‌ها و لاگ جلسات",
+      "social": "فید اجتماعی",
+      "socialHint": "پست‌ها، پسندها و نظرها",
+      "nutrition": "تغذیه",
+      "nutritionHint": "برنامه‌های غذایی و لاگ وعده‌ها",
+      "referral": "دعوت دوستان",
+      "referralHint": "کد معرف و دعوت‌ها",
       "preferencesGroup": "ترجیحات",
       "notifications": "اعلان‌ها",
       "notificationsHint": "دریافت یادآوری و خبرهای مهم",
@@ -1069,7 +1174,7 @@
   "Admin": {
     "Analytics": {
       "title": "آنالیتیکس",
-      "subtitle": "نمای کلی عملکرد پلتفرم؛ داده‌ها نمونه هستند و به‌زودی به سرویس آمار متصل می‌شوند.",
+      "subtitle": "شاخص‌های کلیدی از داده واقعی پلتفرم محاسبه می‌شوند؛ تحلیل‌های تکمیلی نمونه هستند.",
       "searchPlaceholder": "جستجو در گزارش‌ها...",
       "searchAriaLabel": "جستجو در آنالیتیکس",
       "periods": {
@@ -1078,7 +1183,7 @@
         "quarter": "سه‌ماهه"
       },
       "kpi": {
-        "activeUsers": "کاربران فعال",
+        "activeUsers": "کاربران جدید",
         "activeUsersUnit": "نفر",
         "bookings": "رزروها",
         "bookingsUnit": "رزرو",
@@ -1179,6 +1284,10 @@
       "profile": "پروفایل",
       "settings": "تنظیمات",
       "analytics": "آمار",
+      "finance": "مالی",
+      "bookings": "رزروها",
+      "catalogs": "کاتالوگ‌ها",
+      "ops": "عملیات",
       "logout": "خروج"
     },
     "Articles": {
@@ -1508,6 +1617,399 @@
         }
       }
     },
+    "Finance": {
+      "ledgerTitle": "دفتر کل",
+      "ledgerSubtitle": "ورودی‌های تغییرناپذیر مالی پلتفرم.",
+      "filterAll": "همه",
+      "refresh": "به‌روزرسانی",
+      "loading": "در حال بارگذاری...",
+      "loadingMore": "در حال دریافت موارد بیشتر...",
+      "errorLoad": "بارگذاری دفتر کل ناموفق بود.",
+      "empty": "ورودی‌ای ثبت نشده است.",
+      "actionError": "انجام عملیات ناموفق بود.",
+      "cancel": "انصراف",
+      "searchAriaLabel": "جستجوی مالی",
+      "searchPlaceholder": "جستجو...",
+      "tabs": {
+        "ledger": "دفتر کل",
+        "payments": "پرداخت‌ها",
+        "payouts": "تسویه‌ها",
+        "refunds": "استردادها"
+      },
+      "infinite": {
+        "summary": "{loaded} از {total} ورودی"
+      },
+      "columns": {
+        "kind": "نوع",
+        "occurredAt": "زمان",
+        "paymentId": "پرداخت",
+        "net": "خالص",
+        "note": "یادداشت"
+      },
+      "payments": {
+        "title": "پرداخت‌ها",
+        "subtitle": "همه پرداخت‌های پلتفرم با جزئیات تفکیک مبلغ.",
+        "empty": "پرداختی ثبت نشده است.",
+        "errorLoad": "بارگذاری پرداخت‌ها ناموفق بود.",
+        "summary": "{loaded} از {total} پرداخت",
+        "columns": {
+          "orderId": "شماره سفارش",
+          "purpose": "بابت",
+          "channel": "کانال",
+          "status": "وضعیت",
+          "gross": "مبلغ",
+          "net": "خالص",
+          "createdAt": "تاریخ"
+        }
+      },
+      "payouts": {
+        "title": "تسویه‌ها",
+        "subtitle": "تسویه با باشگاه‌ها و مربیان.",
+        "empty": "تسویه‌ای ثبت نشده است.",
+        "errorLoad": "بارگذاری تسویه‌ها ناموفق بود.",
+        "summary": "{loaded} از {total} تسویه",
+        "columns": {
+          "recipient": "گیرنده",
+          "amount": "مبلغ",
+          "period": "دوره",
+          "status": "وضعیت",
+          "createdAt": "ایجاد",
+          "actions": "عملیات"
+        },
+        "actions": {
+          "settle": "تسویه",
+          "settleTitle": "تسویه پرداخت",
+          "settleBody": "این تسویه به عنوان پرداخت‌شده ثبت می‌شود و در دفتر کل درج خواهد شد.",
+          "draft": "پیش‌نویس دوره",
+          "draftTitle": "پیش‌نویس تسویه دوره",
+          "draftBody": "برای باشگاه انتخابی، تسویه دوره اخیر بر اساس دفتر کل محاسبه و پیش‌نویس می‌شود.",
+          "clubIdLabel": "شناسه باشگاه",
+          "fromLabel": "از تاریخ (YYYY-MM-DD)",
+          "toLabel": "تا تاریخ (YYYY-MM-DD)",
+          "confirm": "تایید",
+          "dispute": "اختلاف",
+          "disputeTitle": "ثبت اختلاف",
+          "disputeReasonLabel": "دلیل اختلاف",
+          "resolve": "رسیدگی",
+          "resolveTitle": "رسیدگی به اختلاف",
+          "resolveAccept": "تایید اختلاف",
+          "resolveReject": "رد اختلاف",
+          "noteLabel": "یادداشت"
+        }
+      },
+      "refunds": {
+        "title": "استردادها",
+        "subtitle": "رزروهای در انتظار استرداد وجه.",
+        "empty": "درخواست استردادی وجود ندارد.",
+        "errorLoad": "بارگذاری استردادها ناموفق بود.",
+        "summary": "{loaded} از {total} درخواست",
+        "columns": {
+          "code": "کد رزرو",
+          "club": "باشگاه",
+          "resource": "منبع",
+          "total": "مبلغ",
+          "startsAt": "شروع",
+          "actions": "عملیات"
+        },
+        "actions": {
+          "refund": "استرداد",
+          "refundTitle": "استرداد وجه",
+          "refundBody": "مبلغ رزرو به کیف پول کاربر برگردانده می‌شود و در دفتر کل ثبت خواهد شد."
+        }
+      }
+    },
+    "Bookings": {
+      "title": "رزروها",
+      "subtitle": "همه رزروهای پلتفرم برای بررسی و رسیدگی.",
+      "filterAll": "همه",
+      "refresh": "به‌روزرسانی",
+      "loading": "در حال بارگذاری...",
+      "loadingMore": "در حال دریافت موارد بیشتر...",
+      "errorLoad": "بارگذاری رزروها ناموفق بود.",
+      "empty": "رزروی ثبت نشده است.",
+      "actionError": "انجام عملیات ناموفق بود.",
+      "cancel": "انصراف",
+      "infinite": {
+        "summary": "{loaded} از {total} رزرو"
+      },
+      "columns": {
+        "code": "کد",
+        "status": "وضعیت",
+        "resource": "منبع",
+        "club": "باشگاه",
+        "startsAt": "شروع",
+        "total": "مبلغ",
+        "actions": "عملیات"
+      },
+      "actions": {
+        "cancelBooking": "لغو",
+        "cancelTitle": "لغو رزرو",
+        "cancelBody": "این رزرو توسط ادمین پلتفرم لغو می‌شود.",
+        "reasonLabel": "دلیل لغو",
+        "refund": "استرداد",
+        "refundTitle": "استرداد وجه",
+        "refundBody": "مبلغ رزرو به کیف پول کاربر برگردانده می‌شود.",
+        "confirm": "تایید"
+      }
+    },
+    "Catalog": {
+      "searchAriaLabel": "جستجوی کاتالوگ",
+      "searchPlaceholder": "جستجو...",
+      "filterAll": "همه",
+      "refresh": "به‌روزرسانی",
+      "loading": "در حال بارگذاری...",
+      "loadingMore": "در حال دریافت موارد بیشتر...",
+      "actionError": "انجام عملیات ناموفق بود.",
+      "cancel": "انصراف",
+      "save": "ذخیره",
+      "create": "افزودن",
+      "edit": "ویرایش",
+      "archive": "بایگانی",
+      "tabs": {
+        "plans": "پلن‌های پلتفرم",
+        "food": "بانک غذایی",
+        "exercises": "حرکات",
+        "metrics": "شاخص‌ها",
+        "coaching": "مربی‌گری"
+      },
+      "plans": {
+        "title": "پلن‌های اشتراک پلتفرم",
+        "subtitle": "پلن‌های SaaS برای مربیان و مالکان باشگاه.",
+        "empty": "پلنی تعریف نشده است.",
+        "errorLoad": "بارگذاری پلن‌ها ناموفق بود.",
+        "summary": "{loaded} از {total} پلن",
+        "columns": {
+          "code": "کد",
+          "name": "نام",
+          "amount": "مبلغ",
+          "periodDays": "دوره (روز)",
+          "status": "وضعیت",
+          "actions": "عملیات"
+        },
+        "fields": {
+          "code": "کد پلن",
+          "name": "نام پلن",
+          "description": "توضیحات",
+          "amount": "مبلغ (ریال)",
+          "periodDays": "طول دوره (روز)",
+          "features": "امکانات (با ; جدا کنید)"
+        },
+        "createTitle": "افزودن پلن",
+        "editTitle": "ویرایش پلن",
+        "archiveTitle": "بایگانی پلن",
+        "archiveBody": "این پلن بایگانی می‌شود و برای خرید جدید نمایش داده نمی‌شود."
+      },
+      "food": {
+        "title": "بانک اقلام غذایی",
+        "subtitle": "اقلام غذایی تاییدشده برای برنامه‌های تغذیه.",
+        "empty": "قلمی ثبت نشده است.",
+        "errorLoad": "بارگذاری اقلام ناموفق بود.",
+        "summary": "{loaded} از {total} قلم",
+        "columns": {
+          "name": "نام",
+          "category": "دسته",
+          "serving": "واحد",
+          "calories": "کالری",
+          "protein": "پروتئین",
+          "status": "وضعیت",
+          "actions": "عملیات"
+        },
+        "fields": {
+          "name": "نام قلم",
+          "categoryKey": "کلید دسته",
+          "servingLabel": "برچسب واحد (مثل ۱۰۰ گرم)",
+          "calories": "کالری",
+          "protein": "پروتئین (گرم)",
+          "carbs": "کربوهیدرات (گرم)",
+          "fat": "چربی (گرم)"
+        },
+        "createTitle": "افزودن قلم غذایی",
+        "editTitle": "ویرایش قلم غذایی",
+        "archiveTitle": "بایگانی قلم",
+        "archiveBody": "این قلم از فهرست انتخاب حذف می‌شود."
+      },
+      "exercises": {
+        "title": "کاتالوگ حرکات",
+        "subtitle": "حرکات تمرینی و صف تایید حرکات ارسالی مربیان.",
+        "empty": "حرکتی ثبت نشده است.",
+        "errorLoad": "بارگذاری حرکات ناموفق بود.",
+        "summary": "{loaded} از {total} حرکت",
+        "columns": {
+          "name": "نام",
+          "muscles": "عضلات",
+          "status": "وضعیت",
+          "actions": "عملیات"
+        },
+        "fields": {
+          "name": "نام حرکت",
+          "description": "توضیحات",
+          "rejectionReason": "دلیل رد"
+        },
+        "createTitle": "افزودن حرکت",
+        "editTitle": "ویرایش حرکت",
+        "approve": "تایید",
+        "reject": "رد",
+        "rejectTitle": "رد حرکت",
+        "archiveTitle": "بایگانی حرکت",
+        "archiveBody": "این حرکت از کاتالوگ عمومی حذف می‌شود."
+      },
+      "metrics": {
+        "title": "شاخص‌های پیشرفت",
+        "subtitle": "انواع شاخص قابل ثبت توسط ورزشکاران.",
+        "empty": "شاخصی تعریف نشده است.",
+        "errorLoad": "بارگذاری شاخص‌ها ناموفق بود.",
+        "summary": "{loaded} از {total} شاخص",
+        "columns": {
+          "key": "کلید",
+          "name": "نام",
+          "valueKind": "نوع مقدار",
+          "unit": "واحد",
+          "status": "وضعیت",
+          "actions": "عملیات"
+        },
+        "fields": {
+          "key": "کلید (انگلیسی)",
+          "name": "نام نمایشی",
+          "unit": "واحد (kg و ...)",
+          "valueKind": "نوع مقدار"
+        },
+        "createTitle": "افزودن شاخص",
+        "editTitle": "ویرایش شاخص",
+        "archiveTitle": "بایگانی شاخص",
+        "archiveBody": "این شاخص برای ثبت جدید در دسترس نخواهد بود."
+      },
+      "coaching": {
+        "title": "مربی‌گری",
+        "subtitle": "سرویس‌ها، پکیج‌ها و شاگردان مربیان در پلتفرم.",
+        "empty": "موردی یافت نشد.",
+        "errorLoad": "بارگذاری ناموفق بود.",
+        "summary": "{loaded} از {total} مورد",
+        "views": {
+          "services": "سرویس‌ها",
+          "packages": "پکیج‌ها",
+          "students": "شاگردان"
+        },
+        "serviceColumns": {
+          "title": "عنوان",
+          "coach": "مربی",
+          "status": "وضعیت",
+          "createdAt": "ایجاد"
+        },
+        "packageColumns": {
+          "coach": "مربی",
+          "athlete": "ورزشکار",
+          "sessions": "جلسات",
+          "status": "وضعیت"
+        },
+        "studentColumns": {
+          "coach": "مربی",
+          "athlete": "ورزشکار",
+          "since": "از تاریخ",
+          "status": "وضعیت"
+        }
+      }
+    },
+    "Ops": {
+      "searchAriaLabel": "جستجوی عملیات",
+      "searchPlaceholder": "جستجو...",
+      "filterAll": "همه",
+      "refresh": "به‌روزرسانی",
+      "loading": "در حال بارگذاری...",
+      "loadingMore": "در حال دریافت موارد بیشتر...",
+      "actionError": "انجام عملیات ناموفق بود.",
+      "cancel": "انصراف",
+      "save": "ذخیره",
+      "tabs": {
+        "social": "گزارش‌های اجتماعی",
+        "audit": "لاگ ممیزی",
+        "templates": "قالب‌های اعلان"
+      },
+      "social": {
+        "title": "گزارش‌های محتوای اجتماعی",
+        "subtitle": "رسیدگی به گزارش کاربران درباره پست‌ها و نظرات.",
+        "empty": "گزارشی ثبت نشده است.",
+        "errorLoad": "بارگذاری گزارش‌ها ناموفق بود.",
+        "summary": "{loaded} از {total} گزارش",
+        "columns": {
+          "target": "هدف",
+          "reason": "دلیل",
+          "reporter": "گزارش‌دهنده",
+          "status": "وضعیت",
+          "createdAt": "تاریخ",
+          "actions": "عملیات"
+        },
+        "actions": {
+          "resolve": "تایید و حذف",
+          "reject": "رد گزارش",
+          "resolveTitle": "رسیدگی به گزارش",
+          "resolveBody": "نتیجه رسیدگی ثبت و به گزارش‌دهنده اطلاع داده می‌شود.",
+          "noteLabel": "یادداشت"
+        }
+      },
+      "audit": {
+        "title": "لاگ ممیزی",
+        "subtitle": "اقدامات حساس ادمین‌ها و ورود از طرف کاربران.",
+        "empty": "لاگی ثبت نشده است.",
+        "errorLoad": "بارگذاری لاگ‌ها ناموفق بود.",
+        "summary": "{loaded} از {total} رویداد",
+        "columns": {
+          "action": "اقدام",
+          "actor": "انجام‌دهنده",
+          "target": "هدف",
+          "ip": "IP",
+          "createdAt": "زمان"
+        },
+        "impersonation": {
+          "start": "ورود از طرف کاربر",
+          "startTitle": "شروع جلسه ورود از طرف کاربر",
+          "targetUserIdLabel": "شناسه کاربر هدف",
+          "reasonLabel": "دلیل (برای ممیزی ثبت می‌شود)",
+          "confirm": "شروع جلسه",
+          "tokenTitle": "توکن جلسه صادر شد",
+          "tokenBody": "این توکن کوتاه‌عمر را برای ورود از طرف کاربر کپی کنید. این پیام فقط یک بار نمایش داده می‌شود.",
+          "copy": "کپی توکن",
+          "copied": "کپی شد",
+          "end": "پایان جلسه",
+          "endTitle": "پایان جلسه ورود از طرف کاربر",
+          "endBody": "جلسه فعال بسته می‌شود و توکن صادرشده باطل خواهد شد.",
+          "sessionIdLabel": "شناسه جلسه"
+        }
+      },
+      "templates": {
+        "title": "قالب‌های اعلان",
+        "subtitle": "متن و کانال‌های ارسال اعلان‌های سیستمی.",
+        "empty": "قالبی ثبت نشده است.",
+        "errorLoad": "بارگذاری قالب‌ها ناموفق بود.",
+        "summary": "{loaded} قالب",
+        "columns": {
+          "key": "کلید",
+          "title": "عنوان",
+          "push": "پوش",
+          "sms": "پیامک",
+          "inbox": "صندوق",
+          "status": "وضعیت",
+          "actions": "عملیات"
+        },
+        "fields": {
+          "title": "عنوان اعلان",
+          "body": "متن اعلان",
+          "smsTemplateKey": "کلید قالب پیامک (کاوه‌نگار)",
+          "push": "کانال پوش",
+          "sms": "کانال پیامک",
+          "inbox": "صندوق پیام"
+        },
+        "editTitle": "ویرایش قالب",
+        "smsOptions": {
+          "disabled": "غیرفعال",
+          "otp": "کد یکبارمصرف",
+          "transactional": "تراکنشی"
+        },
+        "channelOptions": {
+          "enabled": "فعال",
+          "disabled": "غیرفعال"
+        }
+      }
+    },
     "Support": {
       "tabs": {
         "tickets": "تیکت‌ها",
@@ -1733,6 +2235,17 @@
       "subtitle": "وضعیت رشد پلتفرم، صف رسیدگی و سلامت سرویس‌ها را در یک نگاه دنبال کنید.",
       "sampleData": "داده نمونه",
       "refresh": "به‌روزرسانی",
+      "errorLoad": "دریافت اطلاعات داشبورد ناموفق بود.",
+      "stats": {
+        "title": "آمار کلی پلتفرم",
+        "description": "شاخص‌های کلیدی کاربران و عملیات در یک نگاه",
+        "users": "کل کاربران",
+        "usersNew30d": "کاربر جدید (۳۰ روز)",
+        "verifiedCoaches": "مربی تأییدشده",
+        "activeMemberships": "عضویت فعال",
+        "openTickets": "تیکت باز",
+        "pendingCoachVerifications": "مربی در انتظار تأیید"
+      },
       "metrics": {
         "activeClubs": "باشگاه فعال",
         "pendingKyc": "درخواست احراز هویت",
@@ -1751,7 +2264,8 @@
       "revenue": {
         "title": "جریان درآمد هفتگی",
         "description": "مجموع پرداخت‌های تأییدشده در هفت روز اخیر",
-        "unit": "ریال، داده نمونه",
+        "unit": "ریال",
+        "empty": "در بازه اخیر پرداختی ثبت نشده است.",
         "chartAriaLabel": "نمودار میله‌ای جریان درآمد در هفت روز اخیر"
       },
       "queue": {
@@ -2472,7 +2986,9 @@
     "dateYesterday": "دیروز",
     "statusStepsLeft": "{count} قدم باقی‌مانده",
     "statusGoalCompleted": "هدف تکمیل شد!",
-    "alertHeavier": "وزن شما از حد معمول بیشتر است"
+    "alertHeavier": "وزن شما از حد معمول بیشتر است",
+    "emptyTitle": "ثبتی ندارید",
+    "emptyBody": "وقتی وزن خود را ثبت کنید، تاریخچه اینجا نمایش داده می‌شود."
   },
   "WeightDetail": {
     "title": "جزئیات وزن",
@@ -2889,10 +3405,12 @@
     "statusRefunded": "مسترد‌شده",
     "typeInPerson": "مشاوره حضوری",
     "typeRemote": "مشاوره آنلاین",
+    "actionAccept": "تأیید درخواست",
     "actionCheckIn": "ثبت حضور",
     "actionComplete": "پایان جلسه",
     "actionNoShow": "ثبت غیبت",
     "actionCancel": "لغو جلسه",
+    "cancelConfirm": "با لغو این رزرو، {amount} تومان برای بازپرداخت ثبت می‌شود. ادامه می‌دهید؟",
     "checkInHint": "کد ورود شاگرد: {code}",
     "accept": "پذیرش",
     "reject": "رد کردن",
@@ -2923,7 +3441,17 @@
     "metaSessions": "{sessions} جلسه در هفته",
     "metaAssigned": "{count} شاگرد",
     "emptyTitle": "برنامه‌ای پیدا نشد",
-    "emptyBody": "با تغییر فیلتر یا ساخت برنامه جدید شروع کنید."
+    "emptyBody": "با تغییر فیلتر یا ساخت برنامه جدید شروع کنید.",
+    "createTitleLabel": "عنوان برنامه",
+    "createTitlePlaceholder": "مثلاً چربی‌سوزی ۸ هفته‌ای",
+    "createFocusLabel": "تمرکز",
+    "createFocusPlaceholder": "مثلاً قدرت پایه",
+    "createCancel": "انصراف",
+    "createSubmit": "ایجاد پیش‌نویس",
+    "creating": "در حال ایجاد…",
+    "createError": "ساخت برنامه ناموفق بود. دوباره تلاش کنید.",
+    "publishAction": "انتشار برنامه",
+    "publishing": "در حال انتشار…"
   },
   "CoachEarnings": {
     "pageTitle": "درآمد",
@@ -2943,6 +3471,21 @@
     "settlementPaid": "پرداخت‌شده",
     "settlementProcessing": "در حال پردازش",
     "settlementUpcoming": "پیش رو"
+  },
+  "CoachMessages": {
+    "pageTitle": "پیام‌ها",
+    "threadPageTitle": "گفتگو",
+    "title": "پیام‌ها",
+    "subtitle": "گفتگو با شاگردان را از اینجا مدیریت کنید.",
+    "back": "بازگشت",
+    "emptyTitle": "گفتگویی نیست",
+    "emptyBody": "با ارسال پیام از پروفایل شاگرد، گفتگو اینجا ظاهر می‌شود.",
+    "threadNotFound": "گفتگو پیدا نشد.",
+    "messagesEmpty": "هنوز پیامی رد و بدل نشده است.",
+    "composerLabel": "متن پیام",
+    "composerPlaceholder": "پیام خود را بنویسید…",
+    "send": "ارسال",
+    "sendError": "ارسال پیام ناموفق بود."
   },
   "CoachAnalytics": {
     "pageTitle": "آمار",
@@ -3167,6 +3710,8 @@
     "reserve": "رزرو",
     "totalLabel": "مجموع",
     "confirmBooking": "تأیید رزرو",
+    "purchaseMembership": "خرید عضویت",
+    "purchaseMembershipError": "خرید عضویت ناموفق بود. دوباره تلاش کنید.",
     "subscriptionsTitle": "پلن‌های اشتراک",
     "subscriptionsLabel": "انتخاب پلن اشتراک",
     "planFree": "پلن رایگان",
@@ -3357,6 +3902,7 @@
     "timelineTitle": "وضعیت رزرو",
     "steps": {
       "created": "ثبت",
+      "approval": "تأیید مربی",
       "payment": "پرداخت",
       "confirm": "تأیید",
       "attend": "حضور",
@@ -3374,6 +3920,7 @@
     "cancelRequested": "درخواست لغو رزرو ثبت شد.",
     "cancelConfirmTitle": "رزرو لغو شود؟",
     "cancelConfirmBody": "با لغو رزرو، ظرفیت شما آزاد می‌شود. این عملیات در نسخه نمایشی اعمال نمی‌شود.",
+    "cancelRefundPreview": "مبلغ بازپرداخت: {refund} تومان · جریمه لغو: {fee} تومان",
     "confirmCancel": "بله، لغو کن",
     "keepBooking": "انصراف",
     "actionError": "انجام عملیات ممکن نشد. دوباره تلاش کنید.",
@@ -3578,6 +4125,9 @@
     "gateway": "درگاه زرین‌پال",
     "gatewayHint": "انتقال به درگاه پرداخت امن",
     "payCta": "پرداخت",
+    "paidCta": "مشاهده عضویت‌ها",
+    "alreadyPaid": "این صورت‌حساب پرداخت شده است.",
+    "payError": "پرداخت ناموفق بود. دوباره تلاش کنید.",
     "result": {
       "pageTitle": "نتیجه پرداخت",
       "successTitle": "پرداخت موفق بود",
@@ -3599,6 +4149,8 @@
     "back": "بازگشت",
     "balanceLabel": "موجودی کیف پول",
     "topUp": "افزایش موجودی",
+    "topUpPending": "در حال افزایش موجودی…",
+    "topUpError": "افزایش موجودی ناموفق بود.",
     "incomeTitle": "درآمد",
     "incomeValue": "۱٬۵۰۰",
     "spendTitle": "هزینه",
@@ -3620,10 +4172,22 @@
     "expiredChip": "منقضی شده",
     "sessionsProgress": "{used} از {total} جلسه",
     "renew": "تمدید عضویت",
+    "purchase": "خرید مجدد",
     "pastTitle": "عضویت‌های گذشته",
     "emptyTitle": "عضویت فعالی ندارید",
     "emptyBody": "از بخش کشف، باشگاه موردنظر خود را پیدا کنید و بسته تمرینی بخرید.",
     "emptyPast": "سابقه عضویتی ثبت نشده است."
+  },
+  "AthleteWaitlist": {
+    "pageTitle": "لیست انتظار",
+    "title": "لیست انتظار",
+    "subtitle": "نوبت‌هایی که در صف هستید و پیشنهادهای فعال را ببینید.",
+    "back": "بازگشت",
+    "position": "{count} نفر در صف · تاریخ: {date}",
+    "claim": "پذیرش پیشنهاد",
+    "leave": "خروج از صف",
+    "emptyTitle": "صف انتظاری ندارید",
+    "emptyBody": "وقتی ظرفیت پر باشد می‌توانید به لیست انتظار بپیوندید."
   },
   "Notifications": {
     "pageTitle": "اعلان‌ها",
@@ -3927,6 +4491,30 @@
     "listLabel": "فهرست اعضا",
     "checkInAction": "ثبت حضور برای {name}",
     "checkedInChip": "حاضر شد",
+    "freezeAction": "فریز",
+    "unfreezeAction": "لغو فریز",
+    "sellTitle": "فروش عضویت",
+    "sellPlanLabel": "بسته",
+    "sellPlanPrice": "مبلغ بسته: {amount} تومان",
+    "sellNameLabel": "نام مهمان",
+    "sellPhoneLabel": "موبایل",
+    "sellChannelLabel": "روش پرداخت",
+    "sellPaidAmountLabel": "مبلغ دریافتی (خالی = تسویه کامل)",
+    "sellReferenceLabel": "شماره پیگیری / مرجع (اختیاری)",
+    "channelCash": "نقد",
+    "channelPos": "کارت‌خوان",
+    "channelCard": "کارت‌به‌کارت",
+    "channelMixed": "ترکیبی",
+    "debtDueLabel": "سررسید مانده",
+    "installmentCountLabel": "تعداد اقساط",
+    "sellSubmit": "ثبت فروش",
+    "importTitle": "ورود گروهی اعضا از CSV",
+    "importHint": "ابتدا بسته را انتخاب کنید. ستون‌های name/نام و phone/موبایل الزامی‌اند؛ plan_id اختیاری است.",
+    "importSummary": "معتبر: {valid} · واردشده: {imported} · تکراری: {skipped} · خطا: {error}",
+    "importCommit": "تأیید و ورود اعضا",
+    "importDone": "ورود اعضا انجام شد.",
+    "importError": "خواندن یا ورود فایل ناموفق بود.",
+    "checkInDeskLink": "ورود با کد رزرو",
     "emptyTitle": "عضوی پیدا نشد",
     "emptyBody": "عبارت جستجو یا فیلتر وضعیت را تغییر دهید."
   },
@@ -3945,6 +4533,26 @@
     "toggleGrants": "نمایش همه دسترسی‌های {name}",
     "emptyTitle": "هنوز پرسنلی اضافه نشده",
     "emptyBody": "با دعوت همکاران، مدیریت باشگاه را بین تیم تقسیم کنید."
+  },
+  "OwnerLifecycle": {
+    "pageTitle": "چرخه عمر اعضا",
+    "title": "نگهداری اعضا",
+    "subtitle": "اعضای در معرض ریزش باشگاه {club} و سفرهای پیگیری را مدیریت کنید.",
+    "back": "بازگشت",
+    "enrollCta": "ثبت اعضای در حال انقضا",
+    "runCta": "اجرای گام‌های سفر",
+    "actionError": "عملیات ناموفق بود.",
+    "atRiskTitle": "اعضای در معرض ریزش",
+    "atRiskEmpty": "عضو در معرض ریزشی یافت نشد.",
+    "journeysTitle": "سفرهای فعال",
+    "journeysEmpty": "سفری در جریان نیست.",
+    "segmentsTitle": "سگمنت‌ها",
+    "segmentsEmpty": "سگمنتی تعریف نشده است.",
+    "journeyStatus": {
+      "active": "فعال",
+      "completed": "تمام‌شده",
+      "cancelled": "لغوشده"
+    }
   },
   "OwnerFinance": {
     "pageTitle": "مالی باشگاه",
@@ -3968,6 +4576,15 @@
     "kindMembership": "عضویت",
     "kindBooking": "رزرو",
     "kindRefund": "بازپرداخت"
+  },
+  "OwnerCheckInDesk": {
+    "pageTitle": "میز پذیرش",
+    "title": "ثبت حضور",
+    "subtitle": "کد رزرو ورزشکار را وارد کنید تا حضور ثبت شود.",
+    "back": "بازگشت",
+    "codeLabel": "کد رزرو",
+    "codePlaceholder": "مثلاً G4M-1234",
+    "submit": "ثبت حضور"
   },
   "OwnerAnalytics": {
     "pageTitle": "آمار باشگاه",
@@ -4017,6 +4634,7 @@
     "classes": "کلاس‌ها",
     "equipment": "تجهیزات",
     "bookings": "رزروها",
+    "lifecycle": "نگهداری اعضا",
     "analytics": "آمار",
     "marketing": "بازاریابی",
     "statMembers": "اعضا",
@@ -4103,6 +4721,8 @@
     "programsLinkDescription": "ساخت و مدیریت برنامه‌های تمرینی.",
     "earningsLink": "درآمد",
     "earningsLinkDescription": "درآمد، کارمزدها و تسویه‌ها.",
+    "messagesLink": "پیام‌ها",
+    "messagesLinkDescription": "گفتگو با شاگردان و پیگیری پیام‌ها.",
     "analyticsLink": "آمار",
     "analyticsLinkDescription": "شاخص‌های عملکرد و نظرات شاگردان."
   },
@@ -4135,7 +4755,129 @@
     "bookingsDescription": "جلسات پیش رو و سابقه رزروها را ببینید.",
     "bookingsAction": "مشاهده رزروها",
     "walletTitle": "کیف پول",
-    "membershipsTitle": "عضویت‌ها"
+    "membershipsTitle": "عضویت‌ها",
+    "checkInsTitle": "ورودها",
+    "workoutsTitle": "تمرین‌ها",
+    "referralTitle": "معرفی",
+    "socialTitle": "اجتماعی",
+    "nutritionTitle": "تغذیه"
+  },
+  "AthleteSocial": {
+    "pageTitle": "فید اجتماعی",
+    "detailPageTitle": "جزئیات پست",
+    "createPageTitle": "ساخت پست",
+    "title": "فید اجتماعی",
+    "subtitle": "پست‌های جامعه تناسب اندام را ببینید، پسند کنید و نظر بدهید.",
+    "back": "بازگشت",
+    "create": "ساخت پست",
+    "createTitle": "پست جدید",
+    "createSubtitle": "تجربه تمرین، تغذیه یا پیشرفت خود را به اشتراک بگذارید.",
+    "bodyLabel": "متن پست",
+    "bodyPlaceholder": "امروز چه کردی؟",
+    "mediaHint": "افزودن رسانه به‌زودی فعال می‌شود.",
+    "publish": "انتشار",
+    "createError": "انتشار پست ناموفق بود. دوباره تلاش کنید.",
+    "emptyTitle": "هنوز پستی نیست",
+    "emptyBody": "اولین پست را بسازید یا بعداً دوباره سر بزنید.",
+    "mediaPlaceholder": "{count} رسانه",
+    "commentLabel": "نظر شما",
+    "commentPlaceholder": "نظرتان را بنویسید…",
+    "sendComment": "ارسال نظر",
+    "commentsTitle": "نظرها ({count})",
+    "commentsEmptyTitle": "نظری ثبت نشده",
+    "commentsEmptyBody": "اولین نفر باشید که نظر می‌دهد."
+  },
+  "AthleteNutrition": {
+    "pageTitle": "برنامه‌های غذایی",
+    "detailPageTitle": "جزئیات برنامه غذایی",
+    "logPageTitle": "لاگ تغذیه",
+    "title": "برنامه‌های غذایی",
+    "subtitle": "برنامه‌های اختصاص‌یافته و ثبت وعده‌ها را مدیریت کنید.",
+    "back": "بازگشت",
+    "foodLog": "لاگ وعده‌ها",
+    "statusDraft": "پیش‌نویس",
+    "statusActive": "فعال",
+    "statusArchived": "بایگانی",
+    "planMeta": "{days} روز · {meals} وعده",
+    "coachAssigned": "از {coach}",
+    "selfPlan": "برنامه شخصی",
+    "updated": "به‌روزرسانی {date}",
+    "emptyTitle": "برنامه غذایی ندارید",
+    "emptyBody": "وقتی مربی برنامه‌ای اختصاص دهد اینجا نمایش داده می‌شود.",
+    "dayLabel": "روز {index}",
+    "daysEmptyTitle": "وعده‌ای تعریف نشده",
+    "daysEmptyBody": "جزئیات وعده‌ها هنوز اضافه نشده است.",
+    "logFollowed": "انجام شد",
+    "logSkipped": "رد شد",
+    "logTitle": "لاگ تغذیه",
+    "logSubtitle": "رعایت وعده‌ها را ثبت و تاریخچه را ببینید.",
+    "quickFollowed": "وعده انجام شد",
+    "quickPartial": "ناقص",
+    "quickSkipped": "رد شد",
+    "logEmptyTitle": "لاگی ثبت نشده",
+    "logEmptyBody": "پس از ثبت وعده، تاریخچه اینجا می‌آید.",
+    "slotLabel": "روز {day} · وعده {meal}",
+    "adherenceFollowed": "انجام‌شده",
+    "adherencePartial": "ناقص",
+    "adherenceSkipped": "رد شده",
+    "adherenceSubstituted": "جایگزین"
+  },
+  "AthleteCheckInHistory": {
+    "pageTitle": "تاریخچه ورود",
+    "title": "تاریخچه ورود",
+    "subtitle": "ورودهای ثبت‌شده به باشگاه را با تاریخ و روش ببینید.",
+    "back": "بازگشت",
+    "methodQr": "QR",
+    "methodBarcode": "بارکد",
+    "methodManual": "دستی",
+    "emptyTitle": "ورودی ثبت نشده",
+    "emptyBody": "پس از ورود به باشگاه، سابقه اینجا نمایش داده می‌شود."
+  },
+  "AthleteReferral": {
+    "pageTitle": "دعوت دوستان",
+    "title": "دعوت دوستان",
+    "subtitle": "کد معرف خود را به اشتراک بگذارید و دوستان را دعوت کنید.",
+    "back": "بازگشت",
+    "codeLabel": "کد معرف شما",
+    "copyCode": "کپی کد",
+    "shareInvite": "اشتراک‌گذاری دعوت",
+    "shareText": "با کد {code} در Gym4Me عضو شو: {url}",
+    "statSent": "دعوت ارسال‌شده",
+    "statJoined": "عضویت",
+    "statTotal": "معرفی‌شده",
+    "inviteTitle": "دعوت با شماره",
+    "phoneLabel": "شماره موبایل",
+    "phonePlaceholder": "0912xxxxxxx",
+    "sendInvite": "ارسال دعوت",
+    "invitesTitle": "دعوت‌های شما",
+    "statusPending": "در انتظار",
+    "statusSent": "ارسال‌شده",
+    "statusJoined": "عضویت",
+    "statusExpired": "منقضی",
+    "statusUnknown": "نامشخص",
+    "emptyTitle": "هنوز دعوتی ندارید",
+    "emptyBody": "کد یا لینک دعوت را برای دوستان بفرستید."
+  },
+  "AthleteWorkouts": {
+    "pageTitle": "برنامه‌های تمرینی",
+    "detailPageTitle": "جزئیات برنامه",
+    "title": "برنامه‌های تمرینی",
+    "subtitle": "برنامه‌های اختصاص‌یافته و لاگ جلسات را ببینید.",
+    "back": "بازگشت",
+    "statusDraft": "پیش‌نویس",
+    "statusActive": "فعال",
+    "statusCompleted": "تکمیل‌شده",
+    "statusArchived": "بایگانی",
+    "updated": "به‌روزرسانی {date}",
+    "emptyTitle": "برنامه‌ای ندارید",
+    "emptyBody": "وقتی مربی برنامه‌ای اختصاص دهد اینجا نمایش داده می‌شود.",
+    "logsTitle": "لاگ جلسات",
+    "logsEmptyTitle": "لاگی ثبت نشده",
+    "logsEmptyBody": "پس از ثبت جلسه تمرینی، لاگ‌ها اینجا می‌آیند.",
+    "session": "جلسه {index}",
+    "logCompleted": "انجام‌شده",
+    "logSkipped": "رد شده",
+    "setsCount": "{count} ست"
   },
   "OwnerClubsCreate": {
     "title": "ثبت باشگاه",
@@ -4143,6 +4885,7 @@
     "back": "بازگشت"
   },
   "OwnerClubDetail": {
+    "pageTitle": "مدیریت باشگاه",
     "back": "بازگشت",
     "tabsLabel": "بخش‌های باشگاه",
     "tabOverview": "نمای کلی",
@@ -4190,54 +4933,54 @@
     "taglineRepeat": "تکرار کن"
   },
   "MarketingLanding": {
-    "metaTitle": "Gym4Me — پلتفرم باشگاه و تناسب اندام",
-    "metaDescription": "با Gym4Me باشگاه، مربی و ورزشکار را در یک پلتفرم هوشمند مدیریت کنید؛ رزرو، کلاس، آمار و تجربه کاربری مدرن.",
+    "metaTitle": "Gym4Me — نرم‌افزار مدیریت باشگاه، رزرو و عضویت",
+    "metaDescription": "فروش عضویت حضوری، ورود اعضا، صندوق، بدهی، رزرو، حضور و مدیریت مربی برای باشگاه‌های ایرانی.",
     "header": {
       "brand": "Gym4Me",
-      "version": "نسخه ۱٫۰",
-      "github": "گیت‌هاب",
-      "docs": "مستندات",
+      "version": "ساخته‌شده برای عملیات باشگاه",
+      "directory": "باشگاه‌ها و مربی‌ها",
+      "pricing": "تعرفه",
       "copyright": "©۲۰۲۶",
       "themeToggle": "تغییر حالت روشن و تاریک"
     },
     "hero": {
       "titleLine1": "Gym4Me",
-      "titleLine2": "باشگاه",
-      "description": "پلتفرم سبک و مدرن برای مدیریت باشگاه، مربی و ورزشکار. رزرو، کلاس، آمار و تجربه روان — همه در یکجا.",
+      "titleLine2": "عملیات باشگاه",
+      "description": "از فروش عضویت در پذیرش تا صندوق، بدهی، رزرو، حضور و تسویه مربی—یک جریان یکپارچه و فارسی برای کار واقعی روزانه.",
       "version": "نسخه ۱٫۰",
-      "ctaPrimary": "شروع کنید",
-      "ctaSecondary": "بیشتر بدانید"
+      "ctaPrimary": "برای باشگاه من",
+      "ctaSecondary": "مشاهده باشگاه‌ها"
     },
     "perks": {
       "rail": "نسخه (۱٫۰)",
       "items": [
         {
-          "title": "ساخته‌شده برای باشگاه‌ها",
-          "description": "ابزارهای مدیریتی برای مالک، مربی و ورزشکار با تمرکز روی عملکرد واقعی سالن."
+          "title": "پذیرش و فروش واقعی",
+          "description": "عضو را بدون اجبار به نصب اپ ثبت کنید؛ نقد، کارت‌خوان، کارت‌به‌کارت، پرداخت ترکیبی و بدهی را همان‌جا ببندید."
         },
         {
           "title": "تجربه فارسی و راست‌چین",
           "description": "رابط کاربری بومی، تایپوگرافی فارسی و پشتیبانی کامل از RTL."
         },
         {
-          "title": "رزرو و کلاس هوشمند",
-          "description": "زمان‌بندی کلاس، رزرو جلسه و مدیریت ظرفیت بدون پیچیدگی اضافه."
+          "title": "رزرو قابل اتکا",
+          "description": "تأیید مربی، قفل ظرفیت، مهلت پرداخت، لیست انتظار و بازپرداخت شفاف جلوی ظرفیت سوخته را می‌گیرد."
         },
         {
           "title": "آماده موبایل",
           "description": "طراحی لمسی و واکنش‌گرا؛ تجربه یکسان روی گوشی، تبلت و دسکتاپ."
         },
         {
-          "title": "آماده تولید",
-          "description": "دسترسی‌پذیر، قابل نگهداری و مناسب استفاده روزمره در باشگاه."
+          "title": "مالی قابل حسابرسی",
+          "description": "هر پرداخت و استرداد در دفتر کل متوازن ثبت می‌شود و شیفت صندوق با کانال‌های واقعی تطبیق دارد."
         },
         {
           "title": "سبک و سریع",
           "description": "رابط سریع با تمرکز روی کارهایی که هر روز انجام می‌دهید."
         }
       ],
-      "rewrite": "نسخه جدید Gym4Me از صفر برای جریان کار مدرن باشگاه‌ها طراحی شده و برای استفاده واقعی در سالن بهینه‌سازی شده است.",
-      "evolution": "از ایده ساده رزرو تا پلتفرم کامل مدیریت باشگاه؛ مسیر محصول ما همیشه حول نیاز واقعی مربی و ورزشکار بوده است.",
+      "rewrite": "Gym4Me برای بازار ایران و نقطه شروع واقعی باشگاه طراحی شده: پذیرش، عضویت، پرداخت و حضور؛ بعد از آن رشد و نگهداشت.",
+      "evolution": "باشگاه، مربی و ورزشکار روی یک رزرو و یک رکورد مالی مشترک کار می‌کنند؛ وضعیت‌ها در پیام‌رسان و دفتر دستی گم نمی‌شوند.",
       "cascadeBrand": "Gym4Me",
       "cascadeWord": "باشگاه"
     },
@@ -4379,13 +5122,7 @@
       "ctaPrimary": "شروع کنید",
       "ctaSecondary": "بیشتر بدانید",
       "attrs": [
-        [
-          "npm",
-          "npm install",
-          "npm install gym4me",
-          "npm install",
-          "npm"
-        ],
+        ["npm", "npm install", "npm install gym4me", "npm install", "npm"],
         [
           "gym4me",
           "gym4me app",
@@ -4394,20 +5131,8 @@
           "gym4me",
           "باشگاه"
         ],
-        [
-          "داده",
-          "رزرو",
-          "کلاس",
-          "مربی",
-          "ورزشکار"
-        ],
-        [
-          "باشگاه",
-          "اشتراک",
-          "آمار",
-          "برنامه",
-          "پروفایل"
-        ]
+        ["داده", "رزرو", "کلاس", "مربی", "ورزشکار"],
+        ["باشگاه", "اشتراک", "آمار", "برنامه", "پروفایل"]
       ]
     }
   },

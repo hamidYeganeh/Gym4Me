@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import {
-  getAllOwnerClubIds,
-  getOwnerClubDetail,
-} from "@/modules/owner/lib/owner-club-detail-data";
-import { OwnerClubDetailScreen } from "@/modules/owner/screens/OwnerClubDetailScreen";
+import { OwnerClubDetailGate } from "@/modules/owner/lib/OwnerClubDetailGate";
+import { getAllOwnerClubIds } from "@/modules/owner/lib/owner-club-detail-data";
 
 type OwnerClubDetailPageProps = {
   params: Promise<{ clubId: string }>;
@@ -18,25 +15,13 @@ export async function generateMetadata({
   params,
 }: OwnerClubDetailPageProps): Promise<Metadata> {
   const { clubId } = await params;
-  const club = getOwnerClubDetail(clubId);
-
-  if (!club) {
-    const t = await getTranslations("OwnerClubDetail");
-    return { title: t("pageTitle") };
-  }
-
-  return { title: club.name };
+  const t = await getTranslations("OwnerClubDetail");
+  return { title: `${t("pageTitle")} · ${clubId}` };
 }
 
 export default async function OwnerClubDetailPage({
   params,
 }: OwnerClubDetailPageProps) {
   const { clubId } = await params;
-  const club = getOwnerClubDetail(clubId);
-
-  if (!club) {
-    return null;
-  }
-
-  return <OwnerClubDetailScreen club={club} />;
+  return <OwnerClubDetailGate clubId={clubId} />;
 }
