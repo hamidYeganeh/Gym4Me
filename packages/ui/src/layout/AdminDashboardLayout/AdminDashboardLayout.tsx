@@ -1,7 +1,15 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { Avatar, Badge, Button, SearchField, Typography } from "@heroui/react";
+import {
+  Avatar,
+  Badge,
+  Breadcrumbs,
+  Button,
+  SearchField,
+  Tooltip,
+  Typography,
+} from "@heroui/react";
 import {
   ArrowSignOut1,
   BarbellHorizontal,
@@ -93,6 +101,7 @@ export function AdminDashboardLayout({
   onAvatarPress,
   avatarSrc = DEFAULT_AVATAR,
   notificationCount = 2,
+  breadcrumbs = [],
   header,
   className,
 }: AdminDashboardLayoutProps) {
@@ -130,16 +139,22 @@ export function AdminDashboardLayout({
   return (
     <div className={styles.shell({ className })}>
       <aside className={styles.sidebar()} aria-label={labels.navAriaLabel}>
-        <Button
-          isIconOnly
-          size="lg"
-          variant="ghost"
-          aria-label={APP_NAME}
-          className={styles.logoButton()}
-          onPress={onLogoPress}
-        >
-          <Logo color="var(--accent-foreground)" shadow={false} size="sm" />
-        </Button>
+        <Tooltip delay={300}>
+          <Button
+            isIconOnly
+            size="lg"
+            variant="ghost"
+            aria-label={APP_NAME}
+            className={styles.logoButton()}
+            onPress={onLogoPress}
+          >
+            <Logo color="var(--accent-foreground)" shadow={false} size="sm" />
+          </Button>
+          <Tooltip.Content placement="end" showArrow>
+            <Tooltip.Arrow />
+            {APP_NAME}
+          </Tooltip.Content>
+        </Tooltip>
 
         <nav className={styles.nav()}>
           {NAV_ORDER.map((id) => {
@@ -148,17 +163,23 @@ export function AdminDashboardLayout({
             return (
               <div key={id} className={styles.navItemWrap()}>
                 {isActive ? <span className={styles.navIndicator()} /> : null}
-                <Button
-                  isIconOnly
-                  size="lg"
-                  variant={isActive ? "secondary" : "primary"}
-                  aria-label={labels.nav[id]}
-                  aria-current={isActive ? "page" : undefined}
-                  className={styles.navItem()}
-                  onPress={() => handleNavPress(id)}
-                >
-                  {NAV_ICONS[id]}
-                </Button>
+                <Tooltip delay={300}>
+                  <Button
+                    isIconOnly
+                    size="lg"
+                    variant={isActive ? "secondary" : "primary"}
+                    aria-label={labels.nav[id]}
+                    aria-current={isActive ? "page" : undefined}
+                    className={styles.navItem()}
+                    onPress={() => handleNavPress(id)}
+                  >
+                    {NAV_ICONS[id]}
+                  </Button>
+                  <Tooltip.Content placement="end" showArrow>
+                    <Tooltip.Arrow />
+                    {labels.nav[id]}
+                  </Tooltip.Content>
+                </Tooltip>
               </div>
             );
           })}
@@ -166,21 +187,27 @@ export function AdminDashboardLayout({
 
         <div className={styles.avatarWrap()}>
           <Badge.Anchor>
-            <Button
-              isIconOnly
-              size="lg"
-              variant="ghost"
-              aria-label={labels.avatarAlt}
-              className={styles.logoButton()}
-              onPress={onAvatarPress}
-            >
-              <Avatar className={styles.avatar()} size="lg">
-                <Avatar.Image alt={labels.avatarAlt} src={avatarSrc} />
-                <Avatar.Fallback>
-                  {labels.avatarAlt.slice(0, 2).toUpperCase()}
-                </Avatar.Fallback>
-              </Avatar>
-            </Button>
+            <Tooltip delay={300}>
+              <Button
+                isIconOnly
+                size="lg"
+                variant="ghost"
+                aria-label={labels.avatarAlt}
+                className={styles.logoButton()}
+                onPress={onAvatarPress}
+              >
+                <Avatar className={styles.avatar()} size="lg">
+                  <Avatar.Image alt={labels.avatarAlt} src={avatarSrc} />
+                  <Avatar.Fallback>
+                    {labels.avatarAlt.slice(0, 2).toUpperCase()}
+                  </Avatar.Fallback>
+                </Avatar>
+              </Button>
+              <Tooltip.Content placement="end" showArrow>
+                <Tooltip.Arrow />
+                {labels.avatarAlt}
+              </Tooltip.Content>
+            </Tooltip>
             {notificationCount > 0 ? (
               <Badge color="danger" size="sm">
                 {notificationCount}
@@ -194,13 +221,30 @@ export function AdminDashboardLayout({
         <header
           className={hasCustomHeader ? styles.headerSection() : styles.header()}
         >
-          {hasCustomHeader ? (
-            <div className="flex w-full min-w-0 items-center gap-3">
-              <div className="min-w-0 flex-1">{header}</div>
-              {themeToggle}
-            </div>
-          ) : (
-            <>
+          {breadcrumbs.length > 0 ? (
+            <Breadcrumbs
+              aria-label={labels.breadcrumbsAriaLabel}
+              className={styles.breadcrumbs()}
+            >
+              {breadcrumbs.map((item, index) => (
+                <Breadcrumbs.Item
+                  key={`${item.label}-${index}`}
+                  className={styles.breadcrumbItem()}
+                  onPress={item.onPress}
+                >
+                  {item.label}
+                </Breadcrumbs.Item>
+              ))}
+            </Breadcrumbs>
+          ) : null}
+          <div className={styles.headerRow()}>
+            {hasCustomHeader ? (
+              <>
+                <div className="min-w-0 flex-1">{header}</div>
+                {themeToggle}
+              </>
+            ) : (
+              <>
               <Typography className={styles.greeting()} type="h3" weight="bold">
                 {labels.greeting}
               </Typography>
@@ -232,8 +276,9 @@ export function AdminDashboardLayout({
                 </SearchField>
                 {themeToggle}
               </div>
-            </>
-          )}
+              </>
+            )}
+          </div>
         </header>
 
         <main className={styles.content()}>{children}</main>

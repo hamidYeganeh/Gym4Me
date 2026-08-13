@@ -1,11 +1,9 @@
 import type { ClubLifecycleStatus, ClubOperationalStatus } from "@repo/api";
 
-export type SelectChangeValue = string | number | null;
-
 export type ClubsListFiltersSectionProps = {
-  lifecycleStatus: ClubLifecycleStatus | "all";
-  operationalStatus: ClubOperationalStatus | "all";
-  onLifecycleChange: (value: ClubLifecycleStatus | "all") => void;
-  onOperationalChange: (value: ClubOperationalStatus | "all") => void;
+  lifecycleStatus: ClubLifecycleStatus[];
+  operationalStatus: ClubOperationalStatus[];
+  onLifecycleChange: (value: ClubLifecycleStatus[]) => void;
+  onOperationalChange: (value: ClubOperationalStatus[]) => void;
   className?: string;
 };

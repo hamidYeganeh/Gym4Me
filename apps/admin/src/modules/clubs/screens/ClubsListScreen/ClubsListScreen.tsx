@@ -1,18 +1,16 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Club, ClubLifecycleStatus, ClubOperationalStatus } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { AdminShell } from "@/shared/components";
 import {
-  useAdminInfiniteQuery,
   useAdminListQueryParams,
+  useAdminPaginatedQuery,
 } from "@/shared/hooks";
-import type { FormSubmitIntent } from "@/shared/lib/form-submit-intent";
 import { routes } from "@/shared/lib/routes";
-import { ClubsCreateForm } from "../../components/ClubsCreateForm";
-import type { ClubsCreateFormValues } from "../../components/ClubsCreateForm";
 import { isClubsMockMode } from "../../lib/clubs-repository";
-import { createClub, listClubs } from "../../lib/clubs-repository";
+import { listClubs } from "../../lib/clubs-repository";
+import type { ClubListQuery } from "../../lib/clubs-data";
 import { ClubsListFiltersSection } from "../../sections/ClubsListFiltersSection";
 import { ClubsListHeaderSection } from "../../sections/ClubsListHeaderSection";
 import { ClubsListTableSection } from "../../sections/ClubsListTableSection";
@@ -21,27 +19,39 @@ import type { ClubsListScreenProps } from "./ClubsListScreen.types";
 
 const PAGE_SIZE = 20;
 const FILTER_KEYS = ["lifecycleStatus", "operationalStatus"] as const;
-const FILTER_DEFAULTS = {
-  lifecycleStatus: "all",
-  operationalStatus: "all",
+const FILTER_DEFAULTS: ClubsListFilters & { search: string } = {
+  lifecycleStatus: [],
+  operationalStatus: [],
   search: "",
-} as const;
+};
 
 type ClubsListFilters = {
-  lifecycleStatus: ClubLifecycleStatus | "all";
-  operationalStatus: ClubOperationalStatus | "all";
+  lifecycleStatus: ClubLifecycleStatus[];
+  operationalStatus: ClubOperationalStatus[];
 };
 
 export function ClubsListScreen({ className }: ClubsListScreenProps) {
   const t = useTranslations("Admin.Clubs");
   const navigate = useNavigate();
   const styles = clubsListScreenVariants();
-  const [createOpen, setCreateOpen] = useState(false);
 
-  const { search, searchInput, setSearchInput, filters, setFilter } =
-    useAdminListQueryParams<ClubsListFilters>({
+  const {
+    search,
+    searchInput,
+    setSearchInput,
+    filters,
+    setFilter,
+    sortBy,
+    sortOrder,
+    sort,
+    setSort,
+  } = useAdminListQueryParams<
+    ClubsListFilters,
+    NonNullable<ClubListQuery["sortBy"]>
+  >({
       filterKeys: FILTER_KEYS,
       defaults: FILTER_DEFAULTS,
+      defaultSort: { column: "createdAt", direction: "descending" },
     });
 
   const queryKey = useMemo(
@@ -50,9 +60,17 @@ export function ClubsListScreen({ className }: ClubsListScreenProps) {
         search,
         lifecycleStatus: filters.lifecycleStatus,
         operationalStatus: filters.operationalStatus,
+        sortBy,
+        sortOrder,
         pageSize: PAGE_SIZE,
       }),
-    [filters.lifecycleStatus, filters.operationalStatus, search],
+    [
+      filters.lifecycleStatus,
+      filters.operationalStatus,
+      search,
+      sortBy,
+      sortOrder,
+    ],
   );
 
   const fetchPage = useCallback(
@@ -60,77 +78,44 @@ export function ClubsListScreen({ className }: ClubsListScreenProps) {
       return listClubs({
         page,
         limit: pageSize,
-        q: search || undefined,
+        search: search || undefined,
         lifecycleStatus:
-          filters.lifecycleStatus === "all"
+          filters.lifecycleStatus.length === 0
             ? undefined
             : filters.lifecycleStatus,
         operationalStatus:
-          filters.operationalStatus === "all"
+          filters.operationalStatus.length === 0
             ? undefined
             : filters.operationalStatus,
+        sortBy,
+        sortOrder,
       });
     },
-    [filters.lifecycleStatus, filters.operationalStatus, search],
+    [
+      filters.lifecycleStatus,
+      filters.operationalStatus,
+      search,
+      sortBy,
+      sortOrder,
+    ],
   );
 
   const {
     items,
     total,
+    page,
+    pageSize,
+    totalPages,
     loading,
-    fetchingMore,
-    hasMore,
     error,
-    loadMore,
+    setPage,
     reload,
-  } = useAdminInfiniteQuery<Club>({
+  } = useAdminPaginatedQuery<Club>({
     queryKey,
     pageSize: PAGE_SIZE,
     errorFallback: t("errorLoad"),
     fetchPage,
   });
-
-  const handleCreate = async (
-    values: ClubsCreateFormValues,
-    intent: FormSubmitIntent,
-  ) => {
-    const club = await createClub({
-      ownerId: values.ownerId.trim(),
-      identity: {
-        name: values.name.trim(),
-        description: values.description.trim() || undefined,
-      },
-      contact: {
-        phones: [
-          {
-            number: values.phone.trim(),
-            label: values.phoneLabel.trim() || undefined,
-          },
-        ],
-        website: values.website.trim() || undefined,
-      },
-      location: {
-        address: values.address.trim(),
-        direction: values.direction,
-      },
-      categoryIds: values.categoryIds,
-      sportIds: values.sportIds,
-      audience: {
-        genderPolicy: values.genderPolicy || null,
-        accessibility: values.accessibility || "standard",
-        ageGroupKeys: values.ageGroupKeys,
-        levelKeys: values.levelKeys,
-      },
-    });
-
-    if (intent === "saveAndCreateNew") {
-      void reload();
-      return;
-    }
-
-    setCreateOpen(false);
-    navigate(routes.club(club.id));
-  };
 
   return (
     <AdminShell
@@ -144,16 +129,17 @@ export function ClubsListScreen({ className }: ClubsListScreenProps) {
       <div className={styles.content()}>
         <ClubsListHeaderSection
           usingMock={isClubsMockMode()}
-          onCreate={() => setCreateOpen(true)}
+          onCreate={() => navigate(routes.clubsNew)}
           onRefresh={() => void reload()}
         />
 
         <ClubsListTableSection
           error={error}
-          fetchingMore={fetchingMore}
-          hasMore={hasMore}
           items={items}
           loading={loading}
+          page={page}
+          pageSize={pageSize}
+          sort={sort}
           toolbar={
             <ClubsListFiltersSection
               lifecycleStatus={filters.lifecycleStatus}
@@ -167,16 +153,12 @@ export function ClubsListScreen({ className }: ClubsListScreenProps) {
             />
           }
           total={total}
-          onLoadMore={loadMore}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          onSortChange={setSort}
           onView={(clubId) => navigate(routes.club(clubId))}
         />
       </div>
-
-      <ClubsCreateForm
-        isOpen={createOpen}
-        onOpenChange={setCreateOpen}
-        onSubmit={handleCreate}
-      />
     </AdminShell>
   );
 }

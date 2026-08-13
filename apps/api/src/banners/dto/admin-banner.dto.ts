@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   ArrayMaxSize,
   ArrayMinSize,
@@ -6,6 +6,7 @@ import {
   IsDateString,
   IsEnum,
   IsInt,
+  IsIn,
   IsMongoId,
   IsOptional,
   IsString,
@@ -20,6 +21,7 @@ import {
   BannerPlacement,
   PublishStatus,
 } from '../../common/enums';
+import { toStringArray } from '../../common/utils/list-query.util';
 
 export class BannerSlideDto {
   @IsMongoId()
@@ -117,15 +119,28 @@ export class UpdateBannerDto {
 
 export class AdminListBannersQueryDto extends PaginationQueryDto {
   @IsOptional()
-  @IsEnum(BannerPlacement)
-  placement?: BannerPlacement;
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(BannerPlacement, { each: true })
+  placement?: BannerPlacement[];
 
   @IsOptional()
-  @IsEnum(PublishStatus)
-  publishStatus?: PublishStatus;
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(PublishStatus, { each: true })
+  publishStatus?: PublishStatus[];
 
   @IsOptional()
   @IsString()
   @MaxLength(60)
   search?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  sortBy?: string;
+
+  @IsOptional()
+  @IsIn(['asc', 'desc'])
+  sortOrder?: 'asc' | 'desc';
 }

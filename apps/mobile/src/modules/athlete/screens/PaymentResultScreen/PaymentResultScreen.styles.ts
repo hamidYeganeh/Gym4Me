@@ -9,7 +9,7 @@ export const paymentResultScreenStyles = {
   heroTitle: "text-foreground",
   heroBody: "text-muted",
   detailsCard:
-    "overflow-hidden rounded-[24px] border border-border bg-surface",
+    "overflow-hidden rounded-[24px] border-0 bg-surface shadow-sm shadow-foreground/5",
   detailRow: "flex items-center justify-between gap-3 px-4 py-3.5",
   detailLabel: "text-muted",
   detailValue: "text-foreground text-end",

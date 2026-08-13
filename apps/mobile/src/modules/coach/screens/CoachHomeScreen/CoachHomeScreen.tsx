@@ -14,6 +14,7 @@ import {
   Wallet,
 } from "@repo/icons";
 import { CallToActionCard } from "@repo/ui/cards/CallToActionCard";
+import { QuickActionCard } from "@repo/ui/cards/QuickActionCard";
 import { Logo } from "@repo/ui/common/Logo";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { BottomNav } from "@repo/ui/layout/BottomNav";
@@ -131,96 +132,108 @@ export function CoachHomeScreen() {
           ]}
         />
 
-        <Typography color="muted" type="body">
-          {t("subtitle")}
-        </Typography>
+        <section
+          aria-labelledby="coach-overview-title"
+          className={styles.section}
+        >
+          <div className={styles.sectionHeader}>
+            <Typography
+              className={styles.title}
+              id="coach-overview-title"
+              type="h4"
+              weight="semibold"
+            >
+              {t("overviewTitle")}
+            </Typography>
+            <Typography className={styles.sectionDescription} type="body-sm">
+              {t("subtitle")}
+            </Typography>
+          </div>
 
-        <Typography className={styles.title} type="h4" weight="semibold">
-          {t("quickLinksTitle")}
-        </Typography>
+          <div className={styles.featureGrid}>
+            <CallToActionCard
+              actionLabel={t("dailyPlan")}
+              actionType="plus"
+              onAction={() => router.push("/coach/calendar/daily")}
+              subtitle={t("dailyPlanDescription")}
+              title={t("dailyPlan")}
+              variant="primary"
+            />
+            <CallToActionCard
+              actionLabel={t("weeklyPlan")}
+              actionType="icon"
+              icon={<Calendar2 size={ICON_SIZE} />}
+              onAction={() => router.push("/coach/calendar/weekly")}
+              subtitle={t("weeklyPlanDescription")}
+              title={t("weeklyPlan")}
+              variant="outlined"
+            />
+          </div>
+        </section>
 
-        <div className={styles.links}>
-          <CallToActionCard
-            actionLabel={t("dailyPlan")}
-            actionType="plus"
-            onAction={() => router.push("/coach/calendar/daily")}
-            subtitle={t("dailyPlanDescription")}
-            title={t("dailyPlan")}
-            variant="primary"
-          />
-          <CallToActionCard
-            actionLabel={t("weeklyPlan")}
-            actionType="icon"
-            icon={<Calendar2 size={28} />}
-            onAction={() => router.push("/coach/calendar/weekly")}
-            subtitle={t("weeklyPlanDescription")}
-            title={t("weeklyPlan")}
-            variant="outlined"
-          />
-          <CallToActionCard
-            actionLabel={t("clientsLink")}
-            actionType="icon"
-            icon={<UsersThree size={28} />}
-            onAction={() => router.push("/coach/clients")}
-            subtitle={t("clientsLinkDescription")}
-            title={t("clientsLink")}
-            variant="outlined"
-          />
-          <CallToActionCard
-            actionLabel={t("bookingsLink")}
-            actionType="icon"
-            icon={<CalendarCheck size={28} />}
-            onAction={() => router.push("/coach/bookings")}
-            subtitle={t("bookingsLinkDescription")}
-            title={t("bookingsLink")}
-            variant="outlined"
-          />
-          <CallToActionCard
-            actionLabel={t("slotsLink")}
-            actionType="icon"
-            icon={<Calendar1 size={28} />}
-            onAction={() => router.push("/coach/slots")}
-            subtitle={t("slotsLinkDescription")}
-            title={t("slotsLink")}
-            variant="outlined"
-          />
-          <CallToActionCard
-            actionLabel={t("programsLink")}
-            actionType="icon"
-            icon={<Note1 size={28} />}
-            onAction={() => router.push("/coach/programs")}
-            subtitle={t("programsLinkDescription")}
-            title={t("programsLink")}
-            variant="outlined"
-          />
-          <CallToActionCard
-            actionLabel={t("earningsLink")}
-            actionType="icon"
-            icon={<Wallet size={28} />}
-            onAction={() => router.push("/coach/earnings")}
-            subtitle={t("earningsLinkDescription")}
-            title={t("earningsLink")}
-            variant="outlined"
-          />
-          <CallToActionCard
-            actionLabel={t("messagesLink")}
-            actionType="icon"
-            icon={<Chat size={28} />}
-            onAction={() => router.push("/coach/messages")}
-            subtitle={t("messagesLinkDescription")}
-            title={t("messagesLink")}
-            variant="outlined"
-          />
-          <CallToActionCard
-            actionLabel={t("analyticsLink")}
-            actionType="icon"
-            icon={<ChartTrendUp size={28} />}
-            onAction={() => router.push("/coach/analytics")}
-            subtitle={t("analyticsLinkDescription")}
-            title={t("analyticsLink")}
-            variant="outlined"
-          />
-        </div>
+        <section
+          aria-labelledby="coach-quick-links-title"
+          className={styles.section}
+        >
+          <div className={styles.sectionHeader}>
+            <Typography
+              className={styles.title}
+              id="coach-quick-links-title"
+              type="h4"
+              weight="semibold"
+            >
+              {t("quickLinksTitle")}
+            </Typography>
+            <Typography className={styles.sectionDescription} type="body-sm">
+              {t("quickLinksDescription")}
+            </Typography>
+          </div>
+
+          <div className={styles.quickGrid}>
+            <QuickActionCard
+              icon={<UsersThree size={ICON_SIZE} />}
+              label={t("clientsLink")}
+              layout="row"
+              onPress={() => router.push("/coach/clients")}
+            />
+            <QuickActionCard
+              icon={<CalendarCheck size={ICON_SIZE} />}
+              label={t("bookingsLink")}
+              layout="row"
+              onPress={() => router.push("/coach/bookings")}
+            />
+            <QuickActionCard
+              icon={<Calendar1 size={ICON_SIZE} />}
+              label={t("slotsLink")}
+              layout="row"
+              onPress={() => router.push("/coach/slots")}
+            />
+            <QuickActionCard
+              icon={<Note1 size={ICON_SIZE} />}
+              label={t("programsLink")}
+              layout="row"
+              onPress={() => router.push("/coach/programs")}
+            />
+            <QuickActionCard
+              icon={<Wallet size={ICON_SIZE} />}
+              label={t("earningsLink")}
+              layout="row"
+              onPress={() => router.push("/coach/earnings")}
+            />
+            <QuickActionCard
+              icon={<Chat size={ICON_SIZE} />}
+              label={t("messagesLink")}
+              layout="row"
+              onPress={() => router.push("/coach/messages")}
+            />
+            <QuickActionCard
+              icon={<ChartTrendUp size={ICON_SIZE} />}
+              label={t("analyticsLink")}
+              layout="row"
+              onPress={() => router.push("/coach/analytics")}
+            />
+          </div>
+        </section>
       </div>
     </AppLayout>
   );

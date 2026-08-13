@@ -1,4 +1,4 @@
-import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { mkdirSync } from 'fs';
 import helmet from 'helmet';
@@ -7,6 +7,7 @@ import {
   assertSecurityConfig,
   resolveCorsOrigin,
 } from './common/utils/security-config.util';
+import { createAppValidationPipe } from './common/utils/validation-exception.util';
 import { setupSwagger, SWAGGER_PATH } from './swagger';
 
 async function bootstrap() {
@@ -30,13 +31,7 @@ async function bootstrap() {
     origin: resolveCorsOrigin(),
     credentials: true,
   });
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      transform: true,
-      forbidNonWhitelisted: true,
-    }),
-  );
+  app.useGlobalPipes(createAppValidationPipe());
   app.enableShutdownHooks();
 
   const enableSwagger =

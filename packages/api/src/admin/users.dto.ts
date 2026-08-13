@@ -1,12 +1,24 @@
-import type { KycStatus, Role, UserStatus } from "../types";
+import type {
+  KycStatus,
+  ListQuery,
+  ListQueryFilter,
+  Role,
+  UserStatus,
+} from "../types";
 
-export type ListAdminUsersQuery = {
-  page?: number;
-  limit?: number;
-  role?: Role;
-  status?: UserStatus;
-  kycStatus?: KycStatus;
-  search?: string;
+export type AdminUsersSortBy =
+  | "createdAt"
+  | "updatedAt"
+  | "name"
+  | "phone"
+  | "code"
+  | "status"
+  | "kycStatus";
+
+export type ListAdminUsersQuery = ListQuery<AdminUsersSortBy> & {
+  role?: ListQueryFilter<Role>;
+  status?: ListQueryFilter<UserStatus>;
+  kycStatus?: ListQueryFilter<KycStatus>;
 };
 
 export type AdminCreateUserInput = {

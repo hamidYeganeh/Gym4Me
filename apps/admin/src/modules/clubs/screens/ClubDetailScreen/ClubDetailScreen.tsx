@@ -1,15 +1,13 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button, Chip, Spinner, Typography } from "@heroui/react";
 import type { Club, ClubClass, ClubSlot } from "@repo/api";
 import { ArrowLeft, Pencil1 } from "@repo/icons";
+import { toast } from "@repo/ui/kit/Toast";
 import { useTranslations } from "next-intl";
 import { AdminConfirmDialog, AdminShell } from "@/shared/components";
-import type { FormSubmitIntent } from "@/shared/lib/form-submit-intent";
 import { routes } from "@/shared/lib/routes";
 import { formatAdminDate } from "@/shared/lib/user-format";
-import { ClubsCreateForm } from "../../components/ClubsCreateForm";
-import type { ClubsCreateFormValues } from "../../components/ClubsCreateForm";
 import {
   categoryLabel,
   ownerLabel,
@@ -23,40 +21,11 @@ import {
   listClubCoaches,
   listClubSlots,
   removeClub,
-  updateClub,
 } from "../../lib/clubs-repository";
 import { ClubSlotsSection } from "../../sections/ClubSlotsSection";
 import { ClubCoachesSection } from "../../sections/ClubCoachesSection";
 import { clubDetailScreenVariants } from "./ClubDetailScreen.styles";
 import type { ClubDetailScreenProps } from "./ClubDetailScreen.types";
-
-function clubToFormValues(club: Club): ClubsCreateFormValues {
-  const phone = club.contact.phones[0];
-  return {
-    ownerId: club.ownerId,
-    name: club.identity.name,
-    description: club.identity.description ?? "",
-    phone: phone?.number ?? "",
-    phoneLabel: phone?.label ?? "",
-    website: club.contact.website ?? "",
-    address: club.location?.address ?? "",
-    direction: club.location?.direction ?? "center",
-    categoryIds: club.categories.map((c) =>
-      "id" in c && typeof (c as { id?: string }).id === "string"
-        ? (c as { id: string }).id
-        : (c as { categoryId?: string }).categoryId ?? "",
-    ).filter(Boolean),
-    sportIds: club.sports.map((s) =>
-      "id" in s && typeof (s as { id?: string }).id === "string"
-        ? (s as { id: string }).id
-        : (s as { sportId?: string }).sportId ?? "",
-    ).filter(Boolean),
-    genderPolicy: club.audience?.genderPolicy ?? "mixed",
-    accessibility: club.audience?.accessibility ?? "standard",
-    ageGroupKeys: club.audience?.ageGroupKeys ?? [],
-    levelKeys: club.audience?.levelKeys ?? [],
-  };
-}
 
 export function ClubDetailScreen({ className }: ClubDetailScreenProps) {
   const t = useTranslations("Admin.Clubs");
@@ -67,9 +36,7 @@ export function ClubDetailScreen({ className }: ClubDetailScreenProps) {
   const [club, setClub] = useState<Club | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
   const [activateOpen, setActivateOpen] = useState(false);
   const [deactivateOpen, setDeactivateOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -77,11 +44,6 @@ export function ClubDetailScreen({ className }: ClubDetailScreenProps) {
   const [branches, setBranches] = useState<Club[]>([]);
   const [classes, setClasses] = useState<ClubClass[]>([]);
   const [slots, setSlots] = useState<ClubSlot[]>([]);
-
-  const editValues = useMemo(
-    () => (club ? clubToFormValues(club) : null),
-    [club],
-  );
 
   const load = useCallback(async () => {
     if (!clubId) return;
@@ -122,7 +84,6 @@ export function ClubDetailScreen({ className }: ClubDetailScreenProps) {
     if (!club) return;
     setPending(true);
     setError(null);
-    setMessage(null);
     try {
       if (action === "delete") {
         await removeClub(club.id);
@@ -134,7 +95,7 @@ export function ClubDetailScreen({ className }: ClubDetailScreenProps) {
           ? await activateClub(club.id)
           : await deactivateClub(club.id);
       setClub(next);
-      setMessage(t("detail.saved"));
+      toast.success(t("detail.saved"));
       setActivateOpen(false);
       setDeactivateOpen(false);
     } catch (err) {
@@ -144,46 +105,12 @@ export function ClubDetailScreen({ className }: ClubDetailScreenProps) {
     }
   };
 
-  const handleEdit = async (
-    values: ClubsCreateFormValues,
-    _intent: FormSubmitIntent,
-  ) => {
-    if (!club) return;
-    const next = await updateClub(club.id, {
-      identity: {
-        name: values.name.trim(),
-        description: values.description.trim() || undefined,
-      },
-      contact: {
-        phones: [
-          {
-            number: values.phone.trim(),
-            label: values.phoneLabel.trim() || undefined,
-          },
-        ],
-        website: values.website.trim() || undefined,
-      },
-      location: {
-        address: values.address.trim(),
-        direction: values.direction,
-        locationId: club.location?.locationId ?? undefined,
-      },
-      categoryIds: values.categoryIds,
-      sportIds: values.sportIds,
-      audience: {
-        genderPolicy: values.genderPolicy || null,
-        accessibility: values.accessibility || "standard",
-        ageGroupKeys: values.ageGroupKeys,
-        levelKeys: values.levelKeys,
-      },
-    });
-    setClub(next);
-    setEditOpen(false);
-    setMessage(t("detail.saved"));
-  };
-
   return (
-    <AdminShell activeNavId="clubs" className={className}>
+    <AdminShell
+      activeNavId="clubs"
+      breadcrumbs={[{ label: club?.identity.name ?? t("detail.unnamed") }]}
+      className={className}
+    >
       <div className={styles.content()}>
         <div className={styles.header()}>
           <div>
@@ -215,7 +142,7 @@ export function ClubDetailScreen({ className }: ClubDetailScreenProps) {
 
           {club ? (
             <div className={styles.actions()}>
-              <Button variant="outline" onPress={() => setEditOpen(true)}>
+              <Button variant="outline" onPress={() => navigate(routes.clubEdit(club.id))}>
                 <Pencil1 size={16} />
                 {t("actions.edit")}
               </Button>
@@ -252,7 +179,6 @@ export function ClubDetailScreen({ className }: ClubDetailScreenProps) {
             {error}
           </p>
         ) : null}
-        {message ? <p className={styles.message()}>{message}</p> : null}
 
         {club ? (
           <>
@@ -449,14 +375,6 @@ export function ClubDetailScreen({ className }: ClubDetailScreenProps) {
         title={t("detail.deleteTitle")}
         onConfirm={() => void runAction("delete")}
         onOpenChange={setDeleteOpen}
-      />
-
-      <ClubsCreateForm
-        initialValues={editValues}
-        isOpen={editOpen}
-        mode="edit"
-        onOpenChange={setEditOpen}
-        onSubmit={handleEdit}
       />
     </AdminShell>
   );

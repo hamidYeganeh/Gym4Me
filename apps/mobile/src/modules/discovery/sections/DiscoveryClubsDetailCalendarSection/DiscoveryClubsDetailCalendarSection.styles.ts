@@ -103,7 +103,7 @@ export const discoveryClubsDetailCalendarSectionVariants = tv({
     skeletonCards: "flex min-w-0 flex-col gap-3 pb-5",
     skeletonCard: [
       "flex h-[5.25rem] w-full items-center gap-3 rounded-[22px]",
-      "border border-border/60 bg-surface px-3 py-3",
+      "border-0 bg-surface px-3 py-3 shadow-sm shadow-foreground/5",
     ].join(" "),
     skeletonThumb: "size-14 shrink-0 rounded-2xl",
     skeletonLines: "flex min-w-0 flex-1 flex-col gap-2",

@@ -1172,6 +1172,13 @@
     }
   },
   "Admin": {
+    "Common": {
+      "pagination": {
+        "summary": "{from} تا {to} از {total}",
+        "previous": "قبلی",
+        "next": "بعدی"
+      }
+    },
     "Analytics": {
       "title": "آنالیتیکس",
       "subtitle": "شاخص‌های کلیدی از داده واقعی پلتفرم محاسبه می‌شوند؛ تحلیل‌های تکمیلی نمونه هستند.",
@@ -1264,6 +1271,7 @@
     "searchPlaceholder": "جستجو کنید...",
     "searchAriaLabel": "جستجو",
     "filtersAriaLabel": "فیلترها",
+    "breadcrumbsAriaLabel": "مسیر صفحه",
     "navAriaLabel": "ناوبری مدیریت",
     "themeToLight": "تغییر به حالت روشن",
     "themeToDark": "تغییر به حالت تاریک",
@@ -2304,6 +2312,8 @@
       "saveAndCreateNew": "ذخیره و ایجاد جدید",
       "cancel": "انصراف",
       "confirm": "تأیید",
+      "saved": "ذخیره شد.",
+      "created": "ایجاد شد.",
       "validation": {
         "required": "این فیلد الزامی است.",
         "invalid": "مقدار واردشده معتبر نیست."
@@ -2471,7 +2481,8 @@
         "cancel": "انصراف",
         "errorRequired": "شماره موبایل الزامی است.",
         "errorRoles": "حداقل یک نقش انتخاب کنید.",
-        "errorGeneric": "ایجاد کاربر ممکن نشد."
+        "errorGeneric": "ایجاد کاربر ممکن نشد.",
+        "saved": "کاربر ایجاد شد."
       },
       "detail": {
         "title": "جزئیات کاربر",
@@ -2599,7 +2610,8 @@
         "levelElite": "الیت",
         "loadMock": "پر کردن با داده نمونه",
         "errorRequired": "این فیلد الزامی است.",
-        "errorGeneric": "ثبت باشگاه ممکن نشد."
+        "errorGeneric": "ثبت باشگاه ممکن نشد.",
+        "saved": "باشگاه ایجاد شد."
       },
       "editModal": {
         "title": "ویرایش باشگاه",
@@ -2669,7 +2681,9 @@
         "endsOn": "پایان در تاریخ (اختیاری)",
         "save": "ذخیره اسلات",
         "saveEdit": "ذخیره تغییرات",
+        "saved": "اسلات ذخیره شد.",
         "errorSave": "ذخیره اسلات ممکن نشد.",
+        "errorLoad": "بارگذاری اسلات ممکن نشد.",
         "errorClassRequired": "عنوان کلاس الزامی است.",
         "weekday": {
           "0": "شنبه",
@@ -4673,6 +4687,7 @@
     "tasksAssignedDescription": "تقریباً تمام‌شده",
     "tasksAssignedAction": "وظایف پرسنل",
     "quickLinksTitle": "میانبرهای مدیریتی",
+    "quickLinksDescription": "بخش‌های اصلی باشگاه، اعضا و گزارش‌های مالی را سریع باز کنید.",
     "quickLinkClubs": "باشگاه‌ها",
     "quickLinkMembers": "اعضا",
     "quickLinkStaff": "پرسنل",
@@ -4708,7 +4723,9 @@
     "actionsLabel": "منوی سریع",
     "dailyPlan": "برنامه روزانه",
     "weeklyPlan": "برنامه هفتگی",
+    "overviewTitle": "امروز در یک نگاه",
     "quickLinksTitle": "میانبرها",
+    "quickLinksDescription": "دسترسی سریع به شاگردان، زمان‌بندی و ابزارهای مدیریت مربی.",
     "dailyPlanDescription": "جلسات امروز را ببینید و مدیریت کنید.",
     "weeklyPlanDescription": "نمای هفتگی تمرین‌ها و زمان‌بندی.",
     "clientsLink": "شاگردان",
@@ -4732,6 +4749,8 @@
     "profileName": "امیر حسینی",
     "profileRole": "ورزشکار",
     "profileBio": "ورزشکار علاقه‌مند به تناسب اندام، تمرین‌های قدرتی و پیگیری پیشرفت هفتگی.",
+    "overviewTitle": "امروز در یک نگاه",
+    "overviewDescription": "مهم‌ترین بخش‌های برنامه و روند پیشرفتت را از اینجا ادامه بده.",
     "follow": "دنبال کردن",
     "share": "اشتراک‌گذاری",
     "statFollowers": "دنبال‌کننده‌ها",
@@ -4748,6 +4767,7 @@
     "create": "افزودن",
     "actionsLabel": "منوی سریع",
     "quickLinksTitle": "میانبرها",
+    "quickLinksDescription": "دسترسی سریع به برنامه‌ها، خدمات و فعالیت‌های حساب شما.",
     "metricsTitle": "معیارهای تناسب اندام",
     "metricsDescription": "وزن، ترکیب بدن و روند پیشرفت را ببینید.",
     "metricsAction": "مشاهده معیارها",
@@ -4944,12 +4964,127 @@
       "themeToggle": "تغییر حالت روشن و تاریک"
     },
     "hero": {
-      "titleLine1": "Gym4Me",
-      "titleLine2": "عملیات باشگاه",
-      "description": "از فروش عضویت در پذیرش تا صندوق، بدهی، رزرو، حضور و تسویه مربی—یک جریان یکپارچه و فارسی برای کار واقعی روزانه.",
-      "version": "نسخه ۱٫۰",
-      "ctaPrimary": "برای باشگاه من",
-      "ctaSecondary": "مشاهده باشگاه‌ها"
+      "logoPrimary": "GYM",
+      "logoSecondary": "4ME",
+      "nav": {
+        "features": "ویژگی‌ها",
+        "programs": "برنامه‌ها",
+        "testimonials": "نظرات",
+        "contact": "تماس"
+      },
+      "cta": "شروع رایگان",
+      "line1": "#GYM",
+      "line2": "4ME",
+      "line3": "FIT",
+      "badgeLabel": "شروع رایگان • شروع رایگان • ",
+      "ariaLabel": "هیرو",
+      "features": {
+        "findClub": {
+          "titleLine1": "باشگاه",
+          "titleLine2": "نزدیکت را پیدا کن",
+          "description": "باشگاه‌ها و شعبه‌ها را روی نقشه کشف کن"
+        },
+        "chooseCoach": {
+          "titleLine1": "مربی مناسب",
+          "titleLine2": "را انتخاب کن",
+          "description": "هر مربی امتیاز و تخصص خودش را دارد"
+        },
+        "bookSession": {
+          "titleLine1": "جلسه را",
+          "titleLine2": "رزرو کن",
+          "description": "پیشرفت تمرینت را هر ماه ببین",
+          "metricLabel": "جلسات این ماه",
+          "metricValue": "۱۸۸"
+        }
+      }
+    },
+    "clubDemo": {
+      "title": "رزوود الفاصلیه",
+      "label": "پیشرفته",
+      "actionLabel": "مشاهده"
+    },
+    "coachDemo": {
+      "name": "زاکمن دی. متا",
+      "specialty": "متخصص پایین‌تنه",
+      "badgeNew": "جدید",
+      "certified": "تأیید‌شده",
+      "yearsOfExperience": "{years} سال سابقه"
+    },
+    "sports": {
+      "title": "ورزش‌هایی که دوست داری",
+      "subtitle": "از وزنه و دویدن تا یوگا و شنا — باشگاه و مربی مناسب هر رشته را در Gym4Me پیدا کن.",
+      "ctaText": "شروع با دانلود اپ",
+      "ctaHref": "#download"
+    },
+    "clubs": {
+      "introTitle": "باشگاه‌هایی نزدیک تو",
+      "introHint": "اسکرول کن تا ببینی",
+      "title": "کشف باشگاه‌ها",
+      "description": "مجموعه‌ای از باشگاه‌ها و فضاهای تمرینی را ورق بزن و جایی را پیدا کن که به سبک تمرینت می‌خورد.",
+      "cards": [
+        {
+          "title": "پاور هاوس",
+          "label": "حرفه‌ای",
+          "imageAlt": "قفسه دمبل در باشگاه مدرن"
+        },
+        {
+          "title": "اوربن جیم",
+          "label": "شهری",
+          "imageAlt": "سالن کاردیو با نمای شهر"
+        },
+        {
+          "title": "ماسل فکتوری",
+          "label": "بدنسازی",
+          "imageAlt": "قفسه اسکوات و نیمکت وزنه"
+        },
+        {
+          "title": "فیتنس لند",
+          "label": "تمرکز",
+          "imageAlt": "سالن تمرین با فضای تاریک و حرفه‌ای"
+        },
+        {
+          "title": "جیم سنترال",
+          "label": "عمومی",
+          "imageAlt": "نمای نزدیک دمبل‌های باشگاه"
+        },
+        {
+          "title": "کراس‌فیت آرنا",
+          "label": "شدید",
+          "imageAlt": "باشگاه انباری با تجهیزات عملکردی"
+        },
+        {
+          "title": "کلاب رویال",
+          "label": "پرمیوم",
+          "imageAlt": "صفحه وزنه و هالتر در باشگاه"
+        }
+      ]
+    },
+    "download": {
+      "brandName": "جیم‌فورمی",
+      "tagline1": "باشگاهت را پیدا کن،",
+      "tagline2": "تمرینت را بساز.",
+      "cardHeading": "رزرو هوشمند تمرین.",
+      "cardDescriptionBrand": "جیم‌فورمی",
+      "cardDescriptionAfter": " باشگاه‌ها و مربی‌ها را نزدیک تو جمع می‌کند — رزرو جلسه، پیگیری پیشرفت و برنامه‌ریزی تمرین در یک اپ.",
+      "metricValue": 48,
+      "metricLabel": "جلسه این ماه",
+      "ctaHeading": "همین حالا دانلود کن.",
+      "ctaDescription": "اپ جیم‌فورمی را بگیر و رزرو باشگاه و مربی را از گوشی شروع کن.",
+      "appStoreLabel": "دانلود از",
+      "appStoreTitle": "اپ‌استور",
+      "playStoreLabel": "دریافت از",
+      "playStoreTitle": "گوگل‌پلی",
+      "phoneTodayLabel": "امروز",
+      "phoneJourneyLabel": "تمرین",
+      "phoneAvatarLabel": "جف",
+      "phoneSessionTitle": "جلسه بدنسازی",
+      "phoneSessionMeta": "۴۵ دقیقه",
+      "phoneDoneTitle": "تمرین کامل شد",
+      "phoneDoneMeta": "ثبت شد",
+      "streakTitle": "۱۲ روز متوالی",
+      "streakSubtitle": "رکورد جدید",
+      "coachUpdateTitle": "رزرو مربی",
+      "coachUpdateSubtitle": "با موفقیت ثبت شد"
     },
     "perks": {
       "rail": "نسخه (۱٫۰)",

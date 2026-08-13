@@ -1,4 +1,5 @@
 import { Card } from "@heroui/react";
+import { HorizontalBarChart } from "@repo/ui/kit/HorizontalBarChart";
 import { useTranslations } from "next-intl";
 import {
   formatFaNumber,
@@ -13,9 +14,7 @@ export function AnalyticsAcquisitionSection({
 }: AnalyticsAcquisitionSectionProps) {
   const t = useTranslations("Admin.Analytics.acquisition");
   const styles = analyticsAcquisitionSectionVariants();
-
   const total = sources.reduce((sum, source) => sum + source.count, 0);
-  const maxCount = Math.max(...sources.map((source) => source.count), 1);
 
   return (
     <Card className={styles.card({ className })}>
@@ -26,39 +25,17 @@ export function AnalyticsAcquisitionSection({
         </Card.Description>
       </Card.Header>
       <Card.Content className={styles.content()}>
-        {sources.map((source) => {
-          const share = total > 0 ? (source.count / total) * 100 : 0;
-          return (
-            <div className={styles.row()} key={source.id}>
-              <div className={styles.rowTop()}>
-                <span className={styles.rowLabel()}>
-                  {t(`sources.${source.id}`)}
-                </span>
-                <span className={styles.rowNumbers()}>
-                  <span className={styles.rowCount()}>
-                    {formatFaNumber(source.count)}
-                  </span>
-                  <span className={styles.rowShare()}>
-                    {formatFaPercent(share)}
-                  </span>
-                </span>
-              </div>
-              <div
-                aria-label={`${t(`sources.${source.id}`)}: ${formatFaPercent(share)}`}
-                aria-valuemax={100}
-                aria-valuemin={0}
-                aria-valuenow={Math.round(share)}
-                className={styles.track()}
-                role="meter"
-              >
-                <span
-                  className={styles.fill()}
-                  style={{ width: `${(source.count / maxCount) * 100}%` }}
-                />
-              </div>
-            </div>
-          );
-        })}
+        <HorizontalBarChart
+          aria-label={t("title")}
+          data={sources.map((source) => ({
+            id: source.id,
+            label: t(`sources.${source.id}`),
+            value: source.count,
+          }))}
+          formatValue={(value) =>
+            `${formatFaNumber(value)} (${formatFaPercent(total > 0 ? (value / total) * 100 : 0)})`
+          }
+        />
       </Card.Content>
     </Card>
   );

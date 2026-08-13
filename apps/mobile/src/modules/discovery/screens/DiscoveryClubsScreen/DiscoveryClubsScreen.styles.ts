@@ -21,7 +21,7 @@ export const discoveryClubsScreenStyles = {
   locationCard: "shrink-0 snap-start",
   stack: "flex flex-col gap-4",
   empty:
-    "flex flex-col items-center gap-2 rounded-[24px] border border-border bg-surface px-6 py-10 text-center",
+    "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center shadow-sm shadow-foreground/5",
   emptyTitle: "text-foreground",
   emptyBody: "text-muted",
   emptyInline: "px-1 text-muted",

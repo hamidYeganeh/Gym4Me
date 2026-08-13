@@ -16,10 +16,10 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '../common/enums';
 import {
+  AdminListExercisesQueryDto,
+  AdminListMetricTypesQueryDto,
   CreateExerciseDto,
   CreateMetricTypeDto,
-  ListExercisesQueryDto,
-  ListMetricTypesQueryDto,
   ReviewExerciseVerificationDto,
   UpdateExerciseDto,
   UpdateMetricTypeDto,
@@ -35,7 +35,7 @@ export class AdminProgressController {
 
   @Get()
   @ApiOperation({ summary: 'List exercises (all statuses)' })
-  list(@Query() query: ListExercisesQueryDto) {
+  list(@Query() query: AdminListExercisesQueryDto) {
     return this.progress.adminListExercises(query);
   }
 
@@ -98,7 +98,7 @@ export class AdminMetricTypesController {
 
   @Get()
   @ApiOperation({ summary: 'List metric types (catalog)' })
-  list(@Query() query: ListMetricTypesQueryDto) {
+  list(@Query() query: AdminListMetricTypesQueryDto) {
     return this.progress.adminListMetricTypes(query);
   }
 

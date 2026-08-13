@@ -1,13 +1,13 @@
 export const athleteBookingDetailScreenStyles = {
   root: "bg-background",
   content: "flex flex-col gap-6 pb-10 pt-1",
-  hero: "flex flex-col items-center gap-3 rounded-[24px] border border-border bg-surface px-6 py-8 text-center",
+  hero: "flex flex-col items-center gap-3 rounded-[24px] border-0 bg-surface px-6 py-8 text-center shadow-sm shadow-foreground/5",
   heroTitle: "text-foreground",
   heroClub: "text-muted",
   sectionTitle: "px-1 text-muted",
   section: "flex flex-col gap-2",
   timelineCard:
-    "flex flex-col rounded-[24px] border border-border bg-surface p-5",
+    "flex flex-col rounded-[24px] border-0 bg-surface p-5 shadow-sm shadow-foreground/5",
   timelineStep: "flex gap-3",
   timelineMarkers: "flex flex-col items-center",
   timelineDot:
@@ -23,7 +23,7 @@ export const athleteBookingDetailScreenStyles = {
   timelineLabelCurrent: "text-accent",
   timelineLabelPending: "text-muted",
   detailsCard:
-    "overflow-hidden rounded-[24px] border border-border bg-surface",
+    "overflow-hidden rounded-[24px] border-0 bg-surface shadow-sm shadow-foreground/5",
   detailRow: "flex items-center justify-between gap-3 px-4 py-3.5",
   detailLabel: "text-muted",
   detailValue: "text-foreground text-end",
@@ -42,7 +42,7 @@ export const athleteBookingDetailScreenStyles = {
   cancelConfirmActions: "flex gap-3",
   cancelReasons: "flex flex-col gap-2",
   cancelReason:
-    "flex w-full items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3 text-start transition-colors",
+    "flex w-full items-center gap-3 rounded-[1.25rem] border-0 bg-surface px-4 py-3 text-start shadow-sm shadow-foreground/5 transition-colors",
   cancelReasonSelected: "border-danger bg-danger/5",
   cancelReasonRadio:
     "flex size-5 shrink-0 items-center justify-center rounded-full border-2 border-border",
@@ -51,9 +51,9 @@ export const athleteBookingDetailScreenStyles = {
   cancelReasonLabel: "text-foreground",
   errorText: "text-danger",
   cancelledNotice:
-    "rounded-[24px] border border-border bg-surface px-5 py-4 text-center",
+    "rounded-[24px] border-0 bg-surface px-5 py-4 text-center shadow-sm shadow-foreground/5",
   cancelledNoticeText: "text-muted",
   empty:
-    "flex flex-col items-center gap-2 rounded-[24px] border border-border bg-surface px-6 py-10 text-center",
+    "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center shadow-sm shadow-foreground/5",
   emptyTitle: "text-foreground",
 } as const;

@@ -1,8 +1,9 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   ArrayMaxSize,
   IsArray,
   IsEnum,
+  IsIn,
   IsMongoId,
   IsOptional,
   IsString,
@@ -16,6 +17,7 @@ import {
   ArticleKind,
   PublishStatus,
 } from '../../common/enums';
+import { toStringArray } from '../../common/utils/list-query.util';
 
 export class ArticleSeoDto {
   @IsOptional()
@@ -141,8 +143,10 @@ export class UpdateArticleDto {
 
 export class AdminListArticlesQueryDto extends PaginationQueryDto {
   @IsOptional()
-  @IsEnum(PublishStatus)
-  publishStatus?: PublishStatus;
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(PublishStatus, { each: true })
+  publishStatus?: PublishStatus[];
 
   @IsOptional()
   @IsString()
@@ -155,15 +159,28 @@ export class AdminListArticlesQueryDto extends PaginationQueryDto {
   category?: string;
 
   @IsOptional()
-  @IsEnum(ArticleKind)
-  kind?: ArticleKind;
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(ArticleKind, { each: true })
+  kind?: ArticleKind[];
 
   @IsOptional()
-  @IsEnum(ArticleAudience)
-  audience?: ArticleAudience;
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(ArticleAudience, { each: true })
+  audience?: ArticleAudience[];
 
   @IsOptional()
   @IsString()
   @MaxLength(40)
   tag?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  sortBy?: string;
+
+  @IsOptional()
+  @IsIn(['asc', 'desc'])
+  sortOrder?: 'asc' | 'desc';
 }

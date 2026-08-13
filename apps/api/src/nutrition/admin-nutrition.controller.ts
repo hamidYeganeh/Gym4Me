@@ -16,8 +16,8 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '../common/enums';
 import {
+  AdminListFoodItemsQueryDto,
   CreateFoodItemDto,
-  ListFoodItemsQueryDto,
   UpdateFoodItemDto,
 } from './dto/nutrition.dto';
 import { NutritionService } from './nutrition.service';
@@ -31,8 +31,14 @@ export class AdminNutritionController {
 
   @Get()
   @ApiOperation({ summary: 'List food bank items' })
-  list(@Query() query: ListFoodItemsQueryDto) {
-    return this.nutrition.listFoodItems(query);
+  list(@Query() query: AdminListFoodItemsQueryDto) {
+    return this.nutrition.adminListFoodItems(query);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get a food bank item' })
+  get(@Param('id') id: string) {
+    return this.nutrition.adminGetFoodItem(id);
   }
 
   @Post()

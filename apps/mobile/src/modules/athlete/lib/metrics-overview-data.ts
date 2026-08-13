@@ -16,6 +16,10 @@ export type AthleteMetricDefinition = {
   href: string;
   color: string;
   chart: MetricCardChart;
+  /** Live API values override the legacy design-copy defaults when available. */
+  value?: string;
+  unit?: string;
+  status?: string;
 };
 
 /** Series matched to the MetricsCard reference mock. */
@@ -46,7 +50,7 @@ export const ATHLETE_METRICS: AthleteMetricDefinition[] = [
   },
   {
     id: "weight",
-    href: "/athlete/metrics/weight",
+    href: "/athlete/metrics/log?metric=weight_kg",
     color: statsColors.orange,
     chart: {
       type: "line",
@@ -56,7 +60,7 @@ export const ATHLETE_METRICS: AthleteMetricDefinition[] = [
   },
   {
     id: "hydration",
-    href: "/athlete/metrics",
+    href: "/athlete/metrics/log?metric=water_ml",
     color: statsColors.blue,
     chart: {
       type: "stacked",
@@ -82,7 +86,7 @@ export const ATHLETE_METRICS: AthleteMetricDefinition[] = [
   },
   {
     id: "sleep",
-    href: "/athlete/metrics",
+    href: "/athlete/metrics/log?metric=sleep_duration_min",
     color: statsColors.orange,
     chart: {
       type: "rings",
@@ -125,7 +129,7 @@ export const ATHLETE_METRICS: AthleteMetricDefinition[] = [
   },
   {
     id: "steps",
-    href: "/athlete/metrics",
+    href: "/athlete/metrics/log?metric=steps",
     color: statsColors.orange,
     chart: {
       type: "bars",

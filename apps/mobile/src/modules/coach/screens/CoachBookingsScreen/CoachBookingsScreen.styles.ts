@@ -7,7 +7,7 @@ export const coachBookingsScreenStyles = {
   tabs: "-mx-screen flex gap-2.5 overflow-x-auto px-screen pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
   tabChip: "shrink-0 rounded-full",
   list: "flex flex-col gap-4",
-  card: "flex flex-col gap-4 rounded-[24px] border border-border bg-surface p-4",
+  card: "flex flex-col gap-4 rounded-[24px] border-0 bg-surface p-4 shadow-sm shadow-foreground/5",
   cardHeader: "flex items-center gap-3",
   avatar: "size-12 shrink-0 rounded-full object-cover",
   cardHeaderBody: "flex min-w-0 flex-1 flex-col gap-0.5",
@@ -16,13 +16,12 @@ export const coachBookingsScreenStyles = {
   metaRow: "flex flex-wrap items-center gap-x-4 gap-y-1",
   metaItem: "text-muted",
   price: "text-foreground",
-  checkInHint:
-    "rounded-2xl bg-default px-3 py-2 text-center text-foreground",
+  checkInHint: "rounded-2xl bg-default px-3 py-2 text-center text-foreground",
   actions: "flex gap-3",
   acceptButton: "flex-1",
   rejectButton: "flex-1 text-danger",
   empty:
-    "flex flex-col items-center gap-2 rounded-[24px] border border-border bg-surface px-6 py-10 text-center",
+    "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center shadow-sm shadow-foreground/5",
   emptyTitle: "text-foreground",
   emptyBody: "text-muted",
 } as const;

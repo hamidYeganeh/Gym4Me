@@ -25,6 +25,12 @@ export type ExerciseOriginKind = "system" | "admin" | "coach";
 
 export type WorkoutLogStatus = "completed" | "skipped";
 
+export type MetricSource =
+  | "manual"
+  | "apple_health"
+  | "health_connect"
+  | "import";
+
 export type MetricType = {
   id: string;
   key: string;
@@ -217,6 +223,10 @@ export type ProgressMetric = {
   unit: string | null;
   recordedAt: string;
   note: string | null;
+  source: MetricSource;
+  sourceRecordId: string | null;
+  periodStartAt: string | null;
+  periodEndAt: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -228,6 +238,25 @@ export type CreateProgressMetricInput = {
   recordedAt: string;
   note?: string;
   privacy?: Privacy;
+  source?: MetricSource;
+  sourceRecordId?: string;
+  periodStartAt?: string;
+  periodEndAt?: string;
+};
+
+export type SyncProgressMetricInput = CreateProgressMetricInput & {
+  source: Exclude<MetricSource, "manual">;
+  sourceRecordId: string;
+};
+
+export type SyncProgressMetricsInput = {
+  entries: SyncProgressMetricInput[];
+};
+
+export type SyncProgressMetricsResult = {
+  accepted: number;
+  created: number;
+  deduplicated: number;
 };
 
 export type UpdateProgressMetricInput = {
@@ -243,6 +272,9 @@ export type ListProgressMetricsQuery = {
   page?: number;
   page_size?: number;
   metricKey?: string;
+  source?: MetricSource;
+  from?: string;
+  to?: string;
 };
 
 export type ProgressPhoto = {

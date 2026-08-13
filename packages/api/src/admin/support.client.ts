@@ -48,6 +48,10 @@ export function createAdminSupportApi(client: ApiClient) {
       return client.request<Paginated<AdminFaqItem>>(ep.faq, { query });
     },
 
+    getFaq(id: string) {
+      return client.request<AdminFaqItem>(ep.faqById(id));
+    },
+
     createFaq(input: CreateFaqInput) {
       return client.request<AdminFaqItem>(ep.faq, {
         method: "POST",

@@ -1,33 +1,21 @@
 "use client";
 
-import { MarketingFeaturesSection } from "../../sections/MarketingFeaturesSection";
-import { MarketingFooterSection } from "../../sections/MarketingFooterSection";
-import { MarketingHeaderSection } from "../../sections/MarketingHeaderSection";
+import { MarketingClubsSection } from "../../sections/MarketingClubsSection";
+import { MarketingDownloadSection } from "../../sections/MarketingDownloadSection";
 import { MarketingHeroSection } from "../../sections/MarketingHeroSection";
-import { MarketingPerksSection } from "../../sections/MarketingPerksSection";
-import { MarketingToolsSection } from "../../sections/MarketingToolsSection";
-import { useMarketingScroll } from "../../lib/scroll";
+import { MarketingSportsSection } from "../../sections/MarketingSportsSection";
+import "../../lib/marketing-landing.css";
+import { ScrollSmootherProvider } from "../../lib/marketing-scroll-smoother";
 
 export function HomeScreen() {
-  const scrollRootRef = useMarketingScroll();
-
   return (
-    <>
-      {/* Preloader */}
-      <div className="c-preloader" />
-
-      <div data-load-container="" ref={scrollRootRef}>
-        <div data-module-scroll="main">
-          <MarketingHeaderSection />
-          <main>
-            <MarketingHeroSection />
-            <MarketingPerksSection />
-            <MarketingToolsSection />
-            <MarketingFeaturesSection />
-            <MarketingFooterSection />
-          </main>
-        </div>
+    <ScrollSmootherProvider>
+      <div className="marketing-landing w-full overflow-x-hidden bg-background">
+        <MarketingHeroSection />
+        <MarketingSportsSection />
+        <MarketingClubsSection />
+        <MarketingDownloadSection />
       </div>
-    </>
+    </ScrollSmootherProvider>
   );
 }

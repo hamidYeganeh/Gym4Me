@@ -3,6 +3,8 @@ import type {
   KycRequestKind,
   KycRequestStatus,
   KycStatus,
+  ListQuery,
+  ListQueryFilter,
 } from "../types";
 
 export type AdminKycUserSummary = {
@@ -31,10 +33,16 @@ export type AdminKycRequest = {
   reviewedAt?: string | null;
 };
 
-export type ListAdminKycQuery = {
-  page?: number;
-  limit?: number;
-  status?: KycRequestStatus;
+export type AdminKycSortBy =
+  | "createdAt"
+  | "updatedAt"
+  | "reviewedAt"
+  | "birthDate"
+  | "status"
+  | "kind";
+
+export type ListAdminKycQuery = ListQuery<AdminKycSortBy> & {
+  status?: ListQueryFilter<KycRequestStatus>;
   kind?: KycRequestKind;
 };
 

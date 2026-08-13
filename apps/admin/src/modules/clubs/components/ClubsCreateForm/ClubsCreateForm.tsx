@@ -16,7 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { GeoDirection } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
-import { AdminFormActions, AdminFormDrawer } from "@/shared/components";
+import { AdminFormActions } from "@/shared/components";
 import { resolveFormSubmitIntent } from "@/shared/lib/form-submit-intent";
 import {
   MOCK_CLUB_CATEGORIES,
@@ -41,8 +41,7 @@ const DIRECTIONS: GeoDirection[] = [
 ];
 
 export function ClubsCreateForm({
-  isOpen,
-  onOpenChange,
+  onCancel,
   onSubmit,
   initialValues = null,
   mode = "create",
@@ -68,7 +67,6 @@ export function ClubsCreateForm({
   });
 
   useEffect(() => {
-    if (!isOpen) return;
     let cancelled = false;
     queueMicrotask(() => {
       if (cancelled) return;
@@ -78,20 +76,7 @@ export function ClubsCreateForm({
     return () => {
       cancelled = true;
     };
-  }, [form, initialValues, isOpen]);
-
-  useEffect(() => {
-    if (isOpen) return;
-    let cancelled = false;
-    queueMicrotask(() => {
-      if (cancelled) return;
-      form.reset(clubsCreateFormPrefill);
-      setSubmitError(null);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [form, isOpen]);
+  }, [form, initialValues]);
 
   const handleSubmit = form.handleSubmit(async (values, event) => {
     const intent = resolveFormSubmitIntent(event);
@@ -111,12 +96,7 @@ export function ClubsCreateForm({
   });
 
   return (
-    <AdminFormDrawer
-      isOpen={isOpen}
-      title={isEdit ? t("editModal.title") : t("createModal.title")}
-      onOpenChange={onOpenChange}
-    >
-      <form className={styles.form({ className })} onSubmit={handleSubmit}>
+    <form className={styles.form({ className })} onSubmit={handleSubmit}>
         {!isEdit ? (
           <>
             <div className="flex items-center justify-between gap-3">
@@ -498,7 +478,7 @@ export function ClubsCreateForm({
           saveAndCreateNewLabel={tForm("saveAndCreateNew")}
           saveLabel={tForm("save")}
           showSaveAndCreateNew={!isEdit}
-          onCancel={() => onOpenChange(false)}
+          onCancel={onCancel}
         />
 
         <button
@@ -508,6 +488,5 @@ export function ClubsCreateForm({
           onClick={() => form.reset(clubsCreateFormDefaults)}
         />
       </form>
-    </AdminFormDrawer>
   );
 }

@@ -1,5 +1,7 @@
 import type {
   FaqAudience,
+  ListQuery,
+  ListQueryFilter,
   PublishStatus,
   SupportTicketCategory,
   SupportTicketPriority,
@@ -14,14 +16,23 @@ export type {
   SupportUserSummary,
 } from "../account/support.dto";
 
-export type ListAdminSupportTicketsQuery = {
-  page?: number;
-  page_size?: number;
-  status?: SupportTicketStatus;
-  category?: SupportTicketCategory;
-  priority?: SupportTicketPriority;
-  search?: string;
-};
+export type AdminSupportTicketsSortBy =
+  | "ticketNumber"
+  | "subject"
+  | "status"
+  | "category"
+  | "priority"
+  | "lastMessageAt"
+  | "messageCount"
+  | "createdAt"
+  | "updatedAt";
+
+export type ListAdminSupportTicketsQuery =
+  ListQuery<AdminSupportTicketsSortBy> & {
+    status?: ListQueryFilter<SupportTicketStatus>;
+    category?: ListQueryFilter<SupportTicketCategory>;
+    priority?: ListQueryFilter<SupportTicketPriority>;
+  };
 
 export type AdminUpdateTicketInput = {
   priority?: SupportTicketPriority;
@@ -50,10 +61,15 @@ export type CreateFaqInput = {
 
 export type UpdateFaqInput = Partial<CreateFaqInput>;
 
-export type ListAdminFaqQuery = {
-  page?: number;
-  page_size?: number;
-  publishStatus?: PublishStatus;
-  audience?: FaqAudience;
-  search?: string;
+export type AdminFaqSortBy =
+  | "question"
+  | "audience"
+  | "publishStatus"
+  | "order"
+  | "createdAt"
+  | "updatedAt";
+
+export type ListAdminFaqQuery = ListQuery<AdminFaqSortBy> & {
+  publishStatus?: ListQueryFilter<PublishStatus>;
+  audience?: ListQueryFilter<FaqAudience>;
 };

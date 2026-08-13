@@ -45,10 +45,7 @@ import { MetricHistoryItem } from "@repo/ui/cards/MetricHistoryItem";
 import { MetricInsightCard } from "@repo/ui/cards/MetricInsightCard";
 import { MetricPromoCard } from "@repo/ui/cards/MetricPromoCard";
 import { MetricReorderItem } from "@repo/ui/cards/MetricReorderItem";
-import {
-  BodyTypeCard,
-  BODY_TYPE_KINDS,
-} from "@repo/ui/cards/BodyTypeCard";
+import { BodyTypeCard, BODY_TYPE_KINDS } from "@repo/ui/cards/BodyTypeCard";
 import { MuscleCard, MUSCLE_ART_AREAS } from "@repo/ui/cards/MuscleCard";
 import { QuickActionCard } from "@repo/ui/cards/QuickActionCard";
 import { ReviewCard } from "@repo/ui/cards/ReviewCard";
@@ -616,7 +613,10 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
         </div>
       </section>
 
-      <section className="flex w-full flex-col gap-3" id="demo-quick-action-card">
+      <section
+        className="flex w-full flex-col gap-3"
+        id="demo-quick-action-card"
+      >
         <h2 className="text-lg font-medium text-foreground">
           {labels.quickActionCardLabel}
         </h2>
@@ -636,6 +636,28 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
           <QuickActionCard
             icon={<DotThreeHorizontal size={28} />}
             label={labels.quickActionCardMore}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <QuickActionCard
+            icon={<Kettlebell size={22} />}
+            label={labels.quickActionCardClasses}
+            layout="row"
+          />
+          <QuickActionCard
+            icon={<Calendar1 size={22} />}
+            label={labels.quickActionCardBookings}
+            layout="row"
+          />
+          <QuickActionCard
+            icon={<BarbellHorizontal size={22} />}
+            label={labels.quickActionCardEquipment}
+            layout="row"
+          />
+          <QuickActionCard
+            icon={<DotThreeHorizontal size={22} />}
+            label={labels.quickActionCardMore}
+            layout="row"
           />
         </div>
       </section>

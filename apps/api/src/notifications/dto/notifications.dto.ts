@@ -1,8 +1,10 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
+  IsArray,
   IsBoolean,
   IsEnum,
   IsInt,
+  IsIn,
   IsNotEmpty,
   IsObject,
   IsOptional,
@@ -21,6 +23,7 @@ import {
   NotificationSmsSetting,
   NotificationTemplateKey,
 } from '../../common/enums';
+import { toStringArray } from '../../common/utils/list-query.util';
 
 export class ListNotificationsQueryDto {
   @IsOptional()
@@ -196,11 +199,22 @@ export class UpdateNotificationTemplateDto {
 
 export class ListTemplatesQueryDto {
   @IsOptional()
-  @IsEnum(EntityStatus)
-  status?: EntityStatus;
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(EntityStatus, { each: true })
+  status?: EntityStatus[];
 
   @IsOptional()
   @IsString()
   @MaxLength(120)
   search?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  sortBy?: string;
+
+  @IsOptional()
+  @IsIn(['asc', 'desc'])
+  sortOrder?: 'asc' | 'desc';
 }

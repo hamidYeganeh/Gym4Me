@@ -35,7 +35,11 @@ export class OtpService {
   private isDebugMode(): boolean {
     const value = this.config.get<string | boolean>('DEBUG_MODE', 'false');
     if (typeof value === 'boolean') return value;
-    return String(value ?? 'false').trim().toLowerCase() === 'true';
+    return (
+      String(value ?? 'false')
+        .trim()
+        .toLowerCase() === 'true'
+    );
   }
 
   private codeKey(purpose: OtpPurpose, phone: string) {
@@ -57,7 +61,7 @@ export class OtpService {
   async request(
     phone: string,
     purpose: OtpPurpose,
-  ): Promise<{ expiresInSeconds: number }> {
+  ): Promise<{ expiresInSeconds: number; debugCode?: string }> {
     const cooldownTtl = await this.redis.ttl(this.cooldownKey(purpose, phone));
     if (cooldownTtl > 0) {
       throw new HttpException(
@@ -78,25 +82,71 @@ export class OtpService {
     }
 
     const code = randomOtpCode(OTP_DIGITS);
+    const codeHash = sha256(code);
     await this.redis
       .multi()
-      .set(this.codeKey(purpose, phone), sha256(code), 'EX', OTP_TTL_SECONDS)
+      .set(this.codeKey(purpose, phone), codeHash, 'EX', OTP_TTL_SECONDS)
       .del(this.attemptsKey(purpose, phone))
-      .set(this.cooldownKey(purpose, phone), '1', 'EX', RESEND_COOLDOWN_SECONDS)
+      .set(
+        this.cooldownKey(purpose, phone),
+        codeHash,
+        'EX',
+        RESEND_COOLDOWN_SECONDS,
+      )
       .exec();
 
-    await this.sms.sendOtp(phone, code);
-
-    if (this.isDebugMode()) {
-      // Never return the code over HTTP — log locally for mock/dev only.
-      this.logger.log(
-        `[DEBUG] purpose=${purpose} phone=${phone} code=${code}`,
-      );
+    const debug = this.isDebugMode();
+    if (debug) {
+      this.logger.log(`[DEBUG] purpose=${purpose} phone=${phone} code=${code}`);
+    } else {
+      try {
+        await this.sms.sendOtp(phone, code);
+      } catch (error) {
+        try {
+          await this.rollbackFailedSend(phone, purpose, codeHash);
+        } catch (rollbackError) {
+          this.logger.error(
+            'Failed to roll back rejected OTP send',
+            rollbackError,
+          );
+        }
+        throw error;
+      }
     }
 
     return {
       expiresInSeconds: OTP_TTL_SECONDS,
+      ...(debug ? { debugCode: code } : {}),
     };
+  }
+
+  private async rollbackFailedSend(
+    phone: string,
+    purpose: OtpPurpose,
+    codeHash: string,
+  ): Promise<void> {
+    // Compare before deleting so a slow failed request cannot remove a newer OTP.
+    await this.redis.eval(
+      `
+        if redis.call('GET', KEYS[1]) == ARGV[1] then
+          redis.call('DEL', KEYS[1], KEYS[2])
+        end
+        if redis.call('GET', KEYS[3]) == ARGV[1] then
+          redis.call('DEL', KEYS[3])
+        end
+        local daily = tonumber(redis.call('GET', KEYS[4]) or '0')
+        if daily > 0 then
+          redis.call('DECR', KEYS[4])
+        end
+        return 1
+      `,
+      4,
+      this.codeKey(purpose, phone),
+      this.attemptsKey(purpose, phone),
+      this.cooldownKey(purpose, phone),
+      this.dailyKey(phone),
+      codeHash,
+    );
   }
 
   async verify(

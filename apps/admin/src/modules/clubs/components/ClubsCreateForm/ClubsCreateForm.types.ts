@@ -2,8 +2,7 @@ import type { FormSubmitIntent } from "@/shared/lib/form-submit-intent";
 import type { ClubsCreateFormValues } from "./ClubsCreateForm.schema";
 
 export type ClubsCreateFormProps = {
-  isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
+  onCancel: () => void;
   onSubmit: (
     values: ClubsCreateFormValues,
     intent: FormSubmitIntent,

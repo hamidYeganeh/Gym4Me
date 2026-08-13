@@ -37,6 +37,10 @@ import {
   paginatedResult,
   resolvePageSize,
 } from '../common/utils/pagination.util';
+import {
+  createSearchFilter,
+  resolveListSort,
+} from '../common/utils/list-query.util';
 import { AuditService } from '../audit/audit.service';
 import { User, UserDocument } from '../schemas/user.schema';
 import {
@@ -454,9 +458,9 @@ export class FinanceService {
 
   async listPayments(query: ListPaymentsQueryDto) {
     const filter: QueryFilter<PaymentDocument> = {};
-    if (query.status) filter.status = query.status;
-    if (query.channel) filter.channel = query.channel;
-    if (query.purpose) filter.purpose = query.purpose;
+    if (query.status) filter.status = { $in: query.status };
+    if (query.channel) filter.channel = { $in: query.channel };
+    if (query.purpose) filter.purpose = { $in: query.purpose };
     if (query.clubId) {
       filter['related.clubId'] = this.toObjectId(query.clubId, 'clubId');
     }
@@ -466,12 +470,38 @@ export class FinanceService {
         'payerUserId',
       );
     }
+    Object.assign(
+      filter,
+      createSearchFilter(query.search, [
+        'reference.orderId',
+        'reference.authority',
+        'reference.gatewayRefId',
+        'reference.externalRef',
+        'idempotencyKey',
+        'payer.guest.name',
+        'payer.guest.phone',
+        'operator.note',
+      ]),
+    );
 
     const { page, pageSize } = resolvePageSize(query);
+    const sort = resolveListSort(
+      query,
+      {
+        createdAt: 'createdAt',
+        capturedAt: 'capturedAt',
+        amount: 'amount.gross',
+        status: 'status',
+        channel: 'channel',
+        purpose: 'purpose',
+        orderId: 'reference.orderId',
+      },
+      { createdAt: -1 },
+    );
     const [items, total] = await Promise.all([
       this.paymentModel
         .find(filter)
-        .sort({ createdAt: -1 })
+        .sort(sort)
         .skip((page - 1) * pageSize)
         .limit(pageSize)
         .lean(),
@@ -895,7 +925,7 @@ export class FinanceService {
 
   async listLedger(query: ListLedgerQueryDto) {
     const filter: QueryFilter<LedgerEntryDocument> = {};
-    if (query.kind) filter.kind = query.kind;
+    if (query.kind) filter.kind = { $in: query.kind };
     if (query.clubId) {
       filter['related.clubId'] = this.toObjectId(query.clubId, 'clubId');
     }
@@ -911,12 +941,27 @@ export class FinanceService {
         (filter.occurredAt as Record<string, Date>).$lte = new Date(query.to);
       }
     }
+    Object.assign(
+      filter,
+      createSearchFilter(query.search, ['dedupeKey', 'note']),
+    );
 
     const { page, pageSize } = resolvePageSize(query);
+    const sort = resolveListSort(
+      query,
+      {
+        occurredAt: 'occurredAt',
+        createdAt: 'createdAt',
+        kind: 'kind',
+        amount: 'split.gross',
+        dedupeKey: 'dedupeKey',
+      },
+      { occurredAt: -1 },
+    );
     const [items, total] = await Promise.all([
       this.ledgerModel
         .find(filter)
-        .sort({ occurredAt: -1 })
+        .sort(sort)
         .skip((page - 1) * pageSize)
         .limit(pageSize)
         .lean(),
@@ -1161,21 +1206,44 @@ export class FinanceService {
 
   async listPayouts(query: ListPayoutsQueryDto) {
     const filter: QueryFilter<PayoutDocument> = {};
-    if (query.status) filter.status = query.status;
+    if (query.status) filter.status = { $in: query.status };
     if (query.clubId) filter.clubId = this.toObjectId(query.clubId, 'clubId');
-    if (query.recipientType) filter['recipient.type'] = query.recipientType;
+    if (query.recipientType) {
+      filter['recipient.type'] = { $in: query.recipientType };
+    }
     if (query.recipientId) {
       filter['recipient.id'] = this.toObjectId(
         query.recipientId,
         'recipientId',
       );
     }
+    Object.assign(
+      filter,
+      createSearchFilter(query.search, [
+        'note',
+        'dispute.reason',
+        'dispute.resolutionNote',
+      ]),
+    );
 
     const { page, pageSize } = resolvePageSize(query);
+    const sort = resolveListSort(
+      query,
+      {
+        createdAt: 'createdAt',
+        settledAt: 'settledAt',
+        amount: 'amount',
+        status: 'status',
+        recipientType: 'recipient.type',
+        periodFrom: 'period.from',
+        periodTo: 'period.to',
+      },
+      { createdAt: -1 },
+    );
     const [items, total] = await Promise.all([
       this.payoutModel
         .find(filter)
-        .sort({ createdAt: -1 })
+        .sort(sort)
         .skip((page - 1) * pageSize)
         .limit(pageSize)
         .lean(),

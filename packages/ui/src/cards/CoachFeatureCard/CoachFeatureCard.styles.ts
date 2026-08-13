@@ -5,6 +5,7 @@ export const coachFeatureCardVariants = tv({
   slots: {
     root: [
       "relative flex aspect-[3/4] w-full flex-col overflow-hidden rounded-[28px]",
+      "shadow-[0_14px_34px_color-mix(in_oklch,var(--foreground)_12%,transparent)]",
       "outline-none transition-transform duration-fast ease-app",
       "data-[pressable=true]:cursor-pointer",
       "data-[pressable=true]:active:scale-[0.985]",

@@ -1,34 +1,23 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Button,
   Input,
   Label,
-  ListBox,
-  Select,
   TextField,
   Typography,
 } from "@heroui/react";
 import { Pencil1, Plus, Trash1 } from "@repo/icons";
-import type {
-  ClubSlot,
-  CreateClubSlotInput,
-  SlotKind,
-  SlotRecurrenceType,
-  UpdateClubSlotInput,
-} from "@repo/api";
+import type { ClubSlot } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { AdminFormDrawer } from "@/shared/components/AdminFormDrawer";
+import { routes } from "@/shared/lib/routes";
 import {
   archiveClubSlot,
   cancelClubSlotOccurrence,
-  createClubClass,
-  createClubSlot,
-  updateClubSlot,
 } from "../../lib/clubs-repository";
 import { clubSlotsSectionVariants } from "./ClubSlotsSection.styles";
 import type { ClubSlotsSectionProps } from "./ClubSlotsSection.types";
-
-const WEEKDAY_VALUES = [0, 1, 2, 3, 4, 5, 6] as const;
 
 function todayIso() {
   const now = new Date();
@@ -39,51 +28,6 @@ function todayIso() {
   ].join("-");
 }
 
-type FormState = {
-  kind: SlotKind;
-  classId: string;
-  newClassTitle: string;
-  capacity: string;
-  recurrenceType: SlotRecurrenceType;
-  weekday: string;
-  onceDate: string;
-  startTime: string;
-  endTime: string;
-  startsOn: string;
-  endsOn: string;
-};
-
-const emptyForm = (classId = ""): FormState => ({
-  kind: "class",
-  classId,
-  newClassTitle: "",
-  capacity: "20",
-  recurrenceType: "weekly",
-  weekday: "0",
-  onceDate: todayIso(),
-  startTime: "08:00",
-  endTime: "09:00",
-  startsOn: todayIso(),
-  endsOn: "",
-});
-
-function formFromSlot(slot: ClubSlot): FormState {
-  const r = slot.schedule.recurrence;
-  return {
-    kind: slot.kind,
-    classId: slot.classId ?? "",
-    newClassTitle: "",
-    capacity: String(slot.capacity),
-    recurrenceType: r.type,
-    weekday: String(r.weekday ?? 0),
-    onceDate: r.date ?? todayIso(),
-    startTime: r.startTime,
-    endTime: r.endTime,
-    startsOn: r.startsOn ?? todayIso(),
-    endsOn: r.endsOn ?? "",
-  };
-}
-
 export function ClubSlotsSection({
   clubId,
   classes,
@@ -91,14 +35,12 @@ export function ClubSlotsSection({
   onChanged,
 }: ClubSlotsSectionProps) {
   const t = useTranslations("Admin.Clubs");
+  const navigate = useNavigate();
   const styles = clubSlotsSectionVariants();
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [editingSlotId, setEditingSlotId] = useState<string | null>(null);
   const [cancelSlotId, setCancelSlotId] = useState<string | null>(null);
   const [cancelDate, setCancelDate] = useState(todayIso());
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState<FormState>(() => emptyForm());
 
   const activeSlots = useMemo(
     () => slots.filter((s) => s.status !== "archived"),
@@ -112,97 +54,10 @@ export function ClubSlotsSection({
   const classTitle = (id: string | null) =>
     activeClasses.find((c) => c.id === id)?.title ?? id ?? "—";
 
-  const patchForm = (partial: Partial<FormState>) =>
-    setForm((prev) => ({ ...prev, ...partial }));
-
-  const openCreate = () => {
-    setEditingSlotId(null);
-    setForm(emptyForm(activeClasses[0]?.id ?? ""));
-    setError(null);
-    setDrawerOpen(true);
-  };
-
-  const openEdit = (slot: ClubSlot) => {
-    setEditingSlotId(slot.id);
-    setForm(formFromSlot(slot));
-    setError(null);
-    setDrawerOpen(true);
-  };
-
   const openCancel = (slotId: string) => {
     setCancelSlotId(slotId);
     setCancelDate(todayIso());
     setError(null);
-  };
-
-  const buildScheduleInput = (): CreateClubSlotInput["schedule"] => {
-    if (form.recurrenceType === "once") {
-      return {
-        recurrence: {
-          type: "once",
-          date: form.onceDate,
-          startTime: form.startTime,
-          endTime: form.endTime,
-        },
-      };
-    }
-    return {
-      recurrence: {
-        type: "weekly",
-        weekday: Number(form.weekday),
-        startTime: form.startTime,
-        endTime: form.endTime,
-        startsOn: form.startsOn,
-        endsOn: form.endsOn.trim() || undefined,
-      },
-    };
-  };
-
-  const resolveClassId = async (): Promise<string | undefined> => {
-    if (form.kind !== "class") return undefined;
-    if (form.classId) return form.classId;
-    if (!form.newClassTitle.trim()) {
-      throw new Error(t("slots.errorClassRequired"));
-    }
-    const created = await createClubClass(clubId, {
-      title: form.newClassTitle.trim(),
-    });
-    return created.id;
-  };
-
-  const handleSave = async () => {
-    setPending(true);
-    setError(null);
-    try {
-      const resolvedClassId = await resolveClassId();
-      const schedule = buildScheduleInput();
-      const capacity = Math.max(1, Number(form.capacity) || 1);
-
-      if (editingSlotId) {
-        const input: UpdateClubSlotInput = {
-          kind: form.kind,
-          classId: form.kind === "class" ? resolvedClassId : null,
-          capacity,
-          schedule,
-        };
-        await updateClubSlot(clubId, editingSlotId, input);
-      } else {
-        const input: CreateClubSlotInput = {
-          kind: form.kind,
-          classId: form.kind === "class" ? resolvedClassId : undefined,
-          capacity,
-          schedule,
-        };
-        await createClubSlot(clubId, input);
-      }
-      setDrawerOpen(false);
-      setEditingSlotId(null);
-      onChanged();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t("slots.errorSave"));
-    } finally {
-      setPending(false);
-    }
   };
 
   const handleArchive = async (slotId: string) => {
@@ -246,13 +101,17 @@ export function ClubSlotsSection({
     <section className={styles.root()}>
       <div className={styles.header()}>
         <Typography className={styles.title()}>{t("slots.title")}</Typography>
-        <Button size="sm" variant="primary" onPress={openCreate}>
+        <Button
+          size="sm"
+          variant="primary"
+          onPress={() => navigate(routes.clubSlotNew(clubId))}
+        >
           <Plus size={16} />
           {t("slots.create")}
         </Button>
       </div>
 
-      {error && !drawerOpen && !cancelSlotId ? (
+      {error && !cancelSlotId ? (
         <p className={styles.error()} role="alert">
           {error}
         </p>
@@ -283,7 +142,7 @@ export function ClubSlotsSection({
                   isDisabled={pending}
                   size="sm"
                   variant="outline"
-                  onPress={() => openEdit(slot)}
+                  onPress={() => navigate(routes.clubSlotEdit(clubId, slot.id))}
                 >
                   <Pencil1 size={14} />
                   {t("slots.edit")}
@@ -310,195 +169,6 @@ export function ClubSlotsSection({
           ))}
         </ul>
       )}
-
-      <AdminFormDrawer
-        isOpen={drawerOpen}
-        onOpenChange={(open) => {
-          setDrawerOpen(open);
-          if (!open) setEditingSlotId(null);
-        }}
-        title={editingSlotId ? t("slots.editTitle") : t("slots.createTitle")}
-      >
-        <div className={styles.form()}>
-          <Select
-            value={form.kind}
-            onChange={(value) => {
-              if (value === "class" || value === "session") {
-                patchForm({ kind: value });
-              }
-            }}
-          >
-            <Label>{t("slots.kind")}</Label>
-            <Select.Trigger>
-              <Select.Value />
-              <Select.Indicator />
-            </Select.Trigger>
-            <Select.Popover>
-              <ListBox>
-                <ListBox.Item id="class" textValue={t("slots.kindClass")}>
-                  {t("slots.kindClass")}
-                  <ListBox.ItemIndicator />
-                </ListBox.Item>
-                <ListBox.Item id="session" textValue={t("slots.kindSession")}>
-                  {t("slots.kindSession")}
-                  <ListBox.ItemIndicator />
-                </ListBox.Item>
-              </ListBox>
-            </Select.Popover>
-          </Select>
-
-          {form.kind === "class" ? (
-            activeClasses.length > 0 ? (
-              <Select
-                value={form.classId || activeClasses[0]?.id || null}
-                onChange={(value) =>
-                  patchForm({ classId: String(value ?? "") })
-                }
-              >
-                <Label>{t("slots.class")}</Label>
-                <Select.Trigger>
-                  <Select.Value />
-                  <Select.Indicator />
-                </Select.Trigger>
-                <Select.Popover>
-                  <ListBox>
-                    {activeClasses.map((c) => (
-                      <ListBox.Item id={c.id} key={c.id} textValue={c.title}>
-                        {c.title}
-                        <ListBox.ItemIndicator />
-                      </ListBox.Item>
-                    ))}
-                  </ListBox>
-                </Select.Popover>
-              </Select>
-            ) : (
-              <TextField
-                value={form.newClassTitle}
-                onChange={(value) => patchForm({ newClassTitle: value })}
-              >
-                <Label>{t("slots.newClassTitle")}</Label>
-                <Input placeholder={t("slots.newClassPlaceholder")} />
-              </TextField>
-            )
-          ) : null}
-
-          <Select
-            value={form.recurrenceType}
-            onChange={(value) => {
-              if (value === "weekly" || value === "once") {
-                patchForm({ recurrenceType: value });
-              }
-            }}
-          >
-            <Label>{t("slots.recurrenceType")}</Label>
-            <Select.Trigger>
-              <Select.Value />
-              <Select.Indicator />
-            </Select.Trigger>
-            <Select.Popover>
-              <ListBox>
-                <ListBox.Item id="weekly" textValue={t("slots.recurrenceWeekly")}>
-                  {t("slots.recurrenceWeekly")}
-                  <ListBox.ItemIndicator />
-                </ListBox.Item>
-                <ListBox.Item id="once" textValue={t("slots.recurrenceOnce")}>
-                  {t("slots.recurrenceOnce")}
-                  <ListBox.ItemIndicator />
-                </ListBox.Item>
-              </ListBox>
-            </Select.Popover>
-          </Select>
-
-          {form.recurrenceType === "weekly" ? (
-            <>
-              <Select
-                value={form.weekday}
-                onChange={(value) =>
-                  patchForm({ weekday: String(value ?? "0") })
-                }
-              >
-                <Label>{t("slots.weekdayLabel")}</Label>
-                <Select.Trigger>
-                  <Select.Value />
-                  <Select.Indicator />
-                </Select.Trigger>
-                <Select.Popover>
-                  <ListBox>
-                    {WEEKDAY_VALUES.map((d) => (
-                      <ListBox.Item
-                        id={String(d)}
-                        key={d}
-                        textValue={t(`slots.weekday.${d}`)}
-                      >
-                        {t(`slots.weekday.${d}`)}
-                        <ListBox.ItemIndicator />
-                      </ListBox.Item>
-                    ))}
-                  </ListBox>
-                </Select.Popover>
-              </Select>
-              <TextField
-                value={form.startsOn}
-                onChange={(value) => patchForm({ startsOn: value })}
-              >
-                <Label>{t("slots.startsOn")}</Label>
-                <Input dir="ltr" placeholder="YYYY-MM-DD" />
-              </TextField>
-              <TextField
-                value={form.endsOn}
-                onChange={(value) => patchForm({ endsOn: value })}
-              >
-                <Label>{t("slots.endsOn")}</Label>
-                <Input dir="ltr" placeholder="YYYY-MM-DD" />
-              </TextField>
-            </>
-          ) : (
-            <TextField
-              value={form.onceDate}
-              onChange={(value) => patchForm({ onceDate: value })}
-            >
-              <Label>{t("slots.onceDate")}</Label>
-              <Input dir="ltr" placeholder="YYYY-MM-DD" />
-            </TextField>
-          )}
-
-          <TextField
-            value={form.startTime}
-            onChange={(value) => patchForm({ startTime: value })}
-          >
-            <Label>{t("slots.startTime")}</Label>
-            <Input dir="ltr" />
-          </TextField>
-          <TextField
-            value={form.endTime}
-            onChange={(value) => patchForm({ endTime: value })}
-          >
-            <Label>{t("slots.endTime")}</Label>
-            <Input dir="ltr" />
-          </TextField>
-          <TextField
-            value={form.capacity}
-            onChange={(value) => patchForm({ capacity: value })}
-          >
-            <Label>{t("slots.capacity")}</Label>
-            <Input dir="ltr" inputMode="numeric" />
-          </TextField>
-
-          {error ? (
-            <p className={styles.error()} role="alert">
-              {error}
-            </p>
-          ) : null}
-
-          <Button
-            isDisabled={pending}
-            variant="primary"
-            onPress={() => void handleSave()}
-          >
-            {editingSlotId ? t("slots.saveEdit") : t("slots.save")}
-          </Button>
-        </div>
-      </AdminFormDrawer>
 
       <AdminFormDrawer
         isOpen={Boolean(cancelSlotId)}

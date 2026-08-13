@@ -13,16 +13,20 @@ import type { UsersListTableSectionProps } from "./UsersListTableSection.types";
 export function UsersListTableSection({
   items,
   total,
+  page,
+  pageSize,
+  totalPages,
   loading,
-  fetchingMore,
-  hasMore,
   error,
-  onLoadMore,
+  onPageChange,
+  sort,
+  onSortChange,
   onView,
   toolbar,
   className,
 }: UsersListTableSectionProps) {
   const t = useTranslations("Admin.Users");
+  const commonT = useTranslations("Admin.Common");
   const styles = usersListTableSectionVariants();
 
   const columns = useMemo(
@@ -66,18 +70,25 @@ export function UsersListTableSection({
       emptyLabel={t("empty")}
       error={error}
       getRowId={(row) => row.id}
-      hasMore={hasMore}
-      isFetchingMore={fetchingMore}
       isLoading={loading}
       loadingLabel={t("loading")}
       loadingMoreLabel={t("loadingMore")}
       meta={tableMeta}
-      summaryLabel={t("infinite.summary", {
-        loaded: items.length,
+      pagination={{
+        page,
+        totalPages,
+        previousLabel: commonT("pagination.previous"),
+        nextLabel: commonT("pagination.next"),
+        onPageChange,
+      }}
+      sort={sort}
+      summaryLabel={commonT("pagination.summary", {
+        from: total === 0 ? 0 : (page - 1) * pageSize + 1,
+        to: Math.min(page * pageSize, total),
         total,
       })}
       toolbar={toolbar}
-      onLoadMore={onLoadMore}
+      onSortChange={onSortChange}
     />
   );
 }

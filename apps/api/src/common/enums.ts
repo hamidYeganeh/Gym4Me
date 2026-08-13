@@ -511,6 +511,7 @@ export enum ArticleAudience {
 }
 
 export enum AuditAction {
+  APP_CONFIG_UPDATED = 'app_config.updated',
   USER_REGISTERED = 'user.registered',
   USER_LOGIN = 'user.login',
   USER_LOGOUT = 'user.logout',
@@ -965,6 +966,14 @@ export enum MetricValueKind {
 export enum MetricTypeStatus {
   ACTIVE = 'active',
   ARCHIVED = 'archived',
+}
+
+/** Origin of a ProgressMetric row; sourceRecordId de-duplicates device sync. */
+export enum MetricSource {
+  MANUAL = 'manual',
+  APPLE_HEALTH = 'apple_health',
+  HEALTH_CONNECT = 'health_connect',
+  IMPORT = 'import',
 }
 
 /** Reusable coach/admin workout program template (distinct from assigned WorkoutPlan). */

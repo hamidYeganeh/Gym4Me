@@ -1,11 +1,8 @@
-import { Label, ListBox, Select } from "@heroui/react";
 import type { ClubLifecycleStatus, ClubOperationalStatus } from "@repo/api";
+import { MultiSelectFilter } from "@repo/ui/kit/MultiSelectFilter";
 import { useTranslations } from "next-intl";
 import { clubsListFiltersSectionVariants } from "./ClubsListFiltersSection.styles";
-import type {
-  ClubsListFiltersSectionProps,
-  SelectChangeValue,
-} from "./ClubsListFiltersSection.types";
+import type { ClubsListFiltersSectionProps } from "./ClubsListFiltersSection.types";
 
 const LIFECYCLE: ClubLifecycleStatus[] = [
   "draft",
@@ -30,75 +27,29 @@ export function ClubsListFiltersSection({
   return (
     <div className={styles.root({ className })}>
       <div className={styles.filters()}>
-        <Select
+        <MultiSelectFilter<ClubLifecycleStatus>
           className={styles.filter()}
+          label={t("filterLifecycle")}
+          options={LIFECYCLE.map((item) => ({
+            value: item,
+            label: t(`lifecycle.${item}`),
+          }))}
           placeholder={t("filterLifecycle")}
           value={lifecycleStatus}
-          onChange={(value: SelectChangeValue) => {
-            onLifecycleChange(
-              String(value ?? "all") as ClubLifecycleStatus | "all",
-            );
-          }}
-        >
-          <Label className={styles.label()}>{t("filterLifecycle")}</Label>
-          <Select.Trigger className={styles.trigger()}>
-            <Select.Value className={styles.value()} />
-            <Select.Indicator className={styles.indicator()} />
-          </Select.Trigger>
-          <Select.Popover>
-            <ListBox>
-              <ListBox.Item id="all" textValue={t("filterAll")}>
-                {t("filterAll")}
-                <ListBox.ItemIndicator />
-              </ListBox.Item>
-              {LIFECYCLE.map((item) => (
-                <ListBox.Item
-                  key={item}
-                  id={item}
-                  textValue={t(`lifecycle.${item}`)}
-                >
-                  {t(`lifecycle.${item}`)}
-                  <ListBox.ItemIndicator />
-                </ListBox.Item>
-              ))}
-            </ListBox>
-          </Select.Popover>
-        </Select>
+          onChange={onLifecycleChange}
+        />
 
-        <Select
+        <MultiSelectFilter<ClubOperationalStatus>
           className={styles.filter()}
+          label={t("filterOperational")}
+          options={OPERATIONAL.map((item) => ({
+            value: item,
+            label: t(`operational.${item}`),
+          }))}
           placeholder={t("filterOperational")}
           value={operationalStatus}
-          onChange={(value: SelectChangeValue) => {
-            onOperationalChange(
-              String(value ?? "all") as ClubOperationalStatus | "all",
-            );
-          }}
-        >
-          <Label className={styles.label()}>{t("filterOperational")}</Label>
-          <Select.Trigger className={styles.trigger()}>
-            <Select.Value className={styles.value()} />
-            <Select.Indicator className={styles.indicator()} />
-          </Select.Trigger>
-          <Select.Popover>
-            <ListBox>
-              <ListBox.Item id="all" textValue={t("filterAll")}>
-                {t("filterAll")}
-                <ListBox.ItemIndicator />
-              </ListBox.Item>
-              {OPERATIONAL.map((item) => (
-                <ListBox.Item
-                  key={item}
-                  id={item}
-                  textValue={t(`operational.${item}`)}
-                >
-                  {t(`operational.${item}`)}
-                  <ListBox.ItemIndicator />
-                </ListBox.Item>
-              ))}
-            </ListBox>
-          </Select.Popover>
-        </Select>
+          onChange={onOperationalChange}
+        />
       </div>
     </div>
   );

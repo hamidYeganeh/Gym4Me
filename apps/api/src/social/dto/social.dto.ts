@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsEnum,
@@ -19,6 +19,7 @@ import {
   SocialReportStatus,
   SocialReportTargetKind,
 } from '../../common/enums';
+import { toStringArray } from '../../common/utils/list-query.util';
 
 export class PaginationQueryDto {
   @IsOptional()
@@ -120,8 +121,30 @@ export class CreateSocialReportDto {
 
 export class ListSocialReportsQueryDto extends PaginationQueryDto {
   @IsOptional()
-  @IsEnum(SocialReportStatus)
-  status?: SocialReportStatus;
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(SocialReportStatus, { each: true })
+  status?: SocialReportStatus[];
+
+  @IsOptional()
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(SocialReportTargetKind, { each: true })
+  targetKind?: SocialReportTargetKind[];
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  search?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  sortBy?: string;
+
+  @IsOptional()
+  @IsIn(['asc', 'desc'])
+  sortOrder?: 'asc' | 'desc';
 }
 
 export class ResolveSocialReportDto {

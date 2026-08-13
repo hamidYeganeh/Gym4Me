@@ -5,8 +5,8 @@ export const reservationCardVariants = tv({
   slots: {
     root: "flex w-full flex-col gap-3",
     card: [
-      "flex h-auto w-full items-center gap-3 rounded-2xl border border-border/60",
-      "bg-surface px-3.5 py-3.5 text-start shadow-none",
+      "flex h-auto w-full items-center gap-3 rounded-[1.25rem] border-0",
+      "bg-surface px-3.5 py-3.5 text-start shadow-sm shadow-foreground/5",
       "transition-[border-color,background-color,box-shadow,transform] duration-fast ease-app",
       "data-[pressed=true]:scale-[0.995]",
       "[--button-bg:var(--surface)]",
@@ -14,7 +14,7 @@ export const reservationCardVariants = tv({
       "[--button-bg-pressed:color-mix(in_oklab,var(--accent)_12%,var(--surface))]",
     ].join(" "),
     iconWrap: [
-      "flex size-11 shrink-0 items-center justify-center rounded-full",
+      "flex size-11 shrink-0 items-center justify-center rounded-[0.875rem]",
       "bg-default text-accent",
     ].join(" "),
     content: "flex min-w-0 flex-1 flex-col gap-1.5",
@@ -36,7 +36,7 @@ export const reservationCardVariants = tv({
     chevron: "size-4 shrink-0 text-muted",
     actions: "grid grid-cols-2 gap-2.5",
     reschedule: [
-      "h-12 rounded-full border-0 font-bold shadow-none",
+      "h-12 rounded-[1rem] border-0 font-bold shadow-none",
       "bg-[color-mix(in_oklab,var(--accent)_12%,var(--surface))]",
       "text-accent",
       "hover:opacity-90 data-[hovered=true]:opacity-90",
@@ -45,7 +45,7 @@ export const reservationCardVariants = tv({
       "[--button-bg-pressed:color-mix(in_oklab,var(--accent)_18%,var(--surface))]",
     ].join(" "),
     cancel: [
-      "h-12 rounded-full border-0 font-bold shadow-none",
+      "h-12 rounded-[1rem] border-0 font-bold shadow-none",
       "bg-[color-mix(in_oklab,var(--danger)_10%,var(--surface))]",
       "text-danger",
       "hover:opacity-90 data-[hovered=true]:opacity-90",

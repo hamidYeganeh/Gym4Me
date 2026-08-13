@@ -2,9 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Input, Label, Spinner, TextField, Typography } from "@heroui/react";
 import { ApiError, type PublicUser, type Role } from "@repo/api";
+import { toast } from "@repo/ui/kit/Toast";
 import { useTranslations } from "next-intl";
 import { AdminConfirmDialog, AdminShell } from "@/shared/components";
 import { adminUsers } from "@/shared/lib/api";
+import { routes } from "@/shared/lib/routes";
+import { userDisplayName } from "@/shared/lib/user-format";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import type { UsersProfileFormValues } from "../../components/UsersProfileForm";
 import type { UsersRolesFormValues } from "../../components/UsersRolesForm";
@@ -24,7 +27,6 @@ export function UserDetailScreen({ className }: UserDetailScreenProps) {
   const [user, setUser] = useState<PublicUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
   const [actionPending, setActionPending] = useState(false);
   const [activateOpen, setActivateOpen] = useState(false);
   const [deactivateOpen, setDeactivateOpen] = useState(false);
@@ -86,7 +88,6 @@ export function UserDetailScreen({ className }: UserDetailScreenProps) {
 
   const handleSaveProfile = async (values: UsersProfileFormValues) => {
     if (!user) return;
-    setMessage(null);
     setError(null);
     const next = await adminUsers.update(user.id, {
       firstName: values.firstName.trim() || undefined,
@@ -94,30 +95,28 @@ export function UserDetailScreen({ className }: UserDetailScreenProps) {
       nationalId: values.nationalId.trim() || undefined,
     });
     applyUser(next);
-    setMessage(t("detail.profileSaved"));
+    toast.success(t("detail.profileSaved"));
   };
 
   const handleSaveRoles = async (values: UsersRolesFormValues) => {
     if (!user) return;
-    setMessage(null);
     setError(null);
     const next = await adminUsers.updateRoles(user.id, {
       roles: values.roles,
     });
     applyUser(next);
-    setMessage(t("detail.rolesSaved"));
+    toast.success(t("detail.rolesSaved"));
   };
 
   const handleActivate = async () => {
     if (!user) return;
     setActionPending(true);
-    setMessage(null);
     setError(null);
     try {
       const next = await adminUsers.activate(user.id);
       applyUser(next);
       setActivateOpen(false);
-      setMessage(t("detail.activated"));
+      toast.success(t("detail.activated"));
     } catch (err) {
       setError(
         err instanceof ApiError
@@ -132,7 +131,6 @@ export function UserDetailScreen({ className }: UserDetailScreenProps) {
   const handleDeactivate = async () => {
     if (!user) return;
     setActionPending(true);
-    setMessage(null);
     setError(null);
     try {
       const next = await adminUsers.deactivate(user.id, {
@@ -141,7 +139,7 @@ export function UserDetailScreen({ className }: UserDetailScreenProps) {
       applyUser(next);
       setDeactivateOpen(false);
       setReason("");
-      setMessage(t("detail.deactivated"));
+      toast.success(t("detail.deactivated"));
     } catch (err) {
       setError(
         err instanceof ApiError
@@ -156,13 +154,12 @@ export function UserDetailScreen({ className }: UserDetailScreenProps) {
   const handleDelete = async () => {
     if (!user) return;
     setActionPending(true);
-    setMessage(null);
     setError(null);
     try {
       const next = await adminUsers.remove(user.id);
       applyUser(next);
       setDeleteOpen(false);
-      setMessage(t("detail.deleted"));
+      toast.success(t("detail.deleted"));
     } catch (err) {
       setError(
         err instanceof ApiError
@@ -177,8 +174,14 @@ export function UserDetailScreen({ className }: UserDetailScreenProps) {
   return (
     <AdminShell
       activeNavId="users"
+      breadcrumbs={[
+        {
+          label: user
+            ? userDisplayName(user, t("detail.unnamed"))
+            : t("detail.title"),
+        },
+      ]}
       className={className}
-      usersSection={{ activeTabId: "users" }}
     >
       <div className={styles.content()}>
         <UsersDetailHeaderSection
@@ -186,7 +189,7 @@ export function UserDetailScreen({ className }: UserDetailScreenProps) {
           canMutateStatus={canMutateStatus}
           user={user}
           onActivate={() => setActivateOpen(true)}
-          onBack={() => navigate("/dashboard/users")}
+          onBack={() => navigate(routes.users)}
           onDeactivate={() => setDeactivateOpen(true)}
           onDelete={() => setDeleteOpen(true)}
         />
@@ -200,7 +203,6 @@ export function UserDetailScreen({ className }: UserDetailScreenProps) {
           <p className={styles.error()}>{error || t("detail.notFound")}</p>
         ) : (
           <>
-            {message ? <p className={styles.message()}>{message}</p> : null}
             {error ? <p className={styles.error()}>{error}</p> : null}
 
             <div className={styles.grid()}>

@@ -6,6 +6,7 @@ export const statsCardVariants = tv({
     root: [
       "flex h-[190px] w-[150px] flex-col justify-between",
       "overflow-hidden rounded-[32px] p-4 text-start",
+      "shadow-[0_14px_34px_color-mix(in_oklch,var(--foreground)_10%,transparent)]",
     ].join(" "),
     header: "flex items-center justify-between gap-2",
     title: "min-w-0 truncate leading-none",

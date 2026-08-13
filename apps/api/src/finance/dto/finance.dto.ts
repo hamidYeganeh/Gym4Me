@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
@@ -16,6 +16,7 @@ import {
   MinLength,
   ValidateNested,
 } from 'class-validator';
+import { PaginationQueryDto as CommonPaginationQueryDto } from '../../basics/dto/common.dto';
 import {
   CompensationBasis,
   DebtStatus,
@@ -31,21 +32,9 @@ import {
   WalletOwnerType,
   AnalyticsPeriod,
 } from '../../common/enums';
+import { toStringArray } from '../../common/utils/list-query.util';
 
-export class PaginationQueryDto {
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  page?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  @Max(200)
-  page_size?: number;
-}
+export class PaginationQueryDto extends CommonPaginationQueryDto {}
 
 // ── Shared nested DTOs ────────────────────────────────────────────────────
 
@@ -273,16 +262,22 @@ export class RecordManualPaymentDto {
 
 export class ListPaymentsQueryDto extends PaginationQueryDto {
   @IsOptional()
-  @IsEnum(PaymentStatus)
-  status?: PaymentStatus;
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(PaymentStatus, { each: true })
+  status?: PaymentStatus[];
 
   @IsOptional()
-  @IsEnum(PaymentChannel)
-  channel?: PaymentChannel;
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(PaymentChannel, { each: true })
+  channel?: PaymentChannel[];
 
   @IsOptional()
-  @IsEnum(PaymentPurpose)
-  purpose?: PaymentPurpose;
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(PaymentPurpose, { each: true })
+  purpose?: PaymentPurpose[];
 
   @IsOptional()
   @IsMongoId()
@@ -338,8 +333,10 @@ export class WalletOwnerDto {
 
 export class ListLedgerQueryDto extends PaginationQueryDto {
   @IsOptional()
-  @IsEnum(LedgerEntryKind)
-  kind?: LedgerEntryKind;
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(LedgerEntryKind, { each: true })
+  kind?: LedgerEntryKind[];
 
   @IsOptional()
   @IsMongoId()
@@ -421,12 +418,16 @@ export class CreatePayoutDto {
 
 export class ListPayoutsQueryDto extends PaginationQueryDto {
   @IsOptional()
-  @IsEnum(PayoutStatus)
-  status?: PayoutStatus;
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(PayoutStatus, { each: true })
+  status?: PayoutStatus[];
 
   @IsOptional()
-  @IsEnum(PayoutRecipientType)
-  recipientType?: PayoutRecipientType;
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(PayoutRecipientType, { each: true })
+  recipientType?: PayoutRecipientType[];
 
   @IsOptional()
   @IsMongoId()

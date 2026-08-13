@@ -1,19 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
-import {
-  Button,
-  Chip,
-  Input,
-  Label,
-  TextArea,
-  TextField,
-  Typography,
-} from "@heroui/react";
-import type {
-  AdminArticle,
-  ArticleAudience,
-  ArticleKind,
-  PublishStatus,
-} from "@repo/api";
+import { useNavigate } from "react-router-dom";
+import { Button, Chip, Typography } from "@heroui/react";
+import type { AdminArticle, PublishStatus } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { FilterChip } from "@repo/ui/kit/FilterChip";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
@@ -21,18 +9,12 @@ import { useTranslations } from "next-intl";
 import {
   AdminConfirmDialog,
   AdminDataTable,
-  AdminFormDrawer,
   AdminShell,
 } from "@/shared/components";
 import { useAdminInfiniteQuery } from "@/shared/hooks";
 import { adminArticles } from "@/shared/lib/api";
-import { ArticleCoverField } from "../../components/ArticleCoverField";
-import { ArticleRichTextEditor } from "../../components/ArticleRichTextEditor";
-import {
-  ARTICLE_AUDIENCES,
-  ARTICLE_KINDS,
-  PUBLISH_STATUSES,
-} from "../../lib/article-constants";
+import { routes } from "@/shared/lib/routes";
+import { PUBLISH_STATUSES } from "../../lib/article-constants";
 import { articlesListScreenVariants } from "./ArticlesListScreen.styles";
 import type { ArticlesListScreenProps } from "./ArticlesListScreen.types";
 
@@ -46,38 +28,15 @@ type ArticlesTableMeta = {
   actionsClassName: string;
 };
 
-function parseTags(value: string): string[] {
-  return value
-    .split(/[,\n]/)
-    .map((tag) => tag.trim())
-    .filter(Boolean);
-}
-
 export function ArticlesListScreen({ className }: ArticlesListScreenProps) {
   const t = useTranslations("Admin.Articles");
-  const tBasics = useTranslations("Admin.Basics");
+  const navigate = useNavigate();
   const styles = articlesListScreenVariants();
 
   const [statusFilter, setStatusFilter] = useState<PublishStatus | "all">(
     "all",
   );
   const [search, setSearch] = useState("");
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [editing, setEditing] = useState<AdminArticle | null>(null);
-  const [title, setTitle] = useState("");
-  const [slug, setSlug] = useState("");
-  const [category, setCategory] = useState("");
-  const [kind, setKind] = useState<ArticleKind>("guide");
-  const [audience, setAudience] = useState<ArticleAudience>("all");
-  const [excerpt, setExcerpt] = useState("");
-  const [body, setBody] = useState("");
-  const [coverMediaId, setCoverMediaId] = useState<string | null>(null);
-  const [publishStatus, setPublishStatus] = useState<PublishStatus>("draft");
-  const [tags, setTags] = useState("");
-  const [seoTitle, setSeoTitle] = useState("");
-  const [seoDescription, setSeoDescription] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<AdminArticle | null>(null);
   const [deletePending, setDeletePending] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -114,46 +73,6 @@ export function ArticlesListScreen({ className }: ArticlesListScreenProps) {
     errorFallback: t("errorLoad"),
     fetchPage,
   });
-
-  const resetForm = () => {
-    setEditing(null);
-    setTitle("");
-    setSlug("");
-    setCategory("");
-    setKind("guide");
-    setAudience("all");
-    setExcerpt("");
-    setBody("");
-    setCoverMediaId(null);
-    setPublishStatus("draft");
-    setTags("");
-    setSeoTitle("");
-    setSeoDescription("");
-    setSaveError(null);
-  };
-
-  const openCreate = () => {
-    resetForm();
-    setDrawerOpen(true);
-  };
-
-  const openEdit = (row: AdminArticle) => {
-    setEditing(row);
-    setTitle(row.title);
-    setSlug(row.slug);
-    setCategory(row.taxonomy.category);
-    setKind(row.taxonomy.kind);
-    setAudience(row.taxonomy.audience);
-    setExcerpt(row.excerpt ?? "");
-    setBody(row.body);
-    setCoverMediaId(row.coverMediaId);
-    setPublishStatus(row.publishStatus);
-    setTags(row.tags.join(", "));
-    setSeoTitle(row.seo.title ?? "");
-    setSeoDescription(row.seo.description ?? "");
-    setSaveError(null);
-    setDrawerOpen(true);
-  };
 
   const columns = useMemo(
     () =>
@@ -263,57 +182,11 @@ export function ArticlesListScreen({ className }: ArticlesListScreenProps) {
 
   const meta: ArticlesTableMeta = {
     actionsClassName: styles.actions(),
-    onEdit: openEdit,
+    onEdit: (row) => navigate(routes.articleEdit(row.id)),
     onDelete: (row) => {
       setDeleting(row);
       setDeleteError(null);
     },
-  };
-
-  const canSave =
-    title.trim().length >= 3 &&
-    category.trim().length >= 2 &&
-    body.trim().length > 0;
-
-  const handleSave = async () => {
-    if (!canSave) return;
-    setSaving(true);
-    setSaveError(null);
-    const input = {
-      title: title.trim(),
-      slug: slug.trim() || undefined,
-      taxonomy: {
-        category: category.trim(),
-        kind,
-        audience,
-      },
-      excerpt: excerpt.trim() || undefined,
-      body,
-      coverMediaId: coverMediaId ?? undefined,
-      publishStatus,
-      tags: parseTags(tags),
-      seo: {
-        title: seoTitle.trim() || undefined,
-        description: seoDescription.trim() || undefined,
-      },
-    };
-    try {
-      if (editing) {
-        await adminArticles.update(editing.id, {
-          ...input,
-          coverMediaId: coverMediaId,
-          excerpt: excerpt.trim() || null,
-        });
-      } else {
-        await adminArticles.create(input);
-      }
-      setDrawerOpen(false);
-      void reload();
-    } catch (err) {
-      setSaveError(err instanceof ApiError ? err.message : t("actionError"));
-    } finally {
-      setSaving(false);
-    }
   };
 
   const handleDelete = async () => {
@@ -358,7 +231,11 @@ export function ArticlesListScreen({ className }: ArticlesListScreenProps) {
                 {value === "all" ? t("filterAll") : t(`publishStatus.${value}`)}
               </FilterChip>
             ))}
-            <Button size="sm" variant="primary" onPress={openCreate}>
+            <Button
+              size="sm"
+              variant="primary"
+              onPress={() => navigate(routes.articlesNew)}
+            >
               {t("actions.create")}
             </Button>
             <Button size="sm" variant="ghost" onPress={() => void reload()}>
@@ -387,188 +264,6 @@ export function ArticlesListScreen({ className }: ArticlesListScreenProps) {
           onLoadMore={loadMore}
         />
       </div>
-
-      <AdminFormDrawer
-        className="max-w-3xl sm:max-w-3xl"
-        isOpen={drawerOpen}
-        title={editing ? t("actions.editTitle") : t("actions.createTitle")}
-        onOpenChange={setDrawerOpen}
-      >
-        <div className={styles.form()}>
-          <TextField
-            className={styles.field()}
-            fullWidth
-            name="title"
-            value={title}
-            onChange={setTitle}
-          >
-            <Label>{t("fields.title")}</Label>
-            <Input />
-          </TextField>
-
-          <TextField
-            className={styles.field()}
-            fullWidth
-            name="category"
-            value={category}
-            onChange={setCategory}
-          >
-            <Label>{t("fields.category")}</Label>
-            <Input placeholder={t("fields.categoryHint")} />
-          </TextField>
-
-          <div className={styles.field()}>
-            <Label>{t("fields.kind")}</Label>
-            <div className={styles.chips()}>
-              {ARTICLE_KINDS.map((value) => (
-                <Button
-                  key={value}
-                  size="sm"
-                  variant={kind === value ? "primary" : "secondary"}
-                  onPress={() => setKind(value)}
-                >
-                  {t(`kinds.${value}`)}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          <div className={styles.field()}>
-            <Label>{t("fields.audience")}</Label>
-            <div className={styles.chips()}>
-              {ARTICLE_AUDIENCES.map((value) => (
-                <Button
-                  key={value}
-                  size="sm"
-                  variant={audience === value ? "primary" : "secondary"}
-                  onPress={() => setAudience(value)}
-                >
-                  {t(`audiences.${value}`)}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          <TextField
-            className={styles.field()}
-            fullWidth
-            name="slug"
-            value={slug}
-            onChange={setSlug}
-          >
-            <Label>{t("fields.slug")}</Label>
-            <Input placeholder={t("fields.slugHint")} />
-          </TextField>
-
-          <TextField
-            className={styles.field()}
-            fullWidth
-            name="excerpt"
-            value={excerpt}
-            onChange={setExcerpt}
-          >
-            <Label>{t("fields.excerpt")}</Label>
-            <TextArea className="min-h-20" />
-          </TextField>
-
-          <div className={styles.field()}>
-            <Label>{t("fields.body")}</Label>
-            <ArticleRichTextEditor
-              disabled={saving}
-              value={body}
-              onChange={setBody}
-            />
-          </div>
-
-          <ArticleCoverField
-            key={editing?.id ?? "create"}
-            disabled={saving}
-            errorMessage={tBasics("media.error")}
-            hint={t("fields.coverHint")}
-            label={t("fields.cover")}
-            removeLabel={tBasics("media.remove")}
-            retryLabel={tBasics("media.retry")}
-            successMessage={tBasics("media.success")}
-            uploaderButtonLabel={tBasics("media.uploaderButton")}
-            uploaderDescription={tBasics("media.uploaderDescription")}
-            uploaderTitle={tBasics("media.uploaderTitle")}
-            value={coverMediaId}
-            onChange={setCoverMediaId}
-          />
-
-          <div className={styles.field()}>
-            <Label>{t("fields.publishStatus")}</Label>
-            <div className={styles.chips()}>
-              {PUBLISH_STATUSES.map((value) => (
-                <Button
-                  key={value}
-                  size="sm"
-                  variant={publishStatus === value ? "primary" : "secondary"}
-                  onPress={() => setPublishStatus(value)}
-                >
-                  {t(`publishStatus.${value}`)}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          <TextField
-            className={styles.field()}
-            fullWidth
-            name="tags"
-            value={tags}
-            onChange={setTags}
-          >
-            <Label>{t("fields.tags")}</Label>
-            <Input placeholder={t("fields.tagsHint")} />
-          </TextField>
-
-          <TextField
-            className={styles.field()}
-            fullWidth
-            name="seoTitle"
-            value={seoTitle}
-            onChange={setSeoTitle}
-          >
-            <Label>{t("fields.seoTitle")}</Label>
-            <Input />
-          </TextField>
-
-          <TextField
-            className={styles.field()}
-            fullWidth
-            name="seoDescription"
-            value={seoDescription}
-            onChange={setSeoDescription}
-          >
-            <Label>{t("fields.seoDescription")}</Label>
-            <TextArea className="min-h-20" />
-          </TextField>
-
-          {saveError ? (
-            <p className="text-sm text-danger" role="alert">
-              {saveError}
-            </p>
-          ) : null}
-
-          <div className={styles.actions()}>
-            <Button
-              isDisabled={saving || !canSave}
-              variant="primary"
-              onPress={() => void handleSave()}
-            >
-              {t("actions.save")}
-            </Button>
-            <Button
-              isDisabled={saving}
-              variant="secondary"
-              onPress={() => setDrawerOpen(false)}
-            >
-              {t("cancel")}
-            </Button>
-          </div>
-        </div>
-      </AdminFormDrawer>
 
       <AdminConfirmDialog
         body={

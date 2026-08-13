@@ -23,6 +23,10 @@ import {
   resolvePageSize,
 } from '../common/utils/pagination.util';
 import {
+  createSearchFilter,
+  resolveListSort,
+} from '../common/utils/list-query.util';
+import {
   SocialComment,
   SocialCommentDocument,
 } from '../schemas/social-comment.schema';
@@ -697,13 +701,30 @@ export class SocialService {
   }
 
   async adminListReports(query: ListSocialReportsQueryDto) {
-    const filter: QueryFilter<SocialReportDocument> = {};
-    if (query.status) filter.status = query.status;
+    const filter: QueryFilter<SocialReportDocument> = {
+      ...createSearchFilter(query.search, ['reason', 'resolution.note']),
+    };
+    if (query.status) filter.status = { $in: query.status };
+    if (query.targetKind) {
+      filter['target.kind'] = { $in: query.targetKind };
+    }
     const { page, pageSize } = resolvePageSize(query);
+    const sort = resolveListSort(
+      query,
+      {
+        reason: 'reason',
+        status: 'status',
+        targetKind: 'target.kind',
+        resolvedAt: 'resolution.resolvedAt',
+        createdAt: 'createdAt',
+        updatedAt: 'updatedAt',
+      },
+      { createdAt: -1 },
+    );
     const [items, total] = await Promise.all([
       this.reportModel
         .find(filter)
-        .sort({ createdAt: -1 })
+        .sort(sort)
         .skip((page - 1) * pageSize)
         .limit(pageSize)
         .lean(),

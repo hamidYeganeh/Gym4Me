@@ -1,4 +1,5 @@
-import { Card, Chip } from "@heroui/react";
+import { Card } from "@heroui/react";
+import { DonutChart } from "@repo/ui/kit/DonutChart";
 import { useTranslations } from "next-intl";
 import {
   BOOKING_STATUS_TONES,
@@ -6,6 +7,13 @@ import {
 } from "../../lib/analytics-data";
 import { analyticsBookingStatusSectionVariants } from "./AnalyticsBookingStatusSection.styles";
 import type { AnalyticsBookingStatusSectionProps } from "./AnalyticsBookingStatusSection.types";
+
+const TONE_COLORS: Record<string, string> = {
+  success: "var(--success)",
+  warning: "var(--warning)",
+  danger: "var(--danger)",
+  default: "var(--muted)",
+};
 
 export function AnalyticsBookingStatusSection({
   rows,
@@ -23,22 +31,16 @@ export function AnalyticsBookingStatusSection({
         </Card.Description>
       </Card.Header>
       <Card.Content className={styles.content()}>
-        {rows.map((row) => (
-          <div className={styles.row()} key={row.status}>
-            <span className={styles.rowStart()}>
-              <Chip
-                color={BOOKING_STATUS_TONES[row.status]}
-                size="sm"
-                variant="soft"
-              >
-                {t(`statuses.${row.status}`)}
-              </Chip>
-            </span>
-            <span className={styles.rowCount()}>
-              {formatFaNumber(row.count)}
-            </span>
-          </div>
-        ))}
+        <DonutChart
+          aria-label={t("title")}
+          data={rows.map((row) => ({
+            id: row.status,
+            label: t(`statuses.${row.status}`),
+            value: row.count,
+            color: TONE_COLORS[BOOKING_STATUS_TONES[row.status]],
+          }))}
+          formatValue={(value) => formatFaNumber(value)}
+        />
       </Card.Content>
     </Card>
   );

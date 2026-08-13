@@ -28,6 +28,10 @@ import {
 import { GamificationService } from '../../gamification/gamification.service';
 import type { JwtUser } from '../../common/types';
 import {
+  createSearchFilter,
+  resolveListSort,
+} from '../../common/utils/list-query.util';
+import {
   asSinglePageResult,
   paginatedResult,
   resolvePageSize,
@@ -52,6 +56,7 @@ import { RefItem, RefItemDocument } from '../../schemas/ref-item.schema';
 import { Sport, SportDocument } from '../../schemas/sport.schema';
 import { User, UserDocument } from '../../schemas/user.schema';
 import { UsersService } from '../../users/users.service';
+import { ListClubReviewsQueryDto } from '../../admin/dto/admin-review.dto';
 import {
   AdminCreateClubDto,
   AssignClassDto,
@@ -70,6 +75,31 @@ import {
 } from './dto/club.dto';
 
 type ClubWriteDto = CreateClubDto | UpdateClubDto;
+
+const CLUB_SORT_FIELDS = {
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  name: 'identity.name',
+  status: 'review.status',
+  operationalStatus: 'operationalStatus',
+  rating: 'reviewsSummary.average',
+} as const;
+
+const CLUB_REVIEW_QUEUE_SORT_FIELDS = {
+  submittedAt: 'review.submittedAt',
+  reviewedAt: 'review.reviewedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  name: 'identity.name',
+  status: 'review.status',
+} as const;
+
+const CLUB_USER_REVIEW_SORT_FIELDS = {
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  rating: 'rating',
+  status: 'status',
+} as const;
 
 @Injectable()
 export class ClubsService {
@@ -307,23 +337,30 @@ export class ClubsService {
     return this.toPublic(club);
   }
 
-  async listLifecycleQueue(query: {
-    status?: ClubLifecycleStatus | 'all';
-    page?: number;
-    limit?: number;
-  }) {
-    const filter: QueryFilter<ClubDocument> = {};
-    if (query.status && query.status !== 'all') {
-      filter['review.status'] = query.status;
-    } else if (!query.status) {
+  async listLifecycleQueue(query: ListClubReviewsQueryDto) {
+    const filter: QueryFilter<ClubDocument> = {
+      ...createSearchFilter(query.search, [
+        'identity.name',
+        'identity.description',
+        'contact.email',
+        'location.address',
+        'review.reviewNote',
+      ]),
+    };
+    if (query.status && query.status.length > 0) {
+      filter['review.status'] = { $in: query.status };
+    } else if (query.status === undefined) {
       filter['review.status'] = ClubLifecycleStatus.PENDING_REVIEW;
     }
 
     const { page, pageSize } = resolvePageSize(query);
+    const sort = resolveListSort(query, CLUB_REVIEW_QUEUE_SORT_FIELDS, {
+      'review.submittedAt': -1,
+    });
     const [items, total] = await Promise.all([
       this.clubModel
         .find(filter)
-        .sort({ 'review.submittedAt': -1 })
+        .sort(sort)
         .skip((page - 1) * pageSize)
         .limit(pageSize),
       this.clubModel.countDocuments(filter),
@@ -648,17 +685,24 @@ export class ClubsService {
     const { page, pageSize } = resolvePageSize(query);
     const filter: QueryFilter<ClubUserReviewDocument> = {
       clubId: new Types.ObjectId(clubId),
+      ...createSearchFilter(query.search, [
+        'comment',
+        'reply.text',
+      ]),
     };
     if (opts.publicOnly) {
       filter.status = ClubUserReviewStatus.APPROVED;
     } else if (query.status) {
-      filter.status = query.status;
+      filter.status = { $in: query.status };
     }
+    const sort = resolveListSort(query, CLUB_USER_REVIEW_SORT_FIELDS, {
+      createdAt: -1,
+    });
 
     const [items, total] = await Promise.all([
       this.reviewModel
         .find(filter)
-        .sort({ createdAt: -1 })
+        .sort(sort)
         .skip((page - 1) * pageSize)
         .limit(pageSize)
         .lean(),
@@ -1126,14 +1170,20 @@ export class ClubsService {
   private async listInternal(query: ListClubsQueryDto) {
     const { page, pageSize } = resolvePageSize(query);
     const filter: QueryFilter<ClubDocument> = {};
+    const andFilters: QueryFilter<ClubDocument>[] = [];
 
     if (query.ownerId) filter.ownerId = new Types.ObjectId(query.ownerId);
-    if (query.q?.trim()) {
-      const q = query.q.trim().slice(0, 64);
-      filter['identity.name'] = {
-        $regex: escapeRegex(q),
-        $options: 'i',
-      };
+    const search = query.search ?? query.q;
+    if (search?.trim()) {
+      andFilters.push(
+        createSearchFilter(search, [
+          'identity.name',
+          'identity.description',
+          'contact.email',
+          'contact.phones.number',
+          'location.address',
+        ]) as QueryFilter<ClubDocument>,
+      );
     }
     if (query.categoryId) {
       filter['categories.categoryId'] = new Types.ObjectId(query.categoryId);
@@ -1143,24 +1193,28 @@ export class ClubsService {
     }
     if (query.locationId) {
       const locOid = new Types.ObjectId(query.locationId);
-      filter.$or = [
-        { 'location.locationId': locOid },
-        { 'location.ancestors': locOid },
-      ];
+      andFilters.push({
+        $or: [
+          { 'location.locationId': locOid },
+          { 'location.ancestors': locOid },
+        ],
+      });
     }
     if (query.direction) filter['location.direction'] = query.direction;
     if (query.lifecycleStatus) {
-      filter['review.status'] = query.lifecycleStatus as ClubLifecycleStatus;
+      filter['review.status'] = { $in: query.lifecycleStatus };
     }
     if (query.operationalStatus) {
-      filter.operationalStatus =
-        query.operationalStatus as ClubOperationalStatus;
+      filter.operationalStatus = { $in: query.operationalStatus };
     }
+    if (andFilters.length > 0) filter.$and = andFilters;
+
+    const sort = resolveListSort(query, CLUB_SORT_FIELDS, { createdAt: -1 });
 
     const [items, total] = await Promise.all([
       this.clubModel
         .find(filter)
-        .sort({ createdAt: -1 })
+        .sort(sort)
         .skip((page - 1) * pageSize)
         .limit(pageSize)
         .lean(),

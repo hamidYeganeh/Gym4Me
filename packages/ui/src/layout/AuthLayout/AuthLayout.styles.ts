@@ -41,6 +41,10 @@ export const authLayoutVariants = tv({
         header: "mb-8",
         spacer: "min-h-8",
         footer: "text-muted",
+        body: [
+          "rounded-[1.75rem] bg-surface/92 p-4 sm:p-5",
+          "shadow-[0_18px_48px_color-mix(in_oklch,var(--foreground)_8%,transparent)] backdrop-blur-xl",
+        ].join(" "),
         mediaOverlay:
           "bg-[linear-gradient(to_bottom,color-mix(in_oklch,var(--background)_92%,transparent)_0%,color-mix(in_oklch,var(--background)_78%,transparent)_45%,color-mix(in_oklch,var(--background)_94%,transparent)_100%)]",
         mediaVignette:
@@ -55,6 +59,7 @@ export const authLayoutVariants = tv({
         subtitle: "text-white/65",
         spacer: "min-h-10",
         footer: "text-white/65",
+        body: "rounded-[1.75rem] bg-white/6 p-4 shadow-2xl backdrop-blur-xl sm:p-5",
         mediaOverlay:
           "bg-[linear-gradient(to_bottom,color-mix(in_oklch,black_88%,transparent)_0%,color-mix(in_oklch,black_72%,transparent)_50%,color-mix(in_oklch,black_92%,transparent)_100%)]",
         mediaVignette:
@@ -64,15 +69,14 @@ export const authLayoutVariants = tv({
         /** Welcome hero — black stage; photo only in upper band. */
         shell: "bg-black text-white",
         brand: "mb-1",
-        header:
-          "mb-6 max-w-none self-stretch items-center gap-4 text-center",
+        header: "mb-6 max-w-none self-stretch items-center gap-4 text-center",
         brandName: "text-white",
         title:
           "max-w-[21.5rem] text-balance text-center text-[2rem] leading-[1.2] font-bold tracking-tight text-white",
         subtitle:
           "max-w-[21.5rem] text-pretty text-center text-[0.9375rem] leading-[1.4] text-white/70",
         spacer: "min-h-[48dvh] flex-[1.35]",
-        body: "gap-0 text-white",
+        body: "gap-0 bg-transparent p-0 text-white shadow-none backdrop-blur-none",
         formSlot: "gap-0",
         footer: "pt-5 text-center text-[0.875rem] text-white/70",
         media: "pointer-events-none absolute inset-x-0 top-0 h-[58dvh]",

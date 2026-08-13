@@ -19,41 +19,82 @@ import {
   resolvePageSize,
 } from '../common/utils/pagination.util';
 import {
+  createSearchFilter,
+  resolveListSort,
+} from '../common/utils/list-query.util';
+import {
   CoachProfile,
   CoachProfileDocument,
 } from '../schemas/coach-profile.schema';
+import { User, UserDocument } from '../schemas/user.schema';
 import { ProfileService } from '../account/profile/profile.service';
 import { UsersService } from '../users/users.service';
-import { ReviewVerificationDto } from './dto/admin-review.dto';
+import {
+  ListCoachVerificationsQueryDto,
+  ReviewVerificationDto,
+} from './dto/admin-review.dto';
+
+const COACH_VERIFICATION_SORT_FIELDS = {
+  submittedAt: 'verification.submittedAt',
+  reviewedAt: 'verification.reviewedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  status: 'verification.status',
+  experienceYears: 'experience.years',
+} as const;
 
 @Injectable()
 export class AdminVerificationService {
   constructor(
     @InjectModel(CoachProfile.name)
     private readonly coachModel: Model<CoachProfileDocument>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
     private readonly profiles: ProfileService,
     private readonly users: UsersService,
     private readonly audit: AuditService,
     private readonly events: EventWriterService,
   ) {}
 
-  async listCoachVerifications(query: {
-    status?: VerificationStatus | 'all';
-    page?: number;
-    limit?: number;
-  }) {
+  async listCoachVerifications(query: ListCoachVerificationsQueryDto) {
     const filter: QueryFilter<CoachProfileDocument> = {};
-    if (query.status && query.status !== 'all') {
-      filter['verification.status'] = query.status;
-    } else if (query.status !== 'all') {
+    if (query.status && query.status.length > 0) {
+      filter['verification.status'] = { $in: query.status };
+    } else if (query.status === undefined) {
       filter['verification.status'] = VerificationStatus.PENDING;
     }
 
+    if (query.search?.trim()) {
+      const userIds = await this.userModel
+        .find(
+          createSearchFilter(query.search, [
+            'phone',
+            'name.first',
+            'name.last',
+            'code',
+          ]),
+        )
+        .select({ _id: 1 })
+        .lean();
+      const profileSearch = createSearchFilter(query.search, [
+        'bio',
+        'experience.headline',
+        'verification.reviewNote',
+      ]) as { $or?: QueryFilter<CoachProfileDocument>[] };
+      filter.$or = [
+        ...(profileSearch.$or ?? []),
+        { userId: { $in: userIds.map((user) => user._id) } },
+      ];
+    }
+
     const { page, pageSize } = resolvePageSize(query);
+    const sort = resolveListSort(query, COACH_VERIFICATION_SORT_FIELDS, {
+      'verification.submittedAt': -1,
+    });
     const [items, total] = await Promise.all([
       this.coachModel
         .find(filter)
-        .sort({ 'verification.submittedAt': -1 })
+        .sort(sort)
         .skip((page - 1) * pageSize)
         .limit(pageSize)
         .lean(),

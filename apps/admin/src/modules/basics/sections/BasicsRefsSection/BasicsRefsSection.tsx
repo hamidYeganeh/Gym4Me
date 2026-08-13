@@ -1,56 +1,30 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  type FormEvent,
-  type Key,
-} from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   AlertDialog,
   Button,
   Card,
   Chip,
-  Input,
-  Label,
-  ListBox,
-  Select,
   Spinner,
-  Switch,
   Table,
-  TextField,
   Typography,
 } from "@heroui/react";
-import { ApiError, type RefItem, type RefStatus } from "@repo/api";
+import { ApiError, type RefItem } from "@repo/api";
 import { ArrowRotateClockwise1, Pencil1, Plus, Trash2 } from "@repo/icons";
 import { useTranslations } from "next-intl";
 import { adminBasics } from "@/shared/lib/api";
-import { BasicsFormDrawer } from "../../components/BasicsFormDrawer";
-import { BasicsMediaField } from "../../components/BasicsMediaField";
+import { routes } from "@/shared/lib/routes";
 import { basicsRefsSectionVariants } from "./BasicsRefsSection.styles";
 import type { BasicsRefsSectionProps } from "./BasicsRefsSection.types";
 
-const REF_STATUSES: RefStatus[] = ["approved", "pending"];
-
 export function BasicsRefsSection({ search, type }: BasicsRefsSectionProps) {
   const t = useTranslations("Admin.Basics");
+  const navigate = useNavigate();
   const styles = basicsRefsSectionVariants();
 
   const [items, setItems] = useState<RefItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const [editing, setEditing] = useState<RefItem | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
-  const [name, setName] = useState("");
-  const [slug, setSlug] = useState("");
-  const [description, setDescription] = useState("");
-  const [icon, setIcon] = useState("");
-  const [coverMediaId, setCoverMediaId] = useState<string | null>(null);
-  const [order, setOrder] = useState("0");
-  const [status, setStatus] = useState<RefStatus>("approved");
-  const [isActive, setIsActive] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -92,85 +66,6 @@ export function BasicsRefsSection({ search, type }: BasicsRefsSectionProps) {
     );
   }, [items, search]);
 
-  const resetForm = () => {
-    setEditing(null);
-    setName("");
-    setSlug("");
-    setDescription("");
-    setIcon("");
-    setCoverMediaId(null);
-    setOrder("0");
-    setStatus("approved");
-    setIsActive(true);
-    setFormError(null);
-  };
-
-  const openCreate = () => {
-    resetForm();
-    setSheetOpen(true);
-  };
-
-  const openEdit = (item: RefItem) => {
-    setEditing(item);
-    setName(item.name);
-    setSlug(item.slug);
-    setDescription(item.description ?? "");
-    setIcon(item.icon ?? "");
-    setCoverMediaId(item.coverMediaId);
-    setOrder(String(item.order ?? 0));
-    setStatus(item.status);
-    setIsActive(item.isActive);
-    setFormError(null);
-    setSheetOpen(true);
-  };
-
-  const handleSave = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setFormError(null);
-    if (!name.trim()) {
-      setFormError(t("refs.errorName"));
-      return;
-    }
-
-    setSaving(true);
-    try {
-      if (editing) {
-        await adminBasics.updateRef(type, editing.id, {
-          name: name.trim(),
-          slug: slug.trim() || undefined,
-          description: description.trim() || undefined,
-          icon: icon.trim() || null,
-          coverMediaId,
-          order: Number(order) || 0,
-          status,
-          isActive,
-        });
-      } else {
-        await adminBasics.createRef(type, {
-          name: name.trim(),
-          slug: slug.trim() || undefined,
-          description: description.trim() || undefined,
-          icon: icon.trim() || undefined,
-          coverMediaId: coverMediaId || undefined,
-          order: Number(order) || 0,
-          status,
-          isActive,
-        });
-      }
-      setSheetOpen(false);
-      resetForm();
-      await load();
-    } catch (err) {
-      setFormError(
-        err instanceof ApiError
-          ? err.message || t("errorSave")
-          : t("errorSave"),
-      );
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const handleDelete = async () => {
     if (!deleteId) return;
     setDeleting(true);
@@ -206,7 +101,7 @@ export function BasicsRefsSection({ search, type }: BasicsRefsSectionProps) {
             <ArrowRotateClockwise1 size={18} />
             {t("refresh")}
           </Button>
-          <Button variant="primary" onPress={openCreate}>
+          <Button variant="primary" onPress={() => navigate(routes.refNew(type))}>
             <Plus size={18} />
             {t("create")}
           </Button>
@@ -278,7 +173,9 @@ export function BasicsRefsSection({ search, type }: BasicsRefsSectionProps) {
                             <Button
                               size="sm"
                               variant="tertiary"
-                              onPress={() => openEdit(item)}
+                              onPress={() =>
+                                navigate(routes.refEdit(type, item.id))
+                              }
                             >
                               <Pencil1 size={16} />
                               {t("edit")}
@@ -302,111 +199,6 @@ export function BasicsRefsSection({ search, type }: BasicsRefsSectionProps) {
           )}
         </Card.Content>
       </Card>
-      <BasicsFormDrawer
-        isOpen={sheetOpen}
-        title={editing ? t("refs.editTitle") : t("refs.createTitle")}
-        onOpenChange={(open) => {
-          setSheetOpen(open);
-          if (!open) resetForm();
-        }}
-      >
-        <form className={styles.form()} onSubmit={handleSave}>
-                          <TextField isRequired name="name" value={name} onChange={setName}>
-                            <Label>{t("fields.name")}</Label>
-                            <Input />
-                          </TextField>
-                          <div className={styles.formRow()}>
-                            <TextField name="slug" value={slug} onChange={setSlug}>
-                              <Label>{t("fields.slug")}</Label>
-                              <Input />
-                            </TextField>
-                            <TextField name="icon" value={icon} onChange={setIcon}>
-                              <Label>{t("fields.icon")}</Label>
-                              <Input />
-                            </TextField>
-                          </div>
-                          <TextField
-                            name="description"
-                            value={description}
-                            onChange={setDescription}
-                          >
-                            <Label>{t("fields.description")}</Label>
-                            <Input />
-                          </TextField>
-                          <BasicsMediaField
-                            key={editing?.id ?? "create"}
-                            disabled={saving}
-                            errorMessage={t("media.error")}
-                            hint={t("fields.mediaHint")}
-                            label={t("fields.media")}
-                            removeLabel={t("media.remove")}
-                            retryLabel={t("media.retry")}
-                            successMessage={t("media.success")}
-                            uploaderButtonLabel={t("media.uploaderButton")}
-                            uploaderDescription={t("media.uploaderDescription")}
-                            uploaderTitle={t("media.uploaderTitle")}
-                            value={coverMediaId}
-                            onChange={setCoverMediaId}
-                          />
-                          <Select
-                            value={status}
-                            onChange={(value: Key | Key[] | null) => {
-                              setStatus(String(value ?? "approved") as RefStatus);
-                            }}
-                          >
-                            <Label>{t("fields.status")}</Label>
-                            <Select.Trigger>
-                              <Select.Value />
-                              <Select.Indicator />
-                            </Select.Trigger>
-                            <Select.Popover>
-                              <ListBox>
-                                {REF_STATUSES.map((item) => (
-                                  <ListBox.Item
-                                    key={item}
-                                    id={item}
-                                    textValue={t(`refStatuses.${item}`)}
-                                  >
-                                    {t(`refStatuses.${item}`)}
-                                    <ListBox.ItemIndicator />
-                                  </ListBox.Item>
-                                ))}
-                              </ListBox>
-                            </Select.Popover>
-                          </Select>
-                          <TextField name="order" value={order} onChange={setOrder}>
-                            <Label>{t("fields.order")}</Label>
-                            <Input type="number" />
-                          </TextField>
-                          <Switch isSelected={isActive} onChange={setIsActive}>
-                            <Switch.Content>
-                              <Switch.Control>
-                                <Switch.Thumb />
-                              </Switch.Control>
-                              {t("fields.isActive")}
-                            </Switch.Content>
-                          </Switch>
-                          {formError ? (
-                            <p className={styles.formError()}>{formError}</p>
-                          ) : null}
-                          <div className={styles.introActions()}>
-                            <Button
-                              slot="close"
-                              type="button"
-                              variant="tertiary"
-                              onPress={() => {
-                                setSheetOpen(false);
-                                resetForm();
-                              }}
-                            >
-                              {t("cancel")}
-                            </Button>
-                            <Button isPending={saving} type="submit" variant="primary">
-                              {t("save")}
-                            </Button>
-                          </div>
-                        </form>
-      </BasicsFormDrawer>
 
       <AlertDialog>
         <AlertDialog.Backdrop

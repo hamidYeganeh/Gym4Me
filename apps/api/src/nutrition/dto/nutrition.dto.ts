@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsDateString,
@@ -14,27 +14,16 @@ import {
   MinLength,
   ValidateNested,
 } from 'class-validator';
+import { PaginationQueryDto as CommonPaginationQueryDto } from '../../basics/dto/common.dto';
 import {
   FoodItemStatus,
   MealAdherenceStatus,
   MealPlanStatus,
   Privacy,
 } from '../../common/enums';
+import { toStringArray } from '../../common/utils/list-query.util';
 
-export class PaginationQueryDto {
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  page?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  @Max(200)
-  page_size?: number;
-}
+export class PaginationQueryDto extends CommonPaginationQueryDto {}
 
 export class MealPlanItemDto {
   @IsString()
@@ -243,6 +232,14 @@ export class ListFoodItemsQueryDto extends PaginationQueryDto {
   @IsString()
   @MaxLength(100)
   search?: string;
+}
+
+export class AdminListFoodItemsQueryDto extends PaginationQueryDto {
+  @IsOptional()
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(FoodItemStatus, { each: true })
+  status?: FoodItemStatus[];
 }
 
 // ── Meal adherence ────────────────────────────────────────────────────────

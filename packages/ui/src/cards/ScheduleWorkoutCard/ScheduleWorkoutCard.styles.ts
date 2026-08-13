@@ -8,12 +8,12 @@ export const scheduleWorkoutCardVariants = tv({
       "absolute inset-y-0 end-0 z-0 flex items-center justify-center pe-1",
     panel: [
       "relative z-10 flex w-full cursor-grab items-center gap-3",
-      "rounded-[22px] border border-surface-tertiary bg-surface-secondary px-3 py-3",
-      "text-start",
+      "rounded-[22px] border-0 bg-surface px-3 py-3",
+      "text-start shadow-sm shadow-foreground/5",
       "active:cursor-grabbing touch-pan-y select-none",
     ].join(" "),
     thumb:
-      "relative size-14 shrink-0 overflow-hidden rounded-2xl border border-border bg-surface-secondary",
+      "relative size-14 shrink-0 overflow-hidden rounded-[1rem] border-0 bg-surface-secondary",
     thumbImage: "size-full object-cover",
     body: "flex min-w-0 flex-1 flex-col gap-0.5",
     title: "truncate text-[15px] leading-tight tracking-tight text-foreground",

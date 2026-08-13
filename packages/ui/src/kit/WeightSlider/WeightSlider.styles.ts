@@ -4,14 +4,15 @@ export const weightSliderVariants = tv({
   slots: {
     root: [
       "relative flex h-[220px] w-full touch-none flex-col items-center",
-      "overflow-hidden rounded-[28px] border border-border bg-surface",
+      "overflow-hidden rounded-[28px] border-0 bg-surface shadow-sm shadow-foreground/5",
       "text-surface-foreground font-sans transition-colors duration-moderate ease-app select-none",
       "sm:h-[260px] sm:rounded-[36px]",
     ].join(" "),
     label:
       "mt-5 text-base font-semibold tracking-wide text-muted capitalize transition-colors duration-moderate ease-app sm:mt-6 sm:text-xl",
     dialArea: "relative flex w-full flex-1 items-start justify-center",
-    panLayer: "absolute flex h-full w-full cursor-[var(--pointer-cursor)] items-start",
+    panLayer:
+      "absolute flex h-full w-full cursor-[var(--pointer-cursor)] items-start",
     indicator:
       "pointer-events-none absolute bottom-0 z-20 mb-1 flex flex-col items-center sm:mb-0",
     indicatorDot:

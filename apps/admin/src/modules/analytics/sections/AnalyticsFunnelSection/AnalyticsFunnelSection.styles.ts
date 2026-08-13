@@ -6,7 +6,7 @@ export const analyticsFunnelSectionVariants = tv({
     cardHeader: "flex flex-col gap-1 border-b border-separator p-5 sm:p-6",
     cardTitle: "text-base font-bold text-foreground sm:text-lg",
     cardDescription: "text-sm leading-6 text-muted",
-    content: "flex flex-col gap-1.5 p-5 sm:p-6",
+    content: "p-5 sm:p-6",
     step: "flex flex-col gap-2",
     stepTop: "flex items-center justify-between gap-4",
     stepLabel: "text-sm font-bold text-foreground",

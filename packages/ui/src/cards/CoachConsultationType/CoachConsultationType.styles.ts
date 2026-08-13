@@ -7,7 +7,7 @@ export const coachConsultationTypeVariants = tv({
     title: "min-w-0 text-sm font-medium text-muted",
     card: [
       "w-full gap-0 overflow-hidden rounded-[1.75rem] p-0",
-      "border border-border/60 bg-default text-default-foreground shadow-none",
+      "border-0 bg-default text-default-foreground shadow-sm shadow-foreground/5",
     ].join(" "),
     content: "flex w-full flex-col gap-0 p-0",
     divider: [
@@ -20,11 +20,12 @@ export const coachConsultationTypeVariants = tv({
       "transition-colors duration-fast ease-app",
     ].join(" "),
     iconWrap: [
-      "flex size-11 shrink-0 items-center justify-center rounded-full",
-      "border border-border/80 bg-surface text-foreground",
+      "flex size-11 shrink-0 items-center justify-center rounded-[0.875rem]",
+      "border-0 bg-surface text-foreground",
     ].join(" "),
     meta: "flex min-w-0 flex-1 flex-col gap-0.5",
-    optionTitle: "text-base font-semibold leading-tight tracking-tight text-foreground",
+    optionTitle:
+      "text-base font-semibold leading-tight tracking-tight text-foreground",
     statusLabel: "text-sm font-normal leading-tight text-muted",
     priceGroup:
       "flex shrink-0 flex-wrap items-baseline justify-end gap-1 text-foreground",

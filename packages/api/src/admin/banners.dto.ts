@@ -1,6 +1,8 @@
 import type {
   BannerLinkKind,
   BannerPlacement,
+  ListQuery,
+  ListQueryFilter,
   PublishStatus,
 } from "../types";
 import type { BannerSlide } from "../banners/banners.dto";
@@ -50,10 +52,17 @@ export type UpdateBannerInput = {
   order?: number;
 };
 
-export type ListAdminBannersQuery = {
-  page?: number;
-  page_size?: number;
-  placement?: BannerPlacement;
-  publishStatus?: PublishStatus;
-  search?: string;
+export type AdminBannersSortBy =
+  | "title"
+  | "placement"
+  | "publishStatus"
+  | "order"
+  | "startsAt"
+  | "endsAt"
+  | "createdAt"
+  | "updatedAt";
+
+export type ListAdminBannersQuery = ListQuery<AdminBannersSortBy> & {
+  placement?: ListQueryFilter<BannerPlacement>;
+  publishStatus?: ListQueryFilter<PublishStatus>;
 };

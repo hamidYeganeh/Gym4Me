@@ -13,6 +13,10 @@ import { KycService } from '../account/kyc/kyc.service';
 import { AuditService } from '../audit/audit.service';
 import { AuditAction, KycRequestStatus } from '../common/enums';
 import {
+  createSearchFilter,
+  resolveListSort,
+} from '../common/utils/list-query.util';
+import {
   paginatedResult,
   resolvePageSize,
 } from '../common/utils/pagination.util';
@@ -20,7 +24,17 @@ import {
   KycRequest,
   KycRequestDocument,
 } from '../schemas/kyc-request.schema';
+import { User, UserDocument } from '../schemas/user.schema';
 import { ListKycRequestsQueryDto, ReviewKycDto } from './dto/admin.dto';
+
+const KYC_REQUEST_SORT_FIELDS = {
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  reviewedAt: 'reviewedAt',
+  birthDate: 'birthDate',
+  status: 'status',
+  kind: 'kind',
+} as const;
 
 type PopulatedUser = {
   _id: Types.ObjectId;
@@ -35,21 +49,50 @@ export class AdminKycService {
   constructor(
     @InjectModel(KycRequest.name)
     private readonly kycModel: Model<KycRequestDocument>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
     private readonly kyc: KycService,
     private readonly audit: AuditService,
   ) {}
 
   async list(query: ListKycRequestsQueryDto) {
     const filter: QueryFilter<KycRequestDocument> = {};
-    if (query.status) filter.status = query.status;
+    if (query.status) filter.status = { $in: query.status };
     if (query.kind) filter.kind = query.kind;
 
+    if (query.search?.trim()) {
+      const userIds = await this.userModel
+        .find(
+          createSearchFilter(query.search, [
+            'phone',
+            'name.first',
+            'name.last',
+            'code',
+            'nationalId',
+          ]),
+        )
+        .select({ _id: 1 })
+        .lean();
+      const ownSearch = createSearchFilter(query.search, [
+        'nationalId',
+        'documentType',
+        'rejectionReason',
+      ]) as { $or?: QueryFilter<KycRequestDocument>[] };
+      filter.$or = [
+        ...(ownSearch.$or ?? []),
+        { userId: { $in: userIds.map((user) => user._id) } },
+      ];
+    }
+
     const { page, pageSize } = resolvePageSize(query);
+    const sort = resolveListSort(query, KYC_REQUEST_SORT_FIELDS, {
+      createdAt: -1,
+    });
 
     const [items, total] = await Promise.all([
       this.kycModel
         .find(filter)
-        .sort({ createdAt: -1 })
+        .sort(sort)
         .skip((page - 1) * pageSize)
         .limit(pageSize)
         .populate('userId', 'phone name code kycStatus')

@@ -4,10 +4,10 @@ import { tv } from "tailwind-variants";
 export const helpCenterScreenVariants = tv({
   slots: {
     root: "bg-background",
-    content: "flex flex-col gap-4 pb-12 pt-1",
+    content: "flex flex-col gap-6 pb-12 pt-2",
     intro: "mb-2 flex flex-col gap-1",
-    introTitle: "tracking-tight text-foreground",
-    introSubtitle: "text-muted",
+    introTitle: "text-balance tracking-tight text-foreground",
+    introSubtitle: "max-w-[21rem] text-pretty leading-relaxed text-muted",
     stack: "flex flex-col gap-3",
   },
 });

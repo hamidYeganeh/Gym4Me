@@ -6,7 +6,7 @@ export const analyticsAcquisitionSectionVariants = tv({
     cardHeader: "flex flex-col gap-1 border-b border-separator p-5 sm:p-6",
     cardTitle: "text-base font-bold text-foreground sm:text-lg",
     cardDescription: "text-sm leading-6 text-muted",
-    content: "flex flex-col gap-5 p-5 sm:p-6",
+    content: "p-5 sm:p-6",
     row: "flex flex-col gap-2",
     rowTop: "flex items-center justify-between gap-4",
     rowLabel: "text-sm font-bold text-foreground",

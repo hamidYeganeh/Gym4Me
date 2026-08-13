@@ -3,6 +3,7 @@
 import { Spinner } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { accountProgress } from "@/shared/lib/api";
+import { useFeatureFlag } from "@/shared/providers/AppConfigProvider";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { AthleteWorkoutDetailScreen } from "../screens/AthleteWorkoutDetailScreen";
 import { mapWorkoutLog, mapWorkoutPlan } from "./map-workout-plans";
@@ -13,7 +14,9 @@ import {
 
 export function AthleteWorkoutDetailGate({ planId }: { planId: string }) {
   const { isAuthenticated, isReady } = useAuth();
+  const loggingEnabled = useFeatureFlag("athlete.workout_logging");
   const [detail, setDetail] = useState<AthleteWorkoutPlanDetail | null>(null);
+  const [pending, setPending] = useState(false);
 
   useEffect(() => {
     if (!isReady) return;
@@ -63,5 +66,41 @@ export function AthleteWorkoutDetailGate({ planId }: { planId: string }) {
     );
   }
 
-  return <AthleteWorkoutDetailScreen detail={detail} />;
+  return (
+    <AthleteWorkoutDetailScreen
+      detail={detail}
+      onLogSession={
+        isAuthenticated && loggingEnabled
+          ? async (status) => {
+              setPending(true);
+              try {
+                const nextSessionIndex =
+                  detail.logs.reduce(
+                    (max, log) => Math.max(max, log.sessionIndex),
+                    0,
+                  ) + 1;
+                const created = await accountProgress.createWorkoutLog({
+                  planId,
+                  sessionIndex: nextSessionIndex,
+                  sets: [],
+                  status,
+                  loggedAt: new Date().toISOString(),
+                });
+                setDetail((current) =>
+                  current
+                    ? {
+                        ...current,
+                        logs: [mapWorkoutLog(created), ...current.logs],
+                      }
+                    : current,
+                );
+              } finally {
+                setPending(false);
+              }
+            }
+          : undefined
+      }
+      pending={pending}
+    />
+  );
 }

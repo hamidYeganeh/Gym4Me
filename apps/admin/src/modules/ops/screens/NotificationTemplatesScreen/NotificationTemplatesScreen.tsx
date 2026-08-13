@@ -1,37 +1,15 @@
 import { useCallback, useMemo, useState } from "react";
-import {
-  Button,
-  Chip,
-  Input,
-  Label,
-  TextArea,
-  TextField,
-  Typography,
-} from "@heroui/react";
-import type {
-  NotificationChannelSetting,
-  NotificationSmsSetting,
-  NotificationTemplate,
-} from "@repo/api";
-import { ApiError } from "@repo/api";
+import { useNavigate } from "react-router-dom";
+import { Button, Chip, Typography } from "@heroui/react";
+import type { NotificationTemplate } from "@repo/api";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
-import {
-  AdminDataTable,
-  AdminFormDrawer,
-  AdminShell,
-} from "@/shared/components";
+import { AdminDataTable, AdminShell } from "@/shared/components";
 import { useAdminInfiniteQuery } from "@/shared/hooks";
 import { adminNotificationTemplates } from "@/shared/lib/api";
+import { routes } from "@/shared/lib/routes";
 import { notificationTemplatesScreenVariants } from "./NotificationTemplatesScreen.styles";
 import type { NotificationTemplatesScreenProps } from "./NotificationTemplatesScreen.types";
-
-const CHANNEL_OPTIONS: NotificationChannelSetting[] = ["enabled", "disabled"];
-const SMS_OPTIONS: NotificationSmsSetting[] = [
-  "disabled",
-  "otp",
-  "transactional",
-];
 
 const columnHelper = createColumnHelper<NotificationTemplate>();
 
@@ -44,18 +22,10 @@ export function NotificationTemplatesScreen({
   className,
 }: NotificationTemplatesScreenProps) {
   const t = useTranslations("Admin.Ops");
+  const navigate = useNavigate();
   const styles = notificationTemplatesScreenVariants();
 
   const [search, setSearch] = useState("");
-  const [editing, setEditing] = useState<NotificationTemplate | null>(null);
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
-  const [smsTemplateKey, setSmsTemplateKey] = useState("");
-  const [push, setPush] = useState<NotificationChannelSetting>("enabled");
-  const [inbox, setInbox] = useState<NotificationChannelSetting>("enabled");
-  const [sms, setSms] = useState<NotificationSmsSetting>("disabled");
-  const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
 
   const queryKey = useMemo(() => JSON.stringify({ search }), [search]);
 
@@ -85,17 +55,6 @@ export function NotificationTemplatesScreen({
       errorFallback: t("templates.errorLoad"),
       fetchPage,
     });
-
-  const openEdit = (row: NotificationTemplate) => {
-    setEditing(row);
-    setTitle(row.title);
-    setBody(row.body);
-    setSmsTemplateKey(row.smsTemplateKey ?? "");
-    setPush(row.channels.push);
-    setInbox(row.channels.inbox);
-    setSms(row.channels.sms);
-    setSaveError(null);
-  };
 
   const columns = useMemo(
     () =>
@@ -184,27 +143,7 @@ export function NotificationTemplatesScreen({
 
   const meta: TemplateTableMeta = {
     actionsClassName: styles.actions(),
-    onEdit: openEdit,
-  };
-
-  const handleSave = async () => {
-    if (!editing || !title.trim() || !body.trim()) return;
-    setSaving(true);
-    setSaveError(null);
-    try {
-      await adminNotificationTemplates.update(editing.key, {
-        title: title.trim(),
-        body: body.trim(),
-        smsTemplateKey: smsTemplateKey.trim() || undefined,
-        channels: { push, inbox, sms },
-      });
-      setEditing(null);
-      void reload();
-    } catch (err) {
-      setSaveError(err instanceof ApiError ? err.message : t("actionError"));
-    } finally {
-      setSaving(false);
-    }
+    onEdit: (row) => navigate(routes.opsTemplateEdit(row.key)),
   };
 
   return (
@@ -251,120 +190,6 @@ export function NotificationTemplatesScreen({
           })}
         />
       </div>
-
-      <AdminFormDrawer
-        isOpen={Boolean(editing)}
-        title={t("templates.editTitle")}
-        onOpenChange={(open) => {
-          if (!open) setEditing(null);
-        }}
-      >
-        <div className={styles.form()}>
-          <TextField
-            className={styles.field()}
-            fullWidth
-            name="title"
-            value={title}
-            onChange={setTitle}
-          >
-            <Label>{t("templates.fields.title")}</Label>
-            <Input />
-          </TextField>
-
-          <TextField
-            className={styles.field()}
-            fullWidth
-            name="body"
-            value={body}
-            onChange={setBody}
-          >
-            <Label>{t("templates.fields.body")}</Label>
-            <TextArea className="min-h-28" />
-          </TextField>
-
-          <TextField
-            className={styles.field()}
-            fullWidth
-            name="smsTemplateKey"
-            value={smsTemplateKey}
-            onChange={setSmsTemplateKey}
-          >
-            <Label>{t("templates.fields.smsTemplateKey")}</Label>
-            <Input dir="ltr" />
-          </TextField>
-
-          <div className={styles.field()}>
-            <Label>{t("templates.fields.push")}</Label>
-            <div className={styles.chips()}>
-              {CHANNEL_OPTIONS.map((option) => (
-                <Button
-                  key={option}
-                  size="sm"
-                  variant={push === option ? "primary" : "secondary"}
-                  onPress={() => setPush(option)}
-                >
-                  {t(`templates.channelOptions.${option}`)}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          <div className={styles.field()}>
-            <Label>{t("templates.fields.inbox")}</Label>
-            <div className={styles.chips()}>
-              {CHANNEL_OPTIONS.map((option) => (
-                <Button
-                  key={option}
-                  size="sm"
-                  variant={inbox === option ? "primary" : "secondary"}
-                  onPress={() => setInbox(option)}
-                >
-                  {t(`templates.channelOptions.${option}`)}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          <div className={styles.field()}>
-            <Label>{t("templates.fields.sms")}</Label>
-            <div className={styles.chips()}>
-              {SMS_OPTIONS.map((option) => (
-                <Button
-                  key={option}
-                  size="sm"
-                  variant={sms === option ? "primary" : "secondary"}
-                  onPress={() => setSms(option)}
-                >
-                  {t(`templates.smsOptions.${option}`)}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          {saveError ? (
-            <p className="text-sm text-danger" role="alert">
-              {saveError}
-            </p>
-          ) : null}
-
-          <div className={styles.actions()}>
-            <Button
-              isDisabled={saving || !title.trim() || !body.trim()}
-              variant="primary"
-              onPress={() => void handleSave()}
-            >
-              {t("save")}
-            </Button>
-            <Button
-              isDisabled={saving}
-              variant="secondary"
-              onPress={() => setEditing(null)}
-            >
-              {t("cancel")}
-            </Button>
-          </div>
-        </div>
-      </AdminFormDrawer>
     </AdminShell>
   );
 }

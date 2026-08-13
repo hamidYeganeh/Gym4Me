@@ -14,12 +14,12 @@ export const baseProfileScreenVariants = tv({
     avatarRow:
       "relative z-10 -mt-14 flex items-end justify-center gap-5 px-screen",
     sideAction: [
-      "size-12 shrink-0 rounded-full border border-border bg-surface",
-      "text-foreground shadow-sm",
+      "size-12 shrink-0 rounded-[1rem] border-0 bg-surface",
+      "text-foreground shadow-sm shadow-foreground/5",
     ].join(" "),
     avatarWrap: "relative shrink-0",
     avatar: [
-      "size-[7.25rem] overflow-hidden rounded-full",
+      "size-[7.25rem] overflow-hidden rounded-[2rem]",
       "border-[3px] border-background bg-surface shadow-sm",
     ].join(" "),
     avatarImage: "size-full object-cover",
@@ -48,11 +48,11 @@ export const baseProfileScreenVariants = tv({
     statValue: "text-foreground tabular-nums",
     statLabel: "text-muted",
     actions: "grid grid-cols-2 gap-3 px-1",
-    followButton: "rounded-full font-semibold",
-    chatButton: "rounded-full border-accent font-semibold text-accent",
+    followButton: "rounded-[1rem] font-semibold",
+    chatButton: "rounded-[1rem] border-accent font-semibold text-accent",
     postsCard: [
       "mt-1 flex min-h-64 flex-col overflow-hidden rounded-[1.5rem]",
-      "border border-border bg-surface",
+      "border-0 bg-surface shadow-sm shadow-foreground/5",
     ].join(" "),
     postsBody:
       "flex flex-1 flex-col items-center justify-center gap-2 px-6 py-10 text-center",

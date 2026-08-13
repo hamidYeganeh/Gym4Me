@@ -16,6 +16,7 @@ import {
   ExerciseStatus,
   MetricTypeStatus,
   MetricValueKind,
+  MetricSource,
   Privacy,
   Role,
   VerificationStatus,
@@ -80,6 +81,7 @@ import {
   ListWorkoutPlansQueryDto,
   ListWorkoutProgramsQueryDto,
   ReviewExerciseVerificationDto,
+  SyncProgressMetricsDto,
   UpdateExerciseDto,
   UpdateMetricTypeDto,
   UpdateProgressMetricDto,
@@ -122,6 +124,14 @@ const DEFAULT_METRIC_TYPES: {
     chartKind: 'stacked',
   },
   {
+    key: 'water_ml',
+    name: 'Water intake',
+    valueKind: MetricValueKind.NUMBER,
+    unit: 'ml',
+    sortHint: 31,
+    chartKind: 'bars',
+  },
+  {
     key: 'blood_pressure',
     name: 'Blood pressure',
     valueKind: MetricValueKind.PAIR,
@@ -136,6 +146,22 @@ const DEFAULT_METRIC_TYPES: {
     unit: 'h',
     sortHint: 50,
     chartKind: 'rings',
+  },
+  {
+    key: 'sleep_duration_min',
+    name: 'Sleep duration',
+    valueKind: MetricValueKind.NUMBER,
+    unit: 'min',
+    sortHint: 51,
+    chartKind: 'bars',
+  },
+  {
+    key: 'sleep_quality',
+    name: 'Sleep quality',
+    valueKind: MetricValueKind.NUMBER,
+    unit: 'score',
+    sortHint: 52,
+    chartKind: 'line',
   },
   {
     key: 'nutrition',
@@ -157,6 +183,22 @@ const DEFAULT_METRIC_TYPES: {
     valueKind: MetricValueKind.NUMBER,
     unit: 'steps',
     sortHint: 80,
+    chartKind: 'bars',
+  },
+  {
+    key: 'walking_distance_km',
+    name: 'Walking distance',
+    valueKind: MetricValueKind.NUMBER,
+    unit: 'km',
+    sortHint: 81,
+    chartKind: 'bars',
+  },
+  {
+    key: 'walking_duration_min',
+    name: 'Walking duration',
+    valueKind: MetricValueKind.NUMBER,
+    unit: 'min',
+    sortHint: 82,
     chartKind: 'bars',
   },
   {
@@ -517,6 +559,18 @@ export class ProgressService {
       athleteUserId: new Types.ObjectId(userId),
     };
     if (query.metricKey) filter.metricKey = query.metricKey;
+    if (query.source) filter.source = query.source;
+    if (query.from || query.to) {
+      const from = query.from ? new Date(query.from) : undefined;
+      const to = query.to ? new Date(query.to) : undefined;
+      if (from && to && from > to) {
+        throw new BadRequestException('from must be before to');
+      }
+      filter.recordedAt = {
+        ...(from ? { $gte: from } : {}),
+        ...(to ? { $lte: to } : {}),
+      };
+    }
     const { page, pageSize } = resolvePageSize(query);
     const [items, total] = await Promise.all([
       this.metricModel
@@ -542,6 +596,8 @@ export class ProgressService {
     request: Request,
   ) {
     this.assertAthleteOnlyWrite(activeRole, 'create');
+    this.assertMetricValue(dto.metricKey, dto.value);
+    this.assertMetricPeriod(dto.periodStartAt, dto.periodEndAt);
     const item = await this.metricModel.create({
       athleteUserId: new Types.ObjectId(userId),
       privacy: dto.privacy ?? Privacy.PRIVATE,
@@ -550,6 +606,12 @@ export class ProgressService {
       unit: dto.unit?.trim(),
       recordedAt: new Date(dto.recordedAt),
       note: dto.note?.trim(),
+      source: dto.source ?? MetricSource.MANUAL,
+      sourceRecordId: dto.sourceRecordId?.trim(),
+      periodStartAt: dto.periodStartAt
+        ? new Date(dto.periodStartAt)
+        : undefined,
+      periodEndAt: dto.periodEndAt ? new Date(dto.periodEndAt) : undefined,
     });
     this.audit.log({
       action: AuditAction.WORKOUT_PLAN_UPSERTED,
@@ -558,6 +620,71 @@ export class ProgressService {
       request,
     });
     return this.toMetric(item.toObject());
+  }
+
+  async syncMetrics(
+    dto: SyncProgressMetricsDto,
+    userId: string,
+    activeRole: Role,
+    request: Request,
+  ) {
+    this.assertAthleteOnlyWrite(activeRole, 'sync');
+    const athleteUserId = new Types.ObjectId(userId);
+    const operations = dto.entries.map((entry) => {
+      this.assertMetricValue(entry.metricKey, entry.value);
+      this.assertMetricPeriod(entry.periodStartAt, entry.periodEndAt);
+      return {
+        updateOne: {
+          filter: {
+            athleteUserId,
+            source: entry.source,
+            sourceRecordId: entry.sourceRecordId.trim(),
+          },
+          update: {
+            $setOnInsert: {
+              athleteUserId,
+              privacy: entry.privacy ?? Privacy.PRIVATE,
+              metricKey: entry.metricKey.trim(),
+              value: entry.value,
+              unit: entry.unit?.trim(),
+              recordedAt: new Date(entry.recordedAt),
+              note: entry.note?.trim(),
+              source: entry.source,
+              sourceRecordId: entry.sourceRecordId.trim(),
+              periodStartAt: entry.periodStartAt
+                ? new Date(entry.periodStartAt)
+                : undefined,
+              periodEndAt: entry.periodEndAt
+                ? new Date(entry.periodEndAt)
+                : undefined,
+            },
+          },
+          upsert: true,
+        },
+      };
+    });
+    if (operations.length === 0) {
+      return { accepted: 0, created: 0, deduplicated: 0 };
+    }
+    const result = await this.metricModel.bulkWrite(operations, {
+      ordered: false,
+    });
+    const created = result.upsertedCount;
+    this.audit.log({
+      action: AuditAction.WORKOUT_PLAN_UPSERTED,
+      actorId: userId,
+      metadata: {
+        kind: 'metric_sync',
+        accepted: operations.length,
+        created,
+      },
+      request,
+    });
+    return {
+      accepted: operations.length,
+      created,
+      deduplicated: operations.length - created,
+    };
   }
 
   async updateMetric(
@@ -570,7 +697,12 @@ export class ProgressService {
     const item = await this.findMetric(id);
     this.assertOwnerOrAdmin(item.athleteUserId, userId, activeRole);
     if (dto.metricKey !== undefined) item.metricKey = dto.metricKey.trim();
-    if (dto.value !== undefined) item.value = dto.value;
+    if (dto.value !== undefined) {
+      this.assertMetricValue(dto.metricKey ?? item.metricKey, dto.value);
+      item.value = dto.value;
+    } else if (dto.metricKey !== undefined) {
+      this.assertMetricValue(dto.metricKey, item.value);
+    }
     if (dto.unit !== undefined) item.unit = dto.unit?.trim() || undefined;
     if (dto.recordedAt !== undefined) item.recordedAt = new Date(dto.recordedAt);
     if (dto.note !== undefined) item.note = dto.note?.trim() || undefined;
@@ -1127,13 +1259,19 @@ export class ProgressService {
   }
 
   private async ensureDefaultMetricTypes() {
-    const count = await this.metricTypeModel.estimatedDocumentCount();
-    if (count > 0) return;
     try {
-      await this.metricTypeModel.insertMany(
+      await this.metricTypeModel.bulkWrite(
         DEFAULT_METRIC_TYPES.map((row) => ({
-          ...row,
-          status: MetricTypeStatus.ACTIVE,
+          updateOne: {
+            filter: { key: row.key },
+            update: {
+              $setOnInsert: {
+                ...row,
+                status: MetricTypeStatus.ACTIVE,
+              },
+            },
+            upsert: true,
+          },
         })),
         { ordered: false },
       );
@@ -1365,6 +1503,10 @@ export class ProgressService {
     unit?: string;
     recordedAt: Date;
     note?: string;
+    source?: MetricSource;
+    sourceRecordId?: string;
+    periodStartAt?: Date;
+    periodEndAt?: Date;
     createdAt: Date;
     updatedAt: Date;
   }) {
@@ -1377,9 +1519,48 @@ export class ProgressService {
       unit: doc.unit ?? null,
       recordedAt: doc.recordedAt.toISOString(),
       note: doc.note ?? null,
+      source: doc.source ?? MetricSource.MANUAL,
+      sourceRecordId: doc.sourceRecordId ?? null,
+      periodStartAt: doc.periodStartAt?.toISOString() ?? null,
+      periodEndAt: doc.periodEndAt?.toISOString() ?? null,
       createdAt: doc.createdAt.toISOString(),
       updatedAt: doc.updatedAt.toISOString(),
     };
+  }
+
+  private assertMetricValue(metricKey: string, value: number) {
+    const ranges: Record<string, { min: number; max: number; integer?: boolean }> = {
+      weight_kg: { min: 1, max: 500 },
+      water_ml: { min: 0, max: 20_000 },
+      steps: { min: 0, max: 200_000, integer: true },
+      walking_distance_km: { min: 0, max: 500 },
+      walking_duration_min: { min: 0, max: 1_440 },
+      sleep_duration_min: { min: 0, max: 1_440 },
+      sleep_quality: { min: 1, max: 5, integer: true },
+    };
+    const range = ranges[metricKey.trim()];
+    if (!Number.isFinite(value)) {
+      throw new BadRequestException('Metric value must be finite');
+    }
+    if (!range) return;
+    if (value < range.min || value > range.max) {
+      throw new BadRequestException(
+        `Metric value must be between ${range.min} and ${range.max}`,
+      );
+    }
+    if (range.integer && !Number.isInteger(value)) {
+      throw new BadRequestException('Metric value must be an integer');
+    }
+  }
+
+  private assertMetricPeriod(periodStartAt?: string, periodEndAt?: string) {
+    if (
+      periodStartAt &&
+      periodEndAt &&
+      new Date(periodStartAt) > new Date(periodEndAt)
+    ) {
+      throw new BadRequestException('periodStartAt must be before periodEndAt');
+    }
   }
 
   private toPhoto(doc: {

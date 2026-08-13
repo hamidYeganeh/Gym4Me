@@ -2,9 +2,9 @@ import type { Key } from "react";
 import type { Role, UserStatus } from "@repo/api";
 
 export type UsersListFiltersSectionProps = {
-  status: UserStatus | "all";
+  status: UserStatus[];
   role: Role | "all";
-  onStatusChange: (value: UserStatus | "all") => void;
+  onStatusChange: (value: UserStatus[]) => void;
   onRoleChange: (value: Role | "all") => void;
   className?: string;
 };

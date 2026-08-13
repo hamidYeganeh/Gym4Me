@@ -4,19 +4,18 @@ import { tv } from "tailwind-variants";
 export const settingsScreenVariants = tv({
   slots: {
     root: "bg-background",
-    content: "flex flex-col gap-6 pb-10 pt-1",
+    content: "flex flex-col gap-7 pb-12 pt-2",
     intro: "flex flex-col gap-1",
-    introTitle: "tracking-tight text-foreground",
-    introSubtitle: "text-muted",
+    introTitle: "text-balance tracking-tight text-foreground",
+    introSubtitle: "max-w-[21rem] text-pretty leading-relaxed text-muted",
     group: "flex flex-col gap-2",
     groupTitle: "px-1 text-muted",
     groupCard:
-      "overflow-hidden rounded-[24px] border border-border bg-surface",
+      "overflow-hidden rounded-[24px] border-0 bg-surface shadow-sm shadow-foreground/5",
     row: "flex w-full items-center gap-3 px-4 py-3.5",
-    rowPressable:
-      "h-auto justify-start rounded-none text-start font-normal",
+    rowPressable: "h-auto justify-start rounded-none text-start font-normal",
     rowIcon:
-      "flex size-10 shrink-0 items-center justify-center rounded-full bg-default text-foreground",
+      "flex size-10 shrink-0 items-center justify-center rounded-[0.875rem] bg-default text-foreground",
     rowBody: "flex min-w-0 flex-1 flex-col gap-0.5",
     rowLabel: "text-foreground",
     rowHint: "text-muted",

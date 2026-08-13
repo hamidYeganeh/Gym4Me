@@ -14,6 +14,7 @@ import {
   UserCheck,
   UsersThree,
 } from "@repo/icons";
+import { AreaLineChart } from "@repo/ui/kit/AreaLineChart";
 import { useTranslations } from "next-intl";
 import { AdminShell } from "@/shared/components";
 import { adminAnalytics } from "@/shared/lib/api";
@@ -90,13 +91,9 @@ export function DashboardHomeScreen({ className }: DashboardHomeScreenProps) {
   ];
 
   const revenueSeries = (overview?.series.revenueDaily ?? []).slice(-7);
-  const maxRevenue = revenueSeries.reduce(
-    (max, point) => Math.max(max, point.value),
-    0,
-  );
   const chartData = revenueSeries.map((point) => ({
-    day: faNumber(Number.parseInt(point.date.slice(8), 10)),
-    value: maxRevenue > 0 ? Math.round((point.value / maxRevenue) * 100) : 0,
+    label: faNumber(Number.parseInt(point.date.slice(8), 10)),
+    value: point.value,
   }));
 
   const revenueTotal = revenueSeries.reduce(
@@ -255,26 +252,12 @@ export function DashboardHomeScreen({ className }: DashboardHomeScreenProps) {
             </Card.Header>
             <Card.Content className={styles.chartContent()}>
               {chartData.length > 0 ? (
-                <div
-                  className={styles.chart()}
+                <AreaLineChart
                   aria-label={t("Dashboard.revenue.chartAriaLabel")}
-                  role="img"
-                >
-                  {chartData.map((item, index) => (
-                    <div
-                      className={styles.chartColumn()}
-                      key={`${item.day}-${index}`}
-                    >
-                      <div className={styles.chartTrack()}>
-                        <span
-                          className={styles.chartBar()}
-                          style={{ height: `${Math.max(item.value, 4)}%` }}
-                        />
-                      </div>
-                      <span className={styles.chartDay()}>{item.day}</span>
-                    </div>
-                  ))}
-                </div>
+                  className={styles.chart()}
+                  color="var(--accent)"
+                  data={chartData}
+                />
               ) : (
                 <Typography className={styles.cardDescription()}>
                   {t("Dashboard.revenue.empty")}

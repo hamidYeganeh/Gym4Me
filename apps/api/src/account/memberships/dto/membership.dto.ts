@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   ArrayMaxSize,
   ArrayMinSize,
@@ -19,6 +19,7 @@ import {
   ValidateIf,
   ValidateNested,
 } from 'class-validator';
+import { PaginationQueryDto as CommonPaginationQueryDto } from '../../../basics/dto/common.dto';
 import {
   EntityStatus,
   MembershipPlanKind,
@@ -29,21 +30,9 @@ import {
   PublishStatus,
   SubscriptionRenewalMode,
 } from '../../../common/enums';
+import { toStringArray } from '../../../common/utils/list-query.util';
 
-export class PaginationQueryDto {
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  page?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  @Max(200)
-  page_size?: number;
-}
+export class PaginationQueryDto extends CommonPaginationQueryDto {}
 
 // ── Nested DTOs ───────────────────────────────────────────────────────────
 
@@ -523,14 +512,18 @@ export class UpdatePlatformPlanDto {
 
 export class ListPlatformPlansQueryDto extends PaginationQueryDto {
   @IsOptional()
-  @IsEnum(EntityStatus)
-  status?: EntityStatus;
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(EntityStatus, { each: true })
+  status?: EntityStatus[];
 }
 
 export class ListPlatformSubscriptionsQueryDto extends PaginationQueryDto {
   @IsOptional()
-  @IsEnum(PlatformSubscriptionStatus)
-  status?: PlatformSubscriptionStatus;
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(PlatformSubscriptionStatus, { each: true })
+  status?: PlatformSubscriptionStatus[];
 
   @IsOptional()
   @IsMongoId()

@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   ArrayMaxSize,
   ArrayMinSize,
@@ -22,6 +22,8 @@ import {
   BookingStatus,
   ConsultationKind,
 } from '../../../common/enums';
+import { PaginationQueryDto } from '../../../basics/dto/common.dto';
+import { toStringArray } from '../../../common/utils/list-query.util';
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -213,7 +215,29 @@ export class ListBookingsQueryDto {
   resource_type?: BookingResourceType;
 }
 
-export class AdminListBookingsQueryDto extends ListBookingsQueryDto {
+export class AdminListBookingsQueryDto extends PaginationQueryDto {
+  @IsOptional()
+  @Transform(toStringArray)
+  @IsEnum(BookingStatus, { each: true })
+  status?: BookingStatus[];
+
+  /** UI bucket filter — upcoming | past | cancelled. */
+  @IsOptional()
+  @IsIn(['upcoming', 'past', 'cancelled'])
+  bucket?: 'upcoming' | 'past' | 'cancelled';
+
+  @IsOptional()
+  @IsDateString()
+  from?: string;
+
+  @IsOptional()
+  @IsDateString()
+  to?: string;
+
+  @IsOptional()
+  @IsEnum(BookingResourceType)
+  resource_type?: BookingResourceType;
+
   @IsOptional()
   @IsMongoId()
   athleteId?: string;

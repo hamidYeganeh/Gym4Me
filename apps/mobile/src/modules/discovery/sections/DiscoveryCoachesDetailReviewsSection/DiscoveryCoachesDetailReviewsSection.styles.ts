@@ -9,7 +9,7 @@ export const discoveryCoachesDetailReviewsSectionVariants = tv({
     filters: "flex flex-wrap gap-2.5",
     search: "w-full",
     list: "flex flex-col gap-3",
-    reviewCard: "border border-border/70 bg-surface",
+    reviewCard: "border-0 bg-surface shadow-sm shadow-foreground/5",
   },
 });
 

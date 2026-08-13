@@ -4,11 +4,11 @@ import { tv } from "tailwind-variants";
 export const fileItemVariants = tv({
   slots: {
     root: [
-      "flex w-full items-center gap-3 rounded-[24px] border border-border",
-      "bg-surface p-4 text-start",
+      "flex w-full items-center gap-3 rounded-[24px] border-0",
+      "bg-surface p-4 text-start shadow-sm shadow-foreground/5",
     ].join(" "),
     iconWrap:
-      "flex size-12 shrink-0 items-center justify-center rounded-full",
+      "flex size-12 shrink-0 items-center justify-center rounded-[1rem]",
     icon: "size-6",
     typeIcon: "shrink-0 self-start",
     body: "flex min-w-0 flex-1 flex-col gap-2",

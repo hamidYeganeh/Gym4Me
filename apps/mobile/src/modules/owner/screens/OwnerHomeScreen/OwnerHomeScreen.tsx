@@ -1,5 +1,6 @@
 "use client";
 
+import { Typography } from "@heroui/react";
 import {
   BarbellHorizontal,
   BookOpen,
@@ -22,11 +23,7 @@ import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { BottomNav } from "@repo/ui/layout/BottomNav";
 import { ProfileHeader } from "@repo/ui/layout/ProfileHeader";
 import { ProfileStats } from "@repo/ui/layout/ProfileStats";
-import {
-  motion,
-  useReducedMotion,
-  type Variants,
-} from "motion/react";
+import { motion, useReducedMotion, type Variants } from "motion/react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
@@ -240,33 +237,52 @@ export function OwnerHomeScreen({
         <StaggerSection>
           <section
             aria-label={t("quickLinksTitle")}
-            className="grid grid-cols-5 gap-2"
+            className={styles.quickLinksSection}
           >
-            <QuickActionCard
-              icon={<Building2 size={ACTION_ICON_SIZE} />}
-              label={t("quickLinkClubs")}
-              onPress={() => router.push("/owner/clubs")}
-            />
-            <QuickActionCard
-              icon={<UsersThree size={ACTION_ICON_SIZE} />}
-              label={t("quickLinkMembers")}
-              onPress={() => router.push("/owner/members")}
-            />
-            <QuickActionCard
-              icon={<UsersTwo size={ACTION_ICON_SIZE} />}
-              label={t("quickLinkStaff")}
-              onPress={() => router.push("/owner/staff")}
-            />
-            <QuickActionCard
-              icon={<Wallet size={ACTION_ICON_SIZE} />}
-              label={t("quickLinkFinance")}
-              onPress={() => router.push("/owner/finance")}
-            />
-            <QuickActionCard
-              icon={<ChartBar2 size={ACTION_ICON_SIZE} />}
-              label={t("quickLinkAnalytics")}
-              onPress={() => router.push("/owner/analytics")}
-            />
+            <div className={styles.sectionHeader}>
+              <Typography
+                className={styles.sectionTitle}
+                type="h4"
+                weight="semibold"
+              >
+                {t("quickLinksTitle")}
+              </Typography>
+              <Typography className={styles.sectionDescription} type="body-sm">
+                {t("quickLinksDescription")}
+              </Typography>
+            </div>
+            <div className={styles.quickLinksGrid}>
+              <QuickActionCard
+                icon={<Building2 size={ACTION_ICON_SIZE} />}
+                label={t("quickLinkClubs")}
+                layout="row"
+                onPress={() => router.push("/owner/clubs")}
+              />
+              <QuickActionCard
+                icon={<UsersThree size={ACTION_ICON_SIZE} />}
+                label={t("quickLinkMembers")}
+                layout="row"
+                onPress={() => router.push("/owner/members")}
+              />
+              <QuickActionCard
+                icon={<UsersTwo size={ACTION_ICON_SIZE} />}
+                label={t("quickLinkStaff")}
+                layout="row"
+                onPress={() => router.push("/owner/staff")}
+              />
+              <QuickActionCard
+                icon={<Wallet size={ACTION_ICON_SIZE} />}
+                label={t("quickLinkFinance")}
+                layout="row"
+                onPress={() => router.push("/owner/finance")}
+              />
+              <QuickActionCard
+                icon={<ChartBar2 size={ACTION_ICON_SIZE} />}
+                label={t("quickLinkAnalytics")}
+                layout="row"
+                onPress={() => router.push("/owner/analytics")}
+              />
+            </div>
           </section>
         </StaggerSection>
 

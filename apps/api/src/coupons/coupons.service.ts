@@ -7,6 +7,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { EntityStatus } from '../common/enums';
 import {
+  createSearchFilter,
+  resolveListSort,
+} from '../common/utils/list-query.util';
+import {
   Coupon,
   CouponDiscountType,
   CouponDocument,
@@ -184,19 +188,29 @@ export class CouponsService {
   }
 
   async list(query: ListCouponsQueryDto) {
-    const filter: Record<string, unknown> = {};
-    if (query.status) filter.status = query.status;
+    const filter: Record<string, unknown> = {
+      ...createSearchFilter(query.search, ['code', 'title']),
+    };
+    if (query.status) filter.status = { $in: query.status };
     if (query.clubId) filter.clubId = new Types.ObjectId(query.clubId);
-    if (query.search) {
-      const rx = new RegExp(
-        query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
-        'i',
-      );
-      filter.$or = [{ code: rx }, { title: rx }];
-    }
+    const sort = resolveListSort(
+      query,
+      {
+        code: 'code',
+        title: 'title',
+        status: 'status',
+        discountValue: 'discount.value',
+        redemptionCount: 'redemptionCount',
+        validFrom: 'constraints.validFrom',
+        validUntil: 'constraints.validUntil',
+        createdAt: 'createdAt',
+        updatedAt: 'updatedAt',
+      },
+      { createdAt: -1 },
+    );
     const items = await this.couponModel
       .find(filter)
-      .sort({ createdAt: -1 })
+      .sort(sort)
       .limit(200);
     return { items: items.map((c) => this.toPublic(c)) };
   }

@@ -13,7 +13,7 @@ export const adminDataTableVariants = tv({
     header: "sticky top-0 z-10 bg-surface-secondary",
     spacerCell: "!border-0 !p-0 !bg-transparent",
     footer:
-      "flex w-full items-center justify-between gap-3 px-1 text-sm text-muted",
+      "flex w-full flex-wrap items-center justify-between gap-3 px-1 text-sm text-muted",
     loadMore: "flex items-center justify-center gap-2 text-sm text-muted",
   },
 });

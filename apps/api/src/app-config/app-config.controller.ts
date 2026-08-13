@@ -1,0 +1,71 @@
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Put,
+  Query,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { Public } from '../common/decorators/public.decorator';
+import { Roles } from '../common/decorators/roles.decorator';
+import { Role } from '../common/enums';
+import {
+  FeatureFlagKeyParamDto,
+  MobileBootstrapQueryDto,
+  UpsertFeatureFlagDto,
+  UpsertReleasePolicyDto,
+} from './dto/app-config.dto';
+import { AppConfigService } from './app-config.service';
+
+@ApiTags('app-config')
+@Controller('app-config')
+export class PublicAppConfigController {
+  constructor(private readonly appConfig: AppConfigService) {}
+
+  @Public()
+  @Get('bootstrap')
+  @ApiOperation({
+    summary: 'Resolve release compatibility and remote feature manifest',
+  })
+  bootstrap(@Query() query: MobileBootstrapQueryDto) {
+    return this.appConfig.bootstrap(query);
+  }
+}
+
+@ApiTags('admin-app-config')
+@ApiBearerAuth('access-token')
+@Roles(Role.ADMIN)
+@Controller('admin/app-config')
+export class AdminAppConfigController {
+  constructor(private readonly appConfig: AppConfigService) {}
+
+  @Get('feature-flags')
+  listFeatureFlags() {
+    return this.appConfig.listFeatureFlags();
+  }
+
+  @Put('feature-flags/:key')
+  upsertFeatureFlag(
+    @Param() params: FeatureFlagKeyParamDto,
+    @Body() dto: UpsertFeatureFlagDto,
+    @CurrentUser('sub') adminId: string,
+  ) {
+    return this.appConfig.upsertFeatureFlag(params.key, dto, adminId);
+  }
+
+  @Get('release-policies')
+  listReleasePolicies() {
+    return this.appConfig.listReleasePolicies();
+  }
+
+  @Put('release-policies')
+  upsertReleasePolicy(
+    @Body() dto: UpsertReleasePolicyDto,
+    @CurrentUser('sub') adminId: string,
+  ) {
+    return this.appConfig.upsertReleasePolicy(dto, adminId);
+  }
+}
+

@@ -91,6 +91,12 @@ export class AdminSupportController {
     return this.faq.adminList(query);
   }
 
+  @Get('faq/:id')
+  @ApiOperation({ summary: 'Get an FAQ item' })
+  getFaq(@Param('id') id: string) {
+    return this.faq.get(id);
+  }
+
   @Post('faq')
   @ApiOperation({ summary: 'Create an FAQ item' })
   createFaq(

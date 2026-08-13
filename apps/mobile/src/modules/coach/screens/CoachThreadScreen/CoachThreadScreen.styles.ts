@@ -9,7 +9,7 @@ export const coachThreadScreenVariants = tv({
     bubbleCoach:
       "ms-8 flex flex-col gap-1 rounded-2xl rounded-se-md bg-accent px-3 py-2 text-accent-foreground",
     bubbleAthlete:
-      "me-8 flex flex-col gap-1 rounded-2xl rounded-ss-md border border-separator bg-surface px-3 py-2 text-foreground",
+      "me-8 flex flex-col gap-1 rounded-[1.25rem] rounded-ss-md border-0 bg-surface px-3 py-2 text-foreground shadow-sm shadow-foreground/5",
     bubbleMeta: "opacity-70",
     empty: "py-16 text-center text-muted",
     composer: "sticky bottom-0 flex items-end gap-2 bg-background pt-2",

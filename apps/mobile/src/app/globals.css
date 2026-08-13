@@ -30,11 +30,25 @@ html {
   font-variation-settings: "DOTS" 7;
   background: var(--background);
   cursor: var(--pointer-cursor);
+  scroll-behavior: smooth;
 }
 
 body {
   font-family: var(--font-sans);
   cursor: var(--pointer-cursor);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
 }
 
 a,

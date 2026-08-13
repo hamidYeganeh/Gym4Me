@@ -23,6 +23,10 @@ import {
   paginatedResult,
   resolvePageSize,
 } from '../common/utils/pagination.util';
+import {
+  createSearchFilter,
+  resolveListSort,
+} from '../common/utils/list-query.util';
 import { slugify } from '../common/utils/slug.util';
 import { sanitizeArticleHtml } from '../common/utils/html-sanitize.util';
 import { MediaService } from '../media/media.service';
@@ -199,27 +203,52 @@ export class ArticlesService {
   }
 
   async adminList(query: AdminListArticlesQueryDto) {
-    const filter: QueryFilter<ArticleDocument> = {};
-    if (query.publishStatus) filter.publishStatus = query.publishStatus;
+    const filter: QueryFilter<ArticleDocument> = {
+      ...createSearchFilter(query.search, [
+        'title',
+        'slug',
+        'excerpt',
+        'body',
+        'tags',
+        'seo.title',
+        'seo.description',
+      ]),
+    };
+    if (query.publishStatus) {
+      filter.publishStatus = { $in: query.publishStatus };
+    }
     if (query.category) {
       filter['taxonomy.category'] = query.category.toLowerCase().trim();
     }
-    if (query.kind) filter['taxonomy.kind'] = query.kind;
-    if (query.audience) filter['taxonomy.audience'] = query.audience;
+    if (query.kind) filter['taxonomy.kind'] = { $in: query.kind };
+    if (query.audience) filter['taxonomy.audience'] = { $in: query.audience };
     if (query.tag) filter.tags = query.tag;
-    if (query.search) {
-      const pattern = new RegExp(
-        query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
-        'i',
-      );
-      filter.$or = [{ title: pattern }, { slug: pattern }, { excerpt: pattern }];
-    }
 
     const { page, pageSize } = resolvePageSize(query);
+    const sort = resolveListSort(
+      query,
+      {
+        title: 'title',
+        slug: 'slug',
+        publishStatus: 'publishStatus',
+        category: 'taxonomy.category',
+        kind: 'taxonomy.kind',
+        audience: 'taxonomy.audience',
+        publishedAt: 'publishedAt',
+        readingTimeMinutes: 'readingTimeMinutes',
+        viewsCount: 'engagement.viewsCount',
+        likesCount: 'engagement.likesCount',
+        commentsCount: 'engagement.commentsCount',
+        savesCount: 'engagement.savesCount',
+        createdAt: 'createdAt',
+        updatedAt: 'updatedAt',
+      },
+      { updatedAt: -1 },
+    );
     const [items, total] = await Promise.all([
       this.articleModel
         .find(filter)
-        .sort({ updatedAt: -1 })
+        .sort(sort)
         .skip((page - 1) * pageSize)
         .limit(pageSize)
         .lean(),

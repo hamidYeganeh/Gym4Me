@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   ArrayMaxSize,
   IsArray,
@@ -31,6 +31,7 @@ import {
   Privacy,
   SessionPackageStatus,
 } from '../../../common/enums';
+import { toStringArray } from '../../../common/utils/list-query.util';
 
 const TIME_RE = /^\d{2}:\d{2}$/;
 
@@ -616,6 +617,36 @@ export class AdminListCoachingQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsMongoId()
   athleteUserId?: string;
+}
+
+export class AdminListCoachingServicesQueryDto extends AdminListCoachingQueryDto {
+  @IsOptional()
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(CoachServiceStatus, { each: true })
+  status?: CoachServiceStatus[];
+}
+
+export class AdminListCoachingPackagesQueryDto extends AdminListCoachingQueryDto {
+  @IsOptional()
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(SessionPackageStatus, { each: true })
+  status?: SessionPackageStatus[];
+}
+
+export class AdminListCoachingStudentsQueryDto extends AdminListCoachingQueryDto {
+  @IsOptional()
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(CoachStudentStatus, { each: true })
+  status?: CoachStudentStatus[];
+
+  @IsOptional()
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(CoachStudentEngagementLevel, { each: true })
+  engagementLevel?: CoachStudentEngagementLevel[];
 }
 
 // ── Direct messaging (N4) ─────────────────────────────────────────────────

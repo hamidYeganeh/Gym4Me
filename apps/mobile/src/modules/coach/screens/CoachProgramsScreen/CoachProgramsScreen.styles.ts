@@ -5,7 +5,7 @@ export const coachProgramsScreenStyles = {
   introTitle: "tracking-tight text-foreground",
   introSubtitle: "text-muted",
   list: "flex flex-col gap-4",
-  card: "flex flex-col gap-3 rounded-[24px] border border-border bg-surface p-4",
+  card: "flex flex-col gap-3 rounded-[24px] border-0 bg-surface p-4 shadow-sm shadow-foreground/5",
   cardTop: "flex items-start justify-between gap-2",
   cardTitle: "text-foreground",
   cardFocus: "text-muted",
@@ -14,9 +14,9 @@ export const coachProgramsScreenStyles = {
   metaIcon: "shrink-0 text-muted",
   updated: "text-muted",
   empty:
-    "flex flex-col items-center gap-2 rounded-[24px] border border-border bg-surface px-6 py-10 text-center",
+    "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center shadow-sm shadow-foreground/5",
   emptyTitle: "text-foreground",
   emptyBody: "text-muted",
-  form: "flex flex-col gap-3 rounded-[24px] border border-border bg-surface p-4",
+  form: "flex flex-col gap-3 rounded-[24px] border-0 bg-surface p-4 shadow-sm shadow-foreground/5",
   formActions: "mt-1 flex gap-2",
 } as const;

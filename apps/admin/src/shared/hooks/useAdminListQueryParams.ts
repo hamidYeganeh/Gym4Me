@@ -1,9 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
-type UseAdminListQueryParamsOptions<TFilters extends Record<string, string>> = {
+type AdminListFilterValue = string | readonly string[];
+
+export type AdminListSort = {
+  column: string;
+  direction: "ascending" | "descending";
+};
+
+type UseAdminListQueryParamsOptions<
+  TFilters extends Record<string, AdminListFilterValue>,
+  TSortBy extends string = string,
+> = {
   filterKeys: ReadonlyArray<keyof TFilters & string>;
   defaults?: Partial<{ search: string } & TFilters>;
+  defaultSort?: { column: TSortBy; direction: AdminListSort["direction"] };
   debounceMs?: number;
 };
 
@@ -16,12 +27,14 @@ function readParam(
 }
 
 export function useAdminListQueryParams<
-  TFilters extends Record<string, string>,
+  TFilters extends Record<string, AdminListFilterValue>,
+  TSortBy extends string = string,
 >({
   filterKeys,
   defaults,
+  defaultSort,
   debounceMs = 350,
-}: UseAdminListQueryParamsOptions<TFilters>) {
+}: UseAdminListQueryParamsOptions<TFilters, TSortBy>) {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const search = readParam(searchParams, "search", defaults?.search ?? "");
@@ -56,8 +69,20 @@ export function useAdminListQueryParams<
   const filters = useMemo(() => {
     const next = {} as TFilters;
     for (const key of filterKeys) {
-      const fallback = String(defaults?.[key] ?? "all");
-      next[key] = readParam(searchParams, key, fallback) as TFilters[typeof key];
+      const configuredDefault = defaults?.[key];
+      if (Array.isArray(configuredDefault)) {
+        const value = readParam(searchParams, key);
+        next[key] = (
+          value ? value.split(",").filter(Boolean) : [...configuredDefault]
+        ) as unknown as TFilters[typeof key];
+      } else {
+        const fallback = String(configuredDefault ?? "all");
+        next[key] = readParam(
+          searchParams,
+          key,
+          fallback,
+        ) as TFilters[typeof key];
+      }
     }
     return next;
     // defaults are treated as initial config; callers should pass stable values
@@ -71,9 +96,56 @@ export function useAdminListQueryParams<
     setSearchParams(
       (current) => {
         const params = new URLSearchParams(current);
-        const fallback = String(defaults?.[key] ?? "all");
-        if (!value || value === fallback) params.delete(key);
-        else params.set(key, String(value));
+        const configuredDefault = defaults?.[key];
+        const serialized = Array.isArray(value)
+          ? value.join(",")
+          : String(value ?? "");
+        const fallback = Array.isArray(configuredDefault)
+          ? configuredDefault.join(",")
+          : String(configuredDefault ?? "all");
+        if (!serialized || serialized === fallback) params.delete(key);
+        else params.set(key, serialized);
+        return params;
+      },
+      { replace: true },
+    );
+  };
+
+  const sortBy = (readParam(
+    searchParams,
+    "sortBy",
+    defaultSort?.column ?? "",
+  ) || undefined) as TSortBy | undefined;
+  const sortOrder = readParam(
+    searchParams,
+    "sortOrder",
+    defaultSort?.direction === "ascending" ? "asc" : "desc",
+  ) as "asc" | "desc";
+  const sort: AdminListSort | undefined = sortBy
+    ? {
+        column: sortBy,
+        direction: sortOrder === "desc" ? "descending" : "ascending",
+      }
+    : undefined;
+
+  const setSort = (nextSort: AdminListSort) => {
+    setSearchParams(
+      (current) => {
+        const params = new URLSearchParams(current);
+        if (
+          defaultSort &&
+          nextSort.column === defaultSort.column &&
+          nextSort.direction === defaultSort.direction
+        ) {
+          params.delete("sortBy");
+          params.delete("sortOrder");
+        } else {
+          params.set("sortBy", nextSort.column);
+          params.set(
+            "sortOrder",
+            nextSort.direction === "descending" ? "desc" : "asc",
+          );
+        }
         return params;
       },
       { replace: true },
@@ -85,6 +157,8 @@ export function useAdminListQueryParams<
       (current) => {
         const params = new URLSearchParams(current);
         params.delete("search");
+        params.delete("sortBy");
+        params.delete("sortOrder");
         for (const key of filterKeys) params.delete(key);
         return params;
       },
@@ -99,6 +173,10 @@ export function useAdminListQueryParams<
     setSearchInput,
     filters,
     setFilter,
+    sortBy,
+    sortOrder,
+    sort,
+    setSort,
     resetFilters,
   };
 }

@@ -18,6 +18,10 @@ import {
   paginatedResult,
   resolvePageSize,
 } from '../common/utils/pagination.util';
+import {
+  createSearchFilter,
+  resolveListSort,
+} from '../common/utils/list-query.util';
 import { MediaService } from '../media/media.service';
 import { Banner, BannerDocument } from '../schemas/banner.schema';
 import {
@@ -87,22 +91,37 @@ export class BannersService {
   }
 
   async adminList(query: AdminListBannersQueryDto) {
-    const filter: QueryFilter<BannerDocument> = {};
-    if (query.placement) filter.placement = query.placement;
-    if (query.publishStatus) filter.publishStatus = query.publishStatus;
-    if (query.search) {
-      const pattern = new RegExp(
-        query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
-        'i',
-      );
-      filter.title = pattern;
+    const filter: QueryFilter<BannerDocument> = {
+      ...createSearchFilter(query.search, [
+        'title',
+        'slides.alt',
+        'slides.linkUrl',
+      ]),
+    };
+    if (query.placement) filter.placement = { $in: query.placement };
+    if (query.publishStatus) {
+      filter.publishStatus = { $in: query.publishStatus };
     }
 
     const { page, pageSize } = resolvePageSize(query);
+    const sort = resolveListSort(
+      query,
+      {
+        title: 'title',
+        placement: 'placement',
+        publishStatus: 'publishStatus',
+        order: 'order',
+        startsAt: 'schedule.startsAt',
+        endsAt: 'schedule.endsAt',
+        createdAt: 'createdAt',
+        updatedAt: 'updatedAt',
+      },
+      { updatedAt: -1 },
+    );
     const [items, total] = await Promise.all([
       this.bannerModel
         .find(filter)
-        .sort({ updatedAt: -1 })
+        .sort(sort)
         .skip((page - 1) * pageSize)
         .limit(pageSize)
         .lean(),

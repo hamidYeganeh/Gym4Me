@@ -5,7 +5,10 @@ import type { QueryFilter } from 'mongoose';
 import type { Request } from 'express';
 import { AuditService } from '../audit/audit.service';
 import { AuditAction, Role, UserStatus } from '../common/enums';
-import { escapeRegex } from '../common/utils/escape-regex.util';
+import {
+  createSearchFilter,
+  resolveListSort,
+} from '../common/utils/list-query.util';
 import {
   paginatedResult,
   resolvePageSize,
@@ -22,6 +25,16 @@ import {
   UpdateUserStatusDto,
 } from './dto/admin.dto';
 
+const USER_SORT_FIELDS = {
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  name: 'name.last',
+  phone: 'phone',
+  code: 'code',
+  status: 'status',
+  kycStatus: 'kycStatus',
+} as const;
+
 @Injectable()
 export class AdminUsersService {
   constructor(
@@ -33,28 +46,27 @@ export class AdminUsersService {
   ) {}
 
   async list(query: ListUsersQueryDto) {
-    const filter: QueryFilter<UserDocument> = {};
-    if (query.role) filter.roles = query.role;
-    if (query.status) filter.status = query.status;
-    if (query.kycStatus) filter.kycStatus = query.kycStatus;
-    if (query.search) {
-      const rx = new RegExp(escapeRegex(query.search.trim()), 'i');
-      filter.$or = [
-        { phone: rx },
-        { 'name.first': rx },
-        { 'name.last': rx },
-        { code: rx },
-        { referralCode: rx },
-        { nationalId: rx },
-      ];
-    }
+    const filter: QueryFilter<UserDocument> = {
+      ...createSearchFilter(query.search, [
+        'phone',
+        'name.first',
+        'name.last',
+        'code',
+        'referralCode',
+        'nationalId',
+      ]),
+    };
+    if (query.role) filter.roles = { $in: query.role };
+    if (query.status) filter.status = { $in: query.status };
+    if (query.kycStatus) filter.kycStatus = { $in: query.kycStatus };
 
     const { page, pageSize } = resolvePageSize(query);
+    const sort = resolveListSort(query, USER_SORT_FIELDS, { createdAt: -1 });
 
     const [items, total] = await Promise.all([
       this.userModel
         .find(filter)
-        .sort({ createdAt: -1 })
+        .sort(sort)
         .skip((page - 1) * pageSize)
         .limit(pageSize),
       this.userModel.countDocuments(filter),

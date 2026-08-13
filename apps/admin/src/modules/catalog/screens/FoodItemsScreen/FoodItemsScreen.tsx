@@ -1,12 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
-import {
-  Button,
-  Chip,
-  Input,
-  Label,
-  TextField,
-  Typography,
-} from "@heroui/react";
+import { useNavigate } from "react-router-dom";
+import { Button, Chip, Typography } from "@heroui/react";
 import type { FoodItem, FoodItemStatus } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { FilterChip } from "@repo/ui/kit/FilterChip";
@@ -15,11 +9,11 @@ import { useTranslations } from "next-intl";
 import {
   AdminConfirmDialog,
   AdminDataTable,
-  AdminFormDrawer,
   AdminShell,
 } from "@/shared/components";
 import { useAdminInfiniteQuery } from "@/shared/hooks";
 import { adminNutrition } from "@/shared/lib/api";
+import { routes } from "@/shared/lib/routes";
 import { foodItemsScreenVariants } from "./FoodItemsScreen.styles";
 import type { FoodItemsScreenProps } from "./FoodItemsScreen.types";
 
@@ -36,23 +30,13 @@ type FoodTableMeta = {
 
 export function FoodItemsScreen({ className }: FoodItemsScreenProps) {
   const t = useTranslations("Admin.Catalog");
+  const navigate = useNavigate();
   const styles = foodItemsScreenVariants();
 
   const [statusFilter, setStatusFilter] = useState<FoodItemStatus | "all">(
     "all",
   );
   const [search, setSearch] = useState("");
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [editing, setEditing] = useState<FoodItem | null>(null);
-  const [name, setName] = useState("");
-  const [categoryKey, setCategoryKey] = useState("");
-  const [servingLabel, setServingLabel] = useState("");
-  const [calories, setCalories] = useState("");
-  const [protein, setProtein] = useState("");
-  const [carbs, setCarbs] = useState("");
-  const [fat, setFat] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
   const [archiving, setArchiving] = useState<FoodItem | null>(null);
   const [archivePending, setArchivePending] = useState(false);
   const [archiveError, setArchiveError] = useState<string | null>(null);
@@ -89,32 +73,6 @@ export function FoodItemsScreen({ className }: FoodItemsScreenProps) {
     errorFallback: t("food.errorLoad"),
     fetchPage,
   });
-
-  const openCreate = () => {
-    setEditing(null);
-    setName("");
-    setCategoryKey("");
-    setServingLabel("");
-    setCalories("");
-    setProtein("");
-    setCarbs("");
-    setFat("");
-    setSaveError(null);
-    setDrawerOpen(true);
-  };
-
-  const openEdit = (row: FoodItem) => {
-    setEditing(row);
-    setName(row.name);
-    setCategoryKey(row.categoryKey ?? "");
-    setServingLabel(row.servingLabel ?? "");
-    setCalories(row.macros.calories != null ? String(row.macros.calories) : "");
-    setProtein(row.macros.proteinG != null ? String(row.macros.proteinG) : "");
-    setCarbs(row.macros.carbsG != null ? String(row.macros.carbsG) : "");
-    setFat(row.macros.fatG != null ? String(row.macros.fatG) : "");
-    setSaveError(null);
-    setDrawerOpen(true);
-  };
 
   const columns = useMemo(
     () =>
@@ -190,46 +148,11 @@ export function FoodItemsScreen({ className }: FoodItemsScreenProps) {
 
   const meta: FoodTableMeta = {
     actionsClassName: styles.actions(),
-    onEdit: openEdit,
+    onEdit: (row) => navigate(routes.catalogFoodEdit(row.id)),
     onArchive: (row) => {
       setArchiving(row);
       setArchiveError(null);
     },
-  };
-
-  const parseMacro = (value: string) => {
-    const parsed = Number.parseFloat(value);
-    return Number.isFinite(parsed) ? parsed : undefined;
-  };
-
-  const handleSave = async () => {
-    if (!name.trim()) return;
-    setSaving(true);
-    setSaveError(null);
-    const input = {
-      name: name.trim(),
-      categoryKey: categoryKey.trim() || undefined,
-      servingLabel: servingLabel.trim() || undefined,
-      macros: {
-        calories: parseMacro(calories),
-        proteinG: parseMacro(protein),
-        carbsG: parseMacro(carbs),
-        fatG: parseMacro(fat),
-      },
-    };
-    try {
-      if (editing) {
-        await adminNutrition.updateFoodItem(editing.id, input);
-      } else {
-        await adminNutrition.createFoodItem(input);
-      }
-      setDrawerOpen(false);
-      void reload();
-    } catch (err) {
-      setSaveError(err instanceof ApiError ? err.message : t("actionError"));
-    } finally {
-      setSaving(false);
-    }
   };
 
   const handleArchive = async () => {
@@ -277,7 +200,11 @@ export function FoodItemsScreen({ className }: FoodItemsScreenProps) {
                 {status === "all" ? t("filterAll") : status}
               </FilterChip>
             ))}
-            <Button size="sm" variant="primary" onPress={openCreate}>
+            <Button
+              size="sm"
+              variant="primary"
+              onPress={() => navigate(routes.catalogFoodNew)}
+            >
               {t("create")}
             </Button>
             <Button size="sm" variant="ghost" onPress={() => void reload()}>
@@ -306,113 +233,6 @@ export function FoodItemsScreen({ className }: FoodItemsScreenProps) {
           })}
         />
       </div>
-
-      <AdminFormDrawer
-        isOpen={drawerOpen}
-        title={editing ? t("food.editTitle") : t("food.createTitle")}
-        onOpenChange={setDrawerOpen}
-      >
-        <div className={styles.form()}>
-          <TextField
-            className={styles.field()}
-            fullWidth
-            name="name"
-            value={name}
-            onChange={setName}
-          >
-            <Label>{t("food.fields.name")}</Label>
-            <Input />
-          </TextField>
-
-          <TextField
-            className={styles.field()}
-            fullWidth
-            name="categoryKey"
-            value={categoryKey}
-            onChange={setCategoryKey}
-          >
-            <Label>{t("food.fields.categoryKey")}</Label>
-            <Input dir="ltr" />
-          </TextField>
-
-          <TextField
-            className={styles.field()}
-            fullWidth
-            name="servingLabel"
-            value={servingLabel}
-            onChange={setServingLabel}
-          >
-            <Label>{t("food.fields.servingLabel")}</Label>
-            <Input />
-          </TextField>
-
-          <div className={styles.macroGrid()}>
-            <TextField
-              className={styles.field()}
-              fullWidth
-              name="calories"
-              value={calories}
-              onChange={setCalories}
-            >
-              <Label>{t("food.fields.calories")}</Label>
-              <Input dir="ltr" inputMode="decimal" />
-            </TextField>
-            <TextField
-              className={styles.field()}
-              fullWidth
-              name="protein"
-              value={protein}
-              onChange={setProtein}
-            >
-              <Label>{t("food.fields.protein")}</Label>
-              <Input dir="ltr" inputMode="decimal" />
-            </TextField>
-            <TextField
-              className={styles.field()}
-              fullWidth
-              name="carbs"
-              value={carbs}
-              onChange={setCarbs}
-            >
-              <Label>{t("food.fields.carbs")}</Label>
-              <Input dir="ltr" inputMode="decimal" />
-            </TextField>
-            <TextField
-              className={styles.field()}
-              fullWidth
-              name="fat"
-              value={fat}
-              onChange={setFat}
-            >
-              <Label>{t("food.fields.fat")}</Label>
-              <Input dir="ltr" inputMode="decimal" />
-            </TextField>
-          </div>
-
-          {saveError ? (
-            <p className="text-sm text-danger" role="alert">
-              {saveError}
-            </p>
-          ) : null}
-
-          <div className={styles.actions()}>
-            <Button
-              isDisabled={saving || !name.trim()}
-              variant="primary"
-              onPress={() => void handleSave()}
-            >
-              {t("save")}
-            </Button>
-            <Button
-              isDisabled={saving}
-              variant="secondary"
-              onPress={() => setDrawerOpen(false)}
-            >
-              {t("cancel")}
-            </Button>
-          </div>
-        </div>
-      </AdminFormDrawer>
 
       <AdminConfirmDialog
         body={

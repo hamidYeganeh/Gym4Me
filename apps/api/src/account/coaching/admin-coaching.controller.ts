@@ -3,7 +3,11 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums';
 import { CoachingService } from './coaching.service';
-import { AdminListCoachingQueryDto } from './dto/coaching.dto';
+import {
+  AdminListCoachingPackagesQueryDto,
+  AdminListCoachingServicesQueryDto,
+  AdminListCoachingStudentsQueryDto,
+} from './dto/coaching.dto';
 
 /** Platform ops stubs for coaching domain listings. */
 @ApiTags('admin-coaching')
@@ -15,19 +19,19 @@ export class AdminCoachingController {
 
   @Get('services')
   @ApiOperation({ summary: 'List coaching services (admin)' })
-  listServices(@Query() query: AdminListCoachingQueryDto) {
+  listServices(@Query() query: AdminListCoachingServicesQueryDto) {
     return this.coaching.adminListServices(query);
   }
 
   @Get('packages')
   @ApiOperation({ summary: 'List session packages (admin)' })
-  listPackages(@Query() query: AdminListCoachingQueryDto) {
+  listPackages(@Query() query: AdminListCoachingPackagesQueryDto) {
     return this.coaching.adminListPackages(query);
   }
 
   @Get('students')
   @ApiOperation({ summary: 'List coach–student links (admin)' })
-  listStudents(@Query() query: AdminListCoachingQueryDto) {
+  listStudents(@Query() query: AdminListCoachingStudentsQueryDto) {
     return this.coaching.adminListStudents(query);
   }
 

@@ -71,6 +71,7 @@ export default async function RootLayout({
       lang={locale}
       dir="rtl"
       className={`${iranSansX.variable} h-full`}
+      data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
       <body

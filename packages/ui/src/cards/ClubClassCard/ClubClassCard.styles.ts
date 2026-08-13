@@ -6,16 +6,16 @@ export const clubClassCardVariants = tv({
     root: [
       "relative flex flex-col overflow-hidden",
       "text-start whitespace-normal",
+      "shadow-[0_14px_34px_color-mix(in_oklch,var(--foreground)_10%,transparent)]",
     ].join(" "),
     backgroundImage:
       "pointer-events-none absolute inset-0 size-full object-cover select-none",
     overlay: "pointer-events-none absolute inset-0",
     body: "relative z-10 flex h-full min-h-0 flex-col",
     header: "flex min-w-0 flex-col",
-    category: [
-      "inline-flex w-fit items-center border-0",
-      "text-current",
-    ].join(" "),
+    category: ["inline-flex w-fit items-center border-0", "text-current"].join(
+      " ",
+    ),
     categoryIcon: "shrink-0",
     date: "uppercase tracking-wide",
     title: "leading-[1.2] tracking-tight",

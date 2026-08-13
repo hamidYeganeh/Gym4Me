@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Spinner, Table, Typography } from "@heroui/react";
+import { Pagination, Spinner, Table, Typography } from "@heroui/react";
 import {
   flexRender,
   getCoreRowModel,
@@ -11,6 +11,25 @@ import { adminDataTableVariants } from "./AdminDataTable.styles";
 import type { AdminDataTableProps } from "./AdminDataTable.types";
 
 const VIRTUALIZE_FROM = 40;
+
+function paginationItems(page: number, totalPages: number) {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  const items: Array<number | "start" | "end"> = [1];
+  if (page > 3) items.push("start");
+  for (
+    let value = Math.max(2, page - 1);
+    value <= Math.min(totalPages - 1, page + 1);
+    value += 1
+  ) {
+    items.push(value);
+  }
+  if (page < totalPages - 2) items.push("end");
+  items.push(totalPages);
+  return items;
+}
 
 export function AdminDataTable<TData>({
   columns,
@@ -27,6 +46,9 @@ export function AdminDataTable<TData>({
   hasMore = false,
   onLoadMore,
   estimateRowHeight = 56,
+  sort,
+  onSortChange,
+  pagination,
   meta,
   toolbar,
   className,
@@ -51,6 +73,7 @@ export function AdminDataTable<TData>({
       size: 140,
       minSize: 96,
       maxSize: 480,
+      enableSorting: false,
     },
   });
 
@@ -113,21 +136,45 @@ export function AdminDataTable<TData>({
             ref={setScrollRef}
             className={styles.scroll()}
           >
-            <Table.Content aria-label={ariaLabel} className={styles.table()}>
+            <Table.Content
+              aria-label={ariaLabel}
+              className={styles.table()}
+              sortDescriptor={sort}
+              onSortChange={(descriptor) =>
+                onSortChange?.({
+                  column: String(descriptor.column),
+                  direction: descriptor.direction,
+                })
+              }
+            >
               <Table.Header className={styles.header()}>
                 {table.getHeaderGroups()[0]?.headers.map((header) => {
                   const size = header.column.getSize();
                   return (
                     <Table.Column
                       key={header.id}
+                      allowsSorting={header.column.getCanSort()}
                       id={header.id}
                       isRowHeader={header.index === 0}
                       style={{ width: size, minWidth: size }}
                     >
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
+                      {({ sortDirection }) =>
+                        header.column.getCanSort() ? (
+                          <Table.SortableColumnHeader
+                            sortDirection={sortDirection}
+                          >
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
+                          </Table.SortableColumnHeader>
+                        ) : (
+                          flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )
+                        )
+                      }
                     </Table.Column>
                   );
                 })}
@@ -172,6 +219,53 @@ export function AdminDataTable<TData>({
       {!isLoading && data.length > 0 ? (
         <div className={styles.footer()}>
           {summaryLabel ? <Typography>{summaryLabel}</Typography> : <span />}
+          {pagination && pagination.totalPages > 1 ? (
+            <Pagination size="sm">
+              <Pagination.Content>
+                <Pagination.Item>
+                  <Pagination.Previous
+                    isDisabled={pagination.page <= 1}
+                    onPress={() =>
+                      pagination.onPageChange(pagination.page - 1)
+                    }
+                  >
+                    <Pagination.PreviousIcon />
+                    <span>{pagination.previousLabel}</span>
+                  </Pagination.Previous>
+                </Pagination.Item>
+                {paginationItems(
+                  pagination.page,
+                  pagination.totalPages,
+                ).map((item) =>
+                  typeof item === "number" ? (
+                    <Pagination.Item key={item}>
+                      <Pagination.Link
+                        isActive={item === pagination.page}
+                        onPress={() => pagination.onPageChange(item)}
+                      >
+                        {item}
+                      </Pagination.Link>
+                    </Pagination.Item>
+                  ) : (
+                    <Pagination.Item key={item}>
+                      <Pagination.Ellipsis />
+                    </Pagination.Item>
+                  ),
+                )}
+                <Pagination.Item>
+                  <Pagination.Next
+                    isDisabled={pagination.page >= pagination.totalPages}
+                    onPress={() =>
+                      pagination.onPageChange(pagination.page + 1)
+                    }
+                  >
+                    <span>{pagination.nextLabel}</span>
+                    <Pagination.NextIcon />
+                  </Pagination.Next>
+                </Pagination.Item>
+              </Pagination.Content>
+            </Pagination>
+          ) : null}
           {isFetchingMore ? (
             <div className={styles.loadMore()}>
               <Spinner size="sm" />

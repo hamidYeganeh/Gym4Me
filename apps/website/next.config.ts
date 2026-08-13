@@ -39,7 +39,13 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: path.join(appDir, "../.."),
   reactCompiler: true,
   images: {
-    remotePatterns: [apiRemotePattern()],
+    remotePatterns: [
+      apiRemotePattern(),
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+    ],
   },
   transpilePackages: [
     "@repo/api",

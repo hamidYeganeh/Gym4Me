@@ -1,7 +1,6 @@
 import type {
   AdminCreateClubInput,
   Club,
-  ClubOperationalStatus,
   ClubUserReview,
   GeoDirection,
   Paginated,
@@ -386,8 +385,17 @@ export type ClubListQuery = {
   page?: number;
   limit?: number;
   q?: string;
-  lifecycleStatus?: string;
-  operationalStatus?: string;
+  search?: string;
+  lifecycleStatus?: string | readonly string[];
+  operationalStatus?: string | readonly string[];
+  sortBy?:
+    | "name"
+    | "ownerId"
+    | "lifecycleStatus"
+    | "operationalStatus"
+    | "rating"
+    | "createdAt";
+  sortOrder?: "asc" | "desc";
 };
 
 export function filterMockClubs(
@@ -398,24 +406,63 @@ export function filterMockClubs(
   const limit = query.limit ?? 20;
   let filtered = [...items];
 
-  if (query.q?.trim()) {
-    const q = query.q.trim().toLowerCase();
+  const search = query.search ?? query.q;
+  if (search?.trim()) {
+    const q = search.trim().toLowerCase();
     filtered = filtered.filter((c) =>
       c.identity.name.toLowerCase().includes(q),
     );
   }
-  if (query.lifecycleStatus && query.lifecycleStatus !== "all") {
+  const lifecycleStatuses = query.lifecycleStatus
+    ? Array.isArray(query.lifecycleStatus)
+      ? query.lifecycleStatus
+      : [query.lifecycleStatus]
+    : [];
+  if (lifecycleStatuses.length > 0) {
     filtered = filtered.filter(
-      (c) => c.review.status === query.lifecycleStatus,
+      (c) => lifecycleStatuses.includes(c.review.status),
     );
   }
-  if (query.operationalStatus && query.operationalStatus !== "all") {
+  const operationalStatuses = query.operationalStatus
+    ? Array.isArray(query.operationalStatus)
+      ? query.operationalStatus
+      : [query.operationalStatus]
+    : [];
+  if (operationalStatuses.length > 0) {
     filtered = filtered.filter(
-      (c) =>
-        c.operationalStatus ===
-        (query.operationalStatus as ClubOperationalStatus),
+      (c) => operationalStatuses.includes(c.operationalStatus),
     );
   }
+
+  const sortBy = query.sortBy ?? "createdAt";
+  const direction = query.sortOrder === "asc" ? 1 : -1;
+  filtered.sort((first, second) => {
+    const values: Record<
+      NonNullable<ClubListQuery["sortBy"]>,
+      [string | number, string | number]
+    > = {
+      name: [first.identity.name, second.identity.name],
+      ownerId: [first.ownerId, second.ownerId],
+      lifecycleStatus: [first.review.status, second.review.status],
+      operationalStatus: [
+        first.operationalStatus,
+        second.operationalStatus,
+      ],
+      rating: [
+        first.reviewsSummary.average,
+        second.reviewsSummary.average,
+      ],
+      createdAt: [first.createdAt, second.createdAt],
+    };
+    const [left, right] = values[sortBy];
+    const compared =
+      typeof left === "number" && typeof right === "number"
+        ? left - right
+        : String(left).localeCompare(String(right));
+    return compared === 0
+      ? first.id.localeCompare(second.id) * direction
+      : compared * direction;
+  });
 
   const total = filtered.length;
   const start = (page - 1) * limit;

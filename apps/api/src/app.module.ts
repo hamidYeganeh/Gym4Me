@@ -9,6 +9,7 @@ import type Redis from 'ioredis';
 import { join } from 'node:path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AppConfigModule } from './app-config/app-config.module';
 import { AuthModule } from './account/auth/auth.module';
 import { BookingsModule } from './account/bookings/bookings.module';
 import { CalendarModule } from './account/calendar/calendar.module';
@@ -106,6 +107,7 @@ import { WaitlistModule } from './waitlist/waitlist.module';
     OutboxModule,
     NotificationsModule,
     AuditModule,
+    AppConfigModule,
     AnalyticsModule,
     MediaModule,
     BasicsModule,

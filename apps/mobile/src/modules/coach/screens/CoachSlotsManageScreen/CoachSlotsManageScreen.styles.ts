@@ -20,7 +20,7 @@ export const coachSlotsManageScreenStyles = {
   slotBlocked: "border-border bg-default text-muted",
   slotRemove: "text-muted transition-colors hover:text-danger",
   emptyDay: "text-muted",
-  form: "flex flex-col gap-4 rounded-[24px] border border-border bg-surface p-5",
+  form: "flex flex-col gap-4 rounded-[24px] border-0 bg-surface p-5 shadow-sm shadow-foreground/5",
   formTitle: "text-foreground",
   formHint: "text-muted",
   fieldLabel: "px-1 text-muted",

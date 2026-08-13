@@ -7,6 +7,7 @@ import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useHealthMetricsConnect } from "@/shared/lib/health";
+import { useFeatureFlag } from "@/shared/providers/AppConfigProvider";
 import { AthleteMetricsConnectSection } from "../../sections/AthleteMetricsConnectSection";
 import { AthleteMetricsIntroSection } from "../../sections/AthleteMetricsIntroSection";
 import { AthleteMetricsListSection } from "../../sections/AthleteMetricsListSection";
@@ -21,6 +22,8 @@ export function AthleteMetricsScreen({
   const t = useTranslations("FitnessMetrics");
   const router = useRouter();
   const health = useHealthMetricsConnect();
+  const selfTrackingEnabled = useFeatureFlag("athlete.self_tracking");
+  const deviceSyncEnabled = useFeatureFlag("health.device_sync");
 
   return (
     <AppLayout
@@ -47,11 +50,16 @@ export function AthleteMetricsScreen({
           promoImage={promoImage}
           promoImageAlt={t("promoImageAlt")}
           promoTitle={t("promoTitle")}
+          onPromoAction={
+            selfTrackingEnabled
+              ? () => router.push("/athlete/metrics/log")
+              : undefined
+          }
           subtitle={t("subtitle")}
           title={t("title")}
         />
 
-        <AthleteMetricsConnectSection
+        {deviceSyncEnabled ? <AthleteMetricsConnectSection
           actionLabel={
             health.isConnected ? t("connectAgain") : t("connectAction")
           }
@@ -74,7 +82,7 @@ export function AthleteMetricsScreen({
           subtitle={t("connectSubtitle")}
           title={t("connectTitle")}
           unsupportedLabel={t("connectUnsupported")}
-        />
+        /> : null}
 
         <AthleteMetricsListSection
           labels={{

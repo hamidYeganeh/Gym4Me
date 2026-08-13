@@ -8,6 +8,7 @@ export const accountProgressEndpoints = {
   workoutPlans: "/account/progress/workout-plans",
   workoutPlan: (id: string) => `/account/progress/workout-plans/${id}`,
   metrics: "/account/progress/metrics",
+  syncMetrics: "/account/progress/metrics/sync",
   metric: (id: string) => `/account/progress/metrics/${id}`,
   photos: "/account/progress/photos",
   photo: (id: string) => `/account/progress/photos/${id}`,

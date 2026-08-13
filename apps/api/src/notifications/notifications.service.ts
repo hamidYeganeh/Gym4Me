@@ -19,6 +19,10 @@ import {
 import { PushService } from '../common/push/push.service';
 import { SmsService } from '../common/sms/sms.service';
 import {
+  createSearchFilter,
+  resolveListSort,
+} from '../common/utils/list-query.util';
+import {
   DeviceToken,
   DeviceTokenDocument,
 } from '../schemas/device-token.schema';
@@ -32,6 +36,7 @@ import {
 } from '../schemas/notification-template.schema';
 import { UsersService } from '../users/users.service';
 import { DEFAULT_NOTIFICATION_TEMPLATES } from './notification-defaults';
+import { ListTemplatesQueryDto } from './dto/notifications.dto';
 
 export interface DispatchInput {
   userId: string | Types.ObjectId;
@@ -398,17 +403,29 @@ export class NotificationsService implements OnModuleInit {
 
   // ------------------------------------------------- admin template CRUD
 
-  async listTemplates(query: { status?: EntityStatus; search?: string }) {
-    const filter: Record<string, unknown> = {};
-    if (query.status) filter.status = query.status;
-    if (query.search) {
-      const rx = new RegExp(
-        query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
-        'i',
-      );
-      filter.$or = [{ key: rx }, { title: rx }, { body: rx }];
-    }
-    const items = await this.templateModel.find(filter).sort({ key: 1 }).lean();
+  async listTemplates(query: ListTemplatesQueryDto) {
+    const filter: Record<string, unknown> = {
+      ...createSearchFilter(query.search, [
+        'key',
+        'title',
+        'body',
+        'smsTemplateKey',
+      ]),
+    };
+    if (query.status) filter.status = { $in: query.status };
+    const sort = resolveListSort(
+      query,
+      {
+        key: 'key',
+        title: 'title',
+        status: 'status',
+        smsTemplateKey: 'smsTemplateKey',
+        createdAt: 'createdAt',
+        updatedAt: 'updatedAt',
+      },
+      { key: 1 },
+    );
+    const items = await this.templateModel.find(filter).sort(sort).lean();
     return { items: items.map((t) => this.templateToPublic(t)) };
   }
 

@@ -107,6 +107,21 @@ export type Paginated<T> = {
   result: T[];
 };
 
+export type SortOrder = "asc" | "desc";
+
+/** Scalar or repeated/comma-joined value accepted by admin list filters. */
+export type ListQueryFilter<T> = T | readonly T[];
+
+export type ListQuery<TSortBy extends string = string> = {
+  page?: number;
+  page_size?: number;
+  /** @deprecated Prefer `page_size`. */
+  limit?: number;
+  search?: string;
+  sortBy?: TSortBy;
+  sortOrder?: SortOrder;
+};
+
 /** @deprecated Prefer `Paginated<T>` — kept as alias during migration. */
 export type ItemsResponse<T> = Paginated<T>;
 
@@ -121,9 +136,11 @@ export type AuthSession = TokenPair & {
   isNewUser?: boolean;
 };
 
+export type ApiErrorMessage = string | string[] | Record<string, string[]>;
+
 export type ApiErrorBody = {
   statusCode?: number;
-  message?: string | string[];
+  message?: ApiErrorMessage;
   error?: string;
   /** Machine-readable error code, e.g. `KYC_REQUIRED`. */
   code?: string;

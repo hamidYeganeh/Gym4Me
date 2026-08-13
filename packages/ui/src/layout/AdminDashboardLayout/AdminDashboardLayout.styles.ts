@@ -20,9 +20,13 @@ export const adminDashboardLayoutVariants = tv({
     avatar: "size-10 ring-2 ring-accent-foreground/25 sm:size-11",
     main: "flex min-w-0 flex-1 flex-col overflow-hidden rounded-[2rem] bg-surface text-surface-foreground shadow-[0_24px_80px_-40px_rgba(0,0,0,0.35)] sm:rounded-[2.5rem]",
     header:
-      "flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8 sm:py-6",
+      "flex flex-col gap-3 px-5 py-5 sm:px-8 sm:py-6",
     headerSection:
-      "flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-8 sm:py-4",
+      "flex flex-col gap-3 px-5 py-4 sm:px-8 sm:py-4",
+    headerRow:
+      "flex w-full min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between",
+    breadcrumbs: "text-xs text-muted",
+    breadcrumbItem: "outline-none",
     headerActions: "flex items-center gap-2 sm:gap-3",
     greeting:
       "text-2xl font-bold tracking-tight text-foreground sm:text-[1.75rem]",

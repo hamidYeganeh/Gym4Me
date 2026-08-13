@@ -4,8 +4,8 @@ export const articleCardVariants = tv({
   slots: {
     root: [
       "group relative overflow-hidden rounded-[1.75rem]",
-      "border border-border bg-surface text-start text-foreground",
-      "shadow-none transition-colors",
+      "border-0 bg-surface text-start text-foreground",
+      "shadow-sm shadow-foreground/5 transition-colors",
       "hover:bg-surface-secondary",
     ].join(" "),
     pressable: [
@@ -48,7 +48,7 @@ export const articleCardVariants = tv({
       row: {
         root: "w-full",
         pressable: "flex-row gap-4 p-3",
-        cover: "size-[7.5rem] rounded-2xl sm:size-32",
+        cover: "size-[7.5rem] rounded-[1rem] sm:size-32",
         body: "justify-between gap-2 py-0.5 pe-1",
         category:
           "text-[0.7rem] font-bold uppercase tracking-[0.08em] text-foreground/70",

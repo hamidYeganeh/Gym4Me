@@ -1,5 +1,14 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  BadGatewayException,
+  Injectable,
+  Logger,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+
+type KavenegarResponse = {
+  return?: { status?: number; message?: string };
+};
 
 export abstract class SmsService {
   abstract sendOtp(phone: string, code: string): Promise<void>;
@@ -19,11 +28,12 @@ export abstract class SmsService {
 export class MockSmsService extends SmsService {
   private readonly logger = new Logger('MockSms');
 
-  async sendOtp(phone: string, code: string): Promise<void> {
+  sendOtp(phone: string, code: string): Promise<void> {
     this.logger.log(`[OTP] to=${phone} code=${code}`);
+    return Promise.resolve();
   }
 
-  async sendInvite(
+  sendInvite(
     phone: string,
     inviterName: string,
     referralCode: string,
@@ -31,9 +41,10 @@ export class MockSmsService extends SmsService {
     this.logger.log(
       `[INVITE] to=${phone} from=${inviterName} code=${referralCode}`,
     );
+    return Promise.resolve();
   }
 
-  async sendTemplate(
+  sendTemplate(
     phone: string,
     template: string,
     tokens: string[],
@@ -41,6 +52,7 @@ export class MockSmsService extends SmsService {
     this.logger.log(
       `[TEMPLATE] to=${phone} template=${template} tokens=${tokens.join(',')}`,
     );
+    return Promise.resolve();
   }
 }
 
@@ -73,7 +85,9 @@ export class KavenegarSmsService extends SmsService {
     this.debugMode =
       typeof debug === 'boolean'
         ? debug
-        : String(debug ?? 'false').trim().toLowerCase() === 'true';
+        : String(debug ?? 'false')
+            .trim()
+            .toLowerCase() === 'true';
   }
 
   /** API key may contain `+` / `=` — must be path-encoded or Kavenegar returns 404. */
@@ -135,32 +149,12 @@ export class KavenegarSmsService extends SmsService {
     if (tokens[1]) params.set('token2', tokens[1]);
     if (tokens[2]) params.set('token3', tokens[2]);
 
-    const res = await fetch(`${this.apiUrl('verify/lookup.json')}?${params}`, {
-      method: 'GET',
-    });
-    const body = await res.text();
-    let json: { return?: { status?: number; message?: string } };
-    try {
-      json = JSON.parse(body) as {
-        return?: { status?: number; message?: string };
-      };
-    } catch {
-      this.logger.error(`Kavenegar verify failed: ${res.status} ${body}`);
-      throw new Error(`Kavenegar SMS failed (${res.status})`);
-    }
-    const status = json.return?.status;
-    if (!res.ok || (status !== undefined && status !== 200)) {
-      const message = json.return?.message ?? body;
-      this.logger.error(
-        `Kavenegar verify failed: http=${res.status} status=${status}: ${message}`,
-      );
-      if (status === 424) {
-        throw new Error(
-          `Kavenegar OTP template "${template}" not found or not approved yet. Create it in the Kavenegar panel (Verify → Templates) with body: کد تأیید جیم‌فورمی: %token`,
-        );
-      }
-      throw new Error(`Kavenegar SMS failed (${status ?? res.status})`);
-    }
+    await this.request(
+      `${this.apiUrl('verify/lookup.json')}?${params}`,
+      { method: 'GET' },
+      'verify',
+      template,
+    );
   }
 
   private async sendPlain(phone: string, message: string): Promise<void> {
@@ -171,15 +165,64 @@ export class KavenegarSmsService extends SmsService {
     });
     if (this.sender) params.set('sender', this.sender);
 
-    const res = await fetch(this.apiUrl('sms/send.json'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: params.toString(),
-    });
-    if (!res.ok) {
-      const body = await res.text();
-      this.logger.error(`Kavenegar send failed: ${res.status} ${body}`);
-      throw new Error(`Kavenegar SMS failed (${res.status})`);
+    await this.request(
+      this.apiUrl('sms/send.json'),
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params.toString(),
+      },
+      'send',
+    );
+  }
+
+  private async request(
+    url: string,
+    init: RequestInit,
+    operation: 'verify' | 'send',
+    template?: string,
+  ): Promise<void> {
+    let res: Response;
+    try {
+      res = await fetch(url, init);
+    } catch (error) {
+      this.logger.error(`Kavenegar ${operation} request failed`, error);
+      throw new BadGatewayException('SMS provider is unreachable');
     }
+
+    const body = await res.text();
+    let json: KavenegarResponse;
+    try {
+      json = JSON.parse(body) as KavenegarResponse;
+    } catch {
+      this.logger.error(
+        `Kavenegar ${operation} failed: http=${res.status} invalid response`,
+      );
+      throw new BadGatewayException(
+        'SMS provider returned an invalid response',
+      );
+    }
+
+    const status = json.return?.status;
+    if (res.ok && (status === undefined || status === 200)) return;
+
+    const message = json.return?.message ?? 'Unknown Kavenegar error';
+    this.logger.error(
+      `Kavenegar ${operation} failed: http=${res.status} status=${status}: ${message}`,
+    );
+
+    if (status === 501) {
+      throw new ServiceUnavailableException(
+        'Kavenegar account is in test mode and can only send SMS to the account owner phone. Activate the Kavenegar account for public OTP delivery.',
+      );
+    }
+    if (status === 424 && template) {
+      throw new ServiceUnavailableException(
+        `Kavenegar OTP template "${template}" was not found or is not approved`,
+      );
+    }
+    throw new BadGatewayException(
+      `Kavenegar SMS failed (${status ?? res.status})`,
+    );
   }
 }

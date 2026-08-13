@@ -14,35 +14,35 @@
 [data-theme="light"],
 [data-theme="default"] {
   /* Theme Colors (Light Mode) */
-  --accent: oklch(87.43% 0.2460 148.26);
-  --accent-foreground: oklch(15% 0.0300 148.26);
-  --background: oklch(97.02% 0.0000 148.26);
-  --border: oklch(90.00% 0.0000 148.26);
+  --accent: oklch(87.43% 0.246 148.26);
+  --accent-foreground: oklch(15% 0.03 148.26);
+  --background: oklch(97.02% 0 148.26);
+  --border: oklch(90% 0 148.26);
   --danger: oklch(65.32% 0.2328 13.07);
   --danger-foreground: oklch(99.11% 0 0);
-  --default: oklch(94.00% 0.0000 148.26);
+  --default: oklch(94% 0 148.26);
   --default-foreground: oklch(21.03% 0.0059 148.26);
-  --field-background: oklch(100.00% 0.0000 148.26);
+  --field-background: oklch(100% 0 148.26);
   --field-border: transparent;
-  --field-foreground: oklch(21.03% 0.0000 148.26);
-  --field-placeholder: oklch(55.17% 0.0000 148.26);
-  --focus: oklch(87.43% 0.2460 148.26);
-  --foreground: oklch(21.03% 0.0000 148.26);
-  --muted: oklch(55.17% 0.0000 148.26);
-  --overlay: oklch(100.00% 0.0000 148.26);
-  --overlay-foreground: oklch(21.03% 0.0000 148.26);
-  --scrollbar: oklch(87.10% 0.0000 148.26);
-  --segment: oklch(100.00% 0.0000 148.26);
-  --segment-foreground: oklch(21.03% 0.0000 148.26);
-  --separator: oklch(92.00% 0.0000 148.26);
+  --field-foreground: oklch(21.03% 0 148.26);
+  --field-placeholder: oklch(55.17% 0 148.26);
+  --focus: oklch(87.43% 0.246 148.26);
+  --foreground: oklch(21.03% 0 148.26);
+  --muted: oklch(55.17% 0 148.26);
+  --overlay: oklch(100% 0 148.26);
+  --overlay-foreground: oklch(21.03% 0 148.26);
+  --scrollbar: oklch(87.1% 0 148.26);
+  --segment: oklch(100% 0 148.26);
+  --segment-foreground: oklch(21.03% 0 148.26);
+  --separator: oklch(92% 0 148.26);
   --success: oklch(73.29% 0.1935 138.14);
   --success-foreground: oklch(21.03% 0.0059 138.14);
-  --surface: oklch(100.00% 0.0000 148.26);
-  --surface-foreground: oklch(21.03% 0.0000 148.26);
-  --surface-secondary: oklch(95.24% 0.0000 148.26);
-  --surface-secondary-foreground: oklch(21.03% 0.0000 148.26);
-  --surface-tertiary: oklch(93.73% 0.0000 148.26);
-  --surface-tertiary-foreground: oklch(21.03% 0.0000 148.26);
+  --surface: oklch(100% 0 148.26);
+  --surface-foreground: oklch(21.03% 0 148.26);
+  --surface-secondary: oklch(95.24% 0 148.26);
+  --surface-secondary-foreground: oklch(21.03% 0 148.26);
+  --surface-tertiary: oklch(93.73% 0 148.26);
+  --surface-tertiary-foreground: oklch(21.03% 0 148.26);
   /* Brand uses accent; keep HeroUI `warning` API aliased to accent */
   --warning: var(--accent);
   --warning-foreground: var(--accent-foreground);
@@ -74,8 +74,10 @@
   --stats-foreground: #ffffff;
 
   /* Border Radius */
-  --radius: 0.75rem;
-  --field-radius: 1rem;
+  --radius: 1rem;
+  --field-radius: 1.125rem;
+  --surface-radius: 1.5rem;
+  --surface-radius-compact: 0.875rem;
 
   /*
    * Screen layout grid (design frame 375×812)
@@ -113,35 +115,35 @@
 [data-theme="dark"] {
   color-scheme: dark;
   /* Theme Colors (Dark Mode) */
-  --accent: oklch(87.43% 0.2460 148.26);
-  --accent-foreground: oklch(15% 0.0300 148.26);
-  --background: oklch(12.00% 0.0000 148.26);
-  --border: oklch(28.00% 0.0000 148.26);
-  --danger: oklch(59.40% 0.1967 11.96);
+  --accent: oklch(87.43% 0.246 148.26);
+  --accent-foreground: oklch(15% 0.03 148.26);
+  --background: oklch(12% 0 148.26);
+  --border: oklch(28% 0 148.26);
+  --danger: oklch(59.4% 0.1967 11.96);
   --danger-foreground: oklch(99.11% 0 0);
-  --default: oklch(27.40% 0.0000 148.26);
+  --default: oklch(27.4% 0 148.26);
   --default-foreground: oklch(99.11% 0 0);
-  --field-background: oklch(21.03% 0.0000 148.26);
+  --field-background: oklch(21.03% 0 148.26);
   --field-border: transparent;
-  --field-foreground: oklch(99.11% 0.0000 148.26);
-  --field-placeholder: oklch(70.50% 0.0000 148.26);
-  --focus: oklch(87.43% 0.2460 148.26);
-  --foreground: oklch(99.11% 0.0000 148.26);
-  --muted: oklch(70.50% 0.0000 148.26);
-  --overlay: oklch(21.03% 0.0000 148.26);
-  --overlay-foreground: oklch(99.11% 0.0000 148.26);
-  --scrollbar: oklch(70.50% 0.0000 148.26);
-  --segment: oklch(39.64% 0.0000 148.26);
-  --segment-foreground: oklch(99.11% 0.0000 148.26);
-  --separator: oklch(25.00% 0.0000 148.26);
+  --field-foreground: oklch(99.11% 0 148.26);
+  --field-placeholder: oklch(70.5% 0 148.26);
+  --focus: oklch(87.43% 0.246 148.26);
+  --foreground: oklch(99.11% 0 148.26);
+  --muted: oklch(70.5% 0 148.26);
+  --overlay: oklch(21.03% 0 148.26);
+  --overlay-foreground: oklch(99.11% 0 148.26);
+  --scrollbar: oklch(70.5% 0 148.26);
+  --segment: oklch(39.64% 0 148.26);
+  --segment-foreground: oklch(99.11% 0 148.26);
+  --separator: oklch(25% 0 148.26);
   --success: oklch(73.29% 0.1935 138.14);
   --success-foreground: oklch(21.03% 0.0059 138.14);
-  --surface: oklch(21.03% 0.0000 148.26);
-  --surface-foreground: oklch(99.11% 0.0000 148.26);
-  --surface-secondary: oklch(25.70% 0.0000 148.26);
-  --surface-secondary-foreground: oklch(99.11% 0.0000 148.26);
-  --surface-tertiary: oklch(27.21% 0.0000 148.26);
-  --surface-tertiary-foreground: oklch(99.11% 0.0000 148.26);
+  --surface: oklch(21.03% 0 148.26);
+  --surface-foreground: oklch(99.11% 0 148.26);
+  --surface-secondary: oklch(25.7% 0 148.26);
+  --surface-secondary-foreground: oklch(99.11% 0 148.26);
+  --surface-tertiary: oklch(27.21% 0 148.26);
+  --surface-tertiary-foreground: oklch(99.11% 0 148.26);
   /* Brand uses accent; keep HeroUI `warning` API aliased to accent */
   --warning: var(--accent);
   --warning-foreground: var(--accent-foreground);
@@ -155,7 +157,11 @@
   --map-building: var(--default);
   --map-building-elevated: var(--border);
   --map-road: color-mix(in oklab, var(--foreground) 92%, var(--background));
-  --map-road-muted: color-mix(in oklab, var(--foreground) 86%, var(--background));
+  --map-road-muted: color-mix(
+    in oklab,
+    var(--foreground) 86%,
+    var(--background)
+  );
   --map-highlight: var(--foreground);
   /* Strip Carto Dark Matter blue cast → neutral SVG greys */
   --map-tile-filter: grayscale(1) brightness(0.92) contrast(1.06);
@@ -211,6 +217,17 @@
   grid-template-columns: repeat(var(--screen-columns), minmax(0, 1fr));
   column-gap: var(--screen-gutter);
   row-gap: var(--screen-gutter);
+}
+
+@utility app-surface {
+  border-radius: var(--surface-radius);
+  background: var(--surface);
+  box-shadow: 0 12px 32px color-mix(in oklch, var(--foreground) 6%, transparent);
+}
+
+@utility app-surface-compact {
+  border-radius: var(--surface-radius-compact);
+  background: var(--surface);
 }
 
 /*

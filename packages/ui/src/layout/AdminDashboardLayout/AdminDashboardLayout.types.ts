@@ -28,11 +28,17 @@ export type AdminDashboardNavItem = {
   icon: ReactNode;
 };
 
+export type AdminDashboardBreadcrumb = {
+  label: string;
+  onPress?: () => void;
+};
+
 export type AdminDashboardLabels = {
   greeting: string;
   searchPlaceholder: string;
   searchAriaLabel: string;
   filtersAriaLabel: string;
+  breadcrumbsAriaLabel: string;
   navAriaLabel: string;
   themeToLight: string;
   themeToDark: string;
@@ -50,6 +56,7 @@ export type AdminDashboardLayoutProps = {
   onAvatarPress?: () => void;
   avatarSrc?: string;
   notificationCount?: number;
+  breadcrumbs?: AdminDashboardBreadcrumb[];
   /** Replaces the default greeting + search header content. */
   header?: ReactNode;
   className?: string;

@@ -1,4 +1,5 @@
 import {
+  IsEnum,
   IsIn,
   IsInt,
   IsOptional,
@@ -8,7 +9,13 @@ import {
   Min,
 } from 'class-validator';
 import { ClubLifecycleStatus, VerificationStatus } from '../../common/enums';
-import { Type } from 'class-transformer';
+import { Transform, type TransformFnParams, Type } from 'class-transformer';
+import { toStringArray } from '../../common/utils/list-query.util';
+
+function toQueueStatusArray(params: TransformFnParams): string[] | undefined {
+  const values = toStringArray(params);
+  return values?.includes('all') ? [] : values;
+}
 
 export class ReviewVerificationDto {
   @IsIn(['approve', 'reject'])
@@ -20,11 +27,7 @@ export class ReviewVerificationDto {
   reviewNote?: string;
 }
 
-export class ListCoachVerificationsQueryDto {
-  @IsOptional()
-  @IsIn([...Object.values(VerificationStatus), 'all'])
-  status?: VerificationStatus | 'all';
-
+class ReviewQueueQueryDto {
   @IsOptional()
   @Type(() => Number)
   @IsInt()
@@ -37,23 +40,39 @@ export class ListCoachVerificationsQueryDto {
   @Min(1)
   @Max(100)
   limit?: number = 20;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  page_size?: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  search?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  sortBy?: string;
+
+  @IsOptional()
+  @IsIn(['asc', 'desc'])
+  sortOrder?: 'asc' | 'desc';
 }
 
-export class ListClubReviewsQueryDto {
+export class ListCoachVerificationsQueryDto extends ReviewQueueQueryDto {
   @IsOptional()
-  @IsIn([...Object.values(ClubLifecycleStatus), 'all'])
-  status?: ClubLifecycleStatus | 'all';
+  @Transform(toQueueStatusArray)
+  @IsEnum(VerificationStatus, { each: true })
+  status?: VerificationStatus[];
+}
 
+export class ListClubReviewsQueryDto extends ReviewQueueQueryDto {
   @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  page?: number = 1;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  @Max(100)
-  limit?: number = 20;
+  @Transform(toQueueStatusArray)
+  @IsEnum(ClubLifecycleStatus, { each: true })
+  status?: ClubLifecycleStatus[];
 }

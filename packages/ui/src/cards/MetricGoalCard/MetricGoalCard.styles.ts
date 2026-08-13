@@ -4,12 +4,12 @@ import { tv } from "tailwind-variants";
 export const metricGoalCardVariants = tv({
   slots: {
     root: [
-      "flex flex-col gap-4 rounded-2xl border border-border bg-surface",
-      "px-4 py-5 text-start",
+      "flex flex-col gap-4 rounded-[1.25rem] border-0 bg-surface",
+      "px-4 py-5 text-start shadow-sm shadow-foreground/5",
     ].join(" "),
     header: "flex items-center gap-3",
     iconWrap:
-      "flex size-11 shrink-0 items-center justify-center rounded-full bg-stats-orange/15 text-stats-orange",
+      "flex size-11 shrink-0 items-center justify-center rounded-[0.875rem] bg-stats-orange/15 text-stats-orange",
     goalMeta: "flex min-w-0 flex-col gap-0.5",
     goalValue: "text-[22px] leading-none tracking-tight text-foreground",
     goalLabel: "text-sm text-muted",

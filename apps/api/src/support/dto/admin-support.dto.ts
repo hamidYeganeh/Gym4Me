@@ -1,7 +1,9 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
+  IsArray,
   IsEnum,
   IsInt,
+  IsIn,
   IsOptional,
   IsString,
   MaxLength,
@@ -15,26 +17,42 @@ import {
   SupportTicketPriority,
   SupportTicketStatus,
 } from '../../common/enums';
+import { toStringArray } from '../../common/utils/list-query.util';
 import { PaginationQueryDto } from '../../admin/dto/admin.dto';
 
 export class AdminListTicketsQueryDto extends PaginationQueryDto {
   @IsOptional()
-  @IsEnum(SupportTicketStatus)
-  status?: SupportTicketStatus;
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(SupportTicketStatus, { each: true })
+  status?: SupportTicketStatus[];
 
   @IsOptional()
-  @IsEnum(SupportTicketCategory)
-  category?: SupportTicketCategory;
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(SupportTicketCategory, { each: true })
+  category?: SupportTicketCategory[];
 
   @IsOptional()
-  @IsEnum(SupportTicketPriority)
-  priority?: SupportTicketPriority;
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(SupportTicketPriority, { each: true })
+  priority?: SupportTicketPriority[];
 
   /** Matches ticketNumber or subject. */
   @IsOptional()
   @IsString()
   @MaxLength(60)
   search?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  sortBy?: string;
+
+  @IsOptional()
+  @IsIn(['asc', 'desc'])
+  sortOrder?: 'asc' | 'desc';
 }
 
 export class AdminUpdateTicketDto {
@@ -109,15 +127,28 @@ export class UpdateFaqDto {
 
 export class AdminListFaqQueryDto extends PaginationQueryDto {
   @IsOptional()
-  @IsEnum(PublishStatus)
-  publishStatus?: PublishStatus;
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(PublishStatus, { each: true })
+  publishStatus?: PublishStatus[];
 
   @IsOptional()
-  @IsEnum(FaqAudience)
-  audience?: FaqAudience;
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(FaqAudience, { each: true })
+  audience?: FaqAudience[];
 
   @IsOptional()
   @IsString()
   @MaxLength(60)
   search?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  sortBy?: string;
+
+  @IsOptional()
+  @IsIn(['asc', 'desc'])
+  sortOrder?: 'asc' | 'desc';
 }

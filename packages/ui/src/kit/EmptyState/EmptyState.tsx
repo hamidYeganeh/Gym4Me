@@ -130,7 +130,9 @@ export function EmptyState({
               variant="ghost"
             >
               {suggestion.icon ? (
-                <span className={slots.suggestionIcon()}>{suggestion.icon}</span>
+                <span className={slots.suggestionIcon()}>
+                  {suggestion.icon}
+                </span>
               ) : null}
               {suggestion.label}
             </Button>
@@ -158,10 +160,16 @@ export function EmptyStateSkeleton({
       role="status"
     >
       {layout === "media" ? (
-        <Skeleton aria-hidden className="mb-6 aspect-square w-full max-w-[14rem] rounded-[2rem]" />
+        <Skeleton
+          aria-hidden
+          className="mb-6 aspect-square w-full max-w-[14rem] rounded-[2rem]"
+        />
       ) : null}
       {layout === "icon" ? (
-        <Skeleton aria-hidden className="mb-6 size-20 rounded-full sm:size-24" />
+        <Skeleton
+          aria-hidden
+          className="mb-6 size-20 rounded-[1.75rem] sm:size-24 sm:rounded-[2rem]"
+        />
       ) : null}
       {layout === "compact" ? (
         <Skeleton aria-hidden className="mb-4 h-8 w-44 rounded-full" />

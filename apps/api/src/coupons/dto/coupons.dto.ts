@@ -1,8 +1,10 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
+  IsArray,
   IsDateString,
   IsEnum,
   IsInt,
+  IsIn,
   IsMongoId,
   IsNotEmpty,
   IsNumber,
@@ -15,6 +17,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { EntityStatus } from '../../common/enums';
+import { toStringArray } from '../../common/utils/list-query.util';
 import { CouponDiscountType } from '../../schemas/coupon.schema';
 
 export class CouponDiscountDto {
@@ -115,8 +118,10 @@ export class UpdateCouponDto {
 
 export class ListCouponsQueryDto {
   @IsOptional()
-  @IsEnum(EntityStatus)
-  status?: EntityStatus;
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(EntityStatus, { each: true })
+  status?: EntityStatus[];
 
   @IsOptional()
   @IsMongoId()
@@ -126,6 +131,15 @@ export class ListCouponsQueryDto {
   @IsString()
   @MaxLength(80)
   search?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  sortBy?: string;
+
+  @IsOptional()
+  @IsIn(['asc', 'desc'])
+  sortOrder?: 'asc' | 'desc';
 }
 
 export class PreviewCouponDto {

@@ -13,8 +13,8 @@ export const metricHistoryItemVariants = tv({
     deleteIcon: "size-6",
     panel: [
       "relative z-10 flex w-full cursor-grab items-center gap-3",
-      "rounded-[22px] border border-border bg-surface px-3.5 py-3.5",
-      "text-start shadow-none active:cursor-grabbing",
+      "rounded-[22px] border-0 bg-surface px-3.5 py-3.5",
+      "text-start shadow-sm shadow-foreground/5 active:cursor-grabbing",
       "touch-pan-y select-none",
     ].join(" "),
     iconWrap:

@@ -43,7 +43,7 @@ export function createClubsTableColumns(labels: ClubsTableLabels) {
       id: "name",
       header: labels.columns.name,
       size: 200,
-      enableSorting: false,
+      enableSorting: true,
       cell: (info) => (
         <span className="block truncate font-medium">{info.getValue()}</span>
       ),
@@ -51,7 +51,7 @@ export function createClubsTableColumns(labels: ClubsTableLabels) {
     columnHelper.accessor("ownerId", {
       header: labels.columns.owner,
       size: 160,
-      enableSorting: false,
+      enableSorting: true,
       cell: (info) => (
         <span className="block truncate text-sm text-muted">
           {ownerLabel(info.getValue())}
@@ -79,10 +79,10 @@ export function createClubsTableColumns(labels: ClubsTableLabels) {
       },
     }),
     columnHelper.accessor((row) => row.review.status, {
-      id: "lifecycle",
+      id: "lifecycleStatus",
       header: labels.columns.lifecycle,
       size: 120,
-      enableSorting: false,
+      enableSorting: true,
       cell: (info) => (
         <Chip color={lifecycleColor(info.getValue())} size="sm" variant="soft">
           {labels.lifecycle(info.getValue())}
@@ -92,7 +92,7 @@ export function createClubsTableColumns(labels: ClubsTableLabels) {
     columnHelper.accessor("operationalStatus", {
       header: labels.columns.operational,
       size: 100,
-      enableSorting: false,
+      enableSorting: true,
       cell: (info) => (
         <Chip
           color={info.getValue() === "active" ? "success" : "danger"}
@@ -104,10 +104,10 @@ export function createClubsTableColumns(labels: ClubsTableLabels) {
       ),
     }),
     columnHelper.accessor((row) => row.reviewsSummary, {
-      id: "reviews",
+      id: "rating",
       header: labels.columns.reviews,
       size: 90,
-      enableSorting: false,
+      enableSorting: true,
       cell: (info) => {
         const summary = info.getValue();
         if (!summary.count) return "—";
@@ -121,7 +121,7 @@ export function createClubsTableColumns(labels: ClubsTableLabels) {
     columnHelper.accessor("createdAt", {
       header: labels.columns.createdAt,
       size: 120,
-      enableSorting: false,
+      enableSorting: true,
       cell: (info) => formatAdminDate(info.getValue()),
     }),
     columnHelper.display({

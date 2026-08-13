@@ -19,7 +19,15 @@ export type RequestOptions = {
   body?: unknown;
   /** Multipart body — Content-Type is left unset so the boundary is set by fetch. */
   formData?: FormData;
-  query?: Record<string, string | number | boolean | undefined | null>;
+  query?: Record<
+    string,
+    | string
+    | number
+    | boolean
+    | readonly (string | number | boolean)[]
+    | undefined
+    | null
+  >;
   headers?: HeadersInit;
   /** Skip Authorization header even if a token exists. */
   public?: boolean;
@@ -190,7 +198,10 @@ export class ApiClient {
     if (query) {
       for (const [key, value] of Object.entries(query)) {
         if (value === undefined || value === null) continue;
-        url.searchParams.set(key, String(value));
+        url.searchParams.set(
+          key,
+          Array.isArray(value) ? value.join(",") : String(value),
+        );
       }
     }
     return url.toString();

@@ -14,6 +14,10 @@ export function createAdminNutritionApi(client: ApiClient) {
       return client.request<FoodItemsPage>(ep.foodItems, { query });
     },
 
+    getFoodItem(id: string) {
+      return client.request<FoodItem>(ep.foodItem(id));
+    },
+
     createFoodItem(input: CreateFoodItemInput) {
       return client.request<FoodItem>(ep.foodItems, {
         method: "POST",

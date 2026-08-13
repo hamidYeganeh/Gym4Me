@@ -1,14 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
-import {
-  Button,
-  Chip,
-  Input,
-  Label,
-  TextArea,
-  TextField,
-  Typography,
-} from "@heroui/react";
-import type { AdminFaqItem, FaqAudience, PublishStatus } from "@repo/api";
+import { useNavigate } from "react-router-dom";
+import { Button, Chip, Typography } from "@heroui/react";
+import type { AdminFaqItem, PublishStatus } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { FilterChip } from "@repo/ui/kit/FilterChip";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
@@ -16,12 +9,12 @@ import { useTranslations } from "next-intl";
 import {
   AdminConfirmDialog,
   AdminDataTable,
-  AdminFormDrawer,
   AdminShell,
 } from "@/shared/components";
 import { useAdminInfiniteQuery } from "@/shared/hooks";
 import { adminSupport } from "@/shared/lib/api";
-import { FAQ_AUDIENCES, PUBLISH_STATUSES } from "../../lib/support-constants";
+import { routes } from "@/shared/lib/routes";
+import { PUBLISH_STATUSES } from "../../lib/support-constants";
 import { faqListScreenVariants } from "./FaqListScreen.styles";
 import type { FaqListScreenProps } from "./FaqListScreen.types";
 
@@ -37,21 +30,13 @@ type FaqTableMeta = {
 
 export function FaqListScreen({ className }: FaqListScreenProps) {
   const t = useTranslations("Admin.Support");
+  const navigate = useNavigate();
   const styles = faqListScreenVariants();
 
   const [statusFilter, setStatusFilter] = useState<PublishStatus | "all">(
     "all",
   );
   const [search, setSearch] = useState("");
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [editing, setEditing] = useState<AdminFaqItem | null>(null);
-  const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState("");
-  const [audience, setAudience] = useState<FaqAudience>("all");
-  const [publishStatus, setPublishStatus] = useState<PublishStatus>("draft");
-  const [order, setOrder] = useState("0");
-  const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<AdminFaqItem | null>(null);
   const [deletePending, setDeletePending] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -88,28 +73,6 @@ export function FaqListScreen({ className }: FaqListScreenProps) {
     errorFallback: t("errorLoad"),
     fetchPage,
   });
-
-  const openCreate = () => {
-    setEditing(null);
-    setQuestion("");
-    setAnswer("");
-    setAudience("all");
-    setPublishStatus("draft");
-    setOrder("0");
-    setSaveError(null);
-    setDrawerOpen(true);
-  };
-
-  const openEdit = (row: AdminFaqItem) => {
-    setEditing(row);
-    setQuestion(row.question);
-    setAnswer(row.answer);
-    setAudience(row.audience);
-    setPublishStatus(row.publishStatus);
-    setOrder(String(row.order));
-    setSaveError(null);
-    setDrawerOpen(true);
-  };
 
   const columns = useMemo(
     () =>
@@ -190,37 +153,11 @@ export function FaqListScreen({ className }: FaqListScreenProps) {
 
   const meta: FaqTableMeta = {
     actionsClassName: styles.actions(),
-    onEdit: openEdit,
+    onEdit: (row) => navigate(routes.supportFaqEdit(row.id)),
     onDelete: (row) => {
       setDeleting(row);
       setDeleteError(null);
     },
-  };
-
-  const handleSave = async () => {
-    if (!question.trim() || !answer.trim()) return;
-    setSaving(true);
-    setSaveError(null);
-    const input = {
-      question: question.trim(),
-      answer: answer.trim(),
-      audience,
-      publishStatus,
-      order: Number.parseInt(order, 10) || 0,
-    };
-    try {
-      if (editing) {
-        await adminSupport.updateFaq(editing.id, input);
-      } else {
-        await adminSupport.createFaq(input);
-      }
-      setDrawerOpen(false);
-      void reload();
-    } catch (err) {
-      setSaveError(err instanceof ApiError ? err.message : t("actionError"));
-    } finally {
-      setSaving(false);
-    }
   };
 
   const handleDelete = async () => {
@@ -266,7 +203,11 @@ export function FaqListScreen({ className }: FaqListScreenProps) {
                 {value === "all" ? t("filterAll") : t(`publishStatus.${value}`)}
               </FilterChip>
             ))}
-            <Button size="sm" variant="primary" onPress={openCreate}>
+            <Button
+              size="sm"
+              variant="primary"
+              onPress={() => navigate(routes.supportFaqNew)}
+            >
               {t("faqActions.create")}
             </Button>
             <Button size="sm" variant="ghost" onPress={() => void reload()}>
@@ -295,102 +236,6 @@ export function FaqListScreen({ className }: FaqListScreenProps) {
           onLoadMore={loadMore}
         />
       </div>
-
-      <AdminFormDrawer
-        isOpen={drawerOpen}
-        title={editing ? t("faqActions.editTitle") : t("faqActions.createTitle")}
-        onOpenChange={setDrawerOpen}
-      >
-        <div className={styles.form()}>
-          <TextField
-            className={styles.field()}
-            fullWidth
-            name="question"
-            value={question}
-            onChange={setQuestion}
-          >
-            <Label>{t("faqColumns.question")}</Label>
-            <Input />
-          </TextField>
-
-          <TextField
-            className={styles.field()}
-            fullWidth
-            name="answer"
-            value={answer}
-            onChange={setAnswer}
-          >
-            <Label>{t("faqFields.answer")}</Label>
-            <TextArea className="min-h-32" />
-          </TextField>
-
-          <div className={styles.field()}>
-            <Label>{t("faqColumns.audience")}</Label>
-            <div className={styles.chips()}>
-              {FAQ_AUDIENCES.map((value) => (
-                <Button
-                  key={value}
-                  size="sm"
-                  variant={audience === value ? "primary" : "secondary"}
-                  onPress={() => setAudience(value)}
-                >
-                  {t(`audience.${value}`)}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          <div className={styles.field()}>
-            <Label>{t("faqColumns.publishStatus")}</Label>
-            <div className={styles.chips()}>
-              {PUBLISH_STATUSES.map((value) => (
-                <Button
-                  key={value}
-                  size="sm"
-                  variant={publishStatus === value ? "primary" : "secondary"}
-                  onPress={() => setPublishStatus(value)}
-                >
-                  {t(`publishStatus.${value}`)}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          <TextField
-            className={styles.field()}
-            fullWidth
-            name="order"
-            value={order}
-            onChange={setOrder}
-          >
-            <Label>{t("faqColumns.order")}</Label>
-            <Input inputMode="numeric" />
-          </TextField>
-
-          {saveError ? (
-            <p className="text-sm text-danger" role="alert">
-              {saveError}
-            </p>
-          ) : null}
-
-          <div className={styles.actions()}>
-            <Button
-              isDisabled={saving || !question.trim() || !answer.trim()}
-              variant="primary"
-              onPress={() => void handleSave()}
-            >
-              {t("faqActions.save")}
-            </Button>
-            <Button
-              isDisabled={saving}
-              variant="secondary"
-              onPress={() => setDrawerOpen(false)}
-            >
-              {t("cancel")}
-            </Button>
-          </div>
-        </div>
-      </AdminFormDrawer>
 
       <AdminConfirmDialog
         body={

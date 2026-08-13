@@ -8,12 +8,13 @@ export function QuickActionCard({
   icon,
   label,
   actionLabel,
+  layout = "tile",
   className,
   tileClassName,
   labelClassName,
   ...props
 }: QuickActionCardProps) {
-  const slots = quickActionCardVariants();
+  const slots = quickActionCardVariants({ layout });
   const ariaLabel =
     actionLabel ?? (typeof label === "string" ? label : undefined);
 
@@ -28,10 +29,10 @@ export function QuickActionCard({
         <span className={slots.icon()}>{icon}</span>
       </span>
       <Typography
-        align="center"
+        align={layout === "row" ? "start" : "center"}
         className={slots.label({ className: labelClassName })}
-        type="body-xs"
-        weight="medium"
+        type={layout === "row" ? "body-sm" : "body-xs"}
+        weight={layout === "row" ? "semibold" : "medium"}
       >
         {label}
       </Typography>

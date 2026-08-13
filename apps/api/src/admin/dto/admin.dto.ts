@@ -26,6 +26,7 @@ import {
   PASSWORD_MESSAGE,
   PASSWORD_PATTERN,
 } from '../../common/utils/password.util';
+import { toStringArray } from '../../common/utils/list-query.util';
 import { IR_PHONE, normalizeIranPhone } from '../../common/utils/phone.util';
 
 export class PaginationQueryDto {
@@ -49,20 +50,37 @@ export class PaginationQueryDto {
   @Min(1)
   @Max(100)
   page_size?: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  search?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  sortBy?: string;
+
+  @IsOptional()
+  @IsIn(['asc', 'desc'])
+  sortOrder?: 'asc' | 'desc';
 }
 
 export class ListUsersQueryDto extends PaginationQueryDto {
   @IsOptional()
-  @IsEnum(Role)
-  role?: Role;
+  @Transform(toStringArray)
+  @IsEnum(Role, { each: true })
+  role?: Role[];
 
   @IsOptional()
-  @IsEnum(UserStatus)
-  status?: UserStatus;
+  @Transform(toStringArray)
+  @IsEnum(UserStatus, { each: true })
+  status?: UserStatus[];
 
   @IsOptional()
-  @IsEnum(KycStatus)
-  kycStatus?: KycStatus;
+  @Transform(toStringArray)
+  @IsEnum(KycStatus, { each: true })
+  kycStatus?: KycStatus[];
 
   /** Matches phone, name, code, or referral code. */
   @IsOptional()
@@ -145,8 +163,9 @@ export class UpdateUserRolesDto {
 
 export class ListKycRequestsQueryDto extends PaginationQueryDto {
   @IsOptional()
-  @IsEnum(KycRequestStatus)
-  status?: KycRequestStatus;
+  @Transform(toStringArray)
+  @IsEnum(KycRequestStatus, { each: true })
+  status?: KycRequestStatus[];
 
   @IsOptional()
   @IsEnum(KycRequestKind)

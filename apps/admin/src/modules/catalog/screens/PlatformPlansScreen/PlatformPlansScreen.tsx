@@ -1,13 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
-import {
-  Button,
-  Chip,
-  Input,
-  Label,
-  TextArea,
-  TextField,
-  Typography,
-} from "@heroui/react";
+import { useNavigate } from "react-router-dom";
+import { Button, Chip, Typography } from "@heroui/react";
 import type { PlatformPlan } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
@@ -15,11 +8,11 @@ import { useTranslations } from "next-intl";
 import {
   AdminConfirmDialog,
   AdminDataTable,
-  AdminFormDrawer,
   AdminShell,
 } from "@/shared/components";
 import { useAdminInfiniteQuery } from "@/shared/hooks";
 import { adminMemberships } from "@/shared/lib/api";
+import { routes } from "@/shared/lib/routes";
 import { platformPlansScreenVariants } from "./PlatformPlansScreen.styles";
 import type { PlatformPlansScreenProps } from "./PlatformPlansScreen.types";
 
@@ -35,18 +28,9 @@ type PlanTableMeta = {
 
 export function PlatformPlansScreen({ className }: PlatformPlansScreenProps) {
   const t = useTranslations("Admin.Catalog");
+  const navigate = useNavigate();
   const styles = platformPlansScreenVariants();
 
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [editing, setEditing] = useState<PlatformPlan | null>(null);
-  const [code, setCode] = useState("");
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [amount, setAmount] = useState("0");
-  const [periodDays, setPeriodDays] = useState("30");
-  const [features, setFeatures] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
   const [archiving, setArchiving] = useState<PlatformPlan | null>(null);
   const [archivePending, setArchivePending] = useState(false);
   const [archiveError, setArchiveError] = useState<string | null>(null);
@@ -73,30 +57,6 @@ export function PlatformPlansScreen({ className }: PlatformPlansScreenProps) {
     errorFallback: t("plans.errorLoad"),
     fetchPage,
   });
-
-  const openCreate = () => {
-    setEditing(null);
-    setCode("");
-    setName("");
-    setDescription("");
-    setAmount("0");
-    setPeriodDays("30");
-    setFeatures("");
-    setSaveError(null);
-    setDrawerOpen(true);
-  };
-
-  const openEdit = (row: PlatformPlan) => {
-    setEditing(row);
-    setCode(row.code);
-    setName(row.name);
-    setDescription(row.description ?? "");
-    setAmount(String(row.pricing.amount));
-    setPeriodDays(String(row.pricing.periodDays ?? 30));
-    setFeatures((row.features ?? []).join("; "));
-    setSaveError(null);
-    setDrawerOpen(true);
-  };
 
   const columns = useMemo(
     () =>
@@ -166,51 +126,11 @@ export function PlatformPlansScreen({ className }: PlatformPlansScreenProps) {
 
   const meta: PlanTableMeta = {
     actionsClassName: styles.actions(),
-    onEdit: openEdit,
+    onEdit: (row) => navigate(routes.catalogPlanEdit(row.id)),
     onArchive: (row) => {
       setArchiving(row);
       setArchiveError(null);
     },
-  };
-
-  const handleSave = async () => {
-    if (!name.trim() || (!editing && !code.trim())) return;
-    setSaving(true);
-    setSaveError(null);
-    const featureList = features
-      .split(";")
-      .map((item) => item.trim())
-      .filter(Boolean);
-    try {
-      if (editing) {
-        await adminMemberships.updatePlatformPlan(editing.id, {
-          name: name.trim(),
-          description: description.trim() || undefined,
-          pricing: {
-            amount: Number.parseInt(amount, 10) || 0,
-            periodDays: Number.parseInt(periodDays, 10) || 30,
-          },
-          features: featureList,
-        });
-      } else {
-        await adminMemberships.createPlatformPlan({
-          code: code.trim(),
-          name: name.trim(),
-          description: description.trim() || undefined,
-          pricing: {
-            amount: Number.parseInt(amount, 10) || 0,
-            periodDays: Number.parseInt(periodDays, 10) || 30,
-          },
-          features: featureList,
-        });
-      }
-      setDrawerOpen(false);
-      void reload();
-    } catch (err) {
-      setSaveError(err instanceof ApiError ? err.message : t("actionError"));
-    } finally {
-      setSaving(false);
-    }
   };
 
   const handleArchive = async () => {
@@ -245,7 +165,11 @@ export function PlatformPlansScreen({ className }: PlatformPlansScreenProps) {
             {t("plans.subtitle")}
           </Typography>
           <div className={styles.actions()}>
-            <Button size="sm" variant="primary" onPress={openCreate}>
+            <Button
+              size="sm"
+              variant="primary"
+              onPress={() => navigate(routes.catalogPlanNew)}
+            >
               {t("create")}
             </Button>
             <Button size="sm" variant="ghost" onPress={() => void reload()}>
@@ -274,105 +198,6 @@ export function PlatformPlansScreen({ className }: PlatformPlansScreenProps) {
           })}
         />
       </div>
-
-      <AdminFormDrawer
-        isOpen={drawerOpen}
-        title={editing ? t("plans.editTitle") : t("plans.createTitle")}
-        onOpenChange={setDrawerOpen}
-      >
-        <div className={styles.form()}>
-          {!editing ? (
-            <TextField
-              className={styles.field()}
-              fullWidth
-              name="code"
-              value={code}
-              onChange={setCode}
-            >
-              <Label>{t("plans.fields.code")}</Label>
-              <Input dir="ltr" />
-            </TextField>
-          ) : null}
-
-          <TextField
-            className={styles.field()}
-            fullWidth
-            name="name"
-            value={name}
-            onChange={setName}
-          >
-            <Label>{t("plans.fields.name")}</Label>
-            <Input />
-          </TextField>
-
-          <TextField
-            className={styles.field()}
-            fullWidth
-            name="description"
-            value={description}
-            onChange={setDescription}
-          >
-            <Label>{t("plans.fields.description")}</Label>
-            <TextArea className="min-h-20" />
-          </TextField>
-
-          <TextField
-            className={styles.field()}
-            fullWidth
-            name="amount"
-            value={amount}
-            onChange={setAmount}
-          >
-            <Label>{t("plans.fields.amount")}</Label>
-            <Input dir="ltr" inputMode="numeric" />
-          </TextField>
-
-          <TextField
-            className={styles.field()}
-            fullWidth
-            name="periodDays"
-            value={periodDays}
-            onChange={setPeriodDays}
-          >
-            <Label>{t("plans.fields.periodDays")}</Label>
-            <Input dir="ltr" inputMode="numeric" />
-          </TextField>
-
-          <TextField
-            className={styles.field()}
-            fullWidth
-            name="features"
-            value={features}
-            onChange={setFeatures}
-          >
-            <Label>{t("plans.fields.features")}</Label>
-            <TextArea className="min-h-20" />
-          </TextField>
-
-          {saveError ? (
-            <p className="text-sm text-danger" role="alert">
-              {saveError}
-            </p>
-          ) : null}
-
-          <div className={styles.actions()}>
-            <Button
-              isDisabled={saving || !name.trim() || (!editing && !code.trim())}
-              variant="primary"
-              onPress={() => void handleSave()}
-            >
-              {t("save")}
-            </Button>
-            <Button
-              isDisabled={saving}
-              variant="secondary"
-              onPress={() => setDrawerOpen(false)}
-            >
-              {t("cancel")}
-            </Button>
-          </div>
-        </div>
-      </AdminFormDrawer>
 
       <AdminConfirmDialog
         body={

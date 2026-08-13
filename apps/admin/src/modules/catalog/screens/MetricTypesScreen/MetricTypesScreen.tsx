@@ -1,35 +1,22 @@
 import { useCallback, useMemo, useState } from "react";
-import {
-  Button,
-  Chip,
-  Input,
-  Label,
-  TextField,
-  Typography,
-} from "@heroui/react";
-import type { MetricType, MetricValueKind } from "@repo/api";
+import { useNavigate } from "react-router-dom";
+import { Button, Chip, Typography } from "@heroui/react";
+import type { MetricType } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
 import {
   AdminConfirmDialog,
   AdminDataTable,
-  AdminFormDrawer,
   AdminShell,
 } from "@/shared/components";
 import { useAdminInfiniteQuery } from "@/shared/hooks";
 import { adminProgress } from "@/shared/lib/api";
+import { routes } from "@/shared/lib/routes";
 import { metricTypesScreenVariants } from "./MetricTypesScreen.styles";
 import type { MetricTypesScreenProps } from "./MetricTypesScreen.types";
 
 const PAGE_SIZE = 30;
-const VALUE_KINDS: MetricValueKind[] = [
-  "number",
-  "pair",
-  "range",
-  "ratio",
-  "text",
-];
 
 const columnHelper = createColumnHelper<MetricType>();
 
@@ -41,17 +28,10 @@ type MetricTableMeta = {
 
 export function MetricTypesScreen({ className }: MetricTypesScreenProps) {
   const t = useTranslations("Admin.Catalog");
+  const navigate = useNavigate();
   const styles = metricTypesScreenVariants();
 
   const [search, setSearch] = useState("");
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [editing, setEditing] = useState<MetricType | null>(null);
-  const [key, setKey] = useState("");
-  const [name, setName] = useState("");
-  const [unit, setUnit] = useState("");
-  const [valueKind, setValueKind] = useState<MetricValueKind>("number");
-  const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
   const [archiving, setArchiving] = useState<MetricType | null>(null);
   const [archivePending, setArchivePending] = useState(false);
   const [archiveError, setArchiveError] = useState<string | null>(null);
@@ -87,26 +67,6 @@ export function MetricTypesScreen({ className }: MetricTypesScreenProps) {
     errorFallback: t("metrics.errorLoad"),
     fetchPage,
   });
-
-  const openCreate = () => {
-    setEditing(null);
-    setKey("");
-    setName("");
-    setUnit("");
-    setValueKind("number");
-    setSaveError(null);
-    setDrawerOpen(true);
-  };
-
-  const openEdit = (row: MetricType) => {
-    setEditing(row);
-    setKey(row.key);
-    setName(row.name);
-    setUnit(row.unit ?? "");
-    setValueKind(row.valueKind);
-    setSaveError(null);
-    setDrawerOpen(true);
-  };
 
   const columns = useMemo(
     () =>
@@ -172,39 +132,11 @@ export function MetricTypesScreen({ className }: MetricTypesScreenProps) {
 
   const meta: MetricTableMeta = {
     actionsClassName: styles.actions(),
-    onEdit: openEdit,
+    onEdit: (row) => navigate(routes.catalogMetricEdit(row.id)),
     onArchive: (row) => {
       setArchiving(row);
       setArchiveError(null);
     },
-  };
-
-  const handleSave = async () => {
-    if (!name.trim() || (!editing && !key.trim())) return;
-    setSaving(true);
-    setSaveError(null);
-    try {
-      if (editing) {
-        await adminProgress.updateMetricType(editing.id, {
-          name: name.trim(),
-          unit: unit.trim() || undefined,
-          valueKind,
-        });
-      } else {
-        await adminProgress.createMetricType({
-          key: key.trim(),
-          name: name.trim(),
-          unit: unit.trim() || undefined,
-          valueKind,
-        });
-      }
-      setDrawerOpen(false);
-      void reload();
-    } catch (err) {
-      setSaveError(err instanceof ApiError ? err.message : t("actionError"));
-    } finally {
-      setSaving(false);
-    }
   };
 
   const handleArchive = async () => {
@@ -243,7 +175,11 @@ export function MetricTypesScreen({ className }: MetricTypesScreenProps) {
             {t("metrics.subtitle")}
           </Typography>
           <div className={styles.actions()}>
-            <Button size="sm" variant="primary" onPress={openCreate}>
+            <Button
+              size="sm"
+              variant="primary"
+              onPress={() => navigate(routes.catalogMetricNew)}
+            >
               {t("create")}
             </Button>
             <Button size="sm" variant="ghost" onPress={() => void reload()}>
@@ -272,88 +208,6 @@ export function MetricTypesScreen({ className }: MetricTypesScreenProps) {
           })}
         />
       </div>
-
-      <AdminFormDrawer
-        isOpen={drawerOpen}
-        title={editing ? t("metrics.editTitle") : t("metrics.createTitle")}
-        onOpenChange={setDrawerOpen}
-      >
-        <div className={styles.form()}>
-          {!editing ? (
-            <TextField
-              className={styles.field()}
-              fullWidth
-              name="key"
-              value={key}
-              onChange={setKey}
-            >
-              <Label>{t("metrics.fields.key")}</Label>
-              <Input dir="ltr" />
-            </TextField>
-          ) : null}
-
-          <TextField
-            className={styles.field()}
-            fullWidth
-            name="name"
-            value={name}
-            onChange={setName}
-          >
-            <Label>{t("metrics.fields.name")}</Label>
-            <Input />
-          </TextField>
-
-          <TextField
-            className={styles.field()}
-            fullWidth
-            name="unit"
-            value={unit}
-            onChange={setUnit}
-          >
-            <Label>{t("metrics.fields.unit")}</Label>
-            <Input dir="ltr" />
-          </TextField>
-
-          <div className={styles.field()}>
-            <Label>{t("metrics.fields.valueKind")}</Label>
-            <div className={styles.chips()}>
-              {VALUE_KINDS.map((kind) => (
-                <Button
-                  key={kind}
-                  size="sm"
-                  variant={valueKind === kind ? "primary" : "secondary"}
-                  onPress={() => setValueKind(kind)}
-                >
-                  {kind}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          {saveError ? (
-            <p className="text-sm text-danger" role="alert">
-              {saveError}
-            </p>
-          ) : null}
-
-          <div className={styles.actions()}>
-            <Button
-              isDisabled={saving || !name.trim() || (!editing && !key.trim())}
-              variant="primary"
-              onPress={() => void handleSave()}
-            >
-              {t("save")}
-            </Button>
-            <Button
-              isDisabled={saving}
-              variant="secondary"
-              onPress={() => setDrawerOpen(false)}
-            >
-              {t("cancel")}
-            </Button>
-          </div>
-        </div>
-      </AdminFormDrawer>
 
       <AdminConfirmDialog
         body={

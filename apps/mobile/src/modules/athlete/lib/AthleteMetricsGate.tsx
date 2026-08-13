@@ -2,7 +2,7 @@
 
 import { Spinner } from "@heroui/react";
 import { statsColors } from "@repo/theme";
-import type { MetricType } from "@repo/api";
+import type { MetricType, ProgressMetric } from "@repo/api";
 import { useEffect, useState } from "react";
 import { accountProfile, accountProgress } from "@/shared/lib/api";
 import { useAuth } from "@/shared/providers/AuthProvider";
@@ -91,26 +91,58 @@ function colorForIndex(index: number): string {
 function mapCatalog(
   types: MetricType[],
   preferredKeys: string[],
+  samples: ProgressMetric[],
 ): AthleteMetricDefinition[] {
   const byKey = new Map(types.map((type) => [type.key, type]));
+  const overviewKeys = [
+    "heart_rate",
+    "weight_kg",
+    "hydration",
+    "blood_pressure",
+    "sleep",
+    "nutrition",
+    "mood",
+    "steps",
+  ];
+  const preferredOverviewKeys = preferredKeys.filter((key) =>
+    overviewKeys.includes(key),
+  );
   const orderedKeys =
-    preferredKeys.length > 0
-      ? preferredKeys
-      : types.map((type) => type.key);
+    preferredOverviewKeys.length > 0 ? preferredOverviewKeys : overviewKeys;
+
+  const sampleKey: Record<string, string> = {
+    weight_kg: "weight_kg",
+    hydration: "water_ml",
+    sleep: "sleep_duration_min",
+    steps: "steps",
+    heart_rate: "heart_rate",
+  };
+
+  const editKey: Record<string, string> = {
+    weight_kg: "weight_kg",
+    hydration: "water_ml",
+    sleep: "sleep_duration_min",
+    steps: "steps",
+  };
 
   const mapped: AthleteMetricDefinition[] = [];
   for (const key of orderedKeys) {
     const type = byKey.get(key);
     if (!type) continue;
     const uiId = metricKeyToUiId(type.key);
+    const latest = samples.find(
+      (sample) => sample.metricKey === (sampleKey[type.key] ?? type.key),
+    );
     mapped.push({
       id: uiId as AthleteMetricId,
-      href:
-        uiId === "weight"
-          ? "/athlete/metrics/weight"
-          : "/athlete/metrics",
+      href: editKey[type.key]
+        ? `/athlete/metrics/log?metric=${editKey[type.key]}`
+        : "/athlete/metrics",
       color: colorForIndex(mapped.length),
       chart: chartFromType(type),
+      value: latest?.value.toLocaleString("fa-IR"),
+      unit: latest?.unit ?? undefined,
+      status: latest ? "آخرین ثبت" : undefined,
     });
   }
   return mapped.length > 0 ? mapped : ATHLETE_METRICS;
@@ -133,13 +165,15 @@ export function AthleteMetricsGate() {
     Promise.all([
       accountProgress.listMetricTypes({ page_size: 50 }),
       accountProfile.getAthlete().catch(() => null),
+      accountProgress.listMetrics({ page_size: 200 }).catch(() => null),
     ])
-      .then(([typesPage, athlete]) => {
+      .then(([typesPage, athlete, samplesPage]) => {
         if (cancelled) return;
         setMetrics(
           mapCatalog(
             typesPage.result,
             athlete?.metrics.preferredKeys ?? [],
+            samplesPage?.result ?? [],
           ),
         );
       })

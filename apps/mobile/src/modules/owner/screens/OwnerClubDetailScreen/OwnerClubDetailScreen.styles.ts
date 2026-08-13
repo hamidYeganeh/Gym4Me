@@ -4,18 +4,18 @@ export const ownerClubDetailScreenStyles = {
   intro: "flex flex-col gap-1",
   introTitle: "tracking-tight text-foreground",
   introSubtitle: "text-muted",
-  tabs:
-    "-mx-screen flex gap-2.5 overflow-x-auto px-screen pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+  tabs: "-mx-screen flex gap-2.5 overflow-x-auto px-screen pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
   tabChip: "shrink-0 rounded-full",
   section: "flex flex-col gap-4",
   sectionHeader: "flex items-center justify-between gap-3",
   sectionTitle: "text-foreground",
   statsGrid: "grid grid-cols-2 gap-4",
   chartCard:
-    "flex flex-col gap-3 rounded-[24px] border border-border bg-surface p-4",
+    "flex flex-col gap-3 rounded-[24px] border-0 bg-surface p-4 shadow-sm shadow-foreground/5",
   chartTitle: "text-foreground",
   chart: "w-full",
-  groupCard: "overflow-hidden rounded-[24px] border border-border bg-surface",
+  groupCard:
+    "overflow-hidden rounded-[24px] border-0 bg-surface shadow-sm shadow-foreground/5",
   row: "flex w-full items-center gap-3 px-4 py-3.5",
   rowBody: "flex min-w-0 flex-1 flex-col gap-0.5",
   rowLabel: "text-foreground",
@@ -26,7 +26,6 @@ export const ownerClubDetailScreenStyles = {
   progressRow: "flex items-center justify-between",
   progressLabel: "text-muted",
   progressValue: "text-sm font-medium text-foreground",
-  progressTrack:
-    "block h-1.5 w-full overflow-hidden rounded-full bg-default",
+  progressTrack: "block h-1.5 w-full overflow-hidden rounded-full bg-default",
   progressFill: "block h-full rounded-full bg-accent",
 } as const;

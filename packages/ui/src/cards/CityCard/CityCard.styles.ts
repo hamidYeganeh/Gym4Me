@@ -6,6 +6,7 @@ export const cityCardVariants = tv({
     root: [
       "relative flex flex-col overflow-hidden",
       "bg-surface-tertiary text-foreground",
+      "shadow-[0_14px_34px_color-mix(in_oklch,var(--foreground)_10%,transparent)]",
     ].join(" "),
     media: "absolute inset-0 overflow-hidden",
     image:
@@ -35,8 +36,7 @@ export const cityCardVariants = tv({
         root: "h-[180px] w-[132px] rounded-[20px] p-2.5",
         city: "text-base",
         footer: "gap-1.5",
-        discount:
-          "h-5 px-1.5 [&_.chip__label]:text-[10px]",
+        discount: "h-5 px-1.5 [&_.chip__label]:text-[10px]",
         title: "text-xs",
         action: "min-h-7 px-2 text-[9px]",
       },
@@ -44,8 +44,7 @@ export const cityCardVariants = tv({
         root: "h-[220px] w-[160px] rounded-[24px] p-3",
         city: "text-xl",
         footer: "gap-2",
-        discount:
-          "h-6 px-2 [&_.chip__label]:text-[11px]",
+        discount: "h-6 px-2 [&_.chip__label]:text-[11px]",
         title: "text-sm",
         action: "min-h-8 px-2.5 text-[10px]",
       },
@@ -53,8 +52,7 @@ export const cityCardVariants = tv({
         root: "h-[280px] w-[200px] rounded-[28px] p-4",
         city: "text-2xl",
         footer: "gap-2.5",
-        discount:
-          "h-7 px-2.5 [&_.chip__label]:text-xs",
+        discount: "h-7 px-2.5 [&_.chip__label]:text-xs",
         title: "text-base",
         action: "min-h-9 px-3 text-xs",
       },

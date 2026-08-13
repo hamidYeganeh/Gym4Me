@@ -4,11 +4,12 @@ import { tv } from "tailwind-variants";
 export const notificationCardVariants = tv({
   slots: {
     root: [
-      "flex w-full gap-3 rounded-[28px] border border-border bg-surface",
+      "flex w-full gap-3 rounded-[28px] border-0 bg-surface",
       "p-4 text-start sm:gap-4 sm:rounded-[32px] sm:p-5",
+      "shadow-sm shadow-foreground/5",
     ].join(" "),
     iconWrap: [
-      "flex size-12 shrink-0 items-center justify-center rounded-full",
+      "flex size-12 shrink-0 items-center justify-center rounded-[1rem]",
       "bg-default text-foreground [&_svg]:size-5",
     ].join(" "),
     body: "flex min-w-0 flex-1 flex-col gap-2",
@@ -20,7 +21,7 @@ export const notificationCardVariants = tv({
     track: "h-2 w-full overflow-hidden rounded-full bg-default",
     fill: "h-full rounded-full bg-accent",
     badge: [
-      "h-8 w-fit max-w-full gap-1.5 rounded-full border border-border",
+      "h-8 w-fit max-w-full gap-1.5 rounded-[0.75rem] border-0",
       "bg-transparent px-3 text-foreground",
       "[&_.chip__label]:text-xs [&_.chip__label]:font-semibold",
     ].join(" "),
@@ -41,7 +42,7 @@ export const notificationCardVariants = tv({
     ].join(" "),
     media: [
       "mt-1 min-h-28 w-full overflow-hidden rounded-2xl",
-      "border border-border bg-background",
+      "border-0 bg-background",
     ].join(" "),
   },
   variants: {

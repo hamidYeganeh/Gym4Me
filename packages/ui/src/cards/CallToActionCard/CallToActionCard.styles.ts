@@ -3,11 +3,11 @@ import { tv } from "tailwind-variants";
 
 export const callToActionCardVariants = tv({
   slots: {
-    root: "flex h-[116px] items-center justify-between gap-4 rounded-[32px] p-6 text-start",
-    content: "flex min-w-0 flex-col gap-1",
-    subtitle: "truncate opacity-95",
+    root: "flex min-h-[132px] items-center justify-between gap-4 rounded-[1.5rem] p-5 text-start",
+    content: "flex min-w-0 flex-col gap-1.5",
+    subtitle: "line-clamp-2 leading-snug opacity-95",
     meta: "ms-1 font-normal text-muted",
-    title: "truncate tracking-tight",
+    title: "line-clamp-2 leading-tight tracking-tight",
     badge:
       "mt-2 h-7 w-fit max-w-full border-0 px-3 [&_.chip__label]:text-xs [&_.chip__label]:font-bold",
     actionRing: "hidden",
@@ -22,7 +22,7 @@ export const callToActionCardVariants = tv({
         subtitle: "text-accent-foreground/95",
       },
       outlined: {
-        root: "border-2 border-accent bg-transparent text-accent",
+        root: "border border-accent/70 bg-accent/5 text-accent",
         title: "text-accent",
         subtitle: "text-accent/95",
       },
@@ -46,10 +46,10 @@ export const callToActionCardVariants = tv({
     },
     actionType: {
       plus: {
-        action: "size-12 rounded-full",
+        action: "size-11 rounded-[0.875rem]",
       },
       icon: {
-        action: "size-14 rounded-[18px] ring-4",
+        action: "size-12 rounded-2xl ring-4",
       },
       button: {
         root: "h-auto min-h-[104px] px-7 py-5",
@@ -91,16 +91,14 @@ export const callToActionCardVariants = tv({
       variant: "outlined",
       actionType: "icon",
       class: {
-        action:
-          "bg-accent/10 text-accent ring-accent/20 hover:opacity-90",
+        action: "bg-accent/10 text-accent ring-accent/20 hover:opacity-90",
       },
     },
     {
       variant: "primary",
       actionType: "button",
       class: {
-        action:
-          "bg-accent-foreground text-accent hover:opacity-90",
+        action: "bg-accent-foreground text-accent hover:opacity-90",
       },
     },
     {

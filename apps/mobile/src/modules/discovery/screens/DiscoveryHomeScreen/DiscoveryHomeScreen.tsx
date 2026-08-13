@@ -239,16 +239,20 @@ export function DiscoveryHomeScreen({
           <QuickActionCard
             icon={<MapTrifold size={QUICK_NAV_ICON_SIZE} />}
             label={t("quickMap")}
+            layout="row"
             onPress={() => router.push("/discovery/map")}
           />
           <QuickActionCard
             icon={<Building2 size={QUICK_NAV_ICON_SIZE} />}
             label={t("quickClubs")}
+            layout="row"
             onPress={() => router.push("/discovery/clubs")}
           />
           <QuickActionCard
+            className={styles.quickNavWide}
             icon={<UsersTwo size={QUICK_NAV_ICON_SIZE} />}
             label={t("quickCoaches")}
+            layout="row"
             onPress={() => router.push("/discovery/coaches")}
           />
         </nav>
@@ -407,9 +411,7 @@ export function DiscoveryHomeScreen({
             hint={t("open24Hint")}
             seeAllLabel={t("seeAll")}
             title={t("open24Title")}
-            onSeeAll={() =>
-              router.push("/discovery/clubs?amenitySlug=24h")
-            }
+            onSeeAll={() => router.push("/discovery/clubs?amenitySlug=24h")}
           >
             {open24Clubs.map((club) => (
               <ClubRailCard

@@ -355,6 +355,15 @@ export class NutritionService {
     return this.toFoodItem(item.toObject());
   }
 
+  async adminGetFoodItem(id: string) {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundException('Food item not found');
+    }
+    const item = await this.foodItemModel.findById(id).lean();
+    if (!item) throw new NotFoundException('Food item not found');
+    return this.toFoodItem(item);
+  }
+
   async adminUpdateFoodItem(
     id: string,
     dto: UpdateFoodItemDto,

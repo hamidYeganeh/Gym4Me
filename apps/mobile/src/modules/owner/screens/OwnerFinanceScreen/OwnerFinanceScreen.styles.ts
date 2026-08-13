@@ -4,8 +4,7 @@ export const ownerFinanceScreenStyles = {
   intro: "flex flex-col gap-2",
   introTitle: "tracking-tight text-foreground",
   introSubtitle: "text-muted",
-  hero:
-    "flex flex-col gap-2 rounded-[24px] border border-border bg-surface p-5",
+  hero: "flex flex-col gap-2 rounded-[24px] border-0 bg-surface p-5 shadow-sm shadow-foreground/5",
   heroHeader: "flex items-center gap-2 text-muted",
   heroIcon: "shrink-0 text-accent",
   heroLabel: "text-muted",
@@ -13,13 +12,14 @@ export const ownerFinanceScreenStyles = {
   heroHint: "text-muted",
   statsGrid: "grid grid-cols-2 gap-4",
   chartCard:
-    "flex flex-col gap-3 rounded-[24px] border border-border bg-surface p-4",
+    "flex flex-col gap-3 rounded-[24px] border-0 bg-surface p-4 shadow-sm shadow-foreground/5",
   chartTitle: "text-foreground",
   chart: "w-full",
   section: "flex flex-col gap-3",
   sectionTitle: "text-foreground",
   sectionHint: "text-muted",
-  groupCard: "overflow-hidden rounded-[24px] border border-border bg-surface",
+  groupCard:
+    "overflow-hidden rounded-[24px] border-0 bg-surface shadow-sm shadow-foreground/5",
   row: "flex w-full items-center gap-3 px-4 py-3.5",
   rowBody: "flex min-w-0 flex-1 flex-col gap-0.5",
   rowLabel: "text-foreground",

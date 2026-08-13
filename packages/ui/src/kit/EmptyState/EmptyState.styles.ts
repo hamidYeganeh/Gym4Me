@@ -9,7 +9,7 @@ export const emptyStateVariants = tv({
     illustration:
       "pointer-events-none max-h-56 w-full object-contain select-none sm:max-h-64",
     iconCircle:
-      "mb-6 flex size-20 items-center justify-center rounded-full sm:size-24",
+      "mb-6 flex size-20 items-center justify-center rounded-[1.75rem] sm:size-24 sm:rounded-[2rem]",
     icon: "size-12 shrink-0 sm:size-14",
     badge: [
       "mb-4 h-8 max-w-full gap-1.5 rounded-full border-0 px-3",
@@ -17,10 +17,10 @@ export const emptyStateVariants = tv({
     ].join(" "),
     badgeIcon: "size-3.5 shrink-0",
     copy: "flex w-full max-w-md flex-col items-center gap-2 px-1",
-    title: "tracking-tight text-foreground",
+    title: "max-w-sm tracking-tight text-foreground",
     description: "text-balance text-muted",
     actions: "mt-8 flex w-full max-w-md flex-col items-center gap-3",
-    primaryAction: "rounded-full",
+    primaryAction: "rounded-[1rem]",
     secondaryAction: [
       "h-auto min-h-0 w-fit rounded-md !px-0 !py-0",
       "text-sm font-semibold text-accent shadow-none",
@@ -30,7 +30,7 @@ export const emptyStateVariants = tv({
     suggestions:
       "mt-8 flex w-full max-w-lg flex-wrap items-center justify-center gap-2",
     suggestion: [
-      "h-10 max-w-full gap-1.5 rounded-full border border-border bg-transparent px-4",
+      "h-10 max-w-full gap-1.5 rounded-[0.875rem] border-0 bg-surface px-4",
       "text-foreground shadow-none",
       "hover:bg-surface data-[hovered=true]:bg-surface",
       "data-[pressed=true]:scale-[0.98]",

@@ -1,5 +1,6 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
   IsArray,
   IsDateString,
   IsEnum,
@@ -14,9 +15,11 @@ import {
   MinLength,
   ValidateNested,
 } from 'class-validator';
+import { PaginationQueryDto as CommonPaginationQueryDto } from '../../basics/dto/common.dto';
 import {
   ExerciseStatus,
   MetricTypeStatus,
+  MetricSource,
   MetricValueKind,
   Privacy,
   VerificationStatus,
@@ -24,21 +27,9 @@ import {
   WorkoutPlanStatus,
   WorkoutProgramStatus,
 } from '../../common/enums';
+import { toStringArray } from '../../common/utils/list-query.util';
 
-export class PaginationQueryDto {
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  page?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  @Max(200)
-  page_size?: number;
-}
+export class PaginationQueryDto extends CommonPaginationQueryDto {}
 
 // ── Exercises ─────────────────────────────────────────────────────────────
 
@@ -112,6 +103,14 @@ export class ListExercisesQueryDto extends PaginationQueryDto {
   @IsString()
   @MaxLength(100)
   search?: string;
+}
+
+export class AdminListExercisesQueryDto extends PaginationQueryDto {
+  @IsOptional()
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(ExerciseStatus, { each: true })
+  status?: ExerciseStatus[];
 }
 
 // ── Workout plans ─────────────────────────────────────────────────────────
@@ -273,6 +272,23 @@ export class CreateProgressMetricDto {
   @IsOptional()
   @IsEnum(Privacy)
   privacy?: Privacy;
+
+  @IsOptional()
+  @IsEnum(MetricSource)
+  source?: MetricSource;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(160)
+  sourceRecordId?: string;
+
+  @IsOptional()
+  @IsDateString()
+  periodStartAt?: string;
+
+  @IsOptional()
+  @IsDateString()
+  periodEndAt?: string;
 }
 
 export class UpdateProgressMetricDto {
@@ -311,6 +327,36 @@ export class ListProgressMetricsQueryDto extends PaginationQueryDto {
   @IsString()
   @MaxLength(80)
   metricKey?: string;
+
+  @IsOptional()
+  @IsEnum(MetricSource)
+  source?: MetricSource;
+
+  @IsOptional()
+  @IsDateString()
+  from?: string;
+
+  @IsOptional()
+  @IsDateString()
+  to?: string;
+}
+
+export class SyncProgressMetricItemDto extends CreateProgressMetricDto {
+  @IsEnum(MetricSource)
+  declare source: MetricSource;
+
+  @IsString()
+  @MinLength(1)
+  @MaxLength(160)
+  declare sourceRecordId: string;
+}
+
+export class SyncProgressMetricsDto {
+  @IsArray()
+  @ArrayMaxSize(250)
+  @ValidateNested({ each: true })
+  @Type(() => SyncProgressMetricItemDto)
+  entries!: SyncProgressMetricItemDto[];
 }
 
 // ── Photos ────────────────────────────────────────────────────────────────
@@ -441,6 +487,14 @@ export class ListMetricTypesQueryDto extends PaginationQueryDto {
   @IsString()
   @MaxLength(100)
   search?: string;
+}
+
+export class AdminListMetricTypesQueryDto extends PaginationQueryDto {
+  @IsOptional()
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(MetricTypeStatus, { each: true })
+  status?: MetricTypeStatus[];
 }
 
 // ── Workout programs (templates) ──────────────────────────────────────────

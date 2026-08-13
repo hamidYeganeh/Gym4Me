@@ -7,16 +7,17 @@ export const coachAnalyticsScreenStyles = {
   statsGrid: "grid grid-cols-2 gap-4",
   section: "flex flex-col gap-3",
   sectionTitle: "text-foreground",
-  chartCard: "rounded-[24px] border border-border bg-surface p-4",
+  chartCard:
+    "rounded-[24px] border-0 bg-surface p-4 shadow-sm shadow-foreground/5",
   hoursCard:
-    "flex flex-col gap-4 rounded-[24px] border border-border bg-surface p-4",
+    "flex flex-col gap-4 rounded-[24px] border-0 bg-surface p-4 shadow-sm shadow-foreground/5",
   hourRow: "flex items-center gap-3",
   hourLabel: "w-24 shrink-0 text-muted",
   hourTrack: "h-2 flex-1 overflow-hidden rounded-full bg-default",
   hourFill: "h-full rounded-full bg-accent",
   hourValue: "w-16 shrink-0 text-end text-muted",
   ratingCard:
-    "flex flex-col gap-4 rounded-[24px] border border-border bg-surface p-4",
+    "flex flex-col gap-4 rounded-[24px] border-0 bg-surface p-4 shadow-sm shadow-foreground/5",
   ratingTop: "flex items-center gap-4",
   ratingAverage: "tracking-tight text-foreground",
   ratingMeta: "flex flex-col gap-0.5",

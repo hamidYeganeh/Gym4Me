@@ -8,12 +8,13 @@ export const athleteWalletScreenStyles = {
   statsGrid: "grid grid-cols-2 gap-3",
   sectionTitle: "px-1 text-muted",
   section: "flex flex-col gap-2",
-  trendCard: "rounded-[24px] border border-border bg-surface p-4",
+  trendCard:
+    "rounded-[24px] border-0 bg-surface p-4 shadow-sm shadow-foreground/5",
   groups: "flex flex-col gap-5",
   group: "flex flex-col gap-2",
   groupTitle: "px-1 text-muted",
   groupCard:
-    "overflow-hidden rounded-[24px] border border-border bg-surface",
+    "overflow-hidden rounded-[24px] border-0 bg-surface shadow-sm shadow-foreground/5",
   row: "flex items-center gap-3 px-4 py-3.5",
   rowIconCredit:
     "flex size-10 shrink-0 items-center justify-center rounded-full bg-success/10 text-success",
@@ -26,6 +27,6 @@ export const athleteWalletScreenStyles = {
   rowAmountDebit: "shrink-0 text-end text-foreground",
   divider: "mx-4 h-px bg-border",
   empty:
-    "flex flex-col items-center gap-2 rounded-[24px] border border-border bg-surface px-6 py-10 text-center",
+    "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center shadow-sm shadow-foreground/5",
   emptyBody: "text-muted",
 } as const;

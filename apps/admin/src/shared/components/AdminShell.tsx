@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import type { LocationKind, RefType, SportKind } from "@repo/api";
 import {
   AdminDashboardLayout,
+  type AdminDashboardBreadcrumb,
   type AdminDashboardLabels,
   type AdminDashboardNavId,
 } from "@repo/ui/layout/AdminDashboardLayout";
@@ -52,6 +53,7 @@ type SectionSearch = {
 
 type AdminShellProps = {
   activeNavId: AdminDashboardNavId;
+  breadcrumbs?: AdminDashboardBreadcrumb[];
   children: ReactNode;
   className?: string;
   usersSection?: SectionSearch & {
@@ -93,6 +95,7 @@ type AdminShellProps = {
 
 export function AdminShell({
   activeNavId,
+  breadcrumbs: extraBreadcrumbs = [],
   children,
   className,
   usersSection,
@@ -120,6 +123,7 @@ export function AdminShell({
       searchPlaceholder: t("searchPlaceholder"),
       searchAriaLabel: t("searchAriaLabel"),
       filtersAriaLabel: t("filtersAriaLabel"),
+      breadcrumbsAriaLabel: t("breadcrumbsAriaLabel"),
       navAriaLabel: t("navAriaLabel"),
       themeToLight: t("themeToLight"),
       themeToDark: t("themeToDark"),
@@ -282,14 +286,8 @@ export function AdminShell({
     templates: routes.opsTemplates,
   };
 
-  const handleNav = async (id: AdminDashboardNavId) => {
-    if (id === "logout") {
-      await logout();
-      navigate(routes.signIn, { replace: true });
-      return;
-    }
-
-    const pathByNav: Partial<Record<AdminDashboardNavId, string>> = {
+  const pathByNav = useMemo<Partial<Record<AdminDashboardNavId, string>>>(
+    () => ({
       home: routes.dashboard,
       users: routes.users,
       clubs: routes.clubs,
@@ -306,11 +304,144 @@ export function AdminShell({
       gamification: routes.gamification,
       support: routes.support,
       analytics: routes.analytics,
-    };
+    }),
+    [],
+  );
+
+  const handleNav = async (id: AdminDashboardNavId) => {
+    if (id === "logout") {
+      await logout();
+      navigate(routes.signIn, { replace: true });
+      return;
+    }
 
     const path = pathByNav[id];
     if (path) navigate(path);
   };
+
+  const breadcrumbs = useMemo<AdminDashboardBreadcrumb[]>(() => {
+    const trail: AdminDashboardBreadcrumb[] = [
+      {
+        label: t("nav.home"),
+        onPress:
+          activeNavId === "home" && extraBreadcrumbs.length === 0
+            ? undefined
+            : () => navigate(routes.dashboard),
+      },
+    ];
+
+    const pushCurrentOrLink = (
+      label: string,
+      href: string | undefined,
+      isCurrent: boolean,
+    ) => {
+      trail.push({
+        label,
+        onPress:
+          isCurrent || !href ? undefined : () => navigate(href),
+      });
+    };
+
+    if (activeNavId !== "home") {
+      const hasNested =
+        extraBreadcrumbs.length > 0 ||
+        Boolean(
+          (usersSection && usersSection.activeTabId !== "users") ||
+            (supportSection && supportSection.activeTabId !== "tickets") ||
+            (gamificationSection &&
+              gamificationSection.activeTabId !== "achievements") ||
+            (financeSection && financeSection.activeTabId !== "ledger") ||
+            (catalogSection && catalogSection.activeTabId !== "plans") ||
+            (opsSection && opsSection.activeTabId !== "social") ||
+            locationsSection ||
+            sportsSection ||
+            refsSection,
+        );
+      pushCurrentOrLink(
+        labels.nav[activeNavId],
+        pathByNav[activeNavId],
+        !hasNested,
+      );
+    }
+
+    if (usersSection && usersSection.activeTabId !== "users") {
+      pushCurrentOrLink(
+        t(`Users.tabs.${usersSection.activeTabId}`),
+        usersTabPath[usersSection.activeTabId],
+        extraBreadcrumbs.length === 0,
+      );
+    } else if (supportSection && supportSection.activeTabId !== "tickets") {
+      pushCurrentOrLink(
+        t(`Support.tabs.${supportSection.activeTabId}`),
+        supportTabPath[supportSection.activeTabId],
+        extraBreadcrumbs.length === 0,
+      );
+    } else if (
+      gamificationSection &&
+      gamificationSection.activeTabId !== "achievements"
+    ) {
+      pushCurrentOrLink(
+        t(`Gamification.tabs.${gamificationSection.activeTabId}`),
+        gamificationTabPath[gamificationSection.activeTabId],
+        extraBreadcrumbs.length === 0,
+      );
+    } else if (financeSection && financeSection.activeTabId !== "ledger") {
+      pushCurrentOrLink(
+        t(`Finance.tabs.${financeSection.activeTabId}`),
+        financeTabPath[financeSection.activeTabId],
+        extraBreadcrumbs.length === 0,
+      );
+    } else if (catalogSection && catalogSection.activeTabId !== "plans") {
+      pushCurrentOrLink(
+        t(`Catalog.tabs.${catalogSection.activeTabId}`),
+        catalogTabPath[catalogSection.activeTabId],
+        extraBreadcrumbs.length === 0,
+      );
+    } else if (opsSection && opsSection.activeTabId !== "social") {
+      pushCurrentOrLink(
+        t(`Ops.tabs.${opsSection.activeTabId}`),
+        opsTabPath[opsSection.activeTabId],
+        extraBreadcrumbs.length === 0,
+      );
+    } else if (locationsSection) {
+      pushCurrentOrLink(
+        t(`Basics.locationKinds.${locationsSection.activeTabId}`),
+        routes.locations(locationsSection.activeTabId),
+        extraBreadcrumbs.length === 0,
+      );
+    } else if (sportsSection) {
+      pushCurrentOrLink(
+        t(`Basics.sportKinds.${sportsSection.activeTabId}`),
+        routes.sports(sportsSection.activeTabId),
+        extraBreadcrumbs.length === 0,
+      );
+    } else if (refsSection) {
+      pushCurrentOrLink(
+        t(`Basics.refTypes.${refsSection.activeTabId}`),
+        routes.refs(refsSection.activeTabId),
+        extraBreadcrumbs.length === 0,
+      );
+    }
+
+    trail.push(...extraBreadcrumbs);
+    return trail;
+  }, [
+    activeNavId,
+    catalogSection,
+    extraBreadcrumbs,
+    financeSection,
+    gamificationSection,
+    labels.nav,
+    locationsSection,
+    navigate,
+    opsSection,
+    pathByNav,
+    refsSection,
+    sportsSection,
+    supportSection,
+    t,
+    usersSection,
+  ]);
 
   let header: ReactNode;
 
@@ -534,6 +665,7 @@ export function AdminShell({
   return (
     <AdminDashboardLayout
       activeNavId={activeNavId}
+      breadcrumbs={breadcrumbs}
       className={className}
       header={header}
       labels={labels}

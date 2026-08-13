@@ -9,6 +9,10 @@ import {
   paginatedResult,
   resolvePageSize,
 } from '../common/utils/pagination.util';
+import {
+  createSearchFilter,
+  resolveListSort,
+} from '../common/utils/list-query.util';
 import { FaqItem, FaqItemDocument } from '../schemas/faq-item.schema';
 import {
   AdminListFaqQueryDto,
@@ -42,22 +46,31 @@ export class FaqService {
   }
 
   async adminList(query: AdminListFaqQueryDto) {
-    const filter: QueryFilter<FaqItemDocument> = {};
-    if (query.publishStatus) filter.publishStatus = query.publishStatus;
-    if (query.audience) filter.audience = query.audience;
-    if (query.search) {
-      const pattern = new RegExp(
-        query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
-        'i',
-      );
-      filter.question = pattern;
+    const filter: QueryFilter<FaqItemDocument> = {
+      ...createSearchFilter(query.search, ['question', 'answer']),
+    };
+    if (query.publishStatus) {
+      filter.publishStatus = { $in: query.publishStatus };
     }
+    if (query.audience) filter.audience = { $in: query.audience };
 
     const { page, pageSize } = resolvePageSize(query);
+    const sort = resolveListSort(
+      query,
+      {
+        question: 'question',
+        audience: 'audience',
+        publishStatus: 'publishStatus',
+        order: 'order',
+        createdAt: 'createdAt',
+        updatedAt: 'updatedAt',
+      },
+      { order: 1, createdAt: 1 },
+    );
     const [items, total] = await Promise.all([
       this.faqModel
         .find(filter)
-        .sort({ order: 1, createdAt: 1 })
+        .sort(sort)
         .skip((page - 1) * pageSize)
         .limit(pageSize)
         .lean(),
@@ -70,6 +83,11 @@ export class FaqService {
       page,
       pageSize,
     );
+  }
+
+  async get(id: string) {
+    const item = await this.findItem(id);
+    return this.toPublic(item.toObject());
   }
 
   async create(dto: CreateFaqDto, adminId: string, request: Request) {

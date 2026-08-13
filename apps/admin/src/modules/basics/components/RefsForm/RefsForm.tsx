@@ -1,0 +1,231 @@
+import { useEffect, useMemo, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import {
+  Button,
+  FieldError,
+  Input,
+  Label,
+  Switch,
+  TextField,
+} from "@heroui/react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ApiError } from "@repo/api";
+import { useTranslations } from "next-intl";
+import { AdminFormActions } from "@/shared/components";
+import { resolveFormSubmitIntent } from "@/shared/lib/form-submit-intent";
+import { BasicsMediaField } from "../BasicsMediaField";
+import {
+  createRefsFormSchema,
+  REF_STATUSES,
+  refsFormDefaults,
+  type RefsFormValues,
+} from "./RefsForm.schema";
+import { refsFormVariants } from "./RefsForm.styles";
+import type { RefsFormProps } from "./RefsForm.types";
+
+export function RefsForm({
+  onCancel,
+  onSubmit,
+  initialValues = null,
+  mode = "create",
+  className,
+}: RefsFormProps) {
+  const t = useTranslations("Admin.Basics");
+  const tForm = useTranslations("Admin.Form");
+  const styles = refsFormVariants();
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const isEdit = mode === "edit";
+  const schema = useMemo(
+    () => createRefsFormSchema({ required: tForm("validation.required") }),
+    [tForm],
+  );
+  const form = useForm<RefsFormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: refsFormDefaults,
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      form.reset(initialValues ?? refsFormDefaults);
+      setSubmitError(null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [form, initialValues]);
+
+  const handleSubmit = form.handleSubmit(async (values, event) => {
+    const intent = resolveFormSubmitIntent(event);
+    setSubmitError(null);
+    try {
+      await onSubmit(values, intent);
+      if (intent === "saveAndCreateNew") form.reset(refsFormDefaults);
+    } catch (err) {
+      setSubmitError(
+        err instanceof ApiError ? err.message || t("errorSave") : t("errorSave"),
+      );
+    }
+  });
+
+  return (
+    <form className={styles.form({ className })} onSubmit={handleSubmit}>
+      <Controller
+        control={form.control}
+        name="name"
+        render={({ field, fieldState }) => (
+          <TextField
+            isInvalid={fieldState.invalid}
+            isRequired
+            name={field.name}
+            value={field.value}
+            onBlur={field.onBlur}
+            onChange={field.onChange}
+          >
+            <Label>{t("fields.name")}</Label>
+            <Input ref={field.ref} />
+            <FieldError>{fieldState.error?.message}</FieldError>
+          </TextField>
+        )}
+      />
+      <Controller
+        control={form.control}
+        name="slug"
+        render={({ field, fieldState }) => (
+          <TextField
+            isInvalid={fieldState.invalid}
+            name={field.name}
+            value={field.value}
+            onBlur={field.onBlur}
+            onChange={field.onChange}
+          >
+            <Label>{t("fields.slug")}</Label>
+            <Input ref={field.ref} />
+            <FieldError>{fieldState.error?.message}</FieldError>
+          </TextField>
+        )}
+      />
+      <Controller
+        control={form.control}
+        name="description"
+        render={({ field, fieldState }) => (
+          <TextField
+            isInvalid={fieldState.invalid}
+            name={field.name}
+            value={field.value}
+            onBlur={field.onBlur}
+            onChange={field.onChange}
+          >
+            <Label>{t("fields.description")}</Label>
+            <Input ref={field.ref} />
+            <FieldError>{fieldState.error?.message}</FieldError>
+          </TextField>
+        )}
+      />
+      <Controller
+        control={form.control}
+        name="icon"
+        render={({ field, fieldState }) => (
+          <TextField
+            isInvalid={fieldState.invalid}
+            name={field.name}
+            value={field.value}
+            onBlur={field.onBlur}
+            onChange={field.onChange}
+          >
+            <Label>{t("fields.icon")}</Label>
+            <Input placeholder={t("fields.iconHint")} ref={field.ref} />
+            <FieldError>{fieldState.error?.message}</FieldError>
+          </TextField>
+        )}
+      />
+      <Controller
+        control={form.control}
+        name="coverMediaId"
+        render={({ field }) => (
+          <BasicsMediaField
+            disabled={form.formState.isSubmitting}
+            errorMessage={t("media.error")}
+            hint={t("fields.mediaHint")}
+            label={t("fields.media")}
+            removeLabel={t("media.remove")}
+            retryLabel={t("media.retry")}
+            successMessage={t("media.success")}
+            uploaderButtonLabel={t("media.uploaderButton")}
+            uploaderDescription={t("media.uploaderDescription")}
+            uploaderTitle={t("media.uploaderTitle")}
+            value={field.value}
+            onChange={field.onChange}
+          />
+        )}
+      />
+      <Controller
+        control={form.control}
+        name="status"
+        render={({ field }) => (
+          <div className={styles.field()}>
+            <Label>{t("fields.status")}</Label>
+            <div className={styles.chips()}>
+              {REF_STATUSES.map((status) => (
+                <Button
+                  key={status}
+                  size="sm"
+                  type="button"
+                  variant={field.value === status ? "primary" : "secondary"}
+                  onPress={() => field.onChange(status)}
+                >
+                  {t(`refStatuses.${status}`)}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+      />
+      <Controller
+        control={form.control}
+        name="order"
+        render={({ field, fieldState }) => (
+          <TextField
+            isInvalid={fieldState.invalid}
+            name={field.name}
+            value={field.value}
+            onBlur={field.onBlur}
+            onChange={field.onChange}
+          >
+            <Label>{t("fields.order")}</Label>
+            <Input ref={field.ref} type="number" />
+            <FieldError>{fieldState.error?.message}</FieldError>
+          </TextField>
+        )}
+      />
+      <Controller
+        control={form.control}
+        name="isActive"
+        render={({ field }) => (
+          <Switch isSelected={field.value} onChange={field.onChange}>
+            <Switch.Content>
+              <Switch.Control>
+                <Switch.Thumb />
+              </Switch.Control>
+              {t("fields.isActive")}
+            </Switch.Content>
+          </Switch>
+        )}
+      />
+      {submitError ? (
+        <p className={styles.formError()} role="alert">
+          {submitError}
+        </p>
+      ) : null}
+      <AdminFormActions
+        cancelLabel={t("cancel")}
+        isPending={form.formState.isSubmitting}
+        saveAndCreateNewLabel={tForm("saveAndCreateNew")}
+        saveLabel={tForm("save")}
+        showSaveAndCreateNew={!isEdit}
+        onCancel={onCancel}
+      />
+    </form>
+  );
+}

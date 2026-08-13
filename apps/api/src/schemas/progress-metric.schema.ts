@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-import { Privacy } from '../common/enums';
+import { MetricSource, Privacy } from '../common/enums';
 import { User } from './user.schema';
 
 export type ProgressMetricDocument = HydratedDocument<ProgressMetric>;
@@ -34,6 +34,26 @@ export class ProgressMetric {
   @Prop({ trim: true, maxlength: 500 })
   note?: string;
 
+  @Prop({
+    type: String,
+    enum: MetricSource,
+    required: true,
+    default: MetricSource.MANUAL,
+    index: true,
+  })
+  source!: MetricSource;
+
+  /** Stable identifier supplied by Apple Health / Health Connect / importer. */
+  @Prop({ trim: true, maxlength: 160 })
+  sourceRecordId?: string;
+
+  /** Optional measurement interval for aggregate samples such as sleep/walking. */
+  @Prop({ type: Date })
+  periodStartAt?: Date;
+
+  @Prop({ type: Date })
+  periodEndAt?: Date;
+
   createdAt!: Date;
   updatedAt!: Date;
 }
@@ -42,3 +62,10 @@ export const ProgressMetricSchema =
   SchemaFactory.createForClass(ProgressMetric);
 
 ProgressMetricSchema.index({ athleteUserId: 1, metricKey: 1, recordedAt: -1 });
+ProgressMetricSchema.index(
+  { athleteUserId: 1, source: 1, sourceRecordId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { sourceRecordId: { $type: 'string' } },
+  },
+);

@@ -16,12 +16,13 @@ export const discoveryClubsSlotDetailScreenStyles = {
   ].join(" "),
   titleBlock: "flex flex-col gap-2",
   category: "text-sm font-medium text-muted",
-  title: "text-balance text-[1.65rem] leading-tight tracking-tight text-foreground",
+  title:
+    "text-balance text-[1.65rem] leading-tight tracking-tight text-foreground",
   clubTitle: "text-sm text-muted",
   metaGrid: "grid grid-cols-2 gap-2.5",
   metaCell: [
-    "flex flex-col gap-1.5 rounded-2xl border border-border/50",
-    "bg-surface px-3.5 py-3",
+    "flex flex-col gap-1.5 rounded-[1.25rem] border-0",
+    "bg-surface px-3.5 py-3 shadow-sm shadow-foreground/5",
   ].join(" "),
   metaHeader: "flex items-center gap-1.5",
   metaIcon: "shrink-0 text-muted",
@@ -32,12 +33,12 @@ export const discoveryClubsSlotDetailScreenStyles = {
   bodyText: "text-sm leading-relaxed text-muted",
   upcomingList: "flex w-full flex-col gap-2.5",
   upcomingRow: [
-    "flex w-full flex-1 items-center justify-between gap-3 rounded-2xl",
-    "border border-border/60 bg-surface px-3.5 py-3",
+    "flex w-full flex-1 items-center justify-between gap-3 rounded-[1.25rem]",
+    "border-0 bg-surface px-3.5 py-3 shadow-sm shadow-foreground/5",
   ].join(" "),
   upcomingLeading: "flex min-w-0 flex-1 items-center gap-3",
   upcomingIconWrap: [
-    "flex size-10 shrink-0 items-center justify-center rounded-full",
+    "flex size-10 shrink-0 items-center justify-center rounded-[0.875rem]",
     "bg-default text-accent",
   ].join(" "),
   upcomingMeta: "flex min-w-0 flex-col gap-0.5",

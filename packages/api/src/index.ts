@@ -14,6 +14,7 @@ export {
 } from "./storage";
 export type {
   ApiErrorBody,
+  ApiErrorMessage,
   AuthSession,
   ChoiceGroup,
   ChoiceOption,
@@ -230,6 +231,7 @@ export {
   type AccountProgressApi,
   type Exercise,
   type MetricType,
+  type MetricSource,
   type MetricValueKind,
   type PersonalRecord,
   type ProgressMetric,

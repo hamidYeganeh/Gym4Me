@@ -28,6 +28,8 @@ const LOG_STATUS_KEY: Record<AthleteWorkoutLogStatus, string> = {
 
 export function AthleteWorkoutDetailScreen({
   detail,
+  pending = false,
+  onLogSession,
   className,
 }: AthleteWorkoutDetailScreenProps) {
   const t = useTranslations("AthleteWorkouts");
@@ -72,6 +74,24 @@ export function AthleteWorkoutDetailScreen({
         </section>
 
         <section className="flex flex-col gap-3">
+          {onLogSession ? (
+            <div className="grid grid-cols-2 gap-2 rounded-3xl border border-border bg-surface p-3">
+              <Button
+                isDisabled={pending}
+                onPress={() => void onLogSession("completed")}
+                variant="primary"
+              >
+                ثبت جلسه انجام‌شده
+              </Button>
+              <Button
+                isDisabled={pending}
+                onPress={() => void onLogSession("skipped")}
+                variant="outline"
+              >
+                ثبت جلسه ردشده
+              </Button>
+            </div>
+          ) : null}
           <Typography className={styles.sectionTitle()} type="body-sm">
             {t("logsTitle")}
           </Typography>

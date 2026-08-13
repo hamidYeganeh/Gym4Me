@@ -1,6 +1,8 @@
 import type {
   ClubLifecycleStatus,
   KycStatus,
+  ListQuery,
+  ListQueryFilter,
   VerificationStatus,
 } from "../types";
 import type { Club } from "../account/clubs.dto";
@@ -28,16 +30,29 @@ export type CoachVerificationItem = {
   bio: string | null;
 };
 
-export type ListCoachVerificationsQuery = {
-  page?: number;
-  limit?: number;
-  status?: VerificationStatus | "all";
-};
+export type CoachVerificationsSortBy =
+  | "submittedAt"
+  | "reviewedAt"
+  | "createdAt"
+  | "updatedAt"
+  | "status"
+  | "experienceYears";
 
-export type ListClubReviewsQuery = {
-  page?: number;
-  limit?: number;
-  status?: ClubLifecycleStatus | "all";
+export type ListCoachVerificationsQuery =
+  ListQuery<CoachVerificationsSortBy> & {
+    status?: ListQueryFilter<VerificationStatus | "all">;
+  };
+
+export type ClubVerificationReviewsSortBy =
+  | "submittedAt"
+  | "reviewedAt"
+  | "createdAt"
+  | "updatedAt"
+  | "name"
+  | "status";
+
+export type ListClubReviewsQuery = ListQuery<ClubVerificationReviewsSortBy> & {
+  status?: ListQueryFilter<ClubLifecycleStatus | "all">;
 };
 
 export type ReviewVerificationInput = {

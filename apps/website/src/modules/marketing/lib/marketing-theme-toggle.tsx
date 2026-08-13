@@ -5,7 +5,7 @@ import { Moon, Sun } from "@repo/icons";
 import { useThemeTransition } from "@repo/theme";
 import { useTranslations } from "next-intl";
 
-export function MarketingThemeToggle() {
+export function MarketingThemeToggle({ className }: { className?: string }) {
   const t = useTranslations("MarketingLanding.header");
   const { isDark, mounted, toggleThemeWithTransition } = useThemeTransition();
 
@@ -13,10 +13,13 @@ export function MarketingThemeToggle() {
     <Button
       isIconOnly
       size="lg"
-      variant="ghost"
+      variant="outline"
       aria-label={t("themeToggle")}
       aria-pressed={mounted ? isDark : undefined}
-      className="marketing-theme-toggle rounded-(--radius) text-(--color-header-text,currentColor)"
+      className={
+        className ??
+        "marketing-theme-toggle rounded-(--radius) text-(--color-header-text,currentColor)"
+      }
       onPress={() => {
         void toggleThemeWithTransition();
       }}

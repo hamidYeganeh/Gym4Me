@@ -23,13 +23,12 @@ export const discoveryCoachesReserveScreenStyles = {
   weekButton: "size-10 rounded-full bg-surface-secondary text-foreground",
   weekButtonIcon: "text-foreground",
   locationCard:
-    "flex flex-col gap-1 rounded-2xl border border-separator bg-surface-secondary p-4",
+    "flex flex-col gap-1 rounded-[1.25rem] border-0 bg-surface-secondary p-4",
   locationTitle: "text-foreground",
   locationAddress: "text-muted",
-  remoteHint:
-    "rounded-2xl border border-separator bg-surface-secondary p-4 text-muted",
+  remoteHint: "rounded-[1.25rem] border-0 bg-surface-secondary p-4 text-muted",
   summaryCard:
-    "flex flex-col gap-3 rounded-2xl border border-separator bg-surface-secondary p-4",
+    "flex flex-col gap-3 rounded-[1.25rem] border-0 bg-surface-secondary p-4",
   summaryRow: "flex items-center justify-between gap-3",
   summaryLabel: "text-muted",
   summaryValue: "text-foreground",

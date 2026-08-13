@@ -3,7 +3,10 @@ import { tv } from "tailwind-variants";
 
 export const clubCardVariants = tv({
   slots: {
-    root: "relative flex overflow-hidden rounded-[24px]",
+    root: [
+      "relative flex overflow-hidden rounded-[24px]",
+      "shadow-[0_14px_34px_color-mix(in_oklch,var(--foreground)_10%,transparent)]",
+    ].join(" "),
     media: "absolute inset-0 overflow-hidden",
     image:
       "pointer-events-none absolute inset-0 size-full object-cover select-none",
@@ -42,8 +45,7 @@ export const clubCardVariants = tv({
     divider:
       "bg-border data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full",
     footer: "flex w-full min-w-0 items-end justify-between gap-3",
-    priceGroup:
-      "flex min-w-0 flex-wrap items-baseline gap-1 text-foreground",
+    priceGroup: "flex min-w-0 flex-wrap items-baseline gap-1 text-foreground",
     pricePrefix: "text-xs font-normal text-muted",
     price: "font-semibold text-foreground",
     priceSuffix: "text-xs font-normal text-muted",
@@ -70,7 +72,7 @@ export const clubCardVariants = tv({
         footer: "pt-0.5",
         price: "text-xl leading-none",
         action: [
-          "rounded-lg px-3.5 text-xs font-bold uppercase tracking-wide",
+          "rounded-[0.875rem] px-3.5 text-xs font-bold tracking-wide",
           "[--button-bg:var(--accent)] [--button-fg:var(--accent-foreground)]",
           "[--button-bg-hover:var(--accent)] [--button-bg-pressed:var(--accent)]",
           "bg-accent text-accent-foreground",

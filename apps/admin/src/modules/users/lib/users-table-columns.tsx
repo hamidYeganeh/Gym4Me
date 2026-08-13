@@ -39,7 +39,7 @@ export function createUsersTableColumns(labels: UsersTableLabels) {
       id: "name",
       header: labels.columns.name,
       size: 180,
-      enableSorting: false,
+      enableSorting: true,
       cell: (info) => (
         <span className="block truncate font-medium">{info.getValue()}</span>
       ),
@@ -47,7 +47,7 @@ export function createUsersTableColumns(labels: UsersTableLabels) {
     columnHelper.accessor("phone", {
       header: labels.columns.phone,
       size: 150,
-      enableSorting: false,
+      enableSorting: true,
       cell: (info) => (
         <span className="block truncate tabular-nums" dir="ltr">
           {info.getValue()}
@@ -74,7 +74,7 @@ export function createUsersTableColumns(labels: UsersTableLabels) {
     columnHelper.accessor("status", {
       header: labels.columns.status,
       size: 110,
-      enableSorting: false,
+      enableSorting: true,
       cell: (info) => (
         <Chip color={statusChipColor(info.getValue())} size="sm" variant="soft">
           {labels.status(info.getValue())}
@@ -82,10 +82,10 @@ export function createUsersTableColumns(labels: UsersTableLabels) {
       ),
     }),
     columnHelper.accessor((row) => row.kyc.status, {
-      id: "kyc",
+      id: "kycStatus",
       header: labels.columns.kyc,
       size: 120,
-      enableSorting: false,
+      enableSorting: true,
       cell: (info) => (
         <Chip color={kycChipColor(info.getValue())} size="sm" variant="soft">
           {labels.kyc(info.getValue())}
@@ -95,7 +95,7 @@ export function createUsersTableColumns(labels: UsersTableLabels) {
     columnHelper.accessor("createdAt", {
       header: labels.columns.createdAt,
       size: 120,
-      enableSorting: false,
+      enableSorting: true,
       cell: (info) => (
         <span className="block tabular-nums">{formatAdminDate(info.getValue())}</span>
       ),

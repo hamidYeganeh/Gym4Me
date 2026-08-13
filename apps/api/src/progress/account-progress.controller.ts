@@ -32,6 +32,7 @@ import {
   ListWorkoutLogsQueryDto,
   ListWorkoutPlansQueryDto,
   ListWorkoutProgramsQueryDto,
+  SyncProgressMetricsDto,
   UpdateProgressMetricDto,
   UpdateProgressPhotoDto,
   UpdateWorkoutPlanDto,
@@ -240,6 +241,20 @@ export class AccountProgressController {
     @Req() request: Request,
   ) {
     return this.progress.createMetric(dto, userId, activeRole, request);
+  }
+
+  @Post('metrics/sync')
+  @Roles(Role.ATHLETE)
+  @ApiOperation({
+    summary: 'Idempotently sync metric samples from a device health provider',
+  })
+  syncMetrics(
+    @Body() dto: SyncProgressMetricsDto,
+    @CurrentUser('sub') userId: string,
+    @CurrentUser('activeRole') activeRole: Role,
+    @Req() request: Request,
+  ) {
+    return this.progress.syncMetrics(dto, userId, activeRole, request);
   }
 
   @Patch('metrics/:id')

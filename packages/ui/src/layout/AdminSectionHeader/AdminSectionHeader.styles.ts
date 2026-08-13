@@ -4,7 +4,7 @@ import { tv } from "tailwind-variants";
 export const adminSectionHeaderVariants = tv({
   slots: {
     root: "flex w-full min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6",
-    tabs: "min-w-0",
+    tabs: "w-fit max-w-full min-w-0",
     tabsListContainer: "rounded-none bg-transparent",
     tabsList:
       "gap-6 bg-transparent p-0 sm:gap-8 **:data-[slot=tabs-tab]:rounded-none **:data-[slot=tabs-tab]:bg-transparent **:data-[slot=tabs-tab]:px-0 **:data-[slot=tabs-tab]:pb-3 **:data-[slot=tabs-tab]:pt-0 **:data-[slot=tabs-tab]:text-sm **:data-[slot=tabs-tab]:font-medium **:data-[slot=tabs-tab]:text-muted **:data-[slot=tabs-tab]:opacity-100 **:data-[slot=tabs-tab]:shadow-none **:data-[slot=tabs-tab]:data-[hovered=true]:bg-transparent **:data-[slot=tabs-tab]:data-[hovered=true]:text-foreground **:data-[slot=tabs-tab]:data-[selected=true]:bg-transparent **:data-[slot=tabs-tab]:data-[selected=true]:text-foreground **:data-[slot=tabs-tab]:data-[selected=true]:shadow-none",

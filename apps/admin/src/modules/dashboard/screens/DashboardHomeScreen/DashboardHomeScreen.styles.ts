@@ -48,14 +48,7 @@ export const dashboardHomeScreenVariants = tv({
       "text-xl font-black text-foreground [font-variant-numeric:tabular-nums]",
     revenueUnit: "mt-1 text-xs font-medium text-muted",
     chartContent: "flex flex-1 px-5 pb-5 pt-7 sm:px-6 sm:pb-6",
-    chart:
-      "grid min-h-60 w-full grid-cols-7 items-end gap-2 sm:gap-4",
-    chartColumn: "flex h-full min-w-0 flex-col items-center gap-3",
-    chartTrack:
-      "relative flex min-h-52 w-full items-end overflow-hidden rounded-xl bg-surface-secondary",
-    chartBar:
-      "block w-full rounded-xl bg-accent transition-[height,opacity] duration-500 ease-out hover:opacity-80",
-    chartDay: "text-[11px] font-semibold text-muted sm:text-xs",
+    chart: "min-h-60 w-full",
     queueTotal:
       "flex size-10 shrink-0 items-center justify-center rounded-xl bg-warning/12 text-sm font-black text-warning [font-variant-numeric:tabular-nums]",
     queueContent: "flex flex-col p-0",

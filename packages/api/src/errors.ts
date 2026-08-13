@@ -14,8 +14,29 @@ export class ApiError extends Error {
 }
 
 function resolveMessage(body: ApiErrorBody | null): string | null {
-  if (!body?.message) return null;
-  return Array.isArray(body.message) ? body.message.join(", ") : body.message;
+  return flattenApiErrorMessage(body?.message);
+}
+
+function flattenApiErrorMessage(message: unknown): string | null {
+  if (typeof message === "string") return message || null;
+  if (Array.isArray(message)) {
+    const parts = message.filter(
+      (item): item is string => typeof item === "string" && item.length > 0,
+    );
+    return parts.length > 0 ? parts.join(", ") : null;
+  }
+  if (message && typeof message === "object") {
+    const parts = Object.values(message as Record<string, unknown>).flatMap(
+      (value) =>
+        Array.isArray(value)
+          ? value.filter((item): item is string => typeof item === "string")
+          : typeof value === "string"
+            ? [value]
+            : [],
+    );
+    return parts.length > 0 ? parts.join(", ") : null;
+  }
+  return null;
 }
 
 export const KYC_REQUIRED_CODE = "KYC_REQUIRED";

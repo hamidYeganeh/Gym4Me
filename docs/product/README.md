@@ -2,6 +2,8 @@
 
 | سند | محتوا |
 |-----|--------|
+| [prd-gym4me.md](./prd-gym4me.md) | PRD جامع محصول، شکاف‌ها، اولویت‌ها، KPI و معیار پذیرش |
+| [architecture-mobile-api-delivery.md](./architecture-mobile-api-delivery.md) | معماری پیشنهادی Capacitor، متریک، API versioning و انتشار پویا |
 | [decisions.md](./decisions.md) | تصمیمات قفل‌شدهٔ محصول و معماری |
 | [phases.md](./phases.md) | فازبندی تحویل |
 | [user-stories.md](./user-stories.md) | یوزر استوری‌ها بر اساس Epic |
@@ -23,4 +25,5 @@
 - `user-stories.md` و `scenarios.md`: محدودهٔ محصول و رفتار مورد انتظار.
 - `market-requirements.md` و `growth-lifecycle.md`: backlog و جهت‌گیری پیشنهادی؛ برای قفل‌شدن باید به `decisions.md` منتقل شوند.
 - `architecture-owner-coach.md`: طرح پیاده‌سازی نیازهای پیشنهادی؛ تصمیم قفل‌شدهٔ جدید ایجاد نمی‌کند.
+- `prd-gym4me.md` و `architecture-mobile-api-delivery.md`: پیشنهاد برای تصویب؛ وضعیت «انجام‌شده» ایجاد نمی‌کنند و تصمیم قفل‌شدهٔ جدیدی نمی‌سازند.
 - `checklist.md`: فقط وضعیت پیاده‌سازی است و نباید به‌عنوان مدرک تکمیل قابلیت استفاده شود مگر جریان end-to-end کار کند.

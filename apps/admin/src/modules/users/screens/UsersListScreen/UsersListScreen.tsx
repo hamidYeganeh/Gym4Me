@@ -1,16 +1,14 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import type { PublicUser, Role, UserStatus } from "@repo/api";
+import type { ListAdminUsersQuery, PublicUser, Role, UserStatus } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { AdminShell } from "@/shared/components";
 import {
-  useAdminInfiniteQuery,
   useAdminListQueryParams,
+  useAdminPaginatedQuery,
 } from "@/shared/hooks";
-import type { FormSubmitIntent } from "@/shared/lib/form-submit-intent";
 import { adminUsers } from "@/shared/lib/api";
-import { UsersCreateForm } from "../../components/UsersCreateForm";
-import type { UsersCreateFormValues } from "../../components/UsersCreateForm";
+import { routes } from "@/shared/lib/routes";
 import { UsersListFiltersSection } from "../../sections/UsersListFiltersSection";
 import { UsersListHeaderSection } from "../../sections/UsersListHeaderSection";
 import { UsersListTableSection } from "../../sections/UsersListTableSection";
@@ -19,14 +17,14 @@ import type { UsersListScreenProps } from "./UsersListScreen.types";
 
 const PAGE_SIZE = 20;
 const FILTER_KEYS = ["status", "role"] as const;
-const FILTER_DEFAULTS = {
-  status: "all",
+const FILTER_DEFAULTS: UsersListFilters & { search: string } = {
+  status: [],
   role: "all",
   search: "",
-} as const;
+};
 
 type UsersListFilters = {
-  status: UserStatus | "all";
+  status: UserStatus[];
   role: Role | "all";
 };
 
@@ -34,12 +32,24 @@ export function UsersListScreen({ className }: UsersListScreenProps) {
   const t = useTranslations("Admin.Users");
   const navigate = useNavigate();
   const styles = usersListScreenVariants();
-  const [createOpen, setCreateOpen] = useState(false);
 
-  const { search, searchInput, setSearchInput, filters, setFilter } =
-    useAdminListQueryParams<UsersListFilters>({
+  const {
+    search,
+    searchInput,
+    setSearchInput,
+    filters,
+    setFilter,
+    sortBy,
+    sortOrder,
+    sort,
+    setSort,
+  } = useAdminListQueryParams<
+    UsersListFilters,
+    NonNullable<ListAdminUsersQuery["sortBy"]>
+  >({
       filterKeys: FILTER_KEYS,
       defaults: FILTER_DEFAULTS,
+      defaultSort: { column: "createdAt", direction: "descending" },
     });
 
   const queryKey = useMemo(
@@ -48,9 +58,11 @@ export function UsersListScreen({ className }: UsersListScreenProps) {
         search,
         status: filters.status,
         role: filters.role,
+        sortBy,
+        sortOrder,
         pageSize: PAGE_SIZE,
       }),
-    [filters.role, filters.status, search],
+    [filters.role, filters.status, search, sortBy, sortOrder],
   );
 
   const fetchPage = useCallback(
@@ -59,49 +71,31 @@ export function UsersListScreen({ className }: UsersListScreenProps) {
         page,
         limit: pageSize,
         search: search || undefined,
-        status: filters.status === "all" ? undefined : filters.status,
+        status: filters.status.length > 0 ? filters.status : undefined,
         role: filters.role === "all" ? undefined : filters.role,
+        sortBy,
+        sortOrder,
       });
     },
-    [filters.role, filters.status, search],
+    [filters.role, filters.status, search, sortBy, sortOrder],
   );
 
   const {
     items,
     total,
+    page,
+    pageSize,
+    totalPages,
     loading,
-    fetchingMore,
-    hasMore,
     error,
-    loadMore,
+    setPage,
     reload,
-  } = useAdminInfiniteQuery<PublicUser>({
+  } = useAdminPaginatedQuery<PublicUser>({
     queryKey,
     pageSize: PAGE_SIZE,
     errorFallback: t("errorLoad"),
     fetchPage,
   });
-
-  const handleCreate = async (
-    values: UsersCreateFormValues,
-    intent: FormSubmitIntent,
-  ) => {
-    const user = await adminUsers.create({
-      phone: values.phone.trim(),
-      firstName: values.firstName.trim() || undefined,
-      lastName: values.lastName.trim() || undefined,
-      password: values.password || undefined,
-      roles: values.roles,
-    });
-
-    if (intent === "saveAndCreateNew") {
-      void reload();
-      return;
-    }
-
-    setCreateOpen(false);
-    navigate(`/dashboard/users/${user.id}`);
-  };
 
   return (
     <AdminShell
@@ -115,16 +109,17 @@ export function UsersListScreen({ className }: UsersListScreenProps) {
     >
       <div className={styles.content()}>
         <UsersListHeaderSection
-          onCreate={() => setCreateOpen(true)}
+          onCreate={() => navigate(routes.usersNew)}
           onRefresh={() => void reload()}
         />
 
         <UsersListTableSection
           error={error}
-          fetchingMore={fetchingMore}
-          hasMore={hasMore}
           items={items}
           loading={loading}
+          page={page}
+          pageSize={pageSize}
+          sort={sort}
           toolbar={
             <UsersListFiltersSection
               role={filters.role}
@@ -134,16 +129,12 @@ export function UsersListScreen({ className }: UsersListScreenProps) {
             />
           }
           total={total}
-          onLoadMore={loadMore}
-          onView={(userId) => navigate(`/dashboard/users/${userId}`)}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          onSortChange={setSort}
+          onView={(userId) => navigate(routes.user(userId))}
         />
       </div>
-
-      <UsersCreateForm
-        isOpen={createOpen}
-        onOpenChange={setCreateOpen}
-        onSubmit={handleCreate}
-      />
     </AdminShell>
   );
 }

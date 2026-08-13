@@ -11,19 +11,18 @@ export const paymentInvoiceScreenStyles = {
   sectionTitle: "px-1 text-muted",
   section: "flex flex-col gap-2",
   invoiceCard:
-    "overflow-hidden rounded-[24px] border border-border bg-surface",
+    "overflow-hidden rounded-[24px] border-0 bg-surface shadow-sm shadow-foreground/5",
   invoiceRow: "flex items-center justify-between gap-3 px-4 py-3.5",
   invoiceLabel: "text-muted",
   invoiceValue: "text-foreground text-end",
   invoiceDiscount: "text-success text-end",
   divider: "mx-4 h-px bg-border",
-  totalRow:
-    "flex items-center justify-between gap-3 bg-default px-4 py-4",
+  totalRow: "flex items-center justify-between gap-3 bg-default px-4 py-4",
   totalLabel: "text-foreground",
   totalValue: "text-foreground",
   methods: "flex flex-col gap-3",
   methodCard:
-    "h-auto w-full items-center gap-3 rounded-[24px] border border-border bg-surface p-4 text-start font-normal",
+    "h-auto w-full items-center gap-3 rounded-[24px] border-0 bg-surface p-4 text-start font-normal shadow-sm shadow-foreground/5",
   methodCardSelected: "border-accent bg-accent/10",
   methodIcon:
     "flex size-11 shrink-0 items-center justify-center rounded-full bg-default text-foreground",
@@ -35,6 +34,6 @@ export const paymentInvoiceScreenStyles = {
   methodRadioSelected: "border-accent",
   methodRadioDot: "size-2.5 rounded-full bg-accent",
   empty:
-    "flex flex-col items-center gap-2 rounded-[24px] border border-border bg-surface px-6 py-10 text-center",
+    "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center shadow-sm shadow-foreground/5",
   emptyTitle: "text-foreground",
 } as const;

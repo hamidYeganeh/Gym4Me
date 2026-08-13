@@ -1,4 +1,5 @@
 import { Card } from "@heroui/react";
+import { HorizontalBarChart } from "@repo/ui/kit/HorizontalBarChart";
 import { useTranslations } from "next-intl";
 import {
   formatFaNumber,
@@ -11,34 +12,25 @@ type RankedListProps = {
   title: string;
   unit: string;
   entries: MarketplaceEntry[];
+  color: string;
 };
 
-function RankedList({ title, unit, entries }: RankedListProps) {
+function RankedList({ title, unit, entries, color }: RankedListProps) {
   const styles = analyticsMarketplaceSectionVariants();
-  const maxCount = Math.max(...entries.map((entry) => entry.count), 1);
 
   return (
     <div className={styles.list()}>
       <span className={styles.listTitle()}>{title}</span>
-      {entries.map((entry, index) => (
-        <div className={styles.row()} key={entry.id}>
-          <span className={styles.rank()}>{formatFaNumber(index + 1)}</span>
-          <div className={styles.rowBody()}>
-            <div className={styles.rowTop()}>
-              <span className={styles.rowName()}>{entry.name}</span>
-              <span className={styles.rowCount()}>
-                {formatFaNumber(entry.count)} {unit}
-              </span>
-            </div>
-            <div className={styles.track()}>
-              <span
-                className={styles.fill()}
-                style={{ width: `${(entry.count / maxCount) * 100}%` }}
-              />
-            </div>
-          </div>
-        </div>
-      ))}
+      <HorizontalBarChart
+        aria-label={title}
+        color={color}
+        data={entries.map((entry) => ({
+          id: entry.id,
+          label: entry.name,
+          value: entry.count,
+        }))}
+        formatValue={(value) => `${formatFaNumber(value)} ${unit}`}
+      />
     </div>
   );
 }
@@ -61,11 +53,13 @@ export function AnalyticsMarketplaceSection({
       </Card.Header>
       <Card.Content className={styles.content()}>
         <RankedList
+          color="var(--accent)"
           entries={topClubs}
           title={t("clubsTitle")}
           unit={t("clubsUnit")}
         />
         <RankedList
+          color="var(--stats-purple)"
           entries={topCoaches}
           title={t("coachesTitle")}
           unit={t("coachesUnit")}

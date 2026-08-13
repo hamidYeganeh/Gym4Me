@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   ArrayMaxSize,
   IsArray,
@@ -15,6 +15,8 @@ import {
   ValidateNested,
 } from 'class-validator';
 import {
+  ClubLifecycleStatus,
+  ClubOperationalStatus,
   ClubUserReviewStatus,
   GeoDirection,
   OperatingHourAudience,
@@ -22,6 +24,7 @@ import {
   WeekdayStatus,
 } from '../../../common/enums';
 import { GeoPointDto, PaginationQueryDto } from '../../../basics/dto/common.dto';
+import { toStringArray } from '../../../common/utils/list-query.util';
 
 export class ClubIdentityDto {
   @IsString()
@@ -478,12 +481,14 @@ export class ListClubsQueryDto extends PaginationQueryDto {
   ownerId?: string;
 
   @IsOptional()
-  @IsString()
-  lifecycleStatus?: string;
+  @Transform(toStringArray)
+  @IsEnum(ClubLifecycleStatus, { each: true })
+  lifecycleStatus?: ClubLifecycleStatus[];
 
   @IsOptional()
-  @IsString()
-  operationalStatus?: string;
+  @Transform(toStringArray)
+  @IsEnum(ClubOperationalStatus, { each: true })
+  operationalStatus?: ClubOperationalStatus[];
 }
 
 export class DiscoveryClubsQueryDto extends PaginationQueryDto {
@@ -625,6 +630,7 @@ export class GrantAchievementDto {
 
 export class ListUserReviewsQueryDto extends PaginationQueryDto {
   @IsOptional()
-  @IsEnum(ClubUserReviewStatus)
-  status?: ClubUserReviewStatus;
+  @Transform(toStringArray)
+  @IsEnum(ClubUserReviewStatus, { each: true })
+  status?: ClubUserReviewStatus[];
 }

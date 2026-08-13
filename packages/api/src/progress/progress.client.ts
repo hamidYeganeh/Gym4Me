@@ -24,6 +24,8 @@ import type {
   PersonalRecordsPage,
   ProgressMetric,
   ProgressMetricsPage,
+  SyncProgressMetricsInput,
+  SyncProgressMetricsResult,
   ProgressPhoto,
   ProgressPhotosPage,
   UpdateProgressMetricInput,
@@ -125,6 +127,13 @@ export function createAccountProgressApi(client: ApiClient) {
 
     createMetric(input: CreateProgressMetricInput) {
       return client.request<ProgressMetric>(ep.metrics, {
+        method: "POST",
+        body: input,
+      });
+    },
+
+    syncMetrics(input: SyncProgressMetricsInput) {
+      return client.request<SyncProgressMetricsResult>(ep.syncMetrics, {
         method: "POST",
         body: input,
       });

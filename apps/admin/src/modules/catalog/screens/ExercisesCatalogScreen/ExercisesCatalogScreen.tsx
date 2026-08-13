@@ -1,13 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
-import {
-  Button,
-  Chip,
-  Input,
-  Label,
-  TextArea,
-  TextField,
-  Typography,
-} from "@heroui/react";
+import { useNavigate } from "react-router-dom";
+import { Button, Chip, Input, Label, TextField, Typography } from "@heroui/react";
 import type { Exercise } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
@@ -20,6 +13,7 @@ import {
 } from "@/shared/components";
 import { useAdminInfiniteQuery } from "@/shared/hooks";
 import { adminProgress } from "@/shared/lib/api";
+import { routes } from "@/shared/lib/routes";
 import { exercisesCatalogScreenVariants } from "./ExercisesCatalogScreen.styles";
 import type { ExercisesCatalogScreenProps } from "./ExercisesCatalogScreen.types";
 
@@ -39,15 +33,10 @@ export function ExercisesCatalogScreen({
   className,
 }: ExercisesCatalogScreenProps) {
   const t = useTranslations("Admin.Catalog");
+  const navigate = useNavigate();
   const styles = exercisesCatalogScreenVariants();
 
   const [search, setSearch] = useState("");
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [editing, setEditing] = useState<Exercise | null>(null);
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
 
   const [rejecting, setRejecting] = useState<Exercise | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
@@ -87,20 +76,8 @@ export function ExercisesCatalogScreen({
     fetchPage,
   });
 
-  const openCreate = () => {
-    setEditing(null);
-    setName("");
-    setDescription("");
-    setSaveError(null);
-    setDrawerOpen(true);
-  };
-
   const openEdit = (row: Exercise) => {
-    setEditing(row);
-    setName(row.name);
-    setDescription(row.description ?? "");
-    setSaveError(null);
-    setDrawerOpen(true);
+    navigate(routes.catalogExerciseEdit(row.id));
   };
 
   const columns = useMemo(
@@ -239,31 +216,6 @@ export function ExercisesCatalogScreen({
     },
   };
 
-  const handleSave = async () => {
-    if (!name.trim()) return;
-    setSaving(true);
-    setSaveError(null);
-    try {
-      if (editing) {
-        await adminProgress.updateExercise(editing.id, {
-          name: name.trim(),
-          description: description.trim() || undefined,
-        });
-      } else {
-        await adminProgress.createExercise({
-          name: name.trim(),
-          description: description.trim() || undefined,
-        });
-      }
-      setDrawerOpen(false);
-      void reload();
-    } catch (err) {
-      setSaveError(err instanceof ApiError ? err.message : t("actionError"));
-    } finally {
-      setSaving(false);
-    }
-  };
-
   return (
     <AdminShell
       activeNavId="catalogs"
@@ -283,7 +235,11 @@ export function ExercisesCatalogScreen({
             {t("exercises.subtitle")}
           </Typography>
           <div className={styles.actions()}>
-            <Button size="sm" variant="primary" onPress={openCreate}>
+            <Button
+              size="sm"
+              variant="primary"
+              onPress={() => navigate(routes.catalogExerciseNew)}
+            >
               {t("create")}
             </Button>
             <Button size="sm" variant="ghost" onPress={() => void reload()}>
@@ -312,59 +268,6 @@ export function ExercisesCatalogScreen({
           })}
         />
       </div>
-
-      <AdminFormDrawer
-        isOpen={drawerOpen}
-        title={editing ? t("exercises.editTitle") : t("exercises.createTitle")}
-        onOpenChange={setDrawerOpen}
-      >
-        <div className={styles.form()}>
-          <TextField
-            className={styles.field()}
-            fullWidth
-            name="name"
-            value={name}
-            onChange={setName}
-          >
-            <Label>{t("exercises.fields.name")}</Label>
-            <Input />
-          </TextField>
-
-          <TextField
-            className={styles.field()}
-            fullWidth
-            name="description"
-            value={description}
-            onChange={setDescription}
-          >
-            <Label>{t("exercises.fields.description")}</Label>
-            <TextArea className="min-h-24" />
-          </TextField>
-
-          {saveError ? (
-            <p className="text-sm text-danger" role="alert">
-              {saveError}
-            </p>
-          ) : null}
-
-          <div className={styles.actions()}>
-            <Button
-              isDisabled={saving || !name.trim()}
-              variant="primary"
-              onPress={() => void handleSave()}
-            >
-              {t("save")}
-            </Button>
-            <Button
-              isDisabled={saving}
-              variant="secondary"
-              onPress={() => setDrawerOpen(false)}
-            >
-              {t("cancel")}
-            </Button>
-          </div>
-        </div>
-      </AdminFormDrawer>
 
       <AdminFormDrawer
         isOpen={Boolean(rejecting)}

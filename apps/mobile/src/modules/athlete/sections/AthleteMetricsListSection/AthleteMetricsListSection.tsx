@@ -141,10 +141,10 @@ export function AthleteMetricsListSection({
                 onMetricPress ? () => onMetricPress(metric.href) : undefined
               }
               periodLabel={labels.periodLabel}
-              status={copy.status}
+              status={metric.status ?? copy.status}
               title={copy.title}
-              unit={copy.unit}
-              value={copy.value}
+              unit={metric.unit ?? copy.unit}
+              value={metric.value ?? copy.value}
             />
           );
         })}

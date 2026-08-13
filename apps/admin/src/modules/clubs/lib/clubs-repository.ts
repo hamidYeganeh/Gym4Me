@@ -49,11 +49,47 @@ export function isClubsMockMode(): boolean {
   return CLUBS_USE_MOCK;
 }
 
+type AdminClubsListQuery = NonNullable<
+  Parameters<typeof adminClubs.list>[0]
+>;
+
+const ADMIN_CLUB_SORT: ReadonlyArray<
+  NonNullable<AdminClubsListQuery["sortBy"]>
+> = [
+  "createdAt",
+  "updatedAt",
+  "name",
+  "status",
+  "operationalStatus",
+  "rating",
+];
+
+function toAdminClubsSortBy(
+  sortBy: ClubListQuery["sortBy"],
+): AdminClubsListQuery["sortBy"] {
+  if (!sortBy) return undefined;
+  if (sortBy === "lifecycleStatus") return "status";
+  if ((ADMIN_CLUB_SORT as readonly string[]).includes(sortBy)) {
+    return sortBy as NonNullable<AdminClubsListQuery["sortBy"]>;
+  }
+  return undefined;
+}
+
 export async function listClubs(
   query: ClubListQuery = {},
 ): Promise<Paginated<Club>> {
   if (!CLUBS_USE_MOCK) {
-    return adminClubs.list(query);
+    return adminClubs.list({
+      page: query.page,
+      limit: query.limit,
+      q: query.q ?? query.search,
+      search: query.search,
+      sortBy: toAdminClubsSortBy(query.sortBy),
+      sortOrder: query.sortOrder,
+      lifecycleStatus: query.lifecycleStatus as AdminClubsListQuery["lifecycleStatus"],
+      operationalStatus:
+        query.operationalStatus as AdminClubsListQuery["operationalStatus"],
+    });
   }
   return filterMockClubs(mockStore, query);
 }
@@ -307,6 +343,15 @@ export async function listClubSlots(clubId: string) {
     return adminClubSlots.listSlots(clubId);
   }
   return emptyPage(structuredClone(mockSlots.get(clubId) ?? []));
+}
+
+export async function getClubSlot(clubId: string, slotId: string) {
+  if (!CLUBS_USE_MOCK) {
+    return adminClubSlots.getSlot(clubId, slotId);
+  }
+  const slot = (mockSlots.get(clubId) ?? []).find((item) => item.id === slotId);
+  if (!slot) throw new Error("Slot not found");
+  return structuredClone(slot);
 }
 
 export async function createClubSlot(

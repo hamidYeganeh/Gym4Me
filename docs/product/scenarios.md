@@ -175,3 +175,43 @@
 5. مصرف تکراری یا عضویت نامعتبر به صف بررسی می‌رود؛ سابقهٔ محلی حذف نمی‌شود.
 
 **محدودیت:** عملیات مالی و ایجاد عضویت جدید آفلاین انجام نمی‌شوند؛ سقف زمان/تعداد آفلاین per-device اجباری است.
+
+---
+
+## S18 — ثبت روزانهٔ فعالیت و سلامت
+
+1. ورزشکار از خانه یا صفحهٔ متریک «ثبت فعالیت» را باز می‌کند و آب، وزن، قدم، پیاده‌روی یا خواب را انتخاب می‌کند.
+2. مقدار، زمان، واحد canonical و یادداشت اختیاری ثبت می‌شوند؛ privacy پیش‌فرض `PRIVATE` است.
+3. API validation نوع متریک را اعمال و sample را با `clientMutationId` idempotent ذخیره می‌کند.
+4. خلاصهٔ همان روز طبق aggregation تعریف‌شده در `MetricType` به‌روزرسانی و تاریخچه با تقویم شمسی نمایش داده می‌شود.
+5. اگر ورزشکار grant فعال داده باشد، مربی فقط scopeهای مجاز را در درخواست بعدی می‌بیند.
+
+**شبکه ضعیف:** رکورد در صف محلی `pending` می‌ماند و پس از اتصال sync می‌شود؛ retry نباید duplicate بسازد.
+
+**خطاها:** مقدار خارج از بازه → خطای قابل اصلاح · اختلاف منبع دستی/دستگاه → هر دو source حفظ می‌شوند · revoke مربی → دسترسی query-time فوراً قطع می‌شود.
+
+---
+
+## S19 — اتصال Apple Health / Health Connect
+
+1. flag مربوط به platform و app version بررسی می‌شود؛ اپ قبل از permission هدف و نوع داده را توضیح می‌دهد.
+2. ورزشکار نوع داده‌های مجاز را انتخاب می‌کند؛ `HealthSyncState` با status متناسب ذخیره می‌شود.
+3. اپ بازهٔ محدود اولیه را می‌خواند و batch دارای `sourceRecordId` می‌فرستد.
+4. سرور sampleهای تکراری را dedupe و نتیجهٔ created/deduplicated/rejected را per batch برمی‌گرداند.
+5. sync بعدی incremental و cursor-based است؛ disconnect فوراً خواندن دادهٔ جدید را متوقف می‌کند.
+
+**شاخه‌ها:** permission جزئی → فقط همان metricها sync · provider unavailable → ثبت دستی فعال می‌ماند · disconnect → دادهٔ قبلی تا حذف صریح ورزشکار حفظ می‌شود.
+
+---
+
+## S20 — rollout و سازگاری نسخهٔ اپ
+
+1. اپ Next.js + Capacitor در cold start آخرین config سالم را از cache می‌خواند.
+2. `GET /api/app-config/bootstrap` با platform، appVersion، build، channel و installationId فراخوانی می‌شود.
+3. سرور release policy و Feature Flagها را resolve می‌کند؛ cohort rollout برای installation ثابت می‌ماند.
+4. اپ response را schema-validate می‌کند و فقط config کامل و معتبر را جایگزین cache می‌کند.
+5. feature آماده در navigation بعدی فعال می‌شود و exposure/error per cohort ثبت می‌گردد.
+
+**شاخه‌ها:** timeout/manifest نامعتبر → last-known-good یا bundled default · نسخه زیر minimum → صفحهٔ blocking update · افزایش خطا → ادمین kill switch/rollback می‌زند.
+
+**محدودیت:** Feature Flag فقط کد از قبل نصب‌شده را فعال می‌کند و هیچ authorization یا permission بومی جدیدی ایجاد نمی‌کند.

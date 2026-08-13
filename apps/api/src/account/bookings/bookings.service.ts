@@ -28,6 +28,10 @@ import {
   paginatedResult,
   resolvePageSize,
 } from '../../common/utils/pagination.util';
+import {
+  createSearchFilter,
+  resolveListSort,
+} from '../../common/utils/list-query.util';
 import { FinanceService } from '../../finance/finance.service';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { OutboxService } from '../../outbox/outbox.service';
@@ -68,6 +72,30 @@ const SLOT_KIND_TO_RESOURCE: Record<SlotKind, BookingResourceType> = {
 };
 
 type Audience = 'athlete' | 'coach' | 'club' | 'admin';
+
+type BookingListQuery = {
+  page?: number;
+  page_size?: number;
+  limit?: number;
+  status?: BookingStatus | BookingStatus[];
+  bucket?: 'upcoming' | 'past' | 'cancelled';
+  from?: string;
+  to?: string;
+  resource_type?: BookingResourceType;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+};
+
+const BOOKING_SORT_FIELDS = {
+  startsAt: 'startsAt',
+  endsAt: 'endsAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  code: 'code',
+  status: 'status',
+  total: 'pricing.total',
+} as const;
 
 /** Fixed Tehran offset — club occurrence times are local wall-clock. */
 const TEHRAN_OFFSET = '+03:30';
@@ -1020,7 +1048,7 @@ export class BookingsService {
 
   private async list(
     ownerFilter: QueryFilter<BookingDocument>,
-    query: ListBookingsQueryDto,
+    query: BookingListQuery,
     audience: Audience,
   ) {
     const { page, pageSize } = resolvePageSize(query);
@@ -1028,7 +1056,23 @@ export class BookingsService {
 
     if (query.resource_type) filter['resource.type'] = query.resource_type;
 
-    if (query.status) filter.status = query.status;
+    if (query.search?.trim()) {
+      filter.$and = [
+        createSearchFilter(query.search, [
+          'code',
+          'intake.note',
+          'pricing.couponCode',
+          'cancellation.reasonKey',
+          'cancellation.note',
+        ]) as QueryFilter<BookingDocument>,
+      ];
+    }
+
+    if (query.status) {
+      filter.status = {
+        $in: Array.isArray(query.status) ? query.status : [query.status],
+      };
+    }
     else if (query.bucket === 'upcoming') {
       filter.status = { $in: [...ACTIVE_STATUSES] };
       filter.startsAt = { $gte: new Date() };
@@ -1062,10 +1106,13 @@ export class BookingsService {
       filter.startsAt = startsAt;
     }
 
+    const sort = resolveListSort(query, BOOKING_SORT_FIELDS, {
+      startsAt: query.bucket === 'past' ? -1 : 1,
+    });
     const total = await this.bookingModel.countDocuments(filter);
     const bookings = await this.bookingModel
       .find(filter)
-      .sort({ startsAt: query.bucket === 'past' ? -1 : 1 })
+      .sort(sort)
       .skip((page - 1) * pageSize)
       .limit(pageSize);
 

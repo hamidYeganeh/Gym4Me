@@ -84,6 +84,8 @@
 | G6 | (CCH) بررسی پایبندی و بازخورد | ۵ |
 | G7 | (CCH) گروه‌بندی شاگردان | ۵ |
 | G8 | (CCH) برنامه مکمل | ۵ |
+| G9 | (ATH) اجرای واقعی جلسه با draft/resume و ثبت ست، تکرار، وزنه، مدت، RPE و درد | ۵ |
+| G10 | (CCH/ATH) مشاهده revision برنامه و حفظ اتصال لاگ گذشته به نسخهٔ اجراشده | ۵ |
 
 ## Epic H — پیشرفت و متریک
 
@@ -95,6 +97,14 @@
 | H4 | (ATH) تنظیم حریم خصوصی | ۵ |
 | H5 | (CCH) مشاهده پیشرفت شاگرد طبق مجوز | ۵ |
 | H6 | (ADM) تعریف MetricType per-sport | ۵ |
+| H7 | (ATH) ثبت روزانه آب، قدم، مسافت/مدت پیاده‌روی، مدت و کیفیت خواب | ۵ |
+| H8 | (ATH) مشاهده خلاصهٔ روزانه/هفتگی و روند هر متریک با واحد canonical | ۵ |
+| H9 | (ATH) ثبت آفلاین متریک/تمرین و همگام‌سازی idempotent پس از اتصال | ۵ |
+| H10 | (ATH) اتصال اختیاری Apple Health/Health Connect و کنترل نوع داده‌های مجاز | ۵ |
+| H11 | (ATH) تعریف هدف و reminder با quiet hours و opt-in | ۵ |
+| H12 | (ATH) اشتراک per-metric و زمان‌دار با مربی و revoke فوری | ۵ |
+| H13 | (ATH) export، حذف و مشاهدهٔ تاریخچهٔ رضایت/دسترسی داده | ۵–۶ |
+| H14 | (CCH) مشاهدهٔ فقط scopeهای مجاز شاگرد و دریافت روند بدون دسترسی به دادهٔ تبلیغاتی | ۵ |
 
 ## Epic I — تغذیه
 
@@ -239,3 +249,18 @@
 | R10 | (ADM/OWN) مشاهده funnel بر اساس persona، club و acquisition source | ۶ |
 | R11 | (ADM) اجرای A/B و holdout با assignment پایدار | ۶ |
 | R12 | (OWN/CCH) دریافت هشدار سلامت حساب و CTA ارتقا در لحظه ارزش | ۴ |
+
+## Epic V — نسخه‌بندی و انتشار پویا
+
+جزئیات: [`architecture-mobile-api-delivery.md`](./architecture-mobile-api-delivery.md)
+
+| ID | استوری | فاز پیشنهادی |
+|----|--------|--------------|
+| V1 | (SYS) حفظ قرارداد `/api/v1` و ایجاد `/api/v2` فقط برای breaking change | ۰–۱ |
+| V2 | (APP) دریافت bootstrap نسخه‌خنثی شامل سازگاری و feature manifest | ۰–۱ |
+| V3 | (ADM) مدیریت Feature Flag بر اساس platform/channel/app-version و rollout درصدی | ۰–۱ |
+| V4 | (ADM) تعریف latest/minimum app version، update URL و forced-update کنترل‌شده | ۰–۱ |
+| V5 | (APP) cache آخرین config سالم و استفاده از bundled default در قطعی | ۰–۱ |
+| V6 | (SYS) ثبت exposure/error/conversion per cohort و فعال‌کردن rollback guardrail | ۶ |
+| V7 | (ADM) مشاهده AuditLog و before/after هر تغییر flag/release policy | ۰–۱ |
+| V8 | (SYS) حذف flag پس از rollout کامل و جلوگیری از flag دائمی بدون owner/expiry | ۶ |

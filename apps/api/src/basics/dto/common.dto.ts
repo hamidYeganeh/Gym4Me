@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   IsBoolean,
+  IsIn,
   IsInt,
   IsMongoId,
   IsNumber,
@@ -34,6 +35,20 @@ export class PaginationQueryDto {
   @Min(1)
   @Max(200)
   page_size?: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  search?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  sortBy?: string;
+
+  @IsOptional()
+  @IsIn(['asc', 'desc'])
+  sortOrder?: 'asc' | 'desc';
 }
 
 export class GeoPointDto {

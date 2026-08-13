@@ -3,7 +3,7 @@ import { tv } from "tailwind-variants";
 
 export const ownerClubsCreateMediaSectionVariants = tv({
   slots: {
-    root: "flex flex-col gap-5 rounded-[24px] border border-border bg-surface p-5",
+    root: "flex flex-col gap-5 rounded-[24px] border-0 bg-surface p-5 shadow-sm shadow-foreground/5",
     header: "flex flex-col gap-1",
     title: "text-foreground",
     hint: "text-muted",
@@ -11,7 +11,7 @@ export const ownerClubsCreateMediaSectionVariants = tv({
     groupTitle: "text-foreground",
     stack: "flex flex-col gap-3",
     preview:
-      "relative overflow-hidden rounded-2xl border border-border bg-surface-secondary",
+      "relative overflow-hidden rounded-[1.25rem] border-0 bg-surface-secondary",
     image: "aspect-[16/9] w-full object-cover",
   },
 });

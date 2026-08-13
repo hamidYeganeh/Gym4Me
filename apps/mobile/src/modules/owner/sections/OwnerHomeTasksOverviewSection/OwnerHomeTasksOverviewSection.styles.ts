@@ -22,10 +22,10 @@ export const ownerHomeTasksOverviewSectionStyles = {
   primaryValue: "text-5xl font-bold tracking-tight text-stats-foreground",
   primaryDescription: "max-w-[18rem] text-sm text-stats-foreground/85",
   secondaryCard:
-    "flex min-h-[168px] flex-col justify-between overflow-hidden rounded-[28px] border-0 p-4 shadow-none",
+    "flex min-h-[168px] flex-col justify-between overflow-hidden rounded-[28px] border-0 p-4 shadow-sm shadow-foreground/5",
   upcomingCard:
     "bg-[color-mix(in_oklab,var(--accent)_42%,var(--surface))] text-foreground",
-  assignedCard: "border border-border bg-surface text-foreground",
+  assignedCard: "bg-surface text-foreground",
   cardHeader: "flex items-start justify-between gap-2",
   cardLabel: "text-sm font-medium text-foreground",
   cardAction:

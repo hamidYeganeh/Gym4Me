@@ -19,6 +19,10 @@ import {
   resolvePageSize,
 } from '../common/utils/pagination.util';
 import {
+  createSearchFilter,
+  resolveListSort,
+} from '../common/utils/list-query.util';
+import {
   SupportTicket,
   SupportTicketDocument,
 } from '../schemas/support-ticket.schema';
@@ -50,23 +54,37 @@ export class AdminSupportService {
   ) {}
 
   async list(query: AdminListTicketsQueryDto) {
-    const filter: QueryFilter<SupportTicketDocument> = {};
-    if (query.status) filter.status = query.status;
-    if (query.category) filter.category = query.category;
-    if (query.priority) filter.priority = query.priority;
-    if (query.search) {
-      const pattern = new RegExp(
-        query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
-        'i',
-      );
-      filter.$or = [{ ticketNumber: pattern }, { subject: pattern }];
-    }
+    const filter: QueryFilter<SupportTicketDocument> = {
+      ...createSearchFilter(query.search, [
+        'ticketNumber',
+        'subject',
+        'resolution.note',
+      ]),
+    };
+    if (query.status) filter.status = { $in: query.status };
+    if (query.category) filter.category = { $in: query.category };
+    if (query.priority) filter.priority = { $in: query.priority };
 
     const { page, pageSize } = resolvePageSize(query);
+    const sort = resolveListSort(
+      query,
+      {
+        ticketNumber: 'ticketNumber',
+        subject: 'subject',
+        status: 'status',
+        category: 'category',
+        priority: 'priority',
+        lastMessageAt: 'lastMessageAt',
+        messageCount: 'messageCount',
+        createdAt: 'createdAt',
+        updatedAt: 'updatedAt',
+      },
+      { lastMessageAt: -1 },
+    );
     const [items, total] = await Promise.all([
       this.ticketModel
         .find(filter)
-        .sort({ lastMessageAt: -1 })
+        .sort(sort)
         .skip((page - 1) * pageSize)
         .limit(pageSize)
         .populate(TICKET_POPULATE.map(([path, select]) => ({ path, select })))

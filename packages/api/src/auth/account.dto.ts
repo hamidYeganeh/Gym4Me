@@ -48,7 +48,7 @@ export type SetPasswordInput = {
 
 export type OtpRequested = {
   expiresInSeconds: number;
-  /** @deprecated Never returned by API; OTP is logged server-side in DEBUG_MODE only. */
+  /** Present only when the API is running with DEBUG_MODE=true. */
   debugCode?: string;
 };
 

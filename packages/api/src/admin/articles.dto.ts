@@ -1,4 +1,10 @@
-import type { ArticleAudience, ArticleKind, PublishStatus } from "../types";
+import type {
+  ArticleAudience,
+  ArticleKind,
+  ListQuery,
+  ListQueryFilter,
+  PublishStatus,
+} from "../types";
 import type {
   ArticleAuthor,
   ArticleEngagement,
@@ -63,13 +69,26 @@ export type UpdateArticleInput = {
   };
 };
 
-export type ListAdminArticlesQuery = {
-  page?: number;
-  page_size?: number;
-  publishStatus?: PublishStatus;
-  search?: string;
+export type AdminArticlesSortBy =
+  | "title"
+  | "slug"
+  | "publishStatus"
+  | "category"
+  | "kind"
+  | "audience"
+  | "publishedAt"
+  | "readingTimeMinutes"
+  | "viewsCount"
+  | "likesCount"
+  | "commentsCount"
+  | "savesCount"
+  | "createdAt"
+  | "updatedAt";
+
+export type ListAdminArticlesQuery = ListQuery<AdminArticlesSortBy> & {
+  publishStatus?: ListQueryFilter<PublishStatus>;
   category?: string;
-  kind?: ArticleKind;
-  audience?: ArticleAudience;
+  kind?: ListQueryFilter<ArticleKind>;
+  audience?: ListQueryFilter<ArticleAudience>;
   tag?: string;
 };

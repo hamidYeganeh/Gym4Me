@@ -104,18 +104,11 @@ export default async function RootLayout({
     <html
       lang={locale}
       dir="rtl"
-      className={`${iranSansX.variable} is-loading`}
-      data-header-theme="blue"
+      className={`${iranSansX.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <head>
-        {/* Quarantined legacy marketing CSS — see public/assets/LEGACY.md */}
-        <link id="main-css" rel="stylesheet" href="/assets/styles/main.css" />
-        <link rel="stylesheet" href="/assets/styles/theme-bridge.css" />
-      </head>
       <body
-        data-module-load=""
-        className={`${iranSansX.className} antialiased`}
+        className={`${iranSansX.className} flex h-full min-h-full flex-col bg-background font-sans text-foreground antialiased`}
       >
         <ThemeProvider>
           <NextIntlClientProvider>

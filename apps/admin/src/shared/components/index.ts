@@ -4,4 +4,5 @@ export { AdminDocumentMeta } from "./AdminDocumentMeta";
 export { AdminEvidenceGallery } from "./AdminEvidenceGallery";
 export { AdminFormActions } from "./AdminFormActions";
 export { AdminFormDrawer } from "./AdminFormDrawer";
+export { AdminFormPage } from "./AdminFormPage";
 export { AdminShell } from "./AdminShell";

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   Checkbox,
@@ -13,7 +13,6 @@ import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
 import {
   AdminFormActions,
-  AdminFormDrawer,
 } from "@/shared/components";
 import { resolveFormSubmitIntent } from "@/shared/lib/form-submit-intent";
 import { USER_ROLES } from "@/shared/lib/user-format";
@@ -26,8 +25,7 @@ import { usersCreateFormVariants } from "./UsersCreateForm.styles";
 import type { UsersCreateFormProps } from "./UsersCreateForm.types";
 
 export function UsersCreateForm({
-  isOpen,
-  onOpenChange,
+  onCancel,
   onSubmit,
   className,
 }: UsersCreateFormProps) {
@@ -50,19 +48,6 @@ export function UsersCreateForm({
     defaultValues: usersCreateFormDefaults,
   });
 
-  useEffect(() => {
-    if (isOpen) return;
-    let cancelled = false;
-    queueMicrotask(() => {
-      if (cancelled) return;
-      form.reset(usersCreateFormDefaults);
-      setSubmitError(null);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [form, isOpen]);
-
   const handleSubmit = form.handleSubmit(async (values, event) => {
     const intent = resolveFormSubmitIntent(event);
     setSubmitError(null);
@@ -81,12 +66,7 @@ export function UsersCreateForm({
   });
 
   return (
-    <AdminFormDrawer
-      isOpen={isOpen}
-      title={t("createModal.title")}
-      onOpenChange={onOpenChange}
-    >
-      <form className={styles.form({ className })} onSubmit={handleSubmit}>
+    <form className={styles.form({ className })} onSubmit={handleSubmit}>
         <Controller
           control={form.control}
           name="phone"
@@ -200,9 +180,8 @@ export function UsersCreateForm({
           saveAndCreateNewLabel={tForm("saveAndCreateNew")}
           saveLabel={tForm("save")}
           showSaveAndCreateNew
-          onCancel={() => onOpenChange(false)}
+          onCancel={onCancel}
         />
       </form>
-    </AdminFormDrawer>
   );
 }

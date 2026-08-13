@@ -11,6 +11,8 @@ export type QuickActionCardProps = Omit<
   label: ReactNode;
   /** Accessible name for the pressable card. Defaults to `label` when string. */
   actionLabel?: string;
+  /** Tile for icon-grid layouts, row for compact app-menu layouts. */
+  layout?: "tile" | "row";
   /** Extra classes for the root pressable. */
   className?: string;
   /** Extra classes for the icon tile. */

@@ -27,7 +27,7 @@ export const profileHeaderVariants = tv({
     ].join(" "),
     stage: "relative z-10 w-full",
     avatar: [
-      "absolute start-screen z-20 overflow-hidden rounded-full",
+      "absolute start-screen z-20 overflow-hidden rounded-[1.75rem]",
       "origin-top-left rtl:origin-top-right",
       "ring-2 ring-background",
       "bg-accent text-accent-foreground",
@@ -35,17 +35,16 @@ export const profileHeaderVariants = tv({
     avatarImage: "size-full object-cover",
     notify: "absolute end-screen z-20 flex items-center justify-end",
     notifyButton:
-      "h-11 min-w-11 gap-0 overflow-hidden rounded-full px-2.5 font-semibold",
+      "h-11 min-w-11 gap-0 overflow-hidden rounded-[0.875rem] px-2.5 font-semibold",
     notifyLabel: "inline-block overflow-hidden whitespace-nowrap",
     notifyBadge: "pointer-events-none",
     identity: [
       "absolute z-20 flex min-w-0 flex-col gap-2 text-start",
       "overflow-hidden",
     ].join(" "),
-    nameWrap: [
-      "origin-top-left rtl:origin-top-right",
-      "w-max max-w-full",
-    ].join(" "),
+    nameWrap: ["origin-top-left rtl:origin-top-right", "w-max max-w-full"].join(
+      " ",
+    ),
     name: [
       "truncate text-[2.75rem] leading-[1.05] tracking-tight text-foreground",
       "sm:text-5xl",

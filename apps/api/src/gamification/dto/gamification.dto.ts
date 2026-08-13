@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   ArrayNotEmpty,
   IsArray,
@@ -15,6 +15,7 @@ import {
   MinLength,
   ValidateNested,
 } from 'class-validator';
+import { PaginationQueryDto as CommonPaginationQueryDto } from '../../basics/dto/common.dto';
 import {
   AchievementGrantMode,
   AchievementMetric,
@@ -24,21 +25,9 @@ import {
   PointRuleRepeat,
   PointTransactionReason,
 } from '../../common/enums';
+import { toStringArray } from '../../common/utils/list-query.util';
 
-export class PaginationQueryDto {
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  page?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  @Max(200)
-  page_size?: number;
-}
+export class PaginationQueryDto extends CommonPaginationQueryDto {}
 
 // ── Achievements ──────────────────────────────────────────────────────────
 
@@ -157,12 +146,16 @@ export class UpdateAchievementDto {
 
 export class ListAchievementsQueryDto extends PaginationQueryDto {
   @IsOptional()
-  @IsEnum(EntityStatus)
-  status?: EntityStatus;
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(EntityStatus, { each: true })
+  status?: EntityStatus[];
 
   @IsOptional()
-  @IsEnum(GamificationSubjectType)
-  audience?: GamificationSubjectType;
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(GamificationSubjectType, { each: true })
+  audience?: GamificationSubjectType[];
 }
 
 // ── Point rules ───────────────────────────────────────────────────────────
@@ -274,12 +267,16 @@ export class UpdatePointRuleDto {
 
 export class ListPointRulesQueryDto extends PaginationQueryDto {
   @IsOptional()
-  @IsEnum(EntityStatus)
-  status?: EntityStatus;
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(EntityStatus, { each: true })
+  status?: EntityStatus[];
 
   @IsOptional()
-  @IsEnum(PointRuleEvent)
-  event?: PointRuleEvent;
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(PointRuleEvent, { each: true })
+  event?: PointRuleEvent[];
 }
 
 // ── Grants & adjustments ──────────────────────────────────────────────────
@@ -309,16 +306,20 @@ export class AdjustPointsDto extends SubjectRefDto {
 
 export class ListTransactionsQueryDto extends PaginationQueryDto {
   @IsOptional()
-  @IsEnum(GamificationSubjectType)
-  subjectType?: GamificationSubjectType;
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(GamificationSubjectType, { each: true })
+  subjectType?: GamificationSubjectType[];
 
   @IsOptional()
   @IsMongoId()
   subjectId?: string;
 
   @IsOptional()
-  @IsEnum(PointTransactionReason)
-  reason?: PointTransactionReason;
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(PointTransactionReason, { each: true })
+  reason?: PointTransactionReason[];
 
   @IsOptional()
   @IsMongoId()
@@ -327,8 +328,10 @@ export class ListTransactionsQueryDto extends PaginationQueryDto {
 
 export class ListGrantsQueryDto extends PaginationQueryDto {
   @IsOptional()
-  @IsEnum(GamificationSubjectType)
-  subjectType?: GamificationSubjectType;
+  @Transform(toStringArray)
+  @IsArray()
+  @IsEnum(GamificationSubjectType, { each: true })
+  subjectType?: GamificationSubjectType[];
 
   @IsOptional()
   @IsMongoId()
