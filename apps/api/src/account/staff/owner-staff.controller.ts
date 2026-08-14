@@ -59,13 +59,7 @@ export class OwnerStaffController {
     @Body() dto: UpdateStaffPermissionsDto,
     @Req() request: Request,
   ) {
-    return this.staff.updatePermissions(
-      ownerId,
-      clubId,
-      staffId,
-      dto,
-      request,
-    );
+    return this.staff.updatePermissions(ownerId, clubId, staffId, dto, request);
   }
 
   @Delete(':staffId')

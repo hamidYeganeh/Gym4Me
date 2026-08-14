@@ -46,4 +46,8 @@ AchievementGrantSchema.index(
   { achievementId: 1, 'subject.type': 1, 'subject.id': 1 },
   { unique: true },
 );
-AchievementGrantSchema.index({ 'subject.type': 1, 'subject.id': 1, grantedAt: -1 });
+AchievementGrantSchema.index({
+  'subject.type': 1,
+  'subject.id': 1,
+  grantedAt: -1,
+});

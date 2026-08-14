@@ -21,16 +21,14 @@ import {
   paginatedResult,
   resolvePageSize,
 } from '../common/utils/pagination.util';
-import {
-  FoodItem,
-  FoodItemDocument,
-} from '../schemas/food-item.schema';
+import { FoodItem, FoodItemDocument } from '../schemas/food-item.schema';
 import {
   MealAdherence,
   MealAdherenceDocument,
 } from '../schemas/meal-adherence.schema';
 import { MealPlan, MealPlanDocument } from '../schemas/meal-plan.schema';
 import {
+  AdminListFoodItemsQueryDto,
   CreateFoodItemDto,
   CreateMealAdherenceDto,
   CreateMealPlanDto,
@@ -170,7 +168,9 @@ export class NutritionService {
   ): string {
     if (activeRole === Role.ATHLETE) {
       if (athleteUserId && athleteUserId !== userId) {
-        throw new ForbiddenException('Athletes can only manage their own plans');
+        throw new ForbiddenException(
+          'Athletes can only manage their own plans',
+        );
       }
       return userId;
     }
@@ -218,10 +218,7 @@ export class NutritionService {
   ) {
     if (activeRole === Role.ADMIN) return;
     if (plan.athleteUserId.toString() === userId) return;
-    if (
-      activeRole === Role.COACH &&
-      plan.coachUserId?.toString() === userId
-    ) {
+    if (activeRole === Role.COACH && plan.coachUserId?.toString() === userId) {
       return;
     }
     throw new ForbiddenException('Not allowed to access this meal plan');
@@ -291,7 +288,10 @@ export class NutritionService {
           name: meal.name,
           items: (meal.items ?? []).map((item) => ({
             title: item.title,
-            foodItemId: (item as { foodItemId?: Types.ObjectId }).foodItemId?.toString() ?? null,
+            foodItemId:
+              (
+                item as { foodItemId?: Types.ObjectId }
+              ).foodItemId?.toString() ?? null,
             calories: item.calories ?? null,
             proteinG: item.proteinG ?? null,
             carbsG: item.carbsG ?? null,
@@ -315,6 +315,30 @@ export class NutritionService {
         query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
         'i',
       );
+    }
+    const { page, pageSize } = resolvePageSize(query);
+    const [items, total] = await Promise.all([
+      this.foodItemModel
+        .find(filter)
+        .sort({ name: 1 })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .lean(),
+      this.foodItemModel.countDocuments(filter),
+    ]);
+    return paginatedResult(
+      items.map((i) => this.toFoodItem(i)),
+      total,
+      page,
+      pageSize,
+    );
+  }
+
+  async adminListFoodItems(query: AdminListFoodItemsQueryDto) {
+    const filter: QueryFilter<FoodItemDocument> = {};
+    if (query.status?.length) {
+      filter.status =
+        query.status.length === 1 ? query.status[0] : { $in: query.status };
     }
     const { page, pageSize } = resolvePageSize(query);
     const [items, total] = await Promise.all([
@@ -370,13 +394,16 @@ export class NutritionService {
     adminId: string,
     request: Request,
   ) {
-    if (!Types.ObjectId.isValid(id)) throw new NotFoundException('Food item not found');
+    if (!Types.ObjectId.isValid(id))
+      throw new NotFoundException('Food item not found');
     const item = await this.foodItemModel.findById(id);
     if (!item) throw new NotFoundException('Food item not found');
     if (dto.name !== undefined) item.name = dto.name.trim();
-    if (dto.categoryKey !== undefined) item.categoryKey = dto.categoryKey?.trim();
+    if (dto.categoryKey !== undefined)
+      item.categoryKey = dto.categoryKey?.trim();
     if (dto.macros !== undefined) item.macros = dto.macros;
-    if (dto.servingLabel !== undefined) item.servingLabel = dto.servingLabel?.trim();
+    if (dto.servingLabel !== undefined)
+      item.servingLabel = dto.servingLabel?.trim();
     if (dto.status !== undefined) item.status = dto.status;
     await item.save();
     this.audit.log({
@@ -389,7 +416,8 @@ export class NutritionService {
   }
 
   async adminArchiveFoodItem(id: string, adminId: string, request: Request) {
-    if (!Types.ObjectId.isValid(id)) throw new NotFoundException('Food item not found');
+    if (!Types.ObjectId.isValid(id))
+      throw new NotFoundException('Food item not found');
     const item = await this.foodItemModel.findById(id);
     if (!item) throw new NotFoundException('Food item not found');
     item.status = FoodItemStatus.ARCHIVED;
@@ -426,7 +454,10 @@ export class NutritionService {
     this.audit.log({
       action: AuditAction.MEAL_ADHERENCE_LOGGED,
       actorId: athleteUserId,
-      metadata: { adherenceId: item._id.toString(), mealPlanId: dto.mealPlanId },
+      metadata: {
+        adherenceId: item._id.toString(),
+        mealPlanId: dto.mealPlanId,
+      },
       request,
     });
     return this.toAdherence(item.toObject());

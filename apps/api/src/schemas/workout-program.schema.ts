@@ -6,10 +6,7 @@ import {
   WorkoutProgramStatus,
 } from '../common/enums';
 import { User } from './user.schema';
-import {
-  WorkoutPlanWeek,
-  WorkoutPlanWeekSchema,
-} from './workout-plan.schema';
+import { WorkoutPlanWeek, WorkoutPlanWeekSchema } from './workout-plan.schema';
 
 export type WorkoutProgramDocument = HydratedDocument<WorkoutProgram>;
 

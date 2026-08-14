@@ -48,9 +48,8 @@ export class ExerciseVerification {
   rejectionReason?: string;
 }
 
-export const ExerciseVerificationSchema = SchemaFactory.createForClass(
-  ExerciseVerification,
-);
+export const ExerciseVerificationSchema =
+  SchemaFactory.createForClass(ExerciseVerification);
 
 @Schema({ timestamps: true, collection: 'exercises' })
 export class Exercise {

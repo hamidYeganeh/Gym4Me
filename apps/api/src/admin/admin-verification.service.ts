@@ -159,9 +159,7 @@ export class AdminVerificationService {
     profile.verification.reviewedAt = new Date();
     profile.verification.reviewedBy = new Types.ObjectId(adminId);
     profile.verification.reviewNote =
-      dto.action === 'reject'
-        ? (dto.reviewNote ?? 'Rejected')
-        : dto.reviewNote;
+      dto.action === 'reject' ? (dto.reviewNote ?? 'Rejected') : dto.reviewNote;
     profile.markModified('verification');
     await profile.save();
 
@@ -169,7 +167,10 @@ export class AdminVerificationService {
       action: AuditAction.COACH_VERIFICATION_REVIEWED,
       actorId: adminId,
       targetUserId: userId,
-      metadata: { action: dto.action, reviewNote: profile.verification.reviewNote },
+      metadata: {
+        action: dto.action,
+        reviewNote: profile.verification.reviewNote,
+      },
       request,
     });
 
@@ -188,5 +189,4 @@ export class AdminVerificationService {
       },
     };
   }
-
 }

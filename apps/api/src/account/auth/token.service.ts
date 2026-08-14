@@ -89,10 +89,7 @@ export class TokenService {
     return n;
   }
 
-  async issuePair(
-    user: UserDocument,
-    activeRole?: Role,
-  ): Promise<TokenPair> {
+  async issuePair(user: UserDocument, activeRole?: Role): Promise<TokenPair> {
     const role = activeRole ?? pickDefaultActiveRole(user.roles);
     if (!user.roles.includes(role)) {
       throw new UnauthorizedException('Role not assigned to user');
@@ -268,11 +265,13 @@ export class TokenService {
 
   async verifyPasswordResetToken(token: string): Promise<string> {
     try {
-      const payload =
-        await this.jwt.verifyAsync<PasswordResetTokenPayload>(token, {
+      const payload = await this.jwt.verifyAsync<PasswordResetTokenPayload>(
+        token,
+        {
           secret: this.passwordResetSecret(),
           algorithms: ['HS256'],
-        });
+        },
+      );
       if (payload.type !== 'pwd_reset' || !payload.jti) {
         throw new Error('wrong type');
       }

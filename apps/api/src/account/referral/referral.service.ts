@@ -52,9 +52,7 @@ export class ReferralService {
       referrer: {
         name: {
           first: referrer.name?.first ?? null,
-          last: referrer.name?.last
-            ? `${referrer.name.last[0]}…`
-            : null,
+          last: referrer.name?.last ? `${referrer.name.last[0]}…` : null,
         },
         code: referrer.code ?? null,
       },
@@ -204,8 +202,7 @@ export class ReferralService {
 
     if (!invite) return { qualified: false };
 
-    const rewardStatus =
-      invite.reward?.status ?? ReferralRewardStatus.PENDING;
+    const rewardStatus = invite.reward?.status ?? ReferralRewardStatus.PENDING;
     if (
       rewardStatus === ReferralRewardStatus.QUALIFIED ||
       rewardStatus === ReferralRewardStatus.CLAWED_BACK

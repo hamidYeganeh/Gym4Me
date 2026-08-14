@@ -37,10 +37,7 @@ import {
   CoachClubAffiliation,
   CoachClubAffiliationDocument,
 } from '../../schemas/coach-club-affiliation.schema';
-import {
-  CoachLead,
-  CoachLeadDocument,
-} from '../../schemas/coach-lead.schema';
+import { CoachLead, CoachLeadDocument } from '../../schemas/coach-lead.schema';
 import {
   CoachMessage,
   CoachMessageDocument,
@@ -188,7 +185,7 @@ export class CoachingService {
     if (dto.description !== undefined) item.description = dto.description;
     if (dto.delivery) {
       this.assertDelivery(dto.delivery.mode, dto.delivery);
-      item.delivery = this.toDelivery(dto.delivery) as typeof item.delivery;
+      item.delivery = this.toDelivery(dto.delivery);
     }
     if (dto.pricing) {
       item.pricing = {
@@ -295,7 +292,7 @@ export class CoachingService {
       request,
     });
 
-    return this.toAvailability(item!);
+    return this.toAvailability(item);
   }
 
   // ── Affiliations ────────────────────────────────────────────────────────
@@ -308,10 +305,7 @@ export class CoachingService {
     return items.map((item) => this.toAffiliation(item));
   }
 
-  async createAffiliation(
-    coachUserId: string,
-    dto: CreateAffiliationDto,
-  ) {
+  async createAffiliation(coachUserId: string, dto: CreateAffiliationDto) {
     this.assertContract(dto.type, dto.contract);
     try {
       const item = await this.affiliationModel.create({
@@ -331,9 +325,7 @@ export class CoachingService {
       return this.toAffiliation(item.toObject());
     } catch (err) {
       if (this.isDuplicateKey(err)) {
-        throw new ConflictException(
-          'Affiliation already exists for this club',
-        );
+        throw new ConflictException('Affiliation already exists for this club');
       }
       throw err;
     }
@@ -371,10 +363,7 @@ export class CoachingService {
 
   // ── Packages ────────────────────────────────────────────────────────────
 
-  async listPackagesForCoach(
-    coachUserId: string,
-    query: ListPackagesQueryDto,
-  ) {
+  async listPackagesForCoach(coachUserId: string, query: ListPackagesQueryDto) {
     const filter: QueryFilter<SessionPackageDocument> = {
       coachUserId: this.oid(coachUserId),
     };
@@ -444,11 +433,7 @@ export class CoachingService {
     return this.toPackage(item.toObject());
   }
 
-  async consumePackage(
-    coachUserId: string,
-    id: string,
-    request?: Request,
-  ) {
+  async consumePackage(coachUserId: string, id: string, request?: Request) {
     const item = await this.findOwnedPackage(coachUserId, id);
     this.assertPackageConsumable(item);
 
@@ -473,11 +458,7 @@ export class CoachingService {
     return this.toPackage(item.toObject());
   }
 
-  async freezePackage(
-    coachUserId: string,
-    id: string,
-    dto: FreezePackageDto,
-  ) {
+  async freezePackage(coachUserId: string, id: string, dto: FreezePackageDto) {
     const item = await this.findOwnedPackage(coachUserId, id);
     if (item.status !== SessionPackageStatus.ACTIVE) {
       throw new BadRequestException('Only active packages can be frozen');
@@ -586,8 +567,7 @@ export class CoachingService {
       }
       if (dto.engagement) {
         set.engagement = {
-          level:
-            dto.engagement.level ?? CoachStudentEngagementLevel.HEALTHY,
+          level: dto.engagement.level ?? CoachStudentEngagementLevel.HEALTHY,
           progressPercent: dto.engagement.progressPercent,
           scoredAt: new Date(),
           lastSessionAt: dto.engagement.lastSessionAt
@@ -615,11 +595,11 @@ export class CoachingService {
         action: AuditAction.COACHING_STUDENT_LINKED,
         actorId: coachUserId,
         targetUserId: dto.athleteUserId,
-        metadata: { studentId: item!._id.toString() },
+        metadata: { studentId: item._id.toString() },
         request,
       });
 
-      return this.toStudent(item!.toObject());
+      return this.toStudent(item.toObject());
     } catch (err) {
       if (this.isDuplicateKey(err)) {
         throw new ConflictException('Student already linked');
@@ -628,11 +608,7 @@ export class CoachingService {
     }
   }
 
-  async updateStudent(
-    coachUserId: string,
-    id: string,
-    dto: UpdateStudentDto,
-  ) {
+  async updateStudent(coachUserId: string, id: string, dto: UpdateStudentDto) {
     const item = await this.findOwnedStudent(coachUserId, id);
     if (dto.notes !== undefined) item.notes = dto.notes;
     if (dto.status !== undefined) item.status = dto.status;
@@ -714,9 +690,7 @@ export class CoachingService {
         activeClientsSeries: fillSeries(activeCount),
         activeClientsValue: String(activeCount),
         retentionSeries: fillSeries(retentionPct),
-        retentionComparisonSeries: fillSeries(
-          Math.max(0, retentionPct - 8),
-        ),
+        retentionComparisonSeries: fillSeries(Math.max(0, retentionPct - 8)),
         retentionValue: String(retentionPct),
         cancellationsSeries: fillSeries(quietCount + atRiskCount),
         cancellationsValue: String(quietCount + atRiskCount),
@@ -770,19 +744,13 @@ export class CoachingService {
     );
   }
 
-  async createLead(
-    coachUserId: string,
-    dto: CreateLeadDto,
-    request?: Request,
-  ) {
+  async createLead(coachUserId: string, dto: CreateLeadDto, request?: Request) {
     const item = await this.leadModel.create({
       coachUserId: this.oid(coachUserId),
       contact: {
         name: dto.contact.name,
         phone: dto.contact.phone,
-        userId: dto.contact.userId
-          ? this.oid(dto.contact.userId)
-          : undefined,
+        userId: dto.contact.userId ? this.oid(dto.contact.userId) : undefined,
       },
       stage: dto.stage ?? CoachLeadStage.NEW,
       notes: dto.notes,
@@ -810,9 +778,7 @@ export class CoachingService {
       item.contact = {
         name: dto.contact.name,
         phone: dto.contact.phone,
-        userId: dto.contact.userId
-          ? this.oid(dto.contact.userId)
-          : undefined,
+        userId: dto.contact.userId ? this.oid(dto.contact.userId) : undefined,
       };
     }
     if (dto.notes !== undefined) item.notes = dto.notes;
@@ -913,11 +879,11 @@ export class CoachingService {
       action: AuditAction.HEALTH_ASSESSMENT_UPSERTED,
       actorId: athleteUserId,
       targetUserId: athleteUserId,
-      metadata: { status: item!.status },
+      metadata: { status: item.status },
       request,
     });
 
-    return this.toHealth(item!);
+    return this.toHealth(item);
   }
 
   async getHealthAssessmentForAthlete(athleteUserId: string) {
@@ -1126,7 +1092,7 @@ export class CoachingService {
       },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     );
-    return existing!;
+    return existing;
   }
 
   private assertDelivery(
@@ -1405,8 +1371,7 @@ export class CoachingService {
         levelKey: item.coaching?.levelKey ?? null,
       },
       engagement: {
-        level:
-          item.engagement?.level ?? CoachStudentEngagementLevel.HEALTHY,
+        level: item.engagement?.level ?? CoachStudentEngagementLevel.HEALTHY,
         progressPercent: item.engagement?.progressPercent ?? null,
         scoredAt: item.engagement?.scoredAt?.toISOString() ?? null,
         lastSessionAt: item.engagement?.lastSessionAt?.toISOString() ?? null,
@@ -1477,7 +1442,10 @@ export class CoachingService {
 
   // ── Direct messaging (N4) ───────────────────────────────────────────────
 
-  async listThreadsForCoach(coachUserId: string, query: ListCoachThreadsQueryDto) {
+  async listThreadsForCoach(
+    coachUserId: string,
+    query: ListCoachThreadsQueryDto,
+  ) {
     const filter: QueryFilter<CoachThreadDocument> = {
       coachUserId: this.oid(coachUserId),
       status: EntityStatus.ACTIVE,
@@ -1526,10 +1494,7 @@ export class CoachingService {
     );
   }
 
-  async openOrGetThreadAsCoach(
-    coachUserId: string,
-    dto: OpenCoachThreadDto,
-  ) {
+  async openOrGetThreadAsCoach(coachUserId: string, dto: OpenCoachThreadDto) {
     await this.assertActiveStudentLink(coachUserId, dto.athleteUserId);
     return this.ensureThread(coachUserId, dto.athleteUserId);
   }

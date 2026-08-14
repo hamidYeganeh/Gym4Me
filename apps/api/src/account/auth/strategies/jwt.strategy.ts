@@ -57,7 +57,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       throw new UnauthorizedException();
     }
 
-    const roles = user.roles as Role[];
+    const roles = user.roles;
     if (!roles.includes(payload.activeRole)) {
       // Do not silently remapping — role was revoked or token is stale.
       throw new UnauthorizedException('Active role is no longer assigned');

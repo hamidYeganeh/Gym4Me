@@ -96,7 +96,10 @@ export class ProfileService {
       }
       if (address.point !== undefined) {
         user.address.point = address.point
-          ? { type: 'Point', coordinates: [address.point.lng, address.point.lat] }
+          ? {
+              type: 'Point',
+              coordinates: [address.point.lng, address.point.lat],
+            }
           : undefined;
       }
       user.markModified('address');
@@ -156,8 +159,10 @@ export class ProfileService {
     if (dto.bio !== undefined) profile.bio = dto.bio;
     if (dto.levelKey !== undefined) profile.levelKey = dto.levelKey;
     if (dto.body) {
-      if (dto.body.heightCm !== undefined) profile.body.heightCm = dto.body.heightCm;
-      if (dto.body.weightKg !== undefined) profile.body.weightKg = dto.body.weightKg;
+      if (dto.body.heightCm !== undefined)
+        profile.body.heightCm = dto.body.heightCm;
+      if (dto.body.weightKg !== undefined)
+        profile.body.weightKg = dto.body.weightKg;
       profile.markModified('body');
     }
     if (dto.privacy) {

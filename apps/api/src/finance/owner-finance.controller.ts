@@ -58,7 +58,9 @@ export class OwnerFinanceController {
   // ── Manual payments ─────────────────────────────────────────────────────
 
   @Post('payments/manual')
-  @ApiOperation({ summary: 'Record a desk payment (cash/pos/card_to_card/mixed)' })
+  @ApiOperation({
+    summary: 'Record a desk payment (cash/pos/card_to_card/mixed)',
+  })
   async recordManual(
     @CurrentUser('sub') userId: string,
     @Param('clubId') clubId: string,
@@ -260,13 +262,7 @@ export class OwnerFinanceController {
     @Req() request: Request,
   ) {
     await this.finance.requireOwnedClub(userId, clubId);
-    return this.finance.recordDebtPayment(
-      clubId,
-      debtId,
-      userId,
-      dto,
-      request,
-    );
+    return this.finance.recordDebtPayment(clubId, debtId, userId, dto, request);
   }
 
   // ── Compensation ────────────────────────────────────────────────────────

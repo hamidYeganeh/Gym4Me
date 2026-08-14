@@ -133,12 +133,7 @@ export class RefService {
     return this.toPublic(item);
   }
 
-  async remove(
-    type: RefType,
-    id: string,
-    adminId: string,
-    request: Request,
-  ) {
+  async remove(type: RefType, id: string, adminId: string, request: Request) {
     const item = await this.findOrFail(id);
     if (item.type !== type) throw new NotFoundException('Ref item not found');
 

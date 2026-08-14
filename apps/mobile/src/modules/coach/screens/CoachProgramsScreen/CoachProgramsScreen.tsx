@@ -188,7 +188,19 @@ export function CoachProgramsScreen({
         {visiblePrograms.length > 0 ? (
           <div className={styles.list}>
             {visiblePrograms.map((program) => (
-              <article className={styles.card} key={program.id}>
+              <article
+                className={`${styles.card} cursor-pointer`}
+                key={program.id}
+                onClick={() => router.push(`/coach/programs/${program.id}`)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    router.push(`/coach/programs/${program.id}`);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+              >
                 <div className={styles.cardTop}>
                   <Typography
                     className={styles.cardTitle}
@@ -232,21 +244,27 @@ export function CoachProgramsScreen({
                   {program.updatedLabel}
                 </Typography>
                 {program.state === "draft" && onPublishProgram ? (
-                  <Button
-                    fullWidth
-                    isDisabled={publishingId === program.id}
-                    onPress={() => {
-                      setPublishingId(program.id);
-                      void Promise.resolve(onPublishProgram(program.id)).finally(
-                        () => setPublishingId(null),
-                      );
-                    }}
-                    variant="secondary"
+                  <div
+                    onClick={(event) => event.stopPropagation()}
+                    onKeyDown={(event) => event.stopPropagation()}
+                    role="presentation"
                   >
-                    {publishingId === program.id
-                      ? t("publishing")
-                      : t("publishAction")}
-                  </Button>
+                    <Button
+                      fullWidth
+                      isDisabled={publishingId === program.id}
+                      onPress={() => {
+                        setPublishingId(program.id);
+                        void Promise.resolve(
+                          onPublishProgram(program.id),
+                        ).finally(() => setPublishingId(null));
+                      }}
+                      variant="secondary"
+                    >
+                      {publishingId === program.id
+                        ? t("publishing")
+                        : t("publishAction")}
+                    </Button>
+                  </div>
                 ) : null}
               </article>
             ))}

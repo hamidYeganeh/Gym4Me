@@ -4,6 +4,7 @@ import { App } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
 import { Preferences } from "@capacitor/preferences";
 import { Button, Typography } from "@heroui/react";
+import { createAppConfigApi, type AppBootstrap } from "@repo/api";
 import {
   createContext,
   type ReactNode,
@@ -20,27 +21,6 @@ export type Gym4MeFeatureKey =
   | "athlete.personal_records"
   | "athlete.workout_logging"
   | "health.device_sync";
-
-type FeatureValue = {
-  enabled: boolean;
-  payload: Record<string, unknown>;
-};
-
-type AppBootstrap = {
-  schemaVersion: 1;
-  serverTime: string;
-  cacheTtlSeconds: number;
-  api: { currentVersion: string; recommendedVersion: string };
-  compatibility: {
-    supported: boolean;
-    updateRequired: boolean;
-    updateAvailable: boolean;
-    minimumAppVersion: string;
-    latestAppVersion: string;
-    updateUrl: string | null;
-  };
-  features: Record<string, FeatureValue>;
-};
 
 type CachedBootstrap = { expiresAt: number; value: AppBootstrap };
 
@@ -61,6 +41,7 @@ const DEFAULTS: Record<Gym4MeFeatureKey, boolean> = {
   "health.device_sync": false,
 };
 
+const appConfigApi = createAppConfigApi(apiClient);
 const AppConfigContext = createContext<AppConfigContextValue | null>(null);
 
 async function installationId() {
@@ -103,19 +84,18 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
         installationId(),
       ]);
       const platform = Capacitor.getPlatform();
-      const value = await apiClient.request<AppBootstrap>(
-        "/app-config/bootstrap",
-        {
-          public: true,
-          query: {
-            platform:
-              platform === "ios" || platform === "android" ? platform : "web",
-            appVersion,
-            installationId: deviceId,
-            channel: process.env.NEXT_PUBLIC_RELEASE_CHANNEL || "production",
-          },
-        },
-      );
+      const value = await appConfigApi.fetchBootstrap({
+        platform:
+          platform === "ios" || platform === "android" ? platform : "web",
+        appVersion,
+        installationId: deviceId,
+        channel:
+          (process.env.NEXT_PUBLIC_RELEASE_CHANNEL as
+            | "production"
+            | "beta"
+            | "development"
+            | undefined) || "production",
+      });
       setBootstrap(value);
       await Preferences.set({
         key: CACHE_KEY,

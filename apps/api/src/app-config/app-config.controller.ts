@@ -5,6 +5,7 @@ import {
   Param,
   Put,
   Query,
+  VERSION_NEUTRAL,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -20,7 +21,7 @@ import {
 import { AppConfigService } from './app-config.service';
 
 @ApiTags('app-config')
-@Controller('app-config')
+@Controller({ path: 'app-config', version: VERSION_NEUTRAL })
 export class PublicAppConfigController {
   constructor(private readonly appConfig: AppConfigService) {}
 
@@ -68,4 +69,3 @@ export class AdminAppConfigController {
     return this.appConfig.upsertReleasePolicy(dto, adminId);
   }
 }
-

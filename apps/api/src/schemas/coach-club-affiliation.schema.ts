@@ -57,9 +57,8 @@ export class CoachClubAffiliation {
   updatedAt!: Date;
 }
 
-export const CoachClubAffiliationSchema = SchemaFactory.createForClass(
-  CoachClubAffiliation,
-);
+export const CoachClubAffiliationSchema =
+  SchemaFactory.createForClass(CoachClubAffiliation);
 
 CoachClubAffiliationSchema.index(
   { coachUserId: 1, clubId: 1 },

@@ -27,7 +27,10 @@ describe('flattenValidationErrors', () => {
 
     expect(flattenValidationErrors(errors)).toEqual({
       phone: ['property phone should not exist'],
-      mobile: ['شماره موبایل باید معتبر و ایرانی باشد', 'mobile باید رشته باشد'],
+      mobile: [
+        'شماره موبایل باید معتبر و ایرانی باشد',
+        'mobile باید رشته باشد',
+      ],
     });
   });
 

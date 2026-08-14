@@ -80,7 +80,8 @@ export class CouponsService {
         const raced = await this.redemptionModel
           .findOne({ contextKey: ctx.contextKey })
           .lean();
-        if (raced) return { discount: raced.discount, idempotent: true as const };
+        if (raced)
+          return { discount: raced.discount, idempotent: true as const };
       }
       throw err;
     }
@@ -122,10 +123,7 @@ export class CouponsService {
     ) {
       throw new BadRequestException('Coupon is not valid for this club');
     }
-    if (
-      c.maxRedemptions &&
-      coupon.redemptionCount >= c.maxRedemptions
-    ) {
+    if (c.maxRedemptions && coupon.redemptionCount >= c.maxRedemptions) {
       throw new BadRequestException('Coupon redemption limit reached');
     }
     if (c.maxPerUser && ctx.userId) {
@@ -208,10 +206,7 @@ export class CouponsService {
       },
       { createdAt: -1 },
     );
-    const items = await this.couponModel
-      .find(filter)
-      .sort(sort)
-      .limit(200);
+    const items = await this.couponModel.find(filter).sort(sort).limit(200);
     return { items: items.map((c) => this.toPublic(c)) };
   }
 

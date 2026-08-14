@@ -17,9 +17,8 @@ export class SupportMessageAuthor {
   kind!: SupportMessageAuthorKind;
 }
 
-export const SupportMessageAuthorSchema = SchemaFactory.createForClass(
-  SupportMessageAuthor,
-);
+export const SupportMessageAuthorSchema =
+  SchemaFactory.createForClass(SupportMessageAuthor);
 
 @Schema({ timestamps: true, collection: 'support_ticket_messages' })
 export class SupportTicketMessage {
@@ -45,8 +44,7 @@ export class SupportTicketMessage {
   updatedAt!: Date;
 }
 
-export const SupportTicketMessageSchema = SchemaFactory.createForClass(
-  SupportTicketMessage,
-);
+export const SupportTicketMessageSchema =
+  SchemaFactory.createForClass(SupportTicketMessage);
 
 SupportTicketMessageSchema.index({ ticketId: 1, createdAt: 1 });

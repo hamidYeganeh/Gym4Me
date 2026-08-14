@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
   Req,
 } from '@nestjs/common';
@@ -14,7 +15,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
-import { Role } from '../common/enums';
+import { HealthSyncProvider, Role } from '../common/enums';
 import {
   CreateProgressMetricDto,
   CreateProgressPhotoDto,
@@ -24,7 +25,12 @@ import {
   CreateWorkoutProgramDto,
   AssignWorkoutProgramDto,
   CreateExerciseDto,
+  CreateMetricGoalDto,
+  DeleteProgressMetricsDto,
   ListExercisesQueryDto,
+  ListHealthSyncStatesQueryDto,
+  ListMetricGoalsQueryDto,
+  ListMetricRemindersQueryDto,
   ListMetricTypesQueryDto,
   ListPersonalRecordsQueryDto,
   ListProgressMetricsQueryDto,
@@ -32,11 +38,16 @@ import {
   ListWorkoutLogsQueryDto,
   ListWorkoutPlansQueryDto,
   ListWorkoutProgramsQueryDto,
+  MetricsSummaryQueryDto,
   SyncProgressMetricsDto,
+  UpdateMetricGoalDto,
   UpdateProgressMetricDto,
   UpdateProgressPhotoDto,
+  UpdateWorkoutLogDto,
   UpdateWorkoutPlanDto,
   UpdateWorkoutProgramDto,
+  UpsertHealthSyncStateDto,
+  UpsertMetricReminderDto,
 } from './dto/progress.dto';
 import { ProgressService } from './progress.service';
 
@@ -72,7 +83,9 @@ export class AccountProgressController {
 
   @Get('metric-types')
   @Roles(Role.ATHLETE, Role.COACH, Role.ADMIN)
-  @ApiOperation({ summary: 'List active metric types (seeds defaults if empty)' })
+  @ApiOperation({
+    summary: 'List active metric types (seeds defaults if empty)',
+  })
   listMetricTypes(@Query() query: ListMetricTypesQueryDto) {
     return this.progress.listActiveMetricTypes(query);
   }
@@ -137,7 +150,8 @@ export class AccountProgressController {
   @Post('workout-programs/:id/assign')
   @Roles(Role.COACH)
   @ApiOperation({
-    summary: 'Assign a program to an athlete (creates WorkoutPlan + increments assignedCount)',
+    summary:
+      'Assign a program to an athlete (creates WorkoutPlan + increments assignedCount)',
   })
   assignWorkoutProgram(
     @Param('id') id: string,
@@ -221,14 +235,27 @@ export class AccountProgressController {
   // ── Metrics ─────────────────────────────────────────────────────────────
 
   @Get('metrics')
-  @Roles(Role.ATHLETE)
-  @ApiOperation({ summary: 'List my progress metrics (private)' })
+  @Roles(Role.ATHLETE, Role.COACH, Role.ADMIN)
+  @ApiOperation({
+    summary: 'List progress metrics (athlete own / coach with active grant)',
+  })
   listMetrics(
     @CurrentUser('sub') userId: string,
     @CurrentUser('activeRole') activeRole: Role,
     @Query() query: ListProgressMetricsQueryDto,
   ) {
     return this.progress.listMetrics(userId, activeRole, query);
+  }
+
+  @Get('metrics/summary')
+  @Roles(Role.ATHLETE, Role.COACH, Role.ADMIN)
+  @ApiOperation({ summary: 'Aggregated metric summary for a date range' })
+  metricsSummary(
+    @CurrentUser('sub') userId: string,
+    @CurrentUser('activeRole') activeRole: Role,
+    @Query() query: MetricsSummaryQueryDto,
+  ) {
+    return this.progress.metricsSummary(userId, activeRole, query);
   }
 
   @Post('metrics')
@@ -351,13 +378,123 @@ export class AccountProgressController {
 
   @Post('workout-logs')
   @Roles(Role.ATHLETE)
-  @ApiOperation({ summary: 'Log a completed or skipped workout session' })
+  @ApiOperation({
+    summary: 'Create a workout log (draft allowed; default status draft)',
+  })
   createWorkoutLog(
     @Body() dto: CreateWorkoutLogDto,
     @CurrentUser('sub') userId: string,
     @Req() request: Request,
   ) {
     return this.progress.createWorkoutLog(dto, userId, request);
+  }
+
+  @Patch('workout-logs/:id')
+  @Roles(Role.ATHLETE)
+  @ApiOperation({ summary: 'Patch a draft / in-progress workout log' })
+  updateWorkoutLog(
+    @Param('id') id: string,
+    @Body() dto: UpdateWorkoutLogDto,
+    @CurrentUser('sub') userId: string,
+    @Req() request: Request,
+  ) {
+    return this.progress.updateWorkoutLog(id, dto, userId, request);
+  }
+
+  @Post('workout-logs/:id/complete')
+  @Roles(Role.ATHLETE)
+  @ApiOperation({ summary: 'Mark a workout log completed' })
+  completeWorkoutLog(
+    @Param('id') id: string,
+    @CurrentUser('sub') userId: string,
+    @Req() request: Request,
+  ) {
+    return this.progress.completeWorkoutLog(id, userId, request);
+  }
+
+  // ── Goals ───────────────────────────────────────────────────────────────
+
+  @Get('goals')
+  @Roles(Role.ATHLETE)
+  @ApiOperation({ summary: 'List my metric goals' })
+  listGoals(
+    @CurrentUser('sub') userId: string,
+    @Query() query: ListMetricGoalsQueryDto,
+  ) {
+    return this.progress.listMetricGoals(userId, query);
+  }
+
+  @Post('goals')
+  @Roles(Role.ATHLETE)
+  @ApiOperation({ summary: 'Create a metric goal' })
+  createGoal(
+    @Body() dto: CreateMetricGoalDto,
+    @CurrentUser('sub') userId: string,
+    @Req() request: Request,
+  ) {
+    return this.progress.createMetricGoal(dto, userId, request);
+  }
+
+  @Patch('goals/:id')
+  @Roles(Role.ATHLETE)
+  @ApiOperation({ summary: 'Update a metric goal' })
+  updateGoal(
+    @Param('id') id: string,
+    @Body() dto: UpdateMetricGoalDto,
+    @CurrentUser('sub') userId: string,
+    @Req() request: Request,
+  ) {
+    return this.progress.updateMetricGoal(id, dto, userId, request);
+  }
+
+  // ── Reminders ───────────────────────────────────────────────────────────
+
+  @Get('reminders')
+  @Roles(Role.ATHLETE)
+  @ApiOperation({ summary: 'List my metric reminders (default paused)' })
+  listReminders(
+    @CurrentUser('sub') userId: string,
+    @Query() query: ListMetricRemindersQueryDto,
+  ) {
+    return this.progress.listMetricReminders(userId, query);
+  }
+
+  @Put('reminders/:metricKey')
+  @Roles(Role.ATHLETE)
+  @ApiOperation({
+    summary: 'Create or replace a reminder for a metric key (opt-in active)',
+  })
+  upsertReminder(
+    @Param('metricKey') metricKey: string,
+    @Body() dto: UpsertMetricReminderDto,
+    @CurrentUser('sub') userId: string,
+    @Req() request: Request,
+  ) {
+    return this.progress.upsertMetricReminder(metricKey, dto, userId, request);
+  }
+
+  // ── Health sync ─────────────────────────────────────────────────────────
+
+  @Get('health-sync')
+  @Roles(Role.ATHLETE)
+  @ApiOperation({ summary: 'List health provider sync states' })
+  listHealthSync(
+    @CurrentUser('sub') userId: string,
+    @Query() query: ListHealthSyncStatesQueryDto,
+  ) {
+    return this.progress.listHealthSyncStates(userId, query);
+  }
+
+  @Put('health-sync/:provider')
+  @Roles(Role.ATHLETE)
+  @ApiOperation({ summary: 'Upsert health provider sync state' })
+  upsertHealthSync(
+    @Param('provider') provider: HealthSyncProvider,
+    @Body() dto: UpsertHealthSyncStateDto,
+    @CurrentUser('sub') userId: string,
+    @Req() request: Request,
+  ) {
+    return this.progress.upsertHealthSyncState(provider, dto, userId, request);
   }
 
   // ── Personal records ────────────────────────────────────────────────────
@@ -375,12 +512,63 @@ export class AccountProgressController {
 
   @Post('personal-records')
   @Roles(Role.ATHLETE)
-  @ApiOperation({ summary: 'Record a personal record (default privacy PRIVATE)' })
+  @ApiOperation({
+    summary: 'Record a personal record (default privacy PRIVATE)',
+  })
   createPersonalRecord(
     @Body() dto: CreatePersonalRecordDto,
     @CurrentUser('sub') userId: string,
     @Req() request: Request,
   ) {
     return this.progress.createPersonalRecord(dto, userId, request);
+  }
+
+  // ── Data rights ─────────────────────────────────────────────────────────
+
+  @Get('export')
+  @Roles(Role.ATHLETE)
+  @ApiOperation({
+    summary:
+      'Export athlete progress data (metrics, photos, grants, goals; no financial data)',
+  })
+  exportProgress(@CurrentUser('sub') userId: string, @Req() request: Request) {
+    return this.progress.exportProgressData(userId, request);
+  }
+
+  @Delete('metrics')
+  @HttpCode(200)
+  @Roles(Role.ATHLETE)
+  @ApiOperation({
+    summary: 'Bulk-delete progress metrics (requires confirmation body)',
+  })
+  deleteMetricsBulk(
+    @Body() dto: DeleteProgressMetricsDto,
+    @CurrentUser('sub') userId: string,
+    @Req() request: Request,
+  ) {
+    return this.progress.deleteProgressMetrics(dto, userId, request);
+  }
+
+  @Post('data-rights/delete-metrics')
+  @HttpCode(200)
+  @Roles(Role.ATHLETE)
+  @ApiOperation({
+    summary: 'Alias: bulk-delete progress metrics with confirmation',
+  })
+  deleteMetricsDataRights(
+    @Body() dto: DeleteProgressMetricsDto,
+    @CurrentUser('sub') userId: string,
+    @Req() request: Request,
+  ) {
+    return this.progress.deleteProgressMetrics(dto, userId, request);
+  }
+
+  @Get('consent-history')
+  @Roles(Role.ATHLETE)
+  @ApiOperation({
+    summary: 'Consent / data-grant status history for the athlete',
+  })
+  consentHistory(@CurrentUser('sub') userId: string) {
+    return this.progress.consentHistory(userId);
   }
 }

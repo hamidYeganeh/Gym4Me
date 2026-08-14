@@ -19,7 +19,6 @@ import {
   formatArticleDate,
   formatCategoryLabel,
 } from "@/modules/articles/lib/format-article";
-import { sanitizeArticleHtml } from "@/modules/articles/lib/sanitize-article-html";
 import { articlesApi, mediaFileUrl } from "@/shared/lib/api";
 import { articleDetailScreenVariants } from "./ArticleDetailScreen.styles";
 import type { ArticleDetailScreenProps } from "./ArticleDetailScreen.types";
@@ -33,6 +32,7 @@ export function ArticleDetailScreen({ className }: ArticleDetailScreenProps) {
 
   const [article, setArticle] = useState<Article | null>(null);
   const [related, setRelated] = useState<ArticleSummary[]>([]);
+  const [safeBody, setSafeBody] = useState("");
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -75,6 +75,20 @@ export function ArticleDetailScreen({ className }: ArticleDetailScreenProps) {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    if (!article?.body) {
+      setSafeBody("");
+      return;
+    }
+    let cancelled = false;
+    void import("@/modules/articles/lib/sanitize-article-html").then((mod) => {
+      if (!cancelled) setSafeBody(mod.sanitizeArticleHtml(article.body));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [article?.body]);
 
   const toggleLike = async () => {
     if (!article || actionPending) return;
@@ -196,7 +210,7 @@ export function ArticleDetailScreen({ className }: ArticleDetailScreenProps) {
             <div
               className={styles.body()}
               dangerouslySetInnerHTML={{
-                __html: sanitizeArticleHtml(article.body),
+                __html: safeBody,
               }}
             />
 

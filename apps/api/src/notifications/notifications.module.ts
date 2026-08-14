@@ -1,9 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import {
-  DeviceToken,
-  DeviceTokenSchema,
-} from '../schemas/device-token.schema';
+import { DeviceToken, DeviceTokenSchema } from '../schemas/device-token.schema';
 import {
   Notification,
   NotificationSchema,

@@ -6,7 +6,7 @@ import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useHealthMetricsConnect } from "@/shared/lib/health";
+import { useHealthMetricsConnect, resolveHealthProvider, upsertConnectedHealthState } from "@/shared/lib/health";
 import { useFeatureFlag } from "@/shared/providers/AppConfigProvider";
 import { AthleteMetricsConnectSection } from "../../sections/AthleteMetricsConnectSection";
 import { AthleteMetricsIntroSection } from "../../sections/AthleteMetricsIntroSection";
@@ -59,30 +59,86 @@ export function AthleteMetricsScreen({
           title={t("title")}
         />
 
-        {deviceSyncEnabled ? <AthleteMetricsConnectSection
-          actionLabel={
-            health.isConnected ? t("connectAgain") : t("connectAction")
-          }
-          connectedLabel={t("connectConnected")}
-          connectingLabel={t("connectConnecting")}
-          deniedLabel={t("connectDenied")}
-          errorLabel={t("connectError")}
-          onConnect={() => {
-            void health.connect();
-          }}
-          onOpenSettings={
-            health.platform === "android"
-              ? () => {
-                  void health.openSettings();
-                }
-              : undefined
-          }
-          settingsLabel={t("connectSettings")}
-          status={health.status}
-          subtitle={t("connectSubtitle")}
-          title={t("connectTitle")}
-          unsupportedLabel={t("connectUnsupported")}
-        /> : null}
+        {deviceSyncEnabled ? (
+          <>
+            <AthleteMetricsConnectSection
+              actionLabel={
+                health.isConnected ? t("connectAgain") : t("connectAction")
+              }
+              connectedLabel={t("connectConnected")}
+              connectingLabel={t("connectConnecting")}
+              deniedLabel={t("connectDenied")}
+              errorLabel={t("connectError")}
+              onConnect={() => {
+                void (async () => {
+                  const result = await health.connect();
+                  if (result.ok && result.status === "connected") {
+                    const provider = resolveHealthProvider(result.platform);
+                    if (provider) {
+                      await upsertConnectedHealthState({
+                        provider,
+                        authorization: result.authorization,
+                        lastSyncAt: new Date().toISOString(),
+                      });
+                    }
+                  }
+                })();
+              }}
+              onOpenSettings={
+                health.platform === "android"
+                  ? () => {
+                      void health.openSettings();
+                    }
+                  : undefined
+              }
+              settingsLabel={t("connectSettings")}
+              status={health.status}
+              subtitle={t("connectSubtitle")}
+              title={t("connectTitle")}
+              unsupportedLabel={t("connectUnsupported")}
+            />
+            <div className="flex flex-wrap gap-2 px-0">
+              <Button
+                onPress={() => router.push("/athlete/health-sync")}
+                size="sm"
+                variant="secondary"
+              >
+                مدیریت همگام‌سازی
+              </Button>
+              <Button
+                onPress={() => router.push("/athlete/goals")}
+                size="sm"
+                variant="tertiary"
+              >
+                اهداف و یادآوری
+              </Button>
+              <Button
+                onPress={() => router.push("/athlete/data-rights")}
+                size="sm"
+                variant="tertiary"
+              >
+                حقوق داده
+              </Button>
+            </div>
+          </>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            <Button
+              onPress={() => router.push("/athlete/goals")}
+              size="sm"
+              variant="tertiary"
+            >
+              اهداف و یادآوری
+            </Button>
+            <Button
+              onPress={() => router.push("/athlete/data-rights")}
+              size="sm"
+              variant="tertiary"
+            >
+              حقوق داده
+            </Button>
+          </div>
+        )}
 
         <AthleteMetricsListSection
           labels={{

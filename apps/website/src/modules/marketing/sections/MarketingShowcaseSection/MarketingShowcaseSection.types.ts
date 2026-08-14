@@ -1,2 +1,1 @@
-export type MarketingShowcaseSectionProps = {
-};
+export type MarketingShowcaseSectionProps = Record<string, never>;

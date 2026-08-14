@@ -1,10 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-import {
-  ArticleAudience,
-  ArticleKind,
-  PublishStatus,
-} from '../common/enums';
+import { ArticleAudience, ArticleKind, PublishStatus } from '../common/enums';
 import { Media } from './media.schema';
 import { User } from './user.schema';
 

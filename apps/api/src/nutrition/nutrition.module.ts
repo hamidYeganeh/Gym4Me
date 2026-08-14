@@ -1,9 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import {
-  FoodItem,
-  FoodItemSchema,
-} from '../schemas/food-item.schema';
+import { FoodItem, FoodItemSchema } from '../schemas/food-item.schema';
 import {
   MealAdherence,
   MealAdherenceSchema,

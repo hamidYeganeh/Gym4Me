@@ -44,3 +44,11 @@ alwaysApply: true
 - `apps/api` = single source of truth; `apps/mobile` = multi-role app; `apps/admin` = ops; `apps/website` = public/SEO.
 - Runtime DB is **MongoDB (Mongoose)** under `apps/api/src/schemas`. No PostgreSQL migration.
 - Follow locked decisions in `docs/product/`.
+
+## Delivery & tracking
+
+- Bootstrap: version-neutral `GET /api/app-config/bootstrap` with independent `schemaVersion`.
+- `/api/v2` only for breaking changes; keep at least two API generations for ≥6 months.
+- Feature flags activate pre-bundled code only — never authorization.
+- Athlete data grants are per-scope/time-bound with immediate query-time revoke.
+- Metric reminders default off (opt-in). Health samples retained after disconnect until explicit delete.

@@ -490,7 +490,10 @@ export class GamificationService {
     // Keep the club's embedded achievements list (used by discovery) in sync.
     if (subject.type === GamificationSubjectType.CLUB) {
       await this.clubModel.updateOne(
-        { _id: subjectId, 'achievements.achievementId': { $ne: achievementId } },
+        {
+          _id: subjectId,
+          'achievements.achievementId': { $ne: achievementId },
+        },
         {
           $push: {
             achievements: { achievementId, grantedAt: now, grantedBy },
@@ -641,7 +644,11 @@ export class GamificationService {
       const grant = grantByAchievement.get(achievement._id.toString());
       let progress: { current: number; threshold: number } | null = null;
       const rule = achievement.grant.rule;
-      if (!grant && achievement.grant.mode === AchievementGrantMode.AUTOMATIC && rule) {
+      if (
+        !grant &&
+        achievement.grant.mode === AchievementGrantMode.AUTOMATIC &&
+        rule
+      ) {
         let current = metricCache.get(rule.metric);
         if (current === undefined) {
           current = await this.computeMetric(subject, rule.metric);
@@ -818,16 +825,18 @@ export class GamificationService {
     if (!achievement) throw new NotFoundException('Achievement not found');
     if (dto.grant) {
       this.assertGrantConfig(dto.grant);
-      achievement.grant = dto.grant as typeof achievement.grant;
+      achievement.grant = dto.grant;
     }
     if (dto.title !== undefined) achievement.title = dto.title;
-    if (dto.description !== undefined) achievement.description = dto.description;
+    if (dto.description !== undefined)
+      achievement.description = dto.description;
     if (dto.icon !== undefined) achievement.icon = dto.icon;
     if (dto.badgeMediaId !== undefined) {
       achievement.badgeMediaId = new Types.ObjectId(dto.badgeMediaId);
     }
     if (dto.audience !== undefined) achievement.audience = dto.audience;
-    if (dto.bonusPoints !== undefined) achievement.bonusPoints = dto.bonusPoints;
+    if (dto.bonusPoints !== undefined)
+      achievement.bonusPoints = dto.bonusPoints;
     if (dto.status !== undefined) achievement.status = dto.status;
     if (dto.order !== undefined) achievement.order = dto.order;
     await achievement.save();
@@ -1064,16 +1073,16 @@ export class GamificationService {
     if (dto.description !== undefined) rule.description = dto.description;
     if (dto.event !== undefined) rule.event = dto.event;
     if (dto.awards !== undefined) {
-      rule.awards = dto.awards as typeof rule.awards;
+      rule.awards = dto.awards;
     }
     if (dto.limits !== undefined) {
-      rule.limits = { ...rule.limits, ...dto.limits } as typeof rule.limits;
+      rule.limits = { ...rule.limits, ...dto.limits };
     }
     if (dto.effective !== undefined) {
       rule.effective = {
         from: dto.effective.from ? new Date(dto.effective.from) : undefined,
         to: dto.effective.to ? new Date(dto.effective.to) : undefined,
-      } as typeof rule.effective;
+      };
     }
     if (dto.status !== undefined) rule.status = dto.status;
     await rule.save();
@@ -1110,7 +1119,8 @@ export class GamificationService {
       filter['subject.id'] = new Types.ObjectId(query.subjectId);
     }
     if (query.reason) filter.reason = query.reason;
-    if (query.ruleId) filter['source.ruleId'] = new Types.ObjectId(query.ruleId);
+    if (query.ruleId)
+      filter['source.ruleId'] = new Types.ObjectId(query.ruleId);
     const [items, total] = await Promise.all([
       this.txModel
         .find(filter)

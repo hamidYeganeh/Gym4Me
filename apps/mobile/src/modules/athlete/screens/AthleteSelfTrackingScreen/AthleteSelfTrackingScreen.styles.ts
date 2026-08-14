@@ -3,8 +3,12 @@ export const athleteSelfTrackingScreenStyles = {
   content: "flex flex-col gap-6 px-4 pb-28 pt-4",
   intro: "flex flex-col gap-2",
   subtitle: "text-muted",
+  pendingBanner:
+    "flex items-center justify-between gap-3 rounded-3xl border border-warning/30 bg-warning/10 p-4",
+  pendingCopy: "flex min-w-0 flex-col gap-1",
   selector: "grid grid-cols-2 gap-2",
   metricButton: "h-auto min-h-14 justify-start whitespace-normal text-start",
+  summaryRow: "flex flex-wrap items-center gap-2",
   card: "flex flex-col gap-4 rounded-3xl border border-border bg-surface p-4",
   form: "flex flex-col gap-4",
   grid: "grid grid-cols-2 gap-3",

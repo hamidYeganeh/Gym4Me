@@ -583,7 +583,7 @@ export class FinanceService {
 
     // Prefer live wallet balance on the latest point.
     if (balancePoints.length) {
-      balancePoints[balancePoints.length - 1]!.value = wallet.balance;
+      balancePoints[balancePoints.length - 1].value = wallet.balance;
     }
 
     return {
@@ -1624,7 +1624,7 @@ export class FinanceService {
 
     if (!result.idempotent) {
       debt.remaining = Math.max(0, debt.remaining - dto.amount);
-      debt.paymentIds.push(result.payment._id as Types.ObjectId);
+      debt.paymentIds.push(result.payment._id);
       debt.status =
         debt.remaining === 0 ? DebtStatus.SETTLED : DebtStatus.PARTIAL;
       await debt.save();

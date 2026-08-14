@@ -19,11 +19,9 @@ describe('resolveListSort', () => {
 
   it('maps a public sort key and adds a stable tie-breaker', () => {
     expect(
-      resolveListSort(
-        { sortBy: 'name', sortOrder: 'desc' },
-        fields,
-        { createdAt: -1 },
-      ),
+      resolveListSort({ sortBy: 'name', sortOrder: 'desc' }, fields, {
+        createdAt: -1,
+      }),
     ).toEqual({ 'identity.name': -1, _id: -1 });
   });
 
@@ -35,11 +33,7 @@ describe('resolveListSort', () => {
 
   it('rejects database paths that are not public sort keys', () => {
     expect(() =>
-      resolveListSort(
-        { sortBy: '$where' },
-        fields,
-        { createdAt: -1 },
-      ),
+      resolveListSort({ sortBy: '$where' }, fields, { createdAt: -1 }),
     ).toThrow(BadRequestException);
   });
 });

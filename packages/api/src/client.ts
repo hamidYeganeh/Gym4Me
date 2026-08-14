@@ -31,6 +31,11 @@ export type RequestOptions = {
   headers?: HeadersInit;
   /** Skip Authorization header even if a token exists. */
   public?: boolean;
+  /**
+   * Call a VERSION_NEUTRAL route under `/api/...` instead of `/api/vN/...`.
+   * Strips a trailing `/v\\d+` segment from the configured baseUrl.
+   */
+  versionNeutral?: boolean;
   signal?: AbortSignal;
 };
 
@@ -126,7 +131,7 @@ export class ApiClient {
   }
 
   private async send(path: string, options: RequestOptions): Promise<Response> {
-    const url = this.buildUrl(path, options.query);
+    const url = this.buildUrl(path, options.query, options.versionNeutral);
     const headers = new Headers(options.headers);
     if (!headers.has("Accept")) {
       headers.set("Accept", "application/json");
@@ -192,9 +197,13 @@ export class ApiClient {
   private buildUrl(
     path: string,
     query?: RequestOptions["query"],
+    versionNeutral?: boolean,
   ): string {
     const normalized = path.startsWith("/") ? path : `/${path}`;
-    const url = new URL(`${this.baseUrl}${normalized}`);
+    const base = versionNeutral
+      ? this.baseUrl.replace(/\/v\d+$/, "")
+      : this.baseUrl;
+    const url = new URL(`${base}${normalized}`);
     if (query) {
       for (const [key, value] of Object.entries(query)) {
         if (value === undefined || value === null) continue;

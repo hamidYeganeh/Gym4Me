@@ -9,9 +9,9 @@ import {
 } from '../schemas/user-attribution.schema';
 import { EventWriterService } from './event-writer.service';
 
-export type TouchPointInput = Partial<
-  Omit<TouchPoint, 'capturedAt'>
-> & { capturedAt?: Date };
+export type TouchPointInput = Partial<Omit<TouchPoint, 'capturedAt'>> & {
+  capturedAt?: Date;
+};
 
 @Injectable()
 export class AttributionService {

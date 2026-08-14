@@ -23,4 +23,3 @@ import { AppConfigService } from './app-config.service';
   exports: [AppConfigService],
 })
 export class AppConfigModule {}
-

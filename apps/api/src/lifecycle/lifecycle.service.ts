@@ -439,9 +439,7 @@ export class LifecycleService {
     }
     if (segmentKind === LifecycleSegmentKind.EXPIRING_SOON) {
       const expiresAt = membership.credit?.expiresAt;
-      return (
-        !expiresAt || expiresAt.getTime() > Date.now() + 7 * DAY_MS
-      );
+      return !expiresAt || expiresAt.getTime() > Date.now() + 7 * DAY_MS;
     }
     if (segmentKind === LifecycleSegmentKind.LOW_CREDITS) {
       const remaining = membership.credit?.remainingSessions;

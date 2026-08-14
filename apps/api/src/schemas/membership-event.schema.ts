@@ -1,9 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
-import {
-  MembershipActorKind,
-  MembershipEventType,
-} from '../common/enums';
+import { MembershipActorKind, MembershipEventType } from '../common/enums';
 import { User } from './user.schema';
 
 export type MembershipEventDocument = HydratedDocument<MembershipEvent>;
@@ -21,9 +18,8 @@ export class MembershipEventActor {
   kind!: MembershipActorKind;
 }
 
-export const MembershipEventActorSchema = SchemaFactory.createForClass(
-  MembershipEventActor,
-);
+export const MembershipEventActorSchema =
+  SchemaFactory.createForClass(MembershipEventActor);
 
 /**
  * Append-only membership lifecycle history.

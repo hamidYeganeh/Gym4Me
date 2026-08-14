@@ -19,4 +19,3 @@ describe('app version utilities', () => {
     expect(bucket).toBeLessThan(100);
   });
 });
-

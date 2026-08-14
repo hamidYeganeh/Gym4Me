@@ -1,14 +1,24 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import {
+  AthleteDataGrant,
+  AthleteDataGrantSchema,
+} from '../schemas/athlete-data-grant.schema';
+import {
   CoachStudent,
   CoachStudentSchema,
 } from '../schemas/coach-student.schema';
 import { Exercise, ExerciseSchema } from '../schemas/exercise.schema';
 import {
-  MetricType,
-  MetricTypeSchema,
-} from '../schemas/metric-type.schema';
+  HealthSyncState,
+  HealthSyncStateSchema,
+} from '../schemas/health-sync-state.schema';
+import { MetricGoal, MetricGoalSchema } from '../schemas/metric-goal.schema';
+import {
+  MetricReminder,
+  MetricReminderSchema,
+} from '../schemas/metric-reminder.schema';
+import { MetricType, MetricTypeSchema } from '../schemas/metric-type.schema';
 import {
   PersonalRecord,
   PersonalRecordSchema,
@@ -21,18 +31,13 @@ import {
   ProgressPhoto,
   ProgressPhotoSchema,
 } from '../schemas/progress-photo.schema';
-import {
-  WorkoutLog,
-  WorkoutLogSchema,
-} from '../schemas/workout-log.schema';
-import {
-  WorkoutPlan,
-  WorkoutPlanSchema,
-} from '../schemas/workout-plan.schema';
+import { WorkoutLog, WorkoutLogSchema } from '../schemas/workout-log.schema';
+import { WorkoutPlan, WorkoutPlanSchema } from '../schemas/workout-plan.schema';
 import {
   WorkoutProgram,
   WorkoutProgramSchema,
 } from '../schemas/workout-program.schema';
+import { AccountDataGrantsController } from './account-data-grants.controller';
 import { AccountProgressController } from './account-progress.controller';
 import {
   AdminMetricTypesController,
@@ -52,12 +57,17 @@ import { ProgressService } from './progress.service';
       { name: WorkoutLog.name, schema: WorkoutLogSchema },
       { name: PersonalRecord.name, schema: PersonalRecordSchema },
       { name: CoachStudent.name, schema: CoachStudentSchema },
+      { name: AthleteDataGrant.name, schema: AthleteDataGrantSchema },
+      { name: MetricGoal.name, schema: MetricGoalSchema },
+      { name: MetricReminder.name, schema: MetricReminderSchema },
+      { name: HealthSyncState.name, schema: HealthSyncStateSchema },
     ]),
   ],
   controllers: [
     AdminProgressController,
     AdminMetricTypesController,
     AccountProgressController,
+    AccountDataGrantsController,
   ],
   providers: [ProgressService],
   exports: [ProgressService],

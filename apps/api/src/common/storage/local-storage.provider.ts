@@ -1,4 +1,11 @@
-import { createReadStream, existsSync, mkdirSync, renameSync, statSync, unlinkSync } from 'fs';
+import {
+  createReadStream,
+  existsSync,
+  mkdirSync,
+  renameSync,
+  statSync,
+  unlinkSync,
+} from 'fs';
 import { dirname, join, resolve } from 'path';
 import type { Readable } from 'stream';
 import type { StorageProvider } from './storage.provider';

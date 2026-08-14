@@ -37,7 +37,4 @@ export class Wallet {
 
 export const WalletSchema = SchemaFactory.createForClass(Wallet);
 
-WalletSchema.index(
-  { 'owner.type': 1, 'owner.id': 1 },
-  { unique: true },
-);
+WalletSchema.index({ 'owner.type': 1, 'owner.id': 1 }, { unique: true });

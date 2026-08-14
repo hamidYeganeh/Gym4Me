@@ -1,0 +1,18 @@
+export const coachProgramEditorScreenStyles = {
+  root: "bg-background",
+  content: "flex flex-col gap-6 pb-10 pt-1",
+  intro: "flex flex-col gap-2",
+  introTitle: "tracking-tight text-foreground",
+  introSubtitle: "text-muted",
+  actions: "flex flex-col gap-2",
+  weekCard: "flex flex-col gap-3 rounded-[24px] border-0 bg-surface p-4 shadow-sm shadow-foreground/5",
+  weekTitle: "text-foreground",
+  dayCard: "flex flex-col gap-2 rounded-[16px] bg-background p-3",
+  dayTitle: "text-foreground",
+  sessionCard: "flex flex-col gap-2 rounded-[12px] border border-border/50 p-3",
+  sessionTitle: "text-foreground",
+  exerciseRow: "flex items-center justify-between gap-2 rounded-[8px] bg-surface px-3 py-2",
+  exerciseMeta: "text-muted",
+  addRow: "mt-1",
+  linkRow: "flex gap-2",
+} as const;

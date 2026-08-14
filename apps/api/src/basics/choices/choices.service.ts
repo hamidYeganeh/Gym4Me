@@ -15,10 +15,7 @@ import {
   ChoiceGroupDocument,
   ChoiceOption,
 } from '../../schemas/choice-group.schema';
-import {
-  CreateChoiceGroupDto,
-  UpdateChoiceGroupDto,
-} from './dto/choices.dto';
+import { CreateChoiceGroupDto, UpdateChoiceGroupDto } from './dto/choices.dto';
 
 @Injectable()
 export class ChoicesService {
@@ -39,7 +36,9 @@ export class ChoicesService {
   }
 
   async getPublic(key: string) {
-    const group = await this.choiceModel.findOne({ key, isActive: true }).lean();
+    const group = await this.choiceModel
+      .findOne({ key, isActive: true })
+      .lean();
     if (!group) throw new NotFoundException('Choice group not found');
     return this.toPublic(group, true);
   }
@@ -151,7 +150,12 @@ export class ChoicesService {
   }
 
   private normalizeOptions(
-    options: { value: string; name: string; order?: number; isActive?: boolean }[],
+    options: {
+      value: string;
+      name: string;
+      order?: number;
+      isActive?: boolean;
+    }[],
   ): ChoiceOption[] {
     return options.map((o, i) => ({
       value: o.value,
@@ -161,9 +165,7 @@ export class ChoicesService {
     }));
   }
 
-  private assertUniqueOptionValues(
-    options: { value: string }[],
-  ): void {
+  private assertUniqueOptionValues(options: { value: string }[]): void {
     const values = options.map((o) => o.value);
     if (new Set(values).size !== values.length) {
       throw new BadRequestException('Option values must be unique');
@@ -180,9 +182,7 @@ export class ChoicesService {
       .map((o) => ({
         name: o.name,
         value: o.value,
-        ...(activeOptionsOnly
-          ? {}
-          : { order: o.order, isActive: o.isActive }),
+        ...(activeOptionsOnly ? {} : { order: o.order, isActive: o.isActive }),
       }));
 
     return {

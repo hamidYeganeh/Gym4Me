@@ -14,24 +14,18 @@ import {
   mediaFileUrl,
 } from "@/shared/lib/api";
 import {
-  BROWSE_CLUBS,
   clubsNearby,
   clubsOpen24Hours,
   sortClubsByRating,
   type BrowseClub,
 } from "./clubs-browse-data";
 import {
-  FEATURED_COACHES,
   type FeaturedCoach,
 } from "./coaches-browse-data";
 import {
   DEFAULT_COACH_CITY_NAME,
   HOME_FEATURE_ITEMS,
   MOCK_AMENITIES,
-  MOCK_ARTICLES,
-  MOCK_CITIES,
-  MOCK_CLASSES,
-  MOCK_SPORTS,
   galleryItemsFromClubs,
   mapLocationToHomeItem,
   mapSportToHomeItem,
@@ -129,20 +123,6 @@ function buildSlices(clubs: BrowseClub[]): Pick<
   };
 }
 
-const MOCK_STATE: DiscoveryHomeState = {
-  features: HOME_FEATURE_ITEMS,
-  cities: MOCK_CITIES,
-  ...buildSlices(BROWSE_CLUBS),
-  coaches: FEATURED_COACHES,
-  coachCityName: DEFAULT_COACH_CITY_NAME,
-  classes: MOCK_CLASSES,
-  amenities: MOCK_AMENITIES,
-  sports: MOCK_SPORTS,
-  articles: MOCK_ARTICLES,
-  isLoading: false,
-  source: "mock",
-};
-
 function locationImage(node: { coverMediaId: string | null }) {
   return mediaFileUrl(node.coverMediaId) ?? PLACEHOLDER_IMAGE;
 }
@@ -164,8 +144,20 @@ function coachNameFromClass(cls: ClubClass): string {
 
 export function useDiscoveryHome(): DiscoveryHomeState {
   const [state, setState] = useState<DiscoveryHomeState>({
-    ...MOCK_STATE,
+    features: HOME_FEATURE_ITEMS,
+    cities: [],
+    nearbyClubs: [],
+    topClubs: [],
+    open24Clubs: [],
+    coaches: [],
+    coachCityName: DEFAULT_COACH_CITY_NAME,
+    classes: [],
+    amenities: [],
+    sports: [],
+    articles: [],
+    galleryItems: [],
     isLoading: true,
+    source: "api",
   });
 
   useEffect(() => {
@@ -218,17 +210,13 @@ export function useDiscoveryHome(): DiscoveryHomeState {
           if (tehran) coachCityName = tehran.name;
         }
 
-        const clubs =
-          clubsPage.result.length > 0
-            ? clubsPage.result.map((club) =>
-                mapDiscoveryClubToBrowse(club as never),
-              )
-            : BROWSE_CLUBS;
+        const clubs = clubsPage.result.map((club) =>
+          mapDiscoveryClubToBrowse(club as never),
+        );
 
-        const coaches =
-          coachesPage.result.length > 0
-            ? coachesPage.result.slice(0, 8).map(mapDiscoveryCoachToFeatured)
-            : FEATURED_COACHES;
+        const coaches = coachesPage.result
+          .slice(0, 8)
+          .map(mapDiscoveryCoachToFeatured);
 
         const classClubIds = clubs.slice(0, 4).map((c) => c.id);
         const classLists = await Promise.all(
@@ -260,36 +248,30 @@ export function useDiscoveryHome(): DiscoveryHomeState {
 
         const slices = buildSlices(clubs);
         const articles =
-          articlesPage && articlesPage.result.length > 0
-            ? articlesPage.result.map(mapArticleToHomeItem)
-            : MOCK_ARTICLES;
+          articlesPage?.result.map(mapArticleToHomeItem) ?? [];
 
         setState({
           features: HOME_FEATURE_ITEMS,
-          cities: cities.length > 0 ? cities : MOCK_CITIES,
+          cities,
           ...slices,
           coaches,
           coachCityName,
-          classes: classes.length > 0 ? classes.slice(0, 10) : MOCK_CLASSES,
+          classes: classes.slice(0, 10),
           amenities: MOCK_AMENITIES,
-          sports:
-            sportsPage.result.length > 0
-              ? sportsPage.result.slice(0, 12).map((s) =>
-                  mapSportToHomeItem(s, sportImage(s)),
-                )
-              : MOCK_SPORTS,
+          sports: sportsPage.result.slice(0, 12).map((s) =>
+            mapSportToHomeItem(s, sportImage(s)),
+          ),
           articles,
           isLoading: false,
-          source:
-            clubsPage.result.length > 0 ||
-            coachesPage.result.length > 0 ||
-            Boolean(articlesPage?.result.length)
-              ? "api"
-              : "mock",
+          source: "api",
         });
       } catch {
         if (cancelled) return;
-        setState(MOCK_STATE);
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          source: "api",
+        }));
       }
     })();
 

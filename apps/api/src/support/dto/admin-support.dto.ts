@@ -3,7 +3,6 @@ import {
   IsArray,
   IsEnum,
   IsInt,
-  IsIn,
   IsOptional,
   IsString,
   MaxLength,
@@ -38,21 +37,6 @@ export class AdminListTicketsQueryDto extends PaginationQueryDto {
   @IsArray()
   @IsEnum(SupportTicketPriority, { each: true })
   priority?: SupportTicketPriority[];
-
-  /** Matches ticketNumber or subject. */
-  @IsOptional()
-  @IsString()
-  @MaxLength(60)
-  search?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(80)
-  sortBy?: string;
-
-  @IsOptional()
-  @IsIn(['asc', 'desc'])
-  sortOrder?: 'asc' | 'desc';
 }
 
 export class AdminUpdateTicketDto {
@@ -137,18 +121,4 @@ export class AdminListFaqQueryDto extends PaginationQueryDto {
   @IsArray()
   @IsEnum(FaqAudience, { each: true })
   audience?: FaqAudience[];
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(60)
-  search?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(80)
-  sortBy?: string;
-
-  @IsOptional()
-  @IsIn(['asc', 'desc'])
-  sortOrder?: 'asc' | 'desc';
 }

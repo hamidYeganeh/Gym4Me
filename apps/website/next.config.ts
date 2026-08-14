@@ -34,6 +34,14 @@ function apiRemotePattern(): {
 }
 
 const nextConfig: NextConfig = {
+  experimental: {
+    optimizePackageImports: [
+      "@heroui/react",
+      "@repo/icons",
+      "@repo/ui",
+      "@repo/api",
+    ],
+  },
   output: "standalone",
   // Trace workspace packages from the monorepo root (required for Docker).
   outputFileTracingRoot: path.join(appDir, "../.."),

@@ -1,19 +1,9 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums';
 import { BookingsService } from './bookings.service';
-import {
-  AdminListBookingsQueryDto,
-  CancelBookingDto,
-} from './dto/booking.dto';
+import { AdminListBookingsQueryDto, CancelBookingDto } from './dto/booking.dto';
 
 /** Platform booking ops: audits, disputes, refund settlement. */
 @ApiTags('admin-bookings')

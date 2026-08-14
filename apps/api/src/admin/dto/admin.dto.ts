@@ -81,12 +81,6 @@ export class ListUsersQueryDto extends PaginationQueryDto {
   @Transform(toStringArray)
   @IsEnum(KycStatus, { each: true })
   kycStatus?: KycStatus[];
-
-  /** Matches phone, name, code, or referral code. */
-  @IsOptional()
-  @IsString()
-  @MaxLength(60)
-  search?: string;
 }
 
 export class AdminCreateUserDto {

@@ -121,7 +121,12 @@ export class NotificationsService implements OnModuleInit {
         `dispatch failed template=${input.templateKey} user=${String(input.userId)}`,
         error instanceof Error ? error.stack : String(error),
       );
-      return { notificationId: null, push: null, sms: null, deduplicated: false };
+      return {
+        notificationId: null,
+        push: null,
+        sms: null,
+        deduplicated: false,
+      };
     }
   }
 
@@ -148,7 +153,12 @@ export class NotificationsService implements OnModuleInit {
       .lean();
     if (!template) {
       this.logger.warn(`Unknown/inactive template: ${input.templateKey}`);
-      return { notificationId: null, push: null, sms: null, deduplicated: false };
+      return {
+        notificationId: null,
+        push: null,
+        sms: null,
+        deduplicated: false,
+      };
     }
 
     const params = input.params ?? {};
@@ -173,7 +183,12 @@ export class NotificationsService implements OnModuleInit {
     } catch (error) {
       // Duplicate idempotencyKey inserted by a concurrent trigger — treat as dedup.
       if ((error as { code?: number }).code === 11000 && input.idempotencyKey) {
-        return { notificationId: null, push: null, sms: null, deduplicated: true };
+        return {
+          notificationId: null,
+          push: null,
+          sms: null,
+          deduplicated: true,
+        };
       }
       throw error;
     }
@@ -245,7 +260,8 @@ export class NotificationsService implements OnModuleInit {
           : NotificationDeliveryStatus.FAILED;
       notification.delivery.push = {
         status,
-        sentAt: status === NotificationDeliveryStatus.SENT ? new Date() : undefined,
+        sentAt:
+          status === NotificationDeliveryStatus.SENT ? new Date() : undefined,
         error:
           status === NotificationDeliveryStatus.FAILED
             ? 'provider reported zero deliveries'
@@ -313,7 +329,11 @@ export class NotificationsService implements OnModuleInit {
 
   async list(
     userId: string,
-    options: { page: number; limit: number; readStatus?: NotificationReadStatus },
+    options: {
+      page: number;
+      limit: number;
+      readStatus?: NotificationReadStatus;
+    },
   ) {
     const filter: Record<string, unknown> = {
       userId: new Types.ObjectId(userId),

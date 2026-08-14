@@ -1,6 +1,8 @@
 import type { WorkoutLog, WorkoutPlan } from "@repo/api";
 import type {
   AthleteWorkoutLogItem,
+  AthleteWorkoutPlanDetail,
+  AthleteWorkoutPlanExercise,
   AthleteWorkoutPlanItem,
   AthleteWorkoutPlanStatus,
 } from "./workout-programs-data";
@@ -28,6 +30,29 @@ export function mapWorkoutPlan(plan: WorkoutPlan): AthleteWorkoutPlanItem {
   };
 }
 
+export function flattenPlanExercises(
+  plan: WorkoutPlan,
+  nameById: Map<string, string> = new Map(),
+): AthleteWorkoutPlanExercise[] {
+  const seen = new Map<string, AthleteWorkoutPlanExercise>();
+  for (const week of plan.weeks ?? []) {
+    for (const day of week.days ?? []) {
+      for (const exercise of day.exercises ?? []) {
+        if (seen.has(exercise.exerciseId)) continue;
+        seen.set(exercise.exerciseId, {
+          exerciseId: exercise.exerciseId,
+          label:
+            nameById.get(exercise.exerciseId) ??
+            `تمرین ${exercise.exerciseId.slice(-4)}`,
+          plannedSets: exercise.sets,
+          plannedReps: exercise.reps,
+        });
+      }
+    }
+  }
+  return [...seen.values()];
+}
+
 export function mapWorkoutLog(log: WorkoutLog): AthleteWorkoutLogItem {
   return {
     id: log.id,
@@ -38,5 +63,22 @@ export function mapWorkoutLog(log: WorkoutLog): AthleteWorkoutLogItem {
       timeStyle: "short",
     }),
     setsCount: log.sets.length,
+    sets: log.sets.map((set) => ({
+      exerciseId: set.exerciseId,
+      reps: set.reps,
+      weightKg: set.weightKg,
+    })),
+  };
+}
+
+export function mapWorkoutPlanDetail(
+  plan: WorkoutPlan,
+  logs: WorkoutLog[],
+  nameById?: Map<string, string>,
+): AthleteWorkoutPlanDetail {
+  return {
+    ...mapWorkoutPlan(plan),
+    exercises: flattenPlanExercises(plan, nameById),
+    logs: logs.map(mapWorkoutLog),
   };
 }

@@ -35,7 +35,12 @@ export type CatalogSectionTabId =
   | "metrics"
   | "coaching";
 
-export type OpsSectionTabId = "social" | "audit" | "templates";
+export type OpsSectionTabId =
+  | "social"
+  | "audit"
+  | "templates"
+  | "flags"
+  | "releases";
 
 export type AnalyticsSectionPeriodId = "week" | "month" | "quarter";
 
@@ -276,6 +281,8 @@ export function AdminShell({
       { id: "social", label: t("Ops.tabs.social") },
       { id: "audit", label: t("Ops.tabs.audit") },
       { id: "templates", label: t("Ops.tabs.templates") },
+      { id: "flags", label: t("Ops.tabs.flags") },
+      { id: "releases", label: t("Ops.tabs.releases") },
     ],
     [t],
   );
@@ -284,6 +291,8 @@ export function AdminShell({
     social: routes.opsSocial,
     audit: routes.opsAudit,
     templates: routes.opsTemplates,
+    flags: routes.opsFlags,
+    releases: routes.opsReleases,
   };
 
   const pathByNav = useMemo<Partial<Record<AdminDashboardNavId, string>>>(

@@ -79,4 +79,6 @@ export const routes = {
   opsTemplates: "/dashboard/ops/templates",
   opsTemplateEdit: (templateKey: string) =>
     `/dashboard/ops/templates/${encodeURIComponent(templateKey)}/edit`,
+  opsFlags: "/dashboard/ops/flags",
+  opsReleases: "/dashboard/ops/releases",
 } as const;

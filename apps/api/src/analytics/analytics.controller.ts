@@ -12,7 +12,9 @@ export class AnalyticsController {
   constructor(private readonly attribution: AttributionService) {}
 
   @Get('attribution')
-  @ApiOperation({ summary: 'Get first/last touch attribution for current user' })
+  @ApiOperation({
+    summary: 'Get first/last touch attribution for current user',
+  })
   getAttribution(@CurrentUser('sub') userId: string) {
     return this.attribution.get(userId);
   }
@@ -22,10 +24,7 @@ export class AnalyticsController {
     summary:
       'Capture a touch point (firstTouch write-once, lastTouch always updated)',
   })
-  capture(
-    @CurrentUser() user: JwtUser,
-    @Body() dto: CaptureAttributionDto,
-  ) {
+  capture(@CurrentUser() user: JwtUser, @Body() dto: CaptureAttributionDto) {
     return this.attribution.capture(
       user.sub,
       {

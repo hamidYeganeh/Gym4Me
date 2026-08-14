@@ -1,10 +1,10 @@
+import { createApiClient } from "@repo/api/client";
+import { createArticlesApi } from "@repo/api/articles";
 import {
-  createApiClient,
-  createArticlesApi,
-  createAccountMembershipsApi,
   createDiscoveryClubsApi,
   createDiscoveryCoachesApi,
-} from "@repo/api";
+} from "@repo/api/discovery";
+import { createAccountMembershipsApi } from "@repo/api/memberships";
 import { getApiBaseUrl } from "./env";
 
 const apiClient = createApiClient({

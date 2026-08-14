@@ -118,7 +118,10 @@ export class CoachProfile {
   specialtyKeys!: string[];
 
   /** Derived cache of the points ledger. */
-  @Prop({ type: PointsSummarySchema, default: () => ({ balance: 0, lifetime: 0 }) })
+  @Prop({
+    type: PointsSummarySchema,
+    default: () => ({ balance: 0, lifetime: 0 }),
+  })
   points!: PointsSummary;
 
   createdAt!: Date;

@@ -8,10 +8,7 @@ import {
   CoachClubAffiliation,
   CoachClubAffiliationSchema,
 } from '../../schemas/coach-club-affiliation.schema';
-import {
-  CoachLead,
-  CoachLeadSchema,
-} from '../../schemas/coach-lead.schema';
+import { CoachLead, CoachLeadSchema } from '../../schemas/coach-lead.schema';
 import {
   CoachMessage,
   CoachMessageSchema,

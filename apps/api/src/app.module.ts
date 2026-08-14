@@ -82,7 +82,12 @@ import { WaitlistModule } from './waitlist/waitlist.module';
         const skipDay = skipUnlessAuthThrottleNamed(AUTH_THROTTLE_DAY);
         return {
           throttlers: [
-            { name: 'default', limit: 100, ttl: 60_000, skipIf: () => disabled },
+            {
+              name: 'default',
+              limit: 100,
+              ttl: 60_000,
+              skipIf: () => disabled,
+            },
             {
               name: AUTH_THROTTLE_MINUTE,
               limit: 3,

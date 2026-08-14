@@ -17,10 +17,7 @@ import {
   CoachProfile,
   CoachProfileDocument,
 } from '../../schemas/coach-profile.schema';
-import {
-  CoachSlot,
-  CoachSlotDocument,
-} from '../../schemas/coach-slot.schema';
+import { CoachSlot, CoachSlotDocument } from '../../schemas/coach-slot.schema';
 import { CoachSlotInputDto } from './dto/coach-slot.dto';
 
 const MAX_RANGE_DAYS = 62;
@@ -120,7 +117,9 @@ export class CoachSlotsService {
         })),
       );
       const clubById = await this.resolveClubs(created);
-      return { slots: created.map((slot) => this.toPublicSlot(slot, clubById)) };
+      return {
+        slots: created.map((slot) => this.toPublicSlot(slot, clubById)),
+      };
     } catch (error: unknown) {
       if ((error as { code?: number }).code === 11000) {
         throw new ConflictException('A slot already exists at that time');

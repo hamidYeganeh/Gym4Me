@@ -8,15 +8,28 @@ import { InjectModel } from '@nestjs/mongoose';
 import type { Request } from 'express';
 import { Model, Types } from 'mongoose';
 import type { QueryFilter } from 'mongoose';
+import { EventWriterService } from '../analytics/event-writer.service';
 import { AuditService } from '../audit/audit.service';
 import {
+  AnalyticsEventName,
   AuditAction,
+  AthleteDataGranteeType,
+  AthleteDataGrantScope,
+  AthleteDataGrantStatus,
   CoachStudentStatus,
   ExerciseOriginKind,
   ExerciseStatus,
+  HealthSyncProvider,
+  HealthSyncStatus,
+  MetricAggregation,
+  MetricGoalStatus,
+  MetricPeriodKind,
+  MetricPrivacyClass,
+  MetricReminderChannel,
+  MetricReminderStatus,
+  MetricSource,
   MetricTypeStatus,
   MetricValueKind,
-  MetricSource,
   Privacy,
   Role,
   VerificationStatus,
@@ -30,14 +43,24 @@ import {
   resolvePageSize,
 } from '../common/utils/pagination.util';
 import {
+  AthleteDataGrant,
+  AthleteDataGrantDocument,
+} from '../schemas/athlete-data-grant.schema';
+import {
   CoachStudent,
   CoachStudentDocument,
 } from '../schemas/coach-student.schema';
 import { Exercise, ExerciseDocument } from '../schemas/exercise.schema';
 import {
-  MetricType,
-  MetricTypeDocument,
-} from '../schemas/metric-type.schema';
+  HealthSyncState,
+  HealthSyncStateDocument,
+} from '../schemas/health-sync-state.schema';
+import { MetricGoal, MetricGoalDocument } from '../schemas/metric-goal.schema';
+import {
+  MetricReminder,
+  MetricReminderDocument,
+} from '../schemas/metric-reminder.schema';
+import { MetricType, MetricTypeDocument } from '../schemas/metric-type.schema';
 import {
   PersonalRecord,
   PersonalRecordDocument,
@@ -50,10 +73,7 @@ import {
   ProgressPhoto,
   ProgressPhotoDocument,
 } from '../schemas/progress-photo.schema';
-import {
-  WorkoutLog,
-  WorkoutLogDocument,
-} from '../schemas/workout-log.schema';
+import { WorkoutLog, WorkoutLogDocument } from '../schemas/workout-log.schema';
 import {
   WorkoutPlan,
   WorkoutPlanDocument,
@@ -63,8 +83,12 @@ import {
   WorkoutProgramDocument,
 } from '../schemas/workout-program.schema';
 import {
+  AdminListExercisesQueryDto,
+  AdminListMetricTypesQueryDto,
   AssignWorkoutProgramDto,
+  CreateAthleteDataGrantDto,
   CreateExerciseDto,
+  CreateMetricGoalDto,
   CreateMetricTypeDto,
   CreatePersonalRecordDto,
   CreateProgressMetricDto,
@@ -72,7 +96,12 @@ import {
   CreateWorkoutLogDto,
   CreateWorkoutPlanDto,
   CreateWorkoutProgramDto,
+  DeleteProgressMetricsDto,
+  ListAthleteDataGrantsQueryDto,
   ListExercisesQueryDto,
+  ListHealthSyncStatesQueryDto,
+  ListMetricGoalsQueryDto,
+  ListMetricRemindersQueryDto,
   ListMetricTypesQueryDto,
   ListPersonalRecordsQueryDto,
   ListProgressMetricsQueryDto,
@@ -80,88 +109,162 @@ import {
   ListWorkoutLogsQueryDto,
   ListWorkoutPlansQueryDto,
   ListWorkoutProgramsQueryDto,
+  MetricsSummaryQueryDto,
   ReviewExerciseVerificationDto,
+  SyncProgressMetricItemDto,
   SyncProgressMetricsDto,
   UpdateExerciseDto,
+  UpdateMetricGoalDto,
   UpdateMetricTypeDto,
   UpdateProgressMetricDto,
   UpdateProgressPhotoDto,
+  UpdateWorkoutLogDto,
   UpdateWorkoutPlanDto,
   UpdateWorkoutProgramDto,
+  UpsertHealthSyncStateDto,
+  UpsertMetricReminderDto,
   WorkoutPlanWeekDto,
 } from './dto/progress.dto';
+
+const METRIC_KEY_GRANT_SCOPES: Record<string, AthleteDataGrantScope[]> = {
+  weight_kg: [AthleteDataGrantScope.METRICS_WEIGHT],
+  sleep_duration_min: [AthleteDataGrantScope.METRICS_SLEEP],
+  sleep_quality: [AthleteDataGrantScope.METRICS_SLEEP],
+  sleep: [AthleteDataGrantScope.METRICS_SLEEP],
+  steps: [AthleteDataGrantScope.METRICS_STEPS],
+  water_ml: [AthleteDataGrantScope.METRICS_WATER],
+  hydration: [AthleteDataGrantScope.METRICS_WATER],
+  walking_distance_km: [AthleteDataGrantScope.METRICS_WALKING],
+  walking_duration_min: [AthleteDataGrantScope.METRICS_WALKING],
+};
+
+const HEALTH_METRIC_SOURCES = new Set<MetricSource>([
+  MetricSource.APPLE_HEALTH,
+  MetricSource.HEALTH_CONNECT,
+]);
+
+function isDuplicateKeyError(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    error.code === 11000
+  );
+}
 
 const DEFAULT_METRIC_TYPES: {
   key: string;
   name: string;
   valueKind: MetricValueKind;
   unit?: string;
+  canonicalUnit?: string;
   sortHint: number;
   chartKind?: string;
+  aggregation: MetricAggregation;
+  periodKind: MetricPeriodKind;
+  privacyClass: MetricPrivacyClass;
+  validation?: { min?: number; max?: number; step?: number; integer?: boolean };
 }[] = [
   {
     key: 'weight_kg',
     name: 'Weight',
     valueKind: MetricValueKind.NUMBER,
     unit: 'kg',
+    canonicalUnit: 'kg',
     sortHint: 10,
     chartKind: 'line',
+    aggregation: MetricAggregation.LATEST,
+    periodKind: MetricPeriodKind.POINT,
+    privacyClass: MetricPrivacyClass.HEALTH,
+    validation: { min: 1, max: 500 },
   },
   {
     key: 'heart_rate',
     name: 'Heart rate',
     valueKind: MetricValueKind.NUMBER,
     unit: 'bpm',
+    canonicalUnit: 'bpm',
     sortHint: 20,
     chartKind: 'line',
+    aggregation: MetricAggregation.AVERAGE,
+    periodKind: MetricPeriodKind.POINT,
+    privacyClass: MetricPrivacyClass.HEALTH,
+    validation: { min: 30, max: 250, integer: true },
   },
   {
     key: 'hydration',
     name: 'Hydration',
     valueKind: MetricValueKind.NUMBER,
     unit: 'L',
+    canonicalUnit: 'L',
     sortHint: 30,
     chartKind: 'stacked',
+    aggregation: MetricAggregation.SUM,
+    periodKind: MetricPeriodKind.DAILY_TOTAL,
+    privacyClass: MetricPrivacyClass.WELLNESS,
   },
   {
     key: 'water_ml',
     name: 'Water intake',
     valueKind: MetricValueKind.NUMBER,
     unit: 'ml',
+    canonicalUnit: 'ml',
     sortHint: 31,
     chartKind: 'bars',
+    aggregation: MetricAggregation.SUM,
+    periodKind: MetricPeriodKind.DAILY_TOTAL,
+    privacyClass: MetricPrivacyClass.WELLNESS,
+    validation: { min: 0, max: 20_000, step: 50 },
   },
   {
     key: 'blood_pressure',
     name: 'Blood pressure',
     valueKind: MetricValueKind.PAIR,
     unit: 'mmHg',
+    canonicalUnit: 'mmHg',
     sortHint: 40,
     chartKind: 'range',
+    aggregation: MetricAggregation.LATEST,
+    periodKind: MetricPeriodKind.POINT,
+    privacyClass: MetricPrivacyClass.SENSITIVE,
   },
   {
     key: 'sleep',
     name: 'Sleep',
     valueKind: MetricValueKind.RATIO,
     unit: 'h',
+    canonicalUnit: 'h',
     sortHint: 50,
     chartKind: 'rings',
+    aggregation: MetricAggregation.AVERAGE,
+    periodKind: MetricPeriodKind.INTERVAL,
+    privacyClass: MetricPrivacyClass.HEALTH,
   },
   {
     key: 'sleep_duration_min',
     name: 'Sleep duration',
     valueKind: MetricValueKind.NUMBER,
     unit: 'min',
+    canonicalUnit: 'min',
     sortHint: 51,
     chartKind: 'bars',
+    aggregation: MetricAggregation.SUM,
+    periodKind: MetricPeriodKind.INTERVAL,
+    privacyClass: MetricPrivacyClass.HEALTH,
+    validation: { min: 0, max: 1_440 },
   },
   {
     key: 'sleep_quality',
     name: 'Sleep quality',
     valueKind: MetricValueKind.NUMBER,
     unit: 'score',
+    canonicalUnit: 'score',
     sortHint: 52,
     chartKind: 'line',
+    aggregation: MetricAggregation.AVERAGE,
+    periodKind: MetricPeriodKind.POINT,
+    privacyClass: MetricPrivacyClass.WELLNESS,
+    validation: { min: 1, max: 5, integer: true },
   },
   {
     key: 'nutrition',
@@ -169,6 +272,9 @@ const DEFAULT_METRIC_TYPES: {
     valueKind: MetricValueKind.NUMBER,
     sortHint: 60,
     chartKind: 'dots',
+    aggregation: MetricAggregation.SUM,
+    periodKind: MetricPeriodKind.DAILY_TOTAL,
+    privacyClass: MetricPrivacyClass.WELLNESS,
   },
   {
     key: 'mood',
@@ -176,38 +282,60 @@ const DEFAULT_METRIC_TYPES: {
     valueKind: MetricValueKind.TEXT,
     sortHint: 70,
     chartKind: 'moods',
+    aggregation: MetricAggregation.LATEST,
+    periodKind: MetricPeriodKind.POINT,
+    privacyClass: MetricPrivacyClass.SENSITIVE,
   },
   {
     key: 'steps',
     name: 'Steps',
     valueKind: MetricValueKind.NUMBER,
-    unit: 'steps',
+    unit: 'count',
+    canonicalUnit: 'count',
     sortHint: 80,
     chartKind: 'bars',
+    aggregation: MetricAggregation.SUM,
+    periodKind: MetricPeriodKind.DAILY_TOTAL,
+    privacyClass: MetricPrivacyClass.WELLNESS,
+    validation: { min: 0, max: 200_000, integer: true },
   },
   {
     key: 'walking_distance_km',
     name: 'Walking distance',
     valueKind: MetricValueKind.NUMBER,
     unit: 'km',
+    canonicalUnit: 'km',
     sortHint: 81,
     chartKind: 'bars',
+    aggregation: MetricAggregation.SUM,
+    periodKind: MetricPeriodKind.DAILY_TOTAL,
+    privacyClass: MetricPrivacyClass.WELLNESS,
+    validation: { min: 0, max: 500 },
   },
   {
     key: 'walking_duration_min',
     name: 'Walking duration',
     valueKind: MetricValueKind.NUMBER,
     unit: 'min',
+    canonicalUnit: 'min',
     sortHint: 82,
     chartKind: 'bars',
+    aggregation: MetricAggregation.SUM,
+    periodKind: MetricPeriodKind.INTERVAL,
+    privacyClass: MetricPrivacyClass.WELLNESS,
+    validation: { min: 0, max: 1_440 },
   },
   {
     key: 'respiration',
     name: 'Respiration',
     valueKind: MetricValueKind.NUMBER,
     unit: 'rpm',
+    canonicalUnit: 'rpm',
     sortHint: 90,
     chartKind: 'line',
+    aggregation: MetricAggregation.AVERAGE,
+    periodKind: MetricPeriodKind.POINT,
+    privacyClass: MetricPrivacyClass.HEALTH,
   },
 ];
 
@@ -232,14 +360,26 @@ export class ProgressService {
     private readonly personalRecordModel: Model<PersonalRecordDocument>,
     @InjectModel(CoachStudent.name)
     private readonly coachStudentModel: Model<CoachStudentDocument>,
+    @InjectModel(AthleteDataGrant.name)
+    private readonly dataGrantModel: Model<AthleteDataGrantDocument>,
+    @InjectModel(MetricGoal.name)
+    private readonly metricGoalModel: Model<MetricGoalDocument>,
+    @InjectModel(MetricReminder.name)
+    private readonly metricReminderModel: Model<MetricReminderDocument>,
+    @InjectModel(HealthSyncState.name)
+    private readonly healthSyncStateModel: Model<HealthSyncStateDocument>,
     private readonly audit: AuditService,
+    private readonly events: EventWriterService,
   ) {}
 
   // ── Exercises ───────────────────────────────────────────────────────────
 
-  async adminListExercises(query: ListExercisesQueryDto) {
+  async adminListExercises(query: AdminListExercisesQueryDto) {
     const filter: QueryFilter<ExerciseDocument> = {};
-    if (query.status) filter.status = query.status;
+    if (query.status?.length) {
+      filter.status =
+        query.status.length === 1 ? query.status[0] : { $in: query.status };
+    }
     if (query.search) {
       filter.name = new RegExp(
         query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
@@ -307,17 +447,14 @@ export class ProgressService {
     if (dto.description !== undefined)
       item.description = dto.description?.trim() || undefined;
     if (dto.muscleKeys !== undefined) item.muscleKeys = dto.muscleKeys;
-    if (dto.equipmentKeys !== undefined)
-      item.equipmentKeys = dto.equipmentKeys;
+    if (dto.equipmentKeys !== undefined) item.equipmentKeys = dto.equipmentKeys;
     if (dto.mediaId !== undefined) {
-      item.mediaId = dto.mediaId
-        ? new Types.ObjectId(dto.mediaId)
-        : undefined;
+      item.mediaId = dto.mediaId ? new Types.ObjectId(dto.mediaId) : undefined;
     }
     if (dto.status !== undefined) item.status = dto.status;
     await item.save();
     this.audit.log({
-      action: AuditAction.WORKOUT_PLAN_UPSERTED,
+      action: AuditAction.EXERCISE_UPSERTED,
       actorId: adminId,
       metadata: { kind: 'exercise', exerciseId: id },
       request,
@@ -330,7 +467,7 @@ export class ProgressService {
     item.status = ExerciseStatus.ARCHIVED;
     await item.save();
     this.audit.log({
-      action: AuditAction.WORKOUT_PLAN_UPSERTED,
+      action: AuditAction.EXERCISE_UPSERTED,
       actorId: adminId,
       metadata: { kind: 'exercise_archive', exerciseId: id },
       request,
@@ -474,7 +611,11 @@ export class ProgressService {
     activeRole: Role,
     request: Request,
   ) {
-    const athleteUserId = this.resolveAthleteUserId(dto.athleteUserId, userId, activeRole);
+    const athleteUserId = this.resolveAthleteUserId(
+      dto.athleteUserId,
+      userId,
+      activeRole,
+    );
     const coachUserId =
       activeRole === Role.COACH ? new Types.ObjectId(userId) : undefined;
 
@@ -489,7 +630,7 @@ export class ProgressService {
     });
 
     this.audit.log({
-      action: AuditAction.WORKOUT_PLAN_UPSERTED,
+      action: AuditAction.PROGRESS_METRIC_UPSERTED,
       actorId: userId,
       targetUserId: athleteUserId,
       metadata: { workoutPlanId: item._id.toString() },
@@ -513,7 +654,8 @@ export class ProgressService {
     if (dto.privacy !== undefined) item.privacy = dto.privacy;
     if (dto.weeks !== undefined) item.weeks = this.mapWeeks(dto.weeks);
     if (dto.period !== undefined) {
-      item.period = dto.period === null ? undefined : this.mapPeriod(dto.period);
+      item.period =
+        dto.period === null ? undefined : this.mapPeriod(dto.period);
     }
     await item.save();
 
@@ -554,11 +696,27 @@ export class ProgressService {
     activeRole: Role,
     query: ListProgressMetricsQueryDto,
   ) {
-    this.assertAthleteOnlyWrite(activeRole, 'list');
+    const athleteUserId = await this.resolveProgressAthleteId(
+      userId,
+      activeRole,
+      query.athleteUserId,
+      'metrics',
+    );
     const filter: QueryFilter<ProgressMetricDocument> = {
-      athleteUserId: new Types.ObjectId(userId),
+      athleteUserId: new Types.ObjectId(athleteUserId),
     };
-    if (query.metricKey) filter.metricKey = query.metricKey;
+    if (query.metricKey) {
+      await this.assertCoachMetricScopeIfNeeded(
+        userId,
+        activeRole,
+        athleteUserId,
+        [query.metricKey],
+      );
+      filter.metricKey = query.metricKey;
+    } else if (activeRole === Role.COACH) {
+      const allowed = await this.coachAllowedMetricKeys(userId, athleteUserId);
+      filter.metricKey = { $in: allowed };
+    }
     if (query.source) filter.source = query.source;
     if (query.from || query.to) {
       const from = query.from ? new Date(query.from) : undefined;
@@ -589,6 +747,79 @@ export class ProgressService {
     );
   }
 
+  async metricsSummary(
+    userId: string,
+    activeRole: Role,
+    query: MetricsSummaryQueryDto,
+  ) {
+    const athleteUserId = await this.resolveProgressAthleteId(
+      userId,
+      activeRole,
+      query.athleteUserId,
+      'metrics',
+    );
+    let metricKeys = (query.metricKeys ?? [])
+      .map((k) => k.trim())
+      .filter(Boolean);
+    if (activeRole === Role.COACH) {
+      const allowed = await this.coachAllowedMetricKeys(userId, athleteUserId);
+      metricKeys =
+        metricKeys.length > 0
+          ? metricKeys.filter((k) => allowed.includes(k))
+          : allowed;
+      if (metricKeys.length === 0) {
+        return { from: query.from ?? null, to: query.to ?? null, items: [] };
+      }
+    }
+    await this.ensureDefaultMetricTypes();
+    const typeFilter: QueryFilter<MetricTypeDocument> = {
+      status: MetricTypeStatus.ACTIVE,
+    };
+    if (metricKeys.length > 0) typeFilter.key = { $in: metricKeys };
+    const types = await this.metricTypeModel.find(typeFilter).lean();
+    const from = query.from ? new Date(query.from) : undefined;
+    const to = query.to ? new Date(query.to) : undefined;
+    if (from && to && from > to) {
+      throw new BadRequestException('from must be before to');
+    }
+    const items = await Promise.all(
+      types.map(async (type) => {
+        const filter: QueryFilter<ProgressMetricDocument> = {
+          athleteUserId: new Types.ObjectId(athleteUserId),
+          metricKey: type.key,
+        };
+        if (from || to) {
+          filter.recordedAt = {
+            ...(from ? { $gte: from } : {}),
+            ...(to ? { $lte: to } : {}),
+          };
+        }
+        const samples = await this.metricModel
+          .find(filter)
+          .sort({ recordedAt: -1 })
+          .lean();
+        const values = samples.map((s) => s.value);
+        const aggregated = this.aggregateValues(
+          type.aggregation ?? MetricAggregation.LATEST,
+          values,
+        );
+        return {
+          metricKey: type.key,
+          aggregation: type.aggregation ?? MetricAggregation.LATEST,
+          unit: type.canonicalUnit ?? type.unit ?? null,
+          sampleCount: values.length,
+          value: aggregated,
+          latestRecordedAt: samples[0]?.recordedAt?.toISOString() ?? null,
+        };
+      }),
+    );
+    return {
+      from: query.from ?? null,
+      to: query.to ?? null,
+      items,
+    };
+  }
+
   async createMetric(
     dto: CreateProgressMetricDto,
     userId: string,
@@ -596,8 +827,17 @@ export class ProgressService {
     request: Request,
   ) {
     this.assertAthleteOnlyWrite(activeRole, 'create');
-    this.assertMetricValue(dto.metricKey, dto.value);
-    this.assertMetricPeriod(dto.periodStartAt, dto.periodEndAt);
+    await this.assertMetricValue(dto.metricKey, dto.value);
+    const period = this.resolveMetricPeriod(dto);
+    if (dto.clientMutationId) {
+      const existing = await this.metricModel
+        .findOne({
+          athleteUserId: new Types.ObjectId(userId),
+          clientMutationId: dto.clientMutationId.trim(),
+        })
+        .lean();
+      if (existing) return this.toMetric(existing);
+    }
     const item = await this.metricModel.create({
       athleteUserId: new Types.ObjectId(userId),
       privacy: dto.privacy ?? Privacy.PRIVATE,
@@ -608,16 +848,25 @@ export class ProgressService {
       note: dto.note?.trim(),
       source: dto.source ?? MetricSource.MANUAL,
       sourceRecordId: dto.sourceRecordId?.trim(),
-      periodStartAt: dto.periodStartAt
-        ? new Date(dto.periodStartAt)
-        : undefined,
-      periodEndAt: dto.periodEndAt ? new Date(dto.periodEndAt) : undefined,
+      clientMutationId: dto.clientMutationId?.trim(),
+      period,
+      periodStartAt: period?.start,
+      periodEndAt: period?.end,
     });
     this.audit.log({
-      action: AuditAction.WORKOUT_PLAN_UPSERTED,
+      action: AuditAction.PROGRESS_METRIC_UPSERTED,
       actorId: userId,
       metadata: { kind: 'metric', metricId: item._id.toString() },
       request,
+    });
+    void this.events.track({
+      eventName: AnalyticsEventName.METRIC_LOGGED,
+      actor: { userId, activeRole },
+      properties: {
+        metricKey: item.metricKey,
+        source: item.source,
+        hasClientMutationId: Boolean(item.clientMutationId),
+      },
     });
     return this.toMetric(item.toObject());
   }
@@ -630,17 +879,29 @@ export class ProgressService {
   ) {
     this.assertAthleteOnlyWrite(activeRole, 'sync');
     const athleteUserId = new Types.ObjectId(userId);
-    const operations = dto.entries.map((entry) => {
-      this.assertMetricValue(entry.metricKey, entry.value);
-      this.assertMetricPeriod(entry.periodStartAt, entry.periodEndAt);
-      return {
-        updateOne: {
-          filter: {
-            athleteUserId,
-            source: entry.source,
-            sourceRecordId: entry.sourceRecordId.trim(),
-          },
-          update: {
+    let created = 0;
+    let deduplicated = 0;
+    const rejected: {
+      index: number;
+      reason: string;
+      clientMutationId?: string;
+      sourceRecordId?: string;
+    }[] = [];
+
+    for (let index = 0; index < dto.entries.length; index++) {
+      const entry = dto.entries[index];
+      try {
+        await this.assertMetricValue(entry.metricKey, entry.value);
+        const period = this.resolveMetricPeriod(entry);
+        if (!entry.sourceRecordId?.trim() && !entry.clientMutationId?.trim()) {
+          throw new BadRequestException(
+            'sourceRecordId or clientMutationId is required',
+          );
+        }
+        const filter = this.syncDedupeFilter(athleteUserId, entry);
+        const result = await this.metricModel.updateOne(
+          filter,
+          {
             $setOnInsert: {
               athleteUserId,
               privacy: entry.privacy ?? Privacy.PRIVATE,
@@ -650,40 +911,82 @@ export class ProgressService {
               recordedAt: new Date(entry.recordedAt),
               note: entry.note?.trim(),
               source: entry.source,
-              sourceRecordId: entry.sourceRecordId.trim(),
-              periodStartAt: entry.periodStartAt
-                ? new Date(entry.periodStartAt)
-                : undefined,
-              periodEndAt: entry.periodEndAt
-                ? new Date(entry.periodEndAt)
-                : undefined,
+              sourceRecordId: entry.sourceRecordId?.trim(),
+              clientMutationId: entry.clientMutationId?.trim(),
+              period,
+              periodStartAt: period?.start,
+              periodEndAt: period?.end,
             },
           },
-          upsert: true,
-        },
-      };
-    });
-    if (operations.length === 0) {
-      return { accepted: 0, created: 0, deduplicated: 0 };
+          { upsert: true },
+        );
+        if (result.upsertedCount > 0) created += 1;
+        else deduplicated += 1;
+      } catch (err) {
+        if (isDuplicateKeyError(err)) {
+          deduplicated += 1;
+          continue;
+        }
+        rejected.push({
+          index,
+          reason:
+            err instanceof Error ? err.message : 'Failed to sync metric entry',
+          clientMutationId: entry.clientMutationId,
+          sourceRecordId: entry.sourceRecordId,
+        });
+      }
     }
-    const result = await this.metricModel.bulkWrite(operations, {
-      ordered: false,
-    });
-    const created = result.upsertedCount;
+
     this.audit.log({
-      action: AuditAction.WORKOUT_PLAN_UPSERTED,
+      action: AuditAction.PROGRESS_METRIC_SYNCED,
       actorId: userId,
       metadata: {
         kind: 'metric_sync',
-        accepted: operations.length,
+        accepted: dto.entries.length - rejected.length,
         created,
+        deduplicated,
+        rejected: rejected.length,
       },
       request,
     });
+
+    const providers = [...new Set(dto.entries.map((entry) => entry.source))];
+    const isHealthSync = providers.some((provider) =>
+      HEALTH_METRIC_SOURCES.has(provider),
+    );
+    if (isHealthSync && (created > 0 || deduplicated > 0)) {
+      void this.events.track({
+        eventName: AnalyticsEventName.HEALTH_SYNC_COMPLETED,
+        actor: { userId, activeRole },
+        properties: {
+          created,
+          deduplicated,
+          rejected: rejected.length,
+          providers,
+        },
+      });
+    }
+    if (
+      isHealthSync &&
+      rejected.length > 0 &&
+      created === 0 &&
+      deduplicated === 0
+    ) {
+      void this.events.track({
+        eventName: AnalyticsEventName.HEALTH_SYNC_FAILED,
+        actor: { userId, activeRole },
+        properties: {
+          rejected: rejected.length,
+          providers,
+        },
+      });
+    }
+
     return {
-      accepted: operations.length,
+      accepted: dto.entries.length - rejected.length,
       created,
-      deduplicated: operations.length - created,
+      deduplicated,
+      rejected,
     };
   }
 
@@ -698,18 +1001,19 @@ export class ProgressService {
     this.assertOwnerOrAdmin(item.athleteUserId, userId, activeRole);
     if (dto.metricKey !== undefined) item.metricKey = dto.metricKey.trim();
     if (dto.value !== undefined) {
-      this.assertMetricValue(dto.metricKey ?? item.metricKey, dto.value);
+      await this.assertMetricValue(dto.metricKey ?? item.metricKey, dto.value);
       item.value = dto.value;
     } else if (dto.metricKey !== undefined) {
-      this.assertMetricValue(dto.metricKey, item.value);
+      await this.assertMetricValue(dto.metricKey, item.value);
     }
     if (dto.unit !== undefined) item.unit = dto.unit?.trim() || undefined;
-    if (dto.recordedAt !== undefined) item.recordedAt = new Date(dto.recordedAt);
+    if (dto.recordedAt !== undefined)
+      item.recordedAt = new Date(dto.recordedAt);
     if (dto.note !== undefined) item.note = dto.note?.trim() || undefined;
     if (dto.privacy !== undefined) item.privacy = dto.privacy;
     await item.save();
     this.audit.log({
-      action: AuditAction.WORKOUT_PLAN_UPSERTED,
+      action: AuditAction.PROGRESS_METRIC_UPSERTED,
       actorId: userId,
       metadata: { kind: 'metric', metricId: id },
       request,
@@ -727,7 +1031,7 @@ export class ProgressService {
     this.assertOwnerOrAdmin(item.athleteUserId, userId, activeRole);
     await item.deleteOne();
     this.audit.log({
-      action: AuditAction.WORKOUT_PLAN_UPSERTED,
+      action: AuditAction.PROGRESS_METRIC_DELETED,
       actorId: userId,
       metadata: { kind: 'metric_delete', metricId: id },
       request,
@@ -779,7 +1083,7 @@ export class ProgressService {
       note: dto.note?.trim(),
     });
     this.audit.log({
-      action: AuditAction.WORKOUT_PLAN_UPSERTED,
+      action: AuditAction.PROGRESS_PHOTO_UPSERTED,
       actorId: userId,
       metadata: { kind: 'photo', photoId: item._id.toString() },
       request,
@@ -804,7 +1108,7 @@ export class ProgressService {
     if (dto.privacy !== undefined) item.privacy = dto.privacy;
     await item.save();
     this.audit.log({
-      action: AuditAction.WORKOUT_PLAN_UPSERTED,
+      action: AuditAction.PROGRESS_PHOTO_UPSERTED,
       actorId: userId,
       metadata: { kind: 'photo', photoId: id },
       request,
@@ -822,7 +1126,7 @@ export class ProgressService {
     this.assertOwnerOrAdmin(item.athleteUserId, userId, activeRole);
     await item.deleteOne();
     this.audit.log({
-      action: AuditAction.WORKOUT_PLAN_UPSERTED,
+      action: AuditAction.PROGRESS_PHOTO_DELETED,
       actorId: userId,
       metadata: { kind: 'photo_delete', photoId: id },
       request,
@@ -832,10 +1136,13 @@ export class ProgressService {
 
   // ── Metric types ────────────────────────────────────────────────────────
 
-  async adminListMetricTypes(query: ListMetricTypesQueryDto) {
+  async adminListMetricTypes(query: AdminListMetricTypesQueryDto) {
     await this.ensureDefaultMetricTypes();
     const filter: QueryFilter<MetricTypeDocument> = {};
-    if (query.status) filter.status = query.status;
+    if (query.status?.length) {
+      filter.status =
+        query.status.length === 1 ? query.status[0] : { $in: query.status };
+    }
     if (query.search) {
       const escaped = query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       filter.$or = [
@@ -877,7 +1184,13 @@ export class ProgressService {
         key,
         name: dto.name.trim(),
         valueKind: dto.valueKind,
-        unit: dto.unit?.trim(),
+        unit: dto.unit?.trim() ?? dto.canonicalUnit?.trim(),
+        canonicalUnit: dto.canonicalUnit?.trim() ?? dto.unit?.trim(),
+        validation: dto.validation,
+        aggregation: dto.aggregation ?? MetricAggregation.LATEST,
+        periodKind: dto.periodKind ?? MetricPeriodKind.POINT,
+        privacyClass: dto.privacyClass ?? MetricPrivacyClass.WELLNESS,
+        sourceMappings: dto.sourceMappings,
         sportId: dto.sportId?.trim(),
         status: dto.status ?? MetricTypeStatus.ACTIVE,
         sortHint: dto.sortHint ?? 100,
@@ -908,6 +1221,20 @@ export class ProgressService {
     if (dto.name !== undefined) item.name = dto.name.trim();
     if (dto.valueKind !== undefined) item.valueKind = dto.valueKind;
     if (dto.unit !== undefined) item.unit = dto.unit?.trim() || undefined;
+    if (dto.canonicalUnit !== undefined) {
+      item.canonicalUnit = dto.canonicalUnit?.trim() || undefined;
+    }
+    if (dto.validation !== undefined) {
+      item.validation = dto.validation ?? undefined;
+      item.markModified('validation');
+    }
+    if (dto.aggregation !== undefined) item.aggregation = dto.aggregation;
+    if (dto.periodKind !== undefined) item.periodKind = dto.periodKind;
+    if (dto.privacyClass !== undefined) item.privacyClass = dto.privacyClass;
+    if (dto.sourceMappings !== undefined) {
+      item.sourceMappings = dto.sourceMappings ?? undefined;
+      item.markModified('sourceMappings');
+    }
     if (dto.sportId !== undefined)
       item.sportId = dto.sportId?.trim() || undefined;
     if (dto.status !== undefined) item.status = dto.status;
@@ -970,7 +1297,10 @@ export class ProgressService {
 
   // ── Workout programs ────────────────────────────────────────────────────
 
-  async listWorkoutPrograms(coachUserId: string, query: ListWorkoutProgramsQueryDto) {
+  async listWorkoutPrograms(
+    coachUserId: string,
+    query: ListWorkoutProgramsQueryDto,
+  ) {
     const filter: QueryFilter<WorkoutProgramDocument> = {
       'owner.type': WorkoutProgramOwnerType.COACH,
       'owner.id': new Types.ObjectId(coachUserId),
@@ -1126,7 +1456,9 @@ export class ProgressService {
   ): string {
     if (activeRole === Role.ATHLETE) {
       if (athleteUserId && athleteUserId !== userId) {
-        throw new ForbiddenException('Athletes can only manage their own plans');
+        throw new ForbiddenException(
+          'Athletes can only manage their own plans',
+        );
       }
       return userId;
     }
@@ -1176,10 +1508,7 @@ export class ProgressService {
     if (activeRole === Role.ADMIN) return;
     const uid = userId;
     if (plan.athleteUserId.toString() === uid) return;
-    if (
-      activeRole === Role.COACH &&
-      plan.coachUserId?.toString() === uid
-    ) {
+    if (activeRole === Role.COACH && plan.coachUserId?.toString() === uid) {
       return;
     }
     throw new ForbiddenException('Not allowed to access this workout plan');
@@ -1268,6 +1597,7 @@ export class ProgressService {
               $setOnInsert: {
                 ...row,
                 status: MetricTypeStatus.ACTIVE,
+                canonicalUnit: row.canonicalUnit ?? row.unit,
               },
             },
             upsert: true,
@@ -1411,6 +1741,17 @@ export class ProgressService {
     name: string;
     valueKind: MetricValueKind;
     unit?: string;
+    canonicalUnit?: string;
+    validation?: {
+      min?: number;
+      max?: number;
+      step?: number;
+      integer?: boolean;
+    };
+    aggregation?: MetricAggregation;
+    periodKind?: MetricPeriodKind;
+    privacyClass?: MetricPrivacyClass;
+    sourceMappings?: Record<string, string>;
     sportId?: string;
     status: MetricTypeStatus;
     sortHint: number;
@@ -1418,12 +1759,26 @@ export class ProgressService {
     createdAt: Date;
     updatedAt: Date;
   }) {
+    const unit = doc.canonicalUnit ?? doc.unit ?? null;
     return {
       id: doc._id.toString(),
       key: doc.key,
       name: doc.name,
       valueKind: doc.valueKind,
-      unit: doc.unit ?? null,
+      unit,
+      canonicalUnit: unit,
+      validation: doc.validation
+        ? {
+            min: doc.validation.min ?? null,
+            max: doc.validation.max ?? null,
+            step: doc.validation.step ?? null,
+            integer: doc.validation.integer ?? false,
+          }
+        : null,
+      aggregation: doc.aggregation ?? MetricAggregation.LATEST,
+      periodKind: doc.periodKind ?? MetricPeriodKind.POINT,
+      privacyClass: doc.privacyClass ?? MetricPrivacyClass.WELLNESS,
+      sourceMappings: doc.sourceMappings ?? null,
       sportId: doc.sportId ?? null,
       status: doc.status,
       sortHint: doc.sortHint,
@@ -1505,11 +1860,15 @@ export class ProgressService {
     note?: string;
     source?: MetricSource;
     sourceRecordId?: string;
+    clientMutationId?: string;
+    period?: { start?: Date; end?: Date };
     periodStartAt?: Date;
     periodEndAt?: Date;
     createdAt: Date;
     updatedAt: Date;
   }) {
+    const periodStart = doc.period?.start ?? doc.periodStartAt ?? undefined;
+    const periodEnd = doc.period?.end ?? doc.periodEndAt ?? undefined;
     return {
       id: doc._id.toString(),
       athleteUserId: doc.athleteUserId.toString(),
@@ -1521,45 +1880,104 @@ export class ProgressService {
       note: doc.note ?? null,
       source: doc.source ?? MetricSource.MANUAL,
       sourceRecordId: doc.sourceRecordId ?? null,
-      periodStartAt: doc.periodStartAt?.toISOString() ?? null,
-      periodEndAt: doc.periodEndAt?.toISOString() ?? null,
+      clientMutationId: doc.clientMutationId ?? null,
+      period:
+        periodStart || periodEnd
+          ? {
+              start: periodStart?.toISOString() ?? null,
+              end: periodEnd?.toISOString() ?? null,
+            }
+          : null,
+      periodStartAt: periodStart?.toISOString() ?? null,
+      periodEndAt: periodEnd?.toISOString() ?? null,
       createdAt: doc.createdAt.toISOString(),
       updatedAt: doc.updatedAt.toISOString(),
     };
   }
 
-  private assertMetricValue(metricKey: string, value: number) {
-    const ranges: Record<string, { min: number; max: number; integer?: boolean }> = {
-      weight_kg: { min: 1, max: 500 },
-      water_ml: { min: 0, max: 20_000 },
-      steps: { min: 0, max: 200_000, integer: true },
-      walking_distance_km: { min: 0, max: 500 },
-      walking_duration_min: { min: 0, max: 1_440 },
-      sleep_duration_min: { min: 0, max: 1_440 },
-      sleep_quality: { min: 1, max: 5, integer: true },
-    };
-    const range = ranges[metricKey.trim()];
+  private async assertMetricValue(metricKey: string, value: number) {
     if (!Number.isFinite(value)) {
       throw new BadRequestException('Metric value must be finite');
     }
+    await this.ensureDefaultMetricTypes();
+    const type = await this.metricTypeModel
+      .findOne({ key: metricKey.trim() })
+      .lean();
+    const range =
+      type?.validation ??
+      (
+        {
+          weight_kg: { min: 1, max: 500 },
+          water_ml: { min: 0, max: 20_000 },
+          steps: { min: 0, max: 200_000, integer: true },
+          walking_distance_km: { min: 0, max: 500 },
+          walking_duration_min: { min: 0, max: 1_440 },
+          sleep_duration_min: { min: 0, max: 1_440 },
+          sleep_quality: { min: 1, max: 5, integer: true },
+        } as Record<string, { min?: number; max?: number; integer?: boolean }>
+      )[metricKey.trim()];
     if (!range) return;
-    if (value < range.min || value > range.max) {
-      throw new BadRequestException(
-        `Metric value must be between ${range.min} and ${range.max}`,
-      );
+    if (range.min !== undefined && value < range.min) {
+      throw new BadRequestException(`Metric value must be >= ${range.min}`);
+    }
+    if (range.max !== undefined && value > range.max) {
+      throw new BadRequestException(`Metric value must be <= ${range.max}`);
     }
     if (range.integer && !Number.isInteger(value)) {
       throw new BadRequestException('Metric value must be an integer');
     }
   }
 
-  private assertMetricPeriod(periodStartAt?: string, periodEndAt?: string) {
-    if (
-      periodStartAt &&
-      periodEndAt &&
-      new Date(periodStartAt) > new Date(periodEndAt)
-    ) {
-      throw new BadRequestException('periodStartAt must be before periodEndAt');
+  private resolveMetricPeriod(dto: {
+    period?: { start?: string; end?: string };
+    periodStartAt?: string;
+    periodEndAt?: string;
+  }): { start?: Date; end?: Date } | undefined {
+    const startRaw = dto.period?.start ?? dto.periodStartAt;
+    const endRaw = dto.period?.end ?? dto.periodEndAt;
+    if (!startRaw && !endRaw) return undefined;
+    const start = startRaw ? new Date(startRaw) : undefined;
+    const end = endRaw ? new Date(endRaw) : undefined;
+    if (start && end && start > end) {
+      throw new BadRequestException('period.start must be before period.end');
+    }
+    return { start, end };
+  }
+
+  private syncDedupeFilter(
+    athleteUserId: Types.ObjectId,
+    entry: SyncProgressMetricItemDto,
+  ): QueryFilter<ProgressMetricDocument> {
+    if (entry.sourceRecordId?.trim()) {
+      return {
+        athleteUserId,
+        source: entry.source,
+        sourceRecordId: entry.sourceRecordId.trim(),
+      };
+    }
+    return {
+      athleteUserId,
+      clientMutationId: entry.clientMutationId!.trim(),
+    };
+  }
+
+  private aggregateValues(
+    aggregation: MetricAggregation,
+    values: number[],
+  ): number | null {
+    if (values.length === 0) return null;
+    switch (aggregation) {
+      case MetricAggregation.SUM:
+        return values.reduce((a, b) => a + b, 0);
+      case MetricAggregation.AVERAGE:
+        return values.reduce((a, b) => a + b, 0) / values.length;
+      case MetricAggregation.MIN:
+        return Math.min(...values);
+      case MetricAggregation.MAX:
+        return Math.max(...values);
+      case MetricAggregation.LATEST:
+      default:
+        return values[0] ?? null;
     }
   }
 
@@ -1598,17 +2016,60 @@ export class ProgressService {
       throw new ForbiddenException('Not your workout plan');
     }
 
+    if (dto.clientMutationId) {
+      const existing = await this.workoutLogModel
+        .findOne({
+          athleteId: new Types.ObjectId(athleteId),
+          clientMutationId: dto.clientMutationId.trim(),
+        })
+        .lean();
+      if (existing) return this.toWorkoutLog(existing);
+    }
+
+    const status = dto.status ?? WorkoutLogStatus.DRAFT;
+    if (
+      status !== WorkoutLogStatus.DRAFT &&
+      status !== WorkoutLogStatus.IN_PROGRESS
+    ) {
+      throw new BadRequestException(
+        'Workout logs must start as draft or in progress',
+      );
+    }
     const item = await this.workoutLogModel.create({
       planId: new Types.ObjectId(dto.planId),
+      planRevisionId: dto.planRevisionId
+        ? new Types.ObjectId(dto.planRevisionId)
+        : undefined,
       athleteId: new Types.ObjectId(athleteId),
       sessionIndex: dto.sessionIndex,
-      sets: dto.sets.map((s) => ({
+      sets: (dto.sets ?? []).map((s) => ({
         exerciseId: new Types.ObjectId(s.exerciseId),
         reps: s.reps,
         weightKg: s.weightKg,
+        durationSec: s.durationSec,
+        distanceM: s.distanceM,
         rpe: s.rpe,
       })),
-      status: dto.status,
+      status,
+      timing: dto.timing
+        ? {
+            startedAt: dto.timing.startedAt
+              ? new Date(dto.timing.startedAt)
+              : undefined,
+            completedAt: dto.timing.completedAt
+              ? new Date(dto.timing.completedAt)
+              : undefined,
+            durationSec: dto.timing.durationSec,
+          }
+        : undefined,
+      note: dto.note?.trim(),
+      pain: dto.pain
+        ? {
+            score: dto.pain.score,
+            bodyAreaKeys: dto.pain.bodyAreaKeys ?? [],
+          }
+        : undefined,
+      clientMutationId: dto.clientMutationId?.trim(),
       loggedAt: dto.loggedAt ? new Date(dto.loggedAt) : new Date(),
     });
 
@@ -1617,6 +2078,160 @@ export class ProgressService {
       actorId: athleteId,
       metadata: { workoutLogId: item._id.toString(), planId: dto.planId },
       request,
+    });
+    if (
+      status === WorkoutLogStatus.IN_PROGRESS ||
+      status === WorkoutLogStatus.DRAFT
+    ) {
+      void this.events.track({
+        eventName: AnalyticsEventName.WORKOUT_STARTED,
+        actor: { userId: athleteId, activeRole: Role.ATHLETE },
+        properties: {
+          workoutLogId: item._id.toString(),
+          planId: dto.planId,
+          status,
+        },
+      });
+    }
+    return this.toWorkoutLog(item.toObject());
+  }
+
+  async updateWorkoutLog(
+    id: string,
+    dto: UpdateWorkoutLogDto,
+    athleteId: string,
+    request: Request,
+  ) {
+    const item = await this.findWorkoutLog(id);
+    if (item.athleteId.toString() !== athleteId) {
+      throw new ForbiddenException('Not your workout log');
+    }
+    if (
+      item.status === WorkoutLogStatus.COMPLETED ||
+      item.status === WorkoutLogStatus.SKIPPED ||
+      item.status === WorkoutLogStatus.ABANDONED
+    ) {
+      throw new BadRequestException('Terminal workout logs cannot be patched');
+    }
+    if (
+      dto.status === WorkoutLogStatus.COMPLETED ||
+      dto.status === WorkoutLogStatus.SKIPPED
+    ) {
+      throw new BadRequestException(
+        'Use the dedicated completion or skip flow for terminal states',
+      );
+    }
+    if (dto.sets !== undefined) {
+      item.sets = dto.sets.map((s) => ({
+        exerciseId: new Types.ObjectId(s.exerciseId),
+        reps: s.reps,
+        weightKg: s.weightKg,
+        durationSec: s.durationSec,
+        distanceM: s.distanceM,
+        rpe: s.rpe,
+      }));
+    }
+    if (dto.status !== undefined) item.status = dto.status;
+    if (dto.timing !== undefined) {
+      item.timing = {
+        startedAt: dto.timing.startedAt
+          ? new Date(dto.timing.startedAt)
+          : item.timing?.startedAt,
+        completedAt: dto.timing.completedAt
+          ? new Date(dto.timing.completedAt)
+          : item.timing?.completedAt,
+        durationSec: dto.timing.durationSec ?? item.timing?.durationSec,
+      };
+      item.markModified('timing');
+    }
+    if (dto.note !== undefined) item.note = dto.note?.trim() || undefined;
+    if (dto.pain !== undefined) {
+      item.pain = dto.pain
+        ? {
+            score: dto.pain.score,
+            bodyAreaKeys: dto.pain.bodyAreaKeys ?? [],
+          }
+        : undefined;
+      item.markModified('pain');
+    }
+    if (dto.loggedAt !== undefined) item.loggedAt = new Date(dto.loggedAt);
+    await item.save();
+    this.audit.log({
+      action: AuditAction.WORKOUT_LOG_UPSERTED,
+      actorId: athleteId,
+      metadata: { workoutLogId: id, op: 'patch' },
+      request,
+    });
+    if (dto.status === WorkoutLogStatus.ABANDONED) {
+      void this.events.track({
+        eventName: AnalyticsEventName.WORKOUT_ABANDONED,
+        actor: { userId: athleteId, activeRole: Role.ATHLETE },
+        properties: {
+          workoutLogId: id,
+          planId: item.planId.toString(),
+        },
+      });
+    } else if (dto.status === WorkoutLogStatus.IN_PROGRESS) {
+      void this.events.track({
+        eventName: AnalyticsEventName.WORKOUT_STARTED,
+        actor: { userId: athleteId, activeRole: Role.ATHLETE },
+        properties: {
+          workoutLogId: id,
+          planId: item.planId.toString(),
+          status: dto.status,
+        },
+      });
+    }
+    return this.toWorkoutLog(item.toObject());
+  }
+
+  async completeWorkoutLog(id: string, athleteId: string, request: Request) {
+    const item = await this.findWorkoutLog(id);
+    if (item.athleteId.toString() !== athleteId) {
+      throw new ForbiddenException('Not your workout log');
+    }
+    if (
+      item.status === WorkoutLogStatus.COMPLETED ||
+      item.status === WorkoutLogStatus.SKIPPED ||
+      item.status === WorkoutLogStatus.ABANDONED
+    ) {
+      return this.toWorkoutLog(item.toObject());
+    }
+    const completedAt = new Date();
+    item.status = WorkoutLogStatus.COMPLETED;
+    item.timing = {
+      startedAt: item.timing?.startedAt ?? item.loggedAt,
+      completedAt,
+      durationSec:
+        item.timing?.durationSec ??
+        (item.timing?.startedAt
+          ? Math.max(
+              0,
+              Math.round(
+                (completedAt.getTime() -
+                  (item.timing.startedAt ?? item.loggedAt).getTime()) /
+                  1000,
+              ),
+            )
+          : undefined),
+    };
+    item.markModified('timing');
+    item.loggedAt = completedAt;
+    await item.save();
+    this.audit.log({
+      action: AuditAction.WORKOUT_LOG_UPSERTED,
+      actorId: athleteId,
+      metadata: { workoutLogId: id, op: 'complete' },
+      request,
+    });
+    void this.events.track({
+      eventName: AnalyticsEventName.WORKOUT_COMPLETED,
+      actor: { userId: athleteId, activeRole: Role.ATHLETE },
+      properties: {
+        workoutLogId: id,
+        planId: item.planId.toString(),
+        durationSec: item.timing?.durationSec ?? null,
+      },
     });
     return this.toWorkoutLog(item.toObject());
   }
@@ -1638,6 +2253,11 @@ export class ProgressService {
         throw new BadRequestException('athleteId required for coach view');
       }
       await this.assertCoachStudent(userId, athleteId);
+      await this.assertActiveGrantScope(
+        athleteId,
+        userId,
+        AthleteDataGrantScope.WORKOUTS_LOGS,
+      );
       filter.athleteId = new Types.ObjectId(athleteId);
     } else if (activeRole === Role.ADMIN) {
       if (query.athleteId) {
@@ -1705,6 +2325,11 @@ export class ProgressService {
         throw new BadRequestException('athleteId required for coach view');
       }
       await this.assertCoachStudent(userId, athleteId);
+      await this.assertActiveGrantScope(
+        athleteId,
+        userId,
+        AthleteDataGrantScope.PROGRESS_PERSONAL_RECORDS,
+      );
       filter.athleteId = new Types.ObjectId(athleteId);
       filter.privacy = {
         $in: [Privacy.PUBLIC, Privacy.FOLLOWERS, Privacy.COACH_ONLY],
@@ -1744,20 +2369,145 @@ export class ProgressService {
     if (!link) {
       throw new ForbiddenException('Not an active coach–student relationship');
     }
+    return link;
+  }
+
+  private async findWorkoutLog(id: string) {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundException('Workout log not found');
+    }
+    const item = await this.workoutLogModel.findById(id);
+    if (!item) throw new NotFoundException('Workout log not found');
+    return item;
+  }
+
+  private async resolveProgressAthleteId(
+    userId: string,
+    activeRole: Role,
+    athleteUserId: string | undefined,
+    resource: 'metrics' | 'photos',
+  ): Promise<string> {
+    if (activeRole === Role.ATHLETE) {
+      if (athleteUserId && athleteUserId !== userId) {
+        throw new ForbiddenException(
+          `Athletes can only access their own ${resource}`,
+        );
+      }
+      return userId;
+    }
+    if (activeRole === Role.ADMIN) {
+      return athleteUserId ?? userId;
+    }
+    if (activeRole === Role.COACH) {
+      if (!athleteUserId) {
+        throw new BadRequestException(
+          'athleteUserId is required for coach view',
+        );
+      }
+      await this.assertCoachStudent(userId, athleteUserId);
+      return athleteUserId;
+    }
+    throw new ForbiddenException(`Role cannot access ${resource}`);
+  }
+
+  private async loadActiveGrant(athleteUserId: string, coachUserId: string) {
+    const now = new Date();
+    await this.dataGrantModel.updateMany(
+      {
+        athleteUserId: new Types.ObjectId(athleteUserId),
+        'grantee.type': AthleteDataGranteeType.COACH,
+        'grantee.userId': new Types.ObjectId(coachUserId),
+        status: AthleteDataGrantStatus.ACTIVE,
+        'effective.expiresAt': { $lte: now },
+      },
+      { $set: { status: AthleteDataGrantStatus.EXPIRED } },
+    );
+    return this.dataGrantModel.findOne({
+      athleteUserId: new Types.ObjectId(athleteUserId),
+      'grantee.type': AthleteDataGranteeType.COACH,
+      'grantee.userId': new Types.ObjectId(coachUserId),
+      status: AthleteDataGrantStatus.ACTIVE,
+      $or: [
+        { 'effective.expiresAt': { $exists: false } },
+        { 'effective.expiresAt': null },
+        { 'effective.expiresAt': { $gt: now } },
+      ],
+    });
+  }
+
+  private async assertActiveGrantScope(
+    athleteUserId: string,
+    coachUserId: string,
+    scope: AthleteDataGrantScope,
+  ) {
+    const grant = await this.loadActiveGrant(athleteUserId, coachUserId);
+    if (!grant || !grant.scopes.includes(scope)) {
+      throw new ForbiddenException(
+        `Active data grant with scope ${scope} is required`,
+      );
+    }
+  }
+
+  private async coachAllowedMetricKeys(
+    coachUserId: string,
+    athleteUserId: string,
+  ): Promise<string[]> {
+    const grant = await this.loadActiveGrant(athleteUserId, coachUserId);
+    if (!grant) {
+      throw new ForbiddenException('Active data grant is required');
+    }
+    if (grant.scopes.includes(AthleteDataGrantScope.METRICS_ALL)) {
+      const types = await this.metricTypeModel
+        .find({ status: MetricTypeStatus.ACTIVE })
+        .select({ key: 1 })
+        .lean();
+      return types.map((t) => t.key);
+    }
+    const allowed: string[] = [];
+    for (const [key, scopes] of Object.entries(METRIC_KEY_GRANT_SCOPES)) {
+      if (scopes.some((s) => grant.scopes.includes(s))) allowed.push(key);
+    }
+    return allowed;
+  }
+
+  private async assertCoachMetricScopeIfNeeded(
+    userId: string,
+    activeRole: Role,
+    athleteUserId: string,
+    metricKeys: string[],
+  ) {
+    if (activeRole !== Role.COACH) return;
+    const allowed = await this.coachAllowedMetricKeys(userId, athleteUserId);
+    for (const key of metricKeys) {
+      if (!allowed.includes(key)) {
+        throw new ForbiddenException(`No active grant for metric ${key}`);
+      }
+    }
   }
 
   private toWorkoutLog(doc: {
     _id: Types.ObjectId;
     planId: Types.ObjectId;
+    planRevisionId?: Types.ObjectId;
     athleteId: Types.ObjectId;
     sessionIndex: number;
     sets: {
       exerciseId: Types.ObjectId;
       reps: number;
       weightKg?: number;
+      durationSec?: number;
+      distanceM?: number;
       rpe?: number;
     }[];
     status: WorkoutLogStatus;
+    timing?: {
+      startedAt?: Date;
+      completedAt?: Date;
+      durationSec?: number;
+    };
+    note?: string;
+    pain?: { score?: number; bodyAreaKeys?: string[] };
+    clientMutationId?: string;
     loggedAt: Date;
     createdAt: Date;
     updatedAt: Date;
@@ -1765,15 +2515,33 @@ export class ProgressService {
     return {
       id: doc._id.toString(),
       planId: doc.planId.toString(),
+      planRevisionId: doc.planRevisionId?.toString() ?? null,
       athleteId: doc.athleteId.toString(),
       sessionIndex: doc.sessionIndex,
-      sets: doc.sets.map((s) => ({
+      sets: (doc.sets ?? []).map((s) => ({
         exerciseId: s.exerciseId.toString(),
         reps: s.reps,
         weightKg: s.weightKg ?? null,
+        durationSec: s.durationSec ?? null,
+        distanceM: s.distanceM ?? null,
         rpe: s.rpe ?? null,
       })),
       status: doc.status,
+      timing: doc.timing
+        ? {
+            startedAt: doc.timing.startedAt?.toISOString() ?? null,
+            completedAt: doc.timing.completedAt?.toISOString() ?? null,
+            durationSec: doc.timing.durationSec ?? null,
+          }
+        : null,
+      note: doc.note ?? null,
+      pain: doc.pain
+        ? {
+            score: doc.pain.score ?? null,
+            bodyAreaKeys: doc.pain.bodyAreaKeys ?? [],
+          }
+        : null,
+      clientMutationId: doc.clientMutationId ?? null,
       loggedAt: doc.loggedAt.toISOString(),
       createdAt: doc.createdAt.toISOString(),
       updatedAt: doc.updatedAt.toISOString(),
@@ -1799,6 +2567,662 @@ export class ProgressService {
       achievedAt: doc.achievedAt.toISOString(),
       privacy: doc.privacy,
       note: doc.note ?? null,
+      createdAt: doc.createdAt.toISOString(),
+      updatedAt: doc.updatedAt.toISOString(),
+    };
+  }
+
+  // ── Goals ───────────────────────────────────────────────────────────────
+
+  async listMetricGoals(userId: string, query: ListMetricGoalsQueryDto) {
+    const filter: QueryFilter<MetricGoalDocument> = {
+      athleteUserId: new Types.ObjectId(userId),
+    };
+    if (query.metricKey) filter.metricKey = query.metricKey;
+    if (query.status) filter.status = query.status;
+    const { page, pageSize } = resolvePageSize(query);
+    const [items, total] = await Promise.all([
+      this.metricGoalModel
+        .find(filter)
+        .sort({ updatedAt: -1 })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .lean(),
+      this.metricGoalModel.countDocuments(filter),
+    ]);
+    return paginatedResult(
+      items.map((item) => this.toMetricGoal(item)),
+      total,
+      page,
+      pageSize,
+    );
+  }
+
+  async createMetricGoal(
+    dto: CreateMetricGoalDto,
+    userId: string,
+    request: Request,
+  ) {
+    const item = await this.metricGoalModel.create({
+      athleteUserId: new Types.ObjectId(userId),
+      metricKey: dto.metricKey.trim(),
+      target: {
+        operator: dto.target.operator,
+        value: dto.target.value,
+        unit: dto.target.unit?.trim(),
+      },
+      period: dto.period,
+      effective: {
+        start: new Date(dto.effective.start),
+        end: dto.effective.end ? new Date(dto.effective.end) : undefined,
+      },
+      status: dto.status ?? MetricGoalStatus.ACTIVE,
+    });
+    this.audit.log({
+      action: AuditAction.PROGRESS_GOAL_UPSERTED,
+      actorId: userId,
+      metadata: { kind: 'metric_goal', goalId: item._id.toString() },
+      request,
+    });
+    return this.toMetricGoal(item.toObject());
+  }
+
+  async updateMetricGoal(
+    id: string,
+    dto: UpdateMetricGoalDto,
+    userId: string,
+    request: Request,
+  ) {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundException('Metric goal not found');
+    }
+    const item = await this.metricGoalModel.findOne({
+      _id: new Types.ObjectId(id),
+      athleteUserId: new Types.ObjectId(userId),
+    });
+    if (!item) throw new NotFoundException('Metric goal not found');
+    if (dto.target !== undefined) {
+      item.target = {
+        operator: dto.target.operator,
+        value: dto.target.value,
+        unit: dto.target.unit?.trim(),
+      };
+      item.markModified('target');
+    }
+    if (dto.period !== undefined) item.period = dto.period;
+    if (dto.effective !== undefined) {
+      item.effective = {
+        start: new Date(dto.effective.start),
+        end: dto.effective.end ? new Date(dto.effective.end) : undefined,
+      };
+      item.markModified('effective');
+    }
+    if (dto.status !== undefined) item.status = dto.status;
+    await item.save();
+    this.audit.log({
+      action: AuditAction.PROGRESS_GOAL_UPSERTED,
+      actorId: userId,
+      metadata: { kind: 'metric_goal', goalId: id, op: 'update' },
+      request,
+    });
+    return this.toMetricGoal(item.toObject());
+  }
+
+  // ── Reminders ───────────────────────────────────────────────────────────
+
+  async listMetricReminders(
+    userId: string,
+    query: ListMetricRemindersQueryDto,
+  ) {
+    const filter: QueryFilter<MetricReminderDocument> = {
+      athleteUserId: new Types.ObjectId(userId),
+    };
+    if (query.status) filter.status = query.status;
+    const { page, pageSize } = resolvePageSize(query);
+    const [items, total] = await Promise.all([
+      this.metricReminderModel
+        .find(filter)
+        .sort({ metricKey: 1 })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .lean(),
+      this.metricReminderModel.countDocuments(filter),
+    ]);
+    return paginatedResult(
+      items.map((item) => this.toMetricReminder(item)),
+      total,
+      page,
+      pageSize,
+    );
+  }
+
+  async upsertMetricReminder(
+    metricKey: string,
+    dto: UpsertMetricReminderDto,
+    userId: string,
+    request: Request,
+  ) {
+    const key = metricKey.trim();
+    if (!key) throw new BadRequestException('metricKey is required');
+    const item = await this.metricReminderModel.findOneAndUpdate(
+      {
+        athleteUserId: new Types.ObjectId(userId),
+        metricKey: key,
+      },
+      {
+        $set: {
+          schedule: {
+            timezone: dto.schedule.timezone.trim(),
+            weekdays: dto.schedule.weekdays ?? [],
+            localTime: dto.schedule.localTime,
+          },
+          quietHours:
+            dto.quietHours === null
+              ? undefined
+              : dto.quietHours
+                ? {
+                    start: dto.quietHours.start,
+                    end: dto.quietHours.end,
+                  }
+                : undefined,
+          channel: dto.channel ?? MetricReminderChannel.PUSH,
+          status: dto.status ?? MetricReminderStatus.PAUSED,
+        },
+        $setOnInsert: {
+          athleteUserId: new Types.ObjectId(userId),
+          metricKey: key,
+        },
+      },
+      { upsert: true, new: true },
+    );
+    this.audit.log({
+      action: AuditAction.PROGRESS_REMINDER_UPSERTED,
+      actorId: userId,
+      metadata: { kind: 'metric_reminder', metricKey: key },
+      request,
+    });
+    return this.toMetricReminder(item.toObject());
+  }
+
+  // ── Data grants ─────────────────────────────────────────────────────────
+
+  async listDataGrants(userId: string, query: ListAthleteDataGrantsQueryDto) {
+    const filter: QueryFilter<AthleteDataGrantDocument> = {
+      athleteUserId: new Types.ObjectId(userId),
+    };
+    if (query.status) filter.status = query.status;
+    const { page, pageSize } = resolvePageSize(query);
+    const [items, total] = await Promise.all([
+      this.dataGrantModel
+        .find(filter)
+        .sort({ updatedAt: -1 })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .lean(),
+      this.dataGrantModel.countDocuments(filter),
+    ]);
+    return paginatedResult(
+      items.map((item) => this.toDataGrant(item)),
+      total,
+      page,
+      pageSize,
+    );
+  }
+
+  async createDataGrant(
+    dto: CreateAthleteDataGrantDto,
+    userId: string,
+    request: Request,
+  ) {
+    const relationship = await this.coachStudentModel.findOne({
+      _id: new Types.ObjectId(dto.relationshipId),
+      athleteUserId: new Types.ObjectId(userId),
+      coachUserId: new Types.ObjectId(dto.granteeUserId),
+      status: CoachStudentStatus.ACTIVE,
+    });
+    if (!relationship) {
+      throw new BadRequestException(
+        'relationshipId must be an active CoachStudent for this athlete and coach',
+      );
+    }
+    const expiresAt = dto.expiresAt ? new Date(dto.expiresAt) : undefined;
+    if (expiresAt && expiresAt.getTime() <= Date.now()) {
+      throw new BadRequestException('expiresAt must be in the future');
+    }
+    const item = await this.dataGrantModel.create({
+      athleteUserId: new Types.ObjectId(userId),
+      grantee: {
+        type: AthleteDataGranteeType.COACH,
+        userId: new Types.ObjectId(dto.granteeUserId),
+      },
+      relationshipId: relationship._id,
+      scopes: dto.scopes,
+      effective: {
+        grantedAt: new Date(),
+        expiresAt,
+      },
+      status: AthleteDataGrantStatus.ACTIVE,
+    });
+    await this.dataGrantModel.updateMany(
+      {
+        _id: { $ne: item._id },
+        athleteUserId: new Types.ObjectId(userId),
+        'grantee.type': AthleteDataGranteeType.COACH,
+        'grantee.userId': new Types.ObjectId(dto.granteeUserId),
+        status: AthleteDataGrantStatus.ACTIVE,
+      },
+      {
+        $set: {
+          status: AthleteDataGrantStatus.REVOKED,
+          revokedAt: new Date(),
+          revokedBy: new Types.ObjectId(userId),
+        },
+      },
+    );
+    this.audit.log({
+      action: AuditAction.PROGRESS_DATA_GRANT_CHANGED,
+      actorId: userId,
+      targetUserId: dto.granteeUserId,
+      metadata: { kind: 'data_grant', grantId: item._id.toString() },
+      request,
+    });
+    void this.events.track({
+      eventName: AnalyticsEventName.DATA_GRANT_CREATED,
+      actor: { userId, activeRole: Role.ATHLETE },
+      properties: {
+        grantId: item._id.toString(),
+        scopeCount: dto.scopes.length,
+        hasExpiry: Boolean(dto.expiresAt),
+      },
+    });
+    return this.toDataGrant(item.toObject());
+  }
+
+  async revokeDataGrant(id: string, userId: string, request: Request) {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundException('Data grant not found');
+    }
+    const item = await this.dataGrantModel.findOne({
+      _id: new Types.ObjectId(id),
+      athleteUserId: new Types.ObjectId(userId),
+    });
+    if (!item) throw new NotFoundException('Data grant not found');
+    item.status = AthleteDataGrantStatus.REVOKED;
+    item.revokedAt = new Date();
+    item.revokedBy = new Types.ObjectId(userId);
+    await item.save();
+    this.audit.log({
+      action: AuditAction.PROGRESS_DATA_GRANT_CHANGED,
+      actorId: userId,
+      metadata: { kind: 'data_grant_revoke', grantId: id },
+      request,
+    });
+    void this.events.track({
+      eventName: AnalyticsEventName.DATA_GRANT_REVOKED,
+      actor: { userId, activeRole: Role.ATHLETE },
+      properties: { grantId: id },
+    });
+    return this.toDataGrant(item.toObject());
+  }
+
+  // ── Health sync state ───────────────────────────────────────────────────
+
+  async listHealthSyncStates(
+    userId: string,
+    query: ListHealthSyncStatesQueryDto,
+  ) {
+    const filter: QueryFilter<HealthSyncStateDocument> = {
+      athleteUserId: new Types.ObjectId(userId),
+    };
+    if (query.provider) filter.provider = query.provider;
+    const items = await this.healthSyncStateModel.find(filter).lean();
+    return { items: items.map((item) => this.toHealthSyncState(item)) };
+  }
+
+  async upsertHealthSyncState(
+    provider: HealthSyncProvider,
+    dto: UpsertHealthSyncStateDto,
+    userId: string,
+    request: Request,
+  ) {
+    if (!Object.values(HealthSyncProvider).includes(provider)) {
+      throw new BadRequestException('Invalid health sync provider');
+    }
+    const item = await this.healthSyncStateModel.findOneAndUpdate(
+      {
+        athleteUserId: new Types.ObjectId(userId),
+        provider,
+      },
+      {
+        $set: {
+          status: dto.status,
+          authorizedMetricKeys: dto.authorizedMetricKeys ?? [],
+          cursorByMetric: dto.cursorByMetric ?? {},
+          lastSyncAt: dto.lastSyncAt ? new Date(dto.lastSyncAt) : undefined,
+          lastErrorCode:
+            dto.lastErrorCode === null ? undefined : dto.lastErrorCode?.trim(),
+        },
+        $setOnInsert: {
+          athleteUserId: new Types.ObjectId(userId),
+          provider,
+        },
+      },
+      { upsert: true, new: true },
+    );
+    this.audit.log({
+      action: AuditAction.PROGRESS_HEALTH_SYNC_UPDATED,
+      actorId: userId,
+      metadata: { kind: 'health_sync_state', provider, status: dto.status },
+      request,
+    });
+
+    if (dto.status === HealthSyncStatus.CONNECTED) {
+      void this.events.track({
+        eventName: AnalyticsEventName.HEALTH_SYNC_STARTED,
+        actor: { userId, activeRole: Role.ATHLETE },
+        properties: {
+          provider,
+          authorizedMetricKeyCount: (dto.authorizedMetricKeys ?? []).length,
+        },
+      });
+    } else if (dto.status === HealthSyncStatus.ERROR) {
+      void this.events.track({
+        eventName: AnalyticsEventName.HEALTH_SYNC_FAILED,
+        actor: { userId, activeRole: Role.ATHLETE },
+        properties: {
+          provider,
+          lastErrorCode: dto.lastErrorCode ?? null,
+        },
+      });
+    }
+
+    return this.toHealthSyncState(item.toObject());
+  }
+
+  // ── Data rights ─────────────────────────────────────────────────────────
+
+  async exportProgressData(userId: string, request: Request) {
+    const athleteUserId = new Types.ObjectId(userId);
+    const [metrics, photos, grants, goals, reminders, healthSync] =
+      await Promise.all([
+        this.metricModel
+          .find({ athleteUserId })
+          .sort({ recordedAt: -1 })
+          .lean(),
+        this.photoModel.find({ athleteUserId }).sort({ capturedAt: -1 }).lean(),
+        this.dataGrantModel
+          .find({ athleteUserId })
+          .sort({ updatedAt: -1 })
+          .lean(),
+        this.metricGoalModel
+          .find({ athleteUserId })
+          .sort({ updatedAt: -1 })
+          .lean(),
+        this.metricReminderModel
+          .find({ athleteUserId })
+          .sort({ metricKey: 1 })
+          .lean(),
+        this.healthSyncStateModel.find({ athleteUserId }).lean(),
+      ]);
+
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      athleteUserId: userId,
+      metrics: metrics.map((item) => this.toMetric(item)),
+      photos: photos.map((item) => this.toPhoto(item)),
+      grants: grants.map((item) => this.toDataGrant(item)),
+      goals: goals.map((item) => this.toMetricGoal(item)),
+      reminders: reminders.map((item) => this.toMetricReminder(item)),
+      healthSync: healthSync.map((item) => this.toHealthSyncState(item)),
+    };
+
+    this.audit.log({
+      action: AuditAction.PROGRESS_EXPORTED,
+      actorId: userId,
+      metadata: {
+        kind: 'progress_export',
+        counts: {
+          metrics: metrics.length,
+          photos: photos.length,
+          grants: grants.length,
+          goals: goals.length,
+          reminders: reminders.length,
+          healthSync: healthSync.length,
+        },
+      },
+      request,
+    });
+    void this.events.track({
+      eventName: AnalyticsEventName.PROGRESS_EXPORTED,
+      actor: { userId, activeRole: Role.ATHLETE },
+      properties: {
+        metrics: metrics.length,
+        photos: photos.length,
+        grants: grants.length,
+        goals: goals.length,
+      },
+    });
+
+    return payload;
+  }
+
+  async deleteProgressMetrics(
+    dto: DeleteProgressMetricsDto,
+    userId: string,
+    request: Request,
+  ) {
+    if (dto.confirmation !== 'DELETE_METRICS') {
+      throw new BadRequestException('confirmation must be DELETE_METRICS');
+    }
+    const filter: QueryFilter<ProgressMetricDocument> = {
+      athleteUserId: new Types.ObjectId(userId),
+    };
+    if (dto.metricKeys?.length) {
+      filter.metricKey = { $in: dto.metricKeys.map((key) => key.trim()) };
+    }
+    const result = await this.metricModel.deleteMany(filter);
+    this.audit.log({
+      action: AuditAction.PROGRESS_METRICS_BULK_DELETED,
+      actorId: userId,
+      metadata: {
+        kind: 'metrics_bulk_delete',
+        deletedCount: result.deletedCount ?? 0,
+        metricKeys: dto.metricKeys ?? null,
+      },
+      request,
+    });
+    void this.events.track({
+      eventName: AnalyticsEventName.PROGRESS_METRICS_DELETED,
+      actor: { userId, activeRole: Role.ATHLETE },
+      properties: {
+        deletedCount: result.deletedCount ?? 0,
+        scoped: Boolean(dto.metricKeys?.length),
+      },
+    });
+    return { ok: true as const, deletedCount: result.deletedCount ?? 0 };
+  }
+
+  async consentHistory(userId: string) {
+    const grants = await this.dataGrantModel
+      .find({ athleteUserId: new Types.ObjectId(userId) })
+      .sort({ updatedAt: -1 })
+      .lean();
+
+    const events = grants.flatMap((grant) => {
+      const base = {
+        grantId: grant._id.toString(),
+        granteeUserId: grant.grantee.userId.toString(),
+        scopes: grant.scopes,
+      };
+      const rows: {
+        type: 'granted' | 'revoked' | 'expired';
+        occurredAt: string;
+        grantId: string;
+        granteeUserId: string;
+        scopes: AthleteDataGrantScope[];
+        status: AthleteDataGrantStatus;
+      }[] = [
+        {
+          type: 'granted',
+          occurredAt: grant.effective.grantedAt.toISOString(),
+          ...base,
+          status: AthleteDataGrantStatus.ACTIVE,
+        },
+      ];
+      if (grant.revokedAt) {
+        rows.push({
+          type: 'revoked',
+          occurredAt: grant.revokedAt.toISOString(),
+          ...base,
+          status: AthleteDataGrantStatus.REVOKED,
+        });
+      } else if (
+        grant.status === AthleteDataGrantStatus.EXPIRED ||
+        (grant.effective.expiresAt &&
+          grant.effective.expiresAt.getTime() <= Date.now())
+      ) {
+        rows.push({
+          type: 'expired',
+          occurredAt: (
+            grant.effective.expiresAt ?? grant.updatedAt
+          ).toISOString(),
+          ...base,
+          status: AthleteDataGrantStatus.EXPIRED,
+        });
+      }
+      return rows;
+    });
+
+    events.sort(
+      (a, b) =>
+        new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime(),
+    );
+
+    return {
+      items: events,
+      grants: grants.map((item) => this.toDataGrant(item)),
+    };
+  }
+
+  private toMetricGoal(doc: {
+    _id: Types.ObjectId;
+    athleteUserId: Types.ObjectId;
+    metricKey: string;
+    target: { operator: string; value: number; unit?: string };
+    period: string;
+    effective: { start: Date; end?: Date };
+    status: MetricGoalStatus;
+    createdAt: Date;
+    updatedAt: Date;
+  }) {
+    return {
+      id: doc._id.toString(),
+      athleteUserId: doc.athleteUserId.toString(),
+      metricKey: doc.metricKey,
+      target: {
+        operator: doc.target.operator,
+        value: doc.target.value,
+        unit: doc.target.unit ?? null,
+      },
+      period: doc.period,
+      effective: {
+        start: doc.effective.start.toISOString(),
+        end: doc.effective.end?.toISOString() ?? null,
+      },
+      status: doc.status,
+      createdAt: doc.createdAt.toISOString(),
+      updatedAt: doc.updatedAt.toISOString(),
+    };
+  }
+
+  private toMetricReminder(doc: {
+    _id: Types.ObjectId;
+    athleteUserId: Types.ObjectId;
+    metricKey: string;
+    schedule: { timezone: string; weekdays: number[]; localTime: string };
+    quietHours?: { start?: string; end?: string };
+    channel: MetricReminderChannel;
+    status: MetricReminderStatus;
+    createdAt: Date;
+    updatedAt: Date;
+  }) {
+    return {
+      id: doc._id.toString(),
+      athleteUserId: doc.athleteUserId.toString(),
+      metricKey: doc.metricKey,
+      schedule: {
+        timezone: doc.schedule.timezone,
+        weekdays: doc.schedule.weekdays ?? [],
+        localTime: doc.schedule.localTime,
+      },
+      quietHours: doc.quietHours
+        ? {
+            start: doc.quietHours.start ?? null,
+            end: doc.quietHours.end ?? null,
+          }
+        : null,
+      channel: doc.channel,
+      status: doc.status,
+      createdAt: doc.createdAt.toISOString(),
+      updatedAt: doc.updatedAt.toISOString(),
+    };
+  }
+
+  private toDataGrant(doc: {
+    _id: Types.ObjectId;
+    athleteUserId: Types.ObjectId;
+    grantee: { type: AthleteDataGranteeType; userId: Types.ObjectId };
+    relationshipId: Types.ObjectId;
+    scopes: AthleteDataGrantScope[];
+    effective: { grantedAt: Date; expiresAt?: Date };
+    status: AthleteDataGrantStatus;
+    revokedAt?: Date;
+    revokedBy?: Types.ObjectId;
+    createdAt: Date;
+    updatedAt: Date;
+  }) {
+    return {
+      id: doc._id.toString(),
+      athleteUserId: doc.athleteUserId.toString(),
+      grantee: {
+        type: doc.grantee.type,
+        userId: doc.grantee.userId.toString(),
+      },
+      relationshipId: doc.relationshipId.toString(),
+      scopes: doc.scopes,
+      effective: {
+        grantedAt: doc.effective.grantedAt.toISOString(),
+        expiresAt: doc.effective.expiresAt?.toISOString() ?? null,
+      },
+      status: doc.status,
+      revokedAt: doc.revokedAt?.toISOString() ?? null,
+      revokedBy: doc.revokedBy?.toString() ?? null,
+      createdAt: doc.createdAt.toISOString(),
+      updatedAt: doc.updatedAt.toISOString(),
+    };
+  }
+
+  private toHealthSyncState(doc: {
+    _id: Types.ObjectId;
+    athleteUserId: Types.ObjectId;
+    provider: HealthSyncProvider;
+    status: HealthSyncStatus;
+    authorizedMetricKeys?: string[];
+    cursorByMetric?: Record<string, string>;
+    lastSyncAt?: Date;
+    lastErrorCode?: string;
+    createdAt: Date;
+    updatedAt: Date;
+  }) {
+    return {
+      id: doc._id.toString(),
+      athleteUserId: doc.athleteUserId.toString(),
+      provider: doc.provider,
+      status: doc.status,
+      authorizedMetricKeys: doc.authorizedMetricKeys ?? [],
+      cursorByMetric: doc.cursorByMetric ?? {},
+      lastSyncAt: doc.lastSyncAt?.toISOString() ?? null,
+      lastErrorCode: doc.lastErrorCode ?? null,
       createdAt: doc.createdAt.toISOString(),
       updatedAt: doc.updatedAt.toISOString(),
     };

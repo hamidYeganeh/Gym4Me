@@ -1,0 +1,182 @@
+"use client";
+
+import { Button, Chip, Typography } from "@heroui/react";
+import type { HealthSyncState } from "@repo/api";
+import { ChevronLeft } from "@repo/icons/ChevronLeft";
+import { AppLayout } from "@repo/ui/layout/AppLayout";
+import { Header } from "@repo/ui/layout/Header";
+import { useRouter } from "next/navigation";
+import { athleteHealthSyncScreenVariants } from "./AthleteHealthSyncScreen.styles";
+import type { AthleteHealthSyncScreenProps } from "./AthleteHealthSyncScreen.types";
+
+function formatDate(value: string | null | undefined) {
+  if (!value) return "—";
+  return new Intl.DateTimeFormat("fa-IR", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
+function statusLabel(status: HealthSyncState["status"]) {
+  switch (status) {
+    case "connected":
+      return "متصل";
+    case "paused":
+      return "متوقف";
+    case "disconnected":
+      return "قطع‌شده";
+    case "error":
+      return "خطا";
+    default:
+      return status;
+  }
+}
+
+export function AthleteHealthSyncScreen({
+  syncStates,
+  connectStatus,
+  platform,
+  pending = false,
+  lastFlushSummary,
+  onConnect,
+  onSync,
+  onDisconnect,
+  onOpenSettings,
+}: AthleteHealthSyncScreenProps) {
+  const router = useRouter();
+  const styles = athleteHealthSyncScreenVariants();
+  const active = syncStates.find(
+    (item) => item.status === "connected" || item.status === "error",
+  );
+
+  return (
+    <AppLayout
+      className={styles.root()}
+      header={
+        <Header
+          startContent={
+            <Button
+              aria-label="بازگشت"
+              isIconOnly
+              onPress={() => router.back()}
+              size="lg"
+              variant="ghost"
+            >
+              <ChevronLeft size={22} />
+            </Button>
+          }
+        />
+      }
+    >
+      <div className={styles.content()}>
+        <section className={styles.intro()}>
+          <Typography type="h1" weight="bold">
+            همگام‌سازی سلامت
+          </Typography>
+          <Typography className={styles.subtitle()} type="body">
+            اتصال به Apple Health یا Health Connect. قطع اتصال داده‌های قبلی را
+            حذف نمی‌کند.
+          </Typography>
+        </section>
+
+        <section className={styles.card()}>
+          <Typography type="h3" weight="semibold">
+            وضعیت دستگاه
+          </Typography>
+          <Typography className={styles.meta()} type="body-sm">
+            پلتفرم: {platform} · وضعیت اتصال: {connectStatus}
+          </Typography>
+          <div className={styles.actions()}>
+            <Button
+              fullWidth
+              isDisabled={pending}
+              onPress={() => void onConnect()}
+              variant="primary"
+            >
+              اتصال / مجوز
+            </Button>
+            <Button
+              fullWidth
+              isDisabled={pending}
+              onPress={() => void onSync()}
+              variant="secondary"
+            >
+              همگام‌سازی الان
+            </Button>
+            {active ? (
+              <Button
+                fullWidth
+                isDisabled={pending}
+                onPress={() => void onDisconnect(active.provider)}
+                variant="danger"
+              >
+                قطع اتصال ({active.provider})
+              </Button>
+            ) : null}
+            {onOpenSettings ? (
+              <Button
+                fullWidth
+                isDisabled={pending}
+                onPress={() => void onOpenSettings()}
+                variant="tertiary"
+              >
+                تنظیمات Health Connect
+              </Button>
+            ) : null}
+          </div>
+          {lastFlushSummary ? (
+            <p className={styles.feedback()}>{lastFlushSummary}</p>
+          ) : null}
+        </section>
+
+        <section className={styles.card()}>
+          <Typography type="h3" weight="semibold">
+            وضعیت همگام‌سازی سمت سرور
+          </Typography>
+          {syncStates.length === 0 ? (
+            <div className={styles.empty()}>هنوز ارائه‌دهنده‌ای ثبت نشده است.</div>
+          ) : (
+            <div className={styles.list()}>
+              {syncStates.map((state) => (
+                <article className={styles.row()} key={state.id}>
+                  <div className={styles.rowTop()}>
+                    <Typography type="body" weight="semibold">
+                      {state.provider}
+                    </Typography>
+                    <Chip
+                      color={
+                        state.status === "connected"
+                          ? "success"
+                          : state.status === "error"
+                            ? "danger"
+                            : "default"
+                      }
+                      size="sm"
+                      variant="soft"
+                    >
+                      <Chip.Label>{statusLabel(state.status)}</Chip.Label>
+                    </Chip>
+                  </div>
+                  <Typography className={styles.meta()} type="body-sm">
+                    آخرین همگام‌سازی: {formatDate(state.lastSyncAt)}
+                  </Typography>
+                  <Typography className={styles.meta()} type="body-sm">
+                    متریک‌های مجاز:{" "}
+                    {state.authorizedMetricKeys.length
+                      ? state.authorizedMetricKeys.join(" · ")
+                      : "—"}
+                  </Typography>
+                  {state.lastErrorCode ? (
+                    <Typography className={styles.error()} type="body-sm">
+                      خطا: {state.lastErrorCode}
+                    </Typography>
+                  ) : null}
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+    </AppLayout>
+  );
+}

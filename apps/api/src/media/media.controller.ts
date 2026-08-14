@@ -64,8 +64,7 @@ export class MediaController {
     FileInterceptor('file', {
       storage: diskStorage({
         destination: process.env.UPLOAD_DIR || './uploads',
-        filename: (_req, _file, cb) =>
-          cb(null, `media-${randomToken(16)}.bin`),
+        filename: (_req, _file, cb) => cb(null, `media-${randomToken(16)}.bin`),
       }),
       // MIME is verified from magic bytes after write — do not trust client.
       fileFilter: (_req, _file, cb) => cb(null, true),
@@ -107,10 +106,7 @@ export class MediaController {
   @OptionalAuth()
   @Get(':id')
   @ApiOperation({ summary: 'Get media metadata' })
-  getMeta(
-    @Param('id') id: string,
-    @CurrentUser() user?: JwtUser,
-  ) {
+  getMeta(@Param('id') id: string, @CurrentUser() user?: JwtUser) {
     return this.media.getMeta(id, user ?? null);
   }
 

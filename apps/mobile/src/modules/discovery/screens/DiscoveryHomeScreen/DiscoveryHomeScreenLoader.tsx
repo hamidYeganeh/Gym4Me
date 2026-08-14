@@ -40,7 +40,9 @@ function DiscoveryHomePageSkeleton() {
   );
 }
 
-export function DiscoveryHomeScreenLoader() {
+export function DiscoveryHomeScreenLoader({
+  compact = false,
+}: { compact?: boolean } = {}) {
   const home = useDiscoveryHome();
   const banners = usePlacementBanners("discovery_home");
 
@@ -54,20 +56,20 @@ export function DiscoveryHomeScreenLoader() {
 
   return (
     <DiscoveryHomeScreen
-      amenities={home.amenities}
-      articles={home.articles}
+      amenities={compact ? [] : home.amenities}
+      articles={compact ? [] : home.articles}
       banners={banners.slides}
-      cities={home.cities}
+      cities={compact ? [] : home.cities}
       classes={home.classes}
       coachCityName={home.coachCityName}
       coaches={home.coaches}
       features={home.features}
-      galleryItems={home.galleryItems}
+      galleryItems={compact ? [] : home.galleryItems}
       isLoading={home.isLoading}
       nearbyClubs={home.nearbyClubs}
-      open24Clubs={home.open24Clubs}
-      sports={home.sports}
-      topClubs={home.topClubs}
+      open24Clubs={compact ? [] : home.open24Clubs}
+      sports={compact ? [] : home.sports}
+      topClubs={compact ? [] : home.topClubs}
     />
   );
 }

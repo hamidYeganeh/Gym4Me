@@ -1,9 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-import {
-  CoachServiceDeliveryMode,
-  CoachServiceStatus,
-} from '../common/enums';
+import { CoachServiceDeliveryMode, CoachServiceStatus } from '../common/enums';
 import { User } from './user.schema';
 
 export type CoachServiceDocument = HydratedDocument<CoachService>;

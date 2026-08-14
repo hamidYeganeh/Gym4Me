@@ -1,9 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-import {
-  SocialReportStatus,
-  SocialReportTargetKind,
-} from '../common/enums';
+import { SocialReportStatus, SocialReportTargetKind } from '../common/enums';
 import { User } from './user.schema';
 
 export type SocialReportDocument = HydratedDocument<SocialReport>;

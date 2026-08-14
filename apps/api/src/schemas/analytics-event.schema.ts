@@ -41,7 +41,10 @@ export class AnalyticsContext {
 export const AnalyticsContextSchema =
   SchemaFactory.createForClass(AnalyticsContext);
 
-@Schema({ timestamps: { createdAt: true, updatedAt: false }, collection: 'analytics_events' })
+@Schema({
+  timestamps: { createdAt: true, updatedAt: false },
+  collection: 'analytics_events',
+})
 export class AnalyticsEvent {
   /** Client- or server-generated idempotency key. */
   @Prop({ required: true, unique: true })

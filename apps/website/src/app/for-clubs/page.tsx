@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AudienceLanding } from "@/modules/marketing/screens/AudienceLanding/AudienceLanding";
+import { AudienceLanding } from "@/modules/marketing/screens/AudienceLanding";
 
 export const metadata: Metadata = {
   title: "نرم‌افزار مدیریت باشگاه ورزشی",

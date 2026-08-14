@@ -77,13 +77,7 @@ export class AccountNutritionController {
     @CurrentUser('activeRole') activeRole: Role,
     @Req() request: Request,
   ) {
-    return this.nutrition.updateMealPlan(
-      id,
-      dto,
-      userId,
-      activeRole,
-      request,
-    );
+    return this.nutrition.updateMealPlan(id, dto, userId, activeRole, request);
   }
 
   @Delete('meal-plans/:id')

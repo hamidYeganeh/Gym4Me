@@ -1,17 +1,30 @@
 import type { ApiClient } from "../client";
 import type {
   AssignWorkoutProgramInput,
+  AthleteDataGrant,
+  AthleteDataGrantsPage,
+  CreateAthleteDataGrantInput,
   CreateExerciseInput,
+  CreateMetricGoalInput,
   CreatePersonalRecordInput,
   CreateProgressMetricInput,
   CreateProgressPhotoInput,
   CreateWorkoutLogInput,
   CreateWorkoutPlanInput,
   CreateWorkoutProgramInput,
+  ConsentHistoryResult,
   DeleteOk,
+  DeleteProgressMetricsInput,
+  DeleteProgressMetricsResult,
   Exercise,
   ExercisesPage,
+  HealthSyncProvider,
+  HealthSyncStatesResult,
+  ListAthleteDataGrantsQuery,
   ListExercisesQuery,
+  ListHealthSyncStatesQuery,
+  ListMetricGoalsQuery,
+  ListMetricRemindersQuery,
   ListMetricTypesQuery,
   ListPersonalRecordsQuery,
   ListProgressMetricsQuery,
@@ -19,25 +32,37 @@ import type {
   ListWorkoutLogsQuery,
   ListWorkoutPlansQuery,
   ListWorkoutProgramsQuery,
+  MetricGoal,
+  MetricGoalsPage,
+  MetricReminder,
+  MetricRemindersPage,
+  MetricsSummaryQuery,
+  MetricsSummaryResult,
   MetricTypesPage,
   PersonalRecord,
   PersonalRecordsPage,
+  ProgressExportPayload,
   ProgressMetric,
   ProgressMetricsPage,
-  SyncProgressMetricsInput,
-  SyncProgressMetricsResult,
   ProgressPhoto,
   ProgressPhotosPage,
+  SyncProgressMetricsInput,
+  SyncProgressMetricsResult,
+  UpdateMetricGoalInput,
   UpdateProgressMetricInput,
   UpdateProgressPhotoInput,
+  UpdateWorkoutLogInput,
   UpdateWorkoutPlanInput,
   UpdateWorkoutProgramInput,
+  UpsertHealthSyncStateInput,
+  UpsertMetricReminderInput,
   WorkoutLog,
   WorkoutLogsPage,
   WorkoutPlan,
   WorkoutPlansPage,
   WorkoutProgram,
   WorkoutProgramsPage,
+  HealthSyncState,
 } from "./progress.dto";
 import { accountProgressEndpoints as ep } from "./progress.endpoint";
 
@@ -125,6 +150,12 @@ export function createAccountProgressApi(client: ApiClient) {
       return client.request<ProgressMetricsPage>(ep.metrics, { query });
     },
 
+    metricsSummary(query: MetricsSummaryQuery = {}) {
+      return client.request<MetricsSummaryResult>(ep.metricsSummary, {
+        query,
+      });
+    },
+
     createMetric(input: CreateProgressMetricInput) {
       return client.request<ProgressMetric>(ep.metrics, {
         method: "POST",
@@ -187,6 +218,87 @@ export function createAccountProgressApi(client: ApiClient) {
       });
     },
 
+    updateWorkoutLog(id: string, input: UpdateWorkoutLogInput) {
+      return client.request<WorkoutLog>(ep.workoutLog(id), {
+        method: "PATCH",
+        body: input,
+      });
+    },
+
+    completeWorkoutLog(id: string) {
+      return client.request<WorkoutLog>(ep.completeWorkoutLog(id), {
+        method: "POST",
+      });
+    },
+
+    listGoals(query: ListMetricGoalsQuery = {}) {
+      return client.request<MetricGoalsPage>(ep.goals, { query });
+    },
+
+    createGoal(input: CreateMetricGoalInput) {
+      return client.request<MetricGoal>(ep.goals, {
+        method: "POST",
+        body: input,
+      });
+    },
+
+    updateGoal(id: string, input: UpdateMetricGoalInput) {
+      return client.request<MetricGoal>(ep.goal(id), {
+        method: "PATCH",
+        body: input,
+      });
+    },
+
+    listReminders(query: ListMetricRemindersQuery = {}) {
+      return client.request<MetricRemindersPage>(ep.reminders, { query });
+    },
+
+    upsertReminder(metricKey: string, input: UpsertMetricReminderInput) {
+      return client.request<MetricReminder>(ep.reminder(metricKey), {
+        method: "PUT",
+        body: input,
+      });
+    },
+
+    listHealthSyncStates(query: ListHealthSyncStatesQuery = {}) {
+      return client.request<HealthSyncStatesResult>(ep.healthSync, { query });
+    },
+
+    upsertHealthSyncState(
+      provider: HealthSyncProvider,
+      input: UpsertHealthSyncStateInput,
+    ) {
+      return client.request<HealthSyncState>(ep.healthSyncProvider(provider), {
+        method: "PUT",
+        body: input,
+      });
+    },
+
+    exportProgress() {
+      return client.request<ProgressExportPayload>(ep.export);
+    },
+
+    deleteMetrics(input: DeleteProgressMetricsInput) {
+      return client.request<DeleteProgressMetricsResult>(ep.deleteMetrics, {
+        method: "DELETE",
+        body: input,
+      });
+    },
+
+    deleteMetricsDataRights(input: DeleteProgressMetricsInput) {
+      return client.request<DeleteProgressMetricsResult>(
+        ep.deleteMetricsDataRights,
+        {
+          method: "POST",
+          body: input,
+        },
+      );
+    },
+
+    consentHistory() {
+      return client.request<ConsentHistoryResult>(ep.consentHistory);
+    },
+
     listPersonalRecords(query: ListPersonalRecordsQuery = {}) {
       return client.request<PersonalRecordsPage>(ep.personalRecords, {
         query,
@@ -197,6 +309,23 @@ export function createAccountProgressApi(client: ApiClient) {
       return client.request<PersonalRecord>(ep.personalRecords, {
         method: "POST",
         body: input,
+      });
+    },
+
+    listDataGrants(query: ListAthleteDataGrantsQuery = {}) {
+      return client.request<AthleteDataGrantsPage>(ep.dataGrants, { query });
+    },
+
+    createDataGrant(input: CreateAthleteDataGrantInput) {
+      return client.request<AthleteDataGrant>(ep.dataGrants, {
+        method: "POST",
+        body: input,
+      });
+    },
+
+    revokeDataGrant(id: string) {
+      return client.request<AthleteDataGrant>(ep.revokeDataGrant(id), {
+        method: "POST",
       });
     },
   };

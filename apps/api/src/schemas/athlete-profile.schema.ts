@@ -159,7 +159,10 @@ export class AthleteProfile {
   health!: AthleteHealth;
 
   /** Derived cache of the points ledger. */
-  @Prop({ type: PointsSummarySchema, default: () => ({ balance: 0, lifetime: 0 }) })
+  @Prop({
+    type: PointsSummarySchema,
+    default: () => ({ balance: 0, lifetime: 0 }),
+  })
   points!: PointsSummary;
 
   createdAt!: Date;

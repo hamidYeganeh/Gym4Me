@@ -105,5 +105,9 @@ export class PointTransaction {
 export const PointTransactionSchema =
   SchemaFactory.createForClass(PointTransaction);
 
-PointTransactionSchema.index({ 'subject.type': 1, 'subject.id': 1, occurredAt: -1 });
+PointTransactionSchema.index({
+  'subject.type': 1,
+  'subject.id': 1,
+  occurredAt: -1,
+});
 PointTransactionSchema.index({ 'source.ruleId': 1, occurredAt: -1 });

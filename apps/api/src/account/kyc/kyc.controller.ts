@@ -87,8 +87,7 @@ export class KycController {
     FileInterceptor('file', {
       storage: diskStorage({
         destination: process.env.UPLOAD_DIR || './uploads',
-        filename: (_req, _file, cb) =>
-          cb(null, `kyc-${randomToken(16)}.bin`),
+        filename: (_req, _file, cb) => cb(null, `kyc-${randomToken(16)}.bin`),
       }),
       fileFilter: (_req, _file, cb) => cb(null, true),
     }),
@@ -112,7 +111,10 @@ export class KycController {
     }
     const ext = extensionForMime(mime);
     const finalName = `kyc-${randomToken(16)}${ext}`;
-    renameSync(absolute, join(process.env.UPLOAD_DIR || './uploads', finalName));
+    renameSync(
+      absolute,
+      join(process.env.UPLOAD_DIR || './uploads', finalName),
+    );
     file.filename = finalName;
     file.mimetype = mime;
     file.originalname = sanitizeContentDispositionFilename(

@@ -248,7 +248,7 @@ export class CheckinService {
     ]);
 
     return paginatedResult(
-      items.map((row) => this.toPublic(row as CheckInDocument)),
+      items.map((row) => this.toPublic(row)),
       total,
       page,
       pageSize,
@@ -281,7 +281,7 @@ export class CheckinService {
     ]);
 
     return paginatedResult(
-      items.map((row) => this.toPublic(row as CheckInDocument)),
+      items.map((row) => this.toPublic(row)),
       total,
       page,
       pageSize,

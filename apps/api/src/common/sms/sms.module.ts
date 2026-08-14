@@ -1,10 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  KavenegarSmsService,
-  MockSmsService,
-  SmsService,
-} from './sms.service';
+import { KavenegarSmsService, MockSmsService, SmsService } from './sms.service';
 
 @Global()
 @Module({
@@ -17,7 +13,9 @@ import {
         const debugMode =
           typeof debugRaw === 'boolean'
             ? debugRaw
-            : String(debugRaw ?? 'false').trim().toLowerCase() === 'true';
+            : String(debugRaw ?? 'false')
+                .trim()
+                .toLowerCase() === 'true';
         const provider = (
           config.get<string>('SMS_PROVIDER', 'mock') ?? 'mock'
         ).toLowerCase();

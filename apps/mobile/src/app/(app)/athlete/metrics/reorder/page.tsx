@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { AthleteMetricsReorderGate } from "@/modules/athlete/lib/AthleteMetricsReorderGate";
+import { AthleteMetricsReorderGateDynamic } from "@/modules/athlete/lib/AthleteMetricsReorderGateDynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("FitnessMetricsReorder");
@@ -8,5 +8,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function AthleteMetricsReorderPage() {
-  return <AthleteMetricsReorderGate />;
+  return <AthleteMetricsReorderGateDynamic />;
 }

@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   Button,
   FieldError,
   Input,
   Label,
+  Spinner,
   TextArea,
   TextField,
 } from "@heroui/react";
@@ -13,13 +14,12 @@ import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { AdminFormActions } from "@/shared/components";
 import { resolveFormSubmitIntent } from "@/shared/lib/form-submit-intent";
-import { ArticleCoverField } from "../ArticleCoverField";
-import { ArticleRichTextEditor } from "../ArticleRichTextEditor";
 import {
   ARTICLE_AUDIENCES,
   ARTICLE_KINDS,
   PUBLISH_STATUSES,
 } from "../../lib/article-constants";
+import { ArticleCoverField } from "../ArticleCoverField";
 import {
   articlesFormDefaults,
   createArticlesFormSchema,
@@ -27,6 +27,12 @@ import {
 } from "./ArticlesForm.schema";
 import { articlesFormVariants } from "./ArticlesForm.styles";
 import type { ArticlesFormProps } from "./ArticlesForm.types";
+
+const ArticleRichTextEditor = lazy(() =>
+  import("../ArticleRichTextEditor").then((mod) => ({
+    default: mod.ArticleRichTextEditor,
+  })),
+);
 
 export function ArticlesForm({
   onCancel,
@@ -207,11 +213,19 @@ export function ArticlesForm({
         render={({ field, fieldState }) => (
           <div className={styles.field()}>
             <Label>{t("fields.body")}</Label>
-            <ArticleRichTextEditor
-              disabled={form.formState.isSubmitting}
-              value={field.value}
-              onChange={field.onChange}
-            />
+            <Suspense
+              fallback={
+                <div className="flex h-[420px] items-center justify-center">
+                  <Spinner size="lg" />
+                </div>
+              }
+            >
+              <ArticleRichTextEditor
+                disabled={form.formState.isSubmitting}
+                value={field.value}
+                onChange={field.onChange}
+              />
+            </Suspense>
             {fieldState.error?.message ? (
               <p className={styles.formError()}>{fieldState.error.message}</p>
             ) : null}

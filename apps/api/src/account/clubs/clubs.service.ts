@@ -39,10 +39,7 @@ import {
 import { escapeRegex } from '../../common/utils/escape-regex.util';
 import { assertCanMutateAsRole } from '../../common/utils/role-assert.util';
 import { Location, LocationDocument } from '../../schemas/location.schema';
-import {
-  ClubClass,
-  ClubClassDocument,
-} from '../../schemas/club-class.schema';
+import { ClubClass, ClubClassDocument } from '../../schemas/club-class.schema';
 import { Club, ClubDocument } from '../../schemas/club.schema';
 import {
   ClubUserReview,
@@ -225,9 +222,7 @@ export class ClubsService {
       status !== ClubLifecycleStatus.DRAFT &&
       status !== ClubLifecycleStatus.REJECTED
     ) {
-      throw new ConflictException(
-        `Cannot submit club in status "${status}"`,
-      );
+      throw new ConflictException(`Cannot submit club in status "${status}"`);
     }
     if (!dto.documentMediaIds.length) {
       throw new BadRequestException('At least one document is required');
@@ -274,7 +269,11 @@ export class ClubsService {
     return this.toPublic(club);
   }
 
-  async adminCreate(dto: AdminCreateClubDto, adminId: string, request: Request) {
+  async adminCreate(
+    dto: AdminCreateClubDto,
+    adminId: string,
+    request: Request,
+  ) {
     return this.createInternal(dto.ownerId, dto, request, {
       sub: adminId,
       activeRole: Role.ADMIN,
@@ -496,7 +495,9 @@ export class ClubsService {
     const [items, total] = await Promise.all([
       this.clubModel
         .find(filter)
-        .sort(useGeo ? undefined : { 'reviewsSummary.average': -1, createdAt: -1 })
+        .sort(
+          useGeo ? undefined : { 'reviewsSummary.average': -1, createdAt: -1 },
+        )
         .skip((page - 1) * pageSize)
         .limit(pageSize)
         .lean(),
@@ -550,12 +551,9 @@ export class ClubsService {
     if (parent.parentClubId) {
       throw new BadRequestException('Cannot create a branch of a branch');
     }
-    return this.createInternal(
-      ownerId,
-      { ...dto, parentClubId },
-      request,
-      { sub: actorId } as JwtUser,
-    );
+    return this.createInternal(ownerId, { ...dto, parentClubId }, request, {
+      sub: actorId,
+    } as JwtUser);
   }
 
   async listClasses(clubId: string) {
@@ -582,9 +580,16 @@ export class ClubsService {
     );
   }
 
-  async assignClass(clubId: string, dto: AssignClassDto, actorId: string, request: Request) {
+  async assignClass(
+    clubId: string,
+    dto: AssignClassDto,
+    actorId: string,
+    request: Request,
+  ) {
     const club = await this.findClubOrFail(clubId);
-    const exists = club.classes.some((c) => c.classId.toString() === dto.classId);
+    const exists = club.classes.some(
+      (c) => c.classId.toString() === dto.classId,
+    );
     if (!exists) {
       club.classes.push({ classId: new Types.ObjectId(dto.classId) });
       club.markModified('classes');
@@ -599,7 +604,12 @@ export class ClubsService {
     return this.listClasses(clubId);
   }
 
-  async unassignClass(clubId: string, classId: string, actorId: string, request: Request) {
+  async unassignClass(
+    clubId: string,
+    classId: string,
+    actorId: string,
+    request: Request,
+  ) {
     const club = await this.findClubOrFail(clubId);
     club.classes = club.classes.filter((c) => c.classId.toString() !== classId);
     club.markModified('classes');
@@ -633,7 +643,12 @@ export class ClubsService {
     );
   }
 
-  async assignCoach(clubId: string, dto: AssignCoachDto, actorId: string, request: Request) {
+  async assignCoach(
+    clubId: string,
+    dto: AssignCoachDto,
+    actorId: string,
+    request: Request,
+  ) {
     const club = await this.findClubOrFail(clubId);
     if (!Types.ObjectId.isValid(dto.coachId)) {
       throw new BadRequestException('Invalid coachId');
@@ -645,7 +660,9 @@ export class ClubsService {
     if (!coachUser.roles.includes(Role.COACH)) {
       throw new BadRequestException('User does not have the coach role');
     }
-    const exists = club.coaches.some((c) => c.coachId.toString() === dto.coachId);
+    const exists = club.coaches.some(
+      (c) => c.coachId.toString() === dto.coachId,
+    );
     if (!exists) {
       club.coaches.push({ coachId: new Types.ObjectId(dto.coachId) });
       club.markModified('coaches');
@@ -660,7 +677,12 @@ export class ClubsService {
     return this.listCoaches(clubId);
   }
 
-  async unassignCoach(clubId: string, coachId: string, actorId: string, request: Request) {
+  async unassignCoach(
+    clubId: string,
+    coachId: string,
+    actorId: string,
+    request: Request,
+  ) {
     const club = await this.findClubOrFail(clubId);
     club.coaches = club.coaches.filter((c) => c.coachId.toString() !== coachId);
     club.markModified('coaches');
@@ -685,10 +707,7 @@ export class ClubsService {
     const { page, pageSize } = resolvePageSize(query);
     const filter: QueryFilter<ClubUserReviewDocument> = {
       clubId: new Types.ObjectId(clubId),
-      ...createSearchFilter(query.search, [
-        'comment',
-        'reply.text',
-      ]),
+      ...createSearchFilter(query.search, ['comment', 'reply.text']),
     };
     if (opts.publicOnly) {
       filter.status = ClubUserReviewStatus.APPROVED;
@@ -1182,7 +1201,7 @@ export class ClubsService {
           'contact.email',
           'contact.phones.number',
           'location.address',
-        ]) as QueryFilter<ClubDocument>,
+        ]),
       );
     }
     if (query.categoryId) {
@@ -1271,7 +1290,9 @@ export class ClubsService {
     );
   }
 
-  toReviewPublic(review: ClubUserReview | ClubUserReviewDocument | Record<string, unknown>) {
+  toReviewPublic(
+    review: ClubUserReview | ClubUserReviewDocument | Record<string, unknown>,
+  ) {
     const r = review as ClubUserReviewDocument;
     return {
       id: r._id.toString(),

@@ -1,10 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Club, ClubSchema } from '../../schemas/club.schema';
-import {
-  ClubStaff,
-  ClubStaffSchema,
-} from '../../schemas/club-staff.schema';
+import { ClubStaff, ClubStaffSchema } from '../../schemas/club-staff.schema';
 import { User, UserSchema } from '../../schemas/user.schema';
 import { OwnerStaffController } from './owner-staff.controller';
 import { StaffService } from './staff.service';

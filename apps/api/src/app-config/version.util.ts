@@ -23,4 +23,3 @@ export function rolloutBucket(value: string): number {
   }
   return (hash >>> 0) % 100;
 }
-

@@ -5,6 +5,19 @@ export {
   emptyAuthorization,
   hasAnyReadAccess,
 } from "./health-metrics";
+export {
+  authorizedMetricKeysFromAuth,
+  disconnectHealthProvider,
+  flushHealthSamples,
+  HEALTH_TYPE_TO_METRIC_KEY,
+  readHealthSamples,
+  resolveHealthProvider,
+  upsertConnectedHealthState,
+} from "./health-sync";
+export type {
+  HealthSampleReadMode,
+  HealthSyncFlushResult,
+} from "./health-sync";
 export type {
   HealthMetricsAuthorization,
   HealthMetricsConnectResult,

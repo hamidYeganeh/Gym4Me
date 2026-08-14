@@ -1,0 +1,156 @@
+"use client";
+
+import {
+  Button,
+  Chip,
+  Input,
+  Label,
+  TextField,
+  Typography,
+} from "@heroui/react";
+import { ChevronLeft } from "@repo/icons/ChevronLeft";
+import { AppLayout } from "@repo/ui/layout/AppLayout";
+import { Header } from "@repo/ui/layout/Header";
+import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { ownerHolidaysScreenVariants } from "./OwnerHolidaysScreen.styles";
+import type { OwnerHolidaysScreenProps } from "./OwnerHolidaysScreen.types";
+
+export function OwnerHolidaysScreen({
+  data,
+  form,
+  pending = false,
+  onFormChange,
+  onAddHoliday,
+  className,
+}: OwnerHolidaysScreenProps) {
+  const t = useTranslations("OwnerHolidays");
+  const router = useRouter();
+  const styles = ownerHolidaysScreenVariants();
+
+  return (
+    <AppLayout
+      className={[styles.root(), className].filter(Boolean).join(" ")}
+      header={
+        <Header
+          startContent={
+            <Button
+              aria-label={t("back")}
+              isIconOnly
+              onPress={() => router.back()}
+              size="lg"
+              variant="ghost"
+            >
+              <ChevronLeft className="text-foreground" size={22} />
+            </Button>
+          }
+        />
+      }
+    >
+      <div className={styles.content()}>
+        <section className={styles.intro()}>
+          <Typography className={styles.introTitle()} type="h1" weight="bold">
+            {t("title")}
+          </Typography>
+          <Typography className={styles.introSubtitle()} type="body">
+            {t("subtitle")}
+          </Typography>
+        </section>
+
+        <section className={styles.formCard()}>
+          <Typography type="body" weight="semibold">
+            {t("addTitle")}
+          </Typography>
+          <TextField>
+            <Label>{t("titleLabel")}</Label>
+            <Input
+              onChange={(event) => onFormChange({ title: event.target.value })}
+              value={form.title}
+            />
+          </TextField>
+          <TextField>
+            <Label>{t("dateLabel")}</Label>
+            <Input
+              onChange={(event) =>
+                onFormChange({ jalaliDate: event.target.value })
+              }
+              placeholder={t("datePlaceholder")}
+              value={form.jalaliDate}
+            />
+          </TextField>
+          <Button
+            isDisabled={pending || !onAddHoliday || !form.title.trim() || !form.jalaliDate.trim()}
+            isPending={pending}
+            onPress={onAddHoliday}
+            size="lg"
+            variant="primary"
+          >
+            {t("addSubmit")}
+          </Button>
+        </section>
+
+        <section className={styles.section()}>
+          <Typography className={styles.sectionTitle()} type="h4" weight="semibold">
+            {t("holidaysTitle")}
+          </Typography>
+          <div className={styles.card()}>
+            {data.holidays.map((holiday, index) => (
+              <div key={holiday.id}>
+                <div className={styles.row()}>
+                  <span className={styles.rowBody()}>
+                    <Typography className={styles.rowLabel()} type="body" weight="semibold">
+                      {holiday.title}
+                    </Typography>
+                    <Typography className={styles.rowHint()} type="body-sm">
+                      {holiday.jalaliDateLabel}
+                    </Typography>
+                  </span>
+                  <Chip color={holiday.isOfficial ? "accent" : "default"} size="sm" variant="soft">
+                    <Chip.Label>
+                      {holiday.isOfficial ? t("official") : t("custom")}
+                    </Chip.Label>
+                  </Chip>
+                </div>
+                {index < data.holidays.length - 1 ? (
+                  <div aria-hidden className={styles.divider()} />
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className={styles.section()}>
+          <Typography className={styles.sectionTitle()} type="h4" weight="semibold">
+            {t("programsTitle")}
+          </Typography>
+          {data.programs.length === 0 ? (
+            <div className={styles.empty()}>{t("programsEmpty")}</div>
+          ) : (
+            <div className={styles.card()}>
+              {data.programs.map((program, index) => (
+                <div key={program.id}>
+                  <div className={styles.row()}>
+                    <span className={styles.rowBody()}>
+                      <Typography className={styles.rowLabel()} type="body" weight="semibold">
+                        {program.title}
+                      </Typography>
+                      <Typography className={styles.rowHint()} type="body-sm">
+                        {program.jalaliDateLabel}
+                      </Typography>
+                      <Typography className={styles.rowHint()} type="body-sm">
+                        {program.description}
+                      </Typography>
+                    </span>
+                  </div>
+                  {index < data.programs.length - 1 ? (
+                    <div aria-hidden className={styles.divider()} />
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+    </AppLayout>
+  );
+}

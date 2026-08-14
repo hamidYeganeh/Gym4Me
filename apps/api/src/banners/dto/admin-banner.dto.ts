@@ -6,7 +6,6 @@ import {
   IsDateString,
   IsEnum,
   IsInt,
-  IsIn,
   IsMongoId,
   IsOptional,
   IsString,
@@ -129,18 +128,4 @@ export class AdminListBannersQueryDto extends PaginationQueryDto {
   @IsArray()
   @IsEnum(PublishStatus, { each: true })
   publishStatus?: PublishStatus[];
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(60)
-  search?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(80)
-  sortBy?: string;
-
-  @IsOptional()
-  @IsIn(['asc', 'desc'])
-  sortOrder?: 'asc' | 'desc';
 }

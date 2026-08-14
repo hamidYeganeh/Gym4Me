@@ -40,8 +40,9 @@ export class CoachStudentEngagement {
   lastSessionAt?: Date;
 }
 
-export const CoachStudentEngagementSchema =
-  SchemaFactory.createForClass(CoachStudentEngagement);
+export const CoachStudentEngagementSchema = SchemaFactory.createForClass(
+  CoachStudentEngagement,
+);
 
 /** Active coach ↔ athlete coaching relationship (basis for COACH_ONLY privacy). */
 @Schema({ timestamps: true, collection: 'coach_students' })

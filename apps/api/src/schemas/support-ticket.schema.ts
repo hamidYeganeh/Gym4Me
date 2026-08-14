@@ -37,9 +37,8 @@ export class SupportRelatedEntity {
   id!: Types.ObjectId;
 }
 
-export const SupportRelatedEntitySchema = SchemaFactory.createForClass(
-  SupportRelatedEntity,
-);
+export const SupportRelatedEntitySchema =
+  SchemaFactory.createForClass(SupportRelatedEntity);
 
 @Schema({ _id: false })
 export class SupportAssignment {

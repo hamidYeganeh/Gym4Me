@@ -157,9 +157,9 @@ export class FinnotechKycProviderService extends KycProviderService {
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    const body = (await res.json().catch(() => null)) as
-      | FinnotechShahkarResponse
-      | null;
+    const body = (await res
+      .json()
+      .catch(() => null)) as FinnotechShahkarResponse | null;
 
     if (!res.ok || !body || body.status === 'FAILED') {
       this.logger.error(
@@ -183,9 +183,9 @@ export class FinnotechKycProviderService extends KycProviderService {
   }
 
   private async fetchToken(): Promise<string> {
-    const basic = Buffer.from(
-      `${this.clientId}:${this.clientSecret}`,
-    ).toString('base64');
+    const basic = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString(
+      'base64',
+    );
 
     const res = await fetch(`${this.baseUrl}/dev/v2/oauth2/token`, {
       method: 'POST',
@@ -199,9 +199,9 @@ export class FinnotechKycProviderService extends KycProviderService {
         scopes: FinnotechKycProviderService.SHAHKAR_SCOPE,
       }),
     });
-    const body = (await res.json().catch(() => null)) as
-      | FinnotechTokenResponse
-      | null;
+    const body = (await res
+      .json()
+      .catch(() => null)) as FinnotechTokenResponse | null;
     const token = body?.result?.value;
 
     if (!res.ok || !token) {

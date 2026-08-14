@@ -28,7 +28,7 @@ packages/api/src/discovery/
 6. **Do not re-export hooks from domain `index.ts`** — Vite would pull `@tanstack/react-query` into every `@repo/api` import. Export hooks via `hooks.ts` and `@repo/api/<domain>/hooks`.
 7. **Cross-domain types** — import DTOs from the owning domain (e.g. `Club` from `account/clubs.dto`); do not duplicate.
 8. **Shared infrastructure** stays at package root: `client.ts`, `errors.ts`, `storage.ts`, `types.ts`, `react/`.
-9. **Public exports** — domain `index.ts` re-exports client, endpoints, dto, keys only; root `index.ts` keeps app-facing client/type barrels stable.
+9. **Public exports** — domain `index.ts` re-exports client, endpoints, dto, keys only. Apps import factories from `@repo/api/<domain>`, storage from `@repo/api/storage`, and HTTP from `@repo/api/client`. Root `index.ts` is for shared types.
 
 ## Domains
 
@@ -37,6 +37,7 @@ packages/api/src/discovery/
 | `auth` | `account`, `admin` |
 | `account` | `profile`, `kyc`, `roles`, `referral`, `clubs` |
 | `admin` | `users`, `basics`, `kyc`, `verification`, `clubs` |
+| `app-config` | bootstrap, feature flags, release policies |
 | `discovery` | `clubs` |
 | `media` | `media` |
 | `analytics` | `analytics` |

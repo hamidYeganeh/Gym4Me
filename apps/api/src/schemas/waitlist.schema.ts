@@ -1,9 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-import {
-  CalendarResourceType,
-  WaitlistEntryStatus,
-} from '../common/enums';
+import { CalendarResourceType, WaitlistEntryStatus } from '../common/enums';
 import { Club } from './club.schema';
 import { User } from './user.schema';
 

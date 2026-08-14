@@ -6,6 +6,10 @@ import { AuditAction } from '../common/enums';
 import {
   FeatureFlag,
   FeatureFlagDocument,
+  FeatureFlagRule,
+  type AppPlatform,
+  type FeatureFlagStatus,
+  type ReleaseChannel,
 } from '../schemas/feature-flag.schema';
 import {
   MobileReleasePolicy,
@@ -25,6 +29,43 @@ const DEFAULT_FLAGS = [
   ['health.device_sync', 'همگام‌سازی Apple Health و Health Connect'],
 ] as const;
 
+function toIso(value?: Date | string | null): string | null {
+  if (!value) return null;
+  if (typeof value === 'string') return value;
+  return value.toISOString();
+}
+
+type LeanFeatureFlag = {
+  _id: { toString(): string };
+  key: string;
+  status?: FeatureFlagStatus;
+  enabled?: boolean;
+  rolloutPercentage: number;
+  platforms: AppPlatform[];
+  channels: ReleaseChannel[];
+  minimumAppVersion?: string;
+  maximumAppVersion?: string;
+  rules?: FeatureFlagRule[];
+  defaultVariant?: string;
+  payload?: Record<string, unknown>;
+  description?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
+
+type LeanReleasePolicy = {
+  _id: { toString(): string };
+  platform: AppPlatform;
+  channel: ReleaseChannel;
+  latestAppVersion: string;
+  minimumSupportedAppVersion: string;
+  recommendedApiVersion: string;
+  updateUrl?: string;
+  enabled: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
+
 @Injectable()
 export class AppConfigService {
   constructor(
@@ -41,12 +82,15 @@ export class AppConfigService {
     const [flags, policy] = await Promise.all([
       this.featureFlagModel
         .find({
-          enabled: true,
+          $or: [
+            { status: 'active' },
+            { status: { $exists: false }, enabled: true },
+          ],
           platforms: query.platform,
           channels: channel,
         })
         .sort({ key: 1 })
-        .lean(),
+        .lean<LeanFeatureFlag[]>(),
       this.releasePolicyModel
         .findOne({ platform: query.platform, channel, enabled: true })
         .lean(),
@@ -54,21 +98,12 @@ export class AppConfigService {
 
     const features = Object.fromEntries(
       flags.map((flag) => {
-        const withinMinimum =
-          !flag.minimumAppVersion ||
-          compareAppVersions(query.appVersion, flag.minimumAppVersion) >= 0;
-        const withinMaximum =
-          !flag.maximumAppVersion ||
-          compareAppVersions(query.appVersion, flag.maximumAppVersion) <= 0;
-        const inRollout = this.isInRollout(
-          flag.key,
-          flag.rolloutPercentage,
-          query.installationId,
-        );
+        const resolved = this.resolveFlagEvaluation(flag, query, channel);
         return [
           flag.key,
           {
-            enabled: withinMinimum && withinMaximum && inRollout,
+            enabled: resolved.enabled,
+            variant: resolved.variant,
             payload: flag.payload ?? {},
           },
         ];
@@ -105,7 +140,11 @@ export class AppConfigService {
 
   async listFeatureFlags() {
     await this.ensureDefaultFlags();
-    return this.featureFlagModel.find().sort({ key: 1 }).lean();
+    const items = await this.featureFlagModel
+      .find()
+      .sort({ key: 1 })
+      .lean<LeanFeatureFlag[]>();
+    return items.map((item) => this.serializeFeatureFlag(item));
   }
 
   async upsertFeatureFlag(
@@ -113,45 +152,68 @@ export class AppConfigService {
     dto: UpsertFeatureFlagDto,
     adminId: string,
   ) {
+    const before = await this.featureFlagModel
+      .findOne({ key })
+      .lean<LeanFeatureFlag | null>();
+    const { reason, ...fields } = dto;
     const item = await this.featureFlagModel.findOneAndUpdate(
       { key },
       {
         $set: {
-          ...dto,
-          minimumAppVersion: dto.minimumAppVersion || undefined,
-          maximumAppVersion: dto.maximumAppVersion || undefined,
-          description: dto.description?.trim() || undefined,
-          payload: dto.payload ?? {},
+          ...fields,
+          minimumAppVersion: fields.minimumAppVersion || undefined,
+          maximumAppVersion: fields.maximumAppVersion || undefined,
+          description: fields.description?.trim() || undefined,
+          defaultVariant: fields.defaultVariant?.trim() || undefined,
+          rules: fields.rules ?? [],
+          payload: fields.payload ?? {},
         },
+        $unset: { enabled: 1 },
         $setOnInsert: { key },
       },
       { upsert: true, new: true, runValidators: true },
     );
+    const after = item.toObject() as LeanFeatureFlag;
     this.audit.log({
       action: AuditAction.APP_CONFIG_UPDATED,
       actorId: adminId,
-      metadata: { kind: 'feature_flag', key },
+      metadata: {
+        kind: 'feature_flag',
+        key,
+        reason: reason.trim(),
+        before: before ? this.serializeFeatureFlag(before) : null,
+        after: this.serializeFeatureFlag(after),
+      },
     });
-    return item.toObject();
+    return this.serializeFeatureFlag(after);
   }
 
-  listReleasePolicies() {
-    return this.releasePolicyModel.find().sort({ platform: 1, channel: 1 }).lean();
+  async listReleasePolicies() {
+    const items = await this.releasePolicyModel
+      .find()
+      .sort({ platform: 1, channel: 1 })
+      .lean<LeanReleasePolicy[]>();
+    return items.map((item) => this.serializeReleasePolicy(item));
   }
 
   async upsertReleasePolicy(dto: UpsertReleasePolicyDto, adminId: string) {
     const channel = dto.channel ?? 'production';
+    const before = await this.releasePolicyModel
+      .findOne({ platform: dto.platform, channel })
+      .lean<LeanReleasePolicy | null>();
+    const { reason, ...fields } = dto;
     const item = await this.releasePolicyModel.findOneAndUpdate(
       { platform: dto.platform, channel },
       {
         $set: {
-          ...dto,
+          ...fields,
           channel,
-          updateUrl: dto.updateUrl?.trim() || undefined,
+          updateUrl: fields.updateUrl?.trim() || undefined,
         },
       },
       { upsert: true, new: true, runValidators: true },
     );
+    const after = item.toObject() as LeanReleasePolicy;
     this.audit.log({
       action: AuditAction.APP_CONFIG_UPDATED,
       actorId: adminId,
@@ -159,9 +221,54 @@ export class AppConfigService {
         kind: 'release_policy',
         platform: dto.platform,
         channel,
+        reason: reason.trim(),
+        before: before ? this.serializeReleasePolicy(before) : null,
+        after: this.serializeReleasePolicy(after),
       },
     });
-    return item.toObject();
+    return this.serializeReleasePolicy(after);
+  }
+
+  private resolveFlagEvaluation(
+    flag: LeanFeatureFlag,
+    query: MobileBootstrapQueryDto,
+    channel: ReleaseChannel,
+  ) {
+    const matchingRule = (flag.rules ?? []).find((rule) => {
+      if (!rule.platforms.includes(query.platform)) return false;
+      if (!rule.channels.includes(channel)) return false;
+      const withinMinimum =
+        !rule.minAppVersion ||
+        compareAppVersions(query.appVersion, rule.minAppVersion) >= 0;
+      const withinMaximum =
+        !rule.maxAppVersion ||
+        compareAppVersions(query.appVersion, rule.maxAppVersion) <= 0;
+      return withinMinimum && withinMaximum;
+    });
+
+    const minimumAppVersion =
+      matchingRule?.minAppVersion ?? flag.minimumAppVersion;
+    const maximumAppVersion =
+      matchingRule?.maxAppVersion ?? flag.maximumAppVersion;
+    const rolloutPercentage =
+      matchingRule?.rolloutPercentage ?? flag.rolloutPercentage;
+    const variant = matchingRule?.variant ?? flag.defaultVariant ?? 'on';
+
+    const withinMinimum =
+      !minimumAppVersion ||
+      compareAppVersions(query.appVersion, minimumAppVersion) >= 0;
+    const withinMaximum =
+      !maximumAppVersion ||
+      compareAppVersions(query.appVersion, maximumAppVersion) <= 0;
+    const inRollout = this.isInRollout(
+      flag.key,
+      rolloutPercentage,
+      query.installationId,
+    );
+    const enabled =
+      withinMinimum && withinMaximum && inRollout && variant !== 'off';
+
+    return { enabled, variant };
   }
 
   private isInRollout(
@@ -174,7 +281,70 @@ export class AppConfigService {
     return rolloutBucket(`${key}:${installationId}`) < percentage;
   }
 
+  private serializeFeatureFlag(item: LeanFeatureFlag) {
+    const status =
+      item.status ??
+      (item.enabled === true
+        ? 'active'
+        : item.enabled === false
+          ? 'paused'
+          : 'draft');
+    return {
+      id: item._id.toString(),
+      key: item.key,
+      status,
+      rolloutPercentage: item.rolloutPercentage,
+      platforms: item.platforms,
+      channels: item.channels,
+      minimumAppVersion: item.minimumAppVersion ?? null,
+      maximumAppVersion: item.maximumAppVersion ?? null,
+      rules: (item.rules ?? []).map((rule) => ({
+        platforms: rule.platforms,
+        channels: rule.channels,
+        minAppVersion: rule.minAppVersion ?? null,
+        maxAppVersion: rule.maxAppVersion ?? null,
+        rolloutPercentage: rule.rolloutPercentage,
+        variant: rule.variant,
+      })),
+      defaultVariant: item.defaultVariant ?? null,
+      payload: item.payload ?? {},
+      description: item.description ?? null,
+      createdAt: toIso(item.createdAt),
+      updatedAt: toIso(item.updatedAt),
+    };
+  }
+
+  private serializeReleasePolicy(item: LeanReleasePolicy) {
+    return {
+      id: item._id.toString(),
+      platform: item.platform,
+      channel: item.channel,
+      latestAppVersion: item.latestAppVersion,
+      minimumSupportedAppVersion: item.minimumSupportedAppVersion,
+      recommendedApiVersion: item.recommendedApiVersion,
+      updateUrl: item.updateUrl ?? null,
+      enabled: item.enabled,
+      createdAt: toIso(item.createdAt),
+      updatedAt: toIso(item.updatedAt),
+    };
+  }
+
   private async ensureDefaultFlags() {
+    await Promise.all([
+      this.featureFlagModel.updateMany(
+        { status: { $exists: false }, enabled: true },
+        { $set: { status: 'active' }, $unset: { enabled: 1 } },
+      ),
+      this.featureFlagModel.updateMany(
+        { status: { $exists: false }, enabled: false },
+        { $set: { status: 'paused' }, $unset: { enabled: 1 } },
+      ),
+      this.featureFlagModel.updateMany(
+        { status: { $exists: false } },
+        { $set: { status: 'draft' }, $unset: { enabled: 1 } },
+      ),
+    ]);
+
     await this.featureFlagModel.bulkWrite(
       DEFAULT_FLAGS.map(([key, description]) => ({
         updateOne: {
@@ -183,10 +353,19 @@ export class AppConfigService {
             $setOnInsert: {
               key,
               description,
-              enabled: key !== 'health.device_sync',
+              status:
+                key === 'health.device_sync'
+                  ? ('paused' as const)
+                  : ('active' as const),
               rolloutPercentage: 100,
-              platforms: ['ios', 'android', 'web'],
-              channels: ['production', 'beta', 'development'],
+              platforms: ['ios', 'android', 'web'] as AppPlatform[],
+              channels: [
+                'production',
+                'beta',
+                'development',
+              ] as ReleaseChannel[],
+              rules: [],
+              defaultVariant: 'on',
               payload: {},
             },
           },
@@ -197,4 +376,3 @@ export class AppConfigService {
     );
   }
 }
-

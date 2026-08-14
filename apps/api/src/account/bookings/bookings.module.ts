@@ -4,23 +4,14 @@ import { FinanceModule } from '../../finance/finance.module';
 import { NotificationsModule } from '../../notifications/notifications.module';
 import { OutboxModule } from '../../outbox/outbox.module';
 import { Booking, BookingSchema } from '../../schemas/booking.schema';
-import {
-  ClubClass,
-  ClubClassSchema,
-} from '../../schemas/club-class.schema';
+import { ClubClass, ClubClassSchema } from '../../schemas/club-class.schema';
 import { Club, ClubSchema } from '../../schemas/club.schema';
-import {
-  ClubSpace,
-  ClubSpaceSchema,
-} from '../../schemas/club-space.schema';
+import { ClubSpace, ClubSpaceSchema } from '../../schemas/club-space.schema';
 import {
   CoachProfile,
   CoachProfileSchema,
 } from '../../schemas/coach-profile.schema';
-import {
-  CoachSlot,
-  CoachSlotSchema,
-} from '../../schemas/coach-slot.schema';
+import { CoachSlot, CoachSlotSchema } from '../../schemas/coach-slot.schema';
 import { User, UserSchema } from '../../schemas/user.schema';
 import { ClubSlotsModule } from '../club-slots/club-slots.module';
 import { ReferralModule } from '../referral/referral.module';

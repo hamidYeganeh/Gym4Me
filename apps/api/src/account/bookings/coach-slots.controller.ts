@@ -41,10 +41,7 @@ export class CoachSlotsController {
 
   @Post()
   @ApiOperation({ summary: 'Open availability slots' })
-  create(
-    @CurrentUser('sub') userId: string,
-    @Body() dto: CreateCoachSlotsDto,
-  ) {
+  create(@CurrentUser('sub') userId: string, @Body() dto: CreateCoachSlotsDto) {
     return this.slots.createMine(userId, dto.slots);
   }
 

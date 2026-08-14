@@ -6,10 +6,7 @@ import {
   Achievement,
   AchievementSchema,
 } from '../../schemas/achievement.schema';
-import {
-  ClubClass,
-  ClubClassSchema,
-} from '../../schemas/club-class.schema';
+import { ClubClass, ClubClassSchema } from '../../schemas/club-class.schema';
 import { Club, ClubSchema } from '../../schemas/club.schema';
 import {
   ClubUserReview,

@@ -1,15 +1,30 @@
 "use client";
 
 import { Button, Spinner, Typography } from "@heroui/react";
-import type { PersonalRecord, ProgressMetric } from "@repo/api";
+import type {
+  MetricType,
+  MetricsSummaryItem,
+  PersonalRecord,
+  ProgressMetric,
+} from "@repo/api";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { accountProgress } from "@/shared/lib/api";
+import {
+  createClientMutationId,
+  enqueue,
+  flush,
+  isNetworkFailure,
+  listPending,
+  type OfflineQueueItem,
+} from "@/shared/lib/offline-queue";
 import { useFeatureFlag } from "@/shared/providers/AppConfigProvider";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { AthleteSelfTrackingScreen } from "../screens/AthleteSelfTrackingScreen";
 import {
   getSelfTrackingMetric,
+  mapMetricTypesToCatalog,
+  type SelfTrackingMetric,
   type SelfTrackingMetricKey,
 } from "./self-tracking-data";
 
@@ -19,30 +34,59 @@ export function AthleteSelfTrackingGate() {
   const personalRecordsEnabled = useFeatureFlag("athlete.personal_records");
   const searchParams = useSearchParams();
   const requestedMetric = searchParams.get("metric") ?? "water_ml";
-  const initialMetric = (getSelfTrackingMetric(requestedMetric)?.key ??
-    "water_ml") as SelfTrackingMetricKey;
+  const [catalog, setCatalog] = useState<SelfTrackingMetric[] | null>(null);
   const [metrics, setMetrics] = useState<ProgressMetric[] | null>(null);
+  const [summary, setSummary] = useState<MetricsSummaryItem[]>([]);
   const [records, setRecords] = useState<PersonalRecord[]>([]);
+  const [pendingItems, setPendingItems] = useState<OfflineQueueItem[]>([]);
   const [pending, setPending] = useState(false);
+
+  const initialMetric = (getSelfTrackingMetric(requestedMetric)?.key ??
+    catalog?.[0]?.key ??
+    "water_ml") as SelfTrackingMetricKey;
+
+  const refreshPending = useCallback(async () => {
+    setPendingItems(await listPending());
+  }, []);
 
   const load = useCallback(async () => {
     if (!isAuthenticated) {
+      setCatalog(mapMetricTypesToCatalog([]));
       setMetrics([]);
+      setSummary([]);
       setRecords([]);
+      setPendingItems([]);
       return;
     }
-    const [metricPage, recordPage] = await Promise.all([
-      accountProgress.listMetrics({ page_size: 200 }),
-      accountProgress.listPersonalRecords({ page_size: 100 }),
-    ]);
+
+    await flush().catch(() => undefined);
+
+    const [typesPage, metricPage, recordPage, summaryResult, pendingQueue] =
+      await Promise.all([
+        accountProgress.listMetricTypes({ page_size: 100 }).catch(
+          (): { result: MetricType[] } => ({ result: [] }),
+        ),
+        accountProgress.listMetrics({ page_size: 200 }),
+        accountProgress.listPersonalRecords({ page_size: 100 }),
+        accountProgress
+          .metricsSummary({})
+          .catch(() => ({ items: [] as MetricsSummaryItem[] })),
+        listPending(),
+      ]);
+
+    setCatalog(mapMetricTypesToCatalog(typesPage.result));
     setMetrics(metricPage.result);
     setRecords(recordPage.result);
+    setSummary(summaryResult.items);
+    setPendingItems(pendingQueue);
   }, [isAuthenticated]);
 
   useEffect(() => {
     if (!isReady || !enabled) return;
     void load().catch(() => {
+      setCatalog(mapMetricTypesToCatalog([]));
       setMetrics([]);
+      setSummary([]);
       setRecords([]);
     });
   }, [enabled, isReady, load]);
@@ -63,7 +107,7 @@ export function AthleteSelfTrackingGate() {
     );
   }
 
-  if (!metrics) {
+  if (!metrics || !catalog) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
         <Spinner size="lg" />
@@ -73,16 +117,32 @@ export function AthleteSelfTrackingGate() {
 
   return (
     <AthleteSelfTrackingScreen
+      catalog={catalog}
       initialMetric={initialMetric}
       metrics={metrics}
       onCreateMetric={async (input) => {
         setPending(true);
+        const clientMutationId = createClientMutationId("metric");
+        const payload = {
+          ...input,
+          privacy: "private" as const,
+          source: "manual" as const,
+          clientMutationId,
+        };
         try {
-          await accountProgress.createMetric({ ...input, privacy: "private" });
+          await accountProgress.createMetric(payload);
           await load();
+        } catch (error) {
+          if (isNetworkFailure(error)) {
+            await enqueue(payload);
+            await refreshPending();
+            return { queuedOffline: true };
+          }
+          throw error;
         } finally {
           setPending(false);
         }
+        return { queuedOffline: false };
       }}
       onCreatePersonalRecord={async (input) => {
         setPending(true);
@@ -105,10 +165,20 @@ export function AthleteSelfTrackingGate() {
           setPending(false);
         }
       }}
+      onFlushPending={async () => {
+        setPending(true);
+        try {
+          await flush();
+          await load();
+        } finally {
+          setPending(false);
+        }
+      }}
       pending={pending}
+      pendingQueue={pendingItems}
       personalRecords={records}
       personalRecordsEnabled={personalRecordsEnabled}
+      summary={summary}
     />
   );
 }
-

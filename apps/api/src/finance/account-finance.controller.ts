@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Query,
-  Req,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -72,10 +64,7 @@ export class AccountFinanceController {
 
   @Get('invoices/:id')
   @ApiOperation({ summary: 'Get one of my invoices' })
-  getInvoice(
-    @CurrentUser('sub') userId: string,
-    @Param('id') id: string,
-  ) {
+  getInvoice(@CurrentUser('sub') userId: string, @Param('id') id: string) {
     return this.finance.getMyInvoice(userId, id);
   }
 

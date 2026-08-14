@@ -161,6 +161,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { revokeCurrentDeviceToken } = await import("@/shared/lib/push");
     await revokeCurrentDeviceToken();
 
+    // Never leak offline metric queue across accounts.
+    const { clearOfflineQueue } = await import("@/shared/lib/offline-queue");
+    await clearOfflineQueue();
+
     if (revoke) {
       try {
         await accountAuth.logout();

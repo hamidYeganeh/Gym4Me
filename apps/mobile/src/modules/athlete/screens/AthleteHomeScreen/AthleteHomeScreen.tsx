@@ -3,27 +3,20 @@
 import { Typography } from "@heroui/react";
 import {
   Calendar1,
-  ChartBar2,
-  HeartEcg,
-  House1,
+  Chat,
   Ticket,
-  User,
   Wallet,
   Scan1,
   BarbellHorizontal,
-  Gift,
-  Leaf,
-  UsersTwo,
 } from "@repo/icons";
 import { CallToActionCard } from "@repo/ui/cards/CallToActionCard";
 import { QuickActionCard } from "@repo/ui/cards/QuickActionCard";
-import { Logo } from "@repo/ui/common/Logo";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { BottomNav } from "@repo/ui/layout/BottomNav";
 import { ProfileHeader } from "@repo/ui/layout/ProfileHeader";
-import { ProfileStats } from "@repo/ui/layout/ProfileStats";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
+import { mediaFileUrl } from "@/shared/lib/api";
+import { useAuth } from "@/shared/providers/AuthProvider";
 import { athleteHomeScreenStyles as styles } from "./AthleteHomeScreen.styles";
 
 const ICON_SIZE = 22;
@@ -31,103 +24,28 @@ const ICON_SIZE = 22;
 export function AthleteHomeScreen() {
   const t = useTranslations("AthleteHome");
   const router = useRouter();
+  const { user } = useAuth();
+  const displayName =
+    [user?.name.first, user?.name.last].filter(Boolean).join(" ") ||
+    user?.phone ||
+    t("profileName");
 
   return (
     <AppLayout
       className={styles.root}
-      footer={
-        <BottomNav
-          aria-label={t("navLabel")}
-          centerAction={{
-            label: t("create"),
-            icon: (
-              <Logo
-                color="var(--accent-foreground)"
-                gradient={false}
-                shadow={false}
-                size={48}
-              />
-            ),
-            actionsLabel: t("actionsLabel"),
-            actions: [
-              {
-                key: "metrics",
-                label: t("metrics"),
-                icon: <ChartBar2 size={ICON_SIZE} />,
-                href: "/athlete/metrics",
-              },
-              {
-                key: "activity",
-                label: t("activity"),
-                icon: <HeartEcg size={ICON_SIZE} />,
-                href: "/athlete/bookings",
-              },
-            ],
-          }}
-          items={[
-            {
-              key: "home",
-              label: t("home"),
-              icon: <House1 size={ICON_SIZE} />,
-              href: "/athlete",
-              isActive: true,
-            },
-            {
-              key: "metrics",
-              label: t("metrics"),
-              icon: <ChartBar2 size={ICON_SIZE} />,
-              href: "/athlete/metrics",
-            },
-            {
-              key: "activity",
-              label: t("activity"),
-              icon: <HeartEcg size={ICON_SIZE} />,
-              href: "/athlete/bookings",
-            },
-            {
-              key: "profile",
-              label: t("profile"),
-              icon: <User size={ICON_SIZE} />,
-              href: "/athlete/profile",
-            },
-          ]}
-        />
-      }
       header={
         <ProfileHeader
-          avatarAlt={t("profileName")}
-          avatarSrc="/demo/coach-portrait.png"
-          bio={t("profileBio")}
+          avatarAlt={displayName}
+          avatarSrc={mediaFileUrl(user?.avatar.mediaId) ?? undefined}
+          bio={t("subtitle")}
           hasNotification
-          name={t("profileName")}
+          name={displayName}
           notificationLabel={t("notifications")}
           onNotificationPress={() => router.push("/athlete/notifications")}
         />
       }
     >
       <div className={styles.content}>
-        <ProfileStats
-          stats={[
-            {
-              key: "followers",
-              label: t("statFollowers"),
-              value: t("statFollowersValue"),
-              avatars: [
-                "/demo/coach-portrait.png",
-                "/demo/coach-portrait.png",
-                "/demo/coach-portrait.png",
-              ],
-            },
-            {
-              key: "views",
-              label: t("statViews"),
-              value: t("statViewsValue"),
-              actionLabel: t("statViewsAction"),
-              onActionPress: () => undefined,
-            },
-          ]}
-        />
-
         <section
           aria-labelledby="athlete-overview-title"
           className={styles.section}
@@ -211,28 +129,16 @@ export function AthleteHomeScreen() {
               onPress={() => router.push("/athlete/check-ins")}
             />
             <QuickActionCard
+              icon={<Chat size={ICON_SIZE} />}
+              label={t("messagesTitle")}
+              layout="row"
+              onPress={() => router.push("/athlete/messages")}
+            />
+            <QuickActionCard
               icon={<BarbellHorizontal size={ICON_SIZE} />}
               label={t("workoutsTitle")}
               layout="row"
               onPress={() => router.push("/athlete/workouts")}
-            />
-            <QuickActionCard
-              icon={<Gift size={ICON_SIZE} />}
-              label={t("referralTitle")}
-              layout="row"
-              onPress={() => router.push("/athlete/referral")}
-            />
-            <QuickActionCard
-              icon={<UsersTwo size={ICON_SIZE} />}
-              label={t("socialTitle")}
-              layout="row"
-              onPress={() => router.push("/athlete/social")}
-            />
-            <QuickActionCard
-              icon={<Leaf size={ICON_SIZE} />}
-              label={t("nutritionTitle")}
-              layout="row"
-              onPress={() => router.push("/athlete/nutrition")}
             />
           </div>
         </section>

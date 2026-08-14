@@ -103,9 +103,8 @@ export class ClubMembershipPlan {
   updatedAt!: Date;
 }
 
-export const ClubMembershipPlanSchema = SchemaFactory.createForClass(
-  ClubMembershipPlan,
-);
+export const ClubMembershipPlanSchema =
+  SchemaFactory.createForClass(ClubMembershipPlan);
 
 ClubMembershipPlanSchema.index({ clubId: 1, status: 1, publishStatus: 1 });
 ClubMembershipPlanSchema.index({ clubId: 1, kind: 1 });

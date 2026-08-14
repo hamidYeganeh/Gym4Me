@@ -4,7 +4,25 @@ export type AthleteWorkoutPlanStatus =
   | "completed"
   | "archived";
 
-export type AthleteWorkoutLogStatus = "completed" | "skipped";
+export type AthleteWorkoutLogStatus =
+  | "draft"
+  | "in_progress"
+  | "completed"
+  | "skipped"
+  | "abandoned";
+
+export type AthleteWorkoutPlanExercise = {
+  exerciseId: string;
+  label: string;
+  plannedSets: number;
+  plannedReps: number | null;
+};
+
+export type AthleteWorkoutLogSetItem = {
+  exerciseId: string;
+  reps: number;
+  weightKg: number | null;
+};
 
 export type AthleteWorkoutLogItem = {
   id: string;
@@ -12,6 +30,7 @@ export type AthleteWorkoutLogItem = {
   status: AthleteWorkoutLogStatus;
   loggedLabel: string;
   setsCount: number;
+  sets: AthleteWorkoutLogSetItem[];
 };
 
 export type AthleteWorkoutPlanItem = {
@@ -27,6 +46,7 @@ export type AthleteWorkoutPlanItem = {
 
 export type AthleteWorkoutPlanDetail = AthleteWorkoutPlanItem & {
   logs: AthleteWorkoutLogItem[];
+  exercises: AthleteWorkoutPlanExercise[];
 };
 
 export const DEMO_WORKOUT_PLANS: AthleteWorkoutPlanItem[] = [
@@ -54,6 +74,20 @@ export const DEMO_WORKOUT_PLANS: AthleteWorkoutPlanItem[] = [
 
 export const DEMO_WORKOUT_DETAIL: AthleteWorkoutPlanDetail = {
   ...DEMO_WORKOUT_PLANS[0]!,
+  exercises: [
+    {
+      exerciseId: "demo-ex-1",
+      label: "پرس سینه",
+      plannedSets: 3,
+      plannedReps: 10,
+    },
+    {
+      exerciseId: "demo-ex-2",
+      label: "پارویی دمبل",
+      plannedSets: 3,
+      plannedReps: 12,
+    },
+  ],
   logs: [
     {
       id: "demo-log-1",
@@ -61,6 +95,7 @@ export const DEMO_WORKOUT_DETAIL: AthleteWorkoutPlanDetail = {
       status: "completed",
       loggedLabel: "امروز · ۰۸:۲۰",
       setsCount: 12,
+      sets: [],
     },
     {
       id: "demo-log-2",
@@ -68,6 +103,7 @@ export const DEMO_WORKOUT_DETAIL: AthleteWorkoutPlanDetail = {
       status: "skipped",
       loggedLabel: "دیروز · ۱۹:۱۰",
       setsCount: 0,
+      sets: [],
     },
   ],
 };

@@ -1,6 +1,6 @@
 # Gym4Me — تصمیمات قفل‌شدهٔ محصول و معماری
 
-آخرین به‌روزرسانی: ۲۰۲۶-۰۸-۰۴
+آخرین به‌روزرسانی: ۲۰۲۶-۰۸-۱۴
 
 ## نقش‌ها و احراز هویت
 
@@ -64,5 +64,21 @@
 - به‌جای boolean از enum/status استفاده شود (`status: active` نه `isActive`).
 - فیلدهای مرتبط در آبجکت تو در تو گروه‌بندی شوند (`name: { first, last }`).
 - جزئیات در `.cursor/rules/domain-model-shape.mdc`.
+
+## نسخه‌بندی API و انتشار پویا
+
+- Bootstrap نسخه‌خنثی: `GET /api/app-config/bootstrap` با `schemaVersion` مستقل از URI دامنه.
+- افزودن field/endpoint سازگار در `/api/v1`؛ `/api/v2` فقط برای breaking change واقعی.
+- هم‌زیستی حداقل دو نسل API (v1 و v2) حداقل ۶ ماه، مگر رخداد امنیتی.
+- Feature Flag فقط کد از قبل نصب‌شده را فعال می‌کند و جای authorization نیست.
+- Fail-safe: فلوهای خرید/ورود روی last-known-good یا bundled default fail-open؛ فیچر آزمایشی fail-closed.
+- OTA وب‌باندل Capacitor خارج از محدودهٔ فعلی (تصمیم مستقل و امنیتی جداگانه لازم است).
+
+## دادهٔ سلامت و Self Tracking
+
+- متریک‌ها catalog-driven با `MetricType`؛ sample عمومی در `ProgressMetric` (نه collection جدا per-metric).
+- Grant داده به مربی per-metric/scope و زمان‌دار است؛ revoke فوری در query-time اعمال می‌شود.
+- Reminder متریک پیش‌فرض خاموش است و فقط با opt-in فعال می‌شود.
+- پس از disconnect از Apple Health / Health Connect، sync متوقف می‌شود؛ sampleهای قبلی تا حذف صریح کاربر حفظ می‌مانند.
 
 > رانتایم و منبع حقیقت دامنه: MongoDB با Mongoose (`apps/api/src/schemas`). PostgreSQL در محدودهٔ محصول نیست.

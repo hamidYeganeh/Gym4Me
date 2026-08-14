@@ -125,8 +125,7 @@ export class OutboxService {
    */
   private async deliver(message: OutboxMessageDocument) {
     const notification = message.payload?.notification as
-      | OutboxNotification
-      | undefined;
+      OutboxNotification | undefined;
     if (!notification?.userId || !notification.templateKey) return;
 
     await this.notifications.dispatch({

@@ -1,9 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
-import {
-  APP_PLATFORMS,
-  RELEASE_CHANNELS,
-} from './feature-flag.schema';
+import { APP_PLATFORMS, RELEASE_CHANNELS } from './feature-flag.schema';
 import type { AppPlatform, ReleaseChannel } from './feature-flag.schema';
 
 export type MobileReleasePolicyDocument = HydratedDocument<MobileReleasePolicy>;

@@ -7,7 +7,12 @@ export type ArticleCommentDocument = HydratedDocument<ArticleComment>;
 
 @Schema({ timestamps: true, collection: 'article_comments' })
 export class ArticleComment {
-  @Prop({ type: Types.ObjectId, ref: Article.name, required: true, index: true })
+  @Prop({
+    type: Types.ObjectId,
+    ref: Article.name,
+    required: true,
+    index: true,
+  })
   articleId!: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: User.name, required: true, index: true })
@@ -20,6 +25,7 @@ export class ArticleComment {
   updatedAt!: Date;
 }
 
-export const ArticleCommentSchema = SchemaFactory.createForClass(ArticleComment);
+export const ArticleCommentSchema =
+  SchemaFactory.createForClass(ArticleComment);
 
 ArticleCommentSchema.index({ articleId: 1, createdAt: -1 });

@@ -53,7 +53,8 @@ export class CoachCoachingController {
 
   @Get('analytics/overview')
   @ApiOperation({
-    summary: 'Coach KPI overview (engagement-derived, period=week|month|quarter)',
+    summary:
+      'Coach KPI overview (engagement-derived, period=week|month|quarter)',
   })
   analyticsOverview(
     @CurrentUser('sub') userId: string,
@@ -75,10 +76,7 @@ export class CoachCoachingController {
 
   @Get('services/:id')
   @ApiOperation({ summary: 'Get one of my coaching services' })
-  getService(
-    @CurrentUser('sub') userId: string,
-    @Param('id') id: string,
-  ) {
+  getService(@CurrentUser('sub') userId: string, @Param('id') id: string) {
     return this.coaching.getService(userId, id);
   }
 
@@ -212,10 +210,7 @@ export class CoachCoachingController {
 
   @Post('packages/:id/unfreeze')
   @ApiOperation({ summary: 'Unfreeze a session package' })
-  unfreezePackage(
-    @CurrentUser('sub') userId: string,
-    @Param('id') id: string,
-  ) {
+  unfreezePackage(@CurrentUser('sub') userId: string, @Param('id') id: string) {
     return this.coaching.unfreezePackage(userId, id);
   }
 

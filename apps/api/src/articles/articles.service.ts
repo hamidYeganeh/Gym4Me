@@ -748,7 +748,8 @@ export class ArticlesService {
     for (const user of users) {
       map.set(user._id.toString(), {
         id: user._id.toString(),
-        name: [user.name?.first, user.name?.last].filter(Boolean).join(' ') ||
+        name:
+          [user.name?.first, user.name?.last].filter(Boolean).join(' ') ||
           'Gym4Me',
         avatarMediaId: user.avatar?.mediaId?.toString() ?? null,
       });
@@ -772,10 +773,7 @@ export class ArticlesService {
     );
   }
 
-  private toPublicSummary(
-    doc: LeanArticle,
-    authors: Map<string, LeanAuthor>,
-  ) {
+  private toPublicSummary(doc: LeanArticle, authors: Map<string, LeanAuthor>) {
     return {
       id: doc._id.toString(),
       title: doc.title,
@@ -806,10 +804,7 @@ export class ArticlesService {
     };
   }
 
-  private toPublicDetail(
-    doc: LeanArticle,
-    authors: Map<string, LeanAuthor>,
-  ) {
+  private toPublicDetail(doc: LeanArticle, authors: Map<string, LeanAuthor>) {
     return {
       ...this.toPublicSummary(doc, authors),
       body: doc.body,

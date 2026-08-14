@@ -1,3 +1,5 @@
+import type { MetricType } from "@repo/api";
+
 export type SelfTrackingMetricKey =
   | "weight_kg"
   | "water_ml"
@@ -5,10 +7,11 @@ export type SelfTrackingMetricKey =
   | "walking_distance_km"
   | "walking_duration_min"
   | "sleep_duration_min"
-  | "sleep_quality";
+  | "sleep_quality"
+  | (string & {});
 
 export type SelfTrackingMetric = {
-  key: SelfTrackingMetricKey;
+  key: string;
   label: string;
   unit: string;
   unitLabel: string;
@@ -100,4 +103,42 @@ export const PERSONAL_RECORD_TYPES = [
 
 export function getSelfTrackingMetric(key: string) {
   return SELF_TRACKING_METRICS.find((item) => item.key === key);
+}
+
+const UNIT_LABELS: Record<string, string> = {
+  ml: "میلی‌لیتر",
+  steps: "قدم",
+  km: "کیلومتر",
+  min: "دقیقه",
+  kg: "کیلوگرم",
+  score: "از ۵",
+  bpm: "ضربان",
+};
+
+/** Prefer API catalog; fall back to local display map for labels/icons. */
+export function mapMetricTypesToCatalog(
+  types: MetricType[],
+): SelfTrackingMetric[] {
+  const active = types
+    .filter((type) => type.status === "active" && type.valueKind === "number")
+    .sort((a, b) => a.sortHint - b.sortHint || a.key.localeCompare(b.key));
+
+  if (active.length === 0) {
+    return [...SELF_TRACKING_METRICS];
+  }
+
+  return active.map((type) => {
+    const local = getSelfTrackingMetric(type.key);
+    const unit = type.unit ?? type.canonicalUnit ?? local?.unit ?? "";
+    return {
+      key: type.key,
+      label: local?.label ?? type.name,
+      unit,
+      unitLabel: local?.unitLabel ?? UNIT_LABELS[unit] ?? unit,
+      hint: local?.hint ?? type.name,
+      min: type.validation?.min ?? local?.min ?? 0,
+      max: type.validation?.max ?? local?.max ?? 1_000_000,
+      step: type.validation?.step ?? local?.step ?? 1,
+    };
+  });
 }

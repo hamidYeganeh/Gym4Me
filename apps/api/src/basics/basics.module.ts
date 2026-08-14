@@ -1,10 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MediaModule } from '../media/media.module';
-import {
-  ChoiceGroup,
-  ChoiceGroupSchema,
-} from '../schemas/choice-group.schema';
+import { ChoiceGroup, ChoiceGroupSchema } from '../schemas/choice-group.schema';
 import { Location, LocationSchema } from '../schemas/location.schema';
 import { RefItem, RefItemSchema } from '../schemas/ref-item.schema';
 import { Sport, SportSchema } from '../schemas/sport.schema';

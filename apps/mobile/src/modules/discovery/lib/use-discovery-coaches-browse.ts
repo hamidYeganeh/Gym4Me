@@ -9,24 +9,17 @@ import {
   mediaFileUrl,
 } from "@/shared/lib/api";
 import {
-  BROWSE_COACHES,
-  filterBrowseCoaches,
-  type BrowseCoach,
-} from "./coaches-browse-data";
-import {
   COACH_DISCOVERY_FILTERS,
   matchCoachDiscoveryFilterFromQuery,
   type CoachDiscoveryFilter,
   type CoachDiscoveryFilterId,
 } from "./coach-discovery-filters";
 import {
-  MOCK_CITIES,
-  MOCK_DISTRICTS,
-  MOCK_PROVINCES_EXTENDED,
   mapLocationToHomeItem,
   type HomeLocationItem,
 } from "./home-browse-data";
 import { mapDiscoveryCoachToBrowse } from "./map-discovery-coach";
+import { filterBrowseCoaches, type BrowseCoach } from "./coaches-browse-data";
 
 export type DiscoveryCoachesBrowseOptions = {
   specialtyKey?: string | null;
@@ -70,15 +63,12 @@ export function useDiscoveryCoachesBrowse(
 
   const [activeFilter, setActiveFilter] =
     useState<CoachDiscoveryFilterId>(initialFilter);
-  const [coaches, setCoaches] = useState<BrowseCoach[]>(BROWSE_COACHES);
+  const [coaches, setCoaches] = useState<BrowseCoach[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [source, setSource] = useState<"api" | "mock">("mock");
-  const [provinces, setProvinces] = useState<HomeLocationItem[]>(
-    MOCK_PROVINCES_EXTENDED,
-  );
-  const [cities, setCities] = useState<HomeLocationItem[]>(MOCK_CITIES);
-  const [districts, setDistricts] =
-    useState<HomeLocationItem[]>(MOCK_DISTRICTS);
+  const [source, setSource] = useState<"api" | "mock">("api");
+  const [provinces, setProvinces] = useState<HomeLocationItem[]>([]);
+  const [cities, setCities] = useState<HomeLocationItem[]>([]);
+  const [districts, setDistricts] = useState<HomeLocationItem[]>([]);
 
   const loadLocations = useCallback(async () => {
     try {
@@ -126,9 +116,9 @@ export function useDiscoveryCoachesBrowse(
       if (cityMap.size > 0) setCities([...cityMap.values()].slice(0, 12));
       if (districtList.length > 0) setDistricts(districtList.slice(0, 16));
     } catch {
-      setProvinces(MOCK_PROVINCES_EXTENDED);
-      setCities(MOCK_CITIES);
-      setDistricts(MOCK_DISTRICTS);
+      setProvinces([]);
+      setCities([]);
+      setDistricts([]);
     }
   }, []);
 
@@ -140,9 +130,6 @@ export function useDiscoveryCoachesBrowse(
         ...(cityId ? { cityId } : {}),
         ...(specialtyKey && filterId === "all" ? { specialtyKey } : {}),
       };
-      const hasScopedQuery =
-        Object.keys(scopedFromUrl).length > 0 ||
-        Boolean(availability || verified || fresh);
       const query: DiscoveryCoachesQuery = {
         page_size: 40,
         ...scopedFromUrl,
@@ -153,24 +140,12 @@ export function useDiscoveryCoachesBrowse(
 
       try {
         const page = await discoveryCoaches.list(query);
-        if (page.result.length === 0 && filterId === "all" && !hasScopedQuery) {
-          setCoaches(BROWSE_COACHES);
-          setSource("mock");
-        } else if (page.result.length === 0) {
-          setCoaches(filterBrowseCoaches(BROWSE_COACHES, filterId));
-          setSource("mock");
-        } else {
-          const mapped = page.result.map(mapDiscoveryCoachToBrowse);
-          setCoaches(filterBrowseCoaches(mapped, filterId));
-          setSource("api");
-        }
+        const mapped = page.result.map(mapDiscoveryCoachToBrowse);
+        setCoaches(filterBrowseCoaches(mapped, filterId));
+        setSource("api");
       } catch {
-        setCoaches(
-          hasScopedQuery
-            ? filterBrowseCoaches(BROWSE_COACHES, filterId)
-            : BROWSE_COACHES,
-        );
-        setSource("mock");
+        setCoaches([]);
+        setSource("api");
       } finally {
         setIsLoading(false);
       }

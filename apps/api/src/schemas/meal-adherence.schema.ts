@@ -59,8 +59,7 @@ export class MealAdherence {
   updatedAt!: Date;
 }
 
-export const MealAdherenceSchema =
-  SchemaFactory.createForClass(MealAdherence);
+export const MealAdherenceSchema = SchemaFactory.createForClass(MealAdherence);
 
 MealAdherenceSchema.index({
   athleteUserId: 1,

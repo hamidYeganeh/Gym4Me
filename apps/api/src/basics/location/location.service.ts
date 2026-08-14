@@ -97,7 +97,10 @@ export class LocationService {
 
   async create(dto: CreateLocationDto, adminId: string, request: Request) {
     await this.media.assertExists(dto.coverMediaId);
-    const { parentId, ancestors } = await this.resolveParent(dto.kind, dto.parentId);
+    const { parentId, ancestors } = await this.resolveParent(
+      dto.kind,
+      dto.parentId,
+    );
     const slug = await this.uniqueSlug(dto.kind, dto.slug || slugify(dto.name));
 
     const location = await this.locationModel.create({
@@ -106,8 +109,7 @@ export class LocationService {
       slug,
       description: dto.description,
       icon: dto.icon,
-      flagSvg:
-        dto.kind === LocationKind.COUNTRY ? dto.flagSvg : undefined,
+      flagSvg: dto.kind === LocationKind.COUNTRY ? dto.flagSvg : undefined,
       parentId,
       ancestors,
       center: dto.center
@@ -227,8 +229,7 @@ export class LocationService {
       slug,
       description: dto.description,
       icon: dto.icon,
-      flagSvg:
-        dto.kind === LocationKind.COUNTRY ? dto.flagSvg : undefined,
+      flagSvg: dto.kind === LocationKind.COUNTRY ? dto.flagSvg : undefined,
       parentId,
       ancestors,
       center: dto.center

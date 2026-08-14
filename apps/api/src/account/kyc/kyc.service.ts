@@ -47,7 +47,10 @@ export class KycService {
       kycStatus: user.kycStatus,
       kycVerifiedAt: user.kycVerifiedAt ?? null,
       identity: identity
-        ? { status: identity.status, rejectionReason: identity.rejectionReason ?? null }
+        ? {
+            status: identity.status,
+            rejectionReason: identity.rejectionReason ?? null,
+          }
         : { status: 'not_submitted' },
       documents: requests
         .filter((r) => r.kind === KycRequestKind.DOCUMENT)
@@ -55,7 +58,11 @@ export class KycService {
     };
   }
 
-  async submitIdentity(userId: string, dto: SubmitIdentityDto, request: Request) {
+  async submitIdentity(
+    userId: string,
+    dto: SubmitIdentityDto,
+    request: Request,
+  ) {
     if (!isValidIranNationalId(dto.nationalId)) {
       throw new BadRequestException('Invalid national ID');
     }
@@ -110,7 +117,10 @@ export class KycService {
       action: AuditAction.KYC_IDENTITY_SUBMITTED,
       actorId: user._id,
       targetUserId: user._id,
-      metadata: { approved: result.approved, requestId: kycRequest._id.toString() },
+      metadata: {
+        approved: result.approved,
+        requestId: kycRequest._id.toString(),
+      },
       request,
     });
 

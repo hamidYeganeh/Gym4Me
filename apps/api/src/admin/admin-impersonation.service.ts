@@ -8,10 +8,7 @@ import type { Request } from 'express';
 import { Model, Types } from 'mongoose';
 import { TokenService } from '../account/auth/token.service';
 import { AuditService } from '../audit/audit.service';
-import {
-  AuditAction,
-  ImpersonationSessionStatus,
-} from '../common/enums';
+import { AuditAction, ImpersonationSessionStatus } from '../common/enums';
 import {
   ImpersonationSession,
   ImpersonationSessionDocument,
@@ -87,7 +84,8 @@ export class AdminImpersonationService {
       throw new NotFoundException('Impersonation session not found');
     }
     const session = await this.sessionModel.findById(sessionId);
-    if (!session) throw new NotFoundException('Impersonation session not found');
+    if (!session)
+      throw new NotFoundException('Impersonation session not found');
     if (session.adminId.toString() !== adminId) {
       throw new BadRequestException('Not your impersonation session');
     }

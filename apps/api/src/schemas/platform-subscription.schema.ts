@@ -71,9 +71,8 @@ export class PlatformSubscription {
   updatedAt!: Date;
 }
 
-export const PlatformSubscriptionSchema = SchemaFactory.createForClass(
-  PlatformSubscription,
-);
+export const PlatformSubscriptionSchema =
+  SchemaFactory.createForClass(PlatformSubscription);
 
 PlatformSubscriptionSchema.index({ userId: 1, status: 1 });
 PlatformSubscriptionSchema.index({ planId: 1, status: 1 });

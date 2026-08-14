@@ -15,7 +15,10 @@ export interface PushSendResult {
 }
 
 export abstract class PushService {
-  abstract send(tokens: string[], message: PushMessage): Promise<PushSendResult>;
+  abstract send(
+    tokens: string[],
+    message: PushMessage,
+  ): Promise<PushSendResult>;
 }
 
 @Injectable()

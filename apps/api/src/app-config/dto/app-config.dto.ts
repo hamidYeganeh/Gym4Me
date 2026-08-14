@@ -12,8 +12,14 @@ import {
   Max,
   MaxLength,
   Min,
+  MinLength,
+  ValidateNested,
 } from 'class-validator';
-import { APP_PLATFORMS, RELEASE_CHANNELS } from '../../schemas/feature-flag.schema';
+import {
+  APP_PLATFORMS,
+  FEATURE_FLAG_STATUSES,
+  RELEASE_CHANNELS,
+} from '../../schemas/feature-flag.schema';
 
 const VERSION_PATTERN = /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/;
 const FEATURE_KEY_PATTERN = /^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$/;
@@ -42,9 +48,41 @@ export class MobileBootstrapQueryDto {
   channel?: 'production' | 'beta' | 'development';
 }
 
+export class FeatureFlagRuleDto {
+  @IsArray()
+  @IsIn(APP_PLATFORMS, { each: true })
+  platforms!: ('ios' | 'android' | 'web')[];
+
+  @IsArray()
+  @IsIn(RELEASE_CHANNELS, { each: true })
+  channels!: ('production' | 'beta' | 'development')[];
+
+  @IsOptional()
+  @IsString()
+  @Matches(VERSION_PATTERN)
+  @MaxLength(40)
+  minAppVersion?: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(VERSION_PATTERN)
+  @MaxLength(40)
+  maxAppVersion?: string;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(100)
+  rolloutPercentage!: number;
+
+  @IsString()
+  @MaxLength(64)
+  variant!: string;
+}
+
 export class UpsertFeatureFlagDto {
-  @IsBoolean()
-  enabled!: boolean;
+  @IsIn(FEATURE_FLAG_STATUSES)
+  status!: 'draft' | 'active' | 'paused' | 'archived';
 
   @Type(() => Number)
   @IsInt()
@@ -73,6 +111,17 @@ export class UpsertFeatureFlagDto {
   maximumAppVersion?: string;
 
   @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => FeatureFlagRuleDto)
+  rules?: FeatureFlagRuleDto[];
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  defaultVariant?: string;
+
+  @IsOptional()
   @IsObject()
   payload?: Record<string, unknown>;
 
@@ -80,6 +129,11 @@ export class UpsertFeatureFlagDto {
   @IsString()
   @MaxLength(500)
   description?: string;
+
+  @IsString()
+  @MinLength(3)
+  @MaxLength(500)
+  reason!: string;
 }
 
 export class FeatureFlagKeyParamDto {
@@ -119,5 +173,9 @@ export class UpsertReleasePolicyDto {
 
   @IsBoolean()
   enabled!: boolean;
-}
 
+  @IsString()
+  @MinLength(3)
+  @MaxLength(500)
+  reason!: string;
+}

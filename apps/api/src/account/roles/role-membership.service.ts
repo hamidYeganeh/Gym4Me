@@ -6,19 +6,12 @@ import {
 import type { Request } from 'express';
 import { EventWriterService } from '../../analytics/event-writer.service';
 import { AuditService } from '../../audit/audit.service';
-import {
-  AnalyticsEventName,
-  AuditAction,
-  Role,
-} from '../../common/enums';
+import { AnalyticsEventName, AuditAction, Role } from '../../common/enums';
 import type { JwtUser } from '../../common/types';
 import { UsersService } from '../../users/users.service';
 import { ProfileService } from '../profile/profile.service';
 
-const SELF_APPLICABLE_ROLES: Role[] = [
-  Role.COACH,
-  Role.CLUB_OWNER,
-];
+const SELF_APPLICABLE_ROLES: Role[] = [Role.COACH, Role.CLUB_OWNER];
 
 @Injectable()
 export class RoleMembershipService {

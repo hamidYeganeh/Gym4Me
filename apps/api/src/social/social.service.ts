@@ -40,10 +40,7 @@ import {
   SocialReport,
   SocialReportDocument,
 } from '../schemas/social-report.schema';
-import {
-  SocialSave,
-  SocialSaveDocument,
-} from '../schemas/social-save.schema';
+import { SocialSave, SocialSaveDocument } from '../schemas/social-save.schema';
 import {
   CreateSocialCommentDto,
   CreateSocialPostDto,
@@ -158,11 +155,7 @@ export class SocialService {
     return this.toPost(item.toObject(), userId);
   }
 
-  async createPost(
-    dto: CreateSocialPostDto,
-    userId: string,
-    request: Request,
-  ) {
+  async createPost(dto: CreateSocialPostDto, userId: string, request: Request) {
     const visibility = dto.visibility ?? Privacy.FOLLOWERS;
     if (visibility !== Privacy.PUBLIC && visibility !== Privacy.FOLLOWERS) {
       throw new BadRequestException(

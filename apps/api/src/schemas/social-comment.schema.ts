@@ -34,7 +34,6 @@ export class SocialComment {
   updatedAt!: Date;
 }
 
-export const SocialCommentSchema =
-  SchemaFactory.createForClass(SocialComment);
+export const SocialCommentSchema = SchemaFactory.createForClass(SocialComment);
 
 SocialCommentSchema.index({ postId: 1, createdAt: -1 });

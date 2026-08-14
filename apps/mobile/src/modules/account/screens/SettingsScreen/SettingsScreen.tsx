@@ -3,21 +3,27 @@
 import { Button, Typography } from "@heroui/react";
 import { Bell1 } from "@repo/icons/Bell1";
 import { BarbellHorizontal } from "@repo/icons/BarbellHorizontal";
+import { Camera1 } from "@repo/icons/Camera1";
+import { Chat } from "@repo/icons/Chat";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { ChevronRight } from "@repo/icons/ChevronRight";
 import { Door } from "@repo/icons/Door";
 import { Gift } from "@repo/icons/Gift";
 import { Globe } from "@repo/icons/Globe";
 import { Headset1 } from "@repo/icons/Headset1";
+import { HeartEcg } from "@repo/icons/HeartEcg";
 import { InfoCircle } from "@repo/icons/InfoCircle";
 import { Leaf } from "@repo/icons/Leaf";
+import { Lock1 } from "@repo/icons/Lock1";
 import { Moon } from "@repo/icons/Moon";
 import { Pencil1 } from "@repo/icons/Pencil1";
+import { PiggyBank } from "@repo/icons/PiggyBank";
+import { QrCode } from "@repo/icons/QrCode";
 import { Scan1 } from "@repo/icons/Scan1";
 import { ShieldCheck } from "@repo/icons/ShieldCheck";
+import { ShieldExclamationMark } from "@repo/icons/ShieldExclamationMark";
 import { Trophy1 } from "@repo/icons/Trophy1";
 import { UsersTwo } from "@repo/icons/UsersTwo";
-import { Chat } from "@repo/icons/Chat";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
@@ -25,6 +31,7 @@ import { useRouter } from "next/navigation";
 import { type ReactNode } from "react";
 import { AnimatedThemeToggler } from "@/shared/components/animated-theme-toggler";
 import { useAuth } from "@/shared/providers/AuthProvider";
+import { useFeatureFlag } from "@/shared/providers/AppConfigProvider";
 import { settingsScreenVariants } from "./SettingsScreen.styles";
 import type { SettingsScreenProps } from "./SettingsScreen.types";
 
@@ -46,8 +53,9 @@ export function SettingsScreen({
   const styles = settingsScreenVariants();
   const router = useRouter();
   const { logout } = useAuth();
+  const deviceSyncEnabled = useFeatureFlag("health.device_sync");
 
-  const accountRows: NavRow[] = [
+  const allAccountRows: NavRow[] = [
     {
       key: "profile",
       icon: <Pencil1 size={ROW_ICON_SIZE} />,
@@ -107,6 +115,94 @@ export function SettingsScreen({
             onPress: () => router.push("/athlete/nutrition"),
           },
           {
+            key: "data-grants",
+            icon: <Lock1 size={ROW_ICON_SIZE} />,
+            label: t("dataGrants"),
+            hint: t("dataGrantsHint"),
+            onPress: () => router.push("/athlete/data-grants"),
+          },
+          {
+            key: "goals",
+            icon: <Trophy1 size={ROW_ICON_SIZE} />,
+            label: t("goals"),
+            hint: t("goalsHint"),
+            onPress: () => router.push("/athlete/goals"),
+          },
+          {
+            key: "messages",
+            icon: <Chat size={ROW_ICON_SIZE} />,
+            label: t("messages"),
+            hint: t("messagesHint"),
+            onPress: () => router.push("/athlete/messages"),
+          },
+          {
+            key: "progress-photos",
+            icon: <Camera1 size={ROW_ICON_SIZE} />,
+            label: t("progressPhotos"),
+            hint: t("progressPhotosHint"),
+            onPress: () => router.push("/athlete/progress-photos"),
+          },
+          {
+            key: "health-assessment",
+            icon: <HeartEcg size={ROW_ICON_SIZE} />,
+            label: t("healthAssessment"),
+            hint: t("healthAssessmentHint"),
+            onPress: () => router.push("/athlete/health-assessment"),
+          },
+          {
+            key: "qr-check-in",
+            icon: <QrCode size={ROW_ICON_SIZE} />,
+            label: t("qrCheckIn"),
+            hint: t("qrCheckInHint"),
+            onPress: () => router.push("/athlete/qr-check-in"),
+          },
+          {
+            key: "subscription",
+            icon: <PiggyBank size={ROW_ICON_SIZE} />,
+            label: t("subscription"),
+            hint: t("subscriptionHint"),
+            onPress: () => router.push("/athlete/subscription"),
+          },
+          {
+            key: "disputes",
+            icon: <ShieldExclamationMark size={ROW_ICON_SIZE} />,
+            label: t("disputes"),
+            hint: t("disputesHint"),
+            onPress: () => router.push("/athlete/disputes"),
+          },
+          {
+            key: "family",
+            icon: <UsersTwo size={ROW_ICON_SIZE} />,
+            label: t("family"),
+            hint: t("familyHint"),
+            onPress: () => router.push("/athlete/family"),
+          },
+          {
+            key: "passes",
+            icon: <Gift size={ROW_ICON_SIZE} />,
+            label: t("passes"),
+            hint: t("passesHint"),
+            onPress: () => router.push("/athlete/passes"),
+          },
+          {
+            key: "data-rights",
+            icon: <ShieldCheck size={ROW_ICON_SIZE} />,
+            label: t("dataRights"),
+            hint: t("dataRightsHint"),
+            onPress: () => router.push("/athlete/data-rights"),
+          },
+          ...(deviceSyncEnabled
+            ? [
+                {
+                  key: "health-sync",
+                  icon: <Scan1 size={ROW_ICON_SIZE} />,
+                  label: t("healthSync"),
+                  hint: t("healthSyncHint"),
+                  onPress: () => router.push("/athlete/health-sync"),
+                } satisfies NavRow,
+              ]
+            : []),
+          {
             key: "referral",
             icon: <Gift size={ROW_ICON_SIZE} />,
             label: t("referral"),
@@ -116,6 +212,31 @@ export function SettingsScreen({
         ]
       : []),
   ];
+
+  const rowsByKeys = (keys: string[]) =>
+    allAccountRows.filter((row) => keys.includes(row.key));
+  const accountRows = rowsByKeys(["profile", "kyc", "roles"]);
+  const activityRows = rowsByKeys([
+    "achievements",
+    "check-ins",
+    "workouts",
+    "goals",
+    "progress-photos",
+    "health-assessment",
+    "health-sync",
+    "nutrition",
+  ]);
+  const serviceRows = rowsByKeys([
+    "messages",
+    "qr-check-in",
+    "subscription",
+    "disputes",
+    "family",
+    "passes",
+    "referral",
+    "social",
+  ]);
+  const privacyRows = rowsByKeys(["data-grants", "data-rights"]);
 
   const supportRows: NavRow[] = [
     {
@@ -154,6 +275,25 @@ export function SettingsScreen({
     </Button>
   );
 
+  const renderGroup = (title: string, rows: NavRow[]) =>
+    rows.length > 0 ? (
+      <section className={styles.group()}>
+        <Typography className={styles.groupTitle()} type="body-sm">
+          {title}
+        </Typography>
+        <div className={styles.groupCard()}>
+          {rows.map((row, index) => (
+            <div key={row.key}>
+              {renderNavRow(row)}
+              {index < rows.length - 1 ? (
+                <div aria-hidden className={styles.divider()} />
+              ) : null}
+            </div>
+          ))}
+        </div>
+      </section>
+    ) : null;
+
   return (
     <AppLayout
       className={styles.root({ className })}
@@ -183,21 +323,10 @@ export function SettingsScreen({
           </Typography>
         </section>
 
-        <section className={styles.group()}>
-          <Typography className={styles.groupTitle()} type="body-sm">
-            {t("accountGroup")}
-          </Typography>
-          <div className={styles.groupCard()}>
-            {accountRows.map((row, index) => (
-              <div key={row.key}>
-                {renderNavRow(row)}
-                {index < accountRows.length - 1 ? (
-                  <div aria-hidden className={styles.divider()} />
-                ) : null}
-              </div>
-            ))}
-          </div>
-        </section>
+        {renderGroup(t("accountGroup"), accountRows)}
+        {renderGroup(t("activityGroup"), activityRows)}
+        {renderGroup(t("servicesGroup"), serviceRows)}
+        {renderGroup(t("privacyGroup"), privacyRows)}
 
         <section className={styles.group()}>
           <Typography className={styles.groupTitle()} type="body-sm">

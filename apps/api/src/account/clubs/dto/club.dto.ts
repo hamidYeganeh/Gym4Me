@@ -23,7 +23,10 @@ import {
   RulePolicy,
   WeekdayStatus,
 } from '../../../common/enums';
-import { GeoPointDto, PaginationQueryDto } from '../../../basics/dto/common.dto';
+import {
+  GeoPointDto,
+  PaginationQueryDto,
+} from '../../../basics/dto/common.dto';
 import { toStringArray } from '../../../common/utils/list-query.util';
 
 export class ClubIdentityDto {

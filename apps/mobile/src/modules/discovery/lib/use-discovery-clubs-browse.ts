@@ -9,23 +9,17 @@ import {
   mediaFileUrl,
 } from "@/shared/lib/api";
 import {
-  BROWSE_CLUBS,
-  type BrowseClub,
-} from "./clubs-browse-data";
-import {
   CLUB_DISCOVERY_FILTERS,
   matchDiscoveryFilterFromQuery,
   type ClubDiscoveryFilter,
   type ClubDiscoveryFilterId,
 } from "./club-discovery-filters";
 import {
-  MOCK_CITIES,
-  MOCK_DISTRICTS,
-  MOCK_PROVINCES_EXTENDED,
   mapLocationToHomeItem,
   type HomeLocationItem,
 } from "./home-browse-data";
 import { mapDiscoveryClubToBrowse } from "./map-discovery-club-browse";
+import type { BrowseClub } from "./clubs-browse-data";
 
 export type DiscoveryClubsBrowseOptions = {
   locationId?: string | null;
@@ -72,15 +66,12 @@ export function useDiscoveryClubsBrowse(
   });
   const [activeFilter, setActiveFilter] =
     useState<ClubDiscoveryFilterId>(initialFilter);
-  const [clubs, setClubs] = useState<BrowseClub[]>(BROWSE_CLUBS);
+  const [clubs, setClubs] = useState<BrowseClub[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [source, setSource] = useState<"api" | "mock">("mock");
-  const [provinces, setProvinces] = useState<HomeLocationItem[]>(
-    MOCK_PROVINCES_EXTENDED,
-  );
-  const [cities, setCities] = useState<HomeLocationItem[]>(MOCK_CITIES);
-  const [districts, setDistricts] =
-    useState<HomeLocationItem[]>(MOCK_DISTRICTS);
+  const [source, setSource] = useState<"api" | "mock">("api");
+  const [provinces, setProvinces] = useState<HomeLocationItem[]>([]);
+  const [cities, setCities] = useState<HomeLocationItem[]>([]);
+  const [districts, setDistricts] = useState<HomeLocationItem[]>([]);
 
   const loadLocations = useCallback(async () => {
     try {
@@ -130,9 +121,9 @@ export function useDiscoveryClubsBrowse(
       if (cityMap.size > 0) setCities([...cityMap.values()].slice(0, 12));
       if (districtList.length > 0) setDistricts(districtList.slice(0, 16));
     } catch {
-      setProvinces(MOCK_PROVINCES_EXTENDED);
-      setCities(MOCK_CITIES);
-      setDistricts(MOCK_DISTRICTS);
+      setProvinces([]);
+      setCities([]);
+      setDistricts([]);
     }
   }, []);
 
@@ -149,7 +140,6 @@ export function useDiscoveryClubsBrowse(
         ...(ageGroupKey ? { ageGroupKey } : {}),
         ...(levelKey ? { levelKey } : {}),
       };
-      const hasScopedQuery = Object.keys(scopedFromUrl).length > 0;
       const query: DiscoveryClubsQuery = {
         page_size: 40,
         ...scopedFromUrl,
@@ -158,18 +148,13 @@ export function useDiscoveryClubsBrowse(
 
       try {
         const page = await discoveryClubs.list(query);
-        if (page.result.length === 0 && filterId === "all" && !hasScopedQuery) {
-          setClubs(BROWSE_CLUBS);
-          setSource("mock");
-        } else {
-          setClubs(
-            page.result.map((club) => mapDiscoveryClubToBrowse(club as never)),
-          );
-          setSource("api");
-        }
+        setClubs(
+          page.result.map((club) => mapDiscoveryClubToBrowse(club as never)),
+        );
+        setSource("api");
       } catch {
-        setClubs(hasScopedQuery ? [] : BROWSE_CLUBS);
-        setSource("mock");
+        setClubs([]);
+        setSource("api");
       } finally {
         setIsLoading(false);
       }

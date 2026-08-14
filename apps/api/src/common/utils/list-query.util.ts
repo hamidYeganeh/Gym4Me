@@ -33,7 +33,9 @@ export function resolveListSort(
   }
 
   const direction = query.sortOrder === 'desc' ? -1 : 1;
-  return field === '_id' ? { _id: direction } : { [field]: direction, _id: direction };
+  return field === '_id'
+    ? { _id: direction }
+    : { [field]: direction, _id: direction };
 }
 
 export function createSearchFilter(
@@ -49,7 +51,9 @@ export function createSearchFilter(
   };
 }
 
-export function toStringArray({ value }: TransformFnParams): string[] | undefined {
+export function toStringArray({
+  value,
+}: TransformFnParams): string[] | undefined {
   if (value === undefined || value === null || value === '') return undefined;
 
   const values = (Array.isArray(value) ? value : [value])

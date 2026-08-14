@@ -146,11 +146,7 @@ export class AuthService {
     return this.tokens.rotate(user, refreshToken);
   }
 
-  async switchRole(
-    userId: string,
-    dto: SwitchRoleDto,
-    request: Request,
-  ) {
+  async switchRole(userId: string, dto: SwitchRoleDto, request: Request) {
     const user = await this.users.findById(userId);
     this.assertActive(user);
 
@@ -159,11 +155,7 @@ export class AuthService {
       throw new BadRequestException('Role not assigned to user');
     }
 
-    const pair = await this.tokens.switchRole(
-      user,
-      dto.refreshToken,
-      nextRole,
-    );
+    const pair = await this.tokens.switchRole(user, dto.refreshToken, nextRole);
 
     this.audit.log({
       action: AuditAction.ROLE_SWITCHED,

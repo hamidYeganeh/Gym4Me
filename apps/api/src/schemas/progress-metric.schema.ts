@@ -5,6 +5,18 @@ import { User } from './user.schema';
 
 export type ProgressMetricDocument = HydratedDocument<ProgressMetric>;
 
+@Schema({ _id: false })
+export class ProgressMetricPeriod {
+  @Prop({ type: Date })
+  start?: Date;
+
+  @Prop({ type: Date })
+  end?: Date;
+}
+
+export const ProgressMetricPeriodSchema =
+  SchemaFactory.createForClass(ProgressMetricPeriod);
+
 @Schema({ timestamps: true, collection: 'progress_metrics' })
 export class ProgressMetric {
   @Prop({ type: Types.ObjectId, ref: User.name, required: true, index: true })
@@ -47,7 +59,18 @@ export class ProgressMetric {
   @Prop({ trim: true, maxlength: 160 })
   sourceRecordId?: string;
 
-  /** Optional measurement interval for aggregate samples such as sleep/walking. */
+  /** Offline / retry idempotency key for manual or queued writes. */
+  @Prop({ trim: true, maxlength: 120 })
+  clientMutationId?: string;
+
+  /** Nested measurement interval (preferred). */
+  @Prop({ type: ProgressMetricPeriodSchema })
+  period?: ProgressMetricPeriod;
+
+  /**
+   * Legacy flat mirrors of period.start / period.end.
+   * Kept briefly so older readers keep working; writers should set both.
+   */
   @Prop({ type: Date })
   periodStartAt?: Date;
 
@@ -67,5 +90,12 @@ ProgressMetricSchema.index(
   {
     unique: true,
     partialFilterExpression: { sourceRecordId: { $type: 'string' } },
+  },
+);
+ProgressMetricSchema.index(
+  { athleteUserId: 1, clientMutationId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { clientMutationId: { $type: 'string' } },
   },
 );

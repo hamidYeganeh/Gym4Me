@@ -1,0 +1,15 @@
+export const coachPackagesScreenStyles = {
+  root: "bg-background",
+  content: "flex flex-col gap-6 pb-10 pt-1",
+  intro: "flex flex-col gap-2",
+  introTitle: "tracking-tight text-foreground",
+  introSubtitle: "text-muted",
+  sectionTitle: "text-foreground",
+  form: "flex flex-col gap-3 rounded-[24px] border-0 bg-surface p-4 shadow-sm shadow-foreground/5",
+  formActions: "mt-1 flex gap-2",
+  list: "flex flex-col gap-3",
+  card: "flex flex-col gap-2 rounded-[24px] border-0 bg-surface p-4 shadow-sm shadow-foreground/5",
+  cardTop: "flex items-start justify-between gap-2",
+  cardMeta: "text-muted",
+  soldRow: "flex items-center justify-between gap-2 rounded-[16px] bg-background p-3",
+} as const;

@@ -12,7 +12,9 @@ export class AccountGamificationController {
   constructor(private readonly gamification: GamificationService) {}
 
   @Get('summary')
-  @ApiOperation({ summary: 'Points balance + achievement counts for the active role' })
+  @ApiOperation({
+    summary: 'Points balance + achievement counts for the active role',
+  })
   summary(
     @CurrentUser('sub') userId: string,
     @CurrentUser('activeRole') activeRole: Role,

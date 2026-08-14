@@ -115,15 +115,24 @@ export class AdminUsersService {
     const changes: Record<string, unknown> = {};
 
     if (dto.firstName !== undefined && dto.firstName !== user.name?.first) {
-      changes['name.first'] = { from: user.name?.first ?? null, to: dto.firstName };
+      changes['name.first'] = {
+        from: user.name?.first ?? null,
+        to: dto.firstName,
+      };
       user.name = { ...user.name, first: dto.firstName };
     }
     if (dto.lastName !== undefined && dto.lastName !== user.name?.last) {
-      changes['name.last'] = { from: user.name?.last ?? null, to: dto.lastName };
+      changes['name.last'] = {
+        from: user.name?.last ?? null,
+        to: dto.lastName,
+      };
       user.name = { ...user.name, last: dto.lastName };
     }
     if (dto.nationalId !== undefined && dto.nationalId !== user.nationalId) {
-      changes.nationalId = { from: user.nationalId ?? null, to: dto.nationalId };
+      changes.nationalId = {
+        from: user.nationalId ?? null,
+        to: dto.nationalId,
+      };
       user.nationalId = dto.nationalId;
     }
 

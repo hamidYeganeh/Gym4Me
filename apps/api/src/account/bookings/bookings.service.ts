@@ -1064,7 +1064,7 @@ export class BookingsService {
           'pricing.couponCode',
           'cancellation.reasonKey',
           'cancellation.note',
-        ]) as QueryFilter<BookingDocument>,
+        ]),
       ];
     }
 
@@ -1072,8 +1072,7 @@ export class BookingsService {
       filter.status = {
         $in: Array.isArray(query.status) ? query.status : [query.status],
       };
-    }
-    else if (query.bucket === 'upcoming') {
+    } else if (query.bucket === 'upcoming') {
       filter.status = { $in: [...ACTIVE_STATUSES] };
       filter.startsAt = { $gte: new Date() };
     } else if (query.bucket === 'past') {

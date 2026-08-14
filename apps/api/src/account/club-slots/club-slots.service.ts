@@ -20,10 +20,7 @@ import {
 import type { JwtUser } from '../../common/types';
 import { asSinglePageResult } from '../../common/utils/pagination.util';
 import { assertCanMutateAsRole } from '../../common/utils/role-assert.util';
-import {
-  ClubClass,
-  ClubClassDocument,
-} from '../../schemas/club-class.schema';
+import { ClubClass, ClubClassDocument } from '../../schemas/club-class.schema';
 import { Club, ClubDocument } from '../../schemas/club.schema';
 import {
   ClubSlotOccupancy,
@@ -34,10 +31,7 @@ import {
   ClubSlotDocument,
   SlotRecurrence,
 } from '../../schemas/club-slot.schema';
-import {
-  ClubSpace,
-  ClubSpaceDocument,
-} from '../../schemas/club-space.schema';
+import { ClubSpace, ClubSpaceDocument } from '../../schemas/club-space.schema';
 import { User, UserDocument } from '../../schemas/user.schema';
 import { UsersService } from '../../users/users.service';
 import {
@@ -161,14 +155,10 @@ export class ClubSlotsService {
       doc.description = dto.description ?? undefined;
     }
     if (dto.sportId !== undefined) {
-      doc.sportId = dto.sportId
-        ? new Types.ObjectId(dto.sportId)
-        : undefined;
+      doc.sportId = dto.sportId ? new Types.ObjectId(dto.sportId) : undefined;
     }
     if (dto.coachId !== undefined) {
-      doc.coachId = dto.coachId
-        ? new Types.ObjectId(dto.coachId)
-        : undefined;
+      doc.coachId = dto.coachId ? new Types.ObjectId(dto.coachId) : undefined;
     }
     if (dto.media !== undefined) {
       doc.media = {
@@ -424,9 +414,7 @@ export class ClubSlotsService {
       throw new BadRequestException('spaceId is required for space slots');
     }
     if (dto.coachId !== undefined) {
-      doc.coachId = dto.coachId
-        ? new Types.ObjectId(dto.coachId)
-        : undefined;
+      doc.coachId = dto.coachId ? new Types.ObjectId(dto.coachId) : undefined;
     }
     if (dto.capacity !== undefined) doc.capacity = dto.capacity;
     if (dto.price !== undefined) doc.price = dto.price;
@@ -519,9 +507,7 @@ export class ClubSlotsService {
 
     const classIds = [
       ...new Set(
-        slots
-          .filter((s) => s.classId)
-          .map((s) => s.classId!.toString()),
+        slots.filter((s) => s.classId).map((s) => s.classId!.toString()),
       ),
     ];
 
@@ -533,9 +519,7 @@ export class ClubSlotsService {
 
     const spaceIds = [
       ...new Set(
-        slots
-          .filter((s) => s.spaceId)
-          .map((s) => s.spaceId!.toString()),
+        slots.filter((s) => s.spaceId).map((s) => s.spaceId!.toString()),
       ),
     ];
 
@@ -547,12 +531,8 @@ export class ClubSlotsService {
 
     const coachIds = [
       ...new Set([
-        ...slots
-          .filter((s) => s.coachId)
-          .map((s) => s.coachId!.toString()),
-        ...classes
-          .filter((c) => c.coachId)
-          .map((c) => c.coachId!.toString()),
+        ...slots.filter((s) => s.coachId).map((s) => s.coachId!.toString()),
+        ...classes.filter((c) => c.coachId).map((c) => c.coachId!.toString()),
       ]),
     ];
 

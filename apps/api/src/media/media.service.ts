@@ -72,7 +72,8 @@ export class MediaService {
   }
 
   async findById(id: string): Promise<MediaDocument> {
-    if (!Types.ObjectId.isValid(id)) throw new NotFoundException('Media not found');
+    if (!Types.ObjectId.isValid(id))
+      throw new NotFoundException('Media not found');
     const media = await this.mediaModel.findById(id);
     if (!media) throw new NotFoundException('Media not found');
     return media;

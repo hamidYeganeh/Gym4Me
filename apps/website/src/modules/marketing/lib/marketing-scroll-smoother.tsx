@@ -1,17 +1,12 @@
 "use client";
 
-import { useGSAP } from "@gsap/react";
-import { gsap } from "gsap";
-import { ScrollSmoother } from "gsap/ScrollSmoother";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
   createContext,
   useContext,
+  useEffect,
   useState,
   type ReactNode,
 } from "react";
-
-gsap.registerPlugin(useGSAP, ScrollTrigger, ScrollSmoother);
 
 const ScrollSmootherReadyContext = createContext(true);
 
@@ -23,51 +18,73 @@ export function useScrollSmootherReady() {
 export function ScrollSmootherProvider({ children }: { children: ReactNode }) {
   const [isReady, setIsReady] = useState(false);
 
-  useGSAP(() => {
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
+  useEffect(() => {
+    let cancelled = false;
+    let revert: (() => void) | undefined;
 
-    if (prefersReducedMotion) {
-      ScrollSmoother.get()?.kill();
-      setIsReady(true);
-      return;
-    }
+    async function setup() {
+      const [{ gsap }, { ScrollSmoother }, { ScrollTrigger }] =
+        await Promise.all([
+          import("gsap"),
+          import("gsap/ScrollSmoother"),
+          import("gsap/ScrollTrigger"),
+        ]);
 
-    ScrollTrigger.config({ ignoreMobileResize: true });
+      if (cancelled) return;
 
-    const mm = gsap.matchMedia();
+      gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
 
-    mm.add("(min-width: 768px)", () => {
-      ScrollSmoother.get()?.kill();
+      const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
 
-      const smoother = ScrollSmoother.create({
-        wrapper: "#smooth-wrapper",
-        content: "#smooth-content",
-        smooth: 1,
-        effects: true,
-        normalizeScroll: true,
+      if (prefersReducedMotion) {
+        ScrollSmoother.get()?.kill();
+        setIsReady(true);
+        return;
+      }
+
+      ScrollTrigger.config({ ignoreMobileResize: true });
+      const mm = gsap.matchMedia();
+
+      mm.add("(min-width: 768px)", () => {
+        ScrollSmoother.get()?.kill();
+
+        const smoother = ScrollSmoother.create({
+          wrapper: "#smooth-wrapper",
+          content: "#smooth-content",
+          smooth: 1,
+          effects: true,
+          normalizeScroll: true,
+        });
+
+        setIsReady(true);
+        requestAnimationFrame(() => ScrollTrigger.refresh());
+
+        return () => {
+          smoother.kill();
+        };
       });
 
-      setIsReady(true);
-      requestAnimationFrame(() => ScrollTrigger.refresh());
+      mm.add("(max-width: 767px)", () => {
+        ScrollSmoother.get()?.kill();
+        setIsReady(true);
+        requestAnimationFrame(() => ScrollTrigger.refresh());
+      });
 
-      return () => {
-        smoother.kill();
+      revert = () => {
+        mm.revert();
       };
-    });
+    }
 
-    mm.add("(max-width: 767px)", () => {
-      ScrollSmoother.get()?.kill();
-      setIsReady(true);
-      requestAnimationFrame(() => ScrollTrigger.refresh());
-    });
+    void setup();
 
     return () => {
-      mm.revert();
+      cancelled = true;
+      revert?.();
       setIsReady(false);
     };
-  });
+  }, []);
 
   return (
     <ScrollSmootherReadyContext.Provider value={isReady}>

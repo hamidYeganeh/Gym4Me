@@ -1,7 +1,10 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Public } from '../common/decorators/public.decorator';
-import { ListSocialCommentsQueryDto, ListSocialPostsQueryDto } from './dto/social.dto';
+import {
+  ListSocialCommentsQueryDto,
+  ListSocialPostsQueryDto,
+} from './dto/social.dto';
 import { SocialService } from './social.service';
 
 @ApiTags('social')

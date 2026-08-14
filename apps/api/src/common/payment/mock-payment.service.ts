@@ -174,7 +174,10 @@ export class MockPaymentGatewayService extends PaymentGatewayService {
 
     if (payment.status === MockPaymentStatus.VERIFIED) {
       // Zarinpal code 101: already verified — still a success for callers.
-      return { ok: true, refId: payment.refId ?? `MOCK-REF-${payment.authority}` };
+      return {
+        ok: true,
+        refId: payment.refId ?? `MOCK-REF-${payment.authority}`,
+      };
     }
 
     payment.status = MockPaymentStatus.VERIFIED;

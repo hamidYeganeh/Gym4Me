@@ -295,7 +295,7 @@ export class WaitlistService {
     ]);
 
     return paginatedResult(
-      items.map((row) => this.toPublic(row as WaitlistDocument)),
+      items.map((row) => this.toPublic(row)),
       total,
       page,
       pageSize,
@@ -323,7 +323,7 @@ export class WaitlistService {
     ]);
 
     return paginatedResult(
-      items.map((row) => this.toPublic(row as WaitlistDocument, userId)),
+      items.map((row) => this.toPublic(row, userId)),
       total,
       page,
       pageSize,
@@ -339,7 +339,10 @@ export class WaitlistService {
     return waitlist;
   }
 
-  toPublic(doc: WaitlistDocument | Record<string, unknown>, forUserId?: string) {
+  toPublic(
+    doc: WaitlistDocument | Record<string, unknown>,
+    forUserId?: string,
+  ) {
     const row = doc as WaitlistDocument;
     const entries = (row.entries ?? []).map((e) => ({
       id: e._id.toString(),

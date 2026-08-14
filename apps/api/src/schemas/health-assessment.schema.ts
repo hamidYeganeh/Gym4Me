@@ -1,9 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
-import {
-  HealthAssessmentStatus,
-  Privacy,
-} from '../common/enums';
+import { HealthAssessmentStatus, Privacy } from '../common/enums';
 import { User } from './user.schema';
 
 export type HealthAssessmentDocument = HydratedDocument<HealthAssessment>;

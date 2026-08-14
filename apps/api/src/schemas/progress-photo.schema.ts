@@ -32,7 +32,6 @@ export class ProgressPhoto {
   updatedAt!: Date;
 }
 
-export const ProgressPhotoSchema =
-  SchemaFactory.createForClass(ProgressPhoto);
+export const ProgressPhotoSchema = SchemaFactory.createForClass(ProgressPhoto);
 
 ProgressPhotoSchema.index({ athleteUserId: 1, capturedAt: -1 });

@@ -180,7 +180,7 @@ export class ClubLocation {
   locationId?: Types.ObjectId;
 
   /** Ancestor chain for city/province/country filters. */
-  @Prop({ type: [Types.ObjectId], default: [], index: true })
+  @Prop({ type: [Types.ObjectId], default: [] })
   ancestors!: Types.ObjectId[];
 }
 
@@ -449,7 +449,10 @@ export class Club {
   achievements!: ClubAchievementRef[];
 
   /** Derived cache of the points ledger. */
-  @Prop({ type: PointsSummarySchema, default: () => ({ balance: 0, lifetime: 0 }) })
+  @Prop({
+    type: PointsSummarySchema,
+    default: () => ({ balance: 0, lifetime: 0 }),
+  })
   points!: PointsSummary;
 
   @Prop({ type: [ClubRuleSchema], default: [] })

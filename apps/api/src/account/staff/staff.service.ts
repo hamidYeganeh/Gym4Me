@@ -20,10 +20,7 @@ import {
   resolvePageSize,
 } from '../../common/utils/pagination.util';
 import { Club, ClubDocument } from '../../schemas/club.schema';
-import {
-  ClubStaff,
-  ClubStaffDocument,
-} from '../../schemas/club-staff.schema';
+import { ClubStaff, ClubStaffDocument } from '../../schemas/club-staff.schema';
 import { User, UserDocument } from '../../schemas/user.schema';
 import {
   ListStaffQueryDto,

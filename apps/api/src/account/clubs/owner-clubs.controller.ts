@@ -102,7 +102,8 @@ export class OwnerClubsController {
   @Post(':clubId/submit')
   @RequireKyc()
   @ApiOperation({
-    summary: 'Submit club documents for admin verification (requires approved KYC)',
+    summary:
+      'Submit club documents for admin verification (requires approved KYC)',
   })
   submit(
     @CurrentUser() user: JwtUser,
@@ -120,9 +121,9 @@ export class OwnerClubsController {
     @Param('clubId') clubId: string,
     @Query() query: ListUserReviewsQueryDto,
   ) {
-    return this.clubs.requireOwned(user, clubId).then(() =>
-      this.clubs.listUserReviews(clubId, query),
-    );
+    return this.clubs
+      .requireOwned(user, clubId)
+      .then(() => this.clubs.listUserReviews(clubId, query));
   }
 
   @Post(':clubId/reviews/:reviewId/reply')
@@ -139,13 +140,10 @@ export class OwnerClubsController {
 
   @Get(':clubId/branches')
   @ApiOperation({ summary: 'List branches of a club' })
-  branches(
-    @CurrentUser() user: JwtUser,
-    @Param('clubId') clubId: string,
-  ) {
-    return this.clubs.requireOwned(user, clubId).then(() =>
-      this.clubs.listBranches(clubId),
-    );
+  branches(@CurrentUser() user: JwtUser, @Param('clubId') clubId: string) {
+    return this.clubs
+      .requireOwned(user, clubId)
+      .then(() => this.clubs.listBranches(clubId));
   }
 
   @Post(':clubId/branches')
@@ -168,13 +166,10 @@ export class OwnerClubsController {
 
   @Get(':clubId/coaches')
   @ApiOperation({ summary: 'List coaches on a club' })
-  coaches(
-    @CurrentUser() user: JwtUser,
-    @Param('clubId') clubId: string,
-  ) {
-    return this.clubs.requireOwned(user, clubId).then(() =>
-      this.clubs.listCoaches(clubId),
-    );
+  coaches(@CurrentUser() user: JwtUser, @Param('clubId') clubId: string) {
+    return this.clubs
+      .requireOwned(user, clubId)
+      .then(() => this.clubs.listCoaches(clubId));
   }
 
   @Post(':clubId/coaches')
@@ -185,9 +180,9 @@ export class OwnerClubsController {
     @Body() dto: AssignCoachDto,
     @Req() request: Request,
   ) {
-    return this.clubs.requireOwned(user, clubId).then(() =>
-      this.clubs.assignCoach(clubId, dto, user.sub, request),
-    );
+    return this.clubs
+      .requireOwned(user, clubId)
+      .then(() => this.clubs.assignCoach(clubId, dto, user.sub, request));
   }
 
   @Delete(':clubId/coaches/:coachId')
@@ -198,8 +193,8 @@ export class OwnerClubsController {
     @Param('coachId') coachId: string,
     @Req() request: Request,
   ) {
-    return this.clubs.requireOwned(user, clubId).then(() =>
-      this.clubs.unassignCoach(clubId, coachId, user.sub, request),
-    );
+    return this.clubs
+      .requireOwned(user, clubId)
+      .then(() => this.clubs.unassignCoach(clubId, coachId, user.sub, request));
   }
 }

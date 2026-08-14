@@ -24,7 +24,7 @@ export function roleHomePath(role: Role | null | undefined): string {
       return "/owner";
     case "athlete":
     default:
-      return "/home";
+      return "/athlete";
   }
 }
 

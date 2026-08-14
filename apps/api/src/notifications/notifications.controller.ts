@@ -63,10 +63,7 @@ export class NotificationsController {
 
   @Post(':id/read')
   @ApiOperation({ summary: 'Mark one notification as read' })
-  async markRead(
-    @CurrentUser('sub') userId: string,
-    @Param('id') id: string,
-  ) {
+  async markRead(@CurrentUser('sub') userId: string, @Param('id') id: string) {
     await this.notifications.markRead(userId, id);
     return { ok: true };
   }
@@ -102,10 +99,7 @@ export class DevicesController {
 
   @Post()
   @ApiOperation({ summary: 'Register a push device token for this user' })
-  register(
-    @CurrentUser('sub') userId: string,
-    @Body() dto: RegisterDeviceDto,
-  ) {
+  register(@CurrentUser('sub') userId: string, @Body() dto: RegisterDeviceDto) {
     return this.notifications.registerDevice(userId, dto.token, dto.platform);
   }
 

@@ -8,10 +8,28 @@ export const accountProgressEndpoints = {
   workoutPlans: "/account/progress/workout-plans",
   workoutPlan: (id: string) => `/account/progress/workout-plans/${id}`,
   metrics: "/account/progress/metrics",
+  metricsSummary: "/account/progress/metrics/summary",
   syncMetrics: "/account/progress/metrics/sync",
   metric: (id: string) => `/account/progress/metrics/${id}`,
   photos: "/account/progress/photos",
   photo: (id: string) => `/account/progress/photos/${id}`,
   workoutLogs: "/account/progress/workout-logs",
+  workoutLog: (id: string) => `/account/progress/workout-logs/${id}`,
+  completeWorkoutLog: (id: string) =>
+    `/account/progress/workout-logs/${id}/complete`,
+  goals: "/account/progress/goals",
+  goal: (id: string) => `/account/progress/goals/${id}`,
+  reminders: "/account/progress/reminders",
+  reminder: (metricKey: string) =>
+    `/account/progress/reminders/${encodeURIComponent(metricKey)}`,
+  healthSync: "/account/progress/health-sync",
+  healthSyncProvider: (provider: string) =>
+    `/account/progress/health-sync/${provider}`,
   personalRecords: "/account/progress/personal-records",
+  export: "/account/progress/export",
+  deleteMetrics: "/account/progress/metrics",
+  deleteMetricsDataRights: "/account/progress/data-rights/delete-metrics",
+  consentHistory: "/account/progress/consent-history",
+  dataGrants: "/account/data-grants",
+  revokeDataGrant: (id: string) => `/account/data-grants/${id}/revoke`,
 } as const;

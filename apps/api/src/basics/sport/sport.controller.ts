@@ -12,7 +12,9 @@ export class SportController {
   @Get('sport-category')
   @ApiOperation({ summary: 'List sport categories (e.g. ball sports)' })
   listCategories() {
-    return this.sports.listByKind(this.sports.resolvePathKind('sport-category'));
+    return this.sports.listByKind(
+      this.sports.resolvePathKind('sport-category'),
+    );
   }
 
   @Get('sport-category/:id')

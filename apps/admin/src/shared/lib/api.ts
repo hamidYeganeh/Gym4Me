@@ -1,11 +1,10 @@
+import { createAdminAuthApi } from "@repo/api/auth";
 import {
-  ADMIN_SESSION_KEY,
   createAdminAnalyticsApi,
   createAdminAuditApi,
-  createAdminAuthApi,
-  createAdminBasicsApi,
   createAdminArticlesApi,
   createAdminBannersApi,
+  createAdminBasicsApi,
   createAdminBookingsApi,
   createAdminClubsApi,
   createAdminClubSlotsApi,
@@ -21,10 +20,11 @@ import {
   createAdminSupportApi,
   createAdminUsersApi,
   createAdminVerificationApi,
-  createApiClient,
-  createLocalStorage,
-  createMediaApi,
-} from "@repo/api";
+} from "@repo/api/admin";
+import { createAppConfigApi } from "@repo/api/app-config";
+import { createApiClient } from "@repo/api/client";
+import { createMediaApi } from "@repo/api/media";
+import { ADMIN_SESSION_KEY, createLocalStorage } from "@repo/api/storage";
 import { getApiBaseUrl } from "./env";
 
 const storage = createLocalStorage(ADMIN_SESSION_KEY);
@@ -62,4 +62,5 @@ export const adminCoaching = createAdminCoachingApi(apiClient);
 export const adminMemberships = createAdminMembershipsApi(apiClient);
 export const adminNotificationTemplates =
   createAdminNotificationTemplatesApi(apiClient);
+export const adminAppConfig = createAppConfigApi(apiClient);
 export const mediaApi = createMediaApi(apiClient);

@@ -1,0 +1,105 @@
+"use client";
+
+import { Button, Chip, Typography } from "@heroui/react";
+import { ChevronLeft } from "@repo/icons/ChevronLeft";
+import { AppLayout } from "@repo/ui/layout/AppLayout";
+import { Header } from "@repo/ui/layout/Header";
+import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import type { CoachNutritionPlan } from "../../lib/coach-nutrition-data";
+import { coachNutritionScreenStyles as styles } from "./CoachNutritionScreen.styles";
+import type { CoachNutritionScreenProps } from "./CoachNutritionScreen.types";
+
+const STATUS_CHIP_COLOR: Record<
+  CoachNutritionPlan["status"],
+  "success" | "warning" | "default"
+> = {
+  active: "success",
+  draft: "warning",
+  archived: "default",
+};
+
+const STATUS_LABEL_KEY: Record<CoachNutritionPlan["status"], string> = {
+  active: "statusActive",
+  draft: "statusDraft",
+  archived: "statusArchived",
+};
+
+export function CoachNutritionScreen({ plans }: CoachNutritionScreenProps) {
+  const t = useTranslations("CoachNutrition");
+  const router = useRouter();
+
+  return (
+    <AppLayout
+      className={styles.root}
+      header={
+        <Header
+          startContent={
+            <Button
+              aria-label={t("back")}
+              isIconOnly
+              onPress={() => router.back()}
+              size="lg"
+              variant="ghost"
+            >
+              <ChevronLeft className="text-foreground" size={22} />
+            </Button>
+          }
+          title={t("title")}
+        />
+      }
+    >
+      <div className={styles.content}>
+        <section className={styles.intro}>
+          <Typography className={styles.introTitle} type="h1" weight="bold">
+            {t("listTitle")}
+          </Typography>
+          <Typography className={styles.introSubtitle} type="body">
+            {t("listSubtitle")}
+          </Typography>
+        </section>
+
+        {plans.length > 0 ? (
+          <div className={styles.list}>
+            {plans.map((plan) => (
+              <button
+                className={styles.card}
+                key={plan.id}
+                onClick={() => router.push(`/coach/nutrition/${plan.id}`)}
+                type="button"
+              >
+                <div className={styles.cardTop}>
+                  <Typography type="body" weight="semibold">
+                    {plan.title}
+                  </Typography>
+                  <Chip
+                    color={STATUS_CHIP_COLOR[plan.status]}
+                    size="sm"
+                    variant="soft"
+                  >
+                    <Chip.Label>{t(STATUS_LABEL_KEY[plan.status])}</Chip.Label>
+                  </Chip>
+                </div>
+                <Typography className={styles.cardMeta} type="body-sm">
+                  {t("clientMeta", { client: plan.clientLabel })}
+                </Typography>
+                <Typography className={styles.cardMeta} type="body-sm">
+                  {plan.updatedLabel}
+                </Typography>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className={styles.empty}>
+            <Typography type="h4" weight="semibold">
+              {t("emptyTitle")}
+            </Typography>
+            <Typography className="text-muted" type="body-sm">
+              {t("emptyBody")}
+            </Typography>
+          </div>
+        )}
+      </div>
+    </AppLayout>
+  );
+}

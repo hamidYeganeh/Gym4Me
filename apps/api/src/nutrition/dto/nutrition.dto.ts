@@ -8,7 +8,6 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  Max,
   MaxLength,
   Min,
   MinLength,
@@ -227,11 +226,6 @@ export class ListFoodItemsQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsEnum(FoodItemStatus)
   status?: FoodItemStatus;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  search?: string;
 }
 
 export class AdminListFoodItemsQueryDto extends PaginationQueryDto {

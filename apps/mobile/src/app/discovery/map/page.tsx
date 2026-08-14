@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { DiscoveryMapScreenLoader } from "@/modules/discovery/screens/DiscoveryMapScreen/DiscoveryMapScreenLoader";
+import { DiscoveryMapScreenDynamic } from "@/modules/discovery/screens/DiscoveryMapScreen/DiscoveryMapScreenDynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("DiscoveryMap");
@@ -8,5 +8,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function DiscoveryMapPage() {
-  return <DiscoveryMapScreenLoader />;
+  return <DiscoveryMapScreenDynamic />;
 }

@@ -35,7 +35,11 @@ export class AdminAuthService {
   private isDebugMode(): boolean {
     const value = this.config.get<string | boolean>('DEBUG_MODE', 'false');
     if (typeof value === 'boolean') return value;
-    return String(value ?? 'false').trim().toLowerCase() === 'true';
+    return (
+      String(value ?? 'false')
+        .trim()
+        .toLowerCase() === 'true'
+    );
   }
 
   async requestOtp(phone: string) {
@@ -141,11 +145,7 @@ export class AdminAuthService {
 
   async forgotPassword(phone: string) {
     const user = await this.users.findByPhone(phone);
-    if (
-      user &&
-      this.isAdmin(user) &&
-      user.status === UserStatus.ACTIVE
-    ) {
+    if (user && this.isAdmin(user) && user.status === UserStatus.ACTIVE) {
       return this.otp.request(phone, OtpPurpose.PASSWORD_RESET);
     }
     if (this.isDebugMode()) {

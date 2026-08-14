@@ -168,7 +168,9 @@ export class AdminClubsController {
   }
 
   @Post(':clubId/branches')
-  @ApiOperation({ summary: 'Create a branch (inherits parent owner unless ownerId set)' })
+  @ApiOperation({
+    summary: 'Create a branch (inherits parent owner unless ownerId set)',
+  })
   async createBranch(
     @Param('clubId') clubId: string,
     @Body() dto: CreateBranchDto & { ownerId?: string },

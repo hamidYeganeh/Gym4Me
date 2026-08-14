@@ -351,6 +351,18 @@ export enum AnalyticsEventName {
   ARTICLE_LIKED = 'article_liked',
   POINTS_AWARDED = 'points_awarded',
   ACHIEVEMENT_UNLOCKED = 'achievement_unlocked',
+  METRIC_LOGGED = 'metric_logged',
+  WORKOUT_STARTED = 'workout_started',
+  WORKOUT_COMPLETED = 'workout_completed',
+  WORKOUT_ABANDONED = 'workout_abandoned',
+  DATA_GRANT_CREATED = 'data_grant_created',
+  DATA_GRANT_REVOKED = 'data_grant_revoked',
+  FEATURE_EXPOSED = 'feature_exposed',
+  HEALTH_SYNC_STARTED = 'health_sync_started',
+  HEALTH_SYNC_COMPLETED = 'health_sync_completed',
+  HEALTH_SYNC_FAILED = 'health_sync_failed',
+  PROGRESS_EXPORTED = 'progress_exported',
+  PROGRESS_METRICS_DELETED = 'progress_metrics_deleted',
 }
 
 /** Lifecycle of a mock-gateway payment session (dev/test only). */
@@ -608,6 +620,7 @@ export enum AuditAction {
   WAITLIST_CLAIMED = 'waitlist.claimed',
   CALENDAR_BLOCK_UPSERTED = 'calendar.block_upserted',
   HEALTH_ASSESSMENT_UPSERTED = 'health.assessment_upserted',
+  EXERCISE_UPSERTED = 'progress.exercise_upserted',
   WORKOUT_PLAN_UPSERTED = 'workout.plan_upserted',
   WORKOUT_PROGRAM_UPSERTED = 'workout.program_upserted',
   METRIC_TYPE_UPSERTED = 'progress.metric_type_upserted',
@@ -630,6 +643,17 @@ export enum AuditAction {
   FINANCE_PAYOUT_DISPUTE_RESOLVED = 'finance.payout_dispute_resolved',
   ADMIN_IMPERSONATION_STARTED = 'admin.impersonation_started',
   ADMIN_IMPERSONATION_ENDED = 'admin.impersonation_ended',
+  PROGRESS_EXPORTED = 'progress.exported',
+  PROGRESS_METRIC_UPSERTED = 'progress.metric_upserted',
+  PROGRESS_METRIC_SYNCED = 'progress.metric_synced',
+  PROGRESS_METRIC_DELETED = 'progress.metric_deleted',
+  PROGRESS_PHOTO_UPSERTED = 'progress.photo_upserted',
+  PROGRESS_PHOTO_DELETED = 'progress.photo_deleted',
+  PROGRESS_GOAL_UPSERTED = 'progress.goal_upserted',
+  PROGRESS_REMINDER_UPSERTED = 'progress.reminder_upserted',
+  PROGRESS_DATA_GRANT_CHANGED = 'progress.data_grant_changed',
+  PROGRESS_HEALTH_SYNC_UPDATED = 'progress.health_sync_updated',
+  PROGRESS_METRICS_BULK_DELETED = 'progress.metrics_bulk_deleted',
 }
 
 /** Staff permission keys (locked product decision). */
@@ -964,8 +988,32 @@ export enum MetricValueKind {
 }
 
 export enum MetricTypeStatus {
+  DRAFT = 'draft',
   ACTIVE = 'active',
   ARCHIVED = 'archived',
+}
+
+/** How samples for a MetricType roll up in summaries. */
+export enum MetricAggregation {
+  LATEST = 'latest',
+  SUM = 'sum',
+  AVERAGE = 'average',
+  MIN = 'min',
+  MAX = 'max',
+}
+
+/** Temporal shape of a ProgressMetric sample. */
+export enum MetricPeriodKind {
+  POINT = 'point',
+  INTERVAL = 'interval',
+  DAILY_TOTAL = 'daily-total',
+}
+
+/** Sensitivity class for grant / privacy policy. */
+export enum MetricPrivacyClass {
+  WELLNESS = 'wellness',
+  HEALTH = 'health',
+  SENSITIVE = 'sensitive',
 }
 
 /** Origin of a ProgressMetric row; sourceRecordId de-duplicates device sync. */
@@ -974,6 +1022,71 @@ export enum MetricSource {
   APPLE_HEALTH = 'apple_health',
   HEALTH_CONNECT = 'health_connect',
   IMPORT = 'import',
+}
+
+export enum MetricGoalPeriod {
+  DAILY = 'daily',
+  WEEKLY = 'weekly',
+  ROLLING_7D = 'rolling_7d',
+}
+
+export enum MetricGoalStatus {
+  ACTIVE = 'active',
+  PAUSED = 'paused',
+  COMPLETED = 'completed',
+  ARCHIVED = 'archived',
+}
+
+export enum MetricGoalOperator {
+  GTE = 'gte',
+  LTE = 'lte',
+  EQ = 'eq',
+}
+
+export enum MetricReminderStatus {
+  ACTIVE = 'active',
+  PAUSED = 'paused',
+  ARCHIVED = 'archived',
+}
+
+export enum MetricReminderChannel {
+  PUSH = 'push',
+  IN_APP = 'in_app',
+}
+
+export enum AthleteDataGrantStatus {
+  ACTIVE = 'active',
+  REVOKED = 'revoked',
+  EXPIRED = 'expired',
+}
+
+export enum AthleteDataGranteeType {
+  COACH = 'coach',
+}
+
+/** Grant scopes — coach access requires CoachStudent + matching active scope. */
+export enum AthleteDataGrantScope {
+  METRICS_WEIGHT = 'metrics.weight',
+  METRICS_SLEEP = 'metrics.sleep',
+  METRICS_STEPS = 'metrics.steps',
+  METRICS_WATER = 'metrics.water',
+  METRICS_WALKING = 'metrics.walking',
+  METRICS_ALL = 'metrics.*',
+  WORKOUTS_LOGS = 'workouts.logs',
+  PROGRESS_PHOTOS = 'progress.photos',
+  PROGRESS_PERSONAL_RECORDS = 'progress.personal_records',
+}
+
+export enum HealthSyncProvider {
+  APPLE_HEALTH = 'apple_health',
+  HEALTH_CONNECT = 'health_connect',
+}
+
+export enum HealthSyncStatus {
+  CONNECTED = 'connected',
+  PAUSED = 'paused',
+  DISCONNECTED = 'disconnected',
+  ERROR = 'error',
 }
 
 /** Reusable coach/admin workout program template (distinct from assigned WorkoutPlan). */
@@ -1014,10 +1127,13 @@ export enum AnalyticsPeriod {
   QUARTER = 'quarter',
 }
 
-/** Athlete workout session log completion. */
+/** Athlete workout session log lifecycle. */
 export enum WorkoutLogStatus {
+  DRAFT = 'draft',
+  IN_PROGRESS = 'in_progress',
   COMPLETED = 'completed',
   SKIPPED = 'skipped',
+  ABANDONED = 'abandoned',
 }
 
 /** Payout dispute lifecycle (never mutate past ledger — reverse only). */

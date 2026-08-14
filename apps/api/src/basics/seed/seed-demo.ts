@@ -48,6 +48,9 @@ import {
   MembershipPlanKind,
   MembershipStatus,
   MembershipTransferPolicy,
+  MetricAggregation,
+  MetricPeriodKind,
+  MetricPrivacyClass,
   MetricTypeStatus,
   MetricValueKind,
   OperatingHourAudience,
@@ -164,14 +167,54 @@ interface DemoUserSpec {
 }
 
 const USER_SPECS: DemoUserSpec[] = [
-  { key: 'owner1', firstName: 'رضا', lastName: 'کریمی', roles: [Role.CLUB_OWNER, Role.ATHLETE] },
-  { key: 'owner2', firstName: 'مریم', lastName: 'حسینی', roles: [Role.CLUB_OWNER, Role.ATHLETE] },
-  { key: 'coach1', firstName: 'امیر', lastName: 'محمدی', roles: [Role.COACH, Role.ATHLETE] },
-  { key: 'coach2', firstName: 'نگار', lastName: 'صادقی', roles: [Role.COACH, Role.ATHLETE] },
-  { key: 'coach3', firstName: 'حسین', lastName: 'قاسمی', roles: [Role.COACH, Role.ATHLETE] },
-  { key: 'athlete1', firstName: 'علی', lastName: 'احمدی', roles: [Role.ATHLETE] },
-  { key: 'athlete2', firstName: 'زهرا', lastName: 'موسوی', roles: [Role.ATHLETE] },
-  { key: 'athlete3', firstName: 'مهدی', lastName: 'نوری', roles: [Role.ATHLETE] },
+  {
+    key: 'owner1',
+    firstName: 'رضا',
+    lastName: 'کریمی',
+    roles: [Role.CLUB_OWNER, Role.ATHLETE],
+  },
+  {
+    key: 'owner2',
+    firstName: 'مریم',
+    lastName: 'حسینی',
+    roles: [Role.CLUB_OWNER, Role.ATHLETE],
+  },
+  {
+    key: 'coach1',
+    firstName: 'امیر',
+    lastName: 'محمدی',
+    roles: [Role.COACH, Role.ATHLETE],
+  },
+  {
+    key: 'coach2',
+    firstName: 'نگار',
+    lastName: 'صادقی',
+    roles: [Role.COACH, Role.ATHLETE],
+  },
+  {
+    key: 'coach3',
+    firstName: 'حسین',
+    lastName: 'قاسمی',
+    roles: [Role.COACH, Role.ATHLETE],
+  },
+  {
+    key: 'athlete1',
+    firstName: 'علی',
+    lastName: 'احمدی',
+    roles: [Role.ATHLETE],
+  },
+  {
+    key: 'athlete2',
+    firstName: 'زهرا',
+    lastName: 'موسوی',
+    roles: [Role.ATHLETE],
+  },
+  {
+    key: 'athlete3',
+    firstName: 'مهدی',
+    lastName: 'نوری',
+    roles: [Role.ATHLETE],
+  },
 ];
 
 async function seed() {
@@ -208,16 +251,12 @@ async function seed() {
   const reviewModel = app.get<Model<ClubUserReviewDocument>>(
     getModelToken(ClubUserReview.name),
   );
-  const faqModel = app.get<Model<FaqItemDocument>>(
-    getModelToken(FaqItem.name),
-  );
+  const faqModel = app.get<Model<FaqItemDocument>>(getModelToken(FaqItem.name));
   const locationModel = app.get<Model<LocationDocument>>(
     getModelToken(Location.name),
   );
   const sportModel = app.get<Model<SportDocument>>(getModelToken(Sport.name));
-  const refModel = app.get<Model<RefItemDocument>>(
-    getModelToken(RefItem.name),
-  );
+  const refModel = app.get<Model<RefItemDocument>>(getModelToken(RefItem.name));
   const athleteProfileModel = app.get<Model<AthleteProfileDocument>>(
     getModelToken(AthleteProfile.name),
   );
@@ -311,8 +350,14 @@ async function seed() {
     requireDoc(await refModel.findOne({ type, slug }), `${type}/${slug}`);
 
   const gymCategory = await refBySlug(RefType.CLUB_CATEGORY, 'gym');
-  const multiSportCategory = await refBySlug(RefType.CLUB_CATEGORY, 'multi-sport');
-  const groupClassCategory = await refBySlug(RefType.CLUB_CATEGORY, 'group-class');
+  const multiSportCategory = await refBySlug(
+    RefType.CLUB_CATEGORY,
+    'multi-sport',
+  );
+  const groupClassCategory = await refBySlug(
+    RefType.CLUB_CATEGORY,
+    'group-class',
+  );
   const parking = await refBySlug(RefType.AMENITY, 'parking');
   const shower = await refBySlug(RefType.AMENITY, 'shower');
   const locker = await refBySlug(RefType.AMENITY, 'locker');
@@ -320,7 +365,10 @@ async function seed() {
   const treadmill = await refBySlug(RefType.EQUIPMENT, 'treadmill');
   const dumbbell = await refBySlug(RefType.EQUIPMENT, 'dumbbell');
   const barbell = await refBySlug(RefType.EQUIPMENT, 'barbell');
-  const criterionCleanliness = await refBySlug(RefType.REVIEW_CRITERION, 'cleanliness');
+  const criterionCleanliness = await refBySlug(
+    RefType.REVIEW_CRITERION,
+    'cleanliness',
+  );
   const criterionHosting = await refBySlug(RefType.REVIEW_CRITERION, 'hosting');
   const criterionValue = await refBySlug(RefType.REVIEW_CRITERION, 'value');
 
@@ -618,39 +666,35 @@ async function seed() {
     operationalStatus: ClubOperationalStatus.ACTIVE,
   });
 
-  const clubSaadat = await ensureClub(
-    owner1._id,
-    'مجموعه ورزشی سعادت‌آباد',
-    {
-      identity: {
-        name: 'مجموعه ورزشی سعادت‌آباد',
-        description:
-          'مجموعهٔ چندرشته‌ای با سالن فوتسال استاندارد و کلاس‌های گروهی.',
-      },
-      contact: { phones: [{ number: '02122334455' }] },
-      amenities: [{ amenityId: parking._id }, { amenityId: locker._id }],
-      categories: [
-        { categoryId: multiSportCategory._id },
-        { categoryId: groupClassCategory._id },
-      ],
-      sports: [{ sportId: futsal._id }, { sportId: kickboxing._id }],
-      location: {
-        address: 'تهران، سعادت‌آباد، بلوار دریا، مجموعه ورزشی',
-        point: { type: 'Point', coordinates: [51.3781, 35.7796] },
-        direction: GeoDirection.WEST,
-        ...locationOf(saadatAbad),
-      },
-      audience: {
-        genderPolicy: 'mixed',
-        ageGroupKeys: ['kids', 'teens', 'adults'],
-        levelKeys: ['standard'],
-        accessibility: 'standard',
-      },
-      operatingHours: defaultHours,
-      review: approvedReview,
-      operationalStatus: ClubOperationalStatus.ACTIVE,
+  const clubSaadat = await ensureClub(owner1._id, 'مجموعه ورزشی سعادت‌آباد', {
+    identity: {
+      name: 'مجموعه ورزشی سعادت‌آباد',
+      description:
+        'مجموعهٔ چندرشته‌ای با سالن فوتسال استاندارد و کلاس‌های گروهی.',
     },
-  );
+    contact: { phones: [{ number: '02122334455' }] },
+    amenities: [{ amenityId: parking._id }, { amenityId: locker._id }],
+    categories: [
+      { categoryId: multiSportCategory._id },
+      { categoryId: groupClassCategory._id },
+    ],
+    sports: [{ sportId: futsal._id }, { sportId: kickboxing._id }],
+    location: {
+      address: 'تهران، سعادت‌آباد، بلوار دریا، مجموعه ورزشی',
+      point: { type: 'Point', coordinates: [51.3781, 35.7796] },
+      direction: GeoDirection.WEST,
+      ...locationOf(saadatAbad),
+    },
+    audience: {
+      genderPolicy: 'mixed',
+      ageGroupKeys: ['kids', 'teens', 'adults'],
+      levelKeys: ['standard'],
+      accessibility: 'standard',
+    },
+    operatingHours: defaultHours,
+    review: approvedReview,
+    operationalStatus: ClubOperationalStatus.ACTIVE,
+  });
 
   const clubIsfahan = await ensureClub(owner2._id, 'باشگاه بانوان نصف‌جهان', {
     identity: {
@@ -740,7 +784,7 @@ async function seed() {
       });
       log.log(`class: created ${title}`);
     }
-    if (!club.classes.some((c) => c.classId.equals(cls!._id))) {
+    if (!club.classes.some((c) => c.classId.equals(cls._id))) {
       club.classes.push({ classId: cls._id });
       club.markModified('classes');
       await club.save();
@@ -1156,6 +1200,10 @@ async function seed() {
           name: m.name,
           valueKind: m.valueKind,
           unit: m.unit,
+          canonicalUnit: m.unit,
+          aggregation: MetricAggregation.LATEST,
+          periodKind: MetricPeriodKind.POINT,
+          privacyClass: MetricPrivacyClass.HEALTH,
           sortHint: m.sortHint,
           chartKind: m.chartKind,
           status: MetricTypeStatus.ACTIVE,
@@ -1348,7 +1396,7 @@ async function seed() {
   const parseLocal = (date: string, time: string) => {
     const [y, m, day] = date.split('-').map(Number);
     const [hh, mm] = time.split(':').map(Number);
-    return new Date(y!, m! - 1, day!, hh!, mm!, 0, 0);
+    return new Date(y, m - 1, day, hh, mm, 0, 0);
   };
 
   const ensureClassBooking = async (opts: {
@@ -1386,7 +1434,11 @@ async function seed() {
       attendeeCount: 1,
       startsAt,
       endsAt,
-      intake: { note: 'رزرو دمو', medicalConditionKeys: [], supplementKeys: [] },
+      intake: {
+        note: 'رزرو دمو',
+        medicalConditionKeys: [],
+        supplementKeys: [],
+      },
       pricing: {
         amount: opts.amount,
         discount: 0,
@@ -1708,12 +1760,12 @@ async function seed() {
               dayIndex: 0,
               exercises: [
                 {
-                  exerciseId: exerciseIds[0]!,
+                  exerciseId: exerciseIds[0],
                   sets: 4,
                   reps: 8,
                 },
                 {
-                  exerciseId: exerciseIds[4]!,
+                  exerciseId: exerciseIds[4],
                   sets: 3,
                   durationSec: 60,
                 },
@@ -1723,12 +1775,12 @@ async function seed() {
               dayIndex: 2,
               exercises: [
                 {
-                  exerciseId: exerciseIds[1]!,
+                  exerciseId: exerciseIds[1],
                   sets: 4,
                   reps: 10,
                 },
                 {
-                  exerciseId: exerciseIds[2]!,
+                  exerciseId: exerciseIds[2],
                   sets: 3,
                   durationSec: 45,
                 },
@@ -1809,8 +1861,12 @@ async function seed() {
   log.log(`admin:    ${PHONES.admin}`);
   log.log(`owners:   ${PHONES.owner1}, ${PHONES.owner2}`);
   log.log(`coaches:  ${PHONES.coach1}, ${PHONES.coach2}, ${PHONES.coach3}`);
-  log.log(`athletes: ${PHONES.athlete1}, ${PHONES.athlete2}, ${PHONES.athlete3}`);
-  log.log('Linked demo: memberships, bookings BK-DEMO0001…4, wallet, INV-DEMO-0001');
+  log.log(
+    `athletes: ${PHONES.athlete1}, ${PHONES.athlete2}, ${PHONES.athlete3}`,
+  );
+  log.log(
+    'Linked demo: memberships, bookings BK-DEMO0001…4, wallet, INV-DEMO-0001',
+  );
   await app.close();
 }
 

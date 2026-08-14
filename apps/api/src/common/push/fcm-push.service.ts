@@ -1,11 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { createSign } from 'crypto';
 import { readFileSync } from 'fs';
-import {
-  PushMessage,
-  PushSendResult,
-  PushService,
-} from './push.service';
+import { PushMessage, PushSendResult, PushService } from './push.service';
 
 interface ServiceAccount {
   project_id: string;

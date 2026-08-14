@@ -2,6 +2,7 @@
 
 import {
   Button,
+  Chip,
   Input,
   Label,
   TextField,
@@ -14,10 +15,8 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toPersianDigits } from "../../lib/weight/format";
 import {
-  getSelfTrackingMetric,
   PERSONAL_RECORD_TYPES,
-  SELF_TRACKING_METRICS,
-  type SelfTrackingMetricKey,
+  type SelfTrackingMetric,
 } from "../../lib/self-tracking-data";
 import { athleteSelfTrackingScreenStyles as styles } from "./AthleteSelfTrackingScreen.styles";
 import type { AthleteSelfTrackingScreenProps } from "./AthleteSelfTrackingScreen.types";
@@ -35,32 +34,92 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
+function formatSummaryValue(value: number | null, unitLabel: string) {
+  if (value == null) return "—";
+  return `${toPersianDigits(Number(value.toFixed(2)))} ${unitLabel}`;
+}
+
 export function AthleteSelfTrackingScreen({
+  catalog,
   metrics,
   personalRecords,
+  summary = [],
+  pendingQueue = [],
   pending = false,
   personalRecordsEnabled = true,
-  initialMetric = "water_ml",
+  initialMetric,
   onCreateMetric,
   onDeleteMetric,
   onCreatePersonalRecord,
+  onFlushPending,
 }: AthleteSelfTrackingScreenProps) {
   const router = useRouter();
-  const [selectedKey, setSelectedKey] =
-    useState<SelfTrackingMetricKey>(initialMetric);
+  const fallbackKey = catalog[0]?.key ?? "water_ml";
+  const [selectedKey, setSelectedKey] = useState(
+    catalog.some((item) => item.key === initialMetric)
+      ? (initialMetric as string)
+      : fallbackKey,
+  );
   const [value, setValue] = useState("");
   const [recordedAt, setRecordedAt] = useState(localDateTimeValue);
   const [note, setNote] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [recordType, setRecordType] = useState(PERSONAL_RECORD_TYPES[0].key);
+  const [recordType, setRecordType] = useState<string>(
+    PERSONAL_RECORD_TYPES[0].key,
+  );
   const [recordValue, setRecordValue] = useState("");
   const [recordDate, setRecordDate] = useState(localDateTimeValue);
-  const selected = getSelfTrackingMetric(selectedKey)!;
-  const selectedHistory = useMemo(
-    () => metrics.filter((item) => item.metricKey === selectedKey).slice(0, 20),
-    [metrics, selectedKey],
-  );
+
+  const selected: SelfTrackingMetric =
+    catalog.find((item) => item.key === selectedKey) ??
+    catalog[0] ?? {
+      key: fallbackKey,
+      label: fallbackKey,
+      unit: "",
+      unitLabel: "",
+      hint: "",
+      min: 0,
+      max: 1_000_000,
+      step: 1,
+    };
+
+  const selectedHistory = useMemo(() => {
+    const server = metrics
+      .filter((item) => item.metricKey === selected.key)
+      .slice(0, 20)
+      .map((item) => ({
+        id: item.id,
+        value: item.value,
+        recordedAt: item.recordedAt,
+        pending: false as boolean,
+        deletable: true,
+      }));
+
+    const offline = pendingQueue
+      .filter(
+        (item) =>
+          item.kind === "metric" &&
+          item.payload.metricKey === selected.key &&
+          item.status !== "synced",
+      )
+      .map((item) => ({
+        id: item.id,
+        value: item.payload.value,
+        recordedAt: item.payload.recordedAt,
+        pending: true,
+        deletable: false,
+      }));
+
+    return [...offline, ...server].slice(0, 20);
+  }, [metrics, pendingQueue, selected.key]);
+
+  const summaryByKey = useMemo(() => {
+    const map = new Map(summary.map((item) => [item.metricKey, item]));
+    return map;
+  }, [summary]);
+
+  const selectedSummary = summaryByKey.get(selected.key);
 
   async function submitMetric() {
     const parsed = Number(value);
@@ -68,8 +127,8 @@ export function AthleteSelfTrackingScreen({
     setError(null);
     setMessage(null);
     try {
-      await onCreateMetric({
-        metricKey: selectedKey,
+      const result = await onCreateMetric({
+        metricKey: selected.key,
         value: parsed,
         recordedAt: new Date(recordedAt).toISOString(),
         unit: selected.unit,
@@ -77,7 +136,13 @@ export function AthleteSelfTrackingScreen({
       });
       setValue("");
       setNote("");
-      setMessage(`${selected.label} با موفقیت ثبت شد.`);
+      if (result?.queuedOffline) {
+        setMessage(
+          `${selected.label} در صف آفلاین ذخیره شد و بعد از اتصال همگام می‌شود.`,
+        );
+      } else {
+        setMessage(`${selected.label} با موفقیت ثبت شد.`);
+      }
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "ثبت داده ناموفق بود.");
     }
@@ -129,10 +194,56 @@ export function AthleteSelfTrackingScreen({
             آب، خواب، پیاده‌روی، وزن و رکوردهای ورزشی خودت را در یک تاریخچهٔ
             خصوصی نگه دار.
           </Typography>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button
+              onPress={() => router.push("/athlete/goals")}
+              size="sm"
+              variant="secondary"
+            >
+              اهداف و یادآوری
+            </Button>
+            <Button
+              onPress={() => router.push("/athlete/data-rights")}
+              size="sm"
+              variant="tertiary"
+            >
+              حقوق داده
+            </Button>
+            <Button
+              onPress={() => router.push("/athlete/health-sync")}
+              size="sm"
+              variant="tertiary"
+            >
+              همگام‌سازی دستگاه
+            </Button>
+          </div>
         </section>
 
+        {pendingQueue.length > 0 ? (
+          <section className={styles.pendingBanner}>
+            <div className={styles.pendingCopy}>
+              <Typography type="body" weight="semibold">
+                {toPersianDigits(pendingQueue.length)} مورد در صف همگام‌سازی
+              </Typography>
+              <Typography className={styles.meta} type="body-sm">
+                ثبت‌های آفلاین پس از اتصال اینترنت ارسال می‌شوند.
+              </Typography>
+            </div>
+            {onFlushPending ? (
+              <Button
+                isDisabled={pending}
+                onPress={() => void onFlushPending()}
+                size="sm"
+                variant="secondary"
+              >
+                تلاش مجدد
+              </Button>
+            ) : null}
+          </section>
+        ) : null}
+
         <div className={styles.selector}>
-          {SELF_TRACKING_METRICS.map((metric) => (
+          {catalog.map((metric) => (
             <Button
               className={styles.metricButton}
               key={metric.key}
@@ -141,12 +252,28 @@ export function AthleteSelfTrackingScreen({
                 setMessage(null);
                 setError(null);
               }}
-              variant={selectedKey === metric.key ? "primary" : "outline"}
+              variant={selected.key === metric.key ? "primary" : "outline"}
             >
               {metric.label}
             </Button>
           ))}
         </div>
+
+        {selectedSummary ? (
+          <section className={styles.summaryRow}>
+            <Chip size="sm" variant="soft">
+              <Chip.Label>
+                خلاصه: {formatSummaryValue(selectedSummary.value, selected.unitLabel)}
+              </Chip.Label>
+            </Chip>
+            <Typography className={styles.meta} type="body-sm">
+              {toPersianDigits(selectedSummary.sampleCount)} نمونه
+              {selectedSummary.latestRecordedAt
+                ? ` · آخرین ${formatDate(selectedSummary.latestRecordedAt)}`
+                : ""}
+            </Typography>
+          </section>
+        ) : null}
 
         <section className={styles.card}>
           <div>
@@ -221,16 +348,23 @@ export function AthleteSelfTrackingScreen({
                     </Typography>
                     <Typography className={styles.meta} type="body-sm">
                       {formatDate(item.recordedAt)}
+                      {item.pending ? " · در انتظار همگام‌سازی" : ""}
                     </Typography>
                   </div>
-                  <Button
-                    isDisabled={pending}
-                    onPress={() => void onDeleteMetric(item.id)}
-                    size="sm"
-                    variant="ghost"
-                  >
-                    حذف
-                  </Button>
+                  {item.deletable ? (
+                    <Button
+                      isDisabled={pending}
+                      onPress={() => void onDeleteMetric(item.id)}
+                      size="sm"
+                      variant="ghost"
+                    >
+                      حذف
+                    </Button>
+                  ) : (
+                    <Chip size="sm" variant="soft">
+                      <Chip.Label>صف</Chip.Label>
+                    </Chip>
+                  )}
                 </article>
               ))}
             </div>

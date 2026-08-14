@@ -3,7 +3,6 @@ import {
   ArrayMaxSize,
   IsArray,
   IsEnum,
-  IsIn,
   IsMongoId,
   IsOptional,
   IsString,
@@ -151,11 +150,6 @@ export class AdminListArticlesQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsString()
   @MaxLength(60)
-  search?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(60)
   category?: string;
 
   @IsOptional()
@@ -174,13 +168,4 @@ export class AdminListArticlesQueryDto extends PaginationQueryDto {
   @IsString()
   @MaxLength(40)
   tag?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(80)
-  sortBy?: string;
-
-  @IsOptional()
-  @IsIn(['asc', 'desc'])
-  sortOrder?: 'asc' | 'desc';
 }

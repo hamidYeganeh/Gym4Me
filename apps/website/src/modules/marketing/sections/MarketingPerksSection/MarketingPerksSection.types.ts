@@ -1,2 +1,1 @@
-export type MarketingPerksSectionProps = {
-};
+export type MarketingPerksSectionProps = Record<string, never>;

@@ -2,6 +2,9 @@ import type { Paginated } from "../types";
 import type {
   Exercise,
   ExerciseStatus,
+  MetricAggregation,
+  MetricPeriodKind,
+  MetricPrivacyClass,
   MetricType,
   MetricTypeStatus,
   MetricValueKind,
@@ -46,6 +49,17 @@ export type CreateMetricTypeInput = {
   name: string;
   valueKind: MetricValueKind;
   unit?: string;
+  canonicalUnit?: string;
+  validation?: {
+    min?: number;
+    max?: number;
+    step?: number;
+    integer?: boolean;
+  };
+  aggregation?: MetricAggregation;
+  periodKind?: MetricPeriodKind;
+  privacyClass?: MetricPrivacyClass;
+  sourceMappings?: Record<string, string>;
   sportId?: string;
   status?: MetricTypeStatus;
   sortHint?: number;

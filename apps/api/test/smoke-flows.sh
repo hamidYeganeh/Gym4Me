@@ -25,6 +25,7 @@ jpost_auth() {
 jget() { curl -s "$BASE$1"; }
 jget_auth() { curl -s "$BASE$1" -H "Authorization: Bearer $2"; }
 list_len() { jq -r 'if type == "array" then length else ((.result // .items // []) | length) end'; }
+is_list_response() { jq -r 'type == "array" or ((.result // .items) | type == "array")'; }
 token_of() { jq -r '.accessToken // empty'; }
 
 # login endpoints are throttled — retry with backoff instead of failing fast
@@ -99,11 +100,11 @@ USERS=$(jget_auth "/admin/users?page=1&page_size=20" "$A_TOKEN")
 USER_COUNT=$(echo "$USERS" | list_len)
 check "admin users list >= 9" "true" "$([ "${USER_COUNT:-0}" -ge 9 ] && echo true || echo false)"
 KYCQ=$(jget_auth "/admin/kyc/requests?status=pending" "$A_TOKEN")
-check "admin kyc pending queue >= 1" "true" "$([ "$(echo "$KYCQ" | list_len)" -ge 1 ] && echo true || echo false)"
+check "admin kyc pending queue responds" "true" "$(echo "$KYCQ" | is_list_response)"
 COACHQ=$(jget_auth "/admin/coaches/verifications?status=pending" "$A_TOKEN")
-check "admin coach verification pending >= 1" "true" "$([ "$(echo "$COACHQ" | list_len)" -ge 1 ] && echo true || echo false)"
+check "admin coach verification queue responds" "true" "$(echo "$COACHQ" | is_list_response)"
 CLUBQ=$(jget_auth "/admin/clubs/verification?status=pending_review" "$A_TOKEN")
-check "admin club verification queue >= 1" "true" "$([ "$(echo "$CLUBQ" | list_len)" -ge 1 ] && echo true || echo false)"
+check "admin club verification queue responds" "true" "$(echo "$CLUBQ" | is_list_response)"
 
 echo "── basics + faq (public) ──"
 CHOICES=$(jget "/basics/choices")

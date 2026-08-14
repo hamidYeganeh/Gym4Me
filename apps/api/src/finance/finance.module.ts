@@ -2,10 +2,7 @@ import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ReferralModule } from '../account/referral/referral.module';
 import { AuditModule } from '../audit/audit.module';
-import {
-  CashShift,
-  CashShiftSchema,
-} from '../schemas/cash-shift.schema';
+import { CashShift, CashShiftSchema } from '../schemas/cash-shift.schema';
 import { Club, ClubSchema } from '../schemas/club.schema';
 import {
   ClubMembership,
@@ -22,10 +19,7 @@ import {
   InstallmentSchema,
 } from '../schemas/debt.schema';
 import { Invoice, InvoiceSchema } from '../schemas/invoice.schema';
-import {
-  LedgerEntry,
-  LedgerEntrySchema,
-} from '../schemas/ledger-entry.schema';
+import { LedgerEntry, LedgerEntrySchema } from '../schemas/ledger-entry.schema';
 import { Payment, PaymentSchema } from '../schemas/payment.schema';
 import { Payout, PayoutSchema } from '../schemas/payout.schema';
 import { User, UserSchema } from '../schemas/user.schema';

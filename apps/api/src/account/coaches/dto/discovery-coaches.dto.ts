@@ -1,9 +1,4 @@
-import {
-  IsMongoId,
-  IsOptional,
-  IsString,
-  MaxLength,
-} from 'class-validator';
+import { IsMongoId, IsOptional, IsString, MaxLength } from 'class-validator';
 import { PaginationQueryDto } from '../../../basics/dto/common.dto';
 
 export class DiscoveryCoachesQueryDto extends PaginationQueryDto {

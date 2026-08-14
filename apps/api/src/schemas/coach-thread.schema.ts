@@ -34,7 +34,4 @@ export class CoachThread {
 
 export const CoachThreadSchema = SchemaFactory.createForClass(CoachThread);
 
-CoachThreadSchema.index(
-  { coachUserId: 1, athleteUserId: 1 },
-  { unique: true },
-);
+CoachThreadSchema.index({ coachUserId: 1, athleteUserId: 1 }, { unique: true });

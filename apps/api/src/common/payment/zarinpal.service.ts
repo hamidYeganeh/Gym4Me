@@ -27,8 +27,9 @@ export class ZarinpalPaymentGatewayService extends PaymentGatewayService {
     super();
     this.merchantId = config.getOrThrow<string>('ZARINPAL_MERCHANT_ID');
     const sandbox =
-      (config.get<string>('ZARINPAL_SANDBOX', 'true') ?? 'true').toLowerCase() !==
-      'false';
+      (
+        config.get<string>('ZARINPAL_SANDBOX', 'true') ?? 'true'
+      ).toLowerCase() !== 'false';
     this.baseUrl = sandbox
       ? 'https://sandbox.zarinpal.com/pg/v4/payment'
       : 'https://api.zarinpal.com/pg/v4/payment';
@@ -55,7 +56,10 @@ export class ZarinpalPaymentGatewayService extends PaymentGatewayService {
 
     const res = await fetch(`${this.baseUrl}/request.json`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
       body: JSON.stringify(body),
     });
 
@@ -91,7 +95,10 @@ export class ZarinpalPaymentGatewayService extends PaymentGatewayService {
 
     const res = await fetch(`${this.baseUrl}/verify.json`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
       body: JSON.stringify(body),
     });
 

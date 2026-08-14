@@ -1,10 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import {
-  KycRequest,
-  KycRequestSchema,
-} from '../../schemas/kyc-request.schema';
+import { KycRequest, KycRequestSchema } from '../../schemas/kyc-request.schema';
 import { UsersModule } from '../../users/users.module';
 import { KycController } from './kyc.controller';
 import {

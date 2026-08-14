@@ -12,15 +12,26 @@ import {
 } from "./progress.client";
 import type {
   AssignWorkoutProgramInput,
+  AthleteDataGrantsPage,
+  CreateAthleteDataGrantInput,
   CreateExerciseInput,
+  CreateMetricGoalInput,
   CreatePersonalRecordInput,
   CreateProgressMetricInput,
   CreateProgressPhotoInput,
   CreateWorkoutLogInput,
   CreateWorkoutPlanInput,
   CreateWorkoutProgramInput,
+  ConsentHistoryResult,
+  DeleteProgressMetricsInput,
   ExercisesPage,
+  HealthSyncProvider,
+  HealthSyncStatesResult,
+  ListAthleteDataGrantsQuery,
   ListExercisesQuery,
+  ListHealthSyncStatesQuery,
+  ListMetricGoalsQuery,
+  ListMetricRemindersQuery,
   ListMetricTypesQuery,
   ListPersonalRecordsQuery,
   ListProgressMetricsQuery,
@@ -28,14 +39,22 @@ import type {
   ListWorkoutLogsQuery,
   ListWorkoutPlansQuery,
   ListWorkoutProgramsQuery,
+  MetricGoalsPage,
+  MetricRemindersPage,
+  MetricsSummaryQuery,
+  MetricsSummaryResult,
   MetricTypesPage,
   PersonalRecordsPage,
   ProgressMetricsPage,
   ProgressPhotosPage,
+  UpdateMetricGoalInput,
   UpdateProgressMetricInput,
   UpdateProgressPhotoInput,
+  UpdateWorkoutLogInput,
   UpdateWorkoutPlanInput,
   UpdateWorkoutProgramInput,
+  UpsertHealthSyncStateInput,
+  UpsertMetricReminderInput,
   WorkoutLogsPage,
   WorkoutPlan,
   WorkoutPlansPage,
@@ -413,12 +432,251 @@ export function useCreateWorkoutLog() {
   });
 }
 
+export function useUpdateWorkoutLog() {
+  const api = useAccountProgressApi();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      input,
+    }: {
+      id: string;
+      input: UpdateWorkoutLogInput;
+    }) => api.updateWorkoutLog(id, input),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: accountProgressKeys.all,
+      });
+    },
+  });
+}
+
+export function useCompleteWorkoutLog() {
+  const api = useAccountProgressApi();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.completeWorkoutLog(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: accountProgressKeys.all,
+      });
+    },
+  });
+}
+
+export function useMetricsSummary(
+  query: MetricsSummaryQuery = {},
+  options?: Omit<
+    UseQueryOptions<MetricsSummaryResult, Error>,
+    "queryKey" | "queryFn"
+  >,
+) {
+  const api = useAccountProgressApi();
+  return useQuery({
+    queryKey: accountProgressKeys.metricsSummary(query),
+    queryFn: () => api.metricsSummary(query),
+    ...options,
+  });
+}
+
+export function useMetricGoals(
+  query: ListMetricGoalsQuery = {},
+  options?: Omit<
+    UseQueryOptions<MetricGoalsPage, Error>,
+    "queryKey" | "queryFn"
+  >,
+) {
+  const api = useAccountProgressApi();
+  return useQuery({
+    queryKey: accountProgressKeys.goals(query),
+    queryFn: () => api.listGoals(query),
+    ...options,
+  });
+}
+
+export function useCreateMetricGoal() {
+  const api = useAccountProgressApi();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreateMetricGoalInput) => api.createGoal(input),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: accountProgressKeys.goals(),
+      });
+    },
+  });
+}
+
+export function useUpdateMetricGoal() {
+  const api = useAccountProgressApi();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      input,
+    }: {
+      id: string;
+      input: UpdateMetricGoalInput;
+    }) => api.updateGoal(id, input),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: accountProgressKeys.goals(),
+      });
+    },
+  });
+}
+
+export function useMetricReminders(
+  query: ListMetricRemindersQuery = {},
+  options?: Omit<
+    UseQueryOptions<MetricRemindersPage, Error>,
+    "queryKey" | "queryFn"
+  >,
+) {
+  const api = useAccountProgressApi();
+  return useQuery({
+    queryKey: accountProgressKeys.reminders(query),
+    queryFn: () => api.listReminders(query),
+    ...options,
+  });
+}
+
+export function useUpsertMetricReminder() {
+  const api = useAccountProgressApi();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      metricKey,
+      input,
+    }: {
+      metricKey: string;
+      input: UpsertMetricReminderInput;
+    }) => api.upsertReminder(metricKey, input),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: accountProgressKeys.reminders(),
+      });
+    },
+  });
+}
+
+export function useHealthSyncStates(
+  query: ListHealthSyncStatesQuery = {},
+  options?: Omit<
+    UseQueryOptions<HealthSyncStatesResult, Error>,
+    "queryKey" | "queryFn"
+  >,
+) {
+  const api = useAccountProgressApi();
+  return useQuery({
+    queryKey: accountProgressKeys.healthSync(query),
+    queryFn: () => api.listHealthSyncStates(query),
+    ...options,
+  });
+}
+
+export function useUpsertHealthSyncState() {
+  const api = useAccountProgressApi();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      provider,
+      input,
+    }: {
+      provider: HealthSyncProvider;
+      input: UpsertHealthSyncStateInput;
+    }) => api.upsertHealthSyncState(provider, input),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: accountProgressKeys.healthSync(),
+      });
+    },
+  });
+}
+
+export function useDataGrants(
+  query: ListAthleteDataGrantsQuery = {},
+  options?: Omit<
+    UseQueryOptions<AthleteDataGrantsPage, Error>,
+    "queryKey" | "queryFn"
+  >,
+) {
+  const api = useAccountProgressApi();
+  return useQuery({
+    queryKey: accountProgressKeys.dataGrants(query),
+    queryFn: () => api.listDataGrants(query),
+    ...options,
+  });
+}
+
+export function useCreateDataGrant() {
+  const api = useAccountProgressApi();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreateAthleteDataGrantInput) =>
+      api.createDataGrant(input),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: accountProgressKeys.dataGrants(),
+      });
+    },
+  });
+}
+
+export function useRevokeDataGrant() {
+  const api = useAccountProgressApi();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.revokeDataGrant(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: accountProgressKeys.dataGrants(),
+      });
+    },
+  });
+}
+
 export function useCreatePersonalRecord() {
   const api = useAccountProgressApi();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: CreatePersonalRecordInput) =>
       api.createPersonalRecord(input),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: accountProgressKeys.all,
+      });
+    },
+  });
+}
+
+export function useConsentHistory(
+  options?: Omit<
+    UseQueryOptions<ConsentHistoryResult, Error>,
+    "queryKey" | "queryFn"
+  >,
+) {
+  const api = useAccountProgressApi();
+  return useQuery({
+    queryKey: accountProgressKeys.consentHistory(),
+    queryFn: () => api.consentHistory(),
+    ...options,
+  });
+}
+
+export function useExportProgress() {
+  const api = useAccountProgressApi();
+  return useMutation({
+    mutationFn: () => api.exportProgress(),
+  });
+}
+
+export function useDeleteProgressMetrics() {
+  const api = useAccountProgressApi();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: DeleteProgressMetricsInput) =>
+      api.deleteMetricsDataRights(input),
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: accountProgressKeys.all,

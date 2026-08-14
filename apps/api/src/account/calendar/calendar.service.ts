@@ -231,7 +231,7 @@ export class CalendarService {
       this.blockModel.countDocuments(filter),
     ]);
     return paginatedResult(
-      items.map((row) => this.toPublic(row as ResourceCalendarBlockDocument)),
+      items.map((row) => this.toPublic(row)),
       total,
       page,
       pageSize,

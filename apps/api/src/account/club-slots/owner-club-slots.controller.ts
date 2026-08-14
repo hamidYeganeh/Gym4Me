@@ -36,13 +36,10 @@ export class OwnerClubSlotsController {
 
   @Get(':clubId/classes')
   @ApiOperation({ summary: 'List club classes' })
-  listClasses(
-    @CurrentUser() user: JwtUser,
-    @Param('clubId') clubId: string,
-  ) {
-    return this.slots.requireOwned(user, clubId).then(() =>
-      this.slots.listClasses(clubId),
-    );
+  listClasses(@CurrentUser() user: JwtUser, @Param('clubId') clubId: string) {
+    return this.slots
+      .requireOwned(user, clubId)
+      .then(() => this.slots.listClasses(clubId));
   }
 
   @Get(':clubId/classes/:classId')
@@ -52,9 +49,9 @@ export class OwnerClubSlotsController {
     @Param('clubId') clubId: string,
     @Param('classId') classId: string,
   ) {
-    return this.slots.requireOwned(user, clubId).then(() =>
-      this.slots.getClass(clubId, classId),
-    );
+    return this.slots
+      .requireOwned(user, clubId)
+      .then(() => this.slots.getClass(clubId, classId));
   }
 
   @Post(':clubId/classes')
@@ -65,9 +62,9 @@ export class OwnerClubSlotsController {
     @Body() dto: CreateClubClassDto,
     @Req() request: Request,
   ) {
-    return this.slots.requireOwned(user, clubId).then(() =>
-      this.slots.createClass(clubId, dto, user.sub, request),
-    );
+    return this.slots
+      .requireOwned(user, clubId)
+      .then(() => this.slots.createClass(clubId, dto, user.sub, request));
   }
 
   @Patch(':clubId/classes/:classId')
@@ -79,9 +76,11 @@ export class OwnerClubSlotsController {
     @Body() dto: UpdateClubClassDto,
     @Req() request: Request,
   ) {
-    return this.slots.requireOwned(user, clubId).then(() =>
-      this.slots.updateClass(clubId, classId, dto, user.sub, request),
-    );
+    return this.slots
+      .requireOwned(user, clubId)
+      .then(() =>
+        this.slots.updateClass(clubId, classId, dto, user.sub, request),
+      );
   }
 
   @Delete(':clubId/classes/:classId')
@@ -92,22 +91,19 @@ export class OwnerClubSlotsController {
     @Param('classId') classId: string,
     @Req() request: Request,
   ) {
-    return this.slots.requireOwned(user, clubId).then(() =>
-      this.slots.archiveClass(clubId, classId, user.sub, request),
-    );
+    return this.slots
+      .requireOwned(user, clubId)
+      .then(() => this.slots.archiveClass(clubId, classId, user.sub, request));
   }
 
   // ── Spaces ────────────────────────────────────
 
   @Get(':clubId/spaces')
   @ApiOperation({ summary: 'List club spaces' })
-  listSpaces(
-    @CurrentUser() user: JwtUser,
-    @Param('clubId') clubId: string,
-  ) {
-    return this.slots.requireOwned(user, clubId).then(() =>
-      this.slots.listSpaces(clubId),
-    );
+  listSpaces(@CurrentUser() user: JwtUser, @Param('clubId') clubId: string) {
+    return this.slots
+      .requireOwned(user, clubId)
+      .then(() => this.slots.listSpaces(clubId));
   }
 
   @Get(':clubId/spaces/:spaceId')
@@ -117,9 +113,9 @@ export class OwnerClubSlotsController {
     @Param('clubId') clubId: string,
     @Param('spaceId') spaceId: string,
   ) {
-    return this.slots.requireOwned(user, clubId).then(() =>
-      this.slots.getSpace(clubId, spaceId),
-    );
+    return this.slots
+      .requireOwned(user, clubId)
+      .then(() => this.slots.getSpace(clubId, spaceId));
   }
 
   @Post(':clubId/spaces')
@@ -130,9 +126,9 @@ export class OwnerClubSlotsController {
     @Body() dto: CreateClubSpaceDto,
     @Req() request: Request,
   ) {
-    return this.slots.requireOwned(user, clubId).then(() =>
-      this.slots.createSpace(clubId, dto, user.sub, request),
-    );
+    return this.slots
+      .requireOwned(user, clubId)
+      .then(() => this.slots.createSpace(clubId, dto, user.sub, request));
   }
 
   @Patch(':clubId/spaces/:spaceId')
@@ -144,9 +140,11 @@ export class OwnerClubSlotsController {
     @Body() dto: UpdateClubSpaceDto,
     @Req() request: Request,
   ) {
-    return this.slots.requireOwned(user, clubId).then(() =>
-      this.slots.updateSpace(clubId, spaceId, dto, user.sub, request),
-    );
+    return this.slots
+      .requireOwned(user, clubId)
+      .then(() =>
+        this.slots.updateSpace(clubId, spaceId, dto, user.sub, request),
+      );
   }
 
   @Delete(':clubId/spaces/:spaceId')
@@ -157,22 +155,19 @@ export class OwnerClubSlotsController {
     @Param('spaceId') spaceId: string,
     @Req() request: Request,
   ) {
-    return this.slots.requireOwned(user, clubId).then(() =>
-      this.slots.archiveSpace(clubId, spaceId, user.sub, request),
-    );
+    return this.slots
+      .requireOwned(user, clubId)
+      .then(() => this.slots.archiveSpace(clubId, spaceId, user.sub, request));
   }
 
   // ── Slots ─────────────────────────────────────
 
   @Get(':clubId/slots')
   @ApiOperation({ summary: 'List club slots' })
-  listSlots(
-    @CurrentUser() user: JwtUser,
-    @Param('clubId') clubId: string,
-  ) {
-    return this.slots.requireOwned(user, clubId).then(() =>
-      this.slots.listSlots(clubId),
-    );
+  listSlots(@CurrentUser() user: JwtUser, @Param('clubId') clubId: string) {
+    return this.slots
+      .requireOwned(user, clubId)
+      .then(() => this.slots.listSlots(clubId));
   }
 
   @Get(':clubId/slots/:slotId')
@@ -182,9 +177,9 @@ export class OwnerClubSlotsController {
     @Param('clubId') clubId: string,
     @Param('slotId') slotId: string,
   ) {
-    return this.slots.requireOwned(user, clubId).then(() =>
-      this.slots.getSlot(clubId, slotId),
-    );
+    return this.slots
+      .requireOwned(user, clubId)
+      .then(() => this.slots.getSlot(clubId, slotId));
   }
 
   @Post(':clubId/slots')
@@ -195,9 +190,9 @@ export class OwnerClubSlotsController {
     @Body() dto: CreateClubSlotDto,
     @Req() request: Request,
   ) {
-    return this.slots.requireOwned(user, clubId).then(() =>
-      this.slots.createSlot(clubId, dto, user.sub, request),
-    );
+    return this.slots
+      .requireOwned(user, clubId)
+      .then(() => this.slots.createSlot(clubId, dto, user.sub, request));
   }
 
   @Patch(':clubId/slots/:slotId')
@@ -209,9 +204,11 @@ export class OwnerClubSlotsController {
     @Body() dto: UpdateClubSlotDto,
     @Req() request: Request,
   ) {
-    return this.slots.requireOwned(user, clubId).then(() =>
-      this.slots.updateSlot(clubId, slotId, dto, user.sub, request),
-    );
+    return this.slots
+      .requireOwned(user, clubId)
+      .then(() =>
+        this.slots.updateSlot(clubId, slotId, dto, user.sub, request),
+      );
   }
 
   @Delete(':clubId/slots/:slotId')
@@ -222,9 +219,9 @@ export class OwnerClubSlotsController {
     @Param('slotId') slotId: string,
     @Req() request: Request,
   ) {
-    return this.slots.requireOwned(user, clubId).then(() =>
-      this.slots.archiveSlot(clubId, slotId, user.sub, request),
-    );
+    return this.slots
+      .requireOwned(user, clubId)
+      .then(() => this.slots.archiveSlot(clubId, slotId, user.sub, request));
   }
 
   @Post(':clubId/slots/:slotId/cancel-occurrence')
@@ -236,8 +233,10 @@ export class OwnerClubSlotsController {
     @Body() dto: CancelSlotOccurrenceDto,
     @Req() request: Request,
   ) {
-    return this.slots.requireOwned(user, clubId).then(() =>
-      this.slots.cancelOccurrence(clubId, slotId, dto, user.sub, request),
-    );
+    return this.slots
+      .requireOwned(user, clubId)
+      .then(() =>
+        this.slots.cancelOccurrence(clubId, slotId, dto, user.sub, request),
+      );
   }
 }

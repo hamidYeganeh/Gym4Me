@@ -19,9 +19,8 @@ export class AchievementGrantRule {
   threshold!: number;
 }
 
-export const AchievementGrantRuleSchema = SchemaFactory.createForClass(
-  AchievementGrantRule,
-);
+export const AchievementGrantRuleSchema =
+  SchemaFactory.createForClass(AchievementGrantRule);
 
 @Schema({ _id: false })
 export class AchievementGrantConfig {

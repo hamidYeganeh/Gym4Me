@@ -6,6 +6,20 @@ import babel from "@rolldown/plugin-babel";
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
+function vendorChunk(id: string): string | undefined {
+  if (!id.includes("node_modules")) return undefined;
+  if (id.includes("tinymce") || id.includes("@tinymce")) return "tinymce";
+  if (id.includes("@heroui")) return "heroui";
+  if (id.includes("@tanstack")) return "tanstack";
+  if (id.includes("react-router") || id.includes("@remix-run")) return "router";
+  if (
+    /(?:^|[/\\])(?:react|react-dom|scheduler)(?:[/\\]|$)/.test(id)
+  ) {
+    return "react";
+  }
+  return undefined;
+}
+
 export default defineConfig({
   base: process.env.VITE_BASE_PATH || "/",
   plugins: [react(), babel({ presets: [reactCompilerPreset()] })],
@@ -14,6 +28,15 @@ export default defineConfig({
       "@": path.resolve(rootDir, "src"),
     },
     dedupe: ["react", "react-dom"],
+  },
+  build: {
+    cssCodeSplit: true,
+    target: "es2022",
+    rollupOptions: {
+      output: {
+        manualChunks: vendorChunk,
+      },
+    },
   },
   server: {
     port: 8089,

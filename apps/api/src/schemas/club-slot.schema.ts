@@ -57,8 +57,7 @@ export class SlotException {
   status!: SlotExceptionStatus;
 }
 
-export const SlotExceptionSchema =
-  SchemaFactory.createForClass(SlotException);
+export const SlotExceptionSchema = SchemaFactory.createForClass(SlotException);
 
 @Schema({ _id: false })
 export class SlotSchedule {

@@ -20,10 +20,7 @@ import {
   paginatedResult,
   resolvePageSize,
 } from '../common/utils/pagination.util';
-import {
-  KycRequest,
-  KycRequestDocument,
-} from '../schemas/kyc-request.schema';
+import { KycRequest, KycRequestDocument } from '../schemas/kyc-request.schema';
 import { User, UserDocument } from '../schemas/user.schema';
 import { ListKycRequestsQueryDto, ReviewKycDto } from './dto/admin.dto';
 
@@ -173,27 +170,23 @@ export class AdminKycService {
     return this.toPublic(populated!);
   }
 
-  private toPublic(
-    doc: {
-      _id: Types.ObjectId;
-      userId: Types.ObjectId | PopulatedUser;
-      kind: string;
-      status: string;
-      documentType?: string;
-      nationalId?: string;
-      birthDate?: Date;
-      filePath?: string;
-      fileMimeType?: string;
-      rejectionReason?: string;
-      createdAt: Date;
-      reviewedAt?: Date;
-    },
-  ) {
+  private toPublic(doc: {
+    _id: Types.ObjectId;
+    userId: Types.ObjectId | PopulatedUser;
+    kind: string;
+    status: string;
+    documentType?: string;
+    nationalId?: string;
+    birthDate?: Date;
+    filePath?: string;
+    fileMimeType?: string;
+    rejectionReason?: string;
+    createdAt: Date;
+    reviewedAt?: Date;
+  }) {
     const id = doc._id.toString();
     const populated =
-      doc.userId &&
-      typeof doc.userId === 'object' &&
-      '_id' in doc.userId
+      doc.userId && typeof doc.userId === 'object' && '_id' in doc.userId
         ? (doc.userId as PopulatedUser)
         : null;
 
@@ -215,9 +208,7 @@ export class AdminKycService {
       birthDate: doc.birthDate ?? null,
       fileMimeType: doc.fileMimeType ?? null,
       hasDocument: Boolean(doc.filePath),
-      documentUrl: doc.filePath
-        ? `/admin/kyc/requests/${id}/document`
-        : null,
+      documentUrl: doc.filePath ? `/admin/kyc/requests/${id}/document` : null,
       rejectionReason: doc.rejectionReason ?? null,
       createdAt: doc.createdAt,
       reviewedAt: doc.reviewedAt ?? null,

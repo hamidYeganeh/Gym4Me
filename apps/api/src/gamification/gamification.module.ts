@@ -2,10 +2,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuditModule } from '../audit/audit.module';
 import { NotificationsModule } from '../notifications/notifications.module';
-import {
-  Achievement,
-  AchievementSchema,
-} from '../schemas/achievement.schema';
+import { Achievement, AchievementSchema } from '../schemas/achievement.schema';
 import {
   AchievementGrant,
   AchievementGrantSchema,

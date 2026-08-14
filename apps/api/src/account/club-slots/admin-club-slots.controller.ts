@@ -42,10 +42,7 @@ export class AdminClubSlotsController {
 
   @Get(':clubId/classes/:classId')
   @ApiOperation({ summary: 'Get one club class (admin)' })
-  getClass(
-    @Param('clubId') clubId: string,
-    @Param('classId') classId: string,
-  ) {
+  getClass(@Param('clubId') clubId: string, @Param('classId') classId: string) {
     return this.slots.getClass(clubId, classId);
   }
 
@@ -93,10 +90,7 @@ export class AdminClubSlotsController {
 
   @Get(':clubId/spaces/:spaceId')
   @ApiOperation({ summary: 'Get one club space (admin)' })
-  getSpace(
-    @Param('clubId') clubId: string,
-    @Param('spaceId') spaceId: string,
-  ) {
+  getSpace(@Param('clubId') clubId: string, @Param('spaceId') spaceId: string) {
     return this.slots.getSpace(clubId, spaceId);
   }
 
@@ -144,10 +138,7 @@ export class AdminClubSlotsController {
 
   @Get(':clubId/slots/:slotId')
   @ApiOperation({ summary: 'Get one club slot (admin)' })
-  getSlot(
-    @Param('clubId') clubId: string,
-    @Param('slotId') slotId: string,
-  ) {
+  getSlot(@Param('clubId') clubId: string, @Param('slotId') slotId: string) {
     return this.slots.getSlot(clubId, slotId);
   }
 
@@ -194,12 +185,6 @@ export class AdminClubSlotsController {
     @Body() dto: CancelSlotOccurrenceDto,
     @Req() request: Request,
   ) {
-    return this.slots.cancelOccurrence(
-      clubId,
-      slotId,
-      dto,
-      user.sub,
-      request,
-    );
+    return this.slots.cancelOccurrence(clubId, slotId, dto, user.sub, request);
   }
 }
