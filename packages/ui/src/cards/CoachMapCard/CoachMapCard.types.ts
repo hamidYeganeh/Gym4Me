@@ -7,19 +7,27 @@ export type CoachMapCardProps = {
   image: MediaImageSource;
   /** Accessible alt for the avatar. */
   imageAlt?: string;
-  /** Coach display name. */
+  /** Coach / club display name. */
   title: ReactNode;
-  /** Specialty label (e.g. "Cardio Expert"). */
+  /** Specialty label (e.g. "HIIT Expert"). */
   specialtyLabel?: ReactNode;
   /** Optional specialty icon (defaults to Heart). */
   specialtyIcon?: ReactNode;
+  /** Distance label (e.g. "500m"). */
+  distanceLabel?: ReactNode;
   /** Star rating value. */
   rating?: number;
+  /** Max stars rendered (default 5). */
+  maxRating?: number;
   /** Review count. */
   ratingCount?: number;
   /** Address / gym line. */
   address?: ReactNode;
-  /** "Get Direction" link label. */
+  /** Show verified badge on the avatar. */
+  verified?: boolean;
+  /** Accessible label for the verified badge. */
+  verifiedLabel?: string;
+  /** "Get Direction" button label. */
   getDirectionsLabel?: ReactNode;
   /** Called when "Get Direction" is pressed. */
   onGetDirections?: ButtonProps["onPress"];

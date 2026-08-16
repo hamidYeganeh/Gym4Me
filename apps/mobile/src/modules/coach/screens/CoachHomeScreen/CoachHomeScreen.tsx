@@ -12,6 +12,7 @@ import {
 } from "@repo/icons";
 import { CallToActionCard } from "@repo/ui/cards/CallToActionCard";
 import { QuickActionCard } from "@repo/ui/cards/QuickActionCard";
+import { TodoCard, type TodoCardItem } from "@repo/ui/cards/TodoCard";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { ProfileHeader } from "@repo/ui/layout/ProfileHeader";
 import { useTranslations } from "next-intl";
@@ -31,6 +32,33 @@ export function CoachHomeScreen() {
     user?.phone ||
     t("profileName");
 
+  const setupItems: TodoCardItem[] = [
+    {
+      id: "profile",
+      label: t("todoItemProfile"),
+      status: "completed",
+    },
+    {
+      id: "availability",
+      label: t("todoItemAvailability"),
+      status: "completed",
+    },
+    {
+      id: "verify",
+      label: t("todoItemVerify"),
+      status: "completed",
+    },
+    {
+      id: "first-program",
+      label: t("todoItemFirstProgram"),
+      status: "pending",
+      onPress: () => router.push("/coach/programs"),
+    },
+  ];
+  const completedCount = setupItems.filter(
+    (item) => item.status === "completed",
+  ).length;
+
   return (
     <AppLayout
       className={styles.root}
@@ -47,6 +75,16 @@ export function CoachHomeScreen() {
       }
     >
       <div className={styles.content}>
+        <TodoCard
+          items={setupItems}
+          progressLabel={t("todoProgressLabel")}
+          stepLabel={t("todoStepLabel", {
+            current: completedCount,
+            total: setupItems.length,
+          })}
+          title={t("todoTitle")}
+        />
+
         <section
           aria-labelledby="coach-overview-title"
           className={styles.section}

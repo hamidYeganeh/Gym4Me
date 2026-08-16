@@ -1,6 +1,7 @@
 import { createApiClient } from "@repo/api/client";
 import { createArticlesApi } from "@repo/api/articles";
 import {
+  createDiscoveryClassesApi,
   createDiscoveryClubsApi,
   createDiscoveryCoachesApi,
 } from "@repo/api/discovery";
@@ -12,6 +13,7 @@ const apiClient = createApiClient({
 });
 
 export const discoveryClubs = createDiscoveryClubsApi(apiClient);
+export const discoveryClasses = createDiscoveryClassesApi(apiClient);
 export const discoveryCoaches = createDiscoveryCoachesApi(apiClient);
 export const articlesApi = createArticlesApi(apiClient);
 export const membershipsApi = createAccountMembershipsApi(apiClient);

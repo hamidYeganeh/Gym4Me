@@ -16,6 +16,7 @@ import type { DiscoveryMapScreenProps } from "./DiscoveryMapScreen.types";
 export function DiscoveryMapScreen({
   coaches,
   initialSelectedId,
+  nearestId,
 }: DiscoveryMapScreenProps) {
   const t = useTranslations("DiscoveryMap");
   const router = useRouter();
@@ -28,6 +29,7 @@ export function DiscoveryMapScreen({
         lat: coach.lat,
         lng: coach.lng,
         image: coach.image,
+        distanceLabel: coach.distanceLabel,
       })),
     [coaches],
   );
@@ -76,6 +78,7 @@ export function DiscoveryMapScreen({
       <div className={styles.stage}>
         <DiscoveryMapCanvasSection
           markers={markers}
+          nearestId={nearestId}
           onSelect={setSelectedId}
           selectedId={selectedId}
           zoomInLabel={t("zoomIn")}
@@ -94,6 +97,7 @@ export function DiscoveryMapScreen({
                   `/discovery/coaches/${selectedCoach.id}`,
               )
             }
+            verifiedLabel={t("verified")}
             viewDetailsLabel={t("viewDetails")}
           />
         ) : null}

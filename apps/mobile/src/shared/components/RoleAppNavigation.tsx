@@ -25,6 +25,8 @@ type AppRole = "athlete" | "coach" | "owner";
 type RoleAppNavigationProps = {
   children: ReactNode;
   role: AppRole;
+  /** When true, unauthenticated users still see this role’s bottom nav (e.g. discovery). */
+  allowGuest?: boolean;
 };
 
 const ICON_SIZE = 22;
@@ -39,27 +41,38 @@ const IMMERSIVE_SEGMENTS = [
 ];
 
 function isActivePath(pathname: string, href: string) {
+  // Role homes (`/athlete`) are exact-only; discovery highlights the whole tree.
+  if (href === "/discovery") {
+    return pathname === href || pathname.startsWith(`${href}/`);
+  }
   if (href.split("/").filter(Boolean).length === 1) {
     return pathname === href;
   }
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function RoleAppNavigation({ children, role }: RoleAppNavigationProps) {
+export function RoleAppNavigation({
+  children,
+  role,
+  allowGuest = false,
+}: RoleAppNavigationProps) {
   const pathname = usePathname();
   const router = useRouter();
   const t = useTranslations("BottomNav");
-  const { activeRole, isReady } = useAuth();
+  const { activeRole, isAuthenticated, isReady } = useAuth();
   const expectedRole = role === "owner" ? "club_owner" : role;
+  const isGuest = allowGuest && isReady && !isAuthenticated;
+  const roleMatches = isReady && activeRole === expectedRole;
   const hidesNavigation = IMMERSIVE_SEGMENTS.some((segment) =>
     pathname.includes(segment),
   );
 
   useEffect(() => {
+    if (isGuest) return;
     if (isReady && activeRole && activeRole !== expectedRole) {
       router.replace(roleHomePath(activeRole));
     }
-  }, [activeRole, expectedRole, isReady, router]);
+  }, [activeRole, expectedRole, isGuest, isReady, router]);
 
   const configs = {
     athlete: {
@@ -74,7 +87,7 @@ export function RoleAppNavigation({ children, role }: RoleAppNavigationProps) {
           key: "discover",
           label: t("discover"),
           icon: <Compass size={ICON_SIZE} />,
-          href: "/athlete/discover",
+          href: "/discovery",
         },
         {
           key: "activity",
@@ -204,7 +217,7 @@ export function RoleAppNavigation({ children, role }: RoleAppNavigationProps) {
 
   const config = configs[role];
 
-  if (!isReady || activeRole !== expectedRole) {
+  if (!isReady || (!roleMatches && !isGuest)) {
     return <div aria-busy="true" className="min-h-dvh bg-background" />;
   }
 

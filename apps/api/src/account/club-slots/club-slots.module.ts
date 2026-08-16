@@ -11,6 +11,8 @@ import {
 import { ClubSpace, ClubSpaceSchema } from '../../schemas/club-space.schema';
 import { AdminClubSlotsController } from './admin-club-slots.controller';
 import { ClubSlotsService } from './club-slots.service';
+import { DiscoveryClassesController } from './discovery-classes.controller';
+import { DiscoveryClassesService } from './discovery-classes.service';
 import { DiscoveryClubSlotsController } from './discovery-club-slots.controller';
 import { OwnerClubSlotsController } from './owner-club-slots.controller';
 
@@ -29,8 +31,9 @@ import { OwnerClubSlotsController } from './owner-club-slots.controller';
     OwnerClubSlotsController,
     AdminClubSlotsController,
     DiscoveryClubSlotsController,
+    DiscoveryClassesController,
   ],
-  providers: [ClubSlotsService],
+  providers: [ClubSlotsService, DiscoveryClassesService],
   exports: [ClubSlotsService, MongooseModule],
 })
 export class ClubSlotsModule {}

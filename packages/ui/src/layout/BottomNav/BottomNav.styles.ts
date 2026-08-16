@@ -4,13 +4,12 @@ import { tv } from "tailwind-variants";
 export const bottomNavVariants = tv({
   slots: {
     root: [
-      "fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-1/2 z-50",
-      "w-[calc(100%-2rem)] max-w-lg -translate-x-1/2",
+      "fixed bottom-0 left-1/2 z-50",
+      "w-full max-w-xl -translate-x-1/2",
       "isolate flex min-h-18 items-end justify-around overflow-visible",
-      "rounded-[1.75rem] bg-surface/92 px-1.5 py-2",
-      "shadow-[0_18px_48px_color-mix(in_oklch,var(--foreground)_14%,transparent)] backdrop-blur-2xl",
+      "bg-gradient-to-t from-background to-transparent",
+      "px-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-8",
     ].join(" "),
-    blur: "pointer-events-none absolute inset-0 z-0",
     item: "relative z-10 flex min-w-0 flex-1 flex-col items-center gap-0.5 py-1",
     itemButton: [
       "flex size-10 items-center justify-center rounded-[0.875rem]",

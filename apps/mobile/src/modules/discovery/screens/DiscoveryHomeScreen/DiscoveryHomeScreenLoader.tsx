@@ -3,6 +3,7 @@
 import { ClubCardSkeleton } from "@repo/ui/cards/ClubCard";
 import { CoachExpertCardSkeleton } from "@repo/ui/cards/CoachExpertCard";
 import { SportCategoryCardSkeleton } from "@repo/ui/cards/SportCategoryCard";
+import { useAuth } from "@/shared/providers/AuthProvider";
 import { useDiscoveryHome } from "../../lib/use-discovery-home";
 import { usePlacementBanners } from "../../lib/use-placement-banners";
 import { DiscoveryHomeScreen } from "./DiscoveryHomeScreen";
@@ -41,8 +42,11 @@ function DiscoveryHomePageSkeleton() {
 }
 
 export function DiscoveryHomeScreenLoader({
-  compact = false,
+  compact: compactProp,
 }: { compact?: boolean } = {}) {
+  const { isAuthenticated, activeRole } = useAuth();
+  const compact =
+    compactProp ?? (isAuthenticated && activeRole === "athlete");
   const home = useDiscoveryHome();
   const banners = usePlacementBanners("discovery_home");
 
@@ -63,6 +67,7 @@ export function DiscoveryHomeScreenLoader({
       classes={home.classes}
       coachCityName={home.coachCityName}
       coaches={home.coaches}
+      equipment={home.equipment}
       features={home.features}
       galleryItems={compact ? [] : home.galleryItems}
       isLoading={home.isLoading}

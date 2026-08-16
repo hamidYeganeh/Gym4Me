@@ -10,18 +10,30 @@ export type CoachMapMarker = CoachMapLatLng & {
   id: string;
   /** Optional avatar / logo shown inside the location pin. */
   image?: string | null;
+  /** Distance chip above the pin (e.g. "۵۰۰ متر"). */
+  distanceLabel?: string | null;
 };
 
 export type CoachMapProps = Omit<
   HTMLAttributes<HTMLDivElement>,
   "children" | "onSelect"
 > & {
-  /** Coach pin markers. */
+  /** Coach / club pin markers. */
   markers: readonly CoachMapMarker[];
   /** Currently selected marker id. */
   selectedId?: string | null;
+  /**
+   * Nearest club/coach id — draws pulse rings on that pin.
+   * Defaults to `selectedId` when omitted.
+   */
+  nearestId?: string | null;
   /** Called when a pin is pressed. */
   onSelect?: (id: string) => void;
+  /**
+   * Concentric range rings (meters) around the selected / nearest pin.
+   * Empty / omitted disables rings.
+   */
+  rangeRingMeters?: readonly number[];
   /** Accessible label for zoom in. */
   zoomInLabel?: string;
   /** Accessible label for zoom out. */

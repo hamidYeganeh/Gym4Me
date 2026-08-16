@@ -67,6 +67,7 @@ import {
   createCoachSlotsApi,
 } from "@repo/api/booking";
 import {
+  createDiscoveryClassesApi,
   createDiscoveryClubsApi,
   createDiscoveryClubSlotsApi,
   createDiscoveryCoachesApi,
@@ -124,6 +125,7 @@ export const accountLifecycle = createAccountLifecycleApi(apiClient);
 export const accountCalendar = createAccountCalendarApi(apiClient);
 export const discoveryClubs = createDiscoveryClubsApi(apiClient);
 export const discoveryClubSlots = createDiscoveryClubSlotsApi(apiClient);
+export const discoveryClasses = createDiscoveryClassesApi(apiClient);
 export const discoveryCoaches = createDiscoveryCoachesApi(apiClient);
 export const discoveryCoachSlots = createDiscoveryCoachSlotsApi(apiClient);
 export const accountBookings = createAccountBookingsApi(apiClient);

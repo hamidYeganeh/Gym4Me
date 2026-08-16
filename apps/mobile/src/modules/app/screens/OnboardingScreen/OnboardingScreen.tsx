@@ -85,6 +85,7 @@ import {
   mediaApi,
   mediaFileUrl,
 } from "@/shared/lib/api";
+import { roleHomePath } from "@/shared/lib/role-routes";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import type {
   UpdateAddressInput,
@@ -151,7 +152,7 @@ export function OnboardingScreen({ className }: OnboardingScreenProps) {
   const styles = onboardingScreenVariants();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, activeRole } = useAuth();
   const reduceMotion = useReducedMotion();
   const [textDirection] = useState<"rtl" | "ltr">(readDocumentDirection);
   const [slide, setSlide] = useState(0);
@@ -594,7 +595,10 @@ export function OnboardingScreen({ className }: OnboardingScreenProps) {
       ]);
     }
     const next = searchParams.get("next");
-    router.replace(next && next.startsWith("/") ? next : "/home");
+    const fallback = isAuthenticated
+      ? roleHomePath(activeRole)
+      : "/discovery";
+    router.replace(next && next.startsWith("/") ? next : fallback);
   };
 
   const activePermissionKind: DevicePermissionKind | null =

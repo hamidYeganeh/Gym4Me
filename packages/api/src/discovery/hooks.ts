@@ -17,6 +17,10 @@ export {
   useDiscoveryClubSpaces,
 } from "./club-slots.hooks";
 export {
+  useDiscoveryClass,
+  useDiscoveryClassesList,
+} from "./classes.hooks";
+export {
   useDiscoveryCoach,
   useDiscoveryCoachesList,
 } from "./coaches.hooks";

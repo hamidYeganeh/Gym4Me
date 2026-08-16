@@ -82,7 +82,7 @@ export function WelcomeIntroduceScreen({
 
   const finish = () => {
     markWelcomeSeen();
-    router.replace("/home");
+    router.replace("/discovery");
   };
 
   const goPrev = () => {

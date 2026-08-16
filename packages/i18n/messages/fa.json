@@ -4579,6 +4579,17 @@
     "title": "کشف کنید",
     "subtitle": "بر اساس ویژگی، شهر، فاصله، مربی، کلاس و امکانات، گزینه مناسب خود را پیدا کنید.",
     "back": "بازگشت",
+    "locationFallback": "انتخاب موقعیت",
+    "locationChipAria": "موقعیت فعلی: {location}. برای تغییر ضربه بزنید",
+    "locationSheetTitle": "ویرایش آدرس",
+    "locationSheetDescription": "آدرس مورد نظر را انتخاب کنید تا باشگاه‌ها و مربیان نزدیک‌تر نمایش داده شوند.",
+    "locationSheetEmpty": "هنوز آدرسی ذخیره نکرده‌اید.",
+    "locationSheetAdd": "افزودن آدرس جدید",
+    "locationSheetUpdate": "به‌روزرسانی",
+    "locationSheetClose": "بستن",
+    "locationProfileLabel": "آدرس پروفایل",
+    "filterAria": "فیلترها",
+    "searchAria": "جستجو",
     "bannersLabel": "بنرهای تبلیغاتی",
     "bannerSlideLabel": "اسلاید {current} از {total}",
     "quickNavLabel": "دسترسی سریع",
@@ -4600,6 +4611,7 @@
     "classesHint": "از HIIT تا یوگا و رزمی",
     "amenitiesTitle": "امکانات ورزشی",
     "amenitiesHint": "باشگاه‌ها را با امکانات فیلتر کنید",
+    "equipmentTitle": "جستجو بر اساس تجهیزات",
     "sportsTitle": "رشته‌ها و ورزش‌های مختلف",
     "sportsHint": "از بدنسازی تا شنا و رزمی",
     "articlesTitle": "مقالات و راهنماها",
@@ -4622,6 +4634,17 @@
     "yoe": "{years} سال تجربه",
     "emptyClubs": "باشگاهی برای نمایش نیست.",
     "emptyCoaches": "مربی‌ای برای نمایش نیست."
+  },
+  "DiscoverySearch": {
+    "pageTitle": "جستجو",
+    "back": "بازگشت",
+    "searchAria": "جستجوی مربی و باشگاه",
+    "placeholder": "جستجوی مربی تناسب اندام…",
+    "filterAria": "فیلترها",
+    "locationAria": "موقعیت فعلی: {location}. برای تغییر ضربه بزنید",
+    "latestTitle": "آخرین جستجوها",
+    "latestEmpty": "هنوز جستجویی ذخیره نشده است.",
+    "latestItemAria": "جستجوی مجدد: {query}"
   },
   "DiscoveryClubs": {
     "pageTitle": "باشگاه‌ها",
@@ -4663,15 +4686,16 @@
     "viewAllClubs": "مشاهده همه باشگاه‌ها"
   },
   "DiscoveryMap": {
-    "pageTitle": "Coach Near Me",
-    "title": "Coach Near Me",
-    "back": "Back",
-    "search": "Search",
-    "zoom": "Map zoom",
-    "zoomIn": "Zoom in",
-    "zoomOut": "Zoom out",
-    "getDirections": "Get Direction",
-    "viewDetails": "View Details"
+    "pageTitle": "باشگاه‌های نزدیک شما",
+    "title": "باشگاه‌های نزدیک شما",
+    "back": "بازگشت",
+    "search": "جستجو",
+    "zoom": "بزرگ‌نمایی نقشه",
+    "zoomIn": "بزرگ‌نمایی",
+    "zoomOut": "کوچک‌نمایی",
+    "getDirections": "مسیریابی",
+    "viewDetails": "مشاهده جزئیات",
+    "verified": "تأییدشده"
   },
   "CoachDetail": {
     "pageTitle": "جزئیات مربی",
@@ -5260,7 +5284,14 @@
     "clubPricePrefix": "از",
     "clubPriceSuffix": "تومان",
     "clubShare": "اشتراک‌گذاری",
-    "clubFavorite": "علاقه‌مندی"
+    "clubFavorite": "علاقه‌مندی",
+    "todoTitle": "راه‌اندازی حساب باشگاه را تمام کنید.",
+    "todoStepLabel": "گام {current} از {total}",
+    "todoProgressLabel": "پیشرفت راه‌اندازی باشگاه",
+    "todoItemClubProfile": "پروفایل باشگاه",
+    "todoItemStaff": "افزودن پرسنل",
+    "todoItemVerify": "تأیید کسب‌وکار",
+    "todoItemFirstClass": "ایجاد اولین کلاس"
   },
   "CoachHome": {
     "title": "خانه مربی",
@@ -5313,7 +5344,14 @@
     "messagesLink": "پیام‌ها",
     "messagesLinkDescription": "گفتگو با شاگردان و پیگیری پیام‌ها.",
     "analyticsLink": "آمار",
-    "analyticsLinkDescription": "شاخص‌های عملکرد و نظرات شاگردان."
+    "analyticsLinkDescription": "شاخص‌های عملکرد و نظرات شاگردان.",
+    "todoTitle": "راه‌اندازی حساب مربی را تمام کنید.",
+    "todoStepLabel": "گام {current} از {total}",
+    "todoProgressLabel": "پیشرفت راه‌اندازی مربی",
+    "todoItemProfile": "تکمیل پروفایل",
+    "todoItemAvailability": "تنظیم زمان‌های آزاد",
+    "todoItemVerify": "تأیید حساب",
+    "todoItemFirstProgram": "ساخت اولین برنامه"
   },
   "AthleteHome": {
     "title": "خانه ورزشکار",
@@ -5354,7 +5392,14 @@
     "workoutsTitle": "تمرین‌ها",
     "referralTitle": "معرفی",
     "socialTitle": "اجتماعی",
-    "nutritionTitle": "تغذیه"
+    "nutritionTitle": "تغذیه",
+    "todoTitle": "راه‌اندازی حساب خود را تمام کنید.",
+    "todoStepLabel": "گام {current} از {total}",
+    "todoProgressLabel": "پیشرفت راه‌اندازی حساب",
+    "todoItemAssessment": "ارزیابی تناسب اندام",
+    "todoItemProfile": "تنظیم پروفایل",
+    "todoItemVerify": "تأیید حساب",
+    "todoItemFirstExercise": "ثبت اولین تمرین"
   },
   "AthleteSocial": {
     "pageTitle": "فید اجتماعی",

@@ -976,17 +976,6 @@ export class MembershipsService {
     return this.toMembershipPublic(membership);
   }
 
-  async listMembershipEvents(membershipId: string, clubId?: string) {
-    await this.findMembershipOrFail(membershipId, clubId);
-    const items = await this.eventModel
-      .find({ membershipId: new Types.ObjectId(membershipId) })
-      .sort({ occurredAt: -1 })
-      .limit(200);
-    return {
-      result: items.map((e) => this.toEventPublic(e)),
-    };
-  }
-
   // ── Platform plans (admin) ──────────────────────────────────────────────
 
   async adminCreatePlatformPlan(
@@ -1543,22 +1532,6 @@ export class MembershipsService {
         },
       };
     });
-  }
-
-  private toEventPublic(e: MembershipEventDocument) {
-    return {
-      id: e._id.toString(),
-      membershipId: e.membershipId.toString(),
-      type: e.type,
-      actor: {
-        userId: e.actor.userId?.toString(),
-        kind: e.actor.kind,
-      },
-      reason: e.reason,
-      payload: e.payload,
-      occurredAt: e.occurredAt,
-      createdAt: e.createdAt,
-    };
   }
 
   private toPlatformPlanPublic(plan: PlatformPlanDocument) {

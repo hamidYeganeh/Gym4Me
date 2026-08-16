@@ -499,7 +499,7 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
   ];
 
   const discoveryScreens: DemoNavLink[] = [
-    { href: "/home", label: labels.screenHome },
+    { href: "/discovery", label: labels.screenHome },
     { href: "/discovery/clubs", label: labels.screenDiscoveryClubs },
     { href: "/discovery/map", label: labels.screenDiscoveryMap },
     { href: "/discovery/coaches", label: labels.screenDiscoveryCoaches },
@@ -1509,12 +1509,14 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
         </h2>
         <CoachMapCard
           address={labels.coachMapAddress}
+          distanceLabel={labels.coachNearbyDistance}
           getDirectionsLabel={labels.coachMapGetDirections}
           image={PLACEHOLDER_IMAGE}
           rating={4.8}
           ratingCount={96}
           specialtyLabel={labels.coachSpecialty}
           title={labels.coachName}
+          verified
           viewDetailsLabel={labels.coachMapViewDetails}
         />
       </section>

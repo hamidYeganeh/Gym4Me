@@ -7,12 +7,15 @@ import { discoveryClubs, mediaFileUrl } from "@/shared/lib/api";
 import {
   DEFAULT_SELECTED_COACH_ID,
   MAP_COACHES,
+  pickNearestMapCoachId,
+  withMapDistances,
   type MapCoach,
 } from "./map-data";
 
 type State = {
   coaches: MapCoach[];
   initialSelectedId: string;
+  nearestId: string;
   isLoading: boolean;
   source: "api" | "mock";
 };
@@ -38,11 +41,45 @@ function readGeo(): Promise<{ lat: number; lng: number } | null> {
   });
 }
 
+function toPins(
+  clubs: readonly {
+    id: string;
+    identity: { name: string; coverMediaId?: string | null };
+    gallery: readonly { mediaId?: string | null }[];
+    location?: {
+      point?: { lat: number; lng: number } | null;
+      address?: string | null;
+    } | null;
+    reviewsSummary: { average: number; count: number };
+  }[],
+): MapCoach[] {
+  return clubs
+    .filter((club) => club.location?.point)
+    .map((club) => ({
+      id: club.id,
+      name: club.identity.name,
+      image:
+        mediaFileUrl(club.identity.coverMediaId) ??
+        mediaFileUrl(club.gallery[0]?.mediaId) ??
+        PLACEHOLDER_IMAGE,
+      specialtyLabel: club.location?.address?.split("،")[0] ?? "باشگاه",
+      rating: club.reviewsSummary.average,
+      ratingCount: club.reviewsSummary.count,
+      address: club.location?.address ?? "",
+      lat: club.location!.point!.lat,
+      lng: club.location!.point!.lng,
+      detailsHref: `/discovery/clubs/${club.id}`,
+      // Discovery list only returns approved clubs.
+      verified: true,
+    }));
+}
+
 /** Map pins from approved clubs — prefers nearby geo query. */
 export function useDiscoveryMapPins(): State {
   const [state, setState] = useState<State>({
     coaches: MAP_COACHES,
     initialSelectedId: DEFAULT_SELECTED_COACH_ID,
+    nearestId: DEFAULT_SELECTED_COACH_ID,
     isLoading: true,
     source: "mock",
   });
@@ -62,69 +99,46 @@ export function useDiscoveryMapPins(): State {
         const page = await discoveryClubs.list(query);
         if (cancelled) return;
 
-        let pins: MapCoach[] = page.result
-          .filter((club) => club.location?.point)
-          .map((club) => ({
-            id: club.id,
-            name: club.identity.name,
-            image:
-              mediaFileUrl(club.identity.coverMediaId) ??
-              mediaFileUrl(club.gallery[0]?.mediaId) ??
-              PLACEHOLDER_IMAGE,
-            specialtyLabel:
-              club.location?.address?.split("،")[0] ?? "باشگاه",
-            rating: club.reviewsSummary.average,
-            ratingCount: club.reviewsSummary.count,
-            address: club.location?.address ?? "",
-            lat: club.location!.point!.lat,
-            lng: club.location!.point!.lng,
-            detailsHref: `/discovery/clubs/${club.id}`,
-          }));
+        let pins = toPins(page.result);
 
         if (pins.length === 0) {
           const fallback = await discoveryClubs.list({ page_size: 40 });
           if (cancelled) return;
-          pins = fallback.result
-            .filter((club) => club.location?.point)
-            .map((club) => ({
-              id: club.id,
-              name: club.identity.name,
-              image:
-                mediaFileUrl(club.identity.coverMediaId) ??
-                mediaFileUrl(club.gallery[0]?.mediaId) ??
-                PLACEHOLDER_IMAGE,
-              specialtyLabel:
-                club.location?.address?.split("،")[0] ?? "باشگاه",
-              rating: club.reviewsSummary.average,
-              ratingCount: club.reviewsSummary.count,
-              address: club.location?.address ?? "",
-              lat: club.location!.point!.lat,
-              lng: club.location!.point!.lng,
-              detailsHref: `/discovery/clubs/${club.id}`,
-            }));
+          pins = toPins(fallback.result);
         }
 
         if (pins.length === 0) {
+          const mock = withMapDistances(MAP_COACHES, geo);
+          const nearestId =
+            pickNearestMapCoachId(mock) ?? DEFAULT_SELECTED_COACH_ID;
           setState({
-            coaches: MAP_COACHES,
-            initialSelectedId: DEFAULT_SELECTED_COACH_ID,
+            coaches: mock,
+            initialSelectedId: nearestId,
+            nearestId,
             isLoading: false,
             source: "mock",
           });
           return;
         }
 
+        const ranked = withMapDistances(pins, geo);
+        const nearestId = pickNearestMapCoachId(ranked) ?? ranked[0]!.id;
         setState({
-          coaches: pins,
-          initialSelectedId: pins[0]!.id,
+          coaches: ranked,
+          initialSelectedId: nearestId,
+          nearestId,
           isLoading: false,
           source: "api",
         });
       } catch {
         if (cancelled) return;
+        const mock = withMapDistances(MAP_COACHES, TEHRAN);
+        const nearestId =
+          pickNearestMapCoachId(mock) ?? DEFAULT_SELECTED_COACH_ID;
         setState({
-          coaches: MAP_COACHES,
-          initialSelectedId: DEFAULT_SELECTED_COACH_ID,
+          coaches: mock,
+          initialSelectedId: nearestId,
+          nearestId,
           isLoading: false,
           source: "mock",
         });

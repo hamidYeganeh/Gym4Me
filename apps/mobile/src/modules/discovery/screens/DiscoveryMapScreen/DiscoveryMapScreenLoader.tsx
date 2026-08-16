@@ -19,6 +19,7 @@ export function DiscoveryMapScreenLoader() {
     <DiscoveryMapScreen
       coaches={map.coaches}
       initialSelectedId={map.initialSelectedId}
+      nearestId={map.nearestId}
     />
   );
 }

@@ -127,16 +127,6 @@ export class OwnerMembershipsController {
     return this.memberships.getClubMembership(clubId, membershipId);
   }
 
-  @Get(':membershipId/events')
-  @ApiOperation({ summary: 'Append-only membership event history' })
-  async events(
-    @CurrentUser('sub') userId: string,
-    @Param('clubId') clubId: string,
-    @Param('membershipId') membershipId: string,
-  ) {
-    return this.memberships.listMembershipEvents(membershipId, clubId);
-  }
-
   @Post('import')
   @ApiOperation({ summary: 'Validate or import members parsed from CSV' })
   import(

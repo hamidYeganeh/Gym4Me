@@ -67,6 +67,16 @@ export type HomeAmenityItem = {
     | "open24";
 };
 
+export type HomeEquipmentItem = {
+  id: string;
+  slug: string;
+  name: string;
+  image: string;
+  /** Chip width emphasis in the wrapping flex row. */
+  size?: "sm" | "md" | "lg";
+  href: string;
+};
+
 export type HomeGalleryItem = {
   id: string;
   clubId: string;
@@ -397,6 +407,49 @@ export const MOCK_AMENITIES: HomeAmenityItem[] = [
     name: "شبانه‌روزی",
     subtitle: "تمرین در هر ساعت",
     iconKey: "open24",
+  },
+];
+
+export const MOCK_EQUIPMENT: HomeEquipmentItem[] = [
+  {
+    id: "equipment-dumbbell",
+    slug: "dumbbell",
+    name: "دمبل",
+    image: "/demo/equipment/equipment-dumbbell.png",
+    size: "md",
+    href: "/discovery/clubs?equipmentSlug=dumbbell",
+  },
+  {
+    id: "equipment-bench",
+    slug: "bench",
+    name: "نیمکت",
+    image: "/demo/equipment/equipment-bench.png",
+    size: "md",
+    href: "/discovery/clubs?equipmentSlug=bench",
+  },
+  {
+    id: "equipment-treadmill",
+    slug: "treadmill",
+    name: "تردمیل",
+    image: "/demo/equipment/equipment-treadmill.png",
+    size: "md",
+    href: "/discovery/clubs?equipmentSlug=treadmill",
+  },
+  {
+    id: "equipment-resistance-band",
+    slug: "resistance-band",
+    name: "کش مقاومتی",
+    image: "/demo/equipment/equipment-resistance-band.png",
+    size: "lg",
+    href: "/discovery/clubs?equipmentSlug=resistance-band",
+  },
+  {
+    id: "equipment-kettlebell",
+    slug: "kettlebell",
+    name: "کتل‌بل",
+    image: "/demo/equipment/equipment-kettlebell.png",
+    size: "sm",
+    href: "/discovery/clubs?equipmentSlug=kettlebell",
   },
 ];
 

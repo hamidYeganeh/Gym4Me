@@ -163,8 +163,8 @@
     var(--background)
   );
   --map-highlight: var(--foreground);
-  /* Strip Carto Dark Matter blue cast → neutral SVG greys */
-  --map-tile-filter: grayscale(1) brightness(0.92) contrast(1.06);
+  /* Strip Carto Dark Matter blue cast → label-free midnight greys */
+  --map-tile-filter: grayscale(1) brightness(0.78) contrast(1.18) saturate(0);
 
   /* Stats / chart palette (same in dark — saturated cards stay vivid) */
   --stats-red: #dc2626;
@@ -206,6 +206,21 @@
   --duration-moderate: var(--duration-moderate);
   --duration-slow: var(--duration-slow);
   --ease-app: var(--ease-app);
+}
+
+/* Discovery map — expanding ring behind the nearest club pin */
+@keyframes g4m-map-pin-pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.45);
+    opacity: 0.55;
+  }
+  70% {
+    opacity: 0.12;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.35);
+    opacity: 0;
+  }
 }
 
 /**

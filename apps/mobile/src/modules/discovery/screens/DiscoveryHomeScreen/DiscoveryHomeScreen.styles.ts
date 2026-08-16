@@ -1,5 +1,27 @@
 export const discoveryHomeScreenStyles = {
   root: "bg-background",
+  headerSpacer:
+    "pointer-events-none shrink-0 h-[calc(4rem+env(safe-area-inset-top))]",
+  header: [
+    "fixed top-0 left-1/2 z-40 w-full max-w-xl -translate-x-1/2",
+    "overflow-hidden rounded-b-[2.5rem] bg-surface",
+    "pt-[env(safe-area-inset-top)]",
+  ].join(" "),
+  headerBar: "relative flex min-h-16 items-center justify-center px-screen py-3",
+  filterButton: [
+    "absolute start-screen top-1/2 z-10 -translate-y-1/2",
+    "rounded-[0.875rem] text-foreground",
+  ].join(" "),
+  searchButton: [
+    "absolute end-screen top-1/2 z-10 -translate-y-1/2",
+    "rounded-[0.875rem] text-foreground",
+  ].join(" "),
+  locationChip: [
+    "h-9 gap-1.5 rounded-full bg-default px-3.5",
+    "text-default-foreground shadow-none",
+    "hover:bg-default/80 data-[hovered=true]:bg-default/80",
+  ].join(" "),
+  locationLabel: "max-w-[12rem] truncate text-sm font-medium",
   content: "flex flex-col gap-8 pb-12 pt-2",
   intro: "flex flex-col gap-2",
   introTitle: "text-balance tracking-tight text-foreground",
@@ -24,6 +46,7 @@ export const discoveryHomeScreenStyles = {
   classCard: "w-72 shrink-0 snap-start",
   amenityCard:
     "h-auto w-[min(16rem,72vw)] shrink-0 snap-start bg-transparent p-0 shadow-none",
+  equipmentGrid: "flex flex-wrap gap-2",
   sportCard: "w-56 shrink-0 snap-start",
   articleCard: "w-[min(17.5rem,78vw)] shrink-0 snap-start",
   galleryCard: "w-[10rem] shrink-0 snap-start",

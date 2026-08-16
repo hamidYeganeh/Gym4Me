@@ -3,10 +3,13 @@ import type {
   ClubCalendarOccurrence,
   ClubCalendarResponse,
   ClubClass,
+  DiscoveryClass,
 } from "@repo/api/discovery";
 import { mediaFileUrl } from "@/shared/lib/api";
+import type { BrowseClass } from "./classes-browse-data";
 import type { ClassDetail } from "./class-detail-data";
 import type { ClubDetailClassPreview } from "./club-detail-data";
+import type { HomeClassItem } from "./home-browse-data";
 import {
   formatJalaliDateShort,
   slotDurationLabel,
@@ -120,6 +123,36 @@ export function mapDiscoveryClassToPreview(
   };
 }
 
+/** Global discovery catalog card (`/discovery/classes`). */
+export function mapDiscoveryClassToBrowse(cls: DiscoveryClass): BrowseClass {
+  const preview = mapDiscoveryClassToPreview(cls);
+  const clubName = cls.club?.name?.trim();
+  return {
+    id: cls.id,
+    clubId: cls.clubId,
+    title: preview.title,
+    author: preview.author,
+    category: clubName || preview.category,
+    date: preview.date,
+    duration: preview.duration,
+    backgroundImage: preview.backgroundImage,
+  };
+}
+
+export function mapDiscoveryClassToHomeItem(cls: DiscoveryClass): HomeClassItem {
+  const browse = mapDiscoveryClassToBrowse(cls);
+  return {
+    id: browse.id,
+    clubId: browse.clubId,
+    title: browse.title,
+    author: browse.author,
+    category: browse.category,
+    date: browse.date,
+    duration: browse.duration,
+    backgroundImage: browse.backgroundImage,
+  };
+}
+
 export function mapDiscoveryClassToDetail(
   clubId: string,
   cls: ClubClass,
@@ -136,6 +169,10 @@ export function mapDiscoveryClassToDetail(
   const minutesLabel = next
     ? slotDurationLabel(next.startTime, next.endTime)
     : "";
+  const clubName =
+    "club" in cls && cls.club && typeof cls.club === "object" && "name" in cls.club
+      ? String((cls.club as { name?: string }).name ?? "").trim()
+      : "";
 
   const coachId =
     typeof cls.coachId === "string" && cls.coachId
@@ -146,8 +183,8 @@ export function mapDiscoveryClassToDetail(
 
   return {
     id: cls.id,
-    clubId,
-    category: "کلاس گروهی",
+    clubId: cls.clubId || clubId,
+    category: clubName || "کلاس گروهی",
     title: cls.title,
     tagline: coachName ? `با مربی ${coachName}` : (cls.description ?? ""),
     image: cover,

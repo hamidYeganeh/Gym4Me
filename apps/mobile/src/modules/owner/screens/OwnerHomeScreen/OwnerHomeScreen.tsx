@@ -3,6 +3,7 @@
 import { Typography } from "@heroui/react";
 import { Building2, UsersThree, UsersTwo, Wallet } from "@repo/icons";
 import { QuickActionCard } from "@repo/ui/cards/QuickActionCard";
+import { TodoCard, type TodoCardItem } from "@repo/ui/cards/TodoCard";
 import { stagger, transition } from "@repo/theme";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { ProfileHeader } from "@repo/ui/layout/ProfileHeader";
@@ -60,6 +61,33 @@ export function OwnerHomeScreen({
     user?.phone ||
     t("profileName");
 
+  const setupItems: TodoCardItem[] = [
+    {
+      id: "club-profile",
+      label: t("todoItemClubProfile"),
+      status: "completed",
+    },
+    {
+      id: "staff",
+      label: t("todoItemStaff"),
+      status: "completed",
+    },
+    {
+      id: "verify",
+      label: t("todoItemVerify"),
+      status: "completed",
+    },
+    {
+      id: "first-class",
+      label: t("todoItemFirstClass"),
+      status: "pending",
+      onPress: () => router.push("/owner/clubs"),
+    },
+  ];
+  const completedCount = setupItems.filter(
+    (item) => item.status === "completed",
+  ).length;
+
   return (
     <AppLayout
       className={styles.root}
@@ -81,6 +109,18 @@ export function OwnerHomeScreen({
         initial={reduceMotion ? false : "hidden"}
         variants={contentVariants}
       >
+        <StaggerSection>
+          <TodoCard
+            items={setupItems}
+            progressLabel={t("todoProgressLabel")}
+            stepLabel={t("todoStepLabel", {
+              current: completedCount,
+              total: setupItems.length,
+            })}
+            title={t("todoTitle")}
+          />
+        </StaggerSection>
+
         <StaggerSection>
           <section
             aria-label={t("quickLinksTitle")}

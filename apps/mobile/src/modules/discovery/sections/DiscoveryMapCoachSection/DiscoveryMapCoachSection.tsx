@@ -8,6 +8,7 @@ export function DiscoveryMapCoachSection({
   coach,
   getDirectionsLabel,
   viewDetailsLabel,
+  verifiedLabel,
   onGetDirections,
   onViewDetails,
 }: DiscoveryMapCoachSectionProps) {
@@ -16,6 +17,7 @@ export function DiscoveryMapCoachSection({
       <CoachMapCard
         address={coach.address}
         className={styles.card}
+        distanceLabel={coach.distanceLabel}
         getDirectionsLabel={getDirectionsLabel}
         image={coach.image}
         imageAlt={coach.name}
@@ -25,6 +27,8 @@ export function DiscoveryMapCoachSection({
         ratingCount={coach.ratingCount}
         specialtyLabel={coach.specialtyLabel}
         title={coach.name}
+        verified={coach.verified}
+        verifiedLabel={verifiedLabel}
         viewDetailsLabel={viewDetailsLabel}
       />
     </section>

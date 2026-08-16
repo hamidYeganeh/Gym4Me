@@ -13,6 +13,7 @@ import {
   galleryFromImages,
   type GalleryMediaItem,
 } from "./gallery-media";
+import { getBrowseClass } from "./classes-browse-data";
 
 export type ClassDetailInstruction = {
   title: string;
@@ -554,6 +555,40 @@ export function getClassDetail(
   }
 
   return createFallbackClass(club, id);
+}
+
+/**
+ * Resolve club id for a global `/discovery/classes/:classId` route.
+ * Prefers the catalog entry, then falls back to browse ownership.
+ */
+export function getClassClubId(classId: string): string | undefined {
+  const id = classId.trim();
+  if (!id) return undefined;
+  const known = CLASSES[id];
+  if (known?.clubId) return known.clubId;
+  return getBrowseClass(id)?.clubId;
+}
+
+/** Class detail for global discovery routes (club id inferred when possible). */
+export function getClassDetailById(
+  classId: string,
+  clubIdHint?: string,
+): ClassDetail | undefined {
+  const id = classId.trim();
+  if (!id) return undefined;
+
+  const known = CLASSES[id];
+  if (known) {
+    return { ...known, clubId: clubIdHint?.trim() || known.clubId };
+  }
+
+  const clubId = clubIdHint?.trim() || getClassClubId(id);
+  if (!clubId) return undefined;
+  return getClassDetail(clubId, id);
+}
+
+export function getAllClassIds(): string[] {
+  return Object.keys(CLASSES);
 }
 
 /** Pairs for Capacitor static export (`output: "export"`). */

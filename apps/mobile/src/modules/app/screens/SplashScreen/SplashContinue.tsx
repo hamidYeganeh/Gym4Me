@@ -11,12 +11,12 @@ import { useAuth } from "@/shared/providers/AuthProvider";
 const CONTINUE_DELAY_MS = 2800;
 
 type SplashContinueProps = {
-  /** Destination for returning guests who already saw welcome (default `/home`). */
+  /** Destination for returning guests who already saw welcome (default `/discovery`). */
   guestHref?: string;
 };
 
 /** Soft-continues past splash based on session + first-visit welcome. */
-export function SplashContinue({ guestHref = "/home" }: SplashContinueProps) {
+export function SplashContinue({ guestHref = "/discovery" }: SplashContinueProps) {
   const router = useRouter();
   const { isAuthenticated, activeRole, session, isReady } = useAuth();
 

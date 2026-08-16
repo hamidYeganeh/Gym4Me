@@ -21,16 +21,15 @@ export const profileHeaderVariants = tv({
       "bg-linear-to-t from-background via-background/80 to-transparent",
     ].join(" "),
     coverBlur: "pointer-events-none absolute inset-x-0 bottom-0 z-[2] h-[55%]",
-    veil: [
+    /** Collapsed shell — solid surface (no gradient). */
+    shell: [
       "pointer-events-none absolute inset-0 z-[3]",
-      "bg-linear-to-t from-transparent via-background/85 to-background",
+      "rounded-b-[2.5rem] bg-surface",
     ].join(" "),
     stage: "relative z-10 w-full",
     avatar: [
-      "absolute start-screen z-20 overflow-hidden rounded-[1.75rem]",
+      "absolute start-screen z-20 overflow-hidden",
       "origin-top-left rtl:origin-top-right",
-      "ring-2 ring-background",
-      "bg-accent text-accent-foreground",
     ].join(" "),
     avatarImage: "size-full object-cover",
     notify: "absolute end-screen z-20 flex items-center justify-end",

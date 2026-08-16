@@ -4,6 +4,7 @@ export type DiscoveryMapCoachSectionProps = {
   coach: MapCoach;
   getDirectionsLabel: string;
   viewDetailsLabel: string;
+  verifiedLabel?: string;
   onGetDirections?: () => void;
   onViewDetails?: () => void;
 };

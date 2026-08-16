@@ -2,7 +2,6 @@
 
 import { Button, Link, Popover, Typography } from "@heroui/react";
 import { useState, type ReactNode } from "react";
-import { ProgressiveBlur } from "../../kit/ProgressiveBlur";
 import { bottomNavVariants } from "./BottomNav.styles";
 import type {
   BottomNavItem,
@@ -194,12 +193,6 @@ export function BottomNav({
         />
       ) : null}
       <nav aria-label={ariaLabel} className={slots.root({ className })}>
-        <ProgressiveBlur
-          blurIntensity={0.85}
-          blurLayers={12}
-          className={slots.blur()}
-          direction="bottom"
-        />
         {leading.map(renderItem)}
         {centerNode}
         {trailing.map(renderItem)}

@@ -3,12 +3,11 @@
 import { useEffect, useState } from "react";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import type { ArticleSummary } from "@repo/api";
-import type { ClubClass } from "@repo/api/discovery";
 import {
   articlesApi,
   basicsLocations,
   basicsSports,
-  discoveryClubSlots,
+  discoveryClasses,
   discoveryClubs,
   discoveryCoaches,
   mediaFileUrl,
@@ -26,18 +25,20 @@ import {
   DEFAULT_COACH_CITY_NAME,
   HOME_FEATURE_ITEMS,
   MOCK_AMENITIES,
+  MOCK_EQUIPMENT,
   galleryItemsFromClubs,
   mapLocationToHomeItem,
   mapSportToHomeItem,
   type HomeAmenityItem,
   type HomeArticleItem,
   type HomeClassItem,
+  type HomeEquipmentItem,
   type HomeFeatureItem,
   type HomeGalleryItem,
   type HomeLocationItem,
   type HomeSportItem,
 } from "./home-browse-data";
-import { mapDiscoveryClassToPreview } from "./map-discovery-class";
+import { mapDiscoveryClassToHomeItem } from "./map-discovery-class";
 import { mapDiscoveryClubToBrowse } from "./map-discovery-club-browse";
 import { mapDiscoveryCoachToFeatured } from "./map-discovery-coach";
 
@@ -51,6 +52,7 @@ export type DiscoveryHomeState = {
   coachCityName: string;
   classes: HomeClassItem[];
   amenities: HomeAmenityItem[];
+  equipment: HomeEquipmentItem[];
   sports: HomeSportItem[];
   articles: HomeArticleItem[];
   galleryItems: HomeGalleryItem[];
@@ -131,17 +133,6 @@ function sportImage(node: { coverMediaId: string | null }) {
   return mediaFileUrl(node.coverMediaId) ?? undefined;
 }
 
-function coachNameFromClass(cls: ClubClass): string {
-  if (cls.coach && typeof cls.coach === "object" && "name" in cls.coach) {
-    const name = cls.coach.name as {
-      first?: string | null;
-      last?: string | null;
-    };
-    return [name.first, name.last].filter(Boolean).join(" ").trim();
-  }
-  return "";
-}
-
 export function useDiscoveryHome(): DiscoveryHomeState {
   const [state, setState] = useState<DiscoveryHomeState>({
     features: HOME_FEATURE_ITEMS,
@@ -153,6 +144,7 @@ export function useDiscoveryHome(): DiscoveryHomeState {
     coachCityName: DEFAULT_COACH_CITY_NAME,
     classes: [],
     amenities: [],
+    equipment: MOCK_EQUIPMENT,
     sports: [],
     articles: [],
     galleryItems: [],
@@ -165,13 +157,14 @@ export function useDiscoveryHome(): DiscoveryHomeState {
 
     void (async () => {
       try {
-        const [countriesPage, sportsPage, clubsPage, coachesPage, articlesPage] =
+        const [countriesPage, sportsPage, clubsPage, coachesPage, articlesPage, classesPage] =
           await Promise.all([
             basicsLocations.listCountries(),
             basicsSports.listSports(),
             discoveryClubs.list({ page_size: 16 }),
             discoveryCoaches.list({ page_size: 8 }),
             articlesApi.list({ page_size: 8 }).catch(() => null),
+            discoveryClasses.list({ page_size: 10 }).catch(() => null),
           ]);
 
         if (cancelled) return;
@@ -218,33 +211,9 @@ export function useDiscoveryHome(): DiscoveryHomeState {
           .slice(0, 8)
           .map(mapDiscoveryCoachToFeatured);
 
-        const classClubIds = clubs.slice(0, 4).map((c) => c.id);
-        const classLists = await Promise.all(
-          classClubIds.map((clubId) =>
-            discoveryClubSlots.listClasses(clubId).catch(() => null),
-          ),
-        );
-        if (cancelled) return;
-
-        const classes: HomeClassItem[] = [];
-        for (let i = 0; i < classLists.length; i++) {
-          const list = classLists[i];
-          const clubId = classClubIds[i];
-          if (!list || !clubId) continue;
-          for (const cls of list.result.slice(0, 3)) {
-            const preview = mapDiscoveryClassToPreview(cls);
-            classes.push({
-              id: preview.id,
-              clubId,
-              title: preview.title,
-              author: preview.author || coachNameFromClass(cls) || "مربی",
-              category: preview.category,
-              date: preview.date,
-              duration: preview.duration,
-              backgroundImage: preview.backgroundImage,
-            });
-          }
-        }
+        const classes: HomeClassItem[] = (classesPage?.result ?? [])
+          .slice(0, 10)
+          .map(mapDiscoveryClassToHomeItem);
 
         const slices = buildSlices(clubs);
         const articles =
@@ -256,12 +225,14 @@ export function useDiscoveryHome(): DiscoveryHomeState {
           ...slices,
           coaches,
           coachCityName,
-          classes: classes.slice(0, 10),
+          classes,
           amenities: MOCK_AMENITIES,
+          equipment: MOCK_EQUIPMENT,
           sports: sportsPage.result.slice(0, 12).map((s) =>
             mapSportToHomeItem(s, sportImage(s)),
           ),
           articles,
+          galleryItems: galleryItemsFromClubs(clubs),
           isLoading: false,
           source: "api",
         });

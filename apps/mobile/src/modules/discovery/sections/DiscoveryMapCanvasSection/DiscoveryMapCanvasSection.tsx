@@ -7,6 +7,7 @@ import type { DiscoveryMapCanvasSectionProps } from "./DiscoveryMapCanvasSection
 export function DiscoveryMapCanvasSection({
   markers,
   selectedId,
+  nearestId,
   onSelect,
   zoomInLabel,
   zoomOutLabel,
@@ -16,6 +17,7 @@ export function DiscoveryMapCanvasSection({
     <section className={styles.root}>
       <CoachMap
         markers={markers}
+        nearestId={nearestId}
         onSelect={onSelect}
         selectedId={selectedId}
         zoomInLabel={zoomInLabel}

@@ -11,6 +11,7 @@ import {
   useState,
 } from "react";
 import type {
+  Circle,
   DivIcon,
   LatLngExpression,
   Map as LeafletMap,
@@ -27,9 +28,9 @@ import type {
 
 /** Carto raster tiles (OSM data) — no API key; works for Iran usage. */
 const TILE_LIGHT =
-  "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+  "https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png";
 const TILE_DARK =
-  "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+  "https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png";
 
 const TILE_ATTR =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
@@ -37,9 +38,11 @@ const TILE_ATTR =
 const DEFAULT_ZOOM = 14;
 const DEFAULT_MIN_ZOOM = 11;
 const DEFAULT_MAX_ZOOM = 18;
+const DEFAULT_RANGE_RINGS_METERS = [350, 700, 1100] as const;
 
 type MapThemeColors = {
   accent: string;
+  inactiveRing: string;
 };
 
 function resolveCssColor(variable: string, fallback: string) {
@@ -58,6 +61,7 @@ function resolveCssColor(variable: string, fallback: string) {
 function resolveMapThemeColors(): MapThemeColors {
   return {
     accent: resolveCssColor("--accent", "oklch(87.43% 0.2460 148.26)"),
+    inactiveRing: resolveCssColor("--overlay", "#111111"),
   };
 }
 
@@ -90,15 +94,22 @@ function midpoint(markers: readonly CoachMapMarker[]): CoachMapLatLng {
 function markerIcon(
   L: typeof import("leaflet"),
   colors: MapThemeColors,
-  active: boolean,
-  imageUrl?: string | null,
+  options: {
+    active: boolean;
+    pulse: boolean;
+    imageUrl?: string | null;
+    distanceLabel?: string | null;
+  },
 ): DivIcon {
   return L.divIcon({
     className: "coach-map-pin",
     html: mapLocationPinHtml({
       accent: colors.accent,
-      imageUrl,
-      active,
+      inactiveRing: colors.inactiveRing,
+      imageUrl: options.imageUrl,
+      active: options.active,
+      pulse: options.pulse,
+      distanceLabel: options.distanceLabel,
     }),
     iconSize: [0, 0],
     iconAnchor: [0, 0],
@@ -108,7 +119,9 @@ function markerIcon(
 export function CoachMap({
   markers,
   selectedId = null,
+  nearestId = null,
   onSelect,
+  rangeRingMeters = DEFAULT_RANGE_RINGS_METERS,
   zoomInLabel = "Zoom in",
   zoomOutLabel = "Zoom out",
   zoomLabel = "Map zoom",
@@ -127,6 +140,7 @@ export function CoachMap({
   const mapRef = useRef<LeafletMap | null>(null);
   const tileRef = useRef<TileLayer | null>(null);
   const markersRef = useRef<Map<string, Marker>>(new Map());
+  const ringsRef = useRef<Circle[]>([]);
   const leafletRef = useRef<typeof import("leaflet") | null>(null);
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
@@ -134,10 +148,16 @@ export function CoachMap({
   const [mapReady, setMapReady] = useState(false);
   const [zoom, setZoom] = useState(defaultZoom);
 
+  const pulseId = nearestId ?? selectedId;
+
   const markersKey = markers
-    .map((m) => `${m.id}:${m.lat},${m.lng}:${m.image ?? ""}`)
+    .map(
+      (m) =>
+        `${m.id}:${m.lat},${m.lng}:${m.image ?? ""}:${m.distanceLabel ?? ""}`,
+    )
     .join("|");
   const selectedMarker = markers.find((m) => m.id === selectedId);
+  const pulseMarker = markers.find((m) => m.id === pulseId) ?? selectedMarker;
   const markersByIdRef = useRef(new Map<string, CoachMapMarker>());
   markersByIdRef.current = new Map(markers.map((m) => [m.id, m]));
   const mapCenter =
@@ -153,6 +173,33 @@ export function CoachMap({
       mapRef.current?.setZoom(clamped, { animate: true });
     },
     [maxZoom, minZoom],
+  );
+
+  const syncRangeRings = useCallback(
+    (L: typeof import("leaflet"), map: LeafletMap, colors: MapThemeColors) => {
+      for (const ring of ringsRef.current) {
+        ring.remove();
+      }
+      ringsRef.current = [];
+
+      const anchor = selectedMarker ?? pulseMarker;
+      if (!anchor || rangeRingMeters.length === 0) return;
+
+      ringsRef.current = rangeRingMeters.map((radius, index) => {
+        const opacity = Math.max(0.12, 0.34 - index * 0.08);
+        return L.circle([anchor.lat, anchor.lng], {
+          radius,
+          color: colors.accent,
+          weight: 1.5,
+          opacity,
+          fillColor: colors.accent,
+          fillOpacity: opacity * 0.28,
+          interactive: false,
+          className: "coach-map-range-ring",
+        }).addTo(map);
+      });
+    },
+    [pulseMarker, rangeRingMeters, selectedMarker],
   );
 
   useEffect(() => {
@@ -205,10 +252,17 @@ export function CoachMap({
       const markerMap = new Map<string, Marker>();
       for (const item of markers) {
         const active = item.id === selectedId;
+        const pulse = item.id === pulseId;
         const marker = L.marker([item.lat, item.lng], {
-          icon: markerIcon(L, colors, active, item.image),
+          icon: markerIcon(L, colors, {
+            active,
+            pulse,
+            imageUrl: item.image,
+            distanceLabel: active || pulse ? item.distanceLabel : null,
+          }),
           keyboard: true,
           riseOnHover: true,
+          zIndexOffset: pulse || active ? 600 : 0,
         }).addTo(map);
 
         marker.on("click", () => {
@@ -216,6 +270,8 @@ export function CoachMap({
         });
         markerMap.set(item.id, marker);
       }
+
+      syncRangeRings(L, map, colors);
 
       map.on("zoomend", () => {
         setZoom(map.getZoom());
@@ -236,6 +292,10 @@ export function CoachMap({
 
     return () => {
       cancelled = true;
+      for (const ring of ringsRef.current) {
+        ring.remove();
+      }
+      ringsRef.current = [];
       markersRef.current.forEach((marker) => {
         marker.remove();
       });
@@ -251,7 +311,7 @@ export function CoachMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- markersKey serializes markers
   }, [mapId, markersKey, tileUrl, defaultZoom, minZoom, maxZoom]);
 
-  // Sync pin styles + pan when selection changes.
+  // Sync pin styles, range rings, and pan when selection / nearest changes.
   useEffect(() => {
     if (!mapReady || !leafletRef.current || !mapRef.current) return;
     const L = leafletRef.current;
@@ -259,17 +319,27 @@ export function CoachMap({
 
     markersRef.current.forEach((marker, id) => {
       const item = markersByIdRef.current.get(id);
+      const active = id === selectedId;
+      const pulse = id === pulseId;
       marker.setIcon(
-        markerIcon(L, colors, id === selectedId, item?.image),
+        markerIcon(L, colors, {
+          active,
+          pulse,
+          imageUrl: item?.image,
+          distanceLabel: active || pulse ? item?.distanceLabel : null,
+        }),
       );
+      marker.setZIndexOffset(pulse || active ? 600 : 0);
     });
+
+    syncRangeRings(L, mapRef.current, colors);
 
     if (selectedMarker) {
       mapRef.current.panTo([selectedMarker.lat, selectedMarker.lng], {
         animate: true,
       });
     }
-  }, [mapReady, selectedId, selectedMarker]);
+  }, [mapReady, selectedId, pulseId, selectedMarker, syncRangeRings]);
 
   // Sync basemap when theme toggles.
   useEffect(() => {
@@ -287,10 +357,18 @@ export function CoachMap({
       tileRef.current?.setUrl(url);
       markersRef.current.forEach((marker, id) => {
         const item = markersByIdRef.current.get(id);
+        const active = id === selectedId;
+        const pulse = id === pulseId;
         marker.setIcon(
-          markerIcon(L, colors, id === selectedId, item?.image),
+          markerIcon(L, colors, {
+            active,
+            pulse,
+            imageUrl: item?.image,
+            distanceLabel: active || pulse ? item?.distanceLabel : null,
+          }),
         );
       });
+      syncRangeRings(L, map, colors);
     };
 
     sync();
@@ -306,7 +384,7 @@ export function CoachMap({
       observer.disconnect();
       media.removeEventListener("change", sync);
     };
-  }, [mapReady, tileUrl, selectedId]);
+  }, [mapReady, tileUrl, selectedId, pulseId, syncRangeRings]);
 
   // Keep map sized when the shell resizes (safe areas / card height).
   useEffect(() => {

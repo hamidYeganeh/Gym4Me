@@ -33,7 +33,7 @@ export function WelcomeScreen({ className }: WelcomeScreenProps) {
       return;
     }
     if (hasSeenWelcome()) {
-      router.replace("/home");
+      router.replace("/discovery");
     }
   }, [activeRole, isAuthenticated, isReady, router]);
 

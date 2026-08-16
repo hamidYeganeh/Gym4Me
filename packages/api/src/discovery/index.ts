@@ -29,6 +29,18 @@ export type {
 export { discoveryClubSlotsKeys } from "./club-slots.keys";
 
 export {
+  createDiscoveryClassesApi,
+  type DiscoveryClassesApi,
+} from "./classes.client";
+export { discoveryClassesEndpoints } from "./classes.endpoint";
+export type {
+  DiscoveryClass,
+  DiscoveryClassClub,
+  DiscoveryClassesQuery,
+} from "./classes.dto";
+export { discoveryClassesKeys } from "./classes.keys";
+
+export {
   createDiscoveryCoachesApi,
   type DiscoveryCoachesApi,
 } from "./coaches.client";

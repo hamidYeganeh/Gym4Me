@@ -5,6 +5,7 @@ import type {
   HomeAmenityItem,
   HomeArticleItem,
   HomeClassItem,
+  HomeEquipmentItem,
   HomeFeatureItem,
   HomeGalleryItem,
   HomeLocationItem,
@@ -22,6 +23,7 @@ export type DiscoveryHomeScreenProps = {
   coachCityName: string;
   classes: HomeClassItem[];
   amenities: HomeAmenityItem[];
+  equipment: HomeEquipmentItem[];
   sports: HomeSportItem[];
   articles: HomeArticleItem[];
   galleryItems: HomeGalleryItem[];

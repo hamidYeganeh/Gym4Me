@@ -171,7 +171,7 @@ export function ProfileHeader({
   const notifyLabelMaxWidth = useTransform(morph, [0, 0.55], [140, 0]);
   const notifyLabelGap = useTransform(morph, [0, 0.55], [6, 0]);
   const coverOpacity = useTransform(morph, [0, 0.7, 1], [1, 0.35, 0]);
-  const veilOpacity = useTransform(morph, [0, 0.55, 1], [0, 0.55, 1]);
+  const shellOpacity = useTransform(morph, [0, 0.55, 1], [0, 0.55, 1]);
   const coverBlurDisplay = useTransform(morph, (p) =>
     p > 0 ? "none" : "block",
   );
@@ -240,7 +240,11 @@ export function ProfileHeader({
             </motion.div>
           </motion.div>
         ) : (
-          <div aria-hidden className={slots.backdrop()}>
+          <motion.div
+            aria-hidden
+            className={slots.backdrop()}
+            style={{ opacity: coverOpacity }}
+          >
             <ProgressiveBlur
               blurIntensity={1.2}
               blurLayers={6}
@@ -248,16 +252,14 @@ export function ProfileHeader({
               direction="top"
             />
             <div className={slots.backdropFade()} />
-          </div>
+          </motion.div>
         )}
 
-        {hasCover ? (
-          <motion.div
-            aria-hidden
-            className={slots.veil()}
-            style={{ opacity: veilOpacity }}
-          />
-        ) : null}
+        <motion.div
+          aria-hidden
+          className={slots.shell()}
+          style={{ opacity: shellOpacity }}
+        />
 
         <motion.div className={slots.stage()} style={{ height: stageHeightPx }}>
           <motion.div

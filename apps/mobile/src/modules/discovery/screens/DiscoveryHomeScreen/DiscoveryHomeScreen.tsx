@@ -4,12 +4,14 @@ import { Button, Link, Spinner, Typography } from "@heroui/react";
 import { BabyFace1 } from "@repo/icons/BabyFace1";
 import { Building2 } from "@repo/icons/Building2";
 import { Car1 } from "@repo/icons/Car1";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
+import { ChevronDown } from "@repo/icons/ChevronDown";
 import { Coffee } from "@repo/icons/Coffee";
 import { Crown1 } from "@repo/icons/Crown1";
+import { Funnel1 } from "@repo/icons/Funnel1";
 import { GenderFemale } from "@repo/icons/GenderFemale";
 import { GenderMale } from "@repo/icons/GenderMale";
 import { Lock1 } from "@repo/icons/Lock1";
+import { MagnifyingGlass } from "@repo/icons/MagnifyingGlass";
 import { MapTrifold } from "@repo/icons/MapTrifold";
 import { Moon } from "@repo/icons/Moon";
 import { Shower1 } from "@repo/icons/Shower1";
@@ -24,25 +26,48 @@ import { ClubCard } from "@repo/ui/cards/ClubCard";
 import { ClubClassCard } from "@repo/ui/cards/ClubClassCard";
 import { ClubGalleryCard } from "@repo/ui/cards/ClubGalleryCard";
 import { CoachFeatureCard } from "@repo/ui/cards/CoachFeatureCard";
+import { EquipmentBrowseCard } from "@repo/ui/cards/EquipmentBrowseCard";
 import { QuickActionCard } from "@repo/ui/cards/QuickActionCard";
 import { SportCard } from "@repo/ui/cards/SportCard";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { BannerCarousel } from "@repo/ui/kit/BannerCarousel";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import type { PublicUser } from "@repo/api";
+import { useAuth } from "@/shared/providers/AuthProvider";
+import {
+  DISCOVERY_MOCK_ADDRESSES,
+  formatAddressLine,
+  type DiscoveryAddressItem,
+} from "../../lib/discovery-addresses-data";
 import type { BrowseClub } from "../../lib/clubs-browse-data";
 import type {
   HomeAmenityItem,
   HomeFeatureItem,
 } from "../../lib/home-browse-data";
+import { DiscoveryLocationSheet } from "../../sections/DiscoveryLocationSheet";
 import {
   HOME_SPORT_COLORS,
   discoveryHomeScreenStyles as styles,
 } from "./DiscoveryHomeScreen.styles";
 import type { DiscoveryHomeScreenProps } from "./DiscoveryHomeScreen.types";
+
+function profileAddressItem(
+  user: PublicUser | null,
+  label: string,
+): DiscoveryAddressItem | null {
+  if (!user) return null;
+  const line = formatAddressLine(user.address);
+  if (!line) return null;
+  return {
+    id: "profile",
+    label,
+    line,
+    city: user.address.city?.trim() || label,
+  };
+}
 
 const QUICK_NAV_ICON_SIZE = 22;
 const FEATURE_ICON_SIZE = 20;
@@ -176,6 +201,7 @@ export function DiscoveryHomeScreen({
   coachCityName,
   classes,
   amenities,
+  equipment,
   sports,
   articles,
   galleryItems,
@@ -183,6 +209,31 @@ export function DiscoveryHomeScreen({
 }: DiscoveryHomeScreenProps) {
   const t = useTranslations("DiscoveryHome");
   const router = useRouter();
+  const { user, isAuthenticated } = useAuth();
+  const [isLocationOpen, setIsLocationOpen] = useState(false);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(
+    null,
+  );
+
+  const profile = profileAddressItem(user, t("locationProfileLabel"));
+  const addresses = profile
+    ? [
+        profile,
+        ...DISCOVERY_MOCK_ADDRESSES.filter((item) => item.id !== "home"),
+      ]
+    : DISCOVERY_MOCK_ADDRESSES;
+
+  const selectedAddress =
+    addresses.find((item) => item.id === selectedAddressId) ??
+    addresses[0] ??
+    null;
+
+  const locationLabel =
+    selectedAddress?.city ||
+    selectedAddress?.label ||
+    coachCityName ||
+    cities[0]?.name ||
+    t("locationFallback");
 
   const openClub = (id: string) => {
     router.push(`/discovery/clubs/${id}`);
@@ -210,19 +261,63 @@ export function DiscoveryHomeScreen({
     <AppLayout
       className={styles.root}
       header={
-        <Header
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={() => router.back()}
-              size="lg"
-              variant="ghost"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
-            </Button>
-          }
-        />
+        <>
+          <div aria-hidden className={styles.headerSpacer} />
+          <header className={styles.header}>
+            <div className={styles.headerBar}>
+              <Button
+                aria-label={t("filterAria")}
+                className={styles.filterButton}
+                isIconOnly
+                onPress={() => router.push("/discovery/clubs")}
+                size="lg"
+                variant="ghost"
+              >
+                <Funnel1 size={22} />
+              </Button>
+              <Button
+                aria-expanded={isLocationOpen}
+                aria-haspopup="dialog"
+                aria-label={t("locationChipAria", { location: locationLabel })}
+                className={styles.locationChip}
+                onPress={() => setIsLocationOpen(true)}
+                size="sm"
+                variant="secondary"
+              >
+                <span className={styles.locationLabel}>{locationLabel}</span>
+                <ChevronDown size={16} />
+              </Button>
+              <Button
+                aria-label={t("searchAria")}
+                className={styles.searchButton}
+                isIconOnly
+                onPress={() => router.push("/discovery/search")}
+                size="lg"
+                variant="ghost"
+              >
+                <MagnifyingGlass size={22} />
+              </Button>
+            </div>
+          </header>
+          <DiscoveryLocationSheet
+            addresses={addresses}
+            addLabel={t("locationSheetAdd")}
+            closeLabel={t("locationSheetClose")}
+            description={t("locationSheetDescription")}
+            emptyLabel={t("locationSheetEmpty")}
+            isOpen={isLocationOpen}
+            onAddNew={() =>
+              router.push(
+                isAuthenticated ? "/athlete/profile/edit" : "/auth/login",
+              )
+            }
+            onOpenChange={setIsLocationOpen}
+            onSelect={setSelectedAddressId}
+            selectedId={selectedAddress?.id ?? ""}
+            title={t("locationSheetTitle")}
+            updateLabel={t("locationSheetUpdate")}
+          />
+        </>
       }
     >
       <div className={styles.content}>
@@ -432,10 +527,10 @@ export function DiscoveryHomeScreen({
             hint={t("classesHint")}
             seeAllLabel={t("seeAll")}
             title={t("classesTitle")}
-            onSeeAll={() => router.push("/discovery/clubs")}
+            onSeeAll={() => router.push("/discovery/classes")}
           >
             {classes.map((item) => {
-              const href = `/discovery/clubs/${item.clubId}/classes/${item.id}`;
+              const href = `/discovery/classes/${item.id}?clubId=${encodeURIComponent(item.clubId)}`;
               return (
                 <ClubClassCard
                   actionLabel={t("viewClass")}
@@ -454,6 +549,41 @@ export function DiscoveryHomeScreen({
               );
             })}
           </SectionRail>
+        ) : null}
+
+        {equipment.length > 0 ? (
+          <section
+            aria-label={t("equipmentTitle")}
+            className={styles.section}
+          >
+            <div className={styles.sectionHeader}>
+              <Typography
+                className={styles.sectionTitle}
+                type="h4"
+                weight="bold"
+              >
+                {t("equipmentTitle")}
+              </Typography>
+              <Link
+                className={styles.seeAll}
+                onPress={() => router.push("/discovery/clubs")}
+              >
+                {t("seeAll")}
+              </Link>
+            </div>
+            <div className={styles.equipmentGrid}>
+              {equipment.map((item) => (
+                <EquipmentBrowseCard
+                  image={item.image || PLACEHOLDER_IMAGE}
+                  imageAlt={item.name}
+                  key={item.id}
+                  size={item.size ?? "md"}
+                  title={item.name}
+                  onPress={() => router.push(item.href)}
+                />
+              ))}
+            </div>
+          </section>
         ) : null}
 
         {amenities.length > 0 ? (
@@ -491,7 +621,7 @@ export function DiscoveryHomeScreen({
             hint={t("sportsHint")}
             seeAllLabel={t("seeAll")}
             title={t("sportsTitle")}
-            onSeeAll={() => router.push("/discovery/clubs")}
+            onSeeAll={() => router.push("/discovery/sports")}
           >
             {sports.map((sport, index) => (
               <SportCard
@@ -506,9 +636,7 @@ export function DiscoveryHomeScreen({
                   backgroundImage: sport.image,
                 }}
                 onPress={() =>
-                  router.push(
-                    `/discovery/clubs?sportId=${encodeURIComponent(sport.id)}`,
-                  )
+                  router.push(`/discovery/sports/${sport.id}`)
                 }
               />
             ))}
