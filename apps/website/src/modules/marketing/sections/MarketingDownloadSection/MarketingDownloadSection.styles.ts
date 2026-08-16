@@ -33,7 +33,7 @@ export const marketingDownloadSectionStyles = tv({
       "main-card premium-depth-card gsap-reveal pointer-events-auto relative flex h-[90svh] w-[94vw] items-center justify-center overflow-hidden rounded-[28px] sm:h-[92vh] sm:w-[92vw] sm:rounded-[32px] md:h-[85vh] md:w-[85vw] md:rounded-[40px]",
     sheen: "card-sheen",
     cardInner:
-      "relative z-10 mx-auto flex h-full w-full max-w-7xl flex-col items-center justify-center gap-3 px-3 py-4 sm:justify-evenly sm:gap-0 sm:px-4 sm:py-6 lg:grid lg:grid-cols-3 lg:gap-8 lg:px-12 lg:py-0",
+      "relative z-10 mx-auto flex h-full w-full max-w-[1440px] flex-col items-center justify-center gap-3 px-3 py-4 sm:justify-evenly sm:gap-0 sm:px-4 sm:py-6 lg:grid lg:grid-cols-3 lg:gap-8 lg:px-12 lg:py-0",
     brandName:
       "text-4xl tracking-tighter text-foreground sm:text-6xl md:text-[6rem] lg:mt-0 lg:text-[8rem]",
     mockupWrap:

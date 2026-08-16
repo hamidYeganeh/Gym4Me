@@ -1,34 +1,119 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { MarketingHeroSection } from "../../sections/MarketingHeroSection";
-import { MarketingSportsSection } from "../../sections/MarketingSportsSection";
-import "../../lib/marketing-landing.css";
-import { ScrollSmootherProvider } from "../../lib/marketing-scroll-smoother";
+import { LandingScrollProvider } from "../../lib/landing-scroll";
+import "../../lib/landing.css";
+import { LandingHeroSection } from "../../sections/LandingHeroSection";
+import { LandingLoader } from "../../sections/LandingLoader";
+import { LandingMenuOverlay } from "../../sections/LandingMenuOverlay";
+import { LandingContactModal } from "../../sections/LandingContactModal";
+import { homeScreenStyles } from "./HomeScreen.styles";
 
-const MarketingClubsSection = dynamic(
-  () =>
-    import("../../sections/MarketingClubsSection").then((mod) => ({
-      default: mod.MarketingClubsSection,
-    })),
+const LandingTrustSection = dynamic(() =>
+  import("../../sections/LandingTrustSection").then((mod) => ({
+    default: mod.LandingTrustSection,
+  })),
 );
 
-const MarketingDownloadSection = dynamic(
-  () =>
-    import("../../sections/MarketingDownloadSection").then((mod) => ({
-      default: mod.MarketingDownloadSection,
-    })),
+const LandingFeaturesSection = dynamic(() =>
+  import("../../sections/LandingFeaturesSection").then((mod) => ({
+    default: mod.LandingFeaturesSection,
+  })),
+);
+
+const LandingSportsSection = dynamic(() =>
+  import("../../sections/LandingSportsSection").then((mod) => ({
+    default: mod.LandingSportsSection,
+  })),
+);
+
+const LandingClubsSection = dynamic(() =>
+  import("../../sections/LandingClubsSection").then((mod) => ({
+    default: mod.LandingClubsSection,
+  })),
+);
+
+const LandingClassesSection = dynamic(() =>
+  import("../../sections/LandingClassesSection").then((mod) => ({
+    default: mod.LandingClassesSection,
+  })),
+);
+
+const LandingStatsSection = dynamic(() =>
+  import("../../sections/LandingStatsSection").then((mod) => ({
+    default: mod.LandingStatsSection,
+  })),
+);
+
+const LandingTestimonialsSection = dynamic(() =>
+  import("../../sections/LandingTestimonialsSection").then((mod) => ({
+    default: mod.LandingTestimonialsSection,
+  })),
+);
+
+const LandingBlogsSection = dynamic(() =>
+  import("../../sections/LandingBlogsSection").then((mod) => ({
+    default: mod.LandingBlogsSection,
+  })),
+);
+
+const LandingFaqSection = dynamic(() =>
+  import("../../sections/LandingFaqSection").then((mod) => ({
+    default: mod.LandingFaqSection,
+  })),
+);
+
+const LandingDownloadSection = dynamic(() =>
+  import("../../sections/LandingDownloadSection").then((mod) => ({
+    default: mod.LandingDownloadSection,
+  })),
+);
+
+const LandingBookingSection = dynamic(() =>
+  import("../../sections/LandingBookingSection").then((mod) => ({
+    default: mod.LandingBookingSection,
+  })),
+);
+
+const LandingAboutUsSection = dynamic(() =>
+  import("../../sections/LandingAboutUsSection").then((mod) => ({
+    default: mod.LandingAboutUsSection,
+  })),
+);
+
+const LandingFooterSection = dynamic(() =>
+  import("../../sections/LandingFooterSection").then((mod) => ({
+    default: mod.LandingFooterSection,
+  })),
 );
 
 export function HomeScreen() {
   return (
-    <ScrollSmootherProvider>
-      <div className="marketing-landing w-full overflow-x-hidden bg-background">
-        <MarketingHeroSection />
-        <MarketingSportsSection />
-        <MarketingClubsSection />
-        <MarketingDownloadSection />
-      </div>
-    </ScrollSmootherProvider>
+    <LandingScrollProvider
+      overlays={
+        <>
+          <LandingLoader />
+          <LandingMenuOverlay />
+          <LandingContactModal />
+        </>
+      }
+    >
+      <main className={homeScreenStyles.root} dir="rtl" lang="fa">
+        <LandingHeroSection />
+        <LandingTrustSection />
+        <LandingSportsSection />
+        <LandingClubsSection />
+        <LandingClassesSection />
+        <LandingStatsSection />
+        <LandingTestimonialsSection />
+        <LandingBlogsSection />
+        <LandingFaqSection />
+        <LandingDownloadSection />
+        <LandingBookingSection />
+        <LandingAboutUsSection />
+        <LandingFeaturesSection />
+        <LandingFooterSection />
+      </main>
+    </LandingScrollProvider>
   );
 }

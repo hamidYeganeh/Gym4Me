@@ -171,15 +171,18 @@ export function InViewRise({
       io.disconnect();
     };
 
-    void import("gsap/ScrollTrigger").then(({ ScrollTrigger }) => {
-      if (killed || fired.current) return;
-      st = ScrollTrigger.create({
-        trigger: el,
-        start: "top 90%",
-        once: true,
-        onEnter: activate,
-      });
-    });
+    void Promise.all([import("gsap"), import("gsap/ScrollTrigger")]).then(
+      ([{ gsap }, { ScrollTrigger }]) => {
+        if (killed || fired.current) return;
+        gsap.registerPlugin(ScrollTrigger);
+        st = ScrollTrigger.create({
+          trigger: el,
+          start: "top 90%",
+          once: true,
+          onEnter: activate,
+        });
+      },
+    );
 
     const io = new IntersectionObserver(
       ([entry]) => {

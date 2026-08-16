@@ -392,38 +392,65 @@ export const LANDING_REVIEWS = [
   },
 ] as const;
 
-export const LANDING_STATS = [
+/** In-app MetricCard demos for the marketing stats band. */
+export const LANDING_METRICS = [
   {
-    title: "باشگاه",
-    value: "۱۲۰",
-    unit: "+",
-    chart: "bar" as const,
-    color: "var(--stats-orange)",
-    series: [18, 24, 21, 32, 28, 36, 41],
-  },
-  {
-    title: "رزرو",
-    value: "۸٫۴",
-    unit: "هزار",
-    chart: "line" as const,
-    color: "var(--stats-blue)",
-    series: [12, 18, 16, 24, 22, 30, 34],
-  },
-  {
-    title: "مربی",
-    value: "۶۴",
-    unit: "",
-    chart: "bar" as const,
-    color: "var(--stats-purple)",
-    series: [8, 12, 10, 16, 14, 18, 22],
-  },
-  {
-    title: "کلاس",
-    value: "۲۱۰",
-    unit: "",
-    chart: "line" as const,
+    key: "steps",
+    title: "قدم‌ها",
+    value: "۸٬۴۲۰",
+    unit: "گام",
+    status: "۶ دقیقه بیشتر از دیروز",
     color: "var(--accent)",
-    series: [20, 28, 24, 36, 32, 40, 44],
+    chart: {
+      type: "bars" as const,
+      series: [0.42, 0.58, 0.48, 0.76, 0.64, 0.88, 0.72],
+    },
+  },
+  {
+    key: "active",
+    title: "زمان فعال",
+    value: "۳۴",
+    unit: "دقیقه",
+    status: "در مسیر هدف هفتگی",
+    color: "var(--foreground)",
+    chart: {
+      type: "line" as const,
+      series: [18, 24, 21, 32, 28, 38, 34],
+      curve: "monotone" as const,
+    },
+  },
+  {
+    key: "heart",
+    title: "ضربان قلب",
+    value: "۷۲",
+    unit: "ضربان/دقیقه",
+    status: "ضربان در حال استراحت",
+    color: "var(--stats-red)",
+    chart: {
+      type: "line" as const,
+      series: [68, 74, 70, 78, 72, 80, 72.5],
+      curve: "step" as const,
+    },
+  },
+  {
+    key: "sleep",
+    title: "خواب",
+    value: "۷٫۲",
+    unit: "ساعت",
+    status: "هدف شبانه محقق شد",
+    color: "var(--stats-orange)",
+    chart: {
+      type: "rings" as const,
+      series: [
+        { value: 0.95, met: true },
+        { value: 0.88, met: true },
+        { value: 0.4, met: false },
+        { value: 0.92, met: true },
+        { value: 0.35, met: false },
+        { value: 0.9, met: true },
+        { value: 0.28, met: false },
+      ],
+    },
   },
 ] as const;
 

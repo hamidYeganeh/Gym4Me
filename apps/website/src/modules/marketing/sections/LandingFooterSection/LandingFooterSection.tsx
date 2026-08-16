@@ -21,8 +21,7 @@ const COLS = [
     title: "اپ",
     links: [
       { label: "دانلود", href: "#download" },
-      { label: "عضویت باشگاه", href: "#programs" },
-      { label: "امکانات", href: "#facilities" },
+      { label: "ویژگی‌ها", href: "#features" },
       { label: "مقالات", href: "#articles" },
     ],
   },

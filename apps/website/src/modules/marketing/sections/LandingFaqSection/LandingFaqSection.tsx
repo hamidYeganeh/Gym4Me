@@ -53,17 +53,6 @@ export function LandingFaqSection({ className }: LandingFaqSectionProps) {
     >
       <div className={slots.inner()}>
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          transition={landingReveal()}
-          viewport={{ once: true, margin: "-100px" }}
-          whileInView={{ opacity: 1, y: 0 }}
-        >
-          <Typography className={slots.label()} type="body">
-            FAQ
-          </Typography>
-        </motion.div>
-
-        <motion.div
           className="w-full"
           initial={{ opacity: 0, y: 20 }}
           transition={landingReveal(0.1)}

@@ -1,7 +1,46 @@
 /* Gym4Me landing — theme + mobile design-system tokens */
 
+html.landing-page {
+  font-size: 16px;
+}
+
+@media (max-width: 1920px) {
+  html.landing-page {
+    font-size: 0.833333vw;
+  }
+}
+
+@media (max-width: 1440px) {
+  html.landing-page {
+    font-size: 1.111111vw;
+  }
+}
+
+@media (max-width: 1024px) {
+  html.landing-page {
+    font-size: 1.5625vw;
+  }
+}
+
+@media (max-width: 640px) {
+  html.landing-page {
+    font-size: 4.444444vw;
+  }
+}
+
 .landing-smooth-wrapper {
   overflow: hidden;
+  background: var(--background);
+}
+
+.landing-smooth-content {
+  width: 100%;
+}
+
+.landing-container {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 1440px;
 }
 
 .landing-shell {
@@ -109,6 +148,14 @@
   opacity: 1;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .landing-clip-inner {
+    transform: none;
+    opacity: 1;
+    transition: none;
+  }
+}
+
 .landing-sr-only {
   position: absolute;
   width: 1px;
@@ -137,6 +184,16 @@ html.landing-scroll-lock body {
   }
 }
 
+.landing-card-crossfade {
+  animation: landing-card-in 0.7s var(--ease-app) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-card-crossfade {
+    animation: none;
+  }
+}
+
 .landing-arrow-nudge {
   transition: transform var(--dur-landing) var(--ease-landing);
 }
@@ -148,13 +205,12 @@ html.landing-scroll-lock body {
   transform: translateX(0.5rem);
 }
 
-/* Legacy sports/clubs/download inherit theme surfaces cleanly */
+/* Legacy sports/clubs inherit theme surfaces cleanly */
 .landing-shell .landing-legacy {
   isolation: isolate;
 }
 
 .landing-shell .landing-legacy .landing-sports-section,
-.landing-shell .landing-legacy .landing-clubs-section,
-.landing-shell .landing-legacy .landing-download {
+.landing-shell .landing-legacy .landing-clubs-section {
   border-radius: inherit;
 }

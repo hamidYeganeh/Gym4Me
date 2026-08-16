@@ -1,8 +1,9 @@
 "use client";
 
 import { ArrowRight } from "@repo/icons";
+import { CloseX } from "@repo/icons/CloseX";
 import { LogoMark } from "@repo/ui/common/LogoMark";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useHoverEnabled } from "./landing-motion";
 import { cn } from "./marketing-cn";
 
@@ -105,11 +106,9 @@ export function CloseIconButton({
 }) {
   const hover = useHoverEnabled();
   const [rot, setRot] = useState(0);
-  const ref = useRef<HTMLButtonElement>(null);
 
   return (
     <button
-      ref={ref}
       type="button"
       aria-label={label}
       className={cn(
@@ -121,21 +120,12 @@ export function CloseIconButton({
       onPointerEnter={() => hover && setRot(90)}
       onPointerLeave={() => setRot(0)}
     >
-      <svg
-        viewBox="0 0 24 24"
-        className="size-5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        style={{
-          transform: `rotate(${rot}deg)`,
-          transition: "transform var(--duration-moderate) var(--ease-app)",
-        }}
+      <CloseX
+        size={20}
         aria-hidden
-      >
-        <path d="M6 6l12 12M18 6L6 18" />
-      </svg>
+        className="transition-transform duration-moderate ease-app"
+        style={{ transform: `rotate(${rot}deg)` }}
+      />
     </button>
   );
 }

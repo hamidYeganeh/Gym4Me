@@ -223,6 +223,6 @@ export function applyLandingFontScale(root: HTMLElement) {
   const COEF = 0.6666;
   const reduction = ((BASE_W - window.innerWidth) / BASE_W) * 100 * COEF;
   const size = FONT_BASE - (FONT_BASE * reduction) / 100;
-  if (size > FONT_BASE) root.style.setProperty("--landing-fs", `${size}px`);
-  else root.style.removeProperty("--landing-fs");
+  if (size > FONT_BASE) root.style.fontSize = `${size}px`;
+  else root.style.removeProperty("font-size");
 }

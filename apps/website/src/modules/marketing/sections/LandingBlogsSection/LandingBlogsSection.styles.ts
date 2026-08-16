@@ -3,7 +3,7 @@ import { tv } from "tailwind-variants";
 export const landingBlogsSectionStyles = tv({
   slots: {
     root: "mt-3 w-full overflow-hidden rounded-(--radius-card-lg) bg-background py-20 md:py-28",
-    inner: "mx-auto max-w-[1280px] px-6",
+    inner: "landing-container px-6",
     header: "mb-12 flex flex-col items-center text-center",
     heading: [
       "mx-auto mb-4 max-w-[672px] text-[32px] font-medium leading-[40px]",

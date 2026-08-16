@@ -44,8 +44,8 @@ export function LandingFeaturesSection({
 }: LandingFeaturesSectionProps) {
   const slots = landingFeaturesSectionStyles();
   const { scrollTo } = useLandingScroll();
-  const quoteAuthor = LANDING_ASSETS.coaches[1];
-  const portrait = LANDING_ASSETS.coaches[0];
+  const quoteAuthor = LANDING_ASSETS.coaches[1]!;
+  const portrait = LANDING_ASSETS.coaches[0]!;
 
   return (
     <section
@@ -111,7 +111,7 @@ export function LandingFeaturesSection({
                   {quoteAuthor.name}
                 </Typography>
                 <Typography className={slots.authorRole()} type="body-xs">
-                  مربی عملکرد در اپ
+                  {quoteAuthor.role}
                 </Typography>
               </div>
             </footer>

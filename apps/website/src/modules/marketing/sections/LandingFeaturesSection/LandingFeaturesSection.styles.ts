@@ -6,14 +6,15 @@ export const landingFeaturesSectionStyles = tv({
       "relative z-10 mt-3 overflow-hidden rounded-(--radius-card-lg)",
       "bg-background px-6 py-[6.25rem] text-foreground md:px-[3.75rem]",
     ],
-    inner: "mx-auto grid max-w-[1340px] grid-cols-1 items-center gap-[3.75rem] lg:grid-cols-[1.5fr_1fr] lg:gap-[6.25rem]",
+    inner:
+      "landing-container grid grid-cols-1 items-center gap-[3.75rem] lg:grid-cols-[1.5fr_1fr] lg:gap-[6.25rem]",
     bento: "grid h-full grid-cols-2 gap-4",
     heroCard: [
       "group relative col-span-2 h-[20rem] overflow-hidden rounded-[2rem] md:h-[25rem]",
       "bg-surface-secondary shadow-[0_10px_28px_color-mix(in_oklch,var(--foreground)_8%,transparent)]",
     ],
     heroImg:
-      "size-full object-cover transition-transform duration-moderate ease-app will-change-transform group-hover:scale-110",
+      "size-full object-cover transition-transform duration-[1200ms] ease-app will-change-transform group-hover:scale-110",
     mockup: [
       "absolute inset-x-4 -bottom-4 top-4 overflow-hidden rounded-t-[1.25rem]",
       "border-x border-t border-foreground/5 bg-surface",
@@ -28,19 +29,18 @@ export const landingFeaturesSectionStyles = tv({
     mockupStage: "flex h-full items-start justify-center bg-background px-3 pt-3",
     mockupClub: "w-[min(100%,16rem)] max-w-none shadow-none",
     quoteCard: [
-      "flex h-[21.25rem] flex-col justify-between rounded-[2rem] bg-surface p-8 text-foreground",
-      "border border-separator md:h-[26.25rem] md:p-10",
+      "landing-dark flex h-[21.25rem] flex-col justify-between rounded-[2rem]",
+      "bg-(--brand-deep) p-8 text-(--on-brand) md:h-[26.25rem] md:p-10",
     ],
     quote:
-      "text-[1.125rem] font-medium leading-[1.3] tracking-tight text-foreground md:text-[1.375rem]",
+      "text-[1.125rem] font-medium leading-[1.3] tracking-tight text-(--on-brand) md:text-[1.375rem]",
     authorRow: "mt-8 flex items-center gap-4",
     avatar: "size-12 rounded-full object-cover opacity-90",
-    authorName: "text-[0.9375rem] font-semibold text-foreground",
-    authorRole: "text-[0.8125rem] text-muted",
-    portraitCard:
-      "h-[21.25rem] overflow-hidden rounded-[2rem] md:h-[26.25rem]",
+    authorName: "text-[0.9375rem] font-semibold text-(--on-brand)",
+    authorRole: "text-[0.8125rem] text-(--on-brand-muted)",
+    portraitCard: "h-[21.25rem] overflow-hidden rounded-[2rem] md:h-[26.25rem]",
     portraitImg:
-      "size-full object-cover transition-transform duration-moderate ease-app will-change-transform hover:scale-105",
+      "size-full object-cover transition-transform duration-[1200ms] ease-app will-change-transform hover:scale-105",
     content: "flex flex-col",
     heading: [
       "mb-8 max-w-[33.7rem] text-[2.75rem] font-medium leading-[1.1]",
@@ -76,6 +76,7 @@ export const landingFeaturesSectionStyles = tv({
       "last:border-b-0",
     ],
     checkIcon: "shrink-0 text-foreground",
-    checkLabel: "grow text-[0.9375rem] font-medium leading-relaxed text-foreground",
+    checkLabel:
+      "grow text-[0.9375rem] font-medium leading-relaxed text-foreground",
   },
 });

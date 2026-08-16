@@ -3,7 +3,7 @@ import { tv } from "tailwind-variants";
 export const landingFacilitiesSectionStyles = tv({
   slots: {
     root: [
-      "relative z-10 mt-3 rounded-(--radius-card-lg) bg-background",
+      "relative z-10 -mt-10 rounded-(--radius-card-lg) bg-background",
       "px-6 pt-16 pb-20 sm:px-10",
     ],
     intro: "max-w-xl",

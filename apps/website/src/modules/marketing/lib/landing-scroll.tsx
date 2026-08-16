@@ -61,7 +61,6 @@ export function LandingScrollProvider({
 }) {
   const smootherRef = useRef<SmootherLike | null>(null);
   const lockCount = useRef(0);
-  const shellRef = useRef<HTMLElement | null>(null);
   const [ready, setReadyState] = useState(false);
   const readyRef = useRef(false);
   const [smootherReady, setSmootherReady] = useState(false);
@@ -139,10 +138,9 @@ export function LandingScrollProvider({
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    const shell = document.querySelector<HTMLElement>(".landing-shell");
-    shellRef.current = shell;
+    document.documentElement.classList.add("landing-page");
     const onResize = () => {
-      if (shellRef.current) applyLandingFontScale(shellRef.current);
+      applyLandingFontScale(document.documentElement);
     };
     onResize();
     window.addEventListener("resize", onResize);
@@ -204,6 +202,8 @@ export function LandingScrollProvider({
     return () => {
       cancelled = true;
       window.removeEventListener("resize", onResize);
+      document.documentElement.classList.remove("landing-page");
+      document.documentElement.style.removeProperty("font-size");
       revertMm?.();
       smootherRef.current = null;
       applyLockClass(false);

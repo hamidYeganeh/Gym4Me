@@ -6,7 +6,7 @@ export const landingSportsSectionStyles = tv({
       "mt-3 overflow-hidden rounded-(--radius-card-lg) bg-background",
       "py-20 md:py-28",
     ].join(" "),
-    headingWrap: "mx-auto max-w-7xl px-5",
+    headingWrap: "landing-container px-5",
     title: [
       "text-center text-[32px] font-medium leading-[40px] tracking-tight",
       "text-foreground md:text-[40px] md:leading-[46px]",

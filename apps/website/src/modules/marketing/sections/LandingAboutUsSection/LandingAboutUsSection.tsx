@@ -15,16 +15,18 @@ import type {
 } from "./LandingAboutUsSection.types";
 
 const COPY = {
-  label: "اپ Gym4Me",
-  title: "باشگاه، مربی و کلاس را در یک مسیر پیدا کن و رزرو کن.",
-  statValue: "۳",
-  statLineOne: "نقش",
-  statLineTwo: "در یک اپ",
+  label: "مربی شخصی تناسب‌اندام",
+  title:
+    "معتقدم تناسب‌اندام فقط بلند کردن وزنه نیست؛ ساختن ذهنیت قوی‌تر است.",
+  statValue: "۱۵+",
+  statLineOne: "سال",
+  statLineTwo: "تجربه",
   paragraphs: [
-    "ورزشکار باشگاه نزدیک را کشف می‌کند، مربی جلسه خصوصی می‌بندد و مدیر باشگاه عضویت و ظرفیت را می‌بیند.",
-    "پرداخت، حضور و تمدید همان حلقه‌ای است که محصول برای بازار ایران طراحی شده: نقشه، پیامک، و تقویم شمسی.",
+    "تکنیک‌های پیشرفته، برنامه شخصی‌سازی‌شده و رویکرد نتیجه‌محور را کنار هم می‌گذاریم تا تجربه تمرینی متناسب با هدف تو بسازی.",
+    "فقط بدن را تمرین نمی‌دهیم — ذهنیت را هم متحول می‌کنیم. با هم مسیری می‌سازیم بر پایه تمرکز، انضباط و رشد پایدار.",
   ],
-  cta: "دانلود اپ",
+  cta: "درباره ما",
+  reviewCount: "۱۰۰۰+ نظر",
 } as const;
 
 const PORTRAITS = {
@@ -38,13 +40,13 @@ const PORTRAITS = {
   },
 } as const;
 
-const REVIEWERS: LandingAboutUsReviewer[] = LANDING_ASSETS.coaches.map(
-  (coach) => ({
+const REVIEWERS: LandingAboutUsReviewer[] = LANDING_ASSETS.coaches
+  .slice(0, 3)
+  .map((coach) => ({
     src: coach.src,
     alt: coach.name,
     fallback: coach.name.slice(0, 1),
-  }),
-);
+  }));
 
 export function LandingAboutUsSection({
   className,
@@ -63,7 +65,7 @@ export function LandingAboutUsSection({
       <motion.div
         className={slots.inner()}
         initial={reduce ? false : { opacity: 0, y: 20 }}
-        transition={landingReveal()}
+        transition={{ ...landingReveal(), duration: 0.8 }}
         viewport={{ once: true }}
         whileInView={{ opacity: 1, y: 0 }}
       >
@@ -71,7 +73,7 @@ export function LandingAboutUsSection({
           <motion.div
             className={slots.labelRow()}
             initial={reduce ? false : { opacity: 0, scale: 0.9 }}
-            transition={landingReveal(0.2)}
+            transition={{ ...landingReveal(0.2), duration: 0.5 }}
             viewport={{ once: true }}
             whileInView={{ opacity: 1, scale: 1 }}
           >
@@ -85,7 +87,7 @@ export function LandingAboutUsSection({
 
           <motion.div
             initial={reduce ? false : { opacity: 0, y: 20 }}
-            transition={landingReveal(0.3)}
+            transition={{ ...landingReveal(0.3), duration: 0.6 }}
             viewport={{ once: true }}
             whileInView={{ opacity: 1, y: 0 }}
           >
@@ -176,7 +178,7 @@ export function LandingAboutUsSection({
                     ))}
                   </span>
                   <Typography className={slots.reviewCount()} type="body-xs">
-                    نظرهای داخل اپ
+                    {COPY.reviewCount}
                   </Typography>
                 </div>
               </div>

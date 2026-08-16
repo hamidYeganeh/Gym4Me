@@ -1,69 +1,72 @@
 "use client";
 
-import { Building2 } from "@repo/icons/Building2";
-import { Calendar1 } from "@repo/icons/Calendar1";
-import { PersonRunning } from "@repo/icons/PersonRunning";
-import { UsersTwo } from "@repo/icons/UsersTwo";
-import { StatsCard } from "@repo/ui/cards/StatsCard";
+import { Fire1 } from "@repo/icons/Fire1";
+import { FootSteps } from "@repo/icons/FootSteps";
+import { Heart } from "@repo/icons/Heart";
+import { SleepZzz } from "@repo/icons/SleepZzz";
+import { MetricCard } from "@repo/ui/cards/MetricCard";
 import type { ReactNode } from "react";
-import { LANDING_STATS } from "../../lib/landing-assets";
+import { LANDING_METRICS } from "../../lib/landing-assets";
 import { LandingEyebrow } from "../../lib/landing-ui";
 import { ClipReveal, InViewRise } from "../../lib/landing-reveal";
 import { landingStatsSectionStyles } from "./LandingStatsSection.styles";
 import type { LandingStatsSectionProps } from "./LandingStatsSection.types";
 
-const STAT_ICONS: Record<string, ReactNode> = {
-  باشگاه: <Building2 size={18} />,
-  رزرو: <Calendar1 size={18} />,
-  مربی: <UsersTwo size={18} />,
-  کلاس: <PersonRunning size={18} />,
-};
+const WEEKDAY_LABELS = ["ش", "ی", "د", "س", "چ", "پ", "ج"] as const;
+
+const METRIC_ICONS: Record<(typeof LANDING_METRICS)[number]["key"], ReactNode> =
+  {
+    steps: <FootSteps size={18} />,
+    active: <Fire1 size={18} />,
+    heart: <Heart size={18} />,
+    sleep: <SleepZzz size={18} />,
+  };
 
 export function LandingStatsSection({ className }: LandingStatsSectionProps) {
   const slots = landingStatsSectionStyles();
 
   return (
     <section className={slots.root({ className })}>
-      <LandingEyebrow>در اپ</LandingEyebrow>
-      <ClipReveal
-        id="stats-title"
-        as="h2"
-        mode="lines"
-        text={"کشف، رزرو\nو تکرار تمرین"}
-        className={slots.title()}
-      />
-      <p className={slots.hint()}>
-        حلقه محصول Gym4Me: باشگاه یا کلاس را پیدا کن، پرداخت کن، حاضر شو و
-        تمدید را از همان اپ انجام بده.
-      </p>
-      <div className={slots.grid()}>
-        {LANDING_STATS.map((stat, i) => (
-          <InViewRise delayIn={i * 110} fromY={30} key={stat.title}>
-            {stat.chart === "bar" ? (
-              <StatsCard
-                chart="bar"
+      <div className={slots.layout()}>
+        <div className={slots.copy()}>
+          <LandingEyebrow tone="light">در اپ</LandingEyebrow>
+          <ClipReveal
+            id="stats-title"
+            as="h2"
+            mode="lines"
+            text={"معیارها\nدر یک نگاه"}
+            className={slots.title()}
+          />
+          <p className={slots.hint()}>
+            قدم‌ها، خواب، ضربان و فعالیت را همان‌جا که رزرو می‌کنی دنبال کن —
+            بدون خروج از Gym4Me.
+          </p>
+        </div>
+
+        <div className={slots.stack()}>
+          {LANDING_METRICS.map((metric, i) => (
+            <InViewRise
+              className={slots.item()}
+              delayIn={i * 90}
+              fromY={24}
+              key={metric.key}
+            >
+              <MetricCard
+                chart={metric.chart}
                 className={slots.card()}
-                color={stat.color}
-                icon={STAT_ICONS[stat.title]}
-                series={[...stat.series]}
-                title={stat.title}
-                unit={stat.unit}
-                value={stat.value}
+                color={metric.color}
+                dayLabels={WEEKDAY_LABELS}
+                icon={METRIC_ICONS[metric.key]}
+                periodLabel="امروز"
+                status={metric.status}
+                title={metric.title}
+                unit={metric.unit}
+                value={metric.value}
+                variant="horizontal"
               />
-            ) : (
-              <StatsCard
-                chart="line"
-                className={slots.card()}
-                color={stat.color}
-                icon={STAT_ICONS[stat.title]}
-                series={[...stat.series]}
-                title={stat.title}
-                unit={stat.unit}
-                value={stat.value}
-              />
-            )}
-          </InViewRise>
-        ))}
+            </InViewRise>
+          ))}
+        </div>
       </div>
     </section>
   );

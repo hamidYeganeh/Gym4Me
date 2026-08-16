@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 
-const ScrollSmootherReadyContext = createContext(true);
+export const ScrollSmootherReadyContext = createContext(true);
 
 /** True once scroll setup exists (smoother on desktop, native on mobile). */
 export function useScrollSmootherReady() {

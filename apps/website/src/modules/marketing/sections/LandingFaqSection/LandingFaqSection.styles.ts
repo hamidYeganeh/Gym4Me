@@ -2,7 +2,7 @@ import { tv } from "tailwind-variants";
 
 export const landingFaqSectionStyles = tv({
   slots: {
-    root: "flex justify-center bg-background px-5 py-[120px]",
+    root: "mt-3 flex justify-center rounded-(--radius-card-lg) bg-background px-5 py-24 sm:px-10",
     inner: "flex w-full max-w-[800px] flex-col items-center",
     label:
       "mb-5 text-center text-[26px] font-normal leading-none text-muted",

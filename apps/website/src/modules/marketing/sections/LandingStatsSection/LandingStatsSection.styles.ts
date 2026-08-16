@@ -3,12 +3,18 @@ import { tv } from "tailwind-variants";
 export const landingStatsSectionStyles = tv({
   slots: {
     root: [
-      "mt-3 rounded-(--radius-card-lg) bg-surface-secondary",
-      "px-6 py-20 text-foreground sm:px-10",
+      "landing-dark mt-3 rounded-(--radius-card-lg) bg-(--brand-deep)",
+      "px-6 py-20 text-(--on-brand) sm:px-10",
     ],
-    title: "mt-4 text-5xl font-bold leading-[0.95] tracking-tight",
-    hint: "mt-4 max-w-xl text-sm text-muted",
-    grid: "mt-16 flex flex-wrap justify-center gap-4 lg:justify-start",
-    card: "w-[150px]",
+    layout: [
+      "flex flex-col items-stretch gap-12",
+      "lg:flex-row lg:items-end lg:justify-between lg:gap-16",
+    ],
+    copy: "max-w-xl shrink-0",
+    title: "mt-4 text-5xl font-medium leading-[0.95] tracking-tight",
+    hint: "mt-4 max-w-xl text-sm text-(--on-brand-muted)",
+    stack: "flex w-full max-w-[380px] flex-col gap-3 self-center lg:self-end",
+    item: "w-full min-w-0",
+    card: "w-full",
   },
 });

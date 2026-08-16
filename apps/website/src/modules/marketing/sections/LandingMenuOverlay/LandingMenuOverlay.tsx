@@ -16,10 +16,7 @@ const LINKS = [
   { label: "ورزش‌ها", href: "#sports" },
   { label: "باشگاه‌ها", href: "#clubs" },
   { label: "مربی‌ها", href: "#coaches" },
-  { label: "کلاس‌ها", href: "#classes" },
   { label: "دانلود", href: "#download" },
-  { label: "سؤالات متداول", href: "#faq" },
-  { label: "تماس", href: "#contact" },
 ] as const;
 
 export function LandingMenuOverlay({ className }: LandingMenuOverlayProps) {
@@ -63,21 +60,27 @@ export function LandingMenuOverlay({ className }: LandingMenuOverlayProps) {
         </div>
 
         <nav className={slots.nav()} aria-label="منوی تمام‌صفحه">
-          {LINKS.map((link, i) => (
-            <InViewRise key={link.href} delayIn={menuOpen ? 120 + i * 70 : 0} fromY={28}>
-              <a
-                href={link.href}
-                className={slots.link()}
-                onClick={(e) => {
-                  e.preventDefault();
-                  closeMenu();
-                  window.setTimeout(() => scrollTo(link.href), 50);
-                }}
-              >
-                {link.label}
-              </a>
-            </InViewRise>
-          ))}
+          {menuOpen
+            ? LINKS.map((link, i) => (
+                <InViewRise
+                  key={link.href}
+                  delayIn={120 + i * 70}
+                  fromY={28}
+                >
+                  <a
+                    href={link.href}
+                    className={slots.link()}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      closeMenu();
+                      window.setTimeout(() => scrollTo(link.href), 50);
+                    }}
+                  >
+                    {link.label}
+                  </a>
+                </InViewRise>
+              ))
+            : null}
         </nav>
 
         <div className={slots.bottom()}>

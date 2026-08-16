@@ -2,7 +2,7 @@
 
 import { ClubCard } from "@repo/ui/cards/ClubCard";
 import { useEffect, useRef, useState } from "react";
-import { LANDING_ASSETS, LANDING_CLUBS } from "../../lib/landing-assets";
+import { LANDING_ASSETS, LANDING_AVATAR_DOTS, LANDING_CLUBS } from "../../lib/landing-assets";
 import { BrandMark } from "../../lib/landing-controls";
 import { CarouselDots, ClipReveal, InViewRise } from "../../lib/landing-reveal";
 import { useLandingScroll } from "../../lib/landing-scroll";
@@ -59,7 +59,6 @@ export function LandingHeroSection({ className }: LandingHeroSectionProps) {
   }, [ready]);
 
   const featured = HERO_CLUBS[slide]!;
-  const secondary = HERO_CLUBS[(slide + 1) % HERO_CLUBS.length]!;
 
   return (
     <section ref={sectionRef} className={slots.root({ className })}>
@@ -67,7 +66,7 @@ export function LandingHeroSection({ className }: LandingHeroSectionProps) {
         <div ref={parallaxRef} className={slots.plateInner()}>
           <img
             src={LANDING_ASSETS.hero}
-            alt=""
+            alt="ورزشکار در حال تمرین داخل سالن"
             className={slots.plateImg()}
             fetchPriority="high"
           />
@@ -98,24 +97,14 @@ export function LandingHeroSection({ className }: LandingHeroSectionProps) {
             باشگاه‌ها
           </a>
           <a
-            href="#classes"
+            href="#coaches"
             className={slots.navLink()}
             onClick={(e) => {
               e.preventDefault();
-              scrollTo("#classes");
+              scrollTo("#coaches");
             }}
           >
-            کلاس‌ها
-          </a>
-          <a
-            href="#download"
-            className={slots.navLink()}
-            onClick={(e) => {
-              e.preventDefault();
-              scrollTo("#download");
-            }}
-          >
-            دانلود
+            مربی‌ها
           </a>
         </nav>
 
@@ -149,11 +138,12 @@ export function LandingHeroSection({ className }: LandingHeroSectionProps) {
         <ClipReveal
           id="hero-title"
           as="h1"
-          mode="words"
-          text="باشگاهت را پیدا کن"
+          mode="lines"
+          text={"باشگاهت را\nپیدا کن"}
           className={slots.title()}
           active={ready}
           stagger={140}
+          duration={1100}
         />
       </div>
 
@@ -166,11 +156,12 @@ export function LandingHeroSection({ className }: LandingHeroSectionProps) {
           active={ready}
           baseDelay={350}
           stagger={110}
+          duration={900}
         />
 
         <div className={slots.cluster()}>
-          <InViewRise className={slots.clubCardWrap()} delayIn={650} fromY={28}>
-            <div key={cardKey}>
+          <InViewRise className={slots.slider()} delayIn={650} fromY={28}>
+            <div key={cardKey} className="landing-card-crossfade">
               <ClubCard
                 actionLabel="مشاهده"
                 className={slots.clubCard()}
@@ -199,27 +190,28 @@ export function LandingHeroSection({ className }: LandingHeroSectionProps) {
             />
           </InViewRise>
 
-          <InViewRise
-            delayIn={780}
-            fromY={28}
-            className={slots.clubCardWrapSecondary()}
-          >
-            <ClubCard
-              actionLabel="مشاهده"
-              className={slots.clubCard()}
-              features={[...secondary.features]}
-              image={secondary.image}
-              imageAlt={secondary.title}
-              onAction={() => scrollTo("#clubs")}
-              orientation="vertical"
-              price={secondary.price}
-              pricePrefix="از"
-              priceSuffix="تومان"
-              rating={secondary.rating}
-              ratingCount={secondary.ratingCount}
-              subtitle={secondary.subtitle}
-              title={secondary.title}
-            />
+          <InViewRise delayIn={780} fromY={28}>
+            <article className={slots.memberCard()}>
+              <div className={slots.memberCopy()}>
+                <p className={slots.memberValue()}>۹هزار+</p>
+                <div className={slots.memberDots()} aria-hidden>
+                  {LANDING_AVATAR_DOTS.map((color) => (
+                    <span
+                      key={color}
+                      className={slots.memberDot()}
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </div>
+                <p className={slots.memberCaption()}>عضو در حال تمرین</p>
+              </div>
+              <img
+                src={LANDING_ASSETS.membership}
+                alt="ورزشکار آماده برای جلسه بعد"
+                className={slots.memberImg()}
+                loading="lazy"
+              />
+            </article>
           </InViewRise>
         </div>
       </div>

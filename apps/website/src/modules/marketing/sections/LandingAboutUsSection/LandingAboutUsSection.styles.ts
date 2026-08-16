@@ -3,10 +3,10 @@ import { tv } from "tailwind-variants";
 export const landingAboutUsSectionStyles = tv({
   slots: {
     root: [
-      "w-full overflow-hidden bg-background px-5 py-20 font-sans",
-      "md:px-10 lg:py-[140px]",
+      "mt-3 w-full overflow-hidden rounded-(--radius-card-lg)",
+      "bg-background px-5 py-20 font-sans md:px-10 lg:px-10 lg:py-[140px]",
     ].join(" "),
-    inner: "mx-auto max-w-[1200px]",
+    inner: "landing-container",
     header: "mb-12 flex flex-col items-center text-center",
     labelRow: "mb-4 flex items-center gap-2",
     labelChip: [
@@ -26,7 +26,10 @@ export const landingAboutUsSectionStyles = tv({
       "lg:flex-row lg:items-center",
     ].join(" "),
     startCol: "w-full shrink-0 lg:w-[220px]",
-    startImage: "h-[240px] w-full rounded-2xl object-cover lg:h-[300px]",
+    startImage: [
+      "h-[240px] w-full rounded-[12px] object-cover",
+      "lg:h-[300px]",
+    ].join(" "),
     middleCol: "w-full flex-1",
     statRow: "mb-5 flex items-center gap-4",
     statValue: [
@@ -67,6 +70,9 @@ export const landingAboutUsSectionStyles = tv({
     stars: "flex gap-0.5 text-accent",
     reviewCount: "text-[12px] text-muted",
     endCol: "w-full shrink-0 lg:w-[280px]",
-    endImage: "h-[280px] w-full rounded-2xl object-cover lg:h-[400px]",
+    endImage: [
+      "h-[280px] w-full rounded-[14px] object-cover",
+      "lg:h-[400px]",
+    ].join(" "),
   },
 });

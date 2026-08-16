@@ -33,7 +33,7 @@ export const marketingHeroSectionStyles = tv({
     features:
       "relative z-20 mt-auto w-full rounded-t-[2.5rem] bg-surface px-4 py-10 text-surface-foreground shadow-[0_-20px_50px_color-mix(in_oklab,var(--color-accent-foreground)_30%,transparent)] sm:px-6 md:rounded-t-[3.5rem] md:px-10 md:py-16",
     featuresGrid:
-      "mx-auto grid max-w-6xl grid-cols-1 items-stretch gap-8 md:grid-cols-3 md:gap-8",
+      "mx-auto grid w-full max-w-[1440px] grid-cols-1 items-stretch gap-8 md:grid-cols-3 md:gap-8",
     featureCard:
       "relative flex flex-col items-center rounded-[2rem] border border-border bg-surface-secondary px-5 pt-8 pb-6 text-center text-surface-secondary-foreground",
     featureTitle: "mb-2 text-xl leading-tight font-black md:text-2xl",

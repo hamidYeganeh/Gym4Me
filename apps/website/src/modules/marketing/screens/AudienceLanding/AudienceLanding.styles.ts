@@ -3,7 +3,7 @@ import { tv } from "tailwind-variants";
 export const audienceLandingVariants = tv({
   slots: {
     root: "bg-background px-6 py-16 text-foreground",
-    container: "mx-auto flex max-w-6xl flex-col gap-16",
+    container: "mx-auto flex w-full max-w-[1440px] flex-col gap-16",
     header: "max-w-4xl space-y-6",
     eyebrow: "text-sm font-semibold text-accent",
     title: "text-4xl font-bold leading-tight tracking-tight sm:text-6xl",

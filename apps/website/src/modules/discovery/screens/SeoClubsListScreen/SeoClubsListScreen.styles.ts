@@ -3,7 +3,7 @@ import { tv } from "tailwind-variants";
 export const seoClubsListScreenVariants = tv({
   slots: {
     root: "min-h-[70vh] bg-background px-6 py-14 text-foreground",
-    container: "mx-auto flex max-w-6xl flex-col gap-8",
+    container: "mx-auto flex w-full max-w-[1440px] flex-col gap-8",
     header: "max-w-3xl space-y-3",
     eyebrow: "text-sm font-medium text-accent",
     title: "text-3xl font-bold tracking-tight sm:text-5xl",
