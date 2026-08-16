@@ -1,6 +1,5 @@
 "use client";
 
-import { Typography } from "@heroui/react";
 import {
   Calendar1,
   Chat,
@@ -8,23 +7,52 @@ import {
   Wallet,
   Scan1,
   BarbellHorizontal,
+  Fire1,
+  FootSteps,
 } from "@repo/icons";
 import { CallToActionCard } from "@repo/ui/cards/CallToActionCard";
+import { MetricCard } from "@repo/ui/cards/MetricCard";
 import { QuickActionCard } from "@repo/ui/cards/QuickActionCard";
+import { SpotlightCard } from "@repo/ui/cards/SpotlightCard";
 import { TodoCard, type TodoCardItem } from "@repo/ui/cards/TodoCard";
+import { stagger, transition } from "@repo/theme";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
+import { AppSectionHeader } from "@repo/ui/layout/AppSectionHeader";
 import { ProfileHeader } from "@repo/ui/layout/ProfileHeader";
+import { motion, useReducedMotion, type Variants } from "motion/react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
+import type { ReactNode } from "react";
 import { mediaFileUrl } from "@/shared/lib/api";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { athleteHomeScreenStyles as styles } from "./AthleteHomeScreen.styles";
 
 const ICON_SIZE = 22;
+const WEEKDAY_LABELS = ["ش", "ی", "د", "س", "چ", "پ", "ج"] as const;
+
+const contentVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: stagger.children,
+      delayChildren: stagger.delayChildren,
+    },
+  },
+};
+
+const sectionVariants: Variants = {
+  hidden: { opacity: 0, y: 18, scale: 0.985 },
+  visible: { opacity: 1, y: 0, scale: 1, transition },
+};
+
+function StaggerSection({ children }: { children: ReactNode }) {
+  return <motion.div variants={sectionVariants}>{children}</motion.div>;
+}
 
 export function AthleteHomeScreen() {
   const t = useTranslations("AthleteHome");
   const router = useRouter();
+  const reduceMotion = useReducedMotion();
   const { user } = useAuth();
   const displayName =
     [user?.name.first, user?.name.last].filter(Boolean).join(" ") ||
@@ -73,44 +101,68 @@ export function AthleteHomeScreen() {
         />
       }
     >
-      <div className={styles.content}>
-        <TodoCard
-          items={setupItems}
-          progressLabel={t("todoProgressLabel")}
-          stepLabel={t("todoStepLabel", {
-            current: completedCount,
-            total: setupItems.length,
-          })}
-          title={t("todoTitle")}
-        />
+      <motion.div
+        animate="visible"
+        className={styles.content}
+        initial={reduceMotion ? false : "hidden"}
+        variants={contentVariants}
+      >
+        <StaggerSection>
+          <SpotlightCard
+            actionAriaLabel={t("heroAction")}
+            actionLabel={t("heroAction")}
+            description={t("heroDescription")}
+            eyebrow={t("heroEyebrow")}
+            onAction={() => router.push("/athlete/workouts")}
+            progress={72}
+            progressLabel={t("heroProgressLabel")}
+            title={t("heroTitle")}
+            unit={t("heroUnit")}
+            value={t("heroValue")}
+          />
+        </StaggerSection>
 
-        <section
-          aria-labelledby="athlete-overview-title"
-          className={styles.section}
-        >
-          <div className={styles.sectionHeader}>
-            <Typography
-              className={styles.title}
+        <StaggerSection>
+          <section
+            aria-labelledby="athlete-overview-title"
+            className={styles.section}
+          >
+            <AppSectionHeader
+              actionAriaLabel={t("metricsAction")}
+              actionLabel={t("seeAll")}
+              description={t("overviewDescription")}
               id="athlete-overview-title"
-              type="h4"
-              weight="semibold"
-            >
-              {t("overviewTitle")}
-            </Typography>
-            <Typography className={styles.sectionDescription} type="body-sm">
-              {t("overviewDescription")}
-            </Typography>
-          </div>
-
-          <div className={styles.featureGrid}>
-            <CallToActionCard
-              actionLabel={t("metricsAction")}
-              actionType="plus"
               onAction={() => router.push("/athlete/metrics")}
-              subtitle={t("metricsDescription")}
-              title={t("metricsTitle")}
-              variant="primary"
+              title={t("overviewTitle")}
             />
+
+            <div className={styles.metricsGrid}>
+              <MetricCard
+                chart={{ type: "bars", series: [0.42, 0.58, 0.48, 0.76, 0.64, 0.88, 0.72] }}
+                color="var(--accent)"
+                dayLabels={WEEKDAY_LABELS}
+                icon={<FootSteps size={18} />}
+                onPress={() => router.push("/athlete/metrics")}
+                periodLabel={t("today")}
+                status={t("stepsStatus")}
+                title={t("stepsTitle")}
+                unit={t("stepsUnit")}
+                value={t("stepsValue")}
+              />
+              <MetricCard
+                chart={{ type: "line", series: [18, 24, 21, 32, 28, 38, 34] }}
+                color="var(--foreground)"
+                dayLabels={WEEKDAY_LABELS}
+                icon={<Fire1 size={18} />}
+                onPress={() => router.push("/athlete/metrics")}
+                periodLabel={t("today")}
+                status={t("activeMinutesStatus")}
+                title={t("activeMinutesTitle")}
+                unit={t("activeMinutesUnit")}
+                value={t("activeMinutesValue")}
+              />
+            </div>
+
             <CallToActionCard
               actionLabel={t("bookingsAction")}
               actionType="icon"
@@ -120,67 +172,67 @@ export function AthleteHomeScreen() {
               title={t("bookingsTitle")}
               variant="outlined"
             />
-          </div>
-        </section>
+          </section>
+        </StaggerSection>
 
-        <section
-          aria-labelledby="athlete-quick-links-title"
-          className={styles.section}
-        >
-          <div className={styles.sectionHeader}>
-            <Typography
-              className={styles.title}
+        <StaggerSection>
+          <section
+            aria-labelledby="athlete-quick-links-title"
+            className={styles.section}
+          >
+            <AppSectionHeader
+              description={t("quickLinksDescription")}
               id="athlete-quick-links-title"
-              type="h4"
-              weight="semibold"
-            >
-              {t("quickLinksTitle")}
-            </Typography>
-            <Typography className={styles.sectionDescription} type="body-sm">
-              {t("quickLinksDescription")}
-            </Typography>
-          </div>
+              title={t("quickLinksTitle")}
+            />
 
-          <div className={styles.quickGrid}>
-            <QuickActionCard
-              icon={<Calendar1 size={ICON_SIZE} />}
-              label={t("bookingsTitle")}
-              layout="row"
-              onPress={() => router.push("/athlete/bookings")}
-            />
-            <QuickActionCard
-              icon={<Wallet size={ICON_SIZE} />}
-              label={t("walletTitle")}
-              layout="row"
-              onPress={() => router.push("/athlete/wallet")}
-            />
-            <QuickActionCard
-              icon={<Ticket size={ICON_SIZE} />}
-              label={t("membershipsTitle")}
-              layout="row"
-              onPress={() => router.push("/athlete/memberships")}
-            />
-            <QuickActionCard
-              icon={<Scan1 size={ICON_SIZE} />}
-              label={t("checkInsTitle")}
-              layout="row"
-              onPress={() => router.push("/athlete/check-ins")}
-            />
-            <QuickActionCard
-              icon={<Chat size={ICON_SIZE} />}
-              label={t("messagesTitle")}
-              layout="row"
-              onPress={() => router.push("/athlete/messages")}
-            />
-            <QuickActionCard
-              icon={<BarbellHorizontal size={ICON_SIZE} />}
-              label={t("workoutsTitle")}
-              layout="row"
-              onPress={() => router.push("/athlete/workouts")}
-            />
-          </div>
-        </section>
-      </div>
+            <div className={styles.quickGrid}>
+              <QuickActionCard
+                icon={<BarbellHorizontal size={ICON_SIZE} />}
+                label={t("workoutsTitle")}
+                onPress={() => router.push("/athlete/workouts")}
+              />
+              <QuickActionCard
+                icon={<Calendar1 size={ICON_SIZE} />}
+                label={t("bookingsTitle")}
+                onPress={() => router.push("/athlete/bookings")}
+              />
+              <QuickActionCard
+                icon={<Wallet size={ICON_SIZE} />}
+                label={t("walletTitle")}
+                onPress={() => router.push("/athlete/wallet")}
+              />
+              <QuickActionCard
+                icon={<Ticket size={ICON_SIZE} />}
+                label={t("membershipsTitle")}
+                onPress={() => router.push("/athlete/memberships")}
+              />
+              <QuickActionCard
+                icon={<Scan1 size={ICON_SIZE} />}
+                label={t("checkInsTitle")}
+                onPress={() => router.push("/athlete/check-ins")}
+              />
+              <QuickActionCard
+                icon={<Chat size={ICON_SIZE} />}
+                label={t("messagesTitle")}
+                onPress={() => router.push("/athlete/messages")}
+              />
+            </div>
+          </section>
+        </StaggerSection>
+
+        <StaggerSection>
+          <TodoCard
+            items={setupItems}
+            progressLabel={t("todoProgressLabel")}
+            stepLabel={t("todoStepLabel", {
+              current: completedCount,
+              total: setupItems.length,
+            })}
+            title={t("todoTitle")}
+          />
+        </StaggerSection>
+      </motion.div>
     </AppLayout>
   );
 }

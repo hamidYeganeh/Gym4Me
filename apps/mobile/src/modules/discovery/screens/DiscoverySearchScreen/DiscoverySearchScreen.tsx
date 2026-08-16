@@ -187,22 +187,22 @@ export function DiscoverySearchScreen({
         ) : (
           <div className={styles.historyList} role="list">
             {history.map((item) => (
-              <Button
-                aria-label={t("latestItemAria", { query: item.query })}
-                className={styles.historyItem}
-                key={`${item.query}-${item.savedAt}`}
-                role="listitem"
-                variant="ghost"
-                onPress={() => commitSearch(item.query)}
-              >
-                <Clock className={styles.historyIcon} size={18} />
-                <span className={styles.historyQuery}>{item.query}</span>
-                <ArrowUpRight
-                  aria-hidden
-                  className={styles.historyAction}
-                  size={18}
-                />
-              </Button>
+              <div key={`${item.query}-${item.savedAt}`} role="listitem">
+                <Button
+                  aria-label={t("latestItemAria", { query: item.query })}
+                  className={styles.historyItem}
+                  variant="ghost"
+                  onPress={() => commitSearch(item.query)}
+                >
+                  <Clock className={styles.historyIcon} size={18} />
+                  <span className={styles.historyQuery}>{item.query}</span>
+                  <ArrowUpRight
+                    aria-hidden
+                    className={styles.historyAction}
+                    size={18}
+                  />
+                </Button>
+              </div>
             ))}
           </div>
         )}

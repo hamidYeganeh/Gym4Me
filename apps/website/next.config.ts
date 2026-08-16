@@ -46,6 +46,8 @@ const nextConfig: NextConfig = {
   // Trace workspace packages from the monorepo root (required for Docker).
   outputFileTracingRoot: path.join(appDir, "../.."),
   reactCompiler: true,
+  // Fail clearly instead of hanging on slow static generation (G4M-001).
+  staticPageGenerationTimeout: 120,
   images: {
     remotePatterns: [
       apiRemotePattern(),

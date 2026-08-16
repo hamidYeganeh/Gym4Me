@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start --port 8081",
     "lint": "eslint",
-    "check-types": "tsc --noEmit",
+    "check-types": "next typegen && tsc --noEmit",
     "cap:sync": "bash scripts/cap-prepare.sh",
     "cap:sync:android": "bash scripts/cap-prepare.sh android",
     "cap:sync:ios": "bash scripts/cap-prepare.sh ios",

@@ -23,6 +23,8 @@ Monorepo for the Gym4Me platform — Iranian clubs, coaches, athletes, and ops.
 
 Authoritative sequencing and scope live under [`docs/product/`](./docs/product/):
 
+- [`cursor-implementation-master-plan.md`](./docs/product/cursor-implementation-master-plan.md) — executable completion backlog for Cursor
+- [`architecture-completion-guardrails.md`](./docs/product/architecture-completion-guardrails.md) — architecture and quality guardrails
 - [`phases.md`](./docs/product/phases.md) — delivery gates
 - [`checklist.md`](./docs/product/checklist.md) — implementation status
 - [`decisions.md`](./docs/product/decisions.md) — locked product/architecture decisions

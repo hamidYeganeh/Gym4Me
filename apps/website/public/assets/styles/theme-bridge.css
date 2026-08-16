@@ -225,6 +225,7 @@ body {
 .c-heading,
 .c-heading-serif,
 .c-hero_word,
+.c-hero_title,
 .c-section-heading_word,
 .c-button_label,
 .c-list_title,
@@ -236,7 +237,10 @@ body {
 .c-features-grid_desc,
 .c-sticky-heading_title,
 .c-footer_thanks,
-.c-rail_item {
+.c-rail_item,
+.c-cascade_word,
+.c-cascade_item,
+.u-glyph {
   font-family: var(--font-iran-sans-x), Tahoma, ui-sans-serif, system-ui, sans-serif;
 }
 

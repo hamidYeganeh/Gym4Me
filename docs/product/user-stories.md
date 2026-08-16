@@ -2,7 +2,7 @@
 
 شناسه‌گذاری: `ATH` ورزشکار · `CCH` مربی · `OWN` باشگاه‌دار · `STF` پرسنل · `ADM` ادمین · `GST` مهمان · `SYS` سیستمی
 
-جزئیات وضعیت پیاده‌سازی: [`checklist.md`](./checklist.md) · فازها: [`phases.md`](./phases.md)
+جزئیات وضعیت پیاده‌سازی: [`checklist.md`](./checklist.md) · فازها: [`phases.md`](./phases.md) · backlog اجرایی Cursor: [`cursor-implementation-master-plan.md`](./cursor-implementation-master-plan.md)
 
 ---
 

@@ -15,6 +15,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { discoverySportsScreenStyles as styles } from "./DiscoverySportsScreen.styles";
 import type { DiscoverySportsScreenProps } from "./DiscoverySportsScreen.types";
+import { sportThemeForColor } from "../../lib/sports-browse-data";
 
 export function DiscoverySportsScreen({
   sports,
@@ -47,6 +48,7 @@ export function DiscoverySportsScreen({
     >
       <div className={styles.content}>
         <section className={styles.intro}>
+          <span aria-hidden className={styles.introAccent} />
           <Typography className={styles.introTitle} type="h1" weight="bold">
             {t("title")}
           </Typography>
@@ -90,21 +92,27 @@ export function DiscoverySportsScreen({
           />
         ) : (
           <div className={styles.grid}>
-            {sports.map((sport) => (
-              <SportCard
-                actionLabel={t("viewSport")}
-                className={styles.card}
-                color={sport.color}
-                key={sport.id}
-                size="sm"
-                sport={{
-                  title: sport.name,
-                  subtitle: sport.description ?? t("sportLabel"),
-                  backgroundImage: sport.image,
-                }}
-                onPress={() => router.push(`/discovery/sports/${sport.id}`)}
-              />
-            ))}
+            {sports.map((sport, index) => {
+              const theme = sportThemeForColor(sport.color);
+              return (
+                <SportCard
+                  actionLabel={t("viewSport")}
+                  className={
+                    index === 0 ? styles.cardFeatured : styles.card
+                  }
+                  color={theme.color}
+                  foregroundColor={theme.foregroundColor}
+                  key={sport.id}
+                  size="sm"
+                  sport={{
+                    title: sport.name,
+                    subtitle: sport.description ?? t("sportLabel"),
+                    backgroundImage: sport.image,
+                  }}
+                  onPress={() => router.push(`/discovery/sports/${sport.id}`)}
+                />
+              );
+            })}
           </div>
         )}
       </div>

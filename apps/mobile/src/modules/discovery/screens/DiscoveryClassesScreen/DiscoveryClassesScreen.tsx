@@ -46,6 +46,7 @@ export function DiscoveryClassesScreen({
     >
       <div className={styles.content}>
         <section className={styles.intro}>
+          <span aria-hidden className={styles.introAccent} />
           <Typography className={styles.introTitle} type="h1" weight="bold">
             {t("title")}
           </Typography>

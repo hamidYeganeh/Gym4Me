@@ -1,7 +1,7 @@
 "use client";
 
 import { spring } from "@repo/theme";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   animate,
   motion,
@@ -96,12 +96,12 @@ export function FractionalPicker({
   const activeRef = useRef(initial);
   const isDraggingRef = useRef(false);
 
-  const commitValue = (next: number) => {
+  const commitValue = useCallback((next: number) => {
     if (next === activeRef.current) return;
     activeRef.current = next;
     setActiveValue(next);
     onChange?.(next);
-  };
+  }, [onChange]);
 
   const snap = () => {
     const closest = valueToX(
@@ -116,7 +116,7 @@ export function FractionalPicker({
     return x.on("change", (latest) => {
       commitValue(xToValue(latest, min, max, itemWidth));
     });
-  }, [x, itemWidth, onChange, min, max]);
+  }, [x, itemWidth, min, max, commitValue]);
 
   useEffect(() => {
     if (value === undefined || isDraggingRef.current) return;

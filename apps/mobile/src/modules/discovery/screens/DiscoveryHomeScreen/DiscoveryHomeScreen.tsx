@@ -47,12 +47,17 @@ import type {
   HomeAmenityItem,
   HomeFeatureItem,
 } from "../../lib/home-browse-data";
+import { DiscoveryHomeCloseCtaSection } from "../../sections/DiscoveryHomeCloseCtaSection";
+import { DiscoveryHomeHeroSection } from "../../sections/DiscoveryHomeHeroSection";
+import { DiscoveryHomeMapCtaSection } from "../../sections/DiscoveryHomeMapCtaSection";
 import { DiscoveryLocationSheet } from "../../sections/DiscoveryLocationSheet";
 import {
-  HOME_SPORT_COLORS,
+  HOME_SPORT_THEMES,
   discoveryHomeScreenStyles as styles,
 } from "./DiscoveryHomeScreen.styles";
 import type { DiscoveryHomeScreenProps } from "./DiscoveryHomeScreen.types";
+
+const HERO_FALLBACK_IMAGE = "/demo/coach-portrait.png";
 
 function profileAddressItem(
   user: PublicUser | null,
@@ -80,6 +85,7 @@ function SectionRail({
   seeAllLabel,
   onSeeAll,
   children,
+  scrollerClassName = styles.scroller,
 }: {
   title: string;
   hint?: string;
@@ -87,19 +93,23 @@ function SectionRail({
   seeAllLabel?: string;
   onSeeAll?: () => void;
   children: ReactNode;
+  scrollerClassName?: string;
 }) {
   return (
     <section className={styles.section}>
       <div className={styles.sectionHeader}>
-        <div className="min-w-0 flex-1">
-          <Typography className={styles.sectionTitle} type="h4" weight="bold">
-            {title}
-          </Typography>
-          {hint ? (
-            <Typography className={styles.sectionHint} type="body-xs">
-              {hint}
+        <div className={styles.sectionTitleRow}>
+          <span aria-hidden className={styles.sectionAccent} />
+          <div className="min-w-0 flex-1">
+            <Typography className={styles.sectionTitle} type="h3" weight="bold">
+              {title}
             </Typography>
-          ) : null}
+            {hint ? (
+              <Typography className={styles.sectionHint} type="body-xs">
+                {hint}
+              </Typography>
+            ) : null}
+          </div>
         </div>
         {seeAllLabel && onSeeAll ? (
           <Link className={styles.seeAll} onPress={onSeeAll}>
@@ -107,7 +117,7 @@ function SectionRail({
           </Link>
         ) : null}
       </div>
-      <div aria-label={ariaLabel} className={styles.scroller}>
+      <div aria-label={ariaLabel} className={scrollerClassName}>
         {children}
       </div>
     </section>
@@ -321,20 +331,24 @@ export function DiscoveryHomeScreen({
       }
     >
       <div className={styles.content}>
-        <section className={styles.intro}>
-          <Typography className={styles.introTitle} type="h1" weight="bold">
-            {t("title")}
-          </Typography>
-          <Typography className={styles.introSubtitle} type="body">
-            {t("subtitle")}
-          </Typography>
-        </section>
+        <DiscoveryHomeHeroSection
+          ctaLabel={t("heroCta")}
+          eyebrow={t("heroEyebrow")}
+          image={banners[0]?.imageUrl ?? HERO_FALLBACK_IMAGE}
+          imageAlt={banners[0]?.alt ?? ""}
+          subtitle={t("subtitle")}
+          title={t("title")}
+          onCta={() => router.push("/discovery/classes")}
+        />
 
         <nav aria-label={t("quickNavLabel")} className={styles.quickNav}>
           <QuickActionCard
+            className={styles.quickNavMap}
             icon={<MapTrifold size={QUICK_NAV_ICON_SIZE} />}
             label={t("quickMap")}
+            labelClassName={styles.quickNavMapLabel}
             layout="row"
+            tileClassName={styles.quickNavMapTile}
             onPress={() => router.push("/discovery/map")}
           />
           <QuickActionCard
@@ -352,13 +366,13 @@ export function DiscoveryHomeScreen({
           />
         </nav>
 
-        {banners.length > 0 ? (
+        {banners.length > 1 ? (
           <BannerCarousel
             aria-label={t("bannersLabel")}
             slideLabel={(current, total) =>
               t("bannerSlideLabel", { current, total })
             }
-            slides={banners.map((slide) => ({
+            slides={banners.slice(1).map((slide) => ({
               id: slide.id,
               imageUrl: slide.imageUrl,
               alt: slide.alt,
@@ -374,6 +388,44 @@ export function DiscoveryHomeScreen({
           <div className="flex justify-center py-8">
             <Spinner size="lg" />
           </div>
+        ) : null}
+
+        {sports.length > 0 ? (
+          <SectionRail
+            ariaLabel={t("sportsTitle")}
+            hint={t("sportsHint")}
+            seeAllLabel={t("seeAll")}
+            scrollerClassName={styles.sportsBento}
+            title={t("sportsTitle")}
+            onSeeAll={() => router.push("/discovery/sports")}
+          >
+            {sports.slice(0, 5).map((sport, index) => {
+              const theme =
+                HOME_SPORT_THEMES[index % HOME_SPORT_THEMES.length]!;
+              return (
+                <SportCard
+                  actionColor={theme.actionColor}
+                  actionForegroundColor={theme.actionForegroundColor}
+                  actionLabel={t("viewSport")}
+                  className={
+                    index === 0 ? styles.sportCardFeatured : styles.sportCard
+                  }
+                  color={theme.color}
+                  foregroundColor={theme.foregroundColor}
+                  key={sport.id}
+                  size="sm"
+                  sport={{
+                    title: sport.name,
+                    subtitle: sport.description ?? t("sportLabel"),
+                    backgroundImage: sport.image,
+                  }}
+                  onPress={() =>
+                    router.push(`/discovery/sports/${sport.id}`)
+                  }
+                />
+              );
+            })}
+          </SectionRail>
         ) : null}
 
         {features.length > 0 ? (
@@ -500,6 +552,14 @@ export function DiscoveryHomeScreen({
           </SectionRail>
         ) : null}
 
+        <DiscoveryHomeMapCtaSection
+          ctaLabel={t("mapCta")}
+          eyebrow={t("mapEyebrow")}
+          subtitle={t("mapSubtitle")}
+          title={t("mapTitle")}
+          onPress={() => router.push("/discovery/map")}
+        />
+
         {open24Clubs.length > 0 ? (
           <SectionRail
             ariaLabel={t("open24Title")}
@@ -557,13 +617,16 @@ export function DiscoveryHomeScreen({
             className={styles.section}
           >
             <div className={styles.sectionHeader}>
-              <Typography
-                className={styles.sectionTitle}
-                type="h4"
-                weight="bold"
-              >
-                {t("equipmentTitle")}
-              </Typography>
+              <div className={styles.sectionTitleRow}>
+                <span aria-hidden className={styles.sectionAccent} />
+                <Typography
+                  className={styles.sectionTitle}
+                  type="h3"
+                  weight="bold"
+                >
+                  {t("equipmentTitle")}
+                </Typography>
+              </div>
               <Link
                 className={styles.seeAll}
                 onPress={() => router.push("/discovery/clubs")}
@@ -611,34 +674,6 @@ export function DiscoveryHomeScreen({
                   title={amenity.name}
                 />
               </Button>
-            ))}
-          </SectionRail>
-        ) : null}
-
-        {sports.length > 0 ? (
-          <SectionRail
-            ariaLabel={t("sportsTitle")}
-            hint={t("sportsHint")}
-            seeAllLabel={t("seeAll")}
-            title={t("sportsTitle")}
-            onSeeAll={() => router.push("/discovery/sports")}
-          >
-            {sports.map((sport, index) => (
-              <SportCard
-                actionLabel={t("viewSport")}
-                className={styles.sportCard}
-                color={HOME_SPORT_COLORS[index % HOME_SPORT_COLORS.length]}
-                key={sport.id}
-                size="sm"
-                sport={{
-                  title: sport.name,
-                  subtitle: sport.description ?? t("sportLabel"),
-                  backgroundImage: sport.image,
-                }}
-                onPress={() =>
-                  router.push(`/discovery/sports/${sport.id}`)
-                }
-              />
             ))}
           </SectionRail>
         ) : null}
@@ -704,6 +739,13 @@ export function DiscoveryHomeScreen({
             ))}
           </SectionRail>
         ) : null}
+
+        <DiscoveryHomeCloseCtaSection
+          actionLabel={t("closeCta")}
+          subtitle={t("closeSubtitle")}
+          title={t("closeTitle")}
+          onAction={() => router.push("/discovery/classes")}
+        />
       </div>
     </AppLayout>
   );

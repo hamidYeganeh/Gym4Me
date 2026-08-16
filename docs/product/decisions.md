@@ -1,6 +1,6 @@
 # Gym4Me — تصمیمات قفل‌شدهٔ محصول و معماری
 
-آخرین به‌روزرسانی: ۲۰۲۶-۰۸-۱۴
+آخرین به‌روزرسانی: ۲۰۲۶-۰۸-۱۶
 
 ## نقش‌ها و احراز هویت
 
@@ -58,6 +58,13 @@
 | پنل ادمین | `apps/admin` |
 | وب‌سایت | `apps/website` |
 | UI مشترک | `@repo/ui` + `@heroui/react` + `@repo/icons` |
+
+## معماری تکمیل و توسعه‌پذیری
+
+- معماری runtime یک **modular monolith** باقی می‌ماند؛ microservice یا rewrite کامل بدون ADR مستقل وارد نمی‌شود.
+- God Serviceها به‌صورت تدریجی و همراه characterization test به command/query/policy/projectorهای کوچک استخراج می‌شوند.
+- mutation حساس، state دامنه و Outbox را در transaction محلی واحد ثبت می‌کند؛ عملیات مالی Ledger را نیز در همان مرز می‌نویسد.
+- جزئیات الزام‌آور در [`architecture-completion-guardrails.md`](./architecture-completion-guardrails.md) ثبت شده‌اند.
 
 ## شکل مدل دامنه
 

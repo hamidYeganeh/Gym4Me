@@ -1,8 +1,7 @@
 "use client";
 
+import { ClubCard } from "@repo/ui/cards/ClubCard";
 import { CoachFeatureCard } from "@repo/ui/cards/CoachFeatureCard";
-import { MapPin1 } from "@repo/icons";
-import { MediaImage } from "@repo/ui/common/MediaImage";
 import {
   CLUB_CARD_HEIGHT,
   CLUB_CARD_WIDTH,
@@ -16,6 +15,10 @@ export type MarketingClubPosterData = {
   label: string;
   imageSrc: string;
   imageAlt?: string;
+  rating?: number;
+  ratingCount?: number;
+  price?: string;
+  features?: { label: string }[];
 };
 
 export type MarketingCoachPosterData = {
@@ -41,32 +44,21 @@ export function MarketingClubPoster({
   className?: string;
 }) {
   return (
-    <article
-      className={cn(
-        "relative flex h-full w-full flex-col overflow-hidden rounded-[24px] bg-black text-white",
-        className,
-      )}
-    >
-      <MediaImage
-        alt={club.imageAlt ?? club.title}
-        className="pointer-events-none absolute inset-0 size-full object-cover select-none"
-        image={club.imageSrc}
-        sizes="320px"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-[58%] bg-linear-to-t from-black/85 from-10% via-black/50 via-50% to-transparent"
-      />
-      <div className="relative z-10 mt-auto flex flex-col justify-end gap-2 px-5 pt-16 pb-5">
-        <p className="text-[1.375rem] leading-snug font-bold tracking-tight text-balance">
-          {club.title}
-        </p>
-        <p className="flex items-center gap-1.5 text-sm leading-none text-white/80">
-          <MapPin1 aria-hidden className="size-3.5 shrink-0" size={14} />
-          <span>{club.label}</span>
-        </p>
-      </div>
-    </article>
+    <ClubCard
+      actionLabel="مشاهده"
+      className={cn("h-full w-full max-w-none", className)}
+      features={club.features}
+      image={club.imageSrc}
+      imageAlt={club.imageAlt ?? club.title}
+      orientation="vertical"
+      price={club.price}
+      pricePrefix={club.price ? "از" : undefined}
+      priceSuffix={club.price ? "تومان" : undefined}
+      rating={club.rating}
+      ratingCount={club.ratingCount}
+      subtitle={club.label}
+      title={club.title}
+    />
   );
 }
 

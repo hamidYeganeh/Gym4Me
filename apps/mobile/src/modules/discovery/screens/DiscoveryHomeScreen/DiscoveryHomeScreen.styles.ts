@@ -4,7 +4,7 @@ export const discoveryHomeScreenStyles = {
     "pointer-events-none shrink-0 h-[calc(4rem+env(safe-area-inset-top))]",
   header: [
     "fixed top-0 left-1/2 z-40 w-full max-w-xl -translate-x-1/2",
-    "overflow-hidden rounded-b-[2.5rem] bg-surface",
+    "overflow-hidden rounded-b-[2.5rem] bg-surface/95 backdrop-blur-md",
     "pt-[env(safe-area-inset-top)]",
   ].join(" "),
   headerBar: "relative flex min-h-16 items-center justify-center px-screen py-3",
@@ -22,16 +22,22 @@ export const discoveryHomeScreenStyles = {
     "hover:bg-default/80 data-[hovered=true]:bg-default/80",
   ].join(" "),
   locationLabel: "max-w-[12rem] truncate text-sm font-medium",
-  content: "flex flex-col gap-8 pb-12 pt-2",
-  intro: "flex flex-col gap-2",
-  introTitle: "text-balance tracking-tight text-foreground",
-  introSubtitle: "max-w-[21rem] text-pretty leading-relaxed text-muted",
+  content: "flex flex-col gap-10 pb-14 pt-2",
   quickNav: "grid grid-cols-2 gap-3",
   quickNavWide: "col-span-2",
+  quickNavMap: [
+    "bg-accent text-accent-foreground",
+    "hover:bg-accent/90 data-[hovered=true]:bg-accent/90",
+  ].join(" "),
+  quickNavMapTile: "bg-accent-foreground/15 text-accent-foreground",
+  quickNavMapLabel: "text-accent-foreground",
   section: "flex flex-col gap-4",
   sectionHeader: "flex items-start justify-between gap-3",
-  sectionTitle: "min-w-0 flex-1 text-foreground",
-  sectionHint: "text-muted",
+  sectionTitleRow: "flex min-w-0 flex-1 items-start gap-3",
+  sectionAccent: "mt-1.5 h-8 w-1 shrink-0 rounded-full bg-accent",
+  sectionTitle:
+    "min-w-0 flex-1 text-[1.35rem] leading-tight tracking-tight text-foreground",
+  sectionHint: "mt-1 text-muted",
   seeAll:
     "shrink-0 cursor-pointer text-sm font-semibold text-accent no-underline shadow-none",
   scroller:
@@ -47,15 +53,49 @@ export const discoveryHomeScreenStyles = {
   amenityCard:
     "h-auto w-[min(16rem,72vw)] shrink-0 snap-start bg-transparent p-0 shadow-none",
   equipmentGrid: "flex flex-wrap gap-2",
-  sportCard: "w-56 shrink-0 snap-start",
+  sportsBento: "grid grid-cols-2 gap-2",
+  sportCard:
+    "!h-[13.75rem] !w-full !rounded-[1.35rem] snap-start shadow-[0_10px_28px_color-mix(in_oklch,var(--foreground)_8%,transparent)]",
+  sportCardFeatured:
+    "!h-[13.75rem] !w-full !rounded-[1.35rem] col-span-2 shadow-[0_12px_32px_color-mix(in_oklch,var(--accent)_22%,transparent)]",
   articleCard: "w-[min(17.5rem,78vw)] shrink-0 snap-start",
   galleryCard: "w-[10rem] shrink-0 snap-start",
   emptyInline: "px-1 text-muted",
 } as const;
 
-export const HOME_SPORT_COLORS = [
+export const HOME_SPORT_THEMES = [
+  {
+    color: "var(--accent)",
+    foregroundColor: "var(--accent-foreground)",
+    actionColor: "var(--accent-foreground)",
+    actionForegroundColor: "var(--accent)",
+  },
+  {
+    color: "var(--stats-blue)",
+    foregroundColor: "var(--stats-foreground)",
+    actionColor: "var(--eclipse)",
+    actionForegroundColor: "var(--stats-foreground)",
+  },
+  {
+    color: "var(--stats-orange)",
+    foregroundColor: "var(--stats-foreground)",
+    actionColor: "var(--eclipse)",
+    actionForegroundColor: "var(--stats-foreground)",
+  },
+  {
+    color: "var(--foreground)",
+    foregroundColor: "var(--background)",
+    actionColor: "var(--accent)",
+    actionForegroundColor: "var(--accent-foreground)",
+  },
+] as const;
+
+/** @deprecated Prefer HOME_SPORT_THEMES */
+export const HOME_SPORT_COLORS = HOME_SPORT_THEMES.map(
+  (theme) => theme.color,
+) as unknown as readonly [
+  "var(--accent)",
   "var(--stats-blue)",
   "var(--stats-orange)",
-  "var(--stats-green)",
-  "var(--accent)",
-] as const;
+  "var(--foreground)",
+];

@@ -505,9 +505,6 @@ export class MembershipsService {
         const plan = await this.findSellablePlan(clubId, planId);
         const phone = normalizeIranPhone(row.phone);
         const user = await this.userModel.findOne({ phone }).select({ _id: 1 });
-        const holder = user
-          ? { userId: user._id }
-          : { guest: { name: row.name.trim(), phone } };
         const duplicate = await this.membershipModel.findOne({
           clubId: new Types.ObjectId(clubId),
           planId: plan._id,

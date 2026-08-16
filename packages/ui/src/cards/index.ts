@@ -45,6 +45,7 @@ export * from "./SocialMediaCard";
 export * from "./SportCard";
 export * from "./SportCategoryCard";
 export * from "./StatsCard";
+export * from "./SpotlightCard";
 export * from "./ScheduleWorkoutCard";
 export * from "./TicketCard";
 export * from "./TodoCard";

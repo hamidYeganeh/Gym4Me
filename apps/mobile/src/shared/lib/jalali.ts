@@ -13,7 +13,7 @@ function mod(a: number, b: number) {
 
 export function toJalali(gy: number, gm: number, gd: number) {
   const gdm = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
-  let gy2 = gm > 2 ? gy + 1 : gy;
+  const gy2 = gm > 2 ? gy + 1 : gy;
   let days =
     355666 +
     365 * gy +

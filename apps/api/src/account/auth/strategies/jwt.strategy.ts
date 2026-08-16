@@ -4,11 +4,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import {
-  ImpersonationSessionStatus,
-  Role,
-  UserStatus,
-} from '../../../common/enums';
+import { ImpersonationSessionStatus, UserStatus } from '../../../common/enums';
 import type { JwtUser } from '../../../common/types';
 import {
   ImpersonationSession,

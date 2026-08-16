@@ -2,6 +2,8 @@
 
 علائم: ✅ انجام‌شده · 🟡 ناقص (schema / UI mock / API بدون UI) · ❌ شروع‌نشده · — بی‌ربط
 
+ترتیب رفع موارد ناقص، وابستگی‌ها و معیارهای پذیرش در [`cursor-implementation-master-plan.md`](./cursor-implementation-master-plan.md) تعریف شده‌اند. تغییر وضعیت این جدول فقط پس از عبور از Definition of Done همان تسک مجاز است.
+
 > رانتایم فعلی هویت/ادمین/basics/analytics روی MongoDB است. موبایل به API احراز هویت/پروفایل/KYC وصل شده؛ discovery باشگاه/مربی روی API با fallback به mock برای slugهای دمو است.
 >
 > **Seed دمو:** `npm run db:seed:all -w api` — کاربران همهٔ نقش‌ها (رمز `Gym4Me!123`)، باشگاه‌های تأییدشده/در انتظار/پیش‌نویس، کلاس/سانس، KYC و نظرات. تست فلوها: `apps/api/test/smoke-flows.sh` (+ `smoke-booking.sh` / `smoke-membership.sh` / `integrity-flows.sh`) نیازمند API در حال اجرا + `DEBUG_MODE=true`. ادمین به‌صورت پیش‌فرض کلاب‌ها را از API واقعی می‌خواند (`VITE_CLUBS_USE_MOCK=true` فقط برای دموی آفلاین).
@@ -80,7 +82,7 @@
 5. ~~ثبت attribution کلاینت~~ ✅ (پوشش event سروری جزئی؛ taxonomy کامل later)
 6. ~~تست دستی end-to-end: OTP → عضویت → رزرو → حضور → مربی~~ ✅ (`apps/api/test/e2e-scenario.sh` + smokes؛ صف ادمین پس از `db:seed:all`)
 
-> **ابزار پایه:** CI، `check-types`، و smokeهای فازبندی‌شده (`smoke-flows` / `smoke-booking` / `smoke-membership` / `integrity-flows` / `e2e-scenario`) سبز هستند (با `SMS_PROVIDER=mock` و `THROTTLE_DISABLED=true` در dev).
+> **ابزار پایه:** CI (lint read-only + check-types با `next typegen` + build چهار app)، `check-types`، و smokeهای فازبندی‌شده (`smoke-flows` / `smoke-booking` / `smoke-membership` / `integrity-flows` / `e2e-scenario`)؛ G4M-001 quality gate بسته شد (۲۰۲۶-۰۸-۱۶). pyramid تست کامل و service container = G4M-002.
 >
 > دیتابیس: فقط MongoDB — مهاجرت به PostgreSQL در محدوده نیست.
 >

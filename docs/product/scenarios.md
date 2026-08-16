@@ -1,6 +1,6 @@
 # Gym4Me — سناریوهای end-to-end
 
-مرجع تصمیمات: [`decisions.md`](./decisions.md)
+مرجع تصمیمات: [`decisions.md`](./decisions.md) · ترتیب تکمیل و معیارهای اجرایی: [`cursor-implementation-master-plan.md`](./cursor-implementation-master-plan.md)
 
 ---
 

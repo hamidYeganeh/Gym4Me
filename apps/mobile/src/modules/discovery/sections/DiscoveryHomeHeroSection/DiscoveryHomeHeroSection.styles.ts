@@ -1,0 +1,32 @@
+import { tv } from "tailwind-variants";
+
+export const discoveryHomeHeroSectionVariants = tv({
+  slots: {
+    root: [
+      "relative isolate overflow-hidden rounded-[2rem]",
+      "min-h-[22rem] bg-foreground text-background",
+    ].join(" "),
+    media: "absolute inset-0 size-full object-cover",
+    scrim: [
+      "pointer-events-none absolute inset-0",
+      "bg-[linear-gradient(180deg,transparent_18%,color-mix(in_oklab,var(--foreground)_72%,transparent)_72%,color-mix(in_oklab,var(--foreground)_88%,transparent)_100%)]",
+    ].join(" "),
+    accentRail:
+      "pointer-events-none absolute inset-y-5 start-0 w-1 rounded-full bg-accent",
+    content: [
+      "relative z-10 flex min-h-[22rem] flex-col justify-end gap-4",
+      "px-5 pb-6 pt-16",
+    ].join(" "),
+    copy: "flex max-w-[20rem] flex-col gap-2",
+    eyebrow:
+      "text-accent tracking-wide",
+    title:
+      "text-balance text-[2rem] leading-[1.08] tracking-tight text-background",
+    subtitle:
+      "max-w-[18rem] text-pretty leading-relaxed text-background/80",
+    cta: [
+      "h-12 w-fit rounded-2xl bg-accent px-5 font-bold text-accent-foreground",
+      "shadow-none",
+    ].join(" "),
+  },
+});

@@ -8,7 +8,7 @@ export type EquipmentBrowseCardSize = NonNullable<
 
 export type EquipmentBrowseCardProps = Omit<
   ButtonProps,
-  "children" | "variant"
+  "children" | "variant" | "className"
 > & {
   /** Equipment display name overlaid on the image. */
   title: ReactNode;
@@ -17,4 +17,6 @@ export type EquipmentBrowseCardProps = Omit<
   imageAlt?: string;
   /** Chip width emphasis in a wrapping flex row. */
   size?: EquipmentBrowseCardSize;
+  /** Extra classes for the root pressable (string only for `tv` slots). */
+  className?: string;
 };

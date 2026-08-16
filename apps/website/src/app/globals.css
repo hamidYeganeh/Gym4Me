@@ -4,6 +4,11 @@
 
 @source "../../../../packages/ui/src";
 
+@theme inline {
+  --font-sans:
+    var(--font-iran-sans-x), Tahoma, ui-sans-serif, system-ui, sans-serif;
+}
+
 /*
  * Website marketing pages need selectable text.
  * @repo/theme/heroui.css disables selection for the touch app — restore here.
@@ -23,5 +28,5 @@ html {
 }
 
 body {
-  font-family: var(--font-iran-sans-x), Tahoma, ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-sans);
 }

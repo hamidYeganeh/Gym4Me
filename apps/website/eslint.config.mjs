@@ -12,7 +12,20 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Quarantined legacy GSAP/landing scripts (not app source).
+    "public/**",
   ]),
+  {
+    rules: {
+      // Animation bootstraps / scroll locks often set local UI state after mount.
+      "react-hooks/set-state-in-effect": "off",
+      "@next/next/no-img-element": "off",
+      "@typescript-eslint/no-empty-object-type": [
+        "error",
+        { allowObjectTypes: "always" },
+      ],
+    },
+  },
 ]);
 
 export default eslintConfig;

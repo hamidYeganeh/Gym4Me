@@ -9,7 +9,6 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  Max,
   MaxLength,
   Min,
   MinLength,

@@ -241,7 +241,7 @@ export function ClubRouteMapCard({
     if (!map || !L || route.length < 1) return;
     const bounds = L.latLngBounds(toLatLngs(route)) as LatLngBoundsExpression;
     map.fitBounds(bounds, { padding: [48, 48], maxZoom: 16, animate: true });
-  }, [route, routeKey]);
+  }, [route]);
 
   const handleFullscreen = useCallback(
     (e: Parameters<NonNullable<ClubRouteMapCardProps["onFullscreen"]>>[0]) => {

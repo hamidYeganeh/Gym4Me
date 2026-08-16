@@ -62,36 +62,35 @@ export function DiscoveryLocationSheet({
                     selected,
                   });
                   return (
-                    <Button
-                      aria-selected={selected}
-                      className={itemSlots.item()}
-                      key={address.id}
-                      onPress={() => setDraftId(address.id)}
-                      role="option"
-                      variant="ghost"
-                    >
-                      <span aria-hidden className={styles.itemIcon()}>
-                        <House1 size={22} />
-                      </span>
-                      <span className={styles.itemCopy()}>
-                        <Typography
-                          className={styles.itemLabel()}
-                          type="body-sm"
-                          weight="semibold"
-                        >
-                          {address.label}
-                        </Typography>
-                        <Typography
-                          className={styles.itemLine()}
-                          type="body-xs"
-                        >
-                          {address.line}
-                        </Typography>
-                      </span>
-                      <span aria-hidden className={itemSlots.itemCheck()}>
-                        {selected ? <Check size={14} /> : null}
-                      </span>
-                    </Button>
+                    <div key={address.id} role="option" aria-selected={selected}>
+                      <Button
+                        className={itemSlots.item()}
+                        onPress={() => setDraftId(address.id)}
+                        variant="ghost"
+                      >
+                        <span aria-hidden className={styles.itemIcon()}>
+                          <House1 size={22} />
+                        </span>
+                        <span className={styles.itemCopy()}>
+                          <Typography
+                            className={styles.itemLabel()}
+                            type="body-sm"
+                            weight="semibold"
+                          >
+                            {address.label}
+                          </Typography>
+                          <Typography
+                            className={styles.itemLine()}
+                            type="body-xs"
+                          >
+                            {address.line}
+                          </Typography>
+                        </span>
+                        <span aria-hidden className={itemSlots.itemCheck()}>
+                          {selected ? <Check size={14} /> : null}
+                        </span>
+                      </Button>
+                    </div>
                   );
                 })}
               </div>

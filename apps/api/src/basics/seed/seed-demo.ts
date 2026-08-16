@@ -129,7 +129,7 @@ import {
 } from '../../schemas/progress-metric.schema';
 import { RefItem, RefItemDocument } from '../../schemas/ref-item.schema';
 import { Sport, SportDocument } from '../../schemas/sport.schema';
-import { User, UserDocument } from '../../schemas/user.schema';
+import { UserDocument } from '../../schemas/user.schema';
 import { Wallet, WalletDocument } from '../../schemas/wallet.schema';
 import {
   WorkoutPlan,
@@ -234,7 +234,6 @@ async function seed() {
   const users = app.get(UsersService);
   const clubsService = app.get(ClubsService);
 
-  const userModel = app.get<Model<UserDocument>>(getModelToken(User.name));
   const coachModel = app.get<Model<CoachProfileDocument>>(
     getModelToken(CoachProfile.name),
   );

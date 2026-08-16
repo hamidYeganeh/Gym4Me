@@ -19,21 +19,45 @@ export type SportCategoryFilter = {
   label: string;
 };
 
-const SPORT_COLORS = [
-  statsColors.blue,
-  statsColors.orange,
-  statsColors.yellow,
-  statsColors.purple,
-  statsColors.red,
-  "var(--accent)",
+const SPORT_THEMES = [
+  {
+    color: "var(--accent)",
+    foregroundColor: "var(--accent-foreground)",
+  },
+  {
+    color: statsColors.blue,
+    foregroundColor: statsColors.foreground,
+  },
+  {
+    color: statsColors.orange,
+    foregroundColor: statsColors.foreground,
+  },
+  {
+    color: "var(--foreground)",
+    foregroundColor: "var(--background)",
+  },
+  {
+    color: statsColors.red,
+    foregroundColor: statsColors.foreground,
+  },
+  {
+    color: statsColors.yellow,
+    foregroundColor: "var(--eclipse)",
+  },
 ] as const;
 
 /** Demo catalog for `/discovery/sports` (replaceable by API adapters). */
 export const BROWSE_SPORTS: BrowseSport[] = MOCK_SPORTS.map((sport, index) => ({
   ...sport,
-  color: SPORT_COLORS[index % SPORT_COLORS.length]!,
+  color: SPORT_THEMES[index % SPORT_THEMES.length]!.color,
   clubSportKey: clubSportKeyForSlug(sport.slug),
 }));
+
+export function sportThemeForColor(color: string) {
+  return (
+    SPORT_THEMES.find((theme) => theme.color === color) ?? SPORT_THEMES[1]!
+  );
+}
 
 function clubSportKeyForSlug(
   slug: string,

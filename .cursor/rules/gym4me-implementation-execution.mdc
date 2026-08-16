@@ -1,0 +1,30 @@
+---
+description: Execution protocol for the Gym4Me completion backlog
+alwaysApply: true
+---
+
+# Gym4Me Completion Execution
+
+Before implementing product work, read:
+
+1. `docs/product/cursor-implementation-master-plan.md`
+2. `docs/product/architecture-completion-guardrails.md`
+3. `docs/product/decisions.md`
+4. The relevant story and scenario in `docs/product/user-stories.md` and `docs/product/scenarios.md`
+
+## Required behavior
+
+- Select only a `READY` task whose dependencies are `DONE`.
+- Keep one backlog task per branch/commit/PR.
+- Do not overwrite existing user changes.
+- Implement a complete vertical slice: API → `@repo/api` → consuming UI/admin/website → tests → docs.
+- A schema, mock UI, or API-only endpoint is not completion.
+- Never show mock fixtures for production empty/error states.
+- Financial, capacity, reward, callback and notification mutations must be idempotent.
+- Financial mutations write immutable double-entry Ledger records.
+- Enforce `activeRole`, staff permissions and privacy in the API, independent of feature flags.
+- Add failure, retry, concurrency and unauthorized tests for sensitive mutations.
+- Update the master-plan status and `docs/product/checklist.md` only after every acceptance criterion and quality gate passes.
+- Stop and request a decision when work conflicts with `docs/product/decisions.md`.
+
+Do not bypass a red gate with `any`, ignored errors, disabled tests, force flags or reduced validation.

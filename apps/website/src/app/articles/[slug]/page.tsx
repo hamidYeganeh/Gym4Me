@@ -8,6 +8,9 @@ type Props = {
   params: Promise<{ slug: string }>;
 };
 
+type Article = Awaited<ReturnType<typeof articlesApi.getBySlug>>;
+type RelatedArticles = Awaited<ReturnType<typeof articlesApi.listRelated>>;
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   try {
@@ -33,39 +36,45 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ArticlePage({ params }: Props) {
   const { slug } = await params;
+  let article: Article;
+  let related: RelatedArticles;
+
   try {
-    const [article, related] = await Promise.all([
+    const [articleResult, relatedResult] = await Promise.all([
       articlesApi.getBySlug(slug),
       articlesApi.listRelated(slug).catch(() => []),
     ]);
-    const coverUrl = mediaFileUrl(article.coverMediaId);
-
-    return (
-      <>
-        <JsonLd
-          data={{
-            "@context": "https://schema.org",
-            "@type": "Article",
-            headline: article.title,
-            description: article.excerpt ?? article.seo.description ?? undefined,
-            image: coverUrl ?? undefined,
-            datePublished: article.publishedAt ?? undefined,
-            dateModified: article.updatedAt,
-            author: {
-              "@type": "Person",
-              name: article.author.name,
-            },
-            url: `/articles/${article.slug}`,
-          }}
-        />
-        <ArticleDetailScreen
-          article={article}
-          coverUrl={coverUrl}
-          related={related}
-        />
-      </>
-    );
+    article = articleResult;
+    related = relatedResult;
   } catch {
     notFound();
   }
+
+  const coverUrl = mediaFileUrl(article.coverMediaId);
+
+  return (
+    <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "Article",
+          headline: article.title,
+          description: article.excerpt ?? article.seo.description ?? undefined,
+          image: coverUrl ?? undefined,
+          datePublished: article.publishedAt ?? undefined,
+          dateModified: article.updatedAt,
+          author: {
+            "@type": "Person",
+            name: article.author.name,
+          },
+          url: `/articles/${article.slug}`,
+        }}
+      />
+      <ArticleDetailScreen
+        article={article}
+        coverUrl={coverUrl}
+        related={related}
+      />
+    </>
+  );
 }

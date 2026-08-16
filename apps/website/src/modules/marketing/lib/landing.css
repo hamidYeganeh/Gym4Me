@@ -1,0 +1,160 @@
+/* Gym4Me landing — theme + mobile design-system tokens */
+
+.landing-smooth-wrapper {
+  overflow: hidden;
+}
+
+.landing-shell {
+  /* Align with @repo/theme + mobile surfaces */
+  --brand: var(--accent);
+  --brand-foreground: var(--accent-foreground);
+  --brand-light: color-mix(in oklab, var(--accent) 75%, white);
+  --accent-teal: var(--stats-blue);
+  --surface-soft: var(--surface-secondary);
+  --surface-card: var(--surface);
+  --ink: var(--foreground);
+  --ink-soft: var(--muted);
+  --ghost: color-mix(in oklab, var(--muted) 45%, var(--border));
+  --hairline: var(--separator);
+  --radius-card: var(--surface-radius);
+  --radius-card-lg: calc(var(--surface-radius) + 0.5rem);
+  --radius-pill: 62.5rem;
+  --ease-landing: var(--ease-app);
+  --dur-landing: var(--duration-moderate);
+  --dur-landing-reveal: 0.7s;
+
+  /*
+   * Dark editorial bands — mirror mobile “ink surface” pattern:
+   * light: foreground plate + background text
+   * dark: near-black plate + foreground text
+   */
+  --brand-deep: var(--foreground);
+  --on-brand: var(--background);
+  --on-brand-muted: color-mix(in oklab, var(--background) 72%, transparent);
+  --glass-fill: color-mix(in oklab, var(--background) 14%, transparent);
+  --glass-border: color-mix(in oklab, var(--background) 22%, transparent);
+
+  width: 100%;
+  overflow-x: clip;
+  background: var(--background);
+  color: var(--foreground);
+  padding: 0.5rem;
+  font-family: var(--font-iran-sans-x), Tahoma, ui-sans-serif, system-ui, sans-serif;
+}
+
+[data-theme="dark"] .landing-shell {
+  --brand-deep: color-mix(in oklab, var(--background) 35%, black);
+  --on-brand: var(--foreground);
+  --on-brand-muted: color-mix(in oklab, var(--foreground) 68%, transparent);
+  --glass-fill: color-mix(in oklab, var(--foreground) 10%, transparent);
+  --glass-border: color-mix(in oklab, var(--foreground) 16%, transparent);
+  --brand-light: color-mix(in oklab, var(--accent) 80%, white);
+  --ghost: color-mix(in oklab, var(--muted) 40%, var(--border));
+  --surface-soft: var(--surface-secondary);
+}
+
+@media (min-width: 640px) {
+  .landing-shell {
+    padding: 0.75rem;
+  }
+}
+
+.landing-shell :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.landing-shell button {
+  cursor: pointer;
+}
+
+.landing-shell img {
+  display: block;
+  max-width: 100%;
+}
+
+.landing-dark {
+  background: var(--brand-deep);
+  color: var(--on-brand);
+}
+
+/* Soft surface sections — match mobile card language */
+.landing-surface {
+  background: var(--surface-soft);
+  color: var(--ink);
+}
+
+.landing-clip {
+  overflow: hidden;
+  display: block;
+  padding-bottom: 0.14em;
+}
+
+.landing-clip--word {
+  padding-bottom: 0.12em;
+}
+
+.landing-clip-inner {
+  display: inline-block;
+  transform: translateY(115%);
+  opacity: 0;
+  will-change: transform, opacity;
+  transition:
+    transform var(--dur-landing-reveal) var(--ease-landing),
+    opacity var(--dur-landing-reveal) var(--ease-landing);
+}
+
+.landing-clip-inner.is-in {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.landing-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+html.landing-scroll-lock,
+html.landing-scroll-lock body {
+  overflow: hidden !important;
+}
+
+@keyframes landing-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.landing-arrow-nudge {
+  transition: transform var(--dur-landing) var(--ease-landing);
+}
+
+[dir="rtl"] .landing-arrow-nudge.is-on {
+  transform: translateX(-0.5rem);
+}
+[dir="ltr"] .landing-arrow-nudge.is-on {
+  transform: translateX(0.5rem);
+}
+
+/* Legacy sports/clubs/download inherit theme surfaces cleanly */
+.landing-shell .landing-legacy {
+  isolation: isolate;
+}
+
+.landing-shell .landing-legacy .landing-sports-section,
+.landing-shell .landing-legacy .landing-clubs-section,
+.landing-shell .landing-legacy .landing-download {
+  border-radius: inherit;
+}

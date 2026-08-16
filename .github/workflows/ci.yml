@@ -12,7 +12,7 @@ concurrency:
 jobs:
   quality:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
@@ -24,14 +24,25 @@ jobs:
       - name: Install
         run: npm ci
 
+      # Read-only: workspace lint scripts must not mutate sources (no --fix).
       - name: Lint
         run: npm run lint
 
+      # Next apps run `next typegen` before tsc so check-types does not depend
+      # on a stale local `.next` from `next dev`.
       - name: Typecheck
         run: npm run check-types
 
       - name: Build API
         run: npm run build -w api
 
-      - name: Build packages (types)
-        run: npm run check-types -w @repo/api
+      - name: Build admin
+        run: npm run build -w admin
+
+      - name: Build website
+        run: npm run build -w website
+        timeout-minutes: 20
+
+      - name: Build mobile
+        run: npm run build -w mobile
+        timeout-minutes: 25
