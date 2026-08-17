@@ -1,33 +1,19 @@
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Chip, Input, Label, TextField, Typography } from "@heroui/react";
 import type { Exercise } from "@repo/api";
 import { ApiError } from "@repo/api";
-import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
-import {
-  AdminConfirmDialog,
-  AdminDataTable,
-  AdminFormDrawer,
-  AdminShell,
-} from "@/shared/components";
+import { AdminShell } from "@/shared/components";
 import { useAdminInfiniteQuery } from "@/shared/hooks";
 import { adminProgress } from "@/shared/lib/api";
 import { routes } from "@/shared/lib/routes";
+import { ExercisesCatalogHeaderSection } from "../../sections/ExercisesCatalogHeaderSection";
+import { ExercisesCatalogModalsSection } from "../../sections/ExercisesCatalogModalsSection";
+import { ExercisesCatalogTableSection } from "../../sections/ExercisesCatalogTableSection";
 import { exercisesCatalogScreenVariants } from "./ExercisesCatalogScreen.styles";
 import type { ExercisesCatalogScreenProps } from "./ExercisesCatalogScreen.types";
 
 const PAGE_SIZE = 30;
-
-const columnHelper = createColumnHelper<Exercise>();
-
-type ExerciseTableMeta = {
-  actionsClassName: string;
-  onEdit: (row: Exercise) => void;
-  onApprove: (row: Exercise) => void;
-  onReject: (row: Exercise) => void;
-  onArchive: (row: Exercise) => void;
-};
 
 export function ExercisesCatalogScreen({
   className,
@@ -37,7 +23,6 @@ export function ExercisesCatalogScreen({
   const styles = exercisesCatalogScreenVariants();
 
   const [search, setSearch] = useState("");
-
   const [rejecting, setRejecting] = useState<Exercise | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [archiving, setArchiving] = useState<Exercise | null>(null);
@@ -76,110 +61,6 @@ export function ExercisesCatalogScreen({
     fetchPage,
   });
 
-  const openEdit = (row: Exercise) => {
-    navigate(routes.catalogExerciseEdit(row.id));
-  };
-
-  const columns = useMemo(
-    () =>
-      [
-        columnHelper.accessor("name", {
-          header: t("exercises.columns.name"),
-          cell: ({ getValue }) => (
-            <span className="block max-w-56 truncate font-medium">
-              {getValue()}
-            </span>
-          ),
-        }),
-        columnHelper.accessor((row) => row.muscleKeys.join("، ") || "—", {
-          id: "muscles",
-          header: t("exercises.columns.muscles"),
-          cell: ({ getValue }) => (
-            <span className="block max-w-48 truncate">{getValue()}</span>
-          ),
-        }),
-        columnHelper.accessor(
-          (row) => `${row.status} / ${row.verification.status}`,
-          {
-            id: "status",
-            header: t("exercises.columns.status"),
-            cell: ({ row }) => {
-              const item = row.original;
-              const verification = item.verification.status;
-              const color =
-                verification === "approved"
-                  ? "success"
-                  : verification === "rejected"
-                    ? "danger"
-                    : "warning";
-              return (
-                <div className="flex items-center gap-1.5">
-                  <Chip color={color} size="sm" variant="soft">
-                    <Chip.Label>{verification}</Chip.Label>
-                  </Chip>
-                  <Chip size="sm" variant="soft">
-                    <Chip.Label>{item.status}</Chip.Label>
-                  </Chip>
-                </div>
-              );
-            },
-          },
-        ),
-        columnHelper.display({
-          id: "actions",
-          header: t("exercises.columns.actions"),
-          size: 260,
-          cell: (info) => {
-            const meta = info.table.options.meta as
-              | ExerciseTableMeta
-              | undefined;
-            if (!meta) return null;
-            const row = info.row.original;
-            const isPending = row.verification.status === "pending";
-            return (
-              <div className={meta.actionsClassName}>
-                {isPending ? (
-                  <>
-                    <Button
-                      size="sm"
-                      variant="primary"
-                      onPress={() => meta.onApprove(row)}
-                    >
-                      {t("exercises.approve")}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="danger"
-                      onPress={() => meta.onReject(row)}
-                    >
-                      {t("exercises.reject")}
-                    </Button>
-                  </>
-                ) : null}
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onPress={() => meta.onEdit(row)}
-                >
-                  {t("edit")}
-                </Button>
-                {row.status === "active" ? (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onPress={() => meta.onArchive(row)}
-                  >
-                    {t("archive")}
-                  </Button>
-                ) : null}
-              </div>
-            );
-          },
-        }),
-      ] as ColumnDef<Exercise, unknown>[],
-    [t],
-  );
-
   const runAction = async (action: () => Promise<unknown>) => {
     setActionPending(true);
     setActionError(null);
@@ -197,25 +78,6 @@ export function ExercisesCatalogScreen({
     }
   };
 
-  const meta: ExerciseTableMeta = {
-    actionsClassName: styles.actions(),
-    onEdit: openEdit,
-    onApprove: (row) => {
-      void runAction(() =>
-        adminProgress.verifyExercise(row.id, { status: "approved" }),
-      );
-    },
-    onReject: (row) => {
-      setRejecting(row);
-      setRejectionReason("");
-      setActionError(null);
-    },
-    onArchive: (row) => {
-      setArchiving(row);
-      setActionError(null);
-    },
-  };
-
   return (
     <AdminShell
       activeNavId="catalogs"
@@ -227,124 +89,63 @@ export function ExercisesCatalogScreen({
       }}
     >
       <div className={styles.content()}>
-        <section className={styles.intro()}>
-          <Typography className={styles.title()} type="h1" weight="bold">
-            {t("exercises.title")}
-          </Typography>
-          <Typography className={styles.subtitle()}>
-            {t("exercises.subtitle")}
-          </Typography>
-          <div className={styles.actions()}>
-            <Button
-              size="sm"
-              variant="primary"
-              onPress={() => navigate(routes.catalogExerciseNew)}
-            >
-              {t("create")}
-            </Button>
-            <Button size="sm" variant="ghost" onPress={() => void reload()}>
-              {t("refresh")}
-            </Button>
-          </div>
-        </section>
+        <ExercisesCatalogHeaderSection
+          onCreate={() => navigate(routes.catalogExerciseNew)}
+          onRefresh={() => void reload()}
+        />
 
-        <AdminDataTable
-          ariaLabel={t("exercises.title")}
-          columns={columns}
-          data={items}
-          emptyLabel={t("exercises.empty")}
+        <ExercisesCatalogTableSection
           error={error}
-          getRowId={(row) => row.id}
+          fetchingMore={fetchingMore}
           hasMore={hasMore}
-          isFetchingMore={fetchingMore}
-          isLoading={loading}
-          loadingLabel={t("loading")}
-          loadingMoreLabel={t("loadingMore")}
-          meta={meta}
+          items={items}
+          loading={loading}
+          total={total}
+          onApprove={(row) => {
+            void runAction(() =>
+              adminProgress.verifyExercise(row.id, { status: "approved" }),
+            );
+          }}
+          onArchive={(row) => {
+            setArchiving(row);
+            setActionError(null);
+          }}
+          onEdit={(row) => navigate(routes.catalogExerciseEdit(row.id))}
           onLoadMore={loadMore}
-          summaryLabel={t("exercises.summary", {
-            loaded: items.length,
-            total,
-          })}
+          onReject={(row) => {
+            setRejecting(row);
+            setRejectionReason("");
+            setActionError(null);
+          }}
         />
       </div>
 
-      <AdminFormDrawer
-        isOpen={Boolean(rejecting)}
-        title={t("exercises.rejectTitle")}
-        onOpenChange={(open) => {
-          if (!open) setRejecting(null);
-        }}
-      >
-        <div className={styles.form()}>
-          <TextField
-            className={styles.field()}
-            fullWidth
-            name="rejectionReason"
-            value={rejectionReason}
-            onChange={setRejectionReason}
-          >
-            <Label>{t("exercises.fields.rejectionReason")}</Label>
-            <Input />
-          </TextField>
-
-          {actionError ? (
-            <p className="text-sm text-danger" role="alert">
-              {actionError}
-            </p>
-          ) : null}
-
-          <div className={styles.actions()}>
-            <Button
-              isDisabled={actionPending || !rejectionReason.trim()}
-              variant="danger"
-              onPress={() => {
-                if (!rejecting) return;
-                void runAction(() =>
-                  adminProgress.verifyExercise(rejecting.id, {
-                    status: "rejected",
-                    rejectionReason: rejectionReason.trim(),
-                  }),
-                );
-              }}
-            >
-              {t("exercises.reject")}
-            </Button>
-            <Button
-              isDisabled={actionPending}
-              variant="secondary"
-              onPress={() => setRejecting(null)}
-            >
-              {t("cancel")}
-            </Button>
-          </div>
-        </div>
-      </AdminFormDrawer>
-
-      <AdminConfirmDialog
-        body={
-          <>
-            <p>{t("exercises.archiveBody")}</p>
-            {actionError ? (
-              <p className="mt-2 text-sm text-danger" role="alert">
-                {actionError}
-              </p>
-            ) : null}
-          </>
-        }
-        cancelLabel={t("cancel")}
-        confirmLabel={t("archive")}
-        confirmVariant="danger"
-        isOpen={Boolean(archiving)}
-        isPending={actionPending}
-        title={t("exercises.archiveTitle")}
-        onConfirm={() => {
+      <ExercisesCatalogModalsSection
+        actionError={actionError}
+        actionPending={actionPending}
+        archiving={archiving}
+        rejectionReason={rejectionReason}
+        rejecting={rejecting}
+        onArchiveConfirm={() => {
           if (!archiving) return;
           void runAction(() => adminProgress.archiveExercise(archiving.id));
         }}
-        onOpenChange={(open) => {
+        onArchivingOpenChange={(open) => {
           if (!open) setArchiving(null);
         }}
+        onRejectConfirm={() => {
+          if (!rejecting) return;
+          void runAction(() =>
+            adminProgress.verifyExercise(rejecting.id, {
+              status: "rejected",
+              rejectionReason: rejectionReason.trim(),
+            }),
+          );
+        }}
+        onRejectingOpenChange={(open) => {
+          if (!open) setRejecting(null);
+        }}
+        onRejectionReasonChange={setRejectionReason}
       />
     </AdminShell>
   );

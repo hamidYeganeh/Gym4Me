@@ -11,7 +11,5 @@ export const welcomeIntroduceScreenVariants = tv({
     ],
     content:
       "relative z-10 flex min-h-dvh flex-col pt-[max(1.5rem,env(safe-area-inset-top))]",
-    carousel: "relative min-h-0 w-full flex-1 overflow-hidden px-4",
-    track: "flex h-full touch-pan-y",
   },
 });

@@ -1,0 +1,63 @@
+import { Chip, Typography } from "@heroui/react";
+import { athleteWorkoutDetailLogsSectionVariants } from "./AthleteWorkoutDetailLogsSection.styles";
+import type { AthleteWorkoutDetailLogsSectionProps } from "./AthleteWorkoutDetailLogsSection.types";
+
+export function AthleteWorkoutDetailLogsSection({
+  title,
+  emptyTitle,
+  emptyBody,
+  sessionLabel,
+  setsCountLabel,
+  logStatusLabel,
+  logs,
+  className,
+}: AthleteWorkoutDetailLogsSectionProps) {
+  const styles = athleteWorkoutDetailLogsSectionVariants();
+
+  return (
+    <section className={styles.root({ className })}>
+      <Typography className={styles.sectionTitle()} type="body-sm">
+        {title}
+      </Typography>
+      {logs.length === 0 ? (
+        <div className={styles.empty()}>
+          <Typography type="h4" weight="semibold">
+            {emptyTitle}
+          </Typography>
+          <Typography className={styles.meta()} type="body-sm">
+            {emptyBody}
+          </Typography>
+        </div>
+      ) : (
+        <div className={styles.list()}>
+          {logs.map((log) => (
+            <article className={styles.card()} key={log.id}>
+              <div className={styles.cardTop()}>
+                <Typography type="body" weight="semibold">
+                  {sessionLabel(log.sessionIndex)}
+                </Typography>
+                <Chip
+                  color={
+                    log.status === "completed"
+                      ? "success"
+                      : log.status === "draft" ||
+                          log.status === "in_progress"
+                        ? "warning"
+                        : "default"
+                  }
+                  size="sm"
+                  variant="soft"
+                >
+                  <Chip.Label>{logStatusLabel(log.status)}</Chip.Label>
+                </Chip>
+              </div>
+              <Typography className={styles.meta()} type="body-sm">
+                {log.loggedLabel} · {setsCountLabel(log.setsCount)}
+              </Typography>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}

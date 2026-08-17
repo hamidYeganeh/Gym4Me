@@ -1,17 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Button, Chip, Spinner, Typography } from "@heroui/react";
+import { Spinner } from "@heroui/react";
 import type { Club, ClubClass, ClubSlot } from "@repo/api";
-import { ArrowLeft, Pencil1 } from "@repo/icons";
 import { toast } from "@repo/ui/kit/Toast";
 import { useTranslations } from "next-intl";
-import { AdminConfirmDialog, AdminShell } from "@/shared/components";
+import { AdminShell } from "@/shared/components";
 import { routes } from "@/shared/lib/routes";
-import { formatAdminDate } from "@/shared/lib/user-format";
-import {
-  categoryLabel,
-  ownerLabel,
-} from "../../lib/clubs-data";
 import {
   activateClub,
   deactivateClub,
@@ -22,8 +16,9 @@ import {
   listClubSlots,
   removeClub,
 } from "../../lib/clubs-repository";
-import { ClubSlotsSection } from "../../sections/ClubSlotsSection";
-import { ClubCoachesSection } from "../../sections/ClubCoachesSection";
+import { ClubDetailConfirmDialogsSection } from "../../sections/ClubDetailConfirmDialogsSection";
+import { ClubDetailHeaderSection } from "../../sections/ClubDetailHeaderSection";
+import { ClubDetailInfoCardsSection } from "../../sections/ClubDetailInfoCardsSection";
 import { clubDetailScreenVariants } from "./ClubDetailScreen.styles";
 import type { ClubDetailScreenProps } from "./ClubDetailScreen.types";
 
@@ -112,61 +107,14 @@ export function ClubDetailScreen({ className }: ClubDetailScreenProps) {
       className={className}
     >
       <div className={styles.content()}>
-        <div className={styles.header()}>
-          <div>
-            <Button
-              className="mb-3"
-              size="sm"
-              variant="tertiary"
-              onPress={() => navigate(routes.clubs)}
-            >
-              <ArrowLeft size={16} />
-              {t("detail.back")}
-            </Button>
-            {club ? (
-              <>
-                <Typography className={styles.title()} type="h1" weight="bold">
-                  {club.identity.name}
-                </Typography>
-                <p className={styles.subtitle()}>
-                  {ownerLabel(club.ownerId)} ·{" "}
-                  {formatAdminDate(club.createdAt)}
-                </p>
-              </>
-            ) : (
-              <Typography className={styles.title()} type="h1" weight="bold">
-                {t("title")}
-              </Typography>
-            )}
-          </div>
-
-          {club ? (
-            <div className={styles.actions()}>
-              <Button variant="outline" onPress={() => navigate(routes.clubEdit(club.id))}>
-                <Pencil1 size={16} />
-                {t("actions.edit")}
-              </Button>
-              {club.operationalStatus === "inactive" ? (
-                <Button
-                  variant="primary"
-                  onPress={() => setActivateOpen(true)}
-                >
-                  {t("actions.activate")}
-                </Button>
-              ) : (
-                <Button
-                  variant="outline"
-                  onPress={() => setDeactivateOpen(true)}
-                >
-                  {t("actions.deactivate")}
-                </Button>
-              )}
-              <Button variant="danger" onPress={() => setDeleteOpen(true)}>
-                {t("actions.delete")}
-              </Button>
-            </div>
-          ) : null}
-        </div>
+        <ClubDetailHeaderSection
+          club={club}
+          onActivate={() => setActivateOpen(true)}
+          onBack={() => navigate(routes.clubs)}
+          onDeactivate={() => setDeactivateOpen(true)}
+          onDelete={() => setDeleteOpen(true)}
+          onEdit={() => club && navigate(routes.clubEdit(club.id))}
+        />
 
         {loading ? (
           <div className="flex justify-center py-16">
@@ -181,200 +129,28 @@ export function ClubDetailScreen({ className }: ClubDetailScreenProps) {
         ) : null}
 
         {club ? (
-          <>
-            <section className={styles.card()}>
-              <Typography className={styles.cardTitle()}>
-                {t("detail.status")}
-              </Typography>
-              <div className={styles.chips()}>
-                <Chip size="sm" variant="soft">
-                  {t(`lifecycle.${club.review.status}`)}
-                </Chip>
-                <Chip
-                  color={
-                    club.operationalStatus === "active" ? "success" : "danger"
-                  }
-                  size="sm"
-                  variant="soft"
-                >
-                  {t(`operational.${club.operationalStatus}`)}
-                </Chip>
-              </div>
-            </section>
-
-            <section className={styles.card()}>
-              <Typography className={styles.cardTitle()}>
-                {t("detail.identity")}
-              </Typography>
-              <dl className={styles.grid()}>
-                <div>
-                  <dt className={styles.label()}>{t("createModal.name")}</dt>
-                  <dd className={styles.value()}>{club.identity.name}</dd>
-                </div>
-                <div>
-                  <dt className={styles.label()}>{t("createModal.description")}</dt>
-                  <dd className={styles.value()}>
-                    {club.identity.description || "—"}
-                  </dd>
-                </div>
-              </dl>
-              {club.categories.length ? (
-                <div className={`mt-4 ${styles.chips()}`}>
-                  {club.categories.map((c) => (
-                    <Chip key={c.id} size="sm" variant="soft">
-                      {c.name ?? categoryLabel(c.id)}
-                    </Chip>
-                  ))}
-                </div>
-              ) : null}
-            </section>
-
-            <section className={styles.card()}>
-              <Typography className={styles.cardTitle()}>
-                {t("detail.contact")}
-              </Typography>
-              <dl className={styles.grid()}>
-                <div>
-                  <dt className={styles.label()}>{t("createModal.phone")}</dt>
-                  <dd className={styles.value()} dir="ltr">
-                    {club.contact.phones
-                      .map((p) =>
-                        p.label ? `${p.number} (${p.label})` : p.number,
-                      )
-                      .join(" · ") || "—"}
-                  </dd>
-                </div>
-                <div>
-                  <dt className={styles.label()}>{t("createModal.website")}</dt>
-                  <dd className={styles.value()} dir="ltr">
-                    {club.contact.website || "—"}
-                  </dd>
-                </div>
-              </dl>
-            </section>
-
-            <section className={styles.card()}>
-              <Typography className={styles.cardTitle()}>
-                {t("detail.location")}
-              </Typography>
-              <dl className={styles.grid()}>
-                <div>
-                  <dt className={styles.label()}>{t("createModal.address")}</dt>
-                  <dd className={styles.value()}>
-                    {club.location?.address || "—"}
-                  </dd>
-                </div>
-                <div>
-                  <dt className={styles.label()}>
-                    {t("createModal.direction")}
-                  </dt>
-                  <dd className={styles.value()}>
-                    {club.location?.direction
-                      ? t(`direction.${club.location.direction}`)
-                      : "—"}
-                  </dd>
-                </div>
-              </dl>
-            </section>
-
-            <section className={styles.card()}>
-              <Typography className={styles.cardTitle()}>
-                {t("detail.reviews")}
-              </Typography>
-              <p className={styles.value()}>
-                {club.reviewsSummary.count
-                  ? `${club.reviewsSummary.average.toFixed(1)} / 5 · ${club.reviewsSummary.count}`
-                  : "—"}
-              </p>
-            </section>
-
-            <section className={styles.card()}>
-              <ClubCoachesSection
-                clubId={club.id}
-                coaches={coaches}
-                onChanged={() => void load()}
-              />
-            </section>
-
-            <section className={styles.card()}>
-              <Typography className={styles.cardTitle()}>
-                {t("detail.branches")}
-              </Typography>
-              {branches.length ? (
-                <ul className="space-y-1 text-sm">
-                  {branches.map((b) => (
-                    <li key={b.id}>{b.identity.name}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p className={styles.muted()}>{t("detail.emptyRefs")}</p>
-              )}
-            </section>
-
-            <section className={styles.card()}>
-              <Typography className={styles.cardTitle()}>
-                {t("detail.classes")}
-              </Typography>
-              {classes.length ? (
-                <ul className="space-y-1 text-sm">
-                  {classes.map((c) => (
-                    <li key={c.id}>
-                      {c.title}
-                      <span className="ms-2 text-muted tabular-nums" dir="ltr">
-                        {c.id}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className={styles.muted()}>{t("detail.emptyRefs")}</p>
-              )}
-            </section>
-
-            <section className={styles.card()}>
-              <ClubSlotsSection
-                classes={classes}
-                clubId={club.id}
-                slots={slots}
-                onChanged={() => void load()}
-              />
-            </section>
-          </>
+          <ClubDetailInfoCardsSection
+            branches={branches}
+            classes={classes}
+            club={club}
+            coaches={coaches}
+            slots={slots}
+            onChanged={() => void load()}
+          />
         ) : null}
       </div>
 
-      <AdminConfirmDialog
-        body={<Typography>{t("detail.activateBody")}</Typography>}
-        cancelLabel={t("detail.cancel")}
-        confirmLabel={t("detail.activateConfirm")}
-        confirmVariant="primary"
-        isOpen={activateOpen}
-        isPending={pending}
-        title={t("detail.activateTitle")}
-        onConfirm={() => void runAction("activate")}
-        onOpenChange={setActivateOpen}
-      />
-
-      <AdminConfirmDialog
-        body={<Typography>{t("detail.deactivateBody")}</Typography>}
-        cancelLabel={t("detail.cancel")}
-        confirmLabel={t("detail.deactivateConfirm")}
-        isOpen={deactivateOpen}
-        isPending={pending}
-        title={t("detail.deactivateTitle")}
-        onConfirm={() => void runAction("deactivate")}
-        onOpenChange={setDeactivateOpen}
-      />
-
-      <AdminConfirmDialog
-        body={<Typography>{t("detail.deleteBody")}</Typography>}
-        cancelLabel={t("detail.cancel")}
-        confirmLabel={t("detail.deleteConfirm")}
-        isOpen={deleteOpen}
-        isPending={pending}
-        title={t("detail.deleteTitle")}
-        onConfirm={() => void runAction("delete")}
-        onOpenChange={setDeleteOpen}
+      <ClubDetailConfirmDialogsSection
+        activateOpen={activateOpen}
+        deactivateOpen={deactivateOpen}
+        deleteOpen={deleteOpen}
+        pending={pending}
+        onActivateConfirm={() => void runAction("activate")}
+        onActivateOpenChange={setActivateOpen}
+        onDeactivateConfirm={() => void runAction("deactivate")}
+        onDeactivateOpenChange={setDeactivateOpen}
+        onDeleteConfirm={() => void runAction("delete")}
+        onDeleteOpenChange={setDeleteOpen}
       />
     </AdminShell>
   );

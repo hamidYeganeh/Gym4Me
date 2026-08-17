@@ -44,7 +44,7 @@ function accentStyle(color: string): CSSProperties {
   return { ["--metric-accent" as string]: color };
 }
 
-function normalizeSeries(series: number[]): number[] {
+function normalizeSeries(series: readonly number[]): number[] {
   const max = Math.max(...series, 0.0001);
   return series.map((value) => Math.min(1, Math.max(0, value / max)));
 }

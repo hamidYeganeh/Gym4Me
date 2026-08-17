@@ -123,13 +123,14 @@ docker compose --env-file .env.production \
 
 ## Updating
 
-```bash
-cd /opt/gym4me
-git pull --ff-only
-docker compose --env-file .env.production \
-  -f docker-compose.production.yml up -d --build --remove-orphans
-docker image prune -f
-```
+Use [`update-runbook.md`](./update-runbook.md) for production updates. It includes:
+
+- local validation and Git release preparation;
+- individual deployment commands for website, mobile web, admin, and API;
+- an all-four deployment sequence;
+- database and uploads backups;
+- health checks, logs, public smoke tests, and rollback;
+- native Android/iOS release notes and troubleshooting.
 
 ## Backups
 

@@ -1,13 +1,4 @@
 import { useCallback, useMemo, useState } from "react";
-import { Link as RouterLink } from "react-router-dom";
-import {
-  Button,
-  Chip,
-  Label,
-  TextArea,
-  TextField,
-  Typography,
-} from "@heroui/react";
 import type {
   SupportTicket,
   SupportTicketDetail,
@@ -15,28 +6,15 @@ import type {
   SupportTicketStatus,
 } from "@repo/api";
 import { ApiError } from "@repo/api";
-import type { ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
-import {
-  AdminConfirmDialog,
-  AdminDataTable,
-  AdminFormDrawer,
-  AdminShell,
-} from "@/shared/components";
+import { AdminShell } from "@/shared/components";
 import { useAdminInfiniteQuery } from "@/shared/hooks";
 import { adminSupport } from "@/shared/lib/api";
-import { routes } from "@/shared/lib/routes";
-import { formatAdminDate } from "@/shared/lib/user-format";
-import {
-  TICKET_PRIORITIES,
-  TICKET_STATUS_COLOR,
-} from "../../lib/support-constants";
-import {
-  createSupportTableColumns,
-  ticketRequesterId,
-  ticketRequesterLabel,
-  type SupportTableMeta,
-} from "../../lib/support-table-columns";
+import { SupportTicketsDetailDrawerSection } from "../../sections/SupportTicketsDetailDrawerSection";
+import { SupportTicketsFiltersSection } from "../../sections/SupportTicketsFiltersSection";
+import { SupportTicketsHeaderSection } from "../../sections/SupportTicketsHeaderSection";
+import { SupportTicketsResolveDialogSection } from "../../sections/SupportTicketsResolveDialogSection";
+import { SupportTicketsTableSection } from "../../sections/SupportTicketsTableSection";
 import { supportTicketsScreenVariants } from "./SupportTicketsScreen.styles";
 import type { SupportTicketsScreenProps } from "./SupportTicketsScreen.types";
 
@@ -92,27 +70,6 @@ export function SupportTicketsScreen({ className }: SupportTicketsScreenProps) {
     fetchPage,
   });
 
-  const columns = useMemo(
-    () =>
-      createSupportTableColumns({
-        columns: {
-          ticketNumber: t("columns.ticketNumber"),
-          requester: t("columns.requester"),
-          subject: t("columns.subject"),
-          category: t("columns.category"),
-          priority: t("columns.priority"),
-          status: t("columns.status"),
-          lastMessageAt: t("columns.lastMessageAt"),
-          actions: t("columns.actions"),
-        },
-        category: (category) => t(`category.${category}`),
-        priority: (priority) => t(`priority.${priority}`),
-        status: (status) => t(`status.${status}`),
-        view: t("actionsMenu.view"),
-      }) as ColumnDef<SupportTicket, unknown>[],
-    [t],
-  );
-
   const openDetail = useCallback(
     async (row: SupportTicket) => {
       setDetailLoading(true);
@@ -133,11 +90,6 @@ export function SupportTicketsScreen({ className }: SupportTicketsScreenProps) {
     },
     [t],
   );
-
-  const meta: SupportTableMeta = {
-    actionsClassName: styles.actions(),
-    onView: (row) => void openDetail(row),
-  };
 
   const runAction = async (fn: () => Promise<SupportTicketDetail>) => {
     setActionPending(true);
@@ -196,10 +148,6 @@ export function SupportTicketsScreen({ className }: SupportTicketsScreenProps) {
     void runAction(() => adminSupport.assignToMe(detail.id));
   };
 
-  const requesterLinkId = detail ? ticketRequesterId(detail) : null;
-  const isTerminal =
-    detail?.status === "closed" || detail?.status === "resolved";
-
   return (
     <AdminShell
       activeNavId="support"
@@ -211,271 +159,54 @@ export function SupportTicketsScreen({ className }: SupportTicketsScreenProps) {
       }}
     >
       <div className={styles.content()}>
-        <section className={styles.intro()}>
-          <Typography className={styles.title()} type="h1" weight="bold">
-            {t("ticketsTitle")}
-          </Typography>
-          <Typography className={styles.subtitle()}>
-            {t("ticketsSubtitle")}
-          </Typography>
-          <div className={styles.actions()}>
-            {(
-              [
-                "all",
-                "open",
-                "awaiting_admin",
-                "awaiting_user",
-                "resolved",
-                "closed",
-              ] as const
-            ).map((value) => (
-              <Button
-                key={value}
-                size="sm"
-                variant={statusFilter === value ? "primary" : "secondary"}
-                onPress={() => setStatusFilter(value)}
-              >
-                {value === "all" ? t("filterAll") : t(`status.${value}`)}
-              </Button>
-            ))}
-            <Button size="sm" variant="ghost" onPress={() => void reload()}>
-              {t("refresh")}
-            </Button>
-          </div>
-        </section>
+        <SupportTicketsHeaderSection />
 
-        <AdminDataTable
-          ariaLabel={t("ticketsTitle")}
-          columns={columns}
-          data={items}
-          emptyLabel={t("ticketsEmpty")}
+        <SupportTicketsFiltersSection
+          statusFilter={statusFilter}
+          onRefresh={() => void reload()}
+          onStatusChange={setStatusFilter}
+        />
+
+        <SupportTicketsTableSection
           error={error}
-          getRowId={(row) => row.id}
+          fetchingMore={fetchingMore}
           hasMore={hasMore}
-          isFetchingMore={fetchingMore}
-          isLoading={loading}
-          loadingLabel={t("loading")}
-          loadingMoreLabel={t("loadingMore")}
-          meta={meta}
-          summaryLabel={t("infinite.summary", {
-            loaded: items.length,
-            total,
-          })}
+          items={items}
+          loading={loading}
+          total={total}
           onLoadMore={loadMore}
+          onView={(row) => void openDetail(row)}
         />
       </div>
 
-      <AdminFormDrawer
-        isOpen={Boolean(detail)}
-        title={detail ? `${t("ticketTitle")} ${detail.ticketNumber}` : ""}
+      <SupportTicketsDetailDrawerSection
+        actionError={actionError}
+        actionPending={actionPending}
+        detail={detail}
+        detailError={detailError}
+        detailLoading={detailLoading}
+        replyBody={replyBody}
+        onAssign={handleAssign}
+        onClose={handleClose}
         onOpenChange={(open) => {
           if (!open) setDetail(null);
         }}
-      >
-        {detail ? (
-          <div className={styles.drawerBody()}>
-            <dl className={styles.meta()}>
-              <div>
-                <dt className="text-muted">{t("columns.requester")}</dt>
-                <dd className="font-medium">
-                  {requesterLinkId ? (
-                    <RouterLink
-                      className="text-accent underline-offset-2 hover:underline"
-                      to={routes.user(requesterLinkId)}
-                    >
-                      {ticketRequesterLabel(detail)}
-                    </RouterLink>
-                  ) : (
-                    ticketRequesterLabel(detail)
-                  )}{" "}
-                  <span className="text-muted">
-                    ({t(`requesterRole.${detail.requester.role}`)})
-                  </span>
-                </dd>
-              </div>
-              <div>
-                <dt className="text-muted">{t("columns.subject")}</dt>
-                <dd>{detail.subject}</dd>
-              </div>
-              <div>
-                <dt className="text-muted">{t("columns.category")}</dt>
-                <dd>{t(`category.${detail.category}`)}</dd>
-              </div>
-              <div>
-                <dt className="text-muted">{t("columns.status")}</dt>
-                <dd>
-                  <Chip
-                    color={TICKET_STATUS_COLOR[detail.status]}
-                    size="sm"
-                    variant="soft"
-                  >
-                    {t(`status.${detail.status}`)}
-                  </Chip>
-                </dd>
-              </div>
-              <div>
-                <dt className="text-muted">{t("columns.priority")}</dt>
-                <dd className="mt-1 flex flex-wrap gap-1.5">
-                  {TICKET_PRIORITIES.map((priority) => (
-                    <Button
-                      key={priority}
-                      isDisabled={actionPending || isTerminal}
-                      size="sm"
-                      variant={
-                        detail.priority === priority ? "primary" : "secondary"
-                      }
-                      onPress={() => handlePriority(priority)}
-                    >
-                      {t(`priority.${priority}`)}
-                    </Button>
-                  ))}
-                </dd>
-              </div>
-              {detail.resolution ? (
-                <div>
-                  <dt className="text-muted">{t("resolutionNote")}</dt>
-                  <dd>{detail.resolution.note ?? "—"}</dd>
-                </div>
-              ) : null}
-              <div>
-                <dt className="text-muted">{t("createdAt")}</dt>
-                <dd>{formatAdminDate(detail.createdAt)}</dd>
-              </div>
-            </dl>
+        onPriority={handlePriority}
+        onReply={() => void handleReply()}
+        onReplyBodyChange={setReplyBody}
+        onResolveOpen={() => {
+          setResolveNote("");
+          setResolveOpen(true);
+        }}
+      />
 
-            <div>
-              <Typography className="mb-2 text-sm font-medium">
-                {t("thread")}
-              </Typography>
-              {detailLoading ? (
-                <p className="text-sm text-muted">{t("loading")}</p>
-              ) : (
-                <div className={styles.thread()}>
-                  {detail.messages.length === 0 ? (
-                    <p className="text-sm text-muted">{t("threadEmpty")}</p>
-                  ) : (
-                    detail.messages.map((message) => (
-                      <div
-                        key={message.id}
-                        className={`${styles.message()} ${
-                          message.author.kind === "admin"
-                            ? styles.messageAdmin()
-                            : styles.messageRequester()
-                        }`}
-                      >
-                        <span className={styles.messageMeta()}>
-                          {message.author.kind === "admin"
-                            ? t("authorAdmin")
-                            : t("authorRequester")}{" "}
-                          · {formatAdminDate(message.createdAt)}
-                        </span>
-                        <p className="whitespace-pre-wrap text-sm">
-                          {message.body}
-                        </p>
-                      </div>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
-
-            {detailError ? (
-              <p className="text-sm text-danger" role="alert">
-                {detailError}
-              </p>
-            ) : null}
-
-            {detail.status !== "closed" ? (
-              <TextField
-                className={styles.replyField()}
-                fullWidth
-                name="replyBody"
-                value={replyBody}
-                onChange={setReplyBody}
-              >
-                <Label>{t("replyLabel")}</Label>
-                <TextArea
-                  className="min-h-24"
-                  placeholder={t("replyPlaceholder")}
-                />
-              </TextField>
-            ) : null}
-
-            {actionError ? (
-              <p className="text-sm text-danger" role="alert">
-                {actionError}
-              </p>
-            ) : null}
-
-            <div className={styles.actions()}>
-              {detail.status !== "closed" ? (
-                <Button
-                  isDisabled={actionPending || !replyBody.trim()}
-                  variant="primary"
-                  onPress={() => void handleReply()}
-                >
-                  {t("sendReply")}
-                </Button>
-              ) : null}
-              {!detail.assignment ? (
-                <Button
-                  isDisabled={actionPending}
-                  variant="secondary"
-                  onPress={handleAssign}
-                >
-                  {t("assignToMe")}
-                </Button>
-              ) : null}
-              {!isTerminal ? (
-                <Button
-                  isDisabled={actionPending}
-                  variant="secondary"
-                  onPress={() => {
-                    setResolveNote("");
-                    setResolveOpen(true);
-                  }}
-                >
-                  {t("resolve")}
-                </Button>
-              ) : null}
-              {detail.status !== "closed" ? (
-                <Button
-                  isDisabled={actionPending}
-                  variant="danger"
-                  onPress={handleClose}
-                >
-                  {t("close")}
-                </Button>
-              ) : null}
-            </div>
-          </div>
-        ) : null}
-      </AdminFormDrawer>
-
-      <AdminConfirmDialog
-        body={
-          <>
-            <p>{t("resolveBody")}</p>
-            <TextField
-              className={styles.resolveField()}
-              fullWidth
-              name="resolutionNote"
-              value={resolveNote}
-              onChange={setResolveNote}
-            >
-              <Label>{t("resolutionNote")}</Label>
-              <TextArea className="min-h-20" />
-            </TextField>
-          </>
-        }
-        cancelLabel={t("cancel")}
-        confirmLabel={t("resolve")}
-        confirmVariant="primary"
+      <SupportTicketsResolveDialogSection
+        actionPending={actionPending}
         isOpen={resolveOpen}
-        isPending={actionPending}
-        title={t("resolveTitle")}
+        resolveNote={resolveNote}
         onConfirm={() => void handleResolve()}
         onOpenChange={setResolveOpen}
+        onResolveNoteChange={setResolveNote}
       />
     </AdminShell>
   );

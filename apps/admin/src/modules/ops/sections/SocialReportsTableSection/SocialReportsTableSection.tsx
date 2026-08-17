@@ -1,0 +1,134 @@
+import { useMemo } from "react";
+import { Button, Chip } from "@heroui/react";
+import type { SocialReport } from "@repo/api";
+import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
+import { useTranslations } from "next-intl";
+import { AdminDataTable } from "@/shared/components";
+import { formatAdminDate } from "@/shared/lib/user-format";
+import { socialReportsTableSectionVariants } from "./SocialReportsTableSection.styles";
+import type {
+  ReportTableMeta,
+  SocialReportsTableSectionProps,
+} from "./SocialReportsTableSection.types";
+
+const columnHelper = createColumnHelper<SocialReport>();
+
+export function SocialReportsTableSection({
+  items,
+  total,
+  loading,
+  fetchingMore,
+  hasMore,
+  error,
+  onLoadMore,
+  onResolve,
+  className,
+}: SocialReportsTableSectionProps) {
+  const t = useTranslations("Admin.Ops");
+  const styles = socialReportsTableSectionVariants();
+
+  const columns = useMemo(
+    () =>
+      [
+        columnHelper.accessor((row) => `${row.target.kind}:${row.target.id}`, {
+          id: "target",
+          header: t("social.columns.target"),
+          cell: ({ getValue }) => (
+            <span className="block max-w-52 truncate" dir="ltr">
+              {getValue()}
+            </span>
+          ),
+        }),
+        columnHelper.accessor("reason", {
+          header: t("social.columns.reason"),
+          cell: ({ getValue }) => (
+            <span className="block max-w-56 truncate">{getValue()}</span>
+          ),
+        }),
+        columnHelper.accessor("reporterId", {
+          header: t("social.columns.reporter"),
+          cell: ({ getValue }) => (
+            <span className="block max-w-44 truncate" dir="ltr">
+              {getValue()}
+            </span>
+          ),
+        }),
+        columnHelper.accessor("status", {
+          header: t("social.columns.status"),
+          cell: ({ getValue }) => {
+            const status = getValue();
+            const color =
+              status === "open"
+                ? "warning"
+                : status === "resolved"
+                  ? "success"
+                  : "danger";
+            return (
+              <Chip color={color} size="sm" variant="soft">
+                <Chip.Label>{status}</Chip.Label>
+              </Chip>
+            );
+          },
+        }),
+        columnHelper.accessor("createdAt", {
+          header: t("social.columns.createdAt"),
+          cell: ({ getValue }) => formatAdminDate(getValue()),
+        }),
+        columnHelper.display({
+          id: "actions",
+          header: t("social.columns.actions"),
+          size: 210,
+          cell: (info) => {
+            const meta = info.table.options.meta as ReportTableMeta | undefined;
+            if (!meta) return null;
+            const row = info.row.original;
+            if (row.status !== "open") return null;
+            return (
+              <div className={meta.actionsClassName}>
+                <Button
+                  size="sm"
+                  variant="primary"
+                  onPress={() => meta.onResolve(row, "resolved")}
+                >
+                  {t("social.actions.resolve")}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onPress={() => meta.onResolve(row, "rejected")}
+                >
+                  {t("social.actions.reject")}
+                </Button>
+              </div>
+            );
+          },
+        }),
+      ] as ColumnDef<SocialReport, unknown>[],
+    [t],
+  );
+
+  const meta: ReportTableMeta = {
+    actionsClassName: styles.actions(),
+    onResolve,
+  };
+
+  return (
+    <AdminDataTable
+      ariaLabel={t("social.title")}
+      className={className}
+      columns={columns}
+      data={items}
+      emptyLabel={t("social.empty")}
+      error={error}
+      getRowId={(row) => row.id}
+      hasMore={hasMore}
+      isFetchingMore={fetchingMore}
+      isLoading={loading}
+      loadingLabel={t("loading")}
+      loadingMoreLabel={t("loadingMore")}
+      meta={meta}
+      summaryLabel={t("social.summary", { loaded: items.length, total })}
+      onLoadMore={onLoadMore}
+    />
+  );
+}

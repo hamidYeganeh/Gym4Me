@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AudienceLanding } from "@/modules/marketing/screens/AudienceLanding";
+import { AudienceLandingScreen } from "@/modules/marketing/screens/AudienceLandingScreen";
 
 export const metadata: Metadata = {
   title: "نرم‌افزار مدیریت باشگاه ورزشی",
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function ForClubsPage() {
   return (
-    <AudienceLanding
+    <AudienceLandingScreen
       capabilities={[
         {
           title: "فروش از پذیرش",

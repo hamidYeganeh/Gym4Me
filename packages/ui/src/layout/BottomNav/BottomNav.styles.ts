@@ -7,9 +7,10 @@ export const bottomNavVariants = tv({
       "fixed bottom-0 left-1/2 z-50",
       "w-full max-w-xl -translate-x-1/2",
       "isolate flex min-h-18 items-end justify-around overflow-visible",
-      "bg-gradient-to-t from-background to-transparent",
+      "bg-linear-to-t from-background via-background/85 to-transparent",
       "px-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-8",
     ].join(" "),
+    blur: "pointer-events-none absolute inset-0 z-0",
     item: "relative z-10 flex min-w-0 flex-1 flex-col items-center gap-0.5 py-1",
     itemButton: [
       "flex size-10 items-center justify-center rounded-[0.875rem]",

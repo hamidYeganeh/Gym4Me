@@ -1,18 +1,7 @@
 "use client";
 
-import { Button, Typography } from "@heroui/react";
-import { ArrowForward2 } from "@repo/icons/ArrowForward2";
-import { Check } from "@repo/icons/Check";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
-import { Clock } from "@repo/icons/Clock";
-import { UsersTwo } from "@repo/icons/UsersTwo";
 import { duration, ease } from "@repo/theme";
-import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
-import { FormStepper, type FormStepperStep } from "@repo/ui/kit/FormStepper";
-import { ReservationDayChip } from "@repo/ui/kit/ReservationDayChip";
-import { StickyBottomActions } from "@repo/ui/kit/StickyBottomActions";
-import { Header } from "@repo/ui/layout/Header";
-import NumberFlow from "@number-flow/react";
+import { FormStepper } from "@repo/ui/kit/FormStepper";
 import {
   AnimatePresence,
   motion,
@@ -20,18 +9,14 @@ import {
   type Variants,
 } from "motion/react";
 import { useTranslations } from "next-intl";
-import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useRequireAuthAction } from "@/shared/hooks/useRequireAuthAction";
-import type { ReservePlan, ReserveSlotState } from "../../lib/reserve-data";
+import { useDiscoveryClubsReserve } from "../../lib/use-discovery-clubs-reserve";
+import { DiscoveryClubsReserveActionsSection } from "../../sections/DiscoveryClubsReserveActionsSection";
+import { DiscoveryClubsReserveHeroSection } from "../../sections/DiscoveryClubsReserveHeroSection";
+import { DiscoveryClubsReservePlanStepSection } from "../../sections/DiscoveryClubsReservePlanStepSection";
+import { DiscoveryClubsReserveReviewStepSection } from "../../sections/DiscoveryClubsReserveReviewStepSection";
+import { DiscoveryClubsReserveTimeStepSection } from "../../sections/DiscoveryClubsReserveTimeStepSection";
 import { discoveryClubsReserveScreenStyles as styles } from "./DiscoveryClubsReserveScreen.styles";
 import type { DiscoveryClubsReserveScreenProps } from "./DiscoveryClubsReserveScreen.types";
-
-const DEMO_INVOICE_ID = "inv-demo";
-const SLOT_ICON_SIZE = 20;
-
-type ReserveStep = 0 | 1 | 2;
 
 const stepSlideVariants: Variants = {
   enter: (direction: number) => ({
@@ -45,12 +30,6 @@ const stepSlideVariants: Variants = {
   }),
 };
 
-function getCapacityClassName(state: ReserveSlotState): string {
-  if (state === "low") return styles.slotCapacityLow;
-  if (state === "full") return styles.slotCapacityFull;
-  return styles.slotCapacity;
-}
-
 export function DiscoveryClubsReserveScreen({
   clubTitle,
   clubLocation,
@@ -61,94 +40,13 @@ export function DiscoveryClubsReserveScreen({
   onConfirm,
 }: DiscoveryClubsReserveScreenProps) {
   const t = useTranslations("ReserveFlow");
-  const router = useRouter();
-  const pathname = usePathname();
-  const { runWithAuth, isAuthenticated, isReady } = useRequireAuthAction();
   const reduceMotion = useReducedMotion();
-  const stepDirection = useRef(1);
-  const [step, setStep] = useState<ReserveStep>(0);
-  const [activeDayId, setActiveDayId] = useState(
-    () =>
-      days.find((day) => day.availability === "available")?.id ??
-      days[0]?.id ??
-      "",
-  );
-  const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
-  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!isReady || isAuthenticated) return;
-    runWithAuth(() => undefined, pathname);
-  }, [isAuthenticated, isReady, pathname, runWithAuth]);
-
-  const activeDay = days.find((day) => day.id === activeDayId);
-  const slots = slotsByDay[activeDayId] ?? [];
-  const selectedSlot = slots.find((slot) => slot.id === selectedSlotId);
-  const selectedPlan = plans.find((plan) => plan.id === selectedPlanId);
-
-  const steps: FormStepperStep[] = useMemo(
-    () => [
-      { key: "time", label: t("stepTime") },
-      { key: "plan", label: t("stepPlan") },
-      { key: "review", label: t("stepReview") },
-    ],
-    [t],
-  );
-
-  /** API-backed plans price per selected slot; static plans keep their price. */
-  const getPlanPrice = (plan: ReservePlan): number =>
-    plan.sessionCount != null && selectedSlot?.api
-      ? selectedSlot.api.price * plan.sessionCount
-      : plan.price;
-
-  const canGoNext =
-    step === 0
-      ? Boolean(selectedSlot)
-      : step === 1
-        ? Boolean(selectedPlan)
-        : !isSubmitting;
-
-  const paymentHref = `/athlete/payment/${DEMO_INVOICE_ID}`;
-
-  const submitReservation = async () => {
-    if (!selectedSlot || !selectedPlan) return;
-    if (!onConfirm) {
-      router.push(paymentHref);
-      return;
-    }
-    setIsSubmitting(true);
-    setSubmitError(null);
-    try {
-      await onConfirm({ slot: selectedSlot, plan: selectedPlan });
-    } catch (error) {
-      setSubmitError(
-        error instanceof Error && error.message
-          ? error.message
-          : t("submitError"),
-      );
-      setIsSubmitting(false);
-    }
-  };
-
-  const goNext = () => {
-    if (step === 2) {
-      runWithAuth(() => void submitReservation(), pathname);
-      return;
-    }
-    stepDirection.current = 1;
-    setStep((prev) => (prev < 2 ? ((prev + 1) as ReserveStep) : prev));
-  };
-
-  const goBack = () => {
-    if (step === 0) {
-      router.back();
-      return;
-    }
-    stepDirection.current = -1;
-    setStep((prev) => (prev > 0 ? ((prev - 1) as ReserveStep) : prev));
-  };
+  const reserve = useDiscoveryClubsReserve({
+    days,
+    slotsByDay,
+    plans,
+    onConfirm,
+  });
 
   const slideTransition = reduceMotion
     ? { duration: 0 }
@@ -162,11 +60,7 @@ export function DiscoveryClubsReserveScreen({
       } satisfies Variants)
     : stepSlideVariants;
 
-  const displayPrice = selectedPlan ? getPlanPrice(selectedPlan) : 0;
-  const priceSuffix = selectedPlan?.priceSuffix ?? t("priceSuffix");
-  const ctaLabel = step < 2 ? t("nextStep") : t("cta");
-
-  if (!isReady || !isAuthenticated) {
+  if (!reserve.isReady || !reserve.isAuthenticated) {
     return (
       <div
         aria-busy="true"
@@ -179,384 +73,78 @@ export function DiscoveryClubsReserveScreen({
   return (
     <div className={styles.root}>
       <div className={styles.scroll}>
-        <Header
-          className="absolute inset-x-0 top-0 z-20"
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={goBack}
-              size="lg"
-              variant="secondary"
-            >
-              <ChevronLeft size={20} />
-            </Button>
-          }
-        />
-
-        <div className={styles.hero}>
-          <Image
-            alt={clubTitle}
-            className={styles.heroImage}
-            fill
-            priority
-            sizes="100vw"
-            src={clubImage || PLACEHOLDER_IMAGE}
-          />
-          <div aria-hidden className={styles.heroScrim} />
-        </div>
-
-        <div className={styles.sheet}>
-          <div className={styles.titleBlock}>
-            <Typography className={styles.eyebrow} type="body-sm">
-              {t("eyebrow")}
-            </Typography>
-            <Typography className={styles.title} type="h1" weight="bold">
-              {t("title", { club: clubTitle })}
-            </Typography>
-            {clubLocation ? (
-              <Typography className={styles.location} type="body-sm">
-                {clubLocation}
-              </Typography>
-            ) : (
-              <Typography className={styles.location} type="body-sm">
-                {t("subtitle")}
-              </Typography>
-            )}
-          </div>
-
+        <DiscoveryClubsReserveHeroSection
+          clubImage={clubImage}
+          clubLocation={clubLocation}
+          clubTitle={clubTitle}
+          onBack={reserve.goBack}
+        >
           <FormStepper
-            activeIndex={step}
+            activeIndex={reserve.step}
             aria-label={t("stepperLabel")}
-            steps={steps}
+            steps={reserve.steps}
           />
 
-          <AnimatePresence custom={stepDirection.current} mode="wait">
+          <AnimatePresence custom={reserve.stepDirection.current} mode="wait">
             <motion.div
               animate="center"
               className={styles.stepPanel}
-              custom={stepDirection.current}
+              custom={reserve.stepDirection.current}
               exit="exit"
               initial="enter"
-              key={step}
+              key={reserve.step}
               transition={slideTransition}
               variants={slideVariants}
             >
-              {step === 0 ? (
-                <>
-                  <section className={styles.section}>
-                    <div className={styles.sectionHeader}>
-                      <Typography
-                        className={styles.sectionTitle}
-                        type="h4"
-                        weight="semibold"
-                      >
-                        {t("daysLabel")}
-                      </Typography>
-                    </div>
-                    <div
-                      aria-label={t("daysLabel")}
-                      className={styles.days}
-                      role="group"
-                    >
-                      {days.map((day) => (
-                        <ReservationDayChip
-                          availability={day.availability}
-                          dateLabel={day.dateLabel}
-                          key={day.id}
-                          onPress={() => {
-                            setActiveDayId(day.id);
-                            setSelectedSlotId(null);
-                          }}
-                          selected={activeDayId === day.id}
-                          statusLabel={t(`dayAvailability.${day.availability}`)}
-                        />
-                      ))}
-                    </div>
-                  </section>
-
-                  <section className={styles.section}>
-                    <div className={styles.sectionHeader}>
-                      <Typography
-                        className={styles.sectionTitle}
-                        type="h4"
-                        weight="semibold"
-                      >
-                        {t("slotsTitle")}
-                      </Typography>
-                      {activeDay ? (
-                        <Typography className={styles.sectionHint} type="body-xs">
-                          {activeDay.weekdayLabel}
-                        </Typography>
-                      ) : null}
-                    </div>
-                    <div className={styles.slotsGrid}>
-                      {slots.length > 0 ? (
-                        slots.map((slot) => {
-                          const selected = selectedSlotId === slot.id;
-                          return (
-                            <Button
-                              className={[
-                                styles.slot,
-                                selected ? styles.slotSelected : "",
-                                slot.state === "full" ? styles.slotDisabled : "",
-                              ]
-                                .filter(Boolean)
-                                .join(" ")}
-                              isDisabled={slot.state === "full"}
-                              key={slot.id}
-                              onPress={() => setSelectedSlotId(slot.id)}
-                              size="lg"
-                              variant="ghost"
-                            >
-                              <span
-                                aria-hidden
-                                className={[
-                                  styles.slotIconWrap,
-                                  selected ? styles.slotIconWrapSelected : "",
-                                ]
-                                  .filter(Boolean)
-                                  .join(" ")}
-                              >
-                                <Clock size={SLOT_ICON_SIZE} />
-                              </span>
-                              <span className={styles.slotBody}>
-                                <Typography
-                                  className={styles.slotTime}
-                                  type="body"
-                                  weight="semibold"
-                                >
-                                  {slot.timeLabel}
-                                </Typography>
-                                <Typography
-                                  className={[
-                                    getCapacityClassName(slot.state),
-                                    "inline-flex items-center gap-1",
-                                  ].join(" ")}
-                                  type="body-sm"
-                                >
-                                  <UsersTwo aria-hidden size={14} />
-                                  {slot.capacityLabel}
-                                </Typography>
-                              </span>
-                              {selected ? (
-                                <Check
-                                  aria-hidden
-                                  className={styles.slotCheck}
-                                  size={18}
-                                />
-                              ) : null}
-                            </Button>
-                          );
-                        })
-                      ) : (
-                        <div className={styles.empty}>
-                          <Typography className={styles.emptyBody} type="body-sm">
-                            {t("emptySlots")}
-                          </Typography>
-                        </div>
-                      )}
-                    </div>
-                  </section>
-                </>
+              {reserve.step === 0 ? (
+                <DiscoveryClubsReserveTimeStepSection
+                  activeDay={reserve.activeDay}
+                  activeDayId={reserve.activeDayId}
+                  days={reserve.days}
+                  onDayPress={reserve.onDayPress}
+                  onSlotPress={reserve.setSelectedSlotId}
+                  selectedSlotId={reserve.selectedSlotId}
+                  slots={reserve.slots}
+                />
               ) : null}
 
-              {step === 1 ? (
-                <section className={styles.section}>
-                  <Typography
-                    className={styles.sectionTitle}
-                    type="h4"
-                    weight="semibold"
-                  >
-                    {t("plansTitle")}
-                  </Typography>
-                  <div className={styles.plans}>
-                    {plans.map((plan) => {
-                      const selected = selectedPlanId === plan.id;
-                      return (
-                        <Button
-                          className={[
-                            styles.planCard,
-                            selected ? styles.planCardSelected : "",
-                          ]
-                            .filter(Boolean)
-                            .join(" ")}
-                          key={plan.id}
-                          onPress={() => setSelectedPlanId(plan.id)}
-                          size="lg"
-                          variant="ghost"
-                        >
-                          <span className={styles.planHeader}>
-                            <span className={styles.planTitleBlock}>
-                              <Typography
-                                className={styles.planTitle}
-                                type="body"
-                                weight="semibold"
-                              >
-                                {plan.title}
-                              </Typography>
-                              <span className={styles.planPriceRow}>
-                                <span className={styles.planPrice}>
-                                  {getPlanPrice(plan).toLocaleString("en-US")}
-                                </span>
-                                {plan.priceSuffix ? (
-                                  <span className={styles.planPriceSuffix}>
-                                    {plan.priceSuffix}
-                                  </span>
-                                ) : null}
-                              </span>
-                            </span>
-                            {selected ? (
-                              <Check
-                                aria-hidden
-                                className={styles.planCheck}
-                                size={20}
-                              />
-                            ) : null}
-                          </span>
-                          <Typography
-                            className={styles.planDescription}
-                            type="body-sm"
-                          >
-                            {plan.description}
-                          </Typography>
-                        </Button>
-                      );
-                    })}
-                  </div>
-                </section>
+              {reserve.step === 1 ? (
+                <DiscoveryClubsReservePlanStepSection
+                  getPlanPrice={reserve.getPlanPrice}
+                  onPlanPress={reserve.setSelectedPlanId}
+                  plans={reserve.plans}
+                  selectedPlanId={reserve.selectedPlanId}
+                  selectedSlot={reserve.selectedSlot}
+                />
               ) : null}
 
-              {step === 2 ? (
-                <section className={styles.section}>
-                  <Typography
-                    className={styles.sectionTitle}
-                    type="h4"
-                    weight="semibold"
-                  >
-                    {t("summaryTitle")}
-                  </Typography>
-                  <div className={styles.summaryCard}>
-                    <div className={styles.summaryRow}>
-                      <Typography className={styles.summaryLabel} type="body-sm">
-                        {t("summaryClub")}
-                      </Typography>
-                      <Typography
-                        className={styles.summaryValue}
-                        type="body"
-                        weight="medium"
-                      >
-                        {clubTitle || t("notSelected")}
-                      </Typography>
-                    </div>
-                    <div className={styles.summaryRow}>
-                      <Typography className={styles.summaryLabel} type="body-sm">
-                        {t("summaryDay")}
-                      </Typography>
-                      <Typography
-                        className={styles.summaryValue}
-                        type="body"
-                        weight="medium"
-                      >
-                        {activeDay
-                          ? `${activeDay.weekdayLabel} ${activeDay.dayLabel}`
-                          : t("notSelected")}
-                      </Typography>
-                    </div>
-                    <div className={styles.summaryRow}>
-                      <Typography className={styles.summaryLabel} type="body-sm">
-                        {t("summarySlot")}
-                      </Typography>
-                      <Typography
-                        className={styles.summaryValue}
-                        type="body"
-                        weight="medium"
-                      >
-                        {selectedSlot?.timeLabel ?? t("notSelected")}
-                      </Typography>
-                    </div>
-                    <div className={styles.summaryRow}>
-                      <Typography className={styles.summaryLabel} type="body-sm">
-                        {t("summaryPlan")}
-                      </Typography>
-                      <Typography
-                        className={styles.summaryValue}
-                        type="body"
-                        weight="medium"
-                      >
-                        {selectedPlan?.title ?? t("notSelected")}
-                      </Typography>
-                    </div>
-                    <div
-                      className={`${styles.summaryRow} ${styles.summaryTotalRow}`}
-                    >
-                      <Typography className={styles.summaryLabel} type="body-sm">
-                        {t("summaryTotal")}
-                      </Typography>
-                      <Typography
-                        className={styles.summaryTotalValue}
-                        type="h4"
-                        weight="bold"
-                      >
-                        {selectedPlan
-                          ? `${getPlanPrice(selectedPlan).toLocaleString("en-US")} ${selectedPlan.priceSuffix ?? ""}`.trim()
-                          : t("notSelected")}
-                      </Typography>
-                    </div>
-                  </div>
-                </section>
+              {reserve.step === 2 ? (
+                <DiscoveryClubsReserveReviewStepSection
+                  activeDay={reserve.activeDay}
+                  clubTitle={clubTitle}
+                  getPlanPrice={reserve.getPlanPrice}
+                  selectedPlan={reserve.selectedPlan}
+                  selectedSlot={reserve.selectedSlot}
+                />
               ) : null}
             </motion.div>
           </AnimatePresence>
-        </div>
+        </DiscoveryClubsReserveHeroSection>
       </div>
 
-      <StickyBottomActions contentClassName={styles.footerRow}>
-        {submitError ? (
-          <Typography className="w-full text-danger" type="body-sm">
-            {submitError}
-          </Typography>
-        ) : null}
-        <div className={styles.priceGroup}>
-          <Typography className={styles.priceLabel} type="body-xs">
-            {selectedPlan ? t("totalLabel") : t("selectPlanHint")}
-          </Typography>
-          <div className={styles.priceRow}>
-            {selectedPlan ? (
-              <span className={styles.pricePrefix}>{t("pricePrefix")}</span>
-            ) : null}
-            <NumberFlow
-              className={styles.price}
-              format={{ useGrouping: true }}
-              locales="en-US"
-              style={{ color: "var(--foreground)" }}
-              value={displayPrice}
-            />
-            {selectedPlan || displayPrice > 0 ? (
-              <span className={styles.priceSuffix}>{priceSuffix}</span>
-            ) : null}
-          </div>
-        </div>
-
-        <Button
-          aria-label={ctaLabel}
-          className={styles.confirm}
-          isDisabled={step < 2 ? !canGoNext : !selectedSlot || !selectedPlan}
-          isPending={isSubmitting}
-          onPress={goNext}
-          size="lg"
-          variant="primary"
-        >
-          <Typography
-            className={styles.confirmLabel}
-            type="body"
-            weight="semibold"
-          >
-            {ctaLabel}
-          </Typography>
-          <ArrowForward2 aria-hidden className={styles.confirmIcon} size={18} />
-        </Button>
-      </StickyBottomActions>
+      <DiscoveryClubsReserveActionsSection
+        canGoNext={reserve.canGoNext}
+        ctaLabel={reserve.ctaLabel}
+        displayPrice={reserve.displayPrice}
+        hasSelectedPlan={Boolean(reserve.selectedPlan)}
+        hasSelectedSlot={Boolean(reserve.selectedSlot)}
+        isSubmitting={reserve.isSubmitting}
+        onNext={reserve.goNext}
+        priceSuffix={reserve.priceSuffix}
+        selectedPlan={reserve.selectedPlan}
+        step={reserve.step}
+        submitError={reserve.submitError}
+      />
     </div>
   );
 }

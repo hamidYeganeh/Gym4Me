@@ -2,7 +2,6 @@
 
 import { Button } from "@heroui/react";
 import { motion, useReducedMotion } from "framer-motion";
-import { useId } from "react";
 import { useTranslations } from "next-intl";
 import { cn } from "../../lib/marketing-cn";
 import {
@@ -13,102 +12,14 @@ import {
 } from "../../lib/marketing-home-data";
 import { ScaledClubCard, ScaledCoachCard } from "../../lib/marketing-scaled-cards";
 import { MarketingThemeToggle } from "../../lib/marketing-theme-toggle";
+import { MarketingHeroFeaturesBlock } from "./MarketingHeroFeaturesBlock";
+import {
+  ArrowAccentLeft,
+  ArrowAccentRight,
+  CircularBadge,
+} from "./MarketingHeroSectionDecorations";
 import { marketingHeroSectionStyles } from "./MarketingHeroSection.styles";
 import type { MarketingHeroSectionProps } from "./MarketingHeroSection.types";
-
-function ArrowAccentLeft() {
-  return (
-    <svg
-      viewBox="0 0 100 100"
-      className="h-full w-full overflow-visible stroke-current text-foreground"
-      fill="none"
-      strokeWidth="6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M10,90 C 10,40 40,20 60,50 C 70,65 80,75 95,70" />
-      <path d="M80,55 L95,70 L85,85" />
-    </svg>
-  );
-}
-
-function ArrowAccentRight() {
-  return (
-    <svg
-      viewBox="0 0 100 100"
-      className="h-full w-full overflow-visible stroke-current text-foreground"
-      fill="none"
-      strokeWidth="6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M90,10 C 80,60 60,80 40,60 C 20,40 40,20 60,30 C 80,40 70,70 50,80" />
-      <path d="M65,75 L50,80 L55,65" />
-    </svg>
-  );
-}
-
-function ArrowForeground() {
-  return (
-    <svg
-      viewBox="0 0 100 100"
-      className="h-full w-full overflow-visible stroke-current text-foreground"
-      fill="none"
-      strokeWidth="5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M20,80 Q 40,20 80,40" />
-      <path d="M60,20 L80,40 L50,60" />
-    </svg>
-  );
-}
-
-function CircularBadge({
-  label,
-  className,
-}: {
-  label: string;
-  className: string;
-}) {
-  const pathId = useId().replace(/:/g, "");
-
-  return (
-    <div className={className}>
-      <div className="absolute inset-1 animate-[spin_10s_linear_infinite]">
-        <svg viewBox="0 0 100 100" className="h-full w-full" aria-hidden>
-          <path
-            id={pathId}
-            d="M 50, 50 m -36, 0 a 36,36 0 1,1 72,0 a 36,36 0 1,1 -72,0"
-            fill="none"
-          />
-          <text className="fill-current text-[11px] font-black tracking-[0.18em] uppercase">
-            <textPath href={`#${pathId}`} startOffset="0%">
-              {label}
-            </textPath>
-          </text>
-        </svg>
-      </div>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <svg
-          viewBox="0 0 100 100"
-          className="h-10 w-10 overflow-visible stroke-current"
-          fill="none"
-          strokeWidth="8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden
-        >
-          <path d="M20,80 Q 40,50 30,30 T 80,20" />
-          <path d="M60,10 L80,20 L70,40" />
-        </svg>
-      </div>
-    </div>
-  );
-}
 
 export function MarketingHeroSection({
   className,
@@ -278,63 +189,7 @@ export function MarketingHeroSection({
         </div>
       </div>
 
-      <section id="features" className={slots.features()}>
-        <div className={slots.featuresGrid()}>
-          <div className={slots.featureCard()}>
-            <h2 className={slots.featureTitle()}>
-              {t("features.findClub.titleLine1")}
-              <br />
-              {t("features.findClub.titleLine2")}
-            </h2>
-            <p className={slots.featureDescription()}>
-              {t("features.findClub.description")}
-            </p>
-            <div className={slots.featureMedia()}>
-              <ScaledClubCard club={club} scale={0.62} />
-            </div>
-            <div className="absolute -right-12 bottom-8 z-30 hidden h-16 w-16 md:block">
-              <ArrowForeground />
-            </div>
-          </div>
-
-          <div className={cn(slots.featureCard(), "w-full")}>
-            <h2 className={slots.featureTitle()}>
-              {t("features.chooseCoach.titleLine1")}
-              <br />
-              {t("features.chooseCoach.titleLine2")}
-            </h2>
-            <p className={slots.featureDescription()}>
-              {t("features.chooseCoach.description")}
-            </p>
-            <div className={slots.featureMedia()}>
-              <ScaledCoachCard coach={coach} scale={0.58} />
-            </div>
-            <div className="absolute -right-12 bottom-8 z-30 hidden h-16 w-16 md:block">
-              <ArrowForeground />
-            </div>
-          </div>
-
-          <div className={cn(slots.featureCard(), "min-h-64")}>
-            <h2 className={slots.featureTitle()}>
-              {t("features.bookSession.titleLine1")}
-              <br />
-              {t("features.bookSession.titleLine2")}
-            </h2>
-            <p className={cn(slots.featureDescription(), "mb-auto")}>
-              {t("features.bookSession.description")}
-            </p>
-            <div className={slots.metricCard()}>
-              <p className={slots.metricLabel()}>
-                {t("features.bookSession.metricLabel")}
-              </p>
-              <p className={slots.metricValue()}>
-                {t("features.bookSession.metricValue")}
-              </p>
-              <div className={slots.metricTail()} />
-            </div>
-          </div>
-        </div>
-      </section>
+      <MarketingHeroFeaturesBlock club={club} coach={coach} />
     </div>
   );
 }

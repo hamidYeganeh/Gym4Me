@@ -1,0 +1,56 @@
+"use client";
+
+import { ArticleCard } from "@repo/ui/cards/ArticleCard";
+import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
+import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { DiscoverySectionRail } from "../DiscoverySectionRail";
+import { discoveryHomeArticlesSectionVariants } from "./DiscoveryHomeArticlesSection.styles";
+import type { DiscoveryHomeArticlesSectionProps } from "./DiscoveryHomeArticlesSection.types";
+
+export function DiscoveryHomeArticlesSection({
+  articles,
+}: DiscoveryHomeArticlesSectionProps) {
+  const t = useTranslations("DiscoveryHome");
+  const router = useRouter();
+  const slots = discoveryHomeArticlesSectionVariants();
+
+  if (articles.length === 0) return null;
+
+  return (
+    <DiscoverySectionRail
+      ariaLabel={t("articlesTitle")}
+      hint={t("articlesHint")}
+      seeAllLabel={t("seeAll")}
+      title={t("articlesTitle")}
+      onSeeAll={() => router.push("/articles")}
+    >
+      {articles.map((article) => (
+        <ArticleCard
+          actionLabel={t("viewArticle")}
+          author={{
+            name: article.authorName,
+            avatarSrc: article.authorAvatarSrc,
+          }}
+          category={article.category}
+          className={slots.card()}
+          coverSrc={article.coverSrc ?? PLACEHOLDER_IMAGE}
+          key={article.id}
+          likesLabel={article.likesLabel}
+          publishedAtLabel={article.publishedAtLabel}
+          readingTimeLabel={t("readingTime", {
+            minutes: article.readingTimeMinutes,
+          })}
+          title={article.title}
+          variant="stacked"
+          viewsLabel={article.viewsLabel}
+          onPress={() =>
+            router.push(
+              `/articles/detail?slug=${encodeURIComponent(article.slug)}`,
+            )
+          }
+        />
+      ))}
+    </DiscoverySectionRail>
+  );
+}

@@ -1,46 +1,28 @@
 "use client";
 
-import { Avatar, Button, ScrollShadow, Typography } from "@heroui/react";
+import { Button } from "@heroui/react";
 import { Calendar1 } from "@repo/icons/Calendar1";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
-import { ChevronRight } from "@repo/icons/ChevronRight";
-import { Plus } from "@repo/icons/Plus";
-import { StarFull } from "@repo/icons/StarFull";
-import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
-import { StickyBottomActions } from "@repo/ui/kit/StickyBottomActions";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useRequireAuthAction } from "@/shared/hooks/useRequireAuthAction";
+import type { CoachSlotView } from "@/shared/hooks/useCoachSlotsWeek";
 import {
   addDaysIso,
   formatJalaliDateShort,
   formatJalaliRangeLabel,
   todayIso,
-  weekdayKey,
-  weekdaySat0,
   weekRangeContaining,
 } from "../../lib/club-calendar-data";
-import type {
-  CoachSlotDayView,
-  CoachSlotView,
-} from "@/shared/hooks/useCoachSlotsWeek";
 import { useDiscoveryCoachSlotsWeek } from "../../lib/use-discovery-coach-slots";
-import { discoveryCoachesSlotsScreenStyles as styles } from "./DiscoveryCoachesSlotsScreen.styles";
+import { DiscoveryCoachesSlotsCoachSection } from "../../sections/DiscoveryCoachesSlotsCoachSection";
+import { DiscoveryCoachesSlotsFooterSection } from "../../sections/DiscoveryCoachesSlotsFooterSection";
+import { DiscoveryCoachesSlotsScheduleSection } from "../../sections/DiscoveryCoachesSlotsScheduleSection";
+import { discoveryCoachesSlotsScreenVariants } from "./DiscoveryCoachesSlotsScreen.styles";
 import type { DiscoveryCoachesSlotsScreenProps } from "./DiscoveryCoachesSlotsScreen.types";
-
-function formatRating(rating: number) {
-  return Number.isInteger(rating) ? String(rating) : rating.toFixed(1);
-}
-
-function initialsFromName(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "?";
-  if (parts.length === 1) return parts[0]!.slice(0, 2);
-  return `${parts[0]!.slice(0, 1)}${parts[1]!.slice(0, 1)}`;
-}
 
 export function DiscoveryCoachesSlotsScreen({
   coach,
@@ -48,11 +30,11 @@ export function DiscoveryCoachesSlotsScreen({
   const t = useTranslations("CoachDetail");
   const router = useRouter();
   const { runWithAuth } = useRequireAuthAction();
+  const styles = discoveryCoachesSlotsScreenVariants();
   const today = useMemo(() => todayIso(), []);
   const [anchor, setAnchor] = useState(today);
 
   const range = weekRangeContaining(anchor);
-
   const { days } = useDiscoveryCoachSlotsWeek(coach.id, range.from);
 
   const firstAvailableId = useMemo(() => {
@@ -83,13 +65,6 @@ export function DiscoveryCoachesSlotsScreen({
     setAnchor(addDaysIso(range.from, delta * 7));
   };
 
-  const dayLabel = (day: CoachSlotDayView) => {
-    const dateLabel = formatJalaliDateShort(day.date);
-    if (day.date !== today) return dateLabel;
-    const weekday = t(`slotsWeekday.${weekdayKey(weekdaySat0(day.date))}`);
-    return t("slotsDayToday", { weekday, date: dateLabel });
-  };
-
   const selectionSummary = selected
     ? t("slotsYouSelected", {
         date: formatJalaliDateShort(selected.day.date),
@@ -108,11 +83,9 @@ export function DiscoveryCoachesSlotsScreen({
     runWithAuth(() => router.push(reserveHref), reserveHref);
   };
 
-  const avatarSrc = coach.avatar?.trim() || PLACEHOLDER_IMAGE;
-
   return (
     <AppLayout
-      className={styles.root}
+      className={styles.root()}
       header={
         <Header
           endContent={
@@ -124,7 +97,7 @@ export function DiscoveryCoachesSlotsScreen({
               variant="ghost"
             >
               <Calendar1 className="text-foreground" size={22} />
-              <span aria-hidden className={styles.calendarBadge} />
+              <span aria-hidden className={styles.calendarBadge()} />
             </Button>
           }
           startContent={
@@ -141,127 +114,24 @@ export function DiscoveryCoachesSlotsScreen({
         />
       }
     >
-      <div className={styles.main}>
-        <div className={styles.coachRow}>
-          <Avatar className={styles.avatar} size="lg">
-            <Avatar.Image alt={coach.name} src={avatarSrc} />
-            <Avatar.Fallback>{initialsFromName(coach.name)}</Avatar.Fallback>
-          </Avatar>
-          <div className={styles.coachMeta}>
-            <Typography className={styles.coachName} weight="bold">
-              {coach.name}
-            </Typography>
-            <Typography className={styles.coachSpecialty} type="body-sm">
-              {coach.specialty}
-            </Typography>
-          </div>
-          <div className={styles.rating}>
-            <Typography className={styles.ratingValue} weight="semibold">
-              {formatRating(coach.rating)}
-            </Typography>
-            <StarFull aria-hidden className={styles.ratingStar} size={16} />
-          </div>
-        </div>
-
-        <div className={styles.weekRow}>
-          <Typography className={styles.weekLabel} weight="bold">
-            {formatJalaliRangeLabel(range.from, range.to)}
-          </Typography>
-          <div className={styles.weekNav}>
-            <Button
-              aria-label={t("slotsPrevWeek")}
-              className={styles.weekButton}
-              isIconOnly
-              onPress={() => goWeek(-1)}
-              size="lg"
-            >
-              <ChevronRight
-                aria-hidden
-                className={styles.weekButtonIcon}
-                rtlMirror={false}
-                size={18}
-              />
-            </Button>
-            <Button
-              aria-label={t("slotsNextWeek")}
-              className={styles.weekButton}
-              isIconOnly
-              onPress={() => goWeek(1)}
-              size="lg"
-            >
-              <ChevronLeft
-                aria-hidden
-                className={styles.weekButtonIcon}
-                rtlMirror={false}
-                size={18}
-              />
-            </Button>
-          </div>
-        </div>
-
-        <div className={styles.days}>
-          {days.map((day) => (
-            <div className={styles.day} key={day.id}>
-              <Typography className={styles.dayLabel} weight="bold">
-                {dayLabel(day)}
-              </Typography>
-              <ScrollShadow
-                className={styles.slotsScroll}
-                hideScrollBar
-                orientation="horizontal"
-                size={40}
-              >
-                <div className={styles.slotsRow}>
-                  {day.slots.map((slot) => {
-                    const isUnavailable = slot.status === "unavailable";
-                    const isSelected =
-                      !isUnavailable && selected?.slot.id === slot.id;
-
-                    return (
-                      <Button
-                        aria-disabled={isUnavailable || undefined}
-                        aria-label={slot.timeLabel}
-                        aria-pressed={isUnavailable ? undefined : isSelected}
-                        className={[
-                          styles.slot,
-                          isUnavailable
-                            ? styles.slotUnavailable
-                            : isSelected
-                              ? styles.slotSelected
-                              : styles.slotAvailable,
-                        ].join(" ")}
-                        isDisabled={isUnavailable}
-                        key={slot.id}
-                        onPress={() => onSlotPress(slot)}
-                        variant="ghost"
-                      >
-                        {slot.timeLabel}
-                      </Button>
-                    );
-                  })}
-                </div>
-              </ScrollShadow>
-            </div>
-          ))}
-        </div>
+      <div className={styles.main()}>
+        <DiscoveryCoachesSlotsCoachSection coach={coach} />
+        <DiscoveryCoachesSlotsScheduleSection
+          days={days}
+          onNextWeek={() => goWeek(1)}
+          onPrevWeek={() => goWeek(-1)}
+          onSlotPress={onSlotPress}
+          selectedSlotId={selectedSlotId}
+          today={today}
+          weekLabel={formatJalaliRangeLabel(range.from, range.to)}
+        />
       </div>
 
-      <StickyBottomActions contentClassName={styles.footer}>
-        <Typography className={styles.selectionSummary} type="body-sm">
-          {selectionSummary}
-        </Typography>
-        <Button
-          className={styles.bookButton}
-          isDisabled={!selected}
-          onPress={onBook}
-          size="lg"
-        >
-          <Typography className={styles.bookLabel} weight="bold">
-            {t("bookConsultation")}
-          </Typography>
-          <Plus aria-hidden className={styles.bookIcon} size={20} />
-        </Button>
-      </StickyBottomActions>
+      <DiscoveryCoachesSlotsFooterSection
+        canBook={Boolean(selected)}
+        onBook={onBook}
+        selectionSummary={selectionSummary}
+      />
     </AppLayout>
   );
 }

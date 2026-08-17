@@ -1,29 +1,17 @@
 import { useCallback, useMemo, useState } from "react";
-import {
-  Button,
-  Input,
-  Label,
-  TextField,
-  Typography,
-} from "@heroui/react";
 import type { AuditLogItem, StartImpersonationResult } from "@repo/api";
 import { ApiError } from "@repo/api";
-import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
-import {
-  AdminDataTable,
-  AdminFormDrawer,
-  AdminShell,
-} from "@/shared/components";
+import { AdminShell } from "@/shared/components";
 import { useAdminInfiniteQuery } from "@/shared/hooks";
 import { adminAudit } from "@/shared/lib/api";
-import { formatAdminDate } from "@/shared/lib/user-format";
+import { AuditLogsHeaderSection } from "../../sections/AuditLogsHeaderSection";
+import { AuditLogsImpersonationDrawerSection } from "../../sections/AuditLogsImpersonationDrawerSection";
+import { AuditLogsTableSection } from "../../sections/AuditLogsTableSection";
 import { auditLogsScreenVariants } from "./AuditLogsScreen.styles";
 import type { AuditLogsScreenProps } from "./AuditLogsScreen.types";
 
 const PAGE_SIZE = 40;
-
-const columnHelper = createColumnHelper<AuditLogItem>();
 
 export function AuditLogsScreen({ className }: AuditLogsScreenProps) {
   const t = useTranslations("Admin.Ops");
@@ -58,48 +46,6 @@ export function AuditLogsScreen({ className }: AuditLogsScreenProps) {
     errorFallback: t("audit.errorLoad"),
     fetchPage,
   });
-
-  const columns = useMemo(
-    () =>
-      [
-        columnHelper.accessor("action", {
-          header: t("audit.columns.action"),
-          cell: ({ getValue }) => (
-            <span className="block max-w-56 truncate" dir="ltr">
-              {getValue()}
-            </span>
-          ),
-        }),
-        columnHelper.accessor((row) => row.actorId ?? "—", {
-          id: "actor",
-          header: t("audit.columns.actor"),
-          cell: ({ getValue }) => (
-            <span className="block max-w-44 truncate" dir="ltr">
-              {getValue()}
-            </span>
-          ),
-        }),
-        columnHelper.accessor((row) => row.targetUserId ?? "—", {
-          id: "target",
-          header: t("audit.columns.target"),
-          cell: ({ getValue }) => (
-            <span className="block max-w-44 truncate" dir="ltr">
-              {getValue()}
-            </span>
-          ),
-        }),
-        columnHelper.accessor((row) => row.ip ?? "—", {
-          id: "ip",
-          header: t("audit.columns.ip"),
-          cell: ({ getValue }) => <span dir="ltr">{getValue()}</span>,
-        }),
-        columnHelper.accessor("createdAt", {
-          header: t("audit.columns.createdAt"),
-          cell: ({ getValue }) => formatAdminDate(getValue()),
-        }),
-      ] as ColumnDef<AuditLogItem, unknown>[],
-    [t],
-  );
 
   const handleStart = async () => {
     if (!targetUserId.trim() || !reason.trim()) return;
@@ -146,6 +92,14 @@ export function AuditLogsScreen({ className }: AuditLogsScreenProps) {
     }
   };
 
+  const openImpersonation = useCallback(() => {
+    setTargetUserId("");
+    setReason("");
+    setSession(null);
+    setActionError(null);
+    setImpersonateOpen(true);
+  }, []);
+
   return (
     <AdminShell
       activeNavId="ops"
@@ -153,139 +107,37 @@ export function AuditLogsScreen({ className }: AuditLogsScreenProps) {
       opsSection={{ activeTabId: "audit" }}
     >
       <div className={styles.content()}>
-        <section className={styles.intro()}>
-          <Typography className={styles.title()} type="h1" weight="bold">
-            {t("audit.title")}
-          </Typography>
-          <Typography className={styles.subtitle()}>
-            {t("audit.subtitle")}
-          </Typography>
-          <div className={styles.actions()}>
-            <Button
-              size="sm"
-              variant="primary"
-              onPress={() => {
-                setTargetUserId("");
-                setReason("");
-                setSession(null);
-                setActionError(null);
-                setImpersonateOpen(true);
-              }}
-            >
-              {t("audit.impersonation.start")}
-            </Button>
-            <Button size="sm" variant="ghost" onPress={() => void reload()}>
-              {t("refresh")}
-            </Button>
-          </div>
-        </section>
+        <AuditLogsHeaderSection
+          onRefresh={() => void reload()}
+          onStartImpersonation={openImpersonation}
+        />
 
-        <AdminDataTable
-          ariaLabel={t("audit.title")}
-          columns={columns}
-          data={items}
-          emptyLabel={t("audit.empty")}
+        <AuditLogsTableSection
           error={error}
-          getRowId={(row) => row.id}
+          fetchingMore={fetchingMore}
           hasMore={hasMore}
-          isFetchingMore={fetchingMore}
-          isLoading={loading}
-          loadingLabel={t("loading")}
-          loadingMoreLabel={t("loadingMore")}
+          items={items}
+          loading={loading}
+          total={total}
           onLoadMore={loadMore}
-          summaryLabel={t("audit.summary", {
-            loaded: items.length,
-            total,
-          })}
         />
       </div>
 
-      <AdminFormDrawer
+      <AuditLogsImpersonationDrawerSection
+        actionError={actionError}
+        copied={copied}
         isOpen={impersonateOpen}
-        title={t("audit.impersonation.startTitle")}
+        pending={pending}
+        reason={reason}
+        session={session}
+        targetUserId={targetUserId}
+        onCopy={() => void handleCopy()}
+        onEnd={() => void handleEnd()}
         onOpenChange={setImpersonateOpen}
-      >
-        <div className={styles.form()}>
-          {session ? (
-            <>
-              <Typography className={styles.subtitle()} weight="medium">
-                {t("audit.impersonation.tokenTitle")}
-              </Typography>
-              <Typography className={styles.subtitle()}>
-                {t("audit.impersonation.tokenBody")}
-              </Typography>
-              <p className={styles.token()} dir="ltr">
-                {session.accessToken}
-              </p>
-              <div className={styles.actions()}>
-                <Button
-                  variant="primary"
-                  onPress={() => void handleCopy()}
-                >
-                  {copied
-                    ? t("audit.impersonation.copied")
-                    : t("audit.impersonation.copy")}
-                </Button>
-                <Button
-                  isDisabled={pending}
-                  variant="danger"
-                  onPress={() => void handleEnd()}
-                >
-                  {t("audit.impersonation.end")}
-                </Button>
-              </div>
-            </>
-          ) : (
-            <>
-              <TextField
-                className={styles.field()}
-                fullWidth
-                name="targetUserId"
-                value={targetUserId}
-                onChange={setTargetUserId}
-              >
-                <Label>{t("audit.impersonation.targetUserIdLabel")}</Label>
-                <Input dir="ltr" />
-              </TextField>
-              <TextField
-                className={styles.field()}
-                fullWidth
-                name="reason"
-                value={reason}
-                onChange={setReason}
-              >
-                <Label>{t("audit.impersonation.reasonLabel")}</Label>
-                <Input />
-              </TextField>
-
-              <div className={styles.actions()}>
-                <Button
-                  isDisabled={
-                    pending || !targetUserId.trim() || !reason.trim()
-                  }
-                  variant="primary"
-                  onPress={() => void handleStart()}
-                >
-                  {t("audit.impersonation.confirm")}
-                </Button>
-                <Button
-                  isDisabled={pending}
-                  variant="secondary"
-                  onPress={() => setImpersonateOpen(false)}
-                >
-                  {t("cancel")}
-                </Button>
-              </div>
-            </>
-          )}
-
-          {actionError ? (
-            <p className="text-sm text-danger" role="alert">
-              {actionError}
-            </p>
-          ) : null}
-        </div>
-      </AdminFormDrawer>
+        onReasonChange={setReason}
+        onStart={() => void handleStart()}
+        onTargetUserIdChange={setTargetUserId}
+      />
     </AdminShell>
   );
 }

@@ -1,0 +1,24 @@
+import { tv } from "tailwind-variants";
+
+export const coachBookingsListSectionVariants = tv({
+  slots: {
+    list: "flex flex-col gap-4",
+    card: "flex flex-col gap-4 rounded-[24px] border-0 bg-surface p-4",
+    cardHeader: "flex items-center gap-3",
+    avatar: "size-12 shrink-0 rounded-full object-cover",
+    cardHeaderBody: "flex min-w-0 flex-1 flex-col gap-0.5",
+    clientName: "truncate text-foreground",
+    typeLabel: "text-muted",
+    metaRow: "flex flex-wrap items-center gap-x-4 gap-y-1",
+    metaItem: "text-muted",
+    price: "text-foreground",
+    checkInHint: "rounded-2xl bg-default px-3 py-2 text-center text-foreground",
+    actions: "flex gap-3",
+    acceptButton: "flex-1",
+    rejectButton: "flex-1 text-danger",
+    empty:
+      "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center",
+    emptyTitle: "text-foreground",
+    emptyBody: "text-muted",
+  },
+});

@@ -12,7 +12,7 @@ export type MetricCardLayout = "horizontal" | "vertical";
 export type MetricCardLineChart = {
   type: "line";
   /** Daily values (typically 7). */
-  series: number[];
+  series: readonly number[];
   color?: string;
   /**
    * Area curve.
@@ -25,7 +25,7 @@ export type MetricCardLineChart = {
 export type MetricCardBarsChart = {
   type: "bars";
   /** Daily fill amounts 0–1 (or any scale; normalized to max). */
-  series: number[];
+  series: readonly number[];
   color?: string;
   /** Background track color. Defaults to theme `bg-default`. */
   trackColor?: string;
@@ -37,16 +37,16 @@ export type MetricCardStackedChart = {
    * Per day: segment values bottom → top (typically 3).
    * Values are relative heights within the day column.
    */
-  series: number[][];
+  series: readonly (readonly number[])[];
   color?: string;
   /** Per-segment opacity from bottom → top. Defaults to `[1, 0.72, 0.45]`. */
-  opacities?: number[];
+  opacities?: readonly number[];
 };
 
 export type MetricCardRangeChart = {
   type: "range";
   /** Daily low/high pairs (e.g. diastolic/systolic). */
-  series: Array<{ low: number; high: number }>;
+  series: readonly { low: number; high: number }[];
   color?: string;
   trackColor?: string;
 };
@@ -54,20 +54,20 @@ export type MetricCardRangeChart = {
 export type MetricCardRingsChart = {
   type: "rings";
   /** Daily progress 0–1. `met` drives the check inside each ring. */
-  series: Array<{ value: number; met?: boolean }>;
+  series: readonly { value: number; met?: boolean }[];
   color?: string;
 };
 
 export type MetricCardDotsChart = {
   type: "dots";
   /** Per day: how many of 3 dots are filled (0–3). */
-  series: number[];
+  series: readonly number[];
   color?: string;
 };
 
 export type MetricCardMoodsChart = {
   type: "moods";
-  series: Array<MetricMood | null>;
+  series: readonly (MetricMood | null)[];
 };
 
 export type MetricCardChart =

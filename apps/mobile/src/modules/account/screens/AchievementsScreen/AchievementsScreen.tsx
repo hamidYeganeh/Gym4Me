@@ -7,37 +7,17 @@ import type {
   PointTransactionItem,
 } from "@repo/api";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
-import { AchievementTag } from "@repo/ui/cards/AchievementTag";
-import type {
-  AchievementTagColor,
-  AchievementTagVariant,
-} from "@repo/ui/cards/AchievementTag";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { AchievementsGridSection } from "../../sections/AchievementsGridSection";
+import { AchievementsHistorySection } from "../../sections/AchievementsHistorySection";
+import { AchievementsSummarySection } from "../../sections/AchievementsSummarySection";
 import { accountGamification } from "@/shared/lib/api";
 import { achievementsScreenVariants } from "./AchievementsScreen.styles";
 import type { AchievementsScreenProps } from "./AchievementsScreen.types";
-
-const TAG_VARIANTS: AchievementTagVariant[] = [
-  "polygon",
-  "shield1",
-  "star1",
-  "circular",
-  "octagon",
-  "diamond",
-];
-
-const TAG_COLORS: AchievementTagColor[] = [
-  "warning",
-  "accent",
-  "success",
-  "purple",
-  "blue",
-  "orange",
-];
 
 const HISTORY_PAGE_SIZE = 20;
 
@@ -78,46 +58,6 @@ export function AchievementsScreen({ className }: AchievementsScreenProps) {
   useEffect(() => {
     void load();
   }, [load]);
-
-  const unlocked = achievements.filter((item) => item.state === "unlocked");
-  const locked = achievements.filter((item) => item.state === "locked");
-
-  const renderAchievement = (item: MyAchievement, index: number) => {
-    const isUnlocked = item.state === "unlocked";
-    return (
-      <div
-        key={item.id}
-        className={styles.gridItem({
-          className: isUnlocked ? undefined : styles.gridItemLocked(),
-        })}
-      >
-        <AchievementTag
-          color={isUnlocked ? TAG_COLORS[index % TAG_COLORS.length] : "accent"}
-          size="md"
-          variant={TAG_VARIANTS[index % TAG_VARIANTS.length]}
-        />
-        <Typography className={styles.gridItemTitle()} type="body-sm">
-          {item.title}
-        </Typography>
-        {isUnlocked ? (
-          item.bonusPoints > 0 ? (
-            <span className={styles.gridItemMeta()}>
-              {t("bonusPoints", { points: item.bonusPoints })}
-            </span>
-          ) : null
-        ) : item.progress ? (
-          <span className={styles.gridItemMeta()}>
-            {t("progress", {
-              current: Math.min(item.progress.current, item.progress.threshold),
-              threshold: item.progress.threshold,
-            })}
-          </span>
-        ) : (
-          <span className={styles.gridItemMeta()}>{t("locked")}</span>
-        )}
-      </div>
-    );
-  };
 
   return (
     <AppLayout
@@ -164,126 +104,9 @@ export function AchievementsScreen({ className }: AchievementsScreenProps) {
           </div>
         ) : (
           <>
-            <section className={styles.summaryCard()}>
-              <div className={styles.summaryBalance()}>
-                <span className={styles.summaryBalanceValue()}>
-                  {(summary?.points.balance ?? 0).toLocaleString("fa-IR")}
-                </span>
-                <Typography
-                  className={styles.summaryBalanceLabel()}
-                  type="body-sm"
-                >
-                  {t("balance")}
-                </Typography>
-              </div>
-              <div className={styles.summaryStats()}>
-                <div className={styles.summaryStat()}>
-                  <span className={styles.summaryStatValue()}>
-                    {(summary?.points.lifetime ?? 0).toLocaleString("fa-IR")}
-                  </span>
-                  <span className={styles.summaryStatLabel()}>
-                    {t("lifetime")}
-                  </span>
-                </div>
-                <div className={styles.summaryStat()}>
-                  <span className={styles.summaryStatValue()}>
-                    {(summary?.achievements.unlocked ?? 0).toLocaleString(
-                      "fa-IR",
-                    )}
-                    {" / "}
-                    {(summary?.achievements.total ?? 0).toLocaleString(
-                      "fa-IR",
-                    )}
-                  </span>
-                  <span className={styles.summaryStatLabel()}>
-                    {t("unlockedCount")}
-                  </span>
-                </div>
-              </div>
-            </section>
-
-            {achievements.length === 0 ? (
-              <p className={styles.state()}>{t("empty")}</p>
-            ) : (
-              <>
-                {unlocked.length > 0 ? (
-                  <section className={styles.section()}>
-                    <Typography
-                      className={styles.sectionTitle()}
-                      type="body-sm"
-                    >
-                      {t("unlockedSection")}
-                    </Typography>
-                    <div className={styles.grid()}>
-                      {unlocked.map(renderAchievement)}
-                    </div>
-                  </section>
-                ) : null}
-
-                {locked.length > 0 ? (
-                  <section className={styles.section()}>
-                    <Typography
-                      className={styles.sectionTitle()}
-                      type="body-sm"
-                    >
-                      {t("lockedSection")}
-                    </Typography>
-                    <div className={styles.grid()}>
-                      {locked.map((item, index) =>
-                        renderAchievement(item, unlocked.length + index),
-                      )}
-                    </div>
-                  </section>
-                ) : null}
-              </>
-            )}
-
-            <section className={styles.section()}>
-              <Typography className={styles.sectionTitle()} type="body-sm">
-                {t("historySection")}
-              </Typography>
-              {transactions.length === 0 ? (
-                <p className={styles.state()}>{t("historyEmpty")}</p>
-              ) : (
-                <div className={styles.historyCard()}>
-                  {transactions.map((tx, index) => (
-                    <div key={tx.id}>
-                      <div className={styles.historyRow()}>
-                        <span className={styles.historyBody()}>
-                          <span className={styles.historyLabel()}>
-                            {tx.note ?? t(`reasons.${tx.reason}`)}
-                          </span>
-                          <span className={styles.historyDate()} dir="ltr">
-                            {new Date(tx.occurredAt).toLocaleDateString(
-                              "fa-IR",
-                              {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              },
-                            )}
-                          </span>
-                        </span>
-                        <span
-                          className={
-                            tx.amount >= 0
-                              ? styles.historyAmountPositive()
-                              : styles.historyAmountNegative()
-                          }
-                        >
-                          {tx.amount > 0
-                            ? `${tx.amount.toLocaleString("fa-IR")}+`
-                            : tx.amount.toLocaleString("fa-IR")}
-                        </span>
-                      </div>
-                      {index < transactions.length - 1 ? (
-                        <div aria-hidden className={styles.divider()} />
-                      ) : null}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
+            <AchievementsSummarySection summary={summary} />
+            <AchievementsGridSection achievements={achievements} />
+            <AchievementsHistorySection transactions={transactions} />
           </>
         )}
       </div>

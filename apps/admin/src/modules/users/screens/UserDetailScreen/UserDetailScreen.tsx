@@ -1,16 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Input, Label, Spinner, TextField, Typography } from "@heroui/react";
+import { Spinner, Typography } from "@heroui/react";
 import { ApiError, type PublicUser, type Role } from "@repo/api";
 import { toast } from "@repo/ui/kit/Toast";
 import { useTranslations } from "next-intl";
-import { AdminConfirmDialog, AdminShell } from "@/shared/components";
+import { AdminShell } from "@/shared/components";
 import { adminUsers } from "@/shared/lib/api";
 import { routes } from "@/shared/lib/routes";
 import { userDisplayName } from "@/shared/lib/user-format";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import type { UsersProfileFormValues } from "../../components/UsersProfileForm";
 import type { UsersRolesFormValues } from "../../components/UsersRolesForm";
+import { UsersDetailConfirmDialogsSection } from "../../sections/UsersDetailConfirmDialogsSection";
 import { UsersDetailHeaderSection } from "../../sections/UsersDetailHeaderSection";
 import { UsersDetailProfileSection } from "../../sections/UsersDetailProfileSection";
 import { UsersDetailRolesSection } from "../../sections/UsersDetailRolesSection";
@@ -220,49 +221,22 @@ export function UserDetailScreen({ className }: UserDetailScreenProps) {
         )}
       </div>
 
-      <AdminConfirmDialog
-        body={<Typography>{t("detail.activateBody")}</Typography>}
-        cancelLabel={t("detail.activateCancel")}
-        confirmLabel={t("detail.activateConfirm")}
-        confirmVariant="primary"
-        isOpen={activateOpen}
-        isPending={actionPending}
-        title={t("detail.activateTitle")}
-        onConfirm={handleActivate}
-        onOpenChange={setActivateOpen}
-      />
-
-      <AdminConfirmDialog
-        body={
-          <>
-            <Typography>{t("detail.deactivateBody")}</Typography>
-            <TextField name="reason" value={reason} onChange={setReason}>
-              <Label>{t("detail.reason")}</Label>
-              <Input />
-            </TextField>
-          </>
-        }
-        cancelLabel={t("detail.deactivateCancel")}
-        confirmLabel={t("detail.deactivateConfirm")}
-        isOpen={deactivateOpen}
-        isPending={actionPending}
-        title={t("detail.deactivateTitle")}
-        onConfirm={handleDeactivate}
-        onOpenChange={(open) => {
+      <UsersDetailConfirmDialogsSection
+        actionPending={actionPending}
+        activateOpen={activateOpen}
+        deactivateOpen={deactivateOpen}
+        deleteOpen={deleteOpen}
+        reason={reason}
+        onActivateConfirm={handleActivate}
+        onActivateOpenChange={setActivateOpen}
+        onDeactivateConfirm={handleDeactivate}
+        onDeactivateOpenChange={(open) => {
           setDeactivateOpen(open);
           if (!open) setReason("");
         }}
-      />
-
-      <AdminConfirmDialog
-        body={<Typography>{t("detail.deleteBody")}</Typography>}
-        cancelLabel={t("detail.deleteCancel")}
-        confirmLabel={t("detail.deleteConfirm")}
-        isOpen={deleteOpen}
-        isPending={actionPending}
-        title={t("detail.deleteTitle")}
-        onConfirm={handleDelete}
-        onOpenChange={setDeleteOpen}
+        onDeleteConfirm={handleDelete}
+        onDeleteOpenChange={setDeleteOpen}
+        onReasonChange={setReason}
       />
     </AdminShell>
   );

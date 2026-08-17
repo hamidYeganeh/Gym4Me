@@ -1,25 +1,21 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Avatar, Button, Typography } from "@heroui/react";
+import { Button, Typography } from "@heroui/react";
 import type { Article, ArticleSummary } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { Bookmark } from "@repo/icons/Bookmark";
-import { Chat } from "@repo/icons/Chat";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
-import { Heart } from "@repo/icons/Heart";
-import { ArticleCard } from "@repo/ui/cards/ArticleCard";
-import { ReadingTimeCard } from "@repo/ui/cards/ReadingTimeCard";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  articleDetailHref,
-  formatArticleDate,
-  formatCategoryLabel,
-} from "@/modules/articles/lib/format-article";
-import { articlesApi, mediaFileUrl } from "@/shared/lib/api";
+import { articleDetailHref } from "@/modules/articles/lib/format-article";
+import { ArticleDetailBodySection } from "../../sections/ArticleDetailBodySection";
+import { ArticleDetailEngagementSection } from "../../sections/ArticleDetailEngagementSection";
+import { ArticleDetailHeroSection } from "../../sections/ArticleDetailHeroSection";
+import { ArticleDetailRelatedSection } from "../../sections/ArticleDetailRelatedSection";
+import { articlesApi } from "@/shared/lib/api";
 import { articleDetailScreenVariants } from "./ArticleDetailScreen.styles";
 import type { ArticleDetailScreenProps } from "./ArticleDetailScreen.types";
 
@@ -99,9 +95,7 @@ export function ArticleDetailScreen({ className }: ArticleDetailScreenProps) {
         : await articlesApi.like(article.id);
       setLiked(result.viewer.liked);
       setArticle((prev) =>
-        prev
-          ? { ...prev, engagement: result.engagement }
-          : prev,
+        prev ? { ...prev, engagement: result.engagement } : prev,
       );
     } catch {
       // keep previous state
@@ -119,9 +113,7 @@ export function ArticleDetailScreen({ className }: ArticleDetailScreenProps) {
         : await articlesApi.save(article.id);
       setSaved(result.viewer.saved);
       setArticle((prev) =>
-        prev
-          ? { ...prev, engagement: result.engagement }
-          : prev,
+        prev ? { ...prev, engagement: result.engagement } : prev,
       );
     } catch {
       // keep previous state
@@ -172,122 +164,28 @@ export function ArticleDetailScreen({ className }: ArticleDetailScreenProps) {
           <Typography className={styles.error()}>{error ?? t("empty")}</Typography>
         ) : (
           <>
-            <section className={styles.hero()}>
-              <span className={styles.categoryChip()}>
-                {formatCategoryLabel(article.taxonomy.category)}
-              </span>
-              <Typography className={styles.title()} type="h1" weight="bold">
-                {article.title}
-              </Typography>
-              <p className={styles.meta()}>
-                <span>{formatArticleDate(article.publishedAt)}</span>
-              </p>
-              <div className={styles.authorRow()}>
-                <Avatar className="size-8">
-                  {mediaFileUrl(article.author.avatarMediaId) ? (
-                    <Avatar.Image
-                      alt=""
-                      src={mediaFileUrl(article.author.avatarMediaId)!}
-                    />
-                  ) : null}
-                  <Avatar.Fallback>
-                    {article.author.name.slice(0, 1)}
-                  </Avatar.Fallback>
-                </Avatar>
-                <Typography className={styles.authorName()} type="body-sm">
-                  {article.author.name}
-                </Typography>
-              </div>
-            </section>
+            <ArticleDetailHeroSection article={article} />
 
-            <ReadingTimeCard
-              label={t("readingTimeLabel")}
-              value={t("readingTimeApprox", {
-                minutes: article.readingTimeMinutes,
-              })}
+            <ArticleDetailBodySection
+              readingTimeMinutes={article.readingTimeMinutes}
+              safeBody={safeBody}
             />
 
-            <div
-              className={styles.body()}
-              dangerouslySetInnerHTML={{
-                __html: safeBody,
-              }}
+            <ArticleDetailEngagementSection
+              actionPending={actionPending}
+              article={article}
+              liked={liked}
+              saved={saved}
+              onToggleLike={() => void toggleLike()}
+              onToggleSave={() => void toggleSave()}
             />
 
-            <div className={styles.actions()}>
-              <Button
-                aria-label={liked ? t("unlike") : t("like")}
-                aria-pressed={liked}
-                className={styles.actionButton({
-                  className: liked ? styles.actionActive() : undefined,
-                })}
-                isDisabled={actionPending}
-                variant="secondary"
-                onPress={() => void toggleLike()}
-              >
-                <Heart size={18} />
-                {article.engagement.likesCount}
-              </Button>
-              <Button
-                aria-label={t("comments", {
-                  count: article.engagement.commentsCount,
-                })}
-                className={styles.actionButton()}
-                variant="secondary"
-                onPress={() => undefined}
-              >
-                <Chat size={18} />
-                {article.engagement.commentsCount}
-              </Button>
-              <Button
-                aria-label={saved ? t("unsave") : t("save")}
-                aria-pressed={saved}
-                className={styles.actionButton({
-                  className: saved ? styles.actionActive() : undefined,
-                })}
-                isDisabled={actionPending}
-                variant="secondary"
-                onPress={() => void toggleSave()}
-              >
-                <Bookmark size={18} />
-                {article.engagement.savesCount}
-              </Button>
-            </div>
-
-            {related.length > 0 ? (
-              <section className={styles.relatedSection()}>
-                <Typography
-                  className={styles.relatedTitle()}
-                  type="h3"
-                  weight="bold"
-                >
-                  {t("relatedTitle")}
-                </Typography>
-                <div className={styles.relatedScroller()}>
-                  {related.map((item) => (
-                    <div key={item.id} className={styles.relatedCard()}>
-                      <ArticleCard
-                        actionLabel={item.title}
-                        author={{
-                          name: item.author.name,
-                          avatarSrc: mediaFileUrl(item.author.avatarMediaId),
-                        }}
-                        category={formatCategoryLabel(item.taxonomy.category)}
-                        commentsLabel={String(item.engagement.commentsCount)}
-                        coverSrc={mediaFileUrl(item.coverMediaId)}
-                        likesLabel={String(item.engagement.likesCount)}
-                        readingTimeLabel={`${item.readingTimeMinutes}m`}
-                        saveLabel={t("save")}
-                        title={item.title}
-                        variant="row"
-                        viewsLabel={String(item.engagement.viewsCount)}
-                        onPress={() => router.push(articleDetailHref(item.slug))}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </section>
-            ) : null}
+            <ArticleDetailRelatedSection
+              related={related}
+              onArticlePress={(nextSlug) =>
+                router.push(articleDetailHref(nextSlug))
+              }
+            />
           </>
         )}
       </div>
