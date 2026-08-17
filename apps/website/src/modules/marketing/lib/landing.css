@@ -28,9 +28,28 @@ html.landing-page {
   }
 }
 
+/*
+ * ScrollSmoother only runs ≥768px (see landing-scroll.tsx).
+ * On mobile, overflow:hidden + html/body h-full traps content and kills
+ * native document scroll — keep the clip desktop-only and let the
+ * document grow with content.
+ */
 .landing-smooth-wrapper {
-  overflow: hidden;
   background: var(--background);
+}
+
+@media (max-width: 767px) {
+  html.landing-page,
+  html.landing-page body {
+    height: auto;
+    min-height: 100%;
+  }
+}
+
+@media (min-width: 768px) {
+  .landing-smooth-wrapper {
+    overflow: hidden;
+  }
 }
 
 .landing-smooth-content {
