@@ -1,4 +1,6 @@
 import type { PlatformPlan } from "@repo/api";
+import { Typography } from "@heroui/react";
+import { getTranslations } from "next-intl/server";
 import {
   PublicSiteFooter,
   PublicSiteHeader,
@@ -10,6 +12,7 @@ import { PricingPlansSection } from "../../sections/PricingPlansSection";
 import { pricingScreenVariants as styles } from "./PricingScreen.styles";
 
 export async function PricingScreen() {
+  const t = await getTranslations("MarketingLanding.pricing");
   const slots = styles();
   let plans: PlatformPlan[] = [];
 
@@ -26,7 +29,7 @@ export async function PricingScreen() {
         data={{
           "@context": "https://schema.org",
           "@type": "Product",
-          name: "Gym4Me برای باشگاه‌ها",
+          name: t("schemaProductName"),
           offers: plans.map((plan) => ({
             "@type": "Offer",
             name: plan.name,
@@ -38,28 +41,20 @@ export async function PricingScreen() {
       <main className={slots.root()}>
         <div className={slots.container()}>
           <header className={slots.header()}>
-            <p className={slots.eyebrow()}>تعرفه شفاف</p>
-            <h1 className={slots.title()}>
-              پلن متناسب با اندازه و عملیات باشگاه
-            </h1>
-            <p className={slots.description()}>
-              مبلغ‌ها از کاتالوگ فعال محصول خوانده می‌شوند؛ امکانات پایه مالی،
-              عضویت، رزرو و حضور در قرارداد به‌صورت شفاف مشخص است.
-            </p>
+            <Typography className={slots.eyebrow()} type="body-sm">
+              {t("eyebrow")}
+            </Typography>
+            <Typography className={slots.title()} type="h1" weight="bold">
+              {t("title")}
+            </Typography>
+            <Typography className={slots.description()} type="body">
+              {t("description")}
+            </Typography>
           </header>
           {plans.length ? (
-            <PricingPlansSection
-              ctaHref="/for-clubs"
-              ctaLabel="بررسی برای باشگاه من"
-              plans={plans}
-            />
+            <PricingPlansSection ctaHref="/for-clubs" plans={plans} />
           ) : (
-            <PricingEmptySection
-              body="هنوز پلن عمومی منتشر نشده است؛ تا انتشار کاتالوگ، قیمت اختصاصی بدون عدد ساختگی و پس از مشخص‌شدن تعداد شعب و اعضای فعال ارائه می‌شود."
-              ctaHref="/for-clubs"
-              ctaLabel="مشاهده دامنه امکانات"
-              title="پذیرش پایلوت محدود"
-            />
+            <PricingEmptySection />
           )}
         </div>
       </main>

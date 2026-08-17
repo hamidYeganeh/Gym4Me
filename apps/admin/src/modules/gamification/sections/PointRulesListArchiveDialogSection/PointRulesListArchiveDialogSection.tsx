@@ -1,3 +1,4 @@
+import { Typography } from "@heroui/react";
 import { useTranslations } from "next-intl";
 import { AdminConfirmDialog } from "@/shared/components";
 import type { PointRulesListArchiveDialogSectionProps } from "./PointRulesListArchiveDialogSection.types";
@@ -15,11 +16,11 @@ export function PointRulesListArchiveDialogSection({
     <AdminConfirmDialog
       body={
         <>
-          <p>{t("rules.actions.archiveBody")}</p>
+          <Typography>{t("rules.actions.archiveBody")}</Typography>
           {archiveError ? (
-            <p className="mt-2 text-sm text-danger" role="alert">
+            <Typography className="mt-2 text-sm text-danger" role="alert">
               {archiveError}
-            </p>
+            </Typography>
           ) : null}
         </>
       }

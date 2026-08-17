@@ -1,4 +1,4 @@
-import { Button, Input, Label, TextField } from "@heroui/react";
+import { Button, Input, Label, TextField, Typography } from "@heroui/react";
 import { useTranslations } from "next-intl";
 import { AdminConfirmDialog, AdminFormDrawer } from "@/shared/components";
 import { SUBJECT_TYPES } from "../../lib/gamification-constants";
@@ -68,14 +68,14 @@ export function AchievementsListModalsSection({
           </TextField>
 
           {grantError ? (
-            <p className="text-sm text-danger" role="alert">
+            <Typography className="text-sm text-danger" role="alert">
               {grantError}
-            </p>
+            </Typography>
           ) : null}
           {grantDone ? (
-            <p className="text-sm text-success" role="status">
+            <Typography className="text-sm text-success" role="status">
               {t("achievements.actions.grantDone")}
-            </p>
+            </Typography>
           ) : null}
 
           <div className={styles.actions()}>
@@ -100,11 +100,11 @@ export function AchievementsListModalsSection({
       <AdminConfirmDialog
         body={
           <>
-            <p>{t("achievements.actions.archiveBody")}</p>
+            <Typography>{t("achievements.actions.archiveBody")}</Typography>
             {archiveError ? (
-              <p className="mt-2 text-sm text-danger" role="alert">
+              <Typography className="mt-2 text-sm text-danger" role="alert">
                 {archiveError}
-              </p>
+              </Typography>
             ) : null}
           </>
         }

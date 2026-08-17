@@ -76,7 +76,11 @@ export function ClubCoachesSection({
         </Button>
       </div>
 
-      {error ? <p className={styles.error()}>{error}</p> : null}
+      {error ? (
+        <Typography className={styles.error()} role="alert">
+          {error}
+        </Typography>
+      ) : null}
 
       {coaches.length ? (
         <ul className={styles.list()}>
@@ -98,7 +102,7 @@ export function ClubCoachesSection({
           ))}
         </ul>
       ) : (
-        <p className={styles.empty()}>{t("detail.emptyRefs")}</p>
+        <Typography className={styles.empty()}>{t("detail.emptyRefs")}</Typography>
       )}
     </div>
   );

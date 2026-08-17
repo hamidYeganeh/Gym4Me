@@ -385,10 +385,10 @@ export function OnboardingIdentitySection({
         </TextField>
       </section>
 
-      <p className={styles.security()}>
+      <Typography className={styles.security()} type="body-sm">
         <Lock1 aria-hidden className={styles.securityIcon()} size={16} />
         {labels.securityNote}
-      </p>
+      </Typography>
 
       <Drawer.Backdrop
         isOpen={drawer === "province"}
@@ -414,17 +414,16 @@ export function OnboardingIdentitySection({
                   const selected =
                     (draftProvince?.id ?? value.provinceId) === item.id;
                   return (
-                    <button
+                    <Button
                       aria-selected={selected}
                       className={styles.wheelItem()}
                       data-selected={selected || undefined}
                       key={item.id}
-                      role="option"
-                      type="button"
-                      onClick={() => setDraftProvince(item)}
+                      variant="ghost"
+                      onPress={() => setDraftProvince(item)}
                     >
                       {item.name}
-                    </button>
+                    </Button>
                   );
                 })}
               </div>

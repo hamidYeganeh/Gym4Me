@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Button, FieldError, InputOTP } from "@heroui/react";
+import { Button, FieldError, InputOTP, Typography } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import {
@@ -51,14 +51,14 @@ export function AuthForgotPasswordOtpForm({
 
   return (
     <form className={styles.form({ className })} onSubmit={handleSubmit}>
-      <p className={styles.hint()}>
+      <Typography className={styles.hint()}>
         {t("sentTo")} <span dir="ltr">{phone}</span>
-      </p>
+      </Typography>
 
       {debugCode ? (
-        <p className={styles.hint()}>
+        <Typography className={styles.hint()}>
           {t("debugLabel")}: <span dir="ltr">{debugCode}</span>
-        </p>
+        </Typography>
       ) : null}
 
       <Controller
@@ -87,9 +87,9 @@ export function AuthForgotPasswordOtpForm({
       />
 
       {error ? (
-        <p className={styles.error()} role="alert">
+        <Typography className={styles.error()} role="alert">
           {error}
-        </p>
+        </Typography>
       ) : null}
 
       <Button

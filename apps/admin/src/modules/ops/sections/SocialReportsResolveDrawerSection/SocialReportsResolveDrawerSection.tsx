@@ -38,9 +38,9 @@ export function SocialReportsResolveDrawerSection({
         </TextField>
 
         {actionError ? (
-          <p className="text-sm text-danger" role="alert">
+          <Typography className="text-sm text-danger" role="alert">
             {actionError}
-          </p>
+          </Typography>
         ) : null}
 
         <div className={styles.actions()}>

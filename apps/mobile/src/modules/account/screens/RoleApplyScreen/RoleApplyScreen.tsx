@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@heroui/react";
+import { Button, Typography } from "@heroui/react";
 import type { Role } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
@@ -51,8 +51,12 @@ export function RoleApplyScreen({
   return (
     <main className={styles.root({ className })}>
       <header className={styles.header()}>
-        <h1 className={styles.title()}>{t("title")}</h1>
-        <p className={styles.subtitle()}>{t("subtitle")}</p>
+        <Typography className={styles.title()} type="h1" weight="bold">
+          {t("title")}
+        </Typography>
+        <Typography className={styles.subtitle()} color="muted" type="body">
+          {t("subtitle")}
+        </Typography>
       </header>
 
       <div className={styles.list()}>
@@ -74,9 +78,9 @@ export function RoleApplyScreen({
       </div>
 
       {error ? (
-        <p className={styles.error()} role="alert">
+        <Typography className={styles.error()} role="alert" type="body-sm">
           {error}
-        </p>
+        </Typography>
       ) : null}
 
       <Button

@@ -53,8 +53,12 @@ export function WelcomeIntroduceChatSection({
           <div className={styles.widget()}>
             <div aria-hidden className={styles.widgetMedia()} />
             <div className={styles.widgetBody()}>
-              <p className={styles.widgetTitle()}>{widgetTitle}</p>
-              <p className={styles.widgetSubtitle()}>{widgetSubtitle}</p>
+              <Typography className={styles.widgetTitle()} type="body-sm" weight="semibold">
+                {widgetTitle}
+              </Typography>
+              <Typography className={styles.widgetSubtitle()} type="body-sm">
+                {widgetSubtitle}
+              </Typography>
               <span className={styles.widgetCta()}>{widgetCta}</span>
             </div>
           </div>

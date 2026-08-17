@@ -1,5 +1,6 @@
 "use client";
 
+import { Typography } from "@heroui/react";
 import { Car1 } from "@repo/icons/Car1";
 import { Coffee } from "@repo/icons/Coffee";
 import { Lock1 } from "@repo/icons/Lock1";
@@ -9,6 +10,7 @@ import { WifiFull } from "@repo/icons/WifiFull";
 import { ClubAmenityCard } from "@repo/ui/cards/ClubAmenityCard";
 import { ClubGalleryCard } from "@repo/ui/cards/ClubGalleryCard";
 import { EquipmentBrowseCard } from "@repo/ui/cards/EquipmentBrowseCard";
+import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import {
   LANDING_AMENITIES,
@@ -34,6 +36,7 @@ const AMENITY_ICONS: Record<(typeof LANDING_AMENITIES)[number]["id"], ReactNode>
 export function LandingFacilitiesSection({
   className,
 }: LandingFacilitiesSectionProps) {
+  const t = useTranslations("MarketingLanding.landingFacilities");
   const slots = landingFacilitiesSectionStyles();
   const { scrollTo } = useLandingScroll();
 
@@ -44,18 +47,17 @@ export function LandingFacilitiesSection({
           id="facilities-title"
           as="h2"
           mode="lines"
-          text={"امکانات همان باشگاه\nکه در اپ می‌بینی"}
+          text={t("title")}
           className={slots.title()}
           stagger={120}
         />
-        <FadeWords
-          className={slots.body()}
-          text="پارکینگ، دوش، سونا و تجهیزات را قبل از رزرو ببین. همان کارت‌هایی که در کشف باشگاه اپ هست."
-        />
+        <FadeWords className={slots.body()} text={t("body")} />
       </div>
 
       <div className={slots.block()}>
-        <p className={slots.blockTitle()}>امکانات باشگاه</p>
+        <Typography className={slots.blockTitle()} type="body-sm" weight="semibold">
+          {t("amenitiesTitle")}
+        </Typography>
         <div className={slots.amenityRail()}>
           {LANDING_AMENITIES.map((item, i) => (
             <InViewRise delayIn={i * 60} fromY={20} key={item.id}>
@@ -71,7 +73,9 @@ export function LandingFacilitiesSection({
       </div>
 
       <div className={slots.block()}>
-        <p className={slots.blockTitle()}>تجهیزات</p>
+        <Typography className={slots.blockTitle()} type="body-sm" weight="semibold">
+          {t("equipmentTitle")}
+        </Typography>
         <div className={slots.equipmentGrid()}>
           {LANDING_EQUIPMENT.map((item) => (
             <EquipmentBrowseCard
@@ -87,11 +91,13 @@ export function LandingFacilitiesSection({
       </div>
 
       <div className={slots.block()}>
-        <p className={slots.blockTitle()}>گالری باشگاه</p>
+        <Typography className={slots.blockTitle()} type="body-sm" weight="semibold">
+          {t("galleryTitle")}
+        </Typography>
         <div className={slots.galleryRail()}>
           {LANDING_GALLERY.map((item) => (
             <ClubGalleryCard
-              actionLabel="مشاهده باشگاه"
+              actionLabel={t("galleryAction")}
               author={item.author}
               className={slots.galleryCard()}
               image={item.image}

@@ -1,6 +1,7 @@
 "use client";
 
 import { Avatar, Button, Typography } from "@heroui/react";
+import { useTranslations } from "next-intl";
 import {
   LANDING_ASSETS,
   LANDING_CLUBS,
@@ -12,77 +13,6 @@ import type {
   LandingBookingSectionProps,
   LandingBookingStackAvatar,
 } from "./LandingBookingSection.types";
-
-const COPY = {
-  title: "تمرین را با مربی اختصاصی شروع کن!",
-  subtitle:
-    "جلسه یک‌به‌یک و کلاس باشگاه را متناسب با هدفت رزرو کن. به صدها ورزشکار بپیوند و امروز روان تمرین را شروع کن!",
-  cta: "رزرو جلسه آزمایشی",
-  count: "+۱k",
-} as const;
-
-const PORTRAITS = [
-  {
-    src: LANDING_ASSETS.coaches[0].src,
-    alt: LANDING_ASSETS.coaches[0].name,
-    fallback: LANDING_ASSETS.coaches[0].name.slice(0, 1),
-  },
-  {
-    src: LANDING_ASSETS.coaches[1].src,
-    alt: LANDING_ASSETS.coaches[1].name,
-    fallback: LANDING_ASSETS.coaches[1].name.slice(0, 1),
-  },
-  {
-    src: LANDING_ASSETS.coaches[2].src,
-    alt: LANDING_ASSETS.coaches[2].name,
-    fallback: LANDING_ASSETS.coaches[2].name.slice(0, 1),
-  },
-  {
-    src: LANDING_CLUBS[0].image,
-    alt: LANDING_CLUBS[0].title,
-    fallback: LANDING_CLUBS[0].title.slice(0, 1),
-  },
-  {
-    src: LANDING_CLUBS[1].image,
-    alt: LANDING_CLUBS[1].title,
-    fallback: LANDING_CLUBS[1].title.slice(0, 1),
-  },
-  {
-    src: LANDING_CLUBS[2].image,
-    alt: LANDING_CLUBS[2].title,
-    fallback: LANDING_CLUBS[2].title.slice(0, 1),
-  },
-  {
-    src: LANDING_CLUBS[3].image,
-    alt: LANDING_CLUBS[3].title,
-    fallback: LANDING_CLUBS[3].title.slice(0, 1),
-  },
-  {
-    src: LANDING_CLUBS[4].image,
-    alt: LANDING_CLUBS[4].title,
-    fallback: LANDING_CLUBS[4].title.slice(0, 1),
-  },
-  {
-    src: LANDING_CLUBS[5].image,
-    alt: LANDING_CLUBS[5].title,
-    fallback: LANDING_CLUBS[5].title.slice(0, 1),
-  },
-  {
-    src: LANDING_CLUBS[6].image,
-    alt: LANDING_CLUBS[6].title,
-    fallback: LANDING_CLUBS[6].title.slice(0, 1),
-  },
-  {
-    src: LANDING_ASSETS.facilities.clay,
-    alt: "سالن قدرت باشگاه",
-    fallback: "ق",
-  },
-  {
-    src: LANDING_ASSETS.facilities.harbor,
-    alt: "سالن کاردیو باشگاه",
-    fallback: "ک",
-  },
-] as const;
 
 const ORBIT_LAYOUT = [
   { id: 1, size: 56, top: "10%", left: "5%" },
@@ -99,32 +29,96 @@ const ORBIT_LAYOUT = [
   { id: 12, size: 72, top: "70%", left: "90%" },
 ] as const;
 
-const ORBIT_AVATARS: LandingBookingOrbitAvatar[] = ORBIT_LAYOUT.map(
-  (layout, index) => {
-    const portrait = PORTRAITS[index]!;
-    return {
-      ...layout,
-      src: portrait.src,
-      alt: portrait.alt,
-      fallback: portrait.fallback,
-    };
-  },
-);
-
-const STACK_AVATARS: LandingBookingStackAvatar[] = PORTRAITS.slice(0, 5).map(
-  (portrait, index) => ({
-    id: index + 1,
-    src: portrait.src,
-    alt: portrait.alt,
-    fallback: portrait.fallback,
-  }),
-);
-
 export function LandingBookingSection({
   className,
 }: LandingBookingSectionProps) {
+  const t = useTranslations("MarketingLanding.landingBooking");
   const slots = landingBookingSectionStyles();
   const { scrollTo } = useLandingScroll();
+
+  const portraits = [
+    {
+      src: LANDING_ASSETS.coaches[0].src,
+      alt: LANDING_ASSETS.coaches[0].name,
+      fallback: LANDING_ASSETS.coaches[0].name.slice(0, 1),
+    },
+    {
+      src: LANDING_ASSETS.coaches[1].src,
+      alt: LANDING_ASSETS.coaches[1].name,
+      fallback: LANDING_ASSETS.coaches[1].name.slice(0, 1),
+    },
+    {
+      src: LANDING_ASSETS.coaches[2].src,
+      alt: LANDING_ASSETS.coaches[2].name,
+      fallback: LANDING_ASSETS.coaches[2].name.slice(0, 1),
+    },
+    {
+      src: LANDING_CLUBS[0].image,
+      alt: LANDING_CLUBS[0].title,
+      fallback: LANDING_CLUBS[0].title.slice(0, 1),
+    },
+    {
+      src: LANDING_CLUBS[1].image,
+      alt: LANDING_CLUBS[1].title,
+      fallback: LANDING_CLUBS[1].title.slice(0, 1),
+    },
+    {
+      src: LANDING_CLUBS[2].image,
+      alt: LANDING_CLUBS[2].title,
+      fallback: LANDING_CLUBS[2].title.slice(0, 1),
+    },
+    {
+      src: LANDING_CLUBS[3].image,
+      alt: LANDING_CLUBS[3].title,
+      fallback: LANDING_CLUBS[3].title.slice(0, 1),
+    },
+    {
+      src: LANDING_CLUBS[4].image,
+      alt: LANDING_CLUBS[4].title,
+      fallback: LANDING_CLUBS[4].title.slice(0, 1),
+    },
+    {
+      src: LANDING_CLUBS[5].image,
+      alt: LANDING_CLUBS[5].title,
+      fallback: LANDING_CLUBS[5].title.slice(0, 1),
+    },
+    {
+      src: LANDING_CLUBS[6].image,
+      alt: LANDING_CLUBS[6].title,
+      fallback: LANDING_CLUBS[6].title.slice(0, 1),
+    },
+    {
+      src: LANDING_ASSETS.facilities.clay,
+      alt: t("strengthHallAlt"),
+      fallback: "ق",
+    },
+    {
+      src: LANDING_ASSETS.facilities.harbor,
+      alt: t("cardioHallAlt"),
+      fallback: "ک",
+    },
+  ] as const;
+
+  const orbitAvatars: LandingBookingOrbitAvatar[] = ORBIT_LAYOUT.map(
+    (layout, index) => {
+      const portrait = portraits[index]!;
+      return {
+        ...layout,
+        src: portrait.src,
+        alt: portrait.alt,
+        fallback: portrait.fallback,
+      };
+    },
+  );
+
+  const stackAvatars: LandingBookingStackAvatar[] = portraits
+    .slice(0, 5)
+    .map((portrait, index) => ({
+      id: index + 1,
+      src: portrait.src,
+      alt: portrait.alt,
+      fallback: portrait.fallback,
+    }));
 
   return (
     <section
@@ -160,23 +154,23 @@ export function LandingBookingSection({
 
           <div className={slots.copyCol()}>
             <Typography className={slots.title()} type="h2" weight="bold">
-              {COPY.title}
+              {t("title")}
             </Typography>
             <Typography className={slots.subtitle()} type="body-sm">
-              {COPY.subtitle}
+              {t("subtitle")}
             </Typography>
             <div className={slots.ctaWrap()}>
               <Button
                 className={slots.cta()}
                 onPress={() => scrollTo("#download")}
               >
-                {COPY.cta}
+                {t("cta")}
               </Button>
             </div>
           </div>
 
           <div className={slots.orbitCol()}>
-            {ORBIT_AVATARS.map((avatar) => (
+            {orbitAvatars.map((avatar) => (
               <div
                 className={slots.orbitAvatar()}
                 key={avatar.id}
@@ -196,13 +190,15 @@ export function LandingBookingSection({
           </div>
 
           <div className={slots.stack()}>
-            {STACK_AVATARS.map((avatar) => (
+            {stackAvatars.map((avatar) => (
               <Avatar className={slots.stackAvatar()} key={avatar.id}>
                 <Avatar.Image alt={avatar.alt} src={avatar.src} />
                 <Avatar.Fallback>{avatar.fallback}</Avatar.Fallback>
               </Avatar>
             ))}
-            <span className={slots.countChip()}>{COPY.count}</span>
+            <Typography className={slots.countChip()} type="body-sm" weight="semibold">
+              {t("count")}
+            </Typography>
           </div>
         </div>
       </div>

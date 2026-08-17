@@ -183,7 +183,11 @@ export function AthleteWorkoutDetailSessionSection({
         </div>
       ) : null}
 
-      {error ? <p className={styles.error()}>{error}</p> : null}
+      {error ? (
+        <Typography className={styles.error()} type="body-sm">
+          {error}
+        </Typography>
+      ) : null}
     </section>
   );
 }

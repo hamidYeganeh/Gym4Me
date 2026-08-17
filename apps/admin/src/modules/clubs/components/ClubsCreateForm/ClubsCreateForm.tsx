@@ -11,6 +11,7 @@ import {
   Select,
   TextArea,
   TextField,
+  Typography,
 } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { GeoDirection } from "@repo/api";
@@ -100,7 +101,7 @@ export function ClubsCreateForm({
         {!isEdit ? (
           <>
             <div className="flex items-center justify-between gap-3">
-              <p className={styles.mockHint()}>{t("usingMock")}</p>
+              <Typography className={styles.mockHint()}>{t("usingMock")}</Typography>
               <Button
                 size="sm"
                 type="button"
@@ -467,9 +468,9 @@ export function ClubsCreateForm({
         />
 
         {submitError ? (
-          <p className={styles.formError()} role="alert">
+          <Typography className={styles.formError()} role="alert">
             {submitError}
-          </p>
+          </Typography>
         ) : null}
 
         <AdminFormActions
@@ -481,11 +482,11 @@ export function ClubsCreateForm({
           onCancel={onCancel}
         />
 
-        <button
+        <Button
           className="sr-only"
           tabIndex={-1}
           type="button"
-          onClick={() => form.reset(clubsCreateFormDefaults)}
+          onPress={() => form.reset(clubsCreateFormDefaults)}
         />
       </form>
   );

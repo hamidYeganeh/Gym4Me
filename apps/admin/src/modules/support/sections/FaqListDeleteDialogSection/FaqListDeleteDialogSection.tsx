@@ -1,3 +1,4 @@
+import { Typography } from "@heroui/react";
 import { useTranslations } from "next-intl";
 import { AdminConfirmDialog } from "@/shared/components";
 import type { FaqListDeleteDialogSectionProps } from "./FaqListDeleteDialogSection.types";
@@ -15,11 +16,11 @@ export function FaqListDeleteDialogSection({
     <AdminConfirmDialog
       body={
         <>
-          <p>{t("faqActions.deleteBody")}</p>
+          <Typography>{t("faqActions.deleteBody")}</Typography>
           {deleteError ? (
-            <p className="mt-2 text-sm text-danger" role="alert">
+            <Typography className="mt-2 text-sm text-danger" role="alert">
               {deleteError}
-            </p>
+            </Typography>
           ) : null}
         </>
       }

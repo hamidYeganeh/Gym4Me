@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button, Link } from "@heroui/react";
+import { Button, Link, Typography } from "@heroui/react";
 import { ApiError } from "@repo/api";
 import type {
   ForgotPasswordConfirmInput,
@@ -160,7 +160,7 @@ export function ForgotPasswordScreen({ className }: ForgotPasswordScreenProps) {
         </Link>
       </div>
     ) : (
-      <p>
+      <Typography type="body-sm">
         <Link
           className={styles.footerLink()}
           onPress={() =>
@@ -169,7 +169,7 @@ export function ForgotPasswordScreen({ className }: ForgotPasswordScreenProps) {
         >
           {t("backToSignIn")}
         </Link>
-      </p>
+      </Typography>
     );
 
   return (
@@ -226,7 +226,9 @@ export function ForgotPasswordScreen({ className }: ForgotPasswordScreenProps) {
 
       {step === "done" ? (
         <div className={styles.form()}>
-          <p className={styles.success()}>{t("success")}</p>
+          <Typography className={styles.success()} type="body-sm">
+            {t("success")}
+          </Typography>
           <Button
             className={styles.submit()}
             fullWidth

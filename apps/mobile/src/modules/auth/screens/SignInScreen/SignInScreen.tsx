@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button, Link } from "@heroui/react";
+import { Button, Link, Typography } from "@heroui/react";
 import { ApiError } from "@repo/api";
 import { Chat, ChevronLeft } from "@repo/icons";
 import {
@@ -84,7 +84,7 @@ export function SignInScreen({ className }: SignInScreenProps) {
         </div>
       }
       footer={
-        <p className={styles.footer()}>
+        <Typography className={styles.footer()} type="body-sm">
           {t("noAccount")}{" "}
           <Link
             className={styles.footerLink()}
@@ -92,7 +92,7 @@ export function SignInScreen({ className }: SignInScreenProps) {
           >
             {t("signUp")}
           </Link>
-        </p>
+        </Typography>
       }
       heroSrc={HERO_SRC}
       labels={labels}

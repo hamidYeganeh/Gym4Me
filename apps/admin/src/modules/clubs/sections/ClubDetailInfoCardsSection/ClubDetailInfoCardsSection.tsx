@@ -1,5 +1,4 @@
 import { Chip, Typography } from "@heroui/react";
-import type { Club, ClubClass, ClubSlot } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { categoryLabel } from "../../lib/clubs-data";
 import { ClubCoachesSection } from "../ClubCoachesSection";
@@ -100,11 +99,11 @@ export function ClubDetailInfoCardsSection({
 
       <section className={styles.card()}>
         <Typography className={styles.cardTitle()}>{t("detail.reviews")}</Typography>
-        <p className={styles.value()}>
+        <Typography className={styles.value()}>
           {club.reviewsSummary.count
             ? `${club.reviewsSummary.average.toFixed(1)} / 5 · ${club.reviewsSummary.count}`
             : "—"}
-        </p>
+        </Typography>
       </section>
 
       <section className={styles.card()}>
@@ -124,7 +123,7 @@ export function ClubDetailInfoCardsSection({
             ))}
           </ul>
         ) : (
-          <p className={styles.muted()}>{t("detail.emptyRefs")}</p>
+          <Typography className={styles.muted()}>{t("detail.emptyRefs")}</Typography>
         )}
       </section>
 
@@ -142,7 +141,7 @@ export function ClubDetailInfoCardsSection({
             ))}
           </ul>
         ) : (
-          <p className={styles.muted()}>{t("detail.emptyRefs")}</p>
+          <Typography className={styles.muted()}>{t("detail.emptyRefs")}</Typography>
         )}
       </section>
 

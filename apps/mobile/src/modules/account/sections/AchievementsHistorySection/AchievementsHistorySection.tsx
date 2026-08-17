@@ -16,7 +16,9 @@ export function AchievementsHistorySection({
         {t("historySection")}
       </Typography>
       {transactions.length === 0 ? (
-        <p className={styles.empty()}>{t("historyEmpty")}</p>
+        <Typography className={styles.empty()} type="body-sm">
+          {t("historyEmpty")}
+        </Typography>
       ) : (
         <div className={styles.card()}>
           {transactions.map((tx, index) => (

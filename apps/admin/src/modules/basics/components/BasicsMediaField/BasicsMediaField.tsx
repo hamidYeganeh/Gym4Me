@@ -103,7 +103,7 @@ export function BasicsMediaField({
   return (
     <div className={styles.root()}>
       <Typography className={styles.label()}>{label}</Typography>
-      {hint ? <p className={styles.hint()}>{hint}</p> : null}
+      {hint ? <Typography className={styles.hint()}>{hint}</Typography> : null}
 
       <div className={styles.stack()}>
         {showUploader ? (

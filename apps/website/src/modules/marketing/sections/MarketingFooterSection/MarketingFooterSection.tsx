@@ -1,5 +1,6 @@
 "use client";
 
+import { Typography } from "@heroui/react";
 import { ArrowRecycle, Kettlebell } from "@repo/icons";
 import { useTranslations } from "next-intl";
 import type { CSSProperties } from "react";
@@ -37,16 +38,24 @@ export function MarketingFooterSection() {
             data-scroll-call="randomize"
           >
             {column.map((line, lineIndex) => (
-              <p key={`${index}-${lineIndex}`}>
+              <Typography
+                key={`${index}-${lineIndex}`}
+                type="body"
+                render={({ children, ...domProps }) => (
+                  <p {...domProps}>{children}</p>
+                )}
+              >
                 <Ltr>{line}</Ltr>
-              </p>
+              </Typography>
             ))}
           </div>
         ))}
       </div>
 
       <div className="o-grid -cols u-padding-top-lg">
-        <h2
+        <Typography
+          type="h1"
+          render={({ children, ...domProps }) => <h2 {...domProps}>{children}</h2>}
           data-scroll=""
           data-scroll-event-progress="progressEvent"
           data-scroll-position="start, end"
@@ -54,12 +63,14 @@ export function MarketingFooterSection() {
           className="c-footer_thanks || c-hero_title || c-heading -h1"
         >
           {t("thanks")}
-        </h2>
+        </Typography>
       </div>
 
       <div className="c-hero_main || -footer || u-padding-bottom-lg">
         <div className="c-hero_heading">
-          <p
+          <Typography
+            type="h1"
+            render={({ children, ...domProps }) => <p {...domProps}>{children}</p>}
             className="c-hero_title || c-heading -h1"
             data-scroll=""
             data-scroll-position="end"
@@ -91,9 +102,10 @@ export function MarketingFooterSection() {
             >
               <span className="c-hero_word || -footer">{t("titleLine2")}</span>
             </span>
-          </p>
+          </Typography>
 
-          <p
+          <Typography
+            type="body"
             className="c-text -body-regular || c-footer_website"
             data-scroll=""
             data-scroll-position="end"
@@ -107,7 +119,7 @@ export function MarketingFooterSection() {
             >
               <Ltr>{t("madeByLink")}</Ltr>
             </a>
-          </p>
+          </Typography>
         </div>
         <nav className="c-hero_nav">
           <ul className="c-hero_links">

@@ -1,4 +1,4 @@
-import { Label, TextArea, TextField } from "@heroui/react";
+import { Label, TextArea, TextField, Typography } from "@heroui/react";
 import { useTranslations } from "next-intl";
 import { AdminConfirmDialog } from "@/shared/components";
 import { supportTicketsResolveDialogSectionVariants } from "./SupportTicketsResolveDialogSection.styles";
@@ -19,7 +19,7 @@ export function SupportTicketsResolveDialogSection({
     <AdminConfirmDialog
       body={
         <>
-          <p>{t("resolveBody")}</p>
+          <Typography>{t("resolveBody")}</Typography>
           <TextField
             className={styles.resolveField()}
             fullWidth

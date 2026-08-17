@@ -1,7 +1,10 @@
 "use client";
 
+import { Typography } from "@heroui/react";
 import { motion, useReducedMotion, type Variants } from "framer-motion";
-import { LANDING_ASSETS, LANDING_REVIEWS } from "../../lib/landing-assets";
+import { useTranslations } from "next-intl";
+import { useMemo } from "react";
+import { LANDING_ASSETS } from "../../lib/landing-assets";
 import { landingTestimonialsSectionStyles } from "./LandingTestimonialsSection.styles";
 import type {
   LandingOrbitCard,
@@ -14,56 +17,11 @@ const PHOTO_IMAGES = [
   LANDING_ASSETS.facilities.clay,
 ] as const;
 
-const PHOTO_REVIEWS = [
-  "بهترین تجربه مربیگری که تا حالا داشتم!",
-  "نتایج باورنکردنی فقط در ۳ ماه. پیشنهاد می‌کنم!",
-  "حرفه‌ای، متعهد و خیلی مسلط.",
+const QUOTE_AVATARS = [
+  LANDING_ASSETS.coaches[1].src,
+  LANDING_ASSETS.coaches[0].src,
+  LANDING_ASSETS.coaches[2].src,
 ] as const;
-
-const ORBIT_CARDS: LandingOrbitCard[] = [
-  {
-    kind: "photo",
-    imageSrc: PHOTO_IMAGES[0],
-    imageAlt: "ورزشکار در حال تمرین",
-    review: PHOTO_REVIEWS[0],
-  },
-  {
-    kind: "quote",
-    theme: "lime",
-    quote: LANDING_REVIEWS[0].content,
-    authorName: LANDING_REVIEWS[0].authorName,
-    authorRole: LANDING_REVIEWS[0].authorRole,
-    avatarSrc: LANDING_REVIEWS[0].avatarSrc,
-  },
-  {
-    kind: "photo",
-    imageSrc: PHOTO_IMAGES[1],
-    imageAlt: "دویدن در فضای باز",
-    review: PHOTO_REVIEWS[1],
-  },
-  {
-    kind: "quote",
-    theme: "dark",
-    quote: LANDING_REVIEWS[1].content,
-    authorName: LANDING_REVIEWS[1].authorName,
-    authorRole: LANDING_REVIEWS[1].authorRole,
-    avatarSrc: LANDING_REVIEWS[1].avatarSrc,
-  },
-  {
-    kind: "photo",
-    imageSrc: PHOTO_IMAGES[2],
-    imageAlt: "ورزشکار در باشگاه",
-    review: PHOTO_REVIEWS[2],
-  },
-  {
-    kind: "quote",
-    theme: "dark",
-    quote: LANDING_REVIEWS[2].content,
-    authorName: LANDING_REVIEWS[2].authorName,
-    authorRole: LANDING_REVIEWS[2].authorRole,
-    avatarSrc: LANDING_REVIEWS[2].avatarSrc,
-  },
-];
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -82,11 +40,68 @@ const itemVariants: Variants = {
   },
 };
 
+type TestimonialQuote = {
+  content: string;
+  authorName: string;
+  authorRole: string;
+};
+
 export function LandingTestimonialsSection({
   className,
 }: LandingTestimonialsSectionProps) {
+  const t = useTranslations("MarketingLanding.landingTestimonials");
   const slots = landingTestimonialsSectionStyles();
   const reduceMotion = useReducedMotion();
+  const photoReviews = t.raw("photoReviews") as string[];
+  const photoAlts = t.raw("photoAlts") as string[];
+  const quotes = t.raw("quotes") as TestimonialQuote[];
+
+  const orbitCards = useMemo((): LandingOrbitCard[] => {
+    return [
+      {
+        kind: "photo",
+        imageSrc: PHOTO_IMAGES[0],
+        imageAlt: photoAlts[0]!,
+        review: photoReviews[0]!,
+      },
+      {
+        kind: "quote",
+        theme: "lime",
+        quote: quotes[0]!.content,
+        authorName: quotes[0]!.authorName,
+        authorRole: quotes[0]!.authorRole,
+        avatarSrc: QUOTE_AVATARS[0]!,
+      },
+      {
+        kind: "photo",
+        imageSrc: PHOTO_IMAGES[1],
+        imageAlt: photoAlts[1]!,
+        review: photoReviews[1]!,
+      },
+      {
+        kind: "quote",
+        theme: "dark",
+        quote: quotes[1]!.content,
+        authorName: quotes[1]!.authorName,
+        authorRole: quotes[1]!.authorRole,
+        avatarSrc: QUOTE_AVATARS[1]!,
+      },
+      {
+        kind: "photo",
+        imageSrc: PHOTO_IMAGES[2],
+        imageAlt: photoAlts[2]!,
+        review: photoReviews[2]!,
+      },
+      {
+        kind: "quote",
+        theme: "dark",
+        quote: quotes[2]!.content,
+        authorName: quotes[2]!.authorName,
+        authorRole: quotes[2]!.authorRole,
+        avatarSrc: QUOTE_AVATARS[2]!,
+      },
+    ];
+  }, [photoAlts, photoReviews, quotes]);
 
   return (
     <section id="testimonials" className={slots.root({ className })}>
@@ -102,9 +117,13 @@ export function LandingTestimonialsSection({
             <span aria-hidden className={slots.darkCircle()}>
               <span className={slots.limeDot()}>•</span>
             </span>
-            <span className={slots.labelText()}>نظرات</span>
+            <Typography className={slots.labelText()} type="body-sm">
+              {t("label")}
+            </Typography>
           </div>
-          <h2 className={slots.bigHeading()}>نظر اعضا از داخل اپ</h2>
+          <Typography className={slots.bigHeading()} type="h2" weight="bold">
+            {t("heading")}
+          </Typography>
         </motion.header>
 
         <motion.div
@@ -114,7 +133,7 @@ export function LandingTestimonialsSection({
           viewport={{ once: true, margin: "-100px" }}
           whileInView={reduceMotion ? undefined : "visible"}
         >
-          {ORBIT_CARDS.map((card) =>
+          {orbitCards.map((card) =>
             card.kind === "photo" ? (
               <motion.article
                 className={slots.card({ className: slots.photoCard() })}
@@ -130,7 +149,9 @@ export function LandingTestimonialsSection({
                   <div aria-hidden className={slots.reviewStars()}>
                     ★★★★★
                   </div>
-                  <p className={slots.reviewText()}>{card.review}</p>
+                  <Typography className={slots.reviewText()} type="body-sm">
+                    {card.review}
+                  </Typography>
                 </div>
               </motion.article>
             ) : (
@@ -162,16 +183,17 @@ export function LandingTestimonialsSection({
                     "
                   </span>
                 </div>
-                <p
+                <Typography
                   className={slots.quoteText({
                     className:
                       card.theme === "lime"
                         ? slots.quoteTextLime()
                         : slots.quoteTextDark(),
                   })}
+                  type="body"
                 >
                   «{card.quote}»
-                </p>
+                </Typography>
                 <div className={slots.authorRow()}>
                   <img
                     alt=""
@@ -184,26 +206,29 @@ export function LandingTestimonialsSection({
                     src={card.avatarSrc}
                   />
                   <div className={slots.authorMeta()}>
-                    <div
+                    <Typography
                       className={slots.authorName({
                         className:
                           card.theme === "lime"
                             ? slots.authorNameLime()
                             : slots.authorNameDark(),
                       })}
+                      type="body-sm"
+                      weight="semibold"
                     >
                       {card.authorName}
-                    </div>
-                    <div
+                    </Typography>
+                    <Typography
                       className={slots.authorRole({
                         className:
                           card.theme === "lime"
                             ? slots.authorRoleLime()
                             : slots.authorRoleDark(),
                       })}
+                      type="body-xs"
                     >
                       {card.authorRole}
-                    </div>
+                    </Typography>
                   </div>
                 </div>
               </motion.article>

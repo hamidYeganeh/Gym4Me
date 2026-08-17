@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
-import { Button } from "@heroui/react";
+import { Button, Typography } from "@heroui/react";
 import { ApiError } from "@repo/api";
 import type { ConfirmOtpInput } from "@repo/api";
 import { ArrowLeft } from "@repo/icons";
@@ -102,7 +102,7 @@ export function OtpScreen({ className }: OtpScreenProps) {
     <AuthLayout
       className={className}
       labels={labels}
-      footer={<p>{t("securityNote")}</p>}
+      footer={<Typography>{t("securityNote")}</Typography>}
     >
       <div className={styles.form()}>
         <AuthLoginOtpForm

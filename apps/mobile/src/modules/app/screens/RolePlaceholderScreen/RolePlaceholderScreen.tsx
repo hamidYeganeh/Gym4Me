@@ -1,3 +1,4 @@
+import { Typography } from "@heroui/react";
 import { rolePlaceholderScreenVariants } from "./RolePlaceholderScreen.styles";
 import type { RolePlaceholderScreenProps } from "./RolePlaceholderScreen.types";
 
@@ -10,8 +11,12 @@ export function RolePlaceholderScreen({
 
   return (
     <main className={styles.root({ className })}>
-      <h1 className={styles.title()}>{title}</h1>
-      <p className={styles.body()}>{description}</p>
+      <Typography className={styles.title()} type="h1" weight="bold">
+        {title}
+      </Typography>
+      <Typography className={styles.body()} type="body">
+        {description}
+      </Typography>
     </main>
   );
 }

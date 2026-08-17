@@ -16,6 +16,8 @@ import { Soccer } from "@repo/icons/Soccer";
 import { Tennis } from "@repo/icons/Tennis";
 import { SportCard } from "@repo/ui/cards/SportCard";
 import { motion, useReducedMotion, type Variants } from "framer-motion";
+import { useTranslations } from "next-intl";
+import type { ComponentType } from "react";
 import {
   LANDING_ASSETS,
   LANDING_SPORT_THEMES,
@@ -28,102 +30,43 @@ import type {
   LandingSportsSectionProps,
 } from "./LandingSportsSection.types";
 
-const SPORT_DEFS: LandingSportTile[] = [
-  {
-    id: "football",
-    name: "فوتبال",
-    subtitle: "ورزش‌های توپی",
-    icon: Soccer,
-    image: LANDING_ASSETS.collection[1].src,
-  },
-  {
-    id: "bodybuilding",
-    name: "بدنسازی",
-    subtitle: "آمادگی جسمانی",
-    icon: BarbellHorizontal,
-    image: LANDING_ASSETS.facilities.clay,
-  },
-  {
-    id: "yoga",
-    name: "یوگا",
-    subtitle: "آمادگی جسمانی",
-    icon: PersonYoga,
-    image: LANDING_ASSETS.collection[2].src,
-  },
-  {
-    id: "crossfit",
-    name: "کراس‌فیت",
-    subtitle: "آمادگی جسمانی",
-    icon: JumpingRope,
-    image: LANDING_ASSETS.collection[0].src,
-  },
-  {
-    id: "swimming",
-    name: "شنا",
-    subtitle: "آبی",
-    icon: PersonSwimming,
-    image: LANDING_ASSETS.facilities.harbor,
-  },
-  {
-    id: "boxing",
-    name: "بوکس",
-    subtitle: "رزمی",
-    icon: Boxing,
-    image: LANDING_ASSETS.hero,
-  },
-  {
-    id: "running",
-    name: "دویدن",
-    subtitle: "هوازی",
-    icon: PersonRunning,
-    image: LANDING_ASSETS.collection[1].src,
-  },
-  {
-    id: "basketball",
-    name: "بسکتبال",
-    subtitle: "ورزش‌های توپی",
-    icon: Basketball,
-    image: LANDING_ASSETS.facilities.intro,
-  },
-  {
-    id: "tennis",
-    name: "تنیس",
-    subtitle: "راکت",
-    icon: Tennis,
-    image: LANDING_ASSETS.collection[2].src,
-  },
-  {
-    id: "functional",
-    name: "فانکشنال",
-    subtitle: "آمادگی جسمانی",
-    icon: Kettlebell,
-    image: LANDING_ASSETS.facilities.clay,
-  },
-  {
-    id: "martial-arts",
-    name: "رزمی",
-    subtitle: "رزمی",
-    icon: PersonKarate,
-    image: LANDING_ASSETS.hero,
-  },
-  {
-    id: "cardio",
-    name: "قلبی",
-    subtitle: "هوازی",
-    icon: HeartEcg,
-    image: LANDING_ASSETS.facilities.harbor,
-  },
-  {
-    id: "archery",
-    name: "تیراندازی",
-    subtitle: "دقت",
-    icon: Archery,
-    image: LANDING_ASSETS.collection[0].src,
-  },
-];
+type SportTileDef = {
+  id: string;
+  name: string;
+  subtitle: string;
+};
 
-const SPORT_ROW_1 = SPORT_DEFS.slice(0, 7);
-const SPORT_ROW_2 = SPORT_DEFS.slice(6);
+const SPORT_IMAGES: Record<string, string> = {
+  football: LANDING_ASSETS.collection[1].src,
+  bodybuilding: LANDING_ASSETS.facilities.clay,
+  yoga: LANDING_ASSETS.collection[2].src,
+  crossfit: LANDING_ASSETS.collection[0].src,
+  swimming: LANDING_ASSETS.facilities.harbor,
+  boxing: LANDING_ASSETS.hero,
+  running: LANDING_ASSETS.collection[1].src,
+  basketball: LANDING_ASSETS.facilities.intro,
+  tennis: LANDING_ASSETS.collection[2].src,
+  functional: LANDING_ASSETS.facilities.clay,
+  "martial-arts": LANDING_ASSETS.hero,
+  cardio: LANDING_ASSETS.facilities.harbor,
+  archery: LANDING_ASSETS.collection[0].src,
+};
+
+const SPORT_ICONS: Record<string, ComponentType<{ className?: string }>> = {
+  football: Soccer,
+  bodybuilding: BarbellHorizontal,
+  yoga: PersonYoga,
+  crossfit: JumpingRope,
+  swimming: PersonSwimming,
+  boxing: Boxing,
+  running: PersonRunning,
+  basketball: Basketball,
+  tennis: Tennis,
+  functional: Kettlebell,
+  "martial-arts": PersonKarate,
+  cardio: HeartEcg,
+  archery: Archery,
+};
 
 const fadeUpVariants: Variants = {
   hidden: { opacity: 0, y: 30 },
@@ -134,12 +77,24 @@ const fadeUpVariants: Variants = {
   }),
 };
 
+function buildSportTiles(defs: SportTileDef[]): LandingSportTile[] {
+  return defs.map((def) => ({
+    id: def.id,
+    name: def.name,
+    subtitle: def.subtitle,
+    icon: SPORT_ICONS[def.id] ?? BarbellHorizontal,
+    image: SPORT_IMAGES[def.id] ?? LANDING_ASSETS.hero,
+  }));
+}
+
 function SportTileCard({
   tile,
   themeIndex,
+  viewSportLabel,
 }: {
   tile: LandingSportTile;
   themeIndex: number;
+  viewSportLabel: string;
 }) {
   const slots = landingSportsSectionStyles();
   const theme =
@@ -150,7 +105,7 @@ function SportTileCard({
     <SportCard
       actionColor={theme.actionColor}
       actionForegroundColor={theme.actionForegroundColor}
-      actionLabel={`مشاهده ${tile.name}`}
+      actionLabel={viewSportLabel}
       className={slots.card()}
       color={theme.color}
       foregroundColor={theme.foregroundColor}
@@ -170,11 +125,13 @@ function MarqueeRow({
   direction,
   delay,
   themeOffset,
+  viewSportLabel,
 }: {
   tiles: LandingSportTile[];
   direction: "left" | "right";
   delay: number;
   themeOffset: number;
+  viewSportLabel: (name: string) => string;
 }) {
   const slots = landingSportsSectionStyles();
   const reduceMotion = useReducedMotion() ?? false;
@@ -209,6 +166,7 @@ function MarqueeRow({
             key={`${tile.id}-${index}`}
             themeIndex={index + themeOffset}
             tile={tile}
+            viewSportLabel={viewSportLabel(tile.name)}
           />
         ))}
       </motion.div>
@@ -217,8 +175,14 @@ function MarqueeRow({
 }
 
 export function LandingSportsSection({ className }: LandingSportsSectionProps) {
+  const t = useTranslations("MarketingLanding.landingSports");
   const slots = landingSportsSectionStyles();
   const { scrollTo } = useLandingScroll();
+  const tileDefs = t.raw("tiles") as SportTileDef[];
+  const sportTiles = buildSportTiles(tileDefs);
+  const sportRow1 = sportTiles.slice(0, 7);
+  const sportRow2 = sportTiles.slice(6);
+  const titleLines = t("title").split("\n");
 
   return (
     <section
@@ -236,13 +200,12 @@ export function LandingSportsSection({ className }: LandingSportsSectionProps) {
           whileInView="visible"
         >
           <Typography className={slots.title()} type="h2" weight="medium">
-            رشته‌هایی که در اپ
+            {titleLines[0]}
             <br />
-            کشف می‌کنی
+            {titleLines[1]}
           </Typography>
           <Typography className={slots.hint()} type="body">
-            از وزنه و دویدن تا یوگا و شنا. باشگاه و مربی مناسب هر رشته را در
-            Gym4Me پیدا کن.
+            {t("hint")}
           </Typography>
         </motion.div>
 
@@ -259,7 +222,7 @@ export function LandingSportsSection({ className }: LandingSportsSectionProps) {
             size="lg"
             onPress={() => scrollTo("#clubs")}
           >
-            مشاهده باشگاه‌ها
+            {t("cta")}
           </Button>
         </motion.div>
       </div>
@@ -269,13 +232,15 @@ export function LandingSportsSection({ className }: LandingSportsSectionProps) {
           delay={0.3}
           direction="left"
           themeOffset={0}
-          tiles={SPORT_ROW_1}
+          tiles={sportRow1}
+          viewSportLabel={(name) => t("viewSport", { name })}
         />
         <MarqueeRow
           delay={0.4}
           direction="right"
           themeOffset={2}
-          tiles={SPORT_ROW_2}
+          tiles={sportRow2}
+          viewSportLabel={(name) => t("viewSport", { name })}
         />
       </div>
     </section>

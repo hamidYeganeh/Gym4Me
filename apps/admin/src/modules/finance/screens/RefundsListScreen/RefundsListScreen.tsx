@@ -182,11 +182,11 @@ export function RefundsListScreen({ className }: RefundsListScreenProps) {
       <AdminConfirmDialog
         body={
           <>
-            <p>{t("refunds.actions.refundBody")}</p>
+            <Typography>{t("refunds.actions.refundBody")}</Typography>
             {actionError ? (
-              <p className="mt-2 text-sm text-danger" role="alert">
+              <Typography className="mt-2 text-sm text-danger" role="alert">
                 {actionError}
-              </p>
+              </Typography>
             ) : null}
           </>
         }

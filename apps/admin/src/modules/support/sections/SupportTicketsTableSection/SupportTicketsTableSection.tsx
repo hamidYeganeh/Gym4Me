@@ -1,4 +1,6 @@
 import { useMemo } from "react";
+import type { SupportTicket } from "@repo/api";
+import type { ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
 import { AdminDataTable } from "@/shared/components";
 import {
@@ -39,7 +41,7 @@ export function SupportTicketsTableSection({
         priority: (priority) => t(`priority.${priority}`),
         status: (status) => t(`status.${status}`),
         view: t("actionsMenu.view"),
-      }),
+      }) as ColumnDef<SupportTicket, unknown>[],
     [t],
   );
 

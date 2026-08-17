@@ -21,9 +21,9 @@ export function ArticleDetailHeroSection({
       <Typography className={styles.title()} type="h1" weight="bold">
         {article.title}
       </Typography>
-      <p className={styles.meta()}>
+      <Typography className={styles.meta()} type="body-sm">
         <span>{formatArticleDate(article.publishedAt)}</span>
-      </p>
+      </Typography>
       <div className={styles.authorRow()}>
         <Avatar className="size-8">
           {mediaFileUrl(article.author.avatarMediaId) ? (

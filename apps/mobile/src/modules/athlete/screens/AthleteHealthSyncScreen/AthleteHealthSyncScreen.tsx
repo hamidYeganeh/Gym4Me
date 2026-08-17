@@ -125,7 +125,9 @@ export function AthleteHealthSyncScreen({
             ) : null}
           </div>
           {lastFlushSummary ? (
-            <p className={styles.feedback()}>{lastFlushSummary}</p>
+            <Typography className={styles.feedback()} type="body-sm">
+              {lastFlushSummary}
+            </Typography>
           ) : null}
         </section>
 

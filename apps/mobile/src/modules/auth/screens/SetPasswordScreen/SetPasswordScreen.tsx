@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Link } from "@heroui/react";
+import { Button, Link, Typography } from "@heroui/react";
 import { ApiError } from "@repo/api";
 import type { SetPasswordInput } from "@repo/api";
 import { ChevronLeft } from "@repo/icons";
@@ -59,14 +59,14 @@ export function SetPasswordScreen({
     <AuthLayout
       className={className}
       footer={
-        <p>
+        <Typography type="body-sm">
           <Link
             className={styles.footerLink()}
             onPress={() => router.push(`/${roleSegment}/profile/security`)}
           >
             {t("backToSecurity")}
           </Link>
-        </p>
+        </Typography>
       }
       labels={labels}
       tone="dark"
@@ -84,7 +84,9 @@ export function SetPasswordScreen({
         </Button>
       }
     >
-      <p className={styles.notice()}>{t("reloginNote")}</p>
+      <Typography className={styles.notice()} type="body-sm">
+        {t("reloginNote")}
+      </Typography>
       <AuthSetPasswordForm
         error={error}
         isPending={isPending}

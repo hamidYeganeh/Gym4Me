@@ -1,6 +1,6 @@
 "use client";
 
-import { Spinner, Typography } from "@heroui/react";
+import { Button, Spinner, Typography } from "@heroui/react";
 import { CloseX } from "@repo/icons/CloseX";
 import { coachSlotsManageDaysSectionVariants } from "./CoachSlotsManageDaysSection.styles";
 import type { CoachSlotsManageDaysSectionProps } from "./CoachSlotsManageDaysSection.types";
@@ -47,14 +47,16 @@ export function CoachSlotsManageDaysSection({
                   {formatSlotTime(slot.startsAt)}
                   {slot.club ? ` — ${slot.club.name}` : ""}
                   {slot.status === "open" ? (
-                    <button
+                    <Button
                       aria-label={removeSlotLabel}
                       className={styles.slotRemove()}
-                      onClick={() => void onRemoveSlot(slot.id)}
-                      type="button"
+                      isIconOnly
+                      size="lg"
+                      variant="ghost"
+                      onPress={() => void onRemoveSlot(slot.id)}
                     >
                       <CloseX size={14} />
-                    </button>
+                    </Button>
                   ) : null}
                 </span>
               ))}

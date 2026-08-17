@@ -1,5 +1,6 @@
 "use client";
 
+import { Typography } from "@heroui/react";
 import { statsColors } from "@repo/theme";
 import { Logo } from "@repo/ui/common/Logo";
 import { GlyphText } from "@repo/ui/kit/GlyphText";
@@ -27,11 +28,16 @@ export function SplashScreen({ brand, taglines }: SplashScreenProps) {
       <div className={styles.markAnchor()}>
         <Logo color={SPLASH_INK} gradient={false} shadow={false} size="5xl" />
         <div className={styles.copy()}>
-          <h1 className={styles.brand()} style={{ color: SPLASH_INK }}>
+          <Typography
+            className={styles.brand()}
+            style={{ color: SPLASH_INK }}
+            type="h1"
+            weight="bold"
+          >
             {brand}
-          </h1>
+          </Typography>
 
-          <p className={styles.tagline()}>
+          <Typography className={styles.tagline()} type="body">
             <GlyphText
               colors={SPLASH_GLYPH_COLORS}
               delay={0.35}
@@ -44,7 +50,7 @@ export function SplashScreen({ brand, taglines }: SplashScreenProps) {
               text={taglines}
               textColor={SPLASH_INK}
             />
-          </p>
+          </Typography>
         </div>
       </div>
     </main>

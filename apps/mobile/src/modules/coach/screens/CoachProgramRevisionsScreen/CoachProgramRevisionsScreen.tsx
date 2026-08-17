@@ -84,11 +84,11 @@ export function CoachProgramRevisionsScreen({
           {revisions.map((revision) => {
             const selected = selectedIds.includes(revision.id);
             return (
-              <button
+              <Button
                 className={`${styles.revisionCard} ${selected ? styles.revisionSelected : ""}`}
                 key={revision.id}
-                onClick={() => toggleRevision(revision.id)}
-                type="button"
+                variant="ghost"
+                onPress={() => toggleRevision(revision.id)}
               >
                 <Typography type="body" weight="semibold">
                   {revision.label}
@@ -96,7 +96,7 @@ export function CoachProgramRevisionsScreen({
                 <Typography className={styles.revisionMeta} type="body-sm">
                   {revision.createdAtLabel}
                 </Typography>
-              </button>
+              </Button>
             );
           })}
         </div>

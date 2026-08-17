@@ -62,11 +62,11 @@ export function CoachNutritionScreen({ plans }: CoachNutritionScreenProps) {
         {plans.length > 0 ? (
           <div className={styles.list}>
             {plans.map((plan) => (
-              <button
+              <Button
                 className={styles.card}
                 key={plan.id}
-                onClick={() => router.push(`/coach/nutrition/${plan.id}`)}
-                type="button"
+                variant="ghost"
+                onPress={() => router.push(`/coach/nutrition/${plan.id}`)}
               >
                 <div className={styles.cardTop}>
                   <Typography type="body" weight="semibold">
@@ -86,7 +86,7 @@ export function CoachNutritionScreen({ plans }: CoachNutritionScreenProps) {
                 <Typography className={styles.cardMeta} type="body-sm">
                   {plan.updatedLabel}
                 </Typography>
-              </button>
+              </Button>
             ))}
           </div>
         ) : (

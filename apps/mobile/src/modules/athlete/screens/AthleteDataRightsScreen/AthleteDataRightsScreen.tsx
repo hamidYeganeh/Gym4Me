@@ -122,7 +122,9 @@ export function AthleteDataRightsScreen({
             دریافت خروجی JSON
           </Button>
           {lastExportSummary ? (
-            <p className={styles.feedback()}>{lastExportSummary}</p>
+            <Typography className={styles.feedback()} type="body-sm">
+              {lastExportSummary}
+            </Typography>
           ) : null}
         </section>
 
@@ -196,8 +198,16 @@ export function AthleteDataRightsScreen({
           </Button>
         </div>
 
-        {message ? <p className={styles.feedback()}>{message}</p> : null}
-        {error ? <p className={styles.error()}>{error}</p> : null}
+        {message ? (
+          <Typography className={styles.feedback()} type="body-sm">
+            {message}
+          </Typography>
+        ) : null}
+        {error ? (
+          <Typography className={styles.error()} type="body-sm">
+            {error}
+          </Typography>
+        ) : null}
       </div>
     </AppLayout>
   );

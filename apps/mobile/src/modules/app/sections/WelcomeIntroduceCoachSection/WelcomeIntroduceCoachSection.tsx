@@ -57,7 +57,9 @@ export function WelcomeIntroduceCoachSection({
             <Typography className={styles.name()} type="body" weight="semibold">
               {name}
             </Typography>
-            <p className={styles.price()}>{price}</p>
+            <Typography className={styles.price()} type="body-sm">
+              {price}
+            </Typography>
             <div className={styles.metaRow()}>
               <span className={styles.metaItem()}>
                 <HeartEcg aria-hidden className={styles.metaIcon()} size={16} />
@@ -83,10 +85,10 @@ export function WelcomeIntroduceCoachSection({
               <span>{rating}</span>
               <span className="text-muted">({reviews})</span>
             </div>
-            <p className={styles.availability()}>
+            <Typography className={styles.availability()} type="body-sm">
               <CheckCircle aria-hidden size={16} />
               {availability}
-            </p>
+            </Typography>
           </div>
           <ChevronRight aria-hidden className={styles.chevron()} size={20} />
         </div>

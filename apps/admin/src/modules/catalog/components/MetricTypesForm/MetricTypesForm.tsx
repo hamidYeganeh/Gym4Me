@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Button, FieldError, Input, Label, TextField } from "@heroui/react";
+import {
+  Button,
+  FieldError,
+  Input,
+  Label,
+  TextField,
+  Typography,
+} from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
@@ -145,9 +152,9 @@ export function MetricTypesForm({
         )}
       />
       {submitError ? (
-        <p className={styles.formError()} role="alert">
+        <Typography className={styles.formError()} role="alert">
           {submitError}
-        </p>
+        </Typography>
       ) : null}
       <AdminFormActions
         cancelLabel={t("cancel")}

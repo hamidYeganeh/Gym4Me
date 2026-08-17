@@ -201,10 +201,10 @@ export function UserDetailScreen({ className }: UserDetailScreenProps) {
             {t("loading")}
           </div>
         ) : !user ? (
-          <p className={styles.error()}>{error || t("detail.notFound")}</p>
+          <Typography className={styles.error()}>{error || t("detail.notFound")}</Typography>
         ) : (
           <>
-            {error ? <p className={styles.error()}>{error}</p> : null}
+            {error ? <Typography className={styles.error()}>{error}</Typography> : null}
 
             <div className={styles.grid()}>
               <UsersDetailProfileSection

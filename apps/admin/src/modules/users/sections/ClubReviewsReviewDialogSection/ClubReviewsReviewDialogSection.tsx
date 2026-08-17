@@ -1,4 +1,4 @@
-import { Input, Label, TextField } from "@heroui/react";
+import { Input, Label, TextField, Typography } from "@heroui/react";
 import { useTranslations } from "next-intl";
 import { AdminConfirmDialog } from "@/shared/components";
 import type { ClubReviewsReviewDialogSectionProps } from "./ClubReviewsReviewDialogSection.types";
@@ -18,11 +18,11 @@ export function ClubReviewsReviewDialogSection({
     <AdminConfirmDialog
       body={
         <>
-          <p>
+          <Typography>
             {review?.action === "approve"
               ? t("clubsActions.approveBody")
               : t("clubsActions.rejectBody")}
-          </p>
+          </Typography>
           <TextField
             className="mt-3 flex flex-col gap-2"
             fullWidth
@@ -38,9 +38,9 @@ export function ClubReviewsReviewDialogSection({
             <Input />
           </TextField>
           {reviewError ? (
-            <p className="mt-2 text-sm text-danger" role="alert">
+            <Typography className="mt-2 text-sm text-danger" role="alert">
               {reviewError}
-            </p>
+            </Typography>
           ) : null}
         </>
       }

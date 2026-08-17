@@ -1,7 +1,7 @@
 export { AudienceLandingScreen } from "./AudienceLandingScreen";
 export { audienceLandingScreenVariants } from "./AudienceLandingScreen.styles";
 export type {
+  AudienceLandingAudience,
   AudienceLandingScreenCapability,
-  AudienceLandingScreenLink,
   AudienceLandingScreenProps,
 } from "./AudienceLandingScreen.types";

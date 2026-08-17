@@ -1,6 +1,8 @@
 "use client";
 
+import { Typography } from "@heroui/react";
 import { CoachFeatureCard } from "@repo/ui/cards/CoachFeatureCard";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { LANDING_ASSETS } from "../../lib/landing-assets";
 import { LandingArrowButton } from "../../lib/landing-controls";
@@ -14,6 +16,8 @@ import { landingTrustSectionStyles } from "./LandingTrustSection.styles";
 import type { LandingTrustSectionProps } from "./LandingTrustSection.types";
 
 export function LandingTrustSection({ className }: LandingTrustSectionProps) {
+  const t = useTranslations("MarketingLanding.trust");
+  const coachCopy = useTranslations("MarketingLanding.coachDemo");
   const slots = landingTrustSectionStyles();
   const { scrollTo } = useLandingScroll();
   const [index, setIndex] = useState(0);
@@ -83,24 +87,41 @@ export function LandingTrustSection({ className }: LandingTrustSectionProps) {
     >
       <div className={slots.badges()}>
         <InViewRise fromScale={0.9} fromY={0} className={slots.percent()}>
-          <p className={slots.percentValue()}>تأییدشده</p>
-          <p className={slots.percentCaption()}>مربی با سابقه و نظر واقعی</p>
+          <Typography
+            type="body"
+            weight="bold"
+            className={slots.percentValue()}
+          >
+            {t("certifiedValue")}
+          </Typography>
+          <Typography type="body-sm" className={slots.percentCaption()}>
+            {t("certifiedCaption")}
+          </Typography>
         </InViewRise>
 
         <InViewRise delayIn={120} fromY={24} className={slots.badgeCard()}>
-          <span className={slots.chip()}>مربی</span>
+          <span className={slots.chip()}>{t("chip")}</span>
           <div>
-            <h2 className={slots.badgeTitle()}>مربی مناسب را در اپ پیدا کن</h2>
-            <p className={slots.badgeBody()}>
-              تخصص، سابقه و نظر اعضا را ببین، جلسه خصوصی رزرو کن و قبل از تمرین
-              یادآوری بگیر.
-            </p>
+            <Typography
+              type="h3"
+              render={({ children, ...domProps }) => (
+                <h2 {...domProps}>{children}</h2>
+              )}
+              className={slots.badgeTitle()}
+            >
+              {t("badgeTitle")}
+            </Typography>
+            <Typography type="body" className={slots.badgeBody()}>
+              {t("badgeBody")}
+            </Typography>
           </div>
         </InViewRise>
       </div>
 
-      <h2
+      <Typography
+        type="h2"
         id="trust-title"
+        render={({ children, ...domProps }) => <h2 {...domProps}>{children}</h2>}
         className={slots.ghost()}
         aria-label={words.join(" ")}
       >
@@ -142,18 +163,22 @@ export function LandingTrustSection({ className }: LandingTrustSectionProps) {
             </span>
           ))}
         </span>
-      </h2>
+      </Typography>
 
       <InViewRise fromY={60} fromScale={0.92} className={slots.coachWrap()}>
         <CoachFeatureCard
-          certifiedLabel={slide.isCertified ? "تأییدشده" : undefined}
+          certifiedLabel={
+            slide.isCertified ? coachCopy("certified") : undefined
+          }
           className={slots.coachCard()}
-          experienceLabel={`${slide.yearsExperience} سال سابقه`}
+          experienceLabel={coachCopy("yearsOfExperience", {
+            years: slide.yearsExperience,
+          })}
           image={slide.src}
           imageAlt={slide.alt}
           isNew={slide.isNew}
           key={revealKey}
-          newLabel="جدید"
+          newLabel={coachCopy("badgeNew")}
           onPress={() => scrollTo("#download")}
           rating={slide.rating}
           ratingCount={slide.ratingCount}
@@ -166,7 +191,7 @@ export function LandingTrustSection({ className }: LandingTrustSectionProps) {
         <LandingArrowButton
           direction="prev"
           variant="outline"
-          label="قبلی"
+          label={t("prevLabel")}
           onPress={() => go(index - 1)}
         />
         <CarouselDots
@@ -178,7 +203,7 @@ export function LandingTrustSection({ className }: LandingTrustSectionProps) {
         <LandingArrowButton
           direction="next"
           variant="solid"
-          label="بعدی"
+          label={t("nextLabel")}
           onPress={() => go(index + 1)}
         />
       </div>

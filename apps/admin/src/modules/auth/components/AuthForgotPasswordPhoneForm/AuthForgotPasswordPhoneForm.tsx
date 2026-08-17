@@ -1,6 +1,13 @@
 import { useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Button, FieldError, Input, Label, TextField } from "@heroui/react";
+import {
+  Button,
+  FieldError,
+  Input,
+  Label,
+  TextField,
+  Typography,
+} from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight, Telephone1 } from "@repo/icons";
 import { useTranslations } from "next-intl";
@@ -73,9 +80,9 @@ export function AuthForgotPasswordPhoneForm({
       />
 
       {error ? (
-        <p className={styles.error()} role="alert">
+        <Typography className={styles.error()} role="alert">
           {error}
-        </p>
+        </Typography>
       ) : null}
 
       <Button

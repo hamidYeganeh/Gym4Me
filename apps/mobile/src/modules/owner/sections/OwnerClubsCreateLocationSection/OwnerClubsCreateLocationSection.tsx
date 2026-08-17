@@ -62,11 +62,11 @@ export function OwnerClubsCreateLocationSection({
                     onChange={field.onChange}
                   />
                 </div>
-                <p className={styles.mapStatus()} role="status">
+                <Typography className={styles.mapStatus()} role="status" type="body-sm">
                   {field.value
                     ? `${t("coordinatesReady")} (${field.value.lat.toFixed(5)}, ${field.value.lng.toFixed(5)})`
                     : t("coordinatesMissing")}
-                </p>
+                </Typography>
               </>
             )}
           />

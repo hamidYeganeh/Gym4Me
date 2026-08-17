@@ -230,16 +230,16 @@ export function ChoicesForm({
         ))}
         {form.formState.errors.options?.root?.message ||
         form.formState.errors.options?.message ? (
-          <p className={styles.formError()} role="alert">
+          <Typography className={styles.formError()} role="alert">
             {form.formState.errors.options.root?.message ??
               form.formState.errors.options.message}
-          </p>
+          </Typography>
         ) : null}
       </div>
       {submitError ? (
-        <p className={styles.formError()} role="alert">
+        <Typography className={styles.formError()} role="alert">
           {submitError}
-        </p>
+        </Typography>
       ) : null}
       <AdminFormActions
         cancelLabel={t("cancel")}

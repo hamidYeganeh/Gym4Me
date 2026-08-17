@@ -199,14 +199,18 @@ export function BasicsSportsSection({
 
       <Card className={styles.tableCard()}>
         <Card.Content className={styles.tableContent()}>
-          {error ? <p className={styles.error()}>{error}</p> : null}
+          {error ? (
+            <Typography className={styles.error()} role="alert">
+              {error}
+            </Typography>
+          ) : null}
           {loading ? (
             <div className={styles.loading()}>
               <Spinner size="sm" />
               {t("loading")}
             </div>
           ) : filtered.length === 0 ? (
-            <p className={styles.empty()}>{t("empty")}</p>
+            <Typography className={styles.empty()}>{t("empty")}</Typography>
           ) : (
             <Table>
               <Table.ScrollContainer>
@@ -289,7 +293,7 @@ export function BasicsSportsSection({
                 <AlertDialog.Heading>{t("sports.deleteTitle")}</AlertDialog.Heading>
               </AlertDialog.Header>
               <AlertDialog.Body>
-                <p>{t("sports.deleteBody")}</p>
+                <Typography>{t("sports.deleteBody")}</Typography>
               </AlertDialog.Body>
               <AlertDialog.Footer>
                 <Button slot="close" variant="tertiary">

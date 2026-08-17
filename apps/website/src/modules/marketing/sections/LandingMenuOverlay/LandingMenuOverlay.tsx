@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@heroui/react";
+import { useTranslations } from "next-intl";
 import { useEffect } from "react";
 import {
   BrandMark,
@@ -12,16 +14,15 @@ import { cn } from "../../lib/marketing-cn";
 import { landingMenuOverlayStyles } from "./LandingMenuOverlay.styles";
 import type { LandingMenuOverlayProps } from "./LandingMenuOverlay.types";
 
-const LINKS = [
-  { label: "ورزش‌ها", href: "#sports" },
-  { label: "باشگاه‌ها", href: "#clubs" },
-  { label: "مربی‌ها", href: "#coaches" },
-  { label: "دانلود", href: "#download" },
-] as const;
+type MenuLink = { label: string; href: string };
 
 export function LandingMenuOverlay({ className }: LandingMenuOverlayProps) {
+  const t = useTranslations("MarketingLanding.menu");
+  const shared = useTranslations("MarketingLanding.shared");
   const slots = landingMenuOverlayStyles();
   const { menuOpen, closeMenu, scrollTo } = useLandingScroll();
+  const links = t.raw("links") as MenuLink[];
+  const social = t.raw("social") as Record<string, string>;
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -40,12 +41,16 @@ export function LandingMenuOverlay({ className }: LandingMenuOverlayProps) {
       )}
       aria-hidden={!menuOpen}
     >
-      <button
-        type="button"
-        className={slots.backdrop()}
+      <Button
+        variant="ghost"
+        className={cn(
+          slots.backdrop(),
+          "h-auto min-h-0 rounded-none border-0 p-0 shadow-none",
+        )}
         style={{ opacity: menuOpen ? 1 : 0 }}
-        aria-label="بستن منو"
-        onClick={closeMenu}
+        aria-label={t("closeBackdrop")}
+        onPress={closeMenu}
+        render={(props) => <button {...props} type="button" />}
       />
       <div
         className={slots.panel()}
@@ -59,12 +64,16 @@ export function LandingMenuOverlay({ className }: LandingMenuOverlayProps) {
             <BrandMark size={20} instanceId="menu-brand" />
             <span>Gym4Me</span>
           </div>
-          <CloseIconButton onPress={closeMenu} tone="light" />
+          <CloseIconButton
+            label={shared("close")}
+            onPress={closeMenu}
+            tone="light"
+          />
         </div>
 
-        <nav className={slots.nav()} aria-label="منوی تمام‌صفحه">
+        <nav className={slots.nav()} aria-label={t("navAria")}>
           {menuOpen
-            ? LINKS.map((link, i) => (
+            ? links.map((link, i) => (
                 <InViewRise key={link.href} delayIn={120 + i * 70} fromY={28}>
                   <a
                     href={link.href}
@@ -90,13 +99,13 @@ export function LandingMenuOverlay({ className }: LandingMenuOverlayProps) {
               window.setTimeout(() => scrollTo("#download"), 120);
             }}
           >
-            دانلود اپ
+            {t("downloadCta")}
           </LandingPillButton>
-          <nav className={slots.social()} aria-label="شبکه‌ها">
-            <a href="#instagram">اینستاگرام</a>
-            <a href="#x">X</a>
-            <a href="#youtube">یوتیوب</a>
-            <a href="#linkedin">لینکدین</a>
+          <nav className={slots.social()} aria-label={t("socialAria")}>
+            <a href="#instagram">{social.instagram}</a>
+            <a href="#x">{social.x}</a>
+            <a href="#youtube">{social.youtube}</a>
+            <a href="#linkedin">{social.linkedin}</a>
           </nav>
         </div>
       </div>

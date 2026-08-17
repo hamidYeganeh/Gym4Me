@@ -8,6 +8,7 @@ import {
   Select,
   Switch,
   TextField,
+  Typography,
 } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ApiError } from "@repo/api";
@@ -237,9 +238,9 @@ export function SportsForm({
         )}
       />
       {submitError ? (
-        <p className={styles.formError()} role="alert">
+        <Typography className={styles.formError()} role="alert">
           {submitError}
-        </p>
+        </Typography>
       ) : null}
       <AdminFormActions
         cancelLabel={t("cancel")}

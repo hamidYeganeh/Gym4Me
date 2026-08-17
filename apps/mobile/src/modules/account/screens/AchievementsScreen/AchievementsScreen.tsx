@@ -89,10 +89,12 @@ export function AchievementsScreen({ className }: AchievementsScreenProps) {
         </section>
 
         {loading ? (
-          <p className={styles.state()}>{t("loading")}</p>
+          <Typography className={styles.state()} type="body-sm">
+            {t("loading")}
+          </Typography>
         ) : failed ? (
           <div className={styles.state()}>
-            <p>{t("error")}</p>
+            <Typography type="body-sm">{t("error")}</Typography>
             <Button
               className="mt-4"
               size="sm"

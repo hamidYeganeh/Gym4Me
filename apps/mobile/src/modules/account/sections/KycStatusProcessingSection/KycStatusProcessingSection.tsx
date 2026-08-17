@@ -1,3 +1,4 @@
+import { Typography } from "@heroui/react";
 import { Logo } from "@repo/ui/common/Logo";
 import { kycStatusProcessingSectionVariants } from "./KycStatusProcessingSection.styles";
 import type { KycStatusProcessingSectionProps } from "./KycStatusProcessingSection.types";
@@ -13,16 +14,17 @@ export function KycStatusProcessingSection({
     <main className={styles.root({ className })}>
       <div className={styles.steps()}>
         {labels.map((label, index) => (
-          <p
+          <Typography
             className={`${styles.step()} ${
               index === activeIndex
                 ? styles.stepActive()
                 : styles.stepIdle()
             }`}
             key={label}
+            type="body-sm"
           >
             {label}
-          </p>
+          </Typography>
         ))}
       </div>
       <div aria-hidden className={styles.glow()} />

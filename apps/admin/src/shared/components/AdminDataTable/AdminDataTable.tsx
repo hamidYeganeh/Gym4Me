@@ -121,7 +121,9 @@ export function AdminDataTable<TData>({
     <div className={styles.root({ className })}>
       {toolbar ? <div className={styles.toolbar()}>{toolbar}</div> : null}
 
-      {error ? <p className={styles.error()}>{error}</p> : null}
+      {error ? (
+        <Typography className={styles.error()}>{error}</Typography>
+      ) : null}
 
       {isLoading ? (
         <div className={styles.loading()}>
@@ -129,7 +131,7 @@ export function AdminDataTable<TData>({
           {loadingLabel}
         </div>
       ) : data.length === 0 ? (
-        <p className={styles.empty()}>{emptyLabel}</p>
+        <Typography className={styles.empty()}>{emptyLabel}</Typography>
       ) : (
         <Table>
           <Table.ScrollContainer

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Typography } from "@heroui/react";
 import { useNavigate } from "react-router-dom";
 import type { AdminAnalyticsOverview } from "@repo/api";
 import { ApiError } from "@repo/api";
@@ -181,9 +182,9 @@ export function DashboardHomeScreen({ className }: DashboardHomeScreenProps) {
         />
 
         {error ? (
-          <p className="text-sm text-danger" role="alert">
+          <Typography className="text-sm text-danger" role="alert">
             {error}
-          </p>
+          </Typography>
         ) : null}
 
         <DashboardHomeMetricsSection metrics={metrics} />

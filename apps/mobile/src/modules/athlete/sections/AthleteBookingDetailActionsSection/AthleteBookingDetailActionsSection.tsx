@@ -119,15 +119,14 @@ export function AthleteBookingDetailActionsSection({
                 {BOOKING_CANCEL_REASON_KEYS.map((reasonKey) => {
                   const isSelected = cancelReasonKey === reasonKey;
                   return (
-                    <button
+                    <Button
                       aria-checked={isSelected}
                       className={`${styles.cancelReason()} ${
                         isSelected ? styles.cancelReasonSelected() : ""
                       }`}
                       key={reasonKey}
-                      onClick={() => setCancelReasonKey(reasonKey)}
-                      role="radio"
-                      type="button"
+                      variant="ghost"
+                      onPress={() => setCancelReasonKey(reasonKey)}
                     >
                       <span
                         aria-hidden
@@ -145,7 +144,7 @@ export function AthleteBookingDetailActionsSection({
                       >
                         {t(`cancelReasons.${reasonKey}`)}
                       </Typography>
-                    </button>
+                    </Button>
                   );
                 })}
               </div>

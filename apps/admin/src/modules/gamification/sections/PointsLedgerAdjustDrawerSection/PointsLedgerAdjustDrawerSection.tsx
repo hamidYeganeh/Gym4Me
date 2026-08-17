@@ -1,4 +1,4 @@
-import { Button, Input, Label, TextField } from "@heroui/react";
+import { Button, Input, Label, TextField, Typography } from "@heroui/react";
 import { useTranslations } from "next-intl";
 import { AdminFormDrawer } from "@/shared/components";
 import { SUBJECT_TYPES } from "../../lib/gamification-constants";
@@ -90,9 +90,9 @@ export function PointsLedgerAdjustDrawerSection({
         </TextField>
 
         {error ? (
-          <p className="text-sm text-danger" role="alert">
+          <Typography className="text-sm text-danger" role="alert">
             {error}
-          </p>
+          </Typography>
         ) : null}
 
         <div className={styles.actions()}>

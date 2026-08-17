@@ -170,14 +170,14 @@ export function CoachProfileEditScreen({
           </TextField>
 
           {error ? (
-            <p className={styles.error()} role="alert">
+            <Typography className={styles.error()} role="alert" type="body-sm">
               {error}
-            </p>
+            </Typography>
           ) : null}
           {notice ? (
-            <p className={styles.notice()} role="status">
+            <Typography className={styles.notice()} role="status" type="body-sm">
               {notice}
-            </p>
+            </Typography>
           ) : null}
 
           <div className={styles.actions()}>

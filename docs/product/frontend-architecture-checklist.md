@@ -15,6 +15,34 @@ src/
   shared/              # app-shell glue only
 ```
 
+## Path aliases
+
+| Alias | Resolves to |
+|-------|-------------|
+| `@/*` | `src/*` |
+| `@modules/*` | `src/modules/*` |
+| `@shared/*` | `src/shared/*` |
+
+Configured in each app `tsconfig` (`baseUrl` + `paths`) and admin `vite.config.ts` `resolve.alias`. Prefer these over deep `../../../` imports.
+
+## HeroUI v3 primitives
+
+Use `@heroui/react` (see heroui-react skill / MCP) — **not** raw HTML for product UI:
+
+| Instead of | Use |
+|------------|-----|
+| `<h1>`–`<h6>`, `<p>` (copy) | `<Typography type="h1"\|…\|body-sm">` |
+| `<button>` | `<Button onPress={…}>` (`isIconOnly` → `size="lg"`) |
+| custom modal chrome | `<Modal>` / existing shared dialogs built on HeroUI |
+
+No `HeroUIProvider`. Compound components. Semantic variants (`primary` / `secondary` / `tertiary` / `danger` / `ghost`).
+
+## i18n
+
+- All user-facing strings via `next-intl` / `useTranslations` + `packages/i18n/messages/fa.json`
+- No hardcoded Persian or English copy, placeholders, or `aria-label`s in TSX
+- Dynamic API error messages may render as-is when already localized by the API
+
 ## Per-screen Definition of Done
 
 - [ ] Screen `.tsx` **&lt;300** lines (stretch **&lt;150** for pure composers)
@@ -28,6 +56,8 @@ src/
 - [ ] No cross-module deep `lib/` imports
 - [ ] Production empty/error states never filled with mock fixtures
 - [ ] Visual/behavior parity after extraction (routes, i18n keys, loading)
+- [ ] Typography / Button / Modal from HeroUI; no raw heading/paragraph/button for product copy
+- [ ] No hardcoded user-facing strings
 
 ## Size guardrails
 

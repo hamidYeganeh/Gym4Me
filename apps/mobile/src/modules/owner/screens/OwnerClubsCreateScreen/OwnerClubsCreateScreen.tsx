@@ -77,14 +77,14 @@ export function OwnerClubsCreateScreen({
             />
 
             {wizard.error ? (
-              <p className={styles.error()} role="alert">
+              <Typography className={styles.error()} role="alert" type="body-sm">
                 {wizard.error}
-              </p>
+              </Typography>
             ) : null}
             {wizard.notice ? (
-              <p className={styles.notice()} role="status">
+              <Typography className={styles.notice()} role="status" type="body-sm">
                 {wizard.notice}
-              </p>
+              </Typography>
             ) : null}
           </>
         )}

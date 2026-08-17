@@ -61,7 +61,11 @@ export function AchievementsGridSection({
   };
 
   if (achievements.length === 0) {
-    return <p className="py-16 text-center text-muted">{t("empty")}</p>;
+    return (
+      <Typography className="py-16 text-center text-muted" type="body-sm">
+        {t("empty")}
+      </Typography>
+    );
   }
 
   return (

@@ -111,7 +111,11 @@ export function BasicsChoicesSection({ search }: BasicsChoicesSectionProps) {
 
       <Card className={styles.tableCard()}>
         <Card.Content className={styles.tableContent()}>
-          {error ? <p className={styles.error()}>{error}</p> : null}
+          {error ? (
+            <Typography className={styles.error()} role="alert">
+              {error}
+            </Typography>
+          ) : null}
 
           {loading ? (
             <div className={styles.loading()}>
@@ -119,7 +123,7 @@ export function BasicsChoicesSection({ search }: BasicsChoicesSectionProps) {
               {t("loading")}
             </div>
           ) : filtered.length === 0 ? (
-            <p className={styles.empty()}>{t("empty")}</p>
+            <Typography className={styles.empty()}>{t("empty")}</Typography>
           ) : (
             <Table>
               <Table.ScrollContainer>
@@ -215,7 +219,7 @@ export function BasicsChoicesSection({ search }: BasicsChoicesSectionProps) {
                 </AlertDialog.Heading>
               </AlertDialog.Header>
               <AlertDialog.Body>
-                <p>{t("choices.deleteBody")}</p>
+                <Typography>{t("choices.deleteBody")}</Typography>
               </AlertDialog.Body>
               <AlertDialog.Footer>
                 <Button slot="close" variant="tertiary">

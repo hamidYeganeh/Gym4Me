@@ -98,11 +98,11 @@ export function LandingArrowButton({
 export function CloseIconButton({
   onPress,
   tone = "dark",
-  label = "بستن",
+  label,
 }: {
   onPress: () => void;
   tone?: "dark" | "light";
-  label?: string;
+  label: string;
 }) {
   const hover = useHoverEnabled();
   const [rot, setRot] = useState(0);

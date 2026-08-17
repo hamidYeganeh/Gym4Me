@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Spinner } from "@heroui/react";
+import { Spinner, Typography } from "@heroui/react";
 import type { Club, ClubClass, ClubSlot } from "@repo/api";
 import { toast } from "@repo/ui/kit/Toast";
 import { useTranslations } from "next-intl";
@@ -123,9 +123,9 @@ export function ClubDetailScreen({ className }: ClubDetailScreenProps) {
         ) : null}
 
         {error ? (
-          <p className={styles.error()} role="alert">
+          <Typography className={styles.error()} role="alert">
             {error}
-          </p>
+          </Typography>
         ) : null}
 
         {club ? (

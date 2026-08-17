@@ -6,6 +6,7 @@ import {
   Input,
   Label,
   TextField,
+  Typography,
 } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ApiError } from "@repo/api";
@@ -151,7 +152,7 @@ export function BannersForm({
               onChange={field.onChange}
             />
             {fieldState.error?.message ? (
-              <p className={styles.formError()}>{fieldState.error.message}</p>
+              <Typography className={styles.formError()}>{fieldState.error.message}</Typography>
             ) : null}
           </div>
         )}
@@ -236,9 +237,9 @@ export function BannersForm({
       />
 
       {submitError ? (
-        <p className={styles.formError()} role="alert">
+        <Typography className={styles.formError()} role="alert">
           {submitError}
-        </p>
+        </Typography>
       ) : null}
 
       <AdminFormActions

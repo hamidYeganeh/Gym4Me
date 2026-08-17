@@ -1,59 +1,17 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { AudienceLandingScreen } from "@/modules/marketing/screens/AudienceLandingScreen";
 
-export const metadata: Metadata = {
-  title: "نرم‌افزار مدیریت باشگاه ورزشی",
-  description:
-    "فروش عضویت حضوری، ورود اعضا، صندوق، بدهی، رزرو، حضور و گزارش مالی برای باشگاه‌های ایرانی.",
-  alternates: { canonical: "/for-clubs" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("MarketingLanding.audience.clubs");
+
+  return {
+    title: t("metaTitle"),
+    description: t("metaDescription"),
+    alternates: { canonical: "/for-clubs" },
+  };
+}
 
 export default function ForClubsPage() {
-  return (
-    <AudienceLandingScreen
-      capabilities={[
-        {
-          title: "فروش از پذیرش",
-          description:
-            "فروش برای عضو یا مهمان با نقد، کارت‌خوان، کارت‌به‌کارت، پرداخت ترکیبی و ثبت رسید.",
-        },
-        {
-          title: "ورود اعضای قبلی",
-          description:
-            "فایل CSV را پیش‌نمایش کنید، خطا و عضو تکراری را ببینید و سپس وارد کنید.",
-        },
-        {
-          title: "بدهی و اقساط",
-          description:
-            "پرداخت ناقص به مانده متصل به عضویت تبدیل می‌شود و تسویه‌های بعدی قابل ردگیری است.",
-        },
-        {
-          title: "حضور و سخت‌افزار",
-          description:
-            "QR، کد رزرو، حالت آفلاین و قرارداد اتصال گیت یا بارکدخوان در یک تاریخچه قرار می‌گیرند.",
-        },
-        {
-          title: "دفتر کل تغییرناپذیر",
-          description:
-            "هر پرداخت، استرداد و تسویه با خطوط بدهکار/بستانکار متوازن ثبت می‌شود.",
-        },
-        {
-          title: "دسترسی پرسنل",
-          description:
-            "پذیرش، حسابدار و مدیر فقط مجوزهای لازم برای همان شعبه را دریافت می‌کنند.",
-        },
-      ]}
-      description="Gym4Me برای عملیات واقعی باشگاه ساخته شده: از اولین فروش پذیرش تا کنترل ظرفیت، حضور، صندوق و نگهداشت عضو—بدون اجبار ورزشکار به نصب اپ برای شروع."
-      eyebrow="برای باشگاه‌دار و مدیر مجموعه"
-      outcomes={[
-        "کاهش ثبت دستی و فروش تکراری",
-        "تطبیق دقیق صندوق با کانال پرداخت",
-        "کاهش ظرفیت سوخته رزروها",
-        "دید روشن از بدهی، تمدید و ریزش",
-      ]}
-      primary={{ label: "مشاهده تعرفه و پایلوت", href: "/pricing" }}
-      secondary={{ label: "مشاهده باشگاه‌ها", href: "/clubs" }}
-      title="عملیات باشگاه را از پذیرش تا گزارش مالی یکپارچه کنید"
-    />
-  );
+  return <AudienceLandingScreen audience="clubs" />;
 }

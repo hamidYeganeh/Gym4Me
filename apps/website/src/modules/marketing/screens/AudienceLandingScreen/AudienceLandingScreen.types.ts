@@ -1,7 +1,4 @@
-export type AudienceLandingScreenLink = {
-  label: string;
-  href: string;
-};
+export type AudienceLandingAudience = "clubs" | "coaches" | "athletes";
 
 export type AudienceLandingScreenCapability = {
   title: string;
@@ -9,11 +6,5 @@ export type AudienceLandingScreenCapability = {
 };
 
 export type AudienceLandingScreenProps = {
-  eyebrow: string;
-  title: string;
-  description: string;
-  primary: AudienceLandingScreenLink;
-  secondary: AudienceLandingScreenLink;
-  capabilities: AudienceLandingScreenCapability[];
-  outcomes: string[];
+  audience: AudienceLandingAudience;
 };

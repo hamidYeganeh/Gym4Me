@@ -1,6 +1,8 @@
 "use client";
 
+import { Button, Typography } from "@heroui/react";
 import { Check } from "@repo/icons";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { CloseIconButton, LandingPillButton } from "../../lib/landing-controls";
 import { ClipReveal } from "../../lib/landing-reveal";
@@ -11,6 +13,8 @@ import { landingContactModalStyles } from "./LandingContactModal.styles";
 import type { LandingContactModalProps } from "./LandingContactModal.types";
 
 export function LandingContactModal({ className }: LandingContactModalProps) {
+  const t = useTranslations("MarketingLanding.contact");
+  const shared = useTranslations("MarketingLanding.shared");
   const slots = landingContactModalStyles();
   const { contactOpen, closeContact } = useLandingScroll();
   const nameRef = useRef<HTMLInputElement>(null);
@@ -24,21 +28,21 @@ export function LandingContactModal({ className }: LandingContactModalProps) {
       if (e.key === "Escape") closeContact();
     };
     window.addEventListener("keydown", onKey);
-    const t = window.setTimeout(() => nameRef.current?.focus(), 120);
+    const focusTimer = window.setTimeout(() => nameRef.current?.focus(), 120);
     return () => {
       window.removeEventListener("keydown", onKey);
-      window.clearTimeout(t);
+      window.clearTimeout(focusTimer);
     };
   }, [contactOpen, closeContact]);
 
   useEffect(() => {
     if (contactOpen) return;
-    const t = window.setTimeout(() => {
+    const resetTimer = window.setTimeout(() => {
       setSending(false);
       setSuccess(false);
       setFirstName("");
     }, 300);
-    return () => window.clearTimeout(t);
+    return () => window.clearTimeout(resetTimer);
   }, [contactOpen]);
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -53,6 +57,8 @@ export function LandingContactModal({ className }: LandingContactModalProps) {
     }, 700);
   };
 
+  const successName = firstName || t("successFallbackName");
+
   return (
     <div
       className={cn(
@@ -61,12 +67,16 @@ export function LandingContactModal({ className }: LandingContactModalProps) {
       )}
       aria-hidden={!contactOpen}
     >
-      <button
-        type="button"
-        className={slots.backdrop()}
+      <Button
+        variant="ghost"
+        className={cn(
+          slots.backdrop(),
+          "h-auto min-h-0 rounded-none border-0 p-0 shadow-none",
+        )}
         style={{ opacity: contactOpen ? 1 : 0 }}
-        aria-label="بستن"
-        onClick={closeContact}
+        aria-label={t("closeAria")}
+        onPress={closeContact}
+        render={(props) => <button {...props} type="button" />}
       />
       <div
         role="dialog"
@@ -82,18 +92,22 @@ export function LandingContactModal({ className }: LandingContactModalProps) {
       >
         <div className={slots.header()}>
           <div>
-            <LandingEyebrow>باشگاه تو</LandingEyebrow>
+            <LandingEyebrow>{t("eyebrow")}</LandingEyebrow>
             <ClipReveal
               id="contact-modal-title"
               as="h2"
               mode="lines"
-              text={"باشگاهت را\nدر اپ ثبت کن"}
+              text={t("title")}
               className={slots.title()}
               active={contactOpen && !success}
               stagger={90}
             />
           </div>
-          <CloseIconButton onPress={closeContact} tone="dark" />
+          <CloseIconButton
+            label={shared("close")}
+            onPress={closeContact}
+            tone="dark"
+          />
         </div>
 
         {success ? (
@@ -101,55 +115,59 @@ export function LandingContactModal({ className }: LandingContactModalProps) {
             <div className={slots.check()}>
               <Check size={22} className="text-accent-foreground" aria-hidden />
             </div>
-            <p className={slots.successTitle()}>درخواست دریافت شد</p>
-            <p className={slots.successBody()}>
-              ممنون {firstName || "دوست عزیز"}. تیم Gym4Me برای ثبت باشگاه یا
-              مربی با تو تماس می‌گیرد.
-            </p>
+            <Typography type="h4" className={slots.successTitle()}>
+              {t("successTitle")}
+            </Typography>
+            <Typography type="body-sm" color="muted" className={slots.successBody()}>
+              {t("successBody", { name: successName })}
+            </Typography>
             <LandingPillButton variant="solid" onPress={closeContact}>
-              تمام
+              {t("done")}
             </LandingPillButton>
           </div>
         ) : (
           <form className={slots.form()} noValidate onSubmit={onSubmit}>
             <label className={slots.field()}>
-              <span className={slots.label()}>نام کامل</span>
+              <span className={slots.label()}>{t("nameLabel")}</span>
               <input
                 ref={nameRef}
                 name="name"
                 type="text"
-                placeholder="علی رضایی"
+                placeholder={t("namePlaceholder")}
                 className={slots.input()}
                 required
               />
             </label>
             <label className={slots.field()}>
-              <span className={slots.label()}>ایمیل</span>
+              <span className={slots.label()}>{t("emailLabel")}</span>
               <input
                 name="email"
                 type="email"
-                placeholder="you@email.com"
+                placeholder={t("emailPlaceholder")}
                 className={slots.input()}
                 required
                 dir="ltr"
               />
             </label>
             <label className={slots.field()}>
-              <span className={slots.label()}>چه کمکی از اپ می‌خواهی؟</span>
+              <span className={slots.label()}>{t("noteLabel")}</span>
               <textarea
                 name="note"
                 rows={3}
-                placeholder="می‌خواهم باشگاهم را در Gym4Me ثبت کنم…"
+                placeholder={t("notePlaceholder")}
                 className={slots.input()}
               />
             </label>
-            <button
-              type="submit"
-              disabled={sending}
+            <Button
+              variant="primary"
+              isDisabled={sending}
               className={slots.submit()}
+              render={(props) => (
+                <button {...props} type="submit" disabled={sending} />
+              )}
             >
-              {sending ? "در حال ارسال…" : "ارسال درخواست"}
-            </button>
+              {sending ? t("submitting") : t("submit")}
+            </Button>
           </form>
         )}
       </div>

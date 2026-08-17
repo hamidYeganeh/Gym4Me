@@ -127,11 +127,13 @@ export function SupportTicketsDetailDrawerSection({
               {t("thread")}
             </Typography>
             {detailLoading ? (
-              <p className="text-sm text-muted">{t("loading")}</p>
+              <Typography className="text-sm text-muted">{t("loading")}</Typography>
             ) : (
               <div className={styles.thread()}>
                 {detail.messages.length === 0 ? (
-                  <p className="text-sm text-muted">{t("threadEmpty")}</p>
+                  <Typography className="text-sm text-muted">
+                    {t("threadEmpty")}
+                  </Typography>
                 ) : (
                   detail.messages.map((message) => (
                     <div
@@ -148,9 +150,9 @@ export function SupportTicketsDetailDrawerSection({
                           : t("authorRequester")}{" "}
                         · {formatAdminDate(message.createdAt)}
                       </span>
-                      <p className="whitespace-pre-wrap text-sm">
+                      <Typography className="whitespace-pre-wrap text-sm">
                         {message.body}
-                      </p>
+                      </Typography>
                     </div>
                   ))
                 )}
@@ -159,9 +161,9 @@ export function SupportTicketsDetailDrawerSection({
           </div>
 
           {detailError ? (
-            <p className="text-sm text-danger" role="alert">
+            <Typography className="text-sm text-danger" role="alert">
               {detailError}
-            </p>
+            </Typography>
           ) : null}
 
           {detail.status !== "closed" ? (
@@ -181,9 +183,9 @@ export function SupportTicketsDetailDrawerSection({
           ) : null}
 
           {actionError ? (
-            <p className="text-sm text-danger" role="alert">
+            <Typography className="text-sm text-danger" role="alert">
               {actionError}
-            </p>
+            </Typography>
           ) : null}
 
           <div className={styles.actions()}>

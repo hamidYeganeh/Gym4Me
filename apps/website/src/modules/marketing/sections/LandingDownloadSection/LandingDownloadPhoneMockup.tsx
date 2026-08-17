@@ -23,7 +23,6 @@ import { LANDING_ASSETS } from "../../lib/landing-assets";
 import { InViewRise } from "../../lib/landing-reveal";
 import { landingDownloadSectionStyles } from "./LandingDownloadSection.styles";
 
-const WEEKDAY_LABELS = ["ش", "ی", "د", "س", "چ", "پ", "ج"] as const;
 const QUICK_ICON_SIZE = 16;
 
 type LandingDownloadPhoneMockupProps = {
@@ -36,9 +35,11 @@ export function LandingDownloadPhoneMockup({
   scrollRef,
 }: LandingDownloadPhoneMockupProps) {
   const app = useTranslations("AthleteHome");
+  const stats = useTranslations("MarketingLanding.landingStats");
   const slots = landingDownloadSectionStyles();
 
   const profileName = app("profileName");
+  const weekdayLabels = stats.raw("weekdaysShort") as string[];
   const setupItems: TodoCardItem[] = [
     {
       id: "assessment",
@@ -163,7 +164,7 @@ export function LandingDownloadPhoneMockup({
                   }}
                   className={slots.phoneMetric()}
                   color="var(--accent)"
-                  dayLabels={WEEKDAY_LABELS}
+                  dayLabels={weekdayLabels}
                   icon={<FootSteps size={16} />}
                   periodLabel={app("today")}
                   status={app("stepsStatus")}
@@ -179,7 +180,7 @@ export function LandingDownloadPhoneMockup({
                   }}
                   className={slots.phoneMetric()}
                   color="var(--foreground)"
-                  dayLabels={WEEKDAY_LABELS}
+                  dayLabels={weekdayLabels}
                   icon={<Fire1 size={16} />}
                   periodLabel={app("today")}
                   status={app("activeMinutesStatus")}

@@ -85,11 +85,11 @@ export function AthleteNutritionScreen({
         ) : (
           <div className={styles.list()}>
             {plans.map((plan) => (
-              <button
+              <Button
                 className={styles.card()}
                 key={plan.id}
-                onClick={() => router.push(`/athlete/nutrition/${plan.id}`)}
-                type="button"
+                variant="ghost"
+                onPress={() => router.push(`/athlete/nutrition/${plan.id}`)}
               >
                 <div className={styles.cardTop()}>
                   <Typography
@@ -116,7 +116,7 @@ export function AthleteNutritionScreen({
                   {" · "}
                   {t("updated", { date: plan.updatedLabel })}
                 </Typography>
-              </button>
+              </Button>
             ))}
           </div>
         )}

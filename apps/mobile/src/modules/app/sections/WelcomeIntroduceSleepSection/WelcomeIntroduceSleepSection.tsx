@@ -138,7 +138,9 @@ export function WelcomeIntroduceSleepSection({
               />
             ))}
           </div>
-          <p className={styles.streakValue()}>{streakValue}</p>
+          <Typography className={styles.streakValue()} type="body-sm">
+            {streakValue}
+          </Typography>
         </div>
       </motion.div>
 
@@ -149,7 +151,9 @@ export function WelcomeIntroduceSleepSection({
         <span className={styles.insightIcon()}>
           <Sparkle1 aria-hidden size={22} />
         </span>
-        <p className={styles.insightText()}>{insight}</p>
+        <Typography className={styles.insightText()} type="body-sm">
+          {insight}
+        </Typography>
       </motion.div>
     </motion.div>
   );

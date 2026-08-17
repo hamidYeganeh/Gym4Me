@@ -35,6 +35,7 @@ export function ClubSlotsSection({
   onChanged,
 }: ClubSlotsSectionProps) {
   const t = useTranslations("Admin.Clubs");
+  const tCommon = useTranslations("Admin.Common");
   const navigate = useNavigate();
   const styles = clubSlotsSectionVariants();
   const [cancelSlotId, setCancelSlotId] = useState<string | null>(null);
@@ -112,13 +113,13 @@ export function ClubSlotsSection({
       </div>
 
       {error && !cancelSlotId ? (
-        <p className={styles.error()} role="alert">
+        <Typography className={styles.error()} role="alert">
           {error}
-        </p>
+        </Typography>
       ) : null}
 
       {activeSlots.length === 0 ? (
-        <p className={styles.muted()}>{t("slots.empty")}</p>
+        <Typography className={styles.muted()}>{t("slots.empty")}</Typography>
       ) : (
         <ul className={styles.list()}>
           {activeSlots.map((slot) => (
@@ -183,12 +184,15 @@ export function ClubSlotsSection({
           </Typography>
           <TextField value={cancelDate} onChange={setCancelDate}>
             <Label>{t("slots.cancelDate")}</Label>
-            <Input dir="ltr" placeholder="YYYY-MM-DD" />
+            <Input
+              dir="ltr"
+              placeholder={tCommon("datePlaceholder")}
+            />
           </TextField>
           {error ? (
-            <p className={styles.error()} role="alert">
+            <Typography className={styles.error()} role="alert">
               {error}
-            </p>
+            </Typography>
           ) : null}
           <Button
             isDisabled={pending || !/^\d{4}-\d{2}-\d{2}$/.test(cancelDate)}

@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { FieldError, Input, Label, TextField } from "@heroui/react";
+import {
+  FieldError,
+  Input,
+  Label,
+  TextField,
+  Typography,
+} from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
@@ -115,7 +121,7 @@ export function UsersProfileForm({
         )}
       />
 
-      {submitError ? <p className={styles.formError()}>{submitError}</p> : null}
+      {submitError ? <Typography className={styles.formError()}>{submitError}</Typography> : null}
 
       <AdminFormActions
         cancelLabel={tForm("cancel")}

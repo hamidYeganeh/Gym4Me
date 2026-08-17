@@ -2,6 +2,7 @@
 
 import { Button, Typography } from "@heroui/react";
 import { ClubClassCard } from "@repo/ui/cards/ClubClassCard";
+import { useTranslations } from "next-intl";
 import { LANDING_CLASSES } from "../../lib/landing-assets";
 import { ClipReveal, InViewRise } from "../../lib/landing-reveal";
 import { useLandingScroll } from "../../lib/landing-scroll";
@@ -11,6 +12,7 @@ import type { LandingClassesSectionProps } from "./LandingClassesSection.types";
 export function LandingClassesSection({
   className,
 }: LandingClassesSectionProps) {
+  const t = useTranslations("MarketingLanding.landingClasses");
   const slots = landingClassesSectionStyles();
   const { scrollTo } = useLandingScroll();
 
@@ -26,11 +28,10 @@ export function LandingClassesSection({
           as="h2"
           className={slots.title()}
           mode="lines"
-          text={"کلاس باشگاه را\nاز تقویم اپ رزرو کن"}
+          text={t("title")}
         />
         <Typography className={slots.hint()} type="body">
-          HIIT، قدرتی، یوگا و رزمی. مربی، روز و مدت همان چیزی است که در کشف
-          کلاس‌های Gym4Me می‌بینی.
+          {t("hint")}
         </Typography>
       </header>
 
@@ -38,7 +39,7 @@ export function LandingClassesSection({
         {LANDING_CLASSES.map((item, index) => (
           <InViewRise delayIn={index * 90} fromY={28} key={item.id}>
             <ClubClassCard
-              actionLabel="جزئیات کلاس"
+              actionLabel={t("actionLabel")}
               author={item.author}
               backgroundImage={item.backgroundImage}
               backgroundImageAlt={item.title}
@@ -60,7 +61,7 @@ export function LandingClassesSection({
           size="lg"
           onPress={() => scrollTo("#download")}
         >
-          رزرو از اپ
+          {t("cta")}
         </Button>
       </div>
     </section>

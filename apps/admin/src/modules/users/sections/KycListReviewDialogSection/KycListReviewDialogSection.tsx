@@ -1,4 +1,4 @@
-import { Input, Label, TextField } from "@heroui/react";
+import { Input, Label, TextField, Typography } from "@heroui/react";
 import { useTranslations } from "next-intl";
 import { AdminConfirmDialog } from "@/shared/components";
 import { kycListReviewDialogSectionVariants } from "./KycListReviewDialogSection.styles";
@@ -21,11 +21,11 @@ export function KycListReviewDialogSection({
     <AdminConfirmDialog
       body={
         <>
-          <p>
+          <Typography>
             {reviewAction === "approve"
               ? t("kycActions.approveBody")
               : t("kycActions.rejectBody")}
-          </p>
+          </Typography>
           {reviewAction === "reject" ? (
             <TextField
               className={styles.rejectField()}
@@ -39,9 +39,9 @@ export function KycListReviewDialogSection({
             </TextField>
           ) : null}
           {reviewError ? (
-            <p className="mt-2 text-sm text-danger" role="alert">
+            <Typography className="mt-2 text-sm text-danger" role="alert">
               {reviewError}
-            </p>
+            </Typography>
           ) : null}
         </>
       }

@@ -14,9 +14,9 @@ export function PointsLedgerOverviewSection({
   return (
     <div className={className}>
       {overviewError ? (
-        <p className="text-sm text-danger" role="alert">
+        <Typography className="text-sm text-danger" role="alert">
           {overviewError}
-        </p>
+        </Typography>
       ) : null}
 
       {overview ? (

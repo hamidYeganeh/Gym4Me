@@ -1,13 +1,15 @@
 "use client";
 
-import { ScrollShadow, type ScrollShadowVisibility } from "@heroui/react";
+import { Button, ScrollShadow, type ScrollShadowVisibility } from "@heroui/react";
 import { ClubCard } from "@repo/ui/cards/ClubCard";
 import useEmblaCarousel from "embla-carousel-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { LANDING_ASSETS, LANDING_CLUBS } from "../../lib/landing-assets";
 import { BrandMark } from "../../lib/landing-controls";
 import { ClipReveal, InViewRise } from "../../lib/landing-reveal";
 import { useLandingScroll } from "../../lib/landing-scroll";
+import { cn } from "../../lib/marketing-cn";
 import { MarketingThemeToggle } from "../../lib/marketing-theme-toggle";
 import { landingHeroSectionStyles } from "./LandingHeroSection.styles";
 import type { LandingHeroSectionProps } from "./LandingHeroSection.types";
@@ -25,6 +27,8 @@ function shadowFromEmbla(
 }
 
 export function LandingHeroSection({ className }: LandingHeroSectionProps) {
+  const t = useTranslations("MarketingLanding.landingHero");
+  const shared = useTranslations("MarketingLanding.shared");
   const slots = landingHeroSectionStyles();
   const { ready, openMenu, scrollTo } = useLandingScroll();
   const sectionRef = useRef<HTMLElement>(null);
@@ -94,7 +98,7 @@ export function LandingHeroSection({ className }: LandingHeroSectionProps) {
         <div ref={parallaxRef} className={slots.plateInner()}>
           <img
             src={LANDING_ASSETS.hero}
-            alt="ورزشکار در حال تمرین داخل سالن"
+            alt={t("heroImageAlt")}
             className={slots.plateImg()}
             fetchPriority="high"
           />
@@ -103,7 +107,7 @@ export function LandingHeroSection({ className }: LandingHeroSectionProps) {
       </div>
 
       <header className={slots.header()}>
-        <nav className={slots.navLeft()} aria-label="اصلی">
+        <nav className={slots.navLeft()} aria-label={t("navAria")}>
           <a
             href="#sports"
             className={slots.navLink()}
@@ -112,7 +116,7 @@ export function LandingHeroSection({ className }: LandingHeroSectionProps) {
               scrollTo("#sports");
             }}
           >
-            ورزش‌ها
+            {t("navSports")}
           </a>
           <a
             href="#clubs"
@@ -122,7 +126,7 @@ export function LandingHeroSection({ className }: LandingHeroSectionProps) {
               scrollTo("#clubs");
             }}
           >
-            باشگاه‌ها
+            {t("navClubs")}
           </a>
           <a
             href="#coaches"
@@ -132,7 +136,7 @@ export function LandingHeroSection({ className }: LandingHeroSectionProps) {
               scrollTo("#coaches");
             }}
           >
-            مربی‌ها
+            {t("navCoaches")}
           </a>
         </nav>
 
@@ -143,22 +147,26 @@ export function LandingHeroSection({ className }: LandingHeroSectionProps) {
 
         <div className={slots.navRight()}>
           <MarketingThemeToggle className={slots.themeToggle()} />
-          <button
-            type="button"
-            className={slots.bookBtn()}
-            onClick={() => scrollTo("#download")}
+          <Button
+            variant="ghost"
+            className={cn(
+              slots.bookBtn(),
+              "h-auto min-h-0 rounded-none border-0 bg-transparent p-0 shadow-none",
+            )}
+            onPress={() => scrollTo("#download")}
           >
-            دانلود اپ
-          </button>
-          <button
-            type="button"
+            {t("downloadCta")}
+          </Button>
+          <Button
+            variant="ghost"
             className={slots.burger()}
-            aria-label="منو"
-            onClick={openMenu}
+            aria-label={t("menuAria")}
+            onPress={openMenu}
+            render={(props) => <button {...props} type="button" />}
           >
             <span className={slots.burgerBar()} />
             <span className={slots.burgerBar()} />
-          </button>
+          </Button>
         </div>
       </header>
 
@@ -167,7 +175,7 @@ export function LandingHeroSection({ className }: LandingHeroSectionProps) {
           id="hero-title"
           as="h1"
           mode="lines"
-          text={"باشگاهت را پیدا کن"}
+          text={t("title")}
           className={slots.title()}
           active={ready}
           stagger={140}
@@ -179,7 +187,7 @@ export function LandingHeroSection({ className }: LandingHeroSectionProps) {
         <ClipReveal
           as="p"
           mode="lines"
-          text={"رزرو کن،\nتمرین را شروع کن"}
+          text={t("tagline")}
           className={slots.tagline()}
           active={ready}
           baseDelay={350}
@@ -197,7 +205,7 @@ export function LandingHeroSection({ className }: LandingHeroSectionProps) {
             visibility={shadowVisibility}
           >
             <div
-              aria-label="باشگاه‌های پیشنهادی"
+              aria-label={t("carouselAria")}
               aria-roledescription="carousel"
               className={slots.carousel()}
               dir="rtl"
@@ -208,7 +216,7 @@ export function LandingHeroSection({ className }: LandingHeroSectionProps) {
                 {HERO_CLUBS.map((club) => (
                   <div className={slots.slide()} key={club.title}>
                     <ClubCard
-                      actionLabel="مشاهده"
+                      actionLabel={shared("viewAction")}
                       className={slots.clubCard()}
                       features={[...club.features]}
                       image={club.image}
@@ -216,8 +224,8 @@ export function LandingHeroSection({ className }: LandingHeroSectionProps) {
                       onAction={() => scrollTo("#clubs")}
                       orientation="vertical"
                       price={club.price}
-                      pricePrefix="از"
-                      priceSuffix="تومان"
+                      pricePrefix={shared("pricePrefix")}
+                      priceSuffix={shared("priceSuffix")}
                       rating={club.rating}
                       ratingCount={club.ratingCount}
                       subtitle={club.subtitle}

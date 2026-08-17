@@ -202,11 +202,11 @@ export function PlatformPlansScreen({ className }: PlatformPlansScreenProps) {
       <AdminConfirmDialog
         body={
           <>
-            <p>{t("plans.archiveBody")}</p>
+            <Typography>{t("plans.archiveBody")}</Typography>
             {archiveError ? (
-              <p className="mt-2 text-sm text-danger" role="alert">
+              <Typography className="mt-2 text-sm text-danger" role="alert">
                 {archiveError}
-              </p>
+              </Typography>
             ) : null}
           </>
         }

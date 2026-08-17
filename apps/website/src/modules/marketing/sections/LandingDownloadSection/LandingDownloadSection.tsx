@@ -16,6 +16,7 @@ export function LandingDownloadSection({
   className,
 }: LandingDownloadSectionProps) {
   const t = useTranslations("MarketingLanding.download");
+  const landing = useTranslations("MarketingLanding.landingDownload");
   const slots = landingDownloadSectionStyles();
   const reducedMotion = usePrefersReducedMotion();
   const smootherReady = useScrollSmootherReady();
@@ -44,13 +45,12 @@ export function LandingDownloadSection({
               id="download-title"
               as="h2"
               mode="lines"
-              text={"اپ را نصب کن\nو رزرو را شروع کن"}
+              text={landing("title")}
               className={slots.title()}
             />
-            <p className={slots.hint()}>
-              باشگاه، مربی و کلاس را پیدا کن. پرداخت و تمدید عضویت همان‌جا تمام
-              می‌شود — درست مثل تجربه اپ.
-            </p>
+            <Typography type="body" className={slots.hint()}>
+              {landing("hint")}
+            </Typography>
             <InViewRise delayIn={120} fromY={18} className={slots.actions()}>
               <Button
                 size="lg"

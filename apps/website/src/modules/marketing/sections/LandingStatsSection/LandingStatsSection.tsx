@@ -1,18 +1,18 @@
 "use client";
 
+import { Typography } from "@heroui/react";
 import { Fire1 } from "@repo/icons/Fire1";
 import { FootSteps } from "@repo/icons/FootSteps";
 import { Heart } from "@repo/icons/Heart";
 import { SleepZzz } from "@repo/icons/SleepZzz";
 import { MetricCard } from "@repo/ui/cards/MetricCard";
+import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { LANDING_METRICS } from "../../lib/landing-assets";
 import { LandingEyebrow } from "../../lib/landing-ui";
 import { ClipReveal, InViewRise } from "../../lib/landing-reveal";
 import { landingStatsSectionStyles } from "./LandingStatsSection.styles";
 import type { LandingStatsSectionProps } from "./LandingStatsSection.types";
-
-const WEEKDAY_LABELS = ["ش", "ی", "د", "س", "چ", "پ", "ج"] as const;
 
 const METRIC_ICONS: Record<(typeof LANDING_METRICS)[number]["key"], ReactNode> =
   {
@@ -23,24 +23,25 @@ const METRIC_ICONS: Record<(typeof LANDING_METRICS)[number]["key"], ReactNode> =
   };
 
 export function LandingStatsSection({ className }: LandingStatsSectionProps) {
+  const t = useTranslations("MarketingLanding.landingStats");
   const slots = landingStatsSectionStyles();
+  const weekdayLabels = t.raw("weekdaysShort") as string[];
 
   return (
     <section className={slots.root({ className })}>
       <div className={slots.layout()}>
         <div className={slots.copy()}>
-          <LandingEyebrow tone="light">در اپ</LandingEyebrow>
+          <LandingEyebrow tone="light">{t("eyebrow")}</LandingEyebrow>
           <ClipReveal
             id="stats-title"
             as="h2"
             mode="lines"
-            text={"معیارها\nدر یک نگاه"}
+            text={t("title")}
             className={slots.title()}
           />
-          <p className={slots.hint()}>
-            قدم‌ها، خواب، ضربان و فعالیت را همان‌جا که رزرو می‌کنی دنبال کن —
-            بدون خروج از Gym4Me.
-          </p>
+          <Typography type="body" className={slots.hint()}>
+            {t("hint")}
+          </Typography>
         </div>
 
         <div className={slots.stack()}>
@@ -55,9 +56,9 @@ export function LandingStatsSection({ className }: LandingStatsSectionProps) {
                 chart={metric.chart}
                 className={slots.card()}
                 color={metric.color}
-                dayLabels={WEEKDAY_LABELS}
+                dayLabels={weekdayLabels}
                 icon={METRIC_ICONS[metric.key]}
-                periodLabel="امروز"
+                periodLabel={t("today")}
                 status={metric.status}
                 title={metric.title}
                 unit={metric.unit}

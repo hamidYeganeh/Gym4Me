@@ -72,7 +72,10 @@ export function PayoutsListModalsSection({
             onChange={onDraftFromChange}
           >
             <Label>{t("payouts.actions.fromLabel")}</Label>
-            <Input dir="ltr" placeholder="2026-01-01" />
+            <Input
+              dir="ltr"
+              placeholder={t("payouts.actions.fromPlaceholder")}
+            />
           </TextField>
           <TextField
             className={styles.field()}
@@ -82,13 +85,16 @@ export function PayoutsListModalsSection({
             onChange={onDraftToChange}
           >
             <Label>{t("payouts.actions.toLabel")}</Label>
-            <Input dir="ltr" placeholder="2026-01-31" />
+            <Input
+              dir="ltr"
+              placeholder={t("payouts.actions.toPlaceholder")}
+            />
           </TextField>
 
           {actionError ? (
-            <p className="text-sm text-danger" role="alert">
+            <Typography className="text-sm text-danger" role="alert">
               {actionError}
-            </p>
+            </Typography>
           ) : null}
 
           <div className={styles.actions()}>
@@ -133,9 +139,9 @@ export function PayoutsListModalsSection({
           </TextField>
 
           {actionError ? (
-            <p className="text-sm text-danger" role="alert">
+            <Typography className="text-sm text-danger" role="alert">
               {actionError}
-            </p>
+            </Typography>
           ) : null}
 
           <div className={styles.actions()}>
@@ -175,9 +181,9 @@ export function PayoutsListModalsSection({
           </TextField>
 
           {actionError ? (
-            <p className="text-sm text-danger" role="alert">
+            <Typography className="text-sm text-danger" role="alert">
               {actionError}
-            </p>
+            </Typography>
           ) : null}
 
           <div className={styles.actions()}>
@@ -209,11 +215,11 @@ export function PayoutsListModalsSection({
       <AdminConfirmDialog
         body={
           <>
-            <p>{t("payouts.actions.settleBody")}</p>
+            <Typography>{t("payouts.actions.settleBody")}</Typography>
             {actionError ? (
-              <p className="mt-2 text-sm text-danger" role="alert">
+              <Typography className="mt-2 text-sm text-danger" role="alert">
                 {actionError}
-              </p>
+              </Typography>
             ) : null}
           </>
         }

@@ -5,6 +5,7 @@ import {
   CheckboxGroup,
   FieldError,
   Label,
+  Typography,
 } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ApiError } from "@repo/api";
@@ -93,7 +94,7 @@ export function UsersRolesForm({
         )}
       />
 
-      {submitError ? <p className={styles.formError()}>{submitError}</p> : null}
+      {submitError ? <Typography className={styles.formError()}>{submitError}</Typography> : null}
 
       <AdminFormActions
         cancelLabel={tForm("cancel")}

@@ -43,9 +43,9 @@ export function AuditLogsImpersonationDrawerSection({
             <Typography className={styles.subtitle()}>
               {t("audit.impersonation.tokenBody")}
             </Typography>
-            <p className={styles.token()} dir="ltr">
+            <Typography className={styles.token()} dir="ltr">
               {session.accessToken}
-            </p>
+            </Typography>
             <div className={styles.actions()}>
               <Button variant="primary" onPress={onCopy}>
                 {copied
@@ -104,9 +104,9 @@ export function AuditLogsImpersonationDrawerSection({
         )}
 
         {actionError ? (
-          <p className="text-sm text-danger" role="alert">
+          <Typography className="text-sm text-danger" role="alert">
             {actionError}
-          </p>
+          </Typography>
         ) : null}
       </div>
     </AdminFormDrawer>

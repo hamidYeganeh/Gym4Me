@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@heroui/react";
+import { Button, Typography } from "@heroui/react";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
@@ -78,9 +78,15 @@ export function AthleteGoalsScreen(props: AthleteGoalsScreenProps) {
         />
 
         {goals.message ? (
-          <p className={styles.feedback()}>{goals.message}</p>
+          <Typography className={styles.feedback()} type="body-sm">
+            {goals.message}
+          </Typography>
         ) : null}
-        {goals.error ? <p className={styles.error()}>{goals.error}</p> : null}
+        {goals.error ? (
+          <Typography className={styles.error()} type="body-sm">
+            {goals.error}
+          </Typography>
+        ) : null}
       </div>
     </AppLayout>
   );

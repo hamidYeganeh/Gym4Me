@@ -239,9 +239,9 @@ export function PointRulesForm({
         />
       </div>
       {submitError ? (
-        <p className={styles.formError()} role="alert">
+        <Typography className={styles.formError()} role="alert">
           {submitError}
-        </p>
+        </Typography>
       ) : null}
       <AdminFormActions
         cancelLabel={t("cancel")}

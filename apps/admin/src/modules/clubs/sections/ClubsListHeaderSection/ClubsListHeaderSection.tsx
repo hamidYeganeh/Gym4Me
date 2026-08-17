@@ -21,7 +21,7 @@ export function ClubsListHeaderSection({
         </Typography>
         <Typography className={styles.subtitle()}>{t("subtitle")}</Typography>
         {usingMock ? (
-          <p className={styles.badge()}>{t("usingMock")}</p>
+          <Typography className={styles.badge()}>{t("usingMock")}</Typography>
         ) : null}
       </div>
       <div className={styles.actions()}>

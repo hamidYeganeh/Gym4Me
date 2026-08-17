@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
-import { Button, FieldError, InputOTP } from "@heroui/react";
+import { Button, FieldError, InputOTP, Typography } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "@repo/icons";
 import { useTranslations } from "next-intl";
@@ -69,10 +69,10 @@ export function AuthLoginOtpForm({
   return (
     <form className={styles.form({ className })} onSubmit={handleSubmit}>
       <div className={styles.codeArea()}>
-        <p className={styles.phone()}>
+        <Typography className={styles.phone()}>
           {t("sentTo")}{" "}
           <b className={styles.phoneValue()}>{maskPhone(phone)}</b>
-        </p>
+        </Typography>
 
         <Controller
           control={form.control}
@@ -126,14 +126,14 @@ export function AuthLoginOtpForm({
       ) : null}
 
       {error ? (
-        <p className={styles.error()} role="alert">
+        <Typography className={styles.error()} role="alert">
           {error}
-        </p>
+        </Typography>
       ) : null}
       {notice ? (
-        <p className={styles.notice()} role="status">
+        <Typography className={styles.notice()} role="status">
           {notice}
-        </p>
+        </Typography>
       ) : null}
 
       <Button

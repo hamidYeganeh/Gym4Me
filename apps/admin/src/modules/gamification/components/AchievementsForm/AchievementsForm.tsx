@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Button, FieldError, Input, Label, TextField } from "@heroui/react";
+import {
+  Button,
+  FieldError,
+  Input,
+  Label,
+  TextField,
+  Typography,
+} from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
@@ -156,7 +163,7 @@ export function AchievementsForm({
               ))}
             </div>
             {fieldState.error ? (
-              <p className={styles.formError()}>{fieldState.error.message}</p>
+              <Typography className={styles.formError()}>{fieldState.error.message}</Typography>
             ) : null}
           </div>
         )}
@@ -264,9 +271,9 @@ export function AchievementsForm({
         />
       </div>
       {submitError ? (
-        <p className={styles.formError()} role="alert">
+        <Typography className={styles.formError()} role="alert">
           {submitError}
-        </p>
+        </Typography>
       ) : null}
       <AdminFormActions
         cancelLabel={t("cancel")}

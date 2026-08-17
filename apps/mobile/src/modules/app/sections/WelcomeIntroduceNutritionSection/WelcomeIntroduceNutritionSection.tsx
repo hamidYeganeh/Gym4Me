@@ -83,8 +83,12 @@ export function WelcomeIntroduceNutritionSection({
           <Leaf aria-hidden size={20} />
         </span>
         <div className={styles.tipCopy()}>
-          <p className={styles.tipTitle()}>{tipTitle}</p>
-          <p className={styles.tipBody()}>{tipBody}</p>
+          <Typography className={styles.tipTitle()} type="body-sm" weight="semibold">
+            {tipTitle}
+          </Typography>
+          <Typography className={styles.tipBody()} type="body-sm">
+            {tipBody}
+          </Typography>
         </div>
       </motion.div>
     </motion.div>

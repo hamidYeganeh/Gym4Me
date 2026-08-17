@@ -59,10 +59,10 @@ export function BannerSlidesField({
   return (
     <div className={styles.root()}>
       <Typography className={styles.label()}>{labels.label}</Typography>
-      {labels.hint ? <p className={styles.hint()}>{labels.hint}</p> : null}
+      {labels.hint ? <Typography className={styles.hint()}>{labels.hint}</Typography> : null}
 
       {value.length === 0 ? (
-        <p className={styles.empty()}>{labels.empty}</p>
+        <Typography className={styles.empty()}>{labels.empty}</Typography>
       ) : (
         <div className={styles.list()}>
           {value.map((slide, index) => (
@@ -166,9 +166,9 @@ export function BannerSlidesField({
       />
 
       {uploadError ? (
-        <p className={styles.uploadError()} role="alert">
+        <Typography className={styles.uploadError()} role="alert">
           {labels.uploadError}
-        </p>
+        </Typography>
       ) : null}
     </div>
   );

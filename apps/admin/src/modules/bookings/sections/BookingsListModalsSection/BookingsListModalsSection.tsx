@@ -41,9 +41,9 @@ export function BookingsListModalsSection({
           </TextField>
 
           {actionError ? (
-            <p className="text-sm text-danger" role="alert">
+            <Typography className="text-sm text-danger" role="alert">
               {actionError}
-            </p>
+            </Typography>
           ) : null}
 
           <div className={styles.actions()}>
@@ -68,11 +68,11 @@ export function BookingsListModalsSection({
       <AdminConfirmDialog
         body={
           <>
-            <p>{t("actions.refundBody")}</p>
+            <Typography>{t("actions.refundBody")}</Typography>
             {actionError ? (
-              <p className="mt-2 text-sm text-danger" role="alert">
+              <Typography className="mt-2 text-sm text-danger" role="alert">
                 {actionError}
-              </p>
+              </Typography>
             ) : null}
           </>
         }

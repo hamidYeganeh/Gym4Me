@@ -1,4 +1,4 @@
-import { Button, Link } from "@heroui/react";
+import { Button, Link, Typography } from "@heroui/react";
 import { ChevronLeft, Hourglass1, Scan1 } from "@repo/icons";
 import { kycStatusScanSectionVariants } from "./KycStatusScanSection.styles";
 import type { KycStatusScanSectionProps } from "./KycStatusScanSection.types";
@@ -52,7 +52,9 @@ export function KycStatusScanSection({
 
       <div className={styles.footer()}>
         {!cameraReady ? (
-          <p className={styles.hint()}>{t("scan.cameraFallback")}</p>
+          <Typography className={styles.hint()} type="body-sm">
+            {t("scan.cameraFallback")}
+          </Typography>
         ) : null}
         <Button
           aria-label={t("scan.capture")}

@@ -6,13 +6,24 @@ node_modules
 .pnp
 .pnp.js
 
-# Local env files
+# Local env files / secrets
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production
 .env.production.local
+
+# Frontend apps may commit public mode defaults (no secrets).
+!apps/admin/.env.development
+!apps/admin/.env.production
+!apps/mobile/.env.development
+!apps/mobile/.env.production
+!apps/website/.env.development
+!apps/website/.env.production
+!apps/admin/.env.local.example
+!apps/mobile/.env.local.example
+!apps/website/.env.local.example
 
 # Testing
 coverage

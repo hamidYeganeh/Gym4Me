@@ -1,6 +1,8 @@
 "use client";
 
+import { Typography } from "@heroui/react";
 import { ClubCard } from "@repo/ui/cards/ClubCard";
+import { useTranslations } from "next-intl";
 import { LANDING_CLUBS } from "../../lib/landing-assets";
 import { ClipReveal, InViewRise } from "../../lib/landing-reveal";
 import { useLandingScroll } from "../../lib/landing-scroll";
@@ -8,6 +10,8 @@ import { landingClubsSectionStyles } from "./LandingClubsSection.styles";
 import type { LandingClubsSectionProps } from "./LandingClubsSection.types";
 
 export function LandingClubsSection({ className }: LandingClubsSectionProps) {
+  const t = useTranslations("MarketingLanding.landingClubs");
+  const shared = useTranslations("MarketingLanding.shared");
   const slots = landingClubsSectionStyles();
   const { scrollTo } = useLandingScroll();
 
@@ -17,12 +21,12 @@ export function LandingClubsSection({ className }: LandingClubsSectionProps) {
         id="clubs-title"
         as="h2"
         mode="lines"
-        text={"باشگاه نزدیک\nرا روی نقشه ببین"}
+        text={t("title")}
         className={slots.title()}
       />
-      <p className={slots.hint()}>
-        همان کارت کشف اپ: امتیاز، امکانات و قیمت را ببین، بعد از Gym4Me رزرو کن.
-      </p>
+      <Typography type="body" className={slots.hint()}>
+        {t("hint")}
+      </Typography>
       <div className={slots.grid()}>
         {LANDING_CLUBS.slice(0, 4).map((club, i) => (
           <InViewRise
@@ -32,7 +36,7 @@ export function LandingClubsSection({ className }: LandingClubsSectionProps) {
             key={club.title}
           >
             <ClubCard
-              actionLabel="مشاهده"
+              actionLabel={shared("viewAction")}
               className="w-full max-w-none"
               features={[...club.features]}
               image={club.image}
@@ -40,8 +44,8 @@ export function LandingClubsSection({ className }: LandingClubsSectionProps) {
               onAction={() => scrollTo("#download")}
               orientation="vertical"
               price={club.price}
-              pricePrefix="از"
-              priceSuffix="تومان"
+              pricePrefix={shared("pricePrefix")}
+              priceSuffix={shared("priceSuffix")}
               rating={club.rating}
               ratingCount={club.ratingCount}
               subtitle={club.subtitle}

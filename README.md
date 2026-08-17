@@ -43,6 +43,11 @@ npm run dev:admin
 npm run dev:website
 ```
 
+Frontend API base URLs come from each app’s `.env.development` / `.env.production`
+(must include `/api/v1`). Defaults: LAN `http://192.168.3.106:8088/api/v1` in
+development, `https://api.gym4me.ir/api/v1` in production. Copy
+`.env.local.example` → `.env.local` to override on your machine.
+
 Default demo password: `Gym4Me!123`  
 Seeded phones: admin `09121111111`, owners `0912200000x`, coaches `0912300000x`, athletes `0912400000x`.
 

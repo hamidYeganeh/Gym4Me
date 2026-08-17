@@ -64,9 +64,9 @@ export function KycStatusIntroSection({
       </ul>
 
       {error ? (
-        <p className={styles.error()} role="alert">
+        <Typography className={styles.error()} role="alert" type="body-sm">
           {error}
-        </p>
+        </Typography>
       ) : null}
 
       <div className={styles.spacer()} aria-hidden />

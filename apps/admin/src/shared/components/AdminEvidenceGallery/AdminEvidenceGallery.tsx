@@ -1,4 +1,4 @@
-import { Button } from "@heroui/react";
+import { Button, Typography } from "@heroui/react";
 import { mediaApi } from "@/shared/lib/api";
 import { adminEvidenceGalleryVariants } from "./AdminEvidenceGallery.styles";
 import type { AdminEvidenceGalleryProps } from "./AdminEvidenceGallery.types";
@@ -19,15 +19,15 @@ export function AdminEvidenceGallery({
   if (!hasMedia && !hasDocAction) {
     return (
       <div className={styles.root({ className })}>
-        <p className={styles.label()}>{label}</p>
-        <p className={styles.empty()}>{emptyLabel}</p>
+        <Typography className={styles.label()}>{label}</Typography>
+        <Typography className={styles.empty()}>{emptyLabel}</Typography>
       </div>
     );
   }
 
   return (
     <div className={styles.root({ className })}>
-      <p className={styles.label()}>{label}</p>
+      <Typography className={styles.label()}>{label}</Typography>
       {hasMedia ? (
         <div className={styles.grid()}>
           {mediaIds.map((id) => (

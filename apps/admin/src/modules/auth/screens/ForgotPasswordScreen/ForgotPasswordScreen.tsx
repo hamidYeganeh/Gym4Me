@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
-import { Button } from "@heroui/react";
+import { Button, Typography } from "@heroui/react";
 import { ApiError } from "@repo/api";
 import type {
   ForgotPasswordConfirmInput,
@@ -170,7 +170,7 @@ export function ForgotPasswordScreen({ className }: ForgotPasswordScreenProps) {
 
       {step === "done" ? (
         <div className={styles.form()}>
-          <p className={styles.success()}>{t("success")}</p>
+          <Typography className={styles.success()}>{t("success")}</Typography>
           <Button
             className={styles.submit()}
             fullWidth

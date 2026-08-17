@@ -154,11 +154,11 @@ export function OwnerClubsCreateReviewSection({
                             />
                           </div>
                         ) : null}
-                        <p className={styles.mediaCaption()}>
+                        <Typography className={styles.mediaCaption()} type="body-sm">
                           {item.label
                             ? `${item.label}: ${item.fileName}`
                             : item.fileName}
-                        </p>
+                        </Typography>
                       </div>
                     );
                   })}

@@ -3,6 +3,7 @@
 import { Accordion, Typography } from "@heroui/react";
 import { Plus } from "@repo/icons/Plus";
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { landingReveal } from "../../lib/landing-motion";
 import { landingFaqSectionStyles } from "./LandingFaqSection.styles";
 import type {
@@ -10,39 +11,10 @@ import type {
   LandingFaqSectionProps,
 } from "./LandingFaqSection.types";
 
-const FAQ_ITEMS: LandingFaqItem[] = [
-  {
-    id: "signup",
-    number: "{۰۱}",
-    question: "چطور در Gym4Me ثبت‌نام کنم؟",
-    answer:
-      "شماره موبایل خود را وارد کنید، کد تأیید پیامکی را بزنید و پروفایل‌تان را کامل کنید. همان مسیر ورود در اپ موبایل.",
-  },
-  {
-    id: "find-club",
-    number: "{۰۲}",
-    question: "چطور باشگاه نزدیکم را پیدا کنم؟",
-    answer:
-      "در کشف، باشگاه‌ها را روی نقشه یا لیست ببینید، بر اساس رشته و محله فیلتر کنید و جزئیات سالن، مربی و ظرفیت را باز کنید.",
-  },
-  {
-    id: "book",
-    number: "{۰۳}",
-    question: "چطور جلسه یا کلاس رزرو کنم؟",
-    answer:
-      "باشگاه یا کلاس را انتخاب کنید، زمان خالی را بزنید و پرداخت را تمام کنید. رزرو در تقویم شما ثبت می‌شود و قبل از جلسه یادآوری می‌گیرید.",
-  },
-  {
-    id: "membership",
-    number: "{۰۴}",
-    question: "عضویت باشگاه چطور تمدید می‌شود؟",
-    answer:
-      "از پروفایل یا صفحهٔ باشگاه، دورهٔ فعال را ببینید و تمدید کنید. پرداخت عضویت جدا از اشتراک پلتفرم است و موجودی کیف‌پول بعد از تسویه به‌روز می‌شود.",
-  },
-];
-
 export function LandingFaqSection({ className }: LandingFaqSectionProps) {
+  const t = useTranslations("MarketingLanding.landingFaq");
   const slots = landingFaqSectionStyles();
+  const faqItems = t.raw("items") as LandingFaqItem[];
 
   return (
     <section
@@ -60,7 +32,7 @@ export function LandingFaqSection({ className }: LandingFaqSectionProps) {
           whileInView={{ opacity: 1, y: 0 }}
         >
           <Typography className={slots.title()} type="h2" weight="semibold">
-            سؤالات متداول
+            {t("title")}
           </Typography>
         </motion.div>
 
@@ -72,7 +44,7 @@ export function LandingFaqSection({ className }: LandingFaqSectionProps) {
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
         >
           <Accordion className={slots.list()} hideSeparator>
-            {FAQ_ITEMS.map((item) => (
+            {faqItems.map((item) => (
               <Accordion.Item className={slots.item()} id={item.id} key={item.id}>
                 <Accordion.Heading>
                   <Accordion.Trigger className={slots.trigger()}>

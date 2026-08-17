@@ -5,6 +5,7 @@ import { ArrowRight } from "@repo/icons/ArrowRight";
 import { BarbellHorizontal } from "@repo/icons/BarbellHorizontal";
 import { StarFull } from "@repo/icons/StarFull";
 import { motion, useReducedMotion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { LANDING_ASSETS } from "../../lib/landing-assets";
 import { landingReveal } from "../../lib/landing-motion";
 import { useLandingScroll } from "../../lib/landing-scroll";
@@ -13,32 +14,6 @@ import type {
   LandingAboutUsReviewer,
   LandingAboutUsSectionProps,
 } from "./LandingAboutUsSection.types";
-
-const COPY = {
-  label: "مربی شخصی تناسب‌اندام",
-  title:
-    "معتقدم تناسب‌اندام فقط بلند کردن وزنه نیست؛ ساختن ذهنیت قوی‌تر است.",
-  statValue: "۱۵+",
-  statLineOne: "سال",
-  statLineTwo: "تجربه",
-  paragraphs: [
-    "تکنیک‌های پیشرفته، برنامه شخصی‌سازی‌شده و رویکرد نتیجه‌محور را کنار هم می‌گذاریم تا تجربه تمرینی متناسب با هدف تو بسازی.",
-    "فقط بدن را تمرین نمی‌دهیم — ذهنیت را هم متحول می‌کنیم. با هم مسیری می‌سازیم بر پایه تمرکز، انضباط و رشد پایدار.",
-  ],
-  cta: "درباره ما",
-  reviewCount: "۱۰۰۰+ نظر",
-} as const;
-
-const PORTRAITS = {
-  start: {
-    src: LANDING_ASSETS.coaches[0].src,
-    alt: LANDING_ASSETS.coaches[0].alt,
-  },
-  end: {
-    src: LANDING_ASSETS.facilities.clay,
-    alt: "سالن وزنه و فضای تمرین باشگاه",
-  },
-} as const;
 
 const REVIEWERS: LandingAboutUsReviewer[] = LANDING_ASSETS.coaches
   .slice(0, 3)
@@ -51,9 +26,19 @@ const REVIEWERS: LandingAboutUsReviewer[] = LANDING_ASSETS.coaches
 export function LandingAboutUsSection({
   className,
 }: LandingAboutUsSectionProps) {
+  const t = useTranslations("MarketingLanding.landingAboutUs");
   const slots = landingAboutUsSectionStyles();
   const reduce = useReducedMotion();
   const { scrollTo } = useLandingScroll();
+  const paragraphs = t.raw("paragraphs") as string[];
+  const startPortrait = {
+    src: LANDING_ASSETS.coaches[0].src,
+    alt: LANDING_ASSETS.coaches[0].alt,
+  };
+  const endPortrait = {
+    src: LANDING_ASSETS.facilities.clay,
+    alt: t("endPortraitAlt"),
+  };
 
   return (
     <section
@@ -81,7 +66,7 @@ export function LandingAboutUsSection({
               <BarbellHorizontal size={14} />
             </span>
             <Typography className={slots.label()} type="body-xs">
-              {COPY.label}
+              {t("label")}
             </Typography>
           </motion.div>
 
@@ -92,7 +77,7 @@ export function LandingAboutUsSection({
             whileInView={{ opacity: 1, y: 0 }}
           >
             <Typography className={slots.title()} type="h2" weight="bold">
-              {COPY.title}
+              {t("title")}
             </Typography>
           </motion.div>
         </header>
@@ -106,9 +91,9 @@ export function LandingAboutUsSection({
             whileInView={{ opacity: 1, x: 0 }}
           >
             <img
-              alt={PORTRAITS.start.alt}
+              alt={startPortrait.alt}
               className={slots.startImage()}
-              src={PORTRAITS.start.src}
+              src={startPortrait.src}
             />
           </motion.div>
 
@@ -120,17 +105,23 @@ export function LandingAboutUsSection({
             whileInView={{ opacity: 1, y: 0 }}
           >
             <div className={slots.statRow()}>
-              <span className={slots.statValue()}>{COPY.statValue}</span>
+              <Typography className={slots.statValue()} type="h2" weight="bold">
+                {t("statValue")}
+              </Typography>
               <div className={slots.statMeta()}>
-                <span className={slots.statLine()}>{COPY.statLineOne}</span>
-                <span className={slots.statLine()}>{COPY.statLineTwo}</span>
+                <Typography className={slots.statLine()} type="body-sm">
+                  {t("statLineOne")}
+                </Typography>
+                <Typography className={slots.statLine()} type="body-sm">
+                  {t("statLineTwo")}
+                </Typography>
               </div>
             </div>
 
             <div className={slots.divider()} />
 
             <div className={slots.copy()}>
-              {COPY.paragraphs.map((text) => (
+              {paragraphs.map((text) => (
                 <Typography
                   className={slots.paragraph()}
                   key={text}
@@ -146,7 +137,7 @@ export function LandingAboutUsSection({
                 className={slots.cta()}
                 onPress={() => scrollTo("#download")}
               >
-                <span className={slots.ctaLabel()}>{COPY.cta}</span>
+                <span className={slots.ctaLabel()}>{t("cta")}</span>
                 <span aria-hidden className={slots.ctaChip()}>
                   <ArrowRight size={16} />
                 </span>
@@ -169,7 +160,7 @@ export function LandingAboutUsSection({
                 </div>
                 <div className={slots.reviewMeta()}>
                   <span
-                    aria-label="۵ از ۵"
+                    aria-label={t("starsAria")}
                     className={slots.stars()}
                     role="img"
                   >
@@ -178,7 +169,7 @@ export function LandingAboutUsSection({
                     ))}
                   </span>
                   <Typography className={slots.reviewCount()} type="body-xs">
-                    {COPY.reviewCount}
+                    {t("reviewCount")}
                   </Typography>
                 </div>
               </div>
@@ -193,9 +184,9 @@ export function LandingAboutUsSection({
             whileInView={{ opacity: 1, x: 0 }}
           >
             <img
-              alt={PORTRAITS.end.alt}
+              alt={endPortrait.alt}
               className={slots.endImage()}
-              src={PORTRAITS.end.src}
+              src={endPortrait.src}
             />
           </motion.div>
         </div>

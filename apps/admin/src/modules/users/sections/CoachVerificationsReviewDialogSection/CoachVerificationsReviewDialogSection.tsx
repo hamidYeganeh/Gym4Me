@@ -1,4 +1,4 @@
-import { Input, Label, TextField } from "@heroui/react";
+import { Input, Label, TextField, Typography } from "@heroui/react";
 import { useTranslations } from "next-intl";
 import { AdminConfirmDialog } from "@/shared/components";
 import type { CoachVerificationsReviewDialogSectionProps } from "./CoachVerificationsReviewDialogSection.types";
@@ -18,11 +18,11 @@ export function CoachVerificationsReviewDialogSection({
     <AdminConfirmDialog
       body={
         <>
-          <p>
+          <Typography>
             {review?.action === "approve"
               ? t("coachActions.approveBody")
               : t("coachActions.rejectBody")}
-          </p>
+          </Typography>
           <TextField
             className="mt-3 flex flex-col gap-2"
             fullWidth
@@ -38,9 +38,9 @@ export function CoachVerificationsReviewDialogSection({
             <Input />
           </TextField>
           {reviewError ? (
-            <p className="mt-2 text-sm text-danger" role="alert">
+            <Typography className="mt-2 text-sm text-danger" role="alert">
               {reviewError}
-            </p>
+            </Typography>
           ) : null}
         </>
       }

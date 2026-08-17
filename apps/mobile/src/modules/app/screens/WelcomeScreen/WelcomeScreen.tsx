@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Link } from "@heroui/react";
+import { Button, Link, Typography } from "@heroui/react";
 import { ArrowRight } from "@repo/icons";
 import {
   AuthLayout,
@@ -53,12 +53,12 @@ export function WelcomeScreen({ className }: WelcomeScreenProps) {
     <AuthLayout
       className={className}
       footer={
-        <p className={styles.footer()}>
+        <Typography className={styles.footer()} type="body-sm">
           <span>{t("alreadyHaveAccount")}</span>{" "}
           <Link className={styles.signIn()} onPress={goSignIn}>
             {t("ctaSignIn")}
           </Link>
-        </p>
+        </Typography>
       }
       heroSrc={HERO_SRC}
       labels={labels}

@@ -372,7 +372,7 @@ export function DiscoveryClubsDetailCalendarSection({
           const selected = day.date === selectedDate;
           const closed = isWeekdayClosed(club.operatingHours, day.weekday);
           return (
-            <button
+            <Button
               aria-disabled={closed || undefined}
               aria-selected={selected && !closed}
               className={[
@@ -385,14 +385,13 @@ export function DiscoveryClubsDetailCalendarSection({
               ]
                 .filter(Boolean)
                 .join(" ")}
-              disabled={closed}
+              isDisabled={closed}
               key={day.date}
-              onClick={() => {
+              variant="ghost"
+              onPress={() => {
                 if (closed) return;
                 setSelectedDate(day.date);
               }}
-              role="option"
-              type="button"
             >
               <span
                 className={[
@@ -435,7 +434,7 @@ export function DiscoveryClubsDetailCalendarSection({
                   .filter(Boolean)
                   .join(" ")}
               />
-            </button>
+            </Button>
           );
         })}
       </div>

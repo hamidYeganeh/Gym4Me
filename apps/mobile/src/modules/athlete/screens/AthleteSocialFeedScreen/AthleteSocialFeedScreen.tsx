@@ -87,10 +87,10 @@ export function AthleteSocialFeedScreen({
           <div className={styles.list()}>
             {posts.map((post) => (
               <article className={styles.card()} key={post.id}>
-                <button
+                <Button
                   className="flex w-full flex-col gap-3 text-start"
-                  onClick={() => router.push(`/athlete/social/${post.id}`)}
-                  type="button"
+                  variant="ghost"
+                  onPress={() => router.push(`/athlete/social/${post.id}`)}
                 >
                   <div className={styles.cardTop()}>
                     <div>
@@ -119,7 +119,7 @@ export function AthleteSocialFeedScreen({
                       </Typography>
                     </div>
                   ) : null}
-                </button>
+                </Button>
                 <div className={styles.actions()}>
                   <Button
                     isDisabled={pendingId === post.id}

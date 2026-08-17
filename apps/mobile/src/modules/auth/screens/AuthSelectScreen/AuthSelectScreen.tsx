@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button, Link } from "@heroui/react";
+import { Button, Link, Typography } from "@heroui/react";
 import { ApiError } from "@repo/api";
 import { BiometricFrame, FaceId, Lock1, Telephone1 } from "@repo/icons";
 import {
@@ -103,7 +103,7 @@ export function AuthSelectScreen({ className }: AuthSelectScreenProps) {
     <AuthLayout
       className={className}
       footer={
-        <p className={styles.footer()}>
+        <Typography className={styles.footer()} type="body-sm">
           {t("noAccount")}{" "}
           <Link
             className={styles.footerLink()}
@@ -111,7 +111,7 @@ export function AuthSelectScreen({ className }: AuthSelectScreenProps) {
           >
             {t("signUp")}
           </Link>
-        </p>
+        </Typography>
       }
       heroSrc={HERO_SRC}
       labels={labels}
@@ -136,9 +136,13 @@ export function AuthSelectScreen({ className }: AuthSelectScreenProps) {
               {t("continueWithBiometric")}
             </Button>
             {biometricError ? (
-              <p className={styles.biometricError()} role="alert">
+              <Typography
+                className={styles.biometricError()}
+                role="alert"
+                type="body-sm"
+              >
                 {biometricError}
-              </p>
+              </Typography>
             ) : null}
           </div>
         ) : null}

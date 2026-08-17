@@ -1,6 +1,8 @@
 "use client";
 
+import { Typography } from "@heroui/react";
 import { ClubSubscriptionCard } from "@repo/ui/cards/ClubSubscriptionCard";
+import { useTranslations } from "next-intl";
 import { LANDING_MEMBERSHIPS } from "../../lib/landing-assets";
 import { LandingEyebrow } from "../../lib/landing-ui";
 import { ClipReveal, InViewRise } from "../../lib/landing-reveal";
@@ -11,28 +13,28 @@ import type { LandingProgramsSectionProps } from "./LandingProgramsSection.types
 export function LandingProgramsSection({
   className,
 }: LandingProgramsSectionProps) {
+  const t = useTranslations("MarketingLanding.landingPrograms");
   const slots = landingProgramsSectionStyles();
   const { scrollTo } = useLandingScroll();
 
   return (
     <section id="programs" className={slots.root({ className })}>
-      <LandingEyebrow>عضویت باشگاه</LandingEyebrow>
+      <LandingEyebrow>{t("eyebrow")}</LandingEyebrow>
       <ClipReveal
         id="programs-title"
         as="h2"
         mode="lines"
-        text={"پلن باشگاه را\nاز اپ تمدید کن"}
+        text={t("title")}
         className={slots.title()}
       />
-      <p className={slots.hint()}>
-        عضویت باشگاه جدا از اشتراک پلتفرم است. دوره را ببین، تمدید کن و پرداخت
-        را در Gym4Me تمام کن.
-      </p>
+      <Typography type="body" className={slots.hint()}>
+        {t("hint")}
+      </Typography>
       <div className={slots.list()}>
         {LANDING_MEMBERSHIPS.map((plan, i) => (
           <InViewRise delayIn={i * 90} fromY={26} key={plan.planName}>
             <ClubSubscriptionCard
-              actionLabel="دانلود اپ"
+              actionLabel={t("actionLabel")}
               badge={plan.badge}
               className={slots.card()}
               description={plan.description}

@@ -6,6 +6,7 @@ import {
   Input,
   Label,
   TextField,
+  Typography,
 } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeSlash, Lock1 } from "@repo/icons";
@@ -127,9 +128,9 @@ export function AuthForgotPasswordResetForm({
       />
 
       {error ? (
-        <p className={styles.error()} role="alert">
+        <Typography className={styles.error()} role="alert">
           {error}
-        </p>
+        </Typography>
       ) : null}
 
       <Button

@@ -4,29 +4,21 @@ import { Button, Typography } from "@heroui/react";
 import { ArrowRight } from "@repo/icons/ArrowRight";
 import { Check } from "@repo/icons/Check";
 import { ClubCard } from "@repo/ui/cards/ClubCard";
+import { useTranslations } from "next-intl";
 import { LANDING_ASSETS, LANDING_CLUBS } from "../../lib/landing-assets";
 import { useLandingScroll } from "../../lib/landing-scroll";
 import { landingFeaturesSectionStyles } from "./LandingFeaturesSection.styles";
-import type {
-  LandingFeaturesCheckItem,
-  LandingFeaturesSectionProps,
-} from "./LandingFeaturesSection.types";
-
-const CHECK_ITEMS: LandingFeaturesCheckItem[] = [
-  { label: "کشف باشگاه و مربی روی نقشه و لیست" },
-  { label: "رزرو کلاس، جلسه و تمدید عضویت از یک اپ" },
-  { label: "پرداخت، حضور و یادآوری بدون پیگیری دستی" },
-];
+import type { LandingFeaturesSectionProps } from "./LandingFeaturesSection.types";
 
 const MOCKUP_CLUB = LANDING_CLUBS[1]!;
 
 function CheckRow({
-  item,
+  label,
   iconClassName,
   rowClassName,
   labelClassName,
 }: {
-  item: LandingFeaturesCheckItem;
+  label: string;
   iconClassName: string;
   rowClassName: string;
   labelClassName: string;
@@ -34,7 +26,7 @@ function CheckRow({
   return (
     <div className={rowClassName}>
       <Check size={18} className={iconClassName} aria-hidden />
-      <span className={labelClassName}>{item.label}</span>
+      <span className={labelClassName}>{label}</span>
     </div>
   );
 }
@@ -42,10 +34,13 @@ function CheckRow({
 export function LandingFeaturesSection({
   className,
 }: LandingFeaturesSectionProps) {
+  const t = useTranslations("MarketingLanding.landingFeatures");
+  const shared = useTranslations("MarketingLanding.shared");
   const slots = landingFeaturesSectionStyles();
   const { scrollTo } = useLandingScroll();
   const quoteAuthor = LANDING_ASSETS.coaches[1]!;
   const portrait = LANDING_ASSETS.coaches[0]!;
+  const checklist = t.raw("checklist") as string[];
 
   return (
     <section
@@ -59,7 +54,7 @@ export function LandingFeaturesSection({
           <div className={slots.heroCard()}>
             <img
               src={LANDING_ASSETS.hero}
-              alt="فضای باشگاه در Gym4Me"
+              alt={t("heroImageAlt")}
               className={slots.heroImg()}
               loading="lazy"
             />
@@ -71,7 +66,7 @@ export function LandingFeaturesSection({
               </div>
               <div className={slots.mockupStage()}>
                 <ClubCard
-                  actionLabel="مشاهده"
+                  actionLabel={shared("viewAction")}
                   className={slots.mockupClub()}
                   features={[...MOCKUP_CLUB.features]}
                   image={MOCKUP_CLUB.image}
@@ -79,8 +74,8 @@ export function LandingFeaturesSection({
                   onAction={() => scrollTo("#clubs")}
                   orientation="vertical"
                   price={MOCKUP_CLUB.price}
-                  pricePrefix="از"
-                  priceSuffix="تومان"
+                  pricePrefix={shared("pricePrefix")}
+                  priceSuffix={shared("priceSuffix")}
                   rating={MOCKUP_CLUB.rating}
                   ratingCount={MOCKUP_CLUB.ratingCount}
                   subtitle={MOCKUP_CLUB.subtitle}
@@ -92,8 +87,7 @@ export function LandingFeaturesSection({
 
           <blockquote className={slots.quoteCard()}>
             <Typography className={slots.quote()} type="body" weight="medium">
-              Gym4Me همان مسیری را می‌بندد که در باشگاه هر روز تکرار می‌شود:
-              پیدا کردن سالن، رزرو زمان، پرداخت و برگشتن برای جلسه بعد.
+              {t("quote")}
             </Typography>
             <footer className={slots.authorRow()}>
               <img
@@ -129,15 +123,17 @@ export function LandingFeaturesSection({
 
         <div className={slots.content()}>
           <Typography className={slots.heading()} type="h2" weight="medium">
-            کشف باشگاه.
-            <br />
-            رزرو جلسه.
-            <br />
-            تمدید عضویت.
+            {t("heading")
+              .split("\n")
+              .map((line, index, lines) => (
+                <span key={line}>
+                  {line}
+                  {index < lines.length - 1 ? <br /> : null}
+                </span>
+              ))}
           </Typography>
           <Typography className={slots.body()} type="body">
-            یک اپ برای ورزشکار، مربی و مدیر باشگاه. نقش فعال همان چیزی است که
-            مجوز می‌دهد، نه لیست نقش‌ها.
+            {t("body")}
           </Typography>
           <div className={slots.actions()}>
             <Button
@@ -146,7 +142,7 @@ export function LandingFeaturesSection({
               size="lg"
               variant="primary"
             >
-              دانلود اپ
+              {t("primaryCta")}
               <span className={slots.primaryChip()} aria-hidden>
                 <ArrowRight size={18} />
               </span>
@@ -157,14 +153,14 @@ export function LandingFeaturesSection({
               size="lg"
               variant="secondary"
             >
-              تماشای باشگاه‌ها
+              {t("secondaryCta")}
             </Button>
           </div>
           <div className={slots.checklist()}>
-            {CHECK_ITEMS.map((item) => (
+            {checklist.map((label) => (
               <CheckRow
-                key={item.label}
-                item={item}
+                key={label}
+                label={label}
                 iconClassName={slots.checkIcon()}
                 rowClassName={slots.checkRow()}
                 labelClassName={slots.checkLabel()}

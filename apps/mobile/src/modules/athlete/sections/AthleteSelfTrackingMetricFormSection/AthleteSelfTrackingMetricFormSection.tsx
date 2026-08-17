@@ -1,4 +1,5 @@
 import { Button, Input, Label, TextField, Typography } from "@heroui/react";
+import { useTranslations } from "next-intl";
 import { athleteSelfTrackingMetricFormSectionVariants } from "./AthleteSelfTrackingMetricFormSection.styles";
 import type { AthleteSelfTrackingMetricFormSectionProps } from "./AthleteSelfTrackingMetricFormSection.types";
 
@@ -16,21 +17,22 @@ export function AthleteSelfTrackingMetricFormSection({
   onSubmit,
   className,
 }: AthleteSelfTrackingMetricFormSectionProps) {
+  const t = useTranslations("Mobile.SelfTracking");
   const styles = athleteSelfTrackingMetricFormSectionVariants();
 
   return (
     <section className={styles.root({ className })}>
       <div>
         <Typography type="h3" weight="semibold">
-          ثبت {metric.label}
+          {t("logTitle", { label: metric.label })}
         </Typography>
         <Typography className={styles.meta()} type="body-sm">
-          {metric.hint} · این داده به‌صورت پیش‌فرض خصوصی است.
+          {metric.hint} · {t("privacyHint")}
         </Typography>
       </div>
       <div className={styles.form()}>
         <TextField>
-          <Label>مقدار ({metric.unitLabel})</Label>
+          <Label>{t("valueLabel", { unit: metric.unitLabel })}</Label>
           <Input
             inputMode="decimal"
             max={metric.max}
@@ -43,7 +45,7 @@ export function AthleteSelfTrackingMetricFormSection({
         </TextField>
         <div className={styles.grid()}>
           <TextField>
-            <Label>زمان ثبت</Label>
+            <Label>{t("recordedAtLabel")}</Label>
             <Input
               onChange={(event) => onRecordedAtChange(event.target.value)}
               type="datetime-local"
@@ -51,7 +53,7 @@ export function AthleteSelfTrackingMetricFormSection({
             />
           </TextField>
           <TextField>
-            <Label>یادداشت (اختیاری)</Label>
+            <Label>{t("noteLabel")}</Label>
             <Input
               onChange={(event) => onNoteChange(event.target.value)}
               value={note}
@@ -69,10 +71,18 @@ export function AthleteSelfTrackingMetricFormSection({
           onPress={() => void onSubmit()}
           variant="primary"
         >
-          ثبت در تاریخچه
+          {t("submit")}
         </Button>
-        {message ? <p className={styles.feedback()}>{message}</p> : null}
-        {error ? <p className={styles.error()}>{error}</p> : null}
+        {message ? (
+          <Typography className={styles.feedback()} type="body-sm">
+            {message}
+          </Typography>
+        ) : null}
+        {error ? (
+          <Typography className={styles.error()} type="body-sm">
+            {error}
+          </Typography>
+        ) : null}
       </div>
     </section>
   );

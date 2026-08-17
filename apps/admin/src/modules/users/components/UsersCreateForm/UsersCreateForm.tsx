@@ -7,6 +7,7 @@ import {
   Input,
   Label,
   TextField,
+  Typography,
 } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ApiError } from "@repo/api";
@@ -171,7 +172,7 @@ export function UsersCreateForm({
         />
 
         {submitError ? (
-          <p className={styles.formError()}>{submitError}</p>
+          <Typography className={styles.formError()}>{submitError}</Typography>
         ) : null}
 
         <AdminFormActions

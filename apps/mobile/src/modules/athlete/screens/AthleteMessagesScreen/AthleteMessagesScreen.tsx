@@ -52,11 +52,11 @@ export function AthleteMessagesScreen({
         {threads.length > 0 ? (
           <div className={styles.list()}>
             {threads.map((thread: AthleteMessageThread) => (
-              <button
+              <Button
                 className={styles.item()}
                 key={thread.id}
-                onClick={() => router.push(`/athlete/messages/${thread.id}`)}
-                type="button"
+                variant="ghost"
+                onPress={() => router.push(`/athlete/messages/${thread.id}`)}
               >
                 <span className={styles.itemIcon()} aria-hidden>
                   <Chat size={22} />
@@ -72,7 +72,7 @@ export function AthleteMessagesScreen({
                 <Typography className={styles.itemMeta()} type="body-sm">
                   {thread.updatedLabel}
                 </Typography>
-              </button>
+              </Button>
             ))}
           </div>
         ) : (

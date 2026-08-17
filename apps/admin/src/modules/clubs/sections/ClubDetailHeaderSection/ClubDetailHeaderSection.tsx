@@ -1,5 +1,4 @@
 import { Button, Typography } from "@heroui/react";
-import type { Club } from "@repo/api";
 import { ArrowLeft, Pencil1 } from "@repo/icons";
 import { useTranslations } from "next-intl";
 import { formatAdminDate } from "@/shared/lib/user-format";
@@ -31,9 +30,9 @@ export function ClubDetailHeaderSection({
             <Typography className={styles.title()} type="h1" weight="bold">
               {club.identity.name}
             </Typography>
-            <p className={styles.subtitle()}>
+            <Typography className={styles.subtitle()}>
               {ownerLabel(club.ownerId)} · {formatAdminDate(club.createdAt)}
-            </p>
+            </Typography>
           </>
         ) : (
           <Typography className={styles.title()} type="h1" weight="bold">

@@ -14,7 +14,9 @@ function apiRemotePattern(): {
 } {
   const raw =
     process.env.NEXT_PUBLIC_API_BASE_URL?.trim() ||
-    "http://localhost:8088/api/v1";
+    (process.env.NODE_ENV === "production"
+      ? "https://api.gym4me.ir/api/v1"
+      : "http://192.168.3.106:8088/api/v1");
   try {
     const url = new URL(raw);
     return {
@@ -26,7 +28,7 @@ function apiRemotePattern(): {
   } catch {
     return {
       protocol: "http",
-      hostname: "localhost",
+      hostname: "192.168.3.106",
       port: "8088",
       pathname: "/**",
     };
@@ -49,13 +51,7 @@ const nextConfig: NextConfig = {
   // Fail clearly instead of hanging on slow static generation (G4M-001).
   staticPageGenerationTimeout: 120,
   images: {
-    remotePatterns: [
-      apiRemotePattern(),
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com",
-      },
-    ],
+    remotePatterns: [apiRemotePattern()],
   },
   transpilePackages: [
     "@repo/api",

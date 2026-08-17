@@ -172,8 +172,16 @@ export function AthleteDataGrantsScreen({
               >
                 ایجاد دسترسی
               </Button>
-              {message ? <p className={styles.feedback()}>{message}</p> : null}
-              {error ? <p className={styles.error()}>{error}</p> : null}
+              {message ? (
+                <Typography className={styles.feedback()} type="body-sm">
+                  {message}
+                </Typography>
+              ) : null}
+              {error ? (
+                <Typography className={styles.error()} type="body-sm">
+                  {error}
+                </Typography>
+              ) : null}
             </div>
           )}
         </section>

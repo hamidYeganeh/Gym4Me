@@ -1,4 +1,4 @@
-import { Button, Input, Label, TextField } from "@heroui/react";
+import { Button, Input, Label, TextField, Typography } from "@heroui/react";
 import { useTranslations } from "next-intl";
 import { AdminConfirmDialog, AdminFormDrawer } from "@/shared/components";
 import { exercisesCatalogModalsSectionVariants } from "./ExercisesCatalogModalsSection.styles";
@@ -39,9 +39,9 @@ export function ExercisesCatalogModalsSection({
           </TextField>
 
           {actionError ? (
-            <p className="text-sm text-danger" role="alert">
+            <Typography className="text-sm text-danger" role="alert">
               {actionError}
-            </p>
+            </Typography>
           ) : null}
 
           <div className={styles.actions()}>
@@ -66,11 +66,11 @@ export function ExercisesCatalogModalsSection({
       <AdminConfirmDialog
         body={
           <>
-            <p>{t("exercises.archiveBody")}</p>
+            <Typography>{t("exercises.archiveBody")}</Typography>
             {actionError ? (
-              <p className="mt-2 text-sm text-danger" role="alert">
+              <Typography className="mt-2 text-sm text-danger" role="alert">
                 {actionError}
-              </p>
+              </Typography>
             ) : null}
           </>
         }

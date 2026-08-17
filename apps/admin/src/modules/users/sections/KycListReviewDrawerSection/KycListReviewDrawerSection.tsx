@@ -1,5 +1,5 @@
 import { Link as RouterLink } from "react-router-dom";
-import { Button } from "@heroui/react";
+import { Button, Typography } from "@heroui/react";
 import { useTranslations } from "next-intl";
 import { AdminEvidenceGallery, AdminFormDrawer } from "@/shared/components";
 import { routes } from "@/shared/lib/routes";
@@ -94,9 +94,9 @@ export function KycListReviewDrawerSection({
             }
           />
           {docError ? (
-            <p className="text-sm text-danger" role="alert">
+            <Typography className="text-sm text-danger" role="alert">
               {docError}
-            </p>
+            </Typography>
           ) : null}
 
           {selected.status === "pending" ? (

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Link } from "@heroui/react";
+import { Link, Typography } from "@heroui/react";
 import { ApiError } from "@repo/api";
 import type { RequestOtpInput } from "@repo/api";
 import {
@@ -77,12 +77,12 @@ export function SignInScreen({ className }: SignInScreenProps) {
       className={className}
       labels={labels}
       footer={
-        <p>
+        <Typography>
           {t("noAccount")}{" "}
           <Link className={styles.forgot()} href="#support">
             {t("contactSupport")}
           </Link>
-        </p>
+        </Typography>
       }
     >
       <AuthLoginPasswordForm
