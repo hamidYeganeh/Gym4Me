@@ -1,18 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
-import {
-  Button,
-  Checkbox,
-  FieldError,
-  Input,
-  Label,
-  Link,
-  TextField,
-} from "@heroui/react";
+import { Button, Checkbox, Link, Typography } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRight, CloseX, Eye, EyeSlash, Lock1 } from "@repo/icons";
+import { ArrowRight } from "@repo/icons/ArrowRight";
+import { FormBanner } from "@repo/ui/kit/FormBanner";
+import { PasswordField } from "@repo/ui/kit/PasswordField";
 import { useTranslations } from "next-intl";
 import { AuthPhoneField } from "@/modules/auth/sections/AuthPhoneField";
 import {
@@ -34,7 +28,6 @@ export function AuthLoginPasswordForm({
 }: AuthLoginPasswordFormProps) {
   const t = useTranslations("Mobile.Auth");
   const styles = authLoginPasswordFormVariants();
-  const [showPassword, setShowPassword] = useState(false);
 
   const schema = useMemo(
     () =>
@@ -79,43 +72,21 @@ export function AuthLoginPasswordForm({
         control={form.control}
         name="password"
         render={({ field, fieldState }) => (
-          <TextField
-            className={styles.field()}
-            fullWidth
+          <PasswordField
+            autoComplete="current-password"
+            errorMessage={fieldState.error?.message}
+            hidePasswordLabel={t("hidePassword")}
+            inputRef={field.ref}
             isInvalid={fieldState.invalid}
             isRequired
+            label={t("passwordLabel")}
             name={field.name}
-            type={showPassword ? "text" : "password"}
+            placeholder={t("passwordPlaceholder")}
+            showPasswordLabel={t("showPassword")}
             value={field.value}
             onBlur={field.onBlur}
             onChange={field.onChange}
-          >
-            <Label className={styles.label()}>{t("passwordLabel")}</Label>
-            <div className={styles.inputWrap()}>
-              <Lock1 className={styles.inputIcon()} size={22} />
-              <Input
-                autoComplete="current-password"
-                className={`${styles.input()} ${styles.inputWithSuffix()}`}
-                dir="ltr"
-                placeholder={t("passwordPlaceholder")}
-                ref={field.ref}
-              />
-              <Button
-                aria-label={
-                  showPassword ? t("hidePassword") : t("showPassword")
-                }
-                className={styles.suffixButton()}
-                isIconOnly
-                size="lg"
-                type="button"
-                variant="ghost"
-                onPress={() => setShowPassword((prev) => !prev)}
-              >
-                {showPassword ? <EyeSlash size={22} /> : <Eye size={22} />}
-              </Button>
-            </div>
-            <FieldError>{fieldState.error?.message}</FieldError>
-          </TextField>
+          />
         )}
       />
 
@@ -134,7 +105,9 @@ export function AuthLoginPasswordForm({
                 <Checkbox.Control>
                   <Checkbox.Indicator />
                 </Checkbox.Control>
-                <span className={styles.remember()}>{t("remember")}</span>
+                <Typography className={styles.remember()} type="body-sm">
+                  {t("remember")}
+                </Typography>
               </Checkbox.Content>
             </Checkbox>
           )}
@@ -148,24 +121,12 @@ export function AuthLoginPasswordForm({
       </div>
 
       {error ? (
-        <div className={styles.errorBanner()} role="alert">
-          <span>
-            {t("errorPrefix")} {error}
-          </span>
-          {onDismissError ? (
-            <Button
-              aria-label={t("dismissError")}
-              className={styles.errorDismiss()}
-              isIconOnly
-              size="lg"
-              type="button"
-              variant="ghost"
-              onPress={onDismissError}
-            >
-              <CloseX size={18} />
-            </Button>
-          ) : null}
-        </div>
+        <FormBanner
+          dismissLabel={t("dismissError")}
+          onDismiss={onDismissError}
+        >
+          {t("errorPrefix")} {error}
+        </FormBanner>
       ) : null}
 
       <Button

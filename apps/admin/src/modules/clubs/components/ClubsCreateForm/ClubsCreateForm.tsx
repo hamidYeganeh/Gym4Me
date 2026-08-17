@@ -484,7 +484,7 @@ export function ClubsCreateForm({
 
         <Button
           className="sr-only"
-          tabIndex={-1}
+          excludeFromTabOrder
           type="button"
           onPress={() => form.reset(clubsCreateFormDefaults)}
         />

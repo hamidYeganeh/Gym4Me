@@ -6,11 +6,12 @@ import type { InputOTPProps } from "./InputOTP.types";
 
 export function InputOTP({
   length = 4,
+  size = "lg",
   className,
   pattern = REGEXP_ONLY_DIGITS,
   ...props
 }: InputOTPProps) {
-  const styles = inputOTPVariants();
+  const styles = inputOTPVariants({ size });
 
   return (
     <HeroInputOTP

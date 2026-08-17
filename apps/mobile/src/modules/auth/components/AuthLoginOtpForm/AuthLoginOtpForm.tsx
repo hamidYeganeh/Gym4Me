@@ -2,9 +2,11 @@
 
 import { useMemo } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
-import { Button, FieldError, InputOTP } from "@heroui/react";
+import { Button, FieldError, Typography } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRight, CloseX } from "@repo/icons";
+import { ArrowRight } from "@repo/icons/ArrowRight";
+import { FormBanner } from "@repo/ui/kit/FormBanner";
+import { InputOTP } from "@repo/ui/kit/InputOTP";
 import { useTranslations } from "next-intl";
 import {
   normalizeOtpDigits,
@@ -72,27 +74,18 @@ export function AuthLoginOtpForm({
           control={form.control}
           name="code"
           render={({ field, fieldState }) => (
-            <div>
+            <div className={styles.otpWrap()}>
               <InputOTP
                 autoFocus
-                className={styles.otp()}
                 inputMode="numeric"
-                maxLength={OTP_LENGTH}
+                isInvalid={fieldState.invalid}
+                length={OTP_LENGTH}
                 pattern={OTP_PATTERN}
+                size="md"
                 value={field.value}
                 onBlur={field.onBlur}
                 onChange={(value) => field.onChange(normalizeOtpDigits(value))}
-              >
-                <InputOTP.Group className={styles.otpGroup()}>
-                  {Array.from({ length: OTP_LENGTH }, (_, index) => (
-                    <InputOTP.Slot
-                      className={styles.otpSlot()}
-                      index={index}
-                      key={index}
-                    />
-                  ))}
-                </InputOTP.Group>
-              </InputOTP>
+              />
               <FieldError>{fieldState.error?.message}</FieldError>
             </div>
           )}
@@ -100,14 +93,20 @@ export function AuthLoginOtpForm({
 
         <div className={styles.resendRow()}>
           {remainingSeconds > 0 ? (
-            <p className={styles.resendMuted()}>
+            <Typography className={styles.resendMuted()} type="body-sm">
               {t("resendIn")}{" "}
-              <span className={styles.timer()}>
+              <Typography
+                className={styles.timer()}
+                render={({ children, ...domProps }) => (
+                  <span {...domProps}>{children}</span>
+                )}
+                weight="bold"
+              >
                 {formatTimer(remainingSeconds)}
-              </span>
-            </p>
+              </Typography>
+            </Typography>
           ) : (
-            <p className={styles.resendMuted()}>
+            <Typography className={styles.resendMuted()} type="body-sm">
               {t("didNotReceive")}{" "}
               <Button
                 className={styles.resend()}
@@ -119,12 +118,12 @@ export function AuthLoginOtpForm({
               >
                 {t("resend")}
               </Button>
-            </p>
+            </Typography>
           )}
           {notice ? (
-            <p className={styles.notice()} role="status">
+            <Typography className={styles.notice()} role="status" type="body-sm">
               {notice}
-            </p>
+            </Typography>
           ) : null}
         </div>
       </div>
@@ -132,8 +131,10 @@ export function AuthLoginOtpForm({
       {debugCode ? (
         <aside className={styles.debugPanel()}>
           <div className={styles.debugCopy()}>
-            <span className={styles.debugLabel()}>{t("debugLabel")}</span>
-            <code className={styles.debugCode()}>{debugCode}</code>
+            <Typography className={styles.debugLabel()} type="body-xs" weight="semibold">
+              {t("debugLabel")}
+            </Typography>
+            <Typography.Code className={styles.debugCode()}>{debugCode}</Typography.Code>
           </div>
           <Button
             className={styles.debugAction()}
@@ -150,24 +151,12 @@ export function AuthLoginOtpForm({
       ) : null}
 
       {error ? (
-        <div className={styles.errorBanner()} role="alert">
-          <span>
-            {tAuth("errorPrefix")} {error}
-          </span>
-          {onDismissError ? (
-            <Button
-              aria-label={tAuth("dismissError")}
-              className={styles.errorDismiss()}
-              isIconOnly
-              size="lg"
-              type="button"
-              variant="ghost"
-              onPress={onDismissError}
-            >
-              <CloseX size={18} />
-            </Button>
-          ) : null}
-        </div>
+        <FormBanner
+          dismissLabel={tAuth("dismissError")}
+          onDismiss={onDismissError}
+        >
+          {tAuth("errorPrefix")} {error}
+        </FormBanner>
       ) : null}
 
       <Button

@@ -12,17 +12,15 @@ export const MARKETING_CASCADE_COUNT = 8;
 export const MARKETING_HERO_CLUB_IMAGE = LANDING_CLUBS[0].image;
 export const MARKETING_HERO_COACH_IMAGE = LANDING_ASSETS.coaches[0].src;
 
-export const MARKETING_CLUB_IMAGES = LANDING_CLUBS.map(
-  (club) => club.image,
-) as unknown as readonly [
-  string,
-  string,
-  string,
-  string,
-  string,
-  string,
-  string,
-];
+export const MARKETING_CLUB_IMAGES = [
+  LANDING_CLUBS[0].image,
+  LANDING_CLUBS[1].image,
+  LANDING_CLUBS[2].image,
+  LANDING_CLUBS[3].image,
+  LANDING_CLUBS[4].image,
+  LANDING_CLUBS[5].image,
+  LANDING_CLUBS[6].image,
+] as const;
 
 export const CLUB_CARD_WIDTH = 320;
 export const CLUB_CARD_HEIGHT = 420;

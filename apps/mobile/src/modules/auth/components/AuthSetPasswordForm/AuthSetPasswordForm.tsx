@@ -1,16 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
-import {
-  Button,
-  FieldError,
-  Input,
-  Label,
-  TextField,
-} from "@heroui/react";
+import { Button, Typography } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRight, Eye, EyeSlash, Lock1 } from "@repo/icons";
+import { ArrowRight } from "@repo/icons/ArrowRight";
+import { FormBanner } from "@repo/ui/kit/FormBanner";
+import { PasswordField } from "@repo/ui/kit/PasswordField";
 import { useTranslations } from "next-intl";
 import {
   evaluatePasswordStrength,
@@ -33,7 +29,6 @@ export function AuthSetPasswordForm({
 }: AuthSetPasswordFormProps) {
   const t = useTranslations("Mobile.SetPassword");
   const styles = authSetPasswordFormVariants();
-  const [showPassword, setShowPassword] = useState(false);
 
   const schema = useMemo(
     () =>
@@ -63,48 +58,28 @@ export function AuthSetPasswordForm({
 
   return (
     <form className={styles.form({ className })} onSubmit={handleSubmit}>
-      <p className={styles.notice()}>{t("reloginNote")}</p>
+      <Typography className={styles.notice()} type="body-sm">
+        {t("reloginNote")}
+      </Typography>
 
       <Controller
         control={form.control}
         name="currentPassword"
         render={({ field, fieldState }) => (
-          <TextField
-            className={styles.field()}
-            fullWidth
+          <PasswordField
+            autoComplete="current-password"
+            errorMessage={fieldState.error?.message}
+            hidePasswordLabel={t("hidePassword")}
+            inputRef={field.ref}
             isInvalid={fieldState.invalid}
+            label={t("currentPasswordLabel")}
             name={field.name}
-            type={showPassword ? "text" : "password"}
+            placeholder={t("currentPasswordPlaceholder")}
+            showPasswordLabel={t("showPassword")}
             value={field.value}
             onBlur={field.onBlur}
             onChange={field.onChange}
-          >
-            <Label className={styles.label()}>{t("currentPasswordLabel")}</Label>
-            <div className={styles.inputWrap()}>
-              <Lock1 className={styles.inputIcon()} size={22} />
-              <Input
-                autoComplete="current-password"
-                className={`${styles.input()} ${styles.inputWithSuffix()}`}
-                dir="ltr"
-                placeholder={t("currentPasswordPlaceholder")}
-                ref={field.ref}
-              />
-              <Button
-                aria-label={
-                  showPassword ? t("hidePassword") : t("showPassword")
-                }
-                className={styles.suffixButton()}
-                isIconOnly
-                size="lg"
-                type="button"
-                variant="ghost"
-                onPress={() => setShowPassword((prev) => !prev)}
-              >
-                {showPassword ? <EyeSlash size={22} /> : <Eye size={22} />}
-              </Button>
-            </div>
-            <FieldError>{fieldState.error?.message}</FieldError>
-          </TextField>
+          />
         )}
       />
 
@@ -112,43 +87,21 @@ export function AuthSetPasswordForm({
         control={form.control}
         name="password"
         render={({ field, fieldState }) => (
-          <TextField
-            className={styles.field()}
-            fullWidth
+          <PasswordField
+            autoComplete="new-password"
+            errorMessage={fieldState.error?.message}
+            hidePasswordLabel={t("hidePassword")}
+            inputRef={field.ref}
             isInvalid={fieldState.invalid}
             isRequired
+            label={t("passwordLabel")}
             name={field.name}
-            type={showPassword ? "text" : "password"}
+            placeholder={t("passwordPlaceholder")}
+            showPasswordLabel={t("showPassword")}
             value={field.value}
             onBlur={field.onBlur}
             onChange={field.onChange}
-          >
-            <Label className={styles.label()}>{t("passwordLabel")}</Label>
-            <div className={styles.inputWrap()}>
-              <Lock1 className={styles.inputIcon()} size={22} />
-              <Input
-                autoComplete="new-password"
-                className={`${styles.input()} ${styles.inputWithSuffix()}`}
-                dir="ltr"
-                placeholder={t("passwordPlaceholder")}
-                ref={field.ref}
-              />
-              <Button
-                aria-label={
-                  showPassword ? t("hidePassword") : t("showPassword")
-                }
-                className={styles.suffixButton()}
-                isIconOnly
-                size="lg"
-                type="button"
-                variant="ghost"
-                onPress={() => setShowPassword((prev) => !prev)}
-              >
-                {showPassword ? <EyeSlash size={22} /> : <Eye size={22} />}
-              </Button>
-            </div>
-            <FieldError>{fieldState.error?.message}</FieldError>
-          </TextField>
+          />
         )}
       />
 
@@ -156,45 +109,21 @@ export function AuthSetPasswordForm({
         control={form.control}
         name="confirmPassword"
         render={({ field, fieldState }) => (
-          <TextField
-            className={styles.field()}
-            fullWidth
+          <PasswordField
+            autoComplete="new-password"
+            errorMessage={fieldState.error?.message}
+            hidePasswordLabel={t("hidePassword")}
+            inputRef={field.ref}
             isInvalid={fieldState.invalid}
             isRequired
+            label={t("confirmPasswordLabel")}
             name={field.name}
-            type={showPassword ? "text" : "password"}
+            placeholder={t("passwordPlaceholder")}
+            showPasswordLabel={t("showPassword")}
             value={field.value}
             onBlur={field.onBlur}
             onChange={field.onChange}
-          >
-            <Label className={styles.label()}>
-              {t("confirmPasswordLabel")}
-            </Label>
-            <div className={styles.inputWrap()}>
-              <Lock1 className={styles.inputIcon()} size={22} />
-              <Input
-                autoComplete="new-password"
-                className={`${styles.input()} ${styles.inputWithSuffix()}`}
-                dir="ltr"
-                placeholder={t("passwordPlaceholder")}
-                ref={field.ref}
-              />
-              <Button
-                aria-label={
-                  showPassword ? t("hidePassword") : t("showPassword")
-                }
-                className={styles.suffixButton()}
-                isIconOnly
-                size="lg"
-                type="button"
-                variant="ghost"
-                onPress={() => setShowPassword((prev) => !prev)}
-              >
-                {showPassword ? <EyeSlash size={22} /> : <Eye size={22} />}
-              </Button>
-            </div>
-            <FieldError>{fieldState.error?.message}</FieldError>
-          </TextField>
+          />
         )}
       />
 
@@ -210,17 +139,13 @@ export function AuthSetPasswordForm({
           ))}
         </div>
         {password ? (
-          <p className={styles.strengthMessage()}>
+          <Typography className={styles.strengthMessage()} type="body-sm">
             {t(`strength.${strengthKey}`)}
-          </p>
+          </Typography>
         ) : null}
       </div>
 
-      {error ? (
-        <p className={styles.error()} role="alert">
-          {error}
-        </p>
-      ) : null}
+      {error ? <FormBanner>{error}</FormBanner> : null}
 
       <Button
         className={styles.submit()}

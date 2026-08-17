@@ -45,8 +45,7 @@ import type {
 
 const APP_NAME = "Gym4Me";
 
-const DEFAULT_AVATAR =
-  "https://heroui-assets.nyc3.cdn.digitaloceanspaces.com/avatars/orange.jpg";
+const DEFAULT_AVATAR = "/assets/images/default-avatar.png";
 
 const NAV_ICONS: Record<AdminDashboardNavId, ReactNode> = {
   home: <House1 size={22} />,

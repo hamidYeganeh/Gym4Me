@@ -59,7 +59,9 @@ export function AuthLayout({
               title={labels.brandAriaLabel}
             />
             {showBrandName ? (
-              <h1 className={styles.brandName()}>{labels.brandAriaLabel}</h1>
+              <Typography className={styles.brandName()} type="h1" weight="bold">
+                {labels.brandAriaLabel}
+              </Typography>
             ) : null}
           </div>
         ) : null}

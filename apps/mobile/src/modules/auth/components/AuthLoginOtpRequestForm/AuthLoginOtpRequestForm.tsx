@@ -4,7 +4,8 @@ import { useEffect, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRight, CloseX } from "@repo/icons";
+import { ArrowRight } from "@repo/icons/ArrowRight";
+import { FormBanner } from "@repo/ui/kit/FormBanner";
 import { useTranslations } from "next-intl";
 import { AuthPhoneField } from "@/modules/auth/sections/AuthPhoneField";
 import {
@@ -75,24 +76,12 @@ export function AuthLoginOtpRequestForm({
       />
 
       {error ? (
-        <div className={styles.errorBanner()} role="alert">
-          <span>
-            {tAuth("errorPrefix")} {error}
-          </span>
-          {onDismissError ? (
-            <Button
-              aria-label={tAuth("dismissError")}
-              className={styles.errorDismiss()}
-              isIconOnly
-              size="lg"
-              type="button"
-              variant="ghost"
-              onPress={onDismissError}
-            >
-              <CloseX size={18} />
-            </Button>
-          ) : null}
-        </div>
+        <FormBanner
+          dismissLabel={tAuth("dismissError")}
+          onDismiss={onDismissError}
+        >
+          {tAuth("errorPrefix")} {error}
+        </FormBanner>
       ) : null}
 
       <Button

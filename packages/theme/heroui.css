@@ -90,6 +90,27 @@
   --screen-columns: 3;
 
   /*
+   * OTP slots (Gym4Me design system)
+   * lg = gallery / 4-digit showcase · md = auth (6 digits on 375 frame)
+   * Content width ≈ screen − 2×margin = 327px → 6×48 + 5×8 gaps
+   */
+  --otp-slot-lg-width: 88px;
+  --otp-slot-lg-height: 104px;
+  --otp-slot-lg-radius: 32px;
+  --otp-slot-lg-font: 40px;
+  --otp-slot-lg-gap: 12px;
+  --otp-slot-md-width: 48px;
+  --otp-slot-md-height: 56px;
+  --otp-slot-md-radius: 18px;
+  --otp-slot-md-font: 22px;
+  --otp-slot-md-gap: 8px;
+
+  /* Auth field chrome — shared by PhoneField / PasswordField */
+  --auth-field-height: 56px;
+  --auth-field-radius: 1rem;
+  --auth-focus-ring: 0 0 0 4px color-mix(in oklch, var(--accent) 22%, transparent);
+
+  /*
    * Motion — durations + app ease alias
    * JS counterparts: @repo/theme `duration` / `ease` / `spring` / `transition` / `stagger`
    * Default Motion spring (`transition` / `spring.default`) is ProfileHeader morph feel

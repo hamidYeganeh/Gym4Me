@@ -89,22 +89,23 @@ export function useAthleteBookingDetail({
   const currentStepIndex = booking
     ? getBookingTimelineStepIndex(booking.status)
     : 0;
-  const showCheckIn =
-    Boolean(booking) &&
-    (booking.status === "CONFIRMED" || booking.status === "CHECKED_IN") &&
-    Boolean(booking.checkInCode);
-  const showPayAction =
-    Boolean(booking) &&
-    booking.status === "AWAITING_PAYMENT" &&
-    (isApiBooking || Boolean(booking.invoiceId));
+  const showCheckIn = booking
+    ? (booking.status === "CONFIRMED" || booking.status === "CHECKED_IN") &&
+      Boolean(booking.checkInCode)
+    : false;
+  const showPayAction = booking
+    ? booking.status === "AWAITING_PAYMENT" &&
+      (isApiBooking || Boolean(booking.invoiceId))
+    : false;
   const showCancelAction = booking
     ? isApiBooking
       ? canManageBooking(booking.status)
       : (booking.status === "PENDING" || booking.status === "CONFIRMED") &&
         !isCancelRequested
     : false;
-  const showRescheduleAction =
-    Boolean(booking) && isApiBooking && canManageBooking(booking.status);
+  const showRescheduleAction = booking
+    ? isApiBooking && canManageBooking(booking.status)
+    : false;
 
   const detailRows = booking
     ? [

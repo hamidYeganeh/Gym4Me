@@ -1,3 +1,3 @@
 export { CoachProgramsScreen } from "./CoachProgramsScreen";
-export { coachProgramsScreenStyles } from "./CoachProgramsScreen.styles";
+export { coachProgramsScreenVariants } from "./CoachProgramsScreen.styles";
 export type { CoachProgramsScreenProps } from "./CoachProgramsScreen.types";

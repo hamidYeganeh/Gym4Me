@@ -2,9 +2,11 @@
 
 import { useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Button, FieldError, Input, Label, TextField } from "@heroui/react";
+import { Button } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Key1, Telephone1 } from "@repo/icons";
+import { Key1 } from "@repo/icons/Key1";
+import { FormBanner } from "@repo/ui/kit/FormBanner";
+import { PhoneField } from "@repo/ui/kit/PhoneField";
 import { useTranslations } from "next-intl";
 import {
   authForgotPasswordPhoneFormDefaults,
@@ -48,37 +50,21 @@ export function AuthForgotPasswordPhoneForm({
         control={form.control}
         name="phone"
         render={({ field, fieldState }) => (
-          <TextField
-            className={styles.field()}
-            fullWidth
+          <PhoneField
+            errorMessage={fieldState.error?.message}
+            inputRef={field.ref}
             isInvalid={fieldState.invalid}
-            isRequired
+            label={t("phoneLabel")}
             name={field.name}
-            type="tel"
+            placeholder={t("phonePlaceholder")}
             value={field.value}
             onBlur={field.onBlur}
             onChange={field.onChange}
-          >
-            <Label className={styles.label()}>{t("phoneLabel")}</Label>
-            <div className={styles.inputWrap()}>
-              <Telephone1 className={styles.inputIcon()} size={22} />
-              <Input
-                autoComplete="tel"
-                className={styles.input()}
-                placeholder={t("phonePlaceholder")}
-                ref={field.ref}
-              />
-            </div>
-            <FieldError>{fieldState.error?.message}</FieldError>
-          </TextField>
+          />
         )}
       />
 
-      {error ? (
-        <p className={styles.error()} role="alert">
-          {error}
-        </p>
-      ) : null}
+      {error ? <FormBanner>{error}</FormBanner> : null}
 
       <Button
         className={styles.submit()}

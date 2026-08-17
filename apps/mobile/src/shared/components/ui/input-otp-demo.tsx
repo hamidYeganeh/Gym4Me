@@ -22,6 +22,7 @@ export function InputOTPDemo({ labels }: { labels: InputOTPDemoLabels }) {
         </p>
         <InputOTP
           length={4}
+          size="lg"
           value={value}
           onChange={setValue}
           aria-label={labels.label}
@@ -34,6 +35,7 @@ export function InputOTPDemo({ labels }: { labels: InputOTPDemoLabels }) {
         </p>
         <InputOTP
           length={4}
+          size="lg"
           value={filledValue}
           onChange={setFilledValue}
           aria-label={`${labels.label} — ${labels.filled}`}
@@ -46,6 +48,7 @@ export function InputOTPDemo({ labels }: { labels: InputOTPDemoLabels }) {
         </p>
         <InputOTP
           length={4}
+          size="lg"
           value={errorValue}
           onChange={setErrorValue}
           isInvalid
