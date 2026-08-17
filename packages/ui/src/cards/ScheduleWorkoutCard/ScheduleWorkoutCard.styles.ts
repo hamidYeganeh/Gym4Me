@@ -9,7 +9,7 @@ export const scheduleWorkoutCardVariants = tv({
     panel: [
       "relative z-10 flex w-full cursor-grab items-center gap-3",
       "rounded-[22px] border-0 bg-surface px-3 py-3",
-      "text-start shadow-sm shadow-foreground/5",
+      "text-start",
       "active:cursor-grabbing touch-pan-y select-none",
     ].join(" "),
     thumb:

@@ -8,13 +8,13 @@ export const coachProfileEditScreenVariants = tv({
     intro: "flex flex-col gap-2",
     title: "tracking-tight text-foreground",
     subtitle: "text-balance text-muted",
-    form: "flex flex-col gap-4 rounded-[24px] border-0 bg-surface p-5 shadow-sm shadow-foreground/5",
+    form: "flex flex-col gap-4 rounded-[24px] border-0 bg-surface p-5",
     field: "flex w-full flex-col gap-2",
     actions: "flex flex-col gap-3 pt-1",
     status:
       "rounded-[24px] border border-accent/40 bg-accent/10 px-5 py-4 text-sm font-semibold text-foreground",
     verifyCard:
-      "flex flex-col gap-3 rounded-[24px] border-0 bg-surface p-5 shadow-sm shadow-foreground/5",
+      "flex flex-col gap-3 rounded-[24px] border-0 bg-surface p-5",
     error: "text-sm text-danger",
     notice: "text-sm text-success",
     privacy: "flex flex-col items-center gap-2 px-4 text-center",

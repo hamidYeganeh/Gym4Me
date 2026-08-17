@@ -5,7 +5,7 @@ export const metricGoalCardVariants = tv({
   slots: {
     root: [
       "flex flex-col gap-4 rounded-[1.25rem] border-0 bg-surface",
-      "px-4 py-5 text-start shadow-sm shadow-foreground/5",
+      "px-4 py-5 text-start",
     ].join(" "),
     header: "flex items-center gap-3",
     iconWrap:

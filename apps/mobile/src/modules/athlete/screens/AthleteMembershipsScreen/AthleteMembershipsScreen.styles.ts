@@ -8,7 +8,7 @@ export const athleteMembershipsScreenStyles = {
   section: "flex flex-col gap-2",
   heroList: "flex flex-col gap-4",
   heroCard:
-    "flex flex-col gap-4 rounded-[24px] border-0 bg-surface p-5 shadow-sm shadow-foreground/5",
+    "flex flex-col gap-4 rounded-[24px] border-0 bg-surface p-5",
   heroHeader: "flex items-start justify-between gap-3",
   heroTitles: "flex min-w-0 flex-col gap-0.5",
   heroPlan: "text-foreground",
@@ -23,13 +23,13 @@ export const athleteMembershipsScreenStyles = {
   price: "text-foreground",
   pastList: "flex flex-col gap-3",
   pastCard:
-    "flex flex-col gap-3 rounded-[24px] border-0 bg-surface p-4 opacity-80 shadow-sm shadow-foreground/5",
+    "flex flex-col gap-3 rounded-[24px] border-0 bg-surface p-4 opacity-80",
   pastHeader: "flex items-start justify-between gap-3",
   pastTitles: "flex min-w-0 flex-col gap-0.5",
   pastPlan: "text-foreground",
   pastMeta: "text-muted",
   empty:
-    "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center shadow-sm shadow-foreground/5",
+    "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center",
   emptyTitle: "text-foreground",
   emptyBody: "text-muted",
 } as const;

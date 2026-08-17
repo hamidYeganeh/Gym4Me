@@ -9,7 +9,7 @@ export const ownerAnalyticsScreenStyles = {
   periodChip: "shrink-0 rounded-full",
   statsGrid: "grid grid-cols-2 gap-4",
   chartCard:
-    "flex flex-col gap-3 rounded-[24px] border-0 bg-surface p-4 shadow-sm shadow-foreground/5",
+    "flex flex-col gap-3 rounded-[24px] border-0 bg-surface p-4",
   chartTitle: "text-foreground",
   chartHint: "text-muted",
   chart: "w-full",

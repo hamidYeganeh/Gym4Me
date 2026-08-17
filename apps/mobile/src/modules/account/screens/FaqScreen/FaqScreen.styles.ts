@@ -9,7 +9,7 @@ export const faqScreenVariants = tv({
     introTitle: "text-balance tracking-tight text-foreground",
     introSubtitle: "max-w-[21rem] text-pretty leading-relaxed text-muted",
     list: "flex flex-col gap-3",
-    item: "rounded-[1.25rem] border-0 bg-surface px-4 py-3 shadow-sm shadow-foreground/5",
+    item: "rounded-[1.25rem] border-0 bg-surface px-4 py-3",
     question: "text-foreground",
     answer: "mt-2 text-muted whitespace-pre-wrap",
     empty: "py-16 text-center text-muted",

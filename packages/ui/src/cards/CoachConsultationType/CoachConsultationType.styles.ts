@@ -7,7 +7,7 @@ export const coachConsultationTypeVariants = tv({
     title: "min-w-0 text-sm font-medium text-muted",
     card: [
       "w-full gap-0 overflow-hidden rounded-[1.75rem] p-0",
-      "border-0 bg-default text-default-foreground shadow-sm shadow-foreground/5",
+      "border-0 bg-default text-default-foreground",
     ].join(" "),
     content: "flex w-full flex-col gap-0 p-0",
     divider: [

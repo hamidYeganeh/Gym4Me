@@ -34,7 +34,10 @@ export function LandingMenuOverlay({ className }: LandingMenuOverlayProps) {
 
   return (
     <div
-      className={cn(slots.root({ className }), !menuOpen && "pointer-events-none")}
+      className={cn(
+        slots.root({ className }),
+        !menuOpen && "pointer-events-none",
+      )}
       aria-hidden={!menuOpen}
     >
       <button
@@ -62,11 +65,7 @@ export function LandingMenuOverlay({ className }: LandingMenuOverlayProps) {
         <nav className={slots.nav()} aria-label="منوی تمام‌صفحه">
           {menuOpen
             ? LINKS.map((link, i) => (
-                <InViewRise
-                  key={link.href}
-                  delayIn={120 + i * 70}
-                  fromY={28}
-                >
+                <InViewRise key={link.href} delayIn={120 + i * 70} fromY={28}>
                   <a
                     href={link.href}
                     className={slots.link()}

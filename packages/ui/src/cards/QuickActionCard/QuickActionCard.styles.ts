@@ -37,7 +37,6 @@ export const quickActionCardVariants = tv({
         root: [
           "min-h-16 flex-row items-center justify-start gap-3",
           "rounded-[1.25rem] bg-surface p-3 text-start",
-          "shadow-sm shadow-foreground/5",
           "hover:bg-surface-secondary data-[hovered=true]:bg-surface-secondary",
         ].join(" "),
         tile: "size-11 rounded-[0.875rem]",

@@ -9,7 +9,7 @@ export const athletePassesScreenVariants = tv({
     introSubtitle: "text-muted",
     tabs: "flex flex-wrap gap-2",
     section: "flex flex-col gap-3",
-    card: "flex flex-col gap-3 rounded-[1.25rem] border-0 bg-surface p-4 shadow-sm shadow-foreground/5",
+    card: "flex flex-col gap-3 rounded-[1.25rem] border-0 bg-surface p-4",
     rowTop: "flex items-center justify-between gap-2",
     meta: "text-muted",
     list: "flex flex-col gap-3",

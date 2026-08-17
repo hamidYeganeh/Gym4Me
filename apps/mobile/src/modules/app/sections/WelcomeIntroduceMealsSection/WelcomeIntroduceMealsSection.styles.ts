@@ -9,7 +9,7 @@ export const welcomeIntroduceMealsSectionVariants = tv({
     rowOffsetAlt: "-translate-x-6",
     tile: [
       "size-24 overflow-hidden rounded-[1.75rem]",
-      "shadow-[0_12px_28px_color-mix(in_oklch,var(--foreground)_14%,transparent)]",
+      "",
       "ring-1 ring-white/10",
     ],
     t0: "bg-[linear-gradient(145deg,#fde68a,#f59e0b)]",

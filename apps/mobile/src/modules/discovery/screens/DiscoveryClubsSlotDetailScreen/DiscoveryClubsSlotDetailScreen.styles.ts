@@ -22,7 +22,7 @@ export const discoveryClubsSlotDetailScreenStyles = {
   metaGrid: "grid grid-cols-2 gap-2.5",
   metaCell: [
     "flex flex-col gap-1.5 rounded-[1.25rem] border-0",
-    "bg-surface px-3.5 py-3 shadow-sm shadow-foreground/5",
+    "bg-surface px-3.5 py-3",
   ].join(" "),
   metaHeader: "flex items-center gap-1.5",
   metaIcon: "shrink-0 text-muted",
@@ -34,7 +34,7 @@ export const discoveryClubsSlotDetailScreenStyles = {
   upcomingList: "flex w-full flex-col gap-2.5",
   upcomingRow: [
     "flex w-full flex-1 items-center justify-between gap-3 rounded-[1.25rem]",
-    "border-0 bg-surface px-3.5 py-3 shadow-sm shadow-foreground/5",
+    "border-0 bg-surface px-3.5 py-3",
   ].join(" "),
   upcomingLeading: "flex min-w-0 flex-1 items-center gap-3",
   upcomingIconWrap: [

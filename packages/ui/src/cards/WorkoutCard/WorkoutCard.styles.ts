@@ -5,7 +5,7 @@ export const workoutCardVariants = tv({
   slots: {
     root: [
       "relative h-[150px] w-[260px] overflow-hidden rounded-[24px] p-3",
-      "border-0 bg-surface shadow-[0_14px_34px_color-mix(in_oklch,var(--foreground)_10%,transparent)]",
+      "border-0 bg-surface",
     ].join(" "),
     image:
       "pointer-events-none absolute inset-0 size-full object-cover object-right select-none",
@@ -29,9 +29,7 @@ export const workoutCardVariants = tv({
     metaIcon: "size-3.5 shrink-0",
     metaText: "truncate text-xs font-medium",
     metaSeparator: "shrink-0 text-xs leading-none",
-    play: [
-      "shadow-[0_6px_18px_color-mix(in_oklch,var(--accent)_55%,transparent)]",
-    ].join(" "),
+    play: [].join(" "),
   },
 });
 

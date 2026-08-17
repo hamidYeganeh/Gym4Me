@@ -6,10 +6,10 @@ export const coachProgramRevisionsScreenStyles = {
   introSubtitle: "text-muted",
   list: "flex flex-col gap-3",
   revisionCard:
-    "flex flex-col gap-2 rounded-[24px] border-0 bg-surface p-4 shadow-sm shadow-foreground/5",
+    "flex flex-col gap-2 rounded-[24px] border-0 bg-surface p-4",
   revisionSelected: "ring-2 ring-accent",
   revisionMeta: "text-muted",
-  diffCard: "flex flex-col gap-3 rounded-[24px] border-0 bg-surface p-4 shadow-sm shadow-foreground/5",
+  diffCard: "flex flex-col gap-3 rounded-[24px] border-0 bg-surface p-4",
   diffSection: "flex flex-col gap-1",
   addedLine: "text-success",
   removedLine: "text-danger line-through",

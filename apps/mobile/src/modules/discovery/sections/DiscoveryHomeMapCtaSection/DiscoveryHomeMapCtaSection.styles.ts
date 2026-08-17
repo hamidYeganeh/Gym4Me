@@ -22,7 +22,7 @@ export const discoveryHomeMapCtaSectionVariants = tv({
       "pointer-events-none absolute end-6 top-6",
       "flex size-11 items-center justify-center rounded-full",
       "bg-accent text-accent-foreground",
-      "shadow-[0_10px_24px_color-mix(in_oklab,var(--accent)_45%,transparent)]",
+      "",
     ].join(" "),
     content: "relative z-10 flex min-h-[14.5rem] flex-col justify-end gap-3 p-5",
     copy: "flex max-w-[18rem] flex-col gap-1.5",

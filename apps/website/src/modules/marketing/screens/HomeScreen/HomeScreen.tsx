@@ -100,18 +100,18 @@ export function HomeScreen() {
     >
       <main className={homeScreenStyles.root} dir="rtl" lang="fa">
         <LandingHeroSection />
+        <LandingFeaturesSection />
         <LandingTrustSection />
+        <LandingAboutUsSection />
         <LandingSportsSection />
+        <LandingStatsSection />
         <LandingClubsSection />
         <LandingClassesSection />
-        <LandingStatsSection />
         <LandingTestimonialsSection />
-        <LandingBlogsSection />
-        <LandingFaqSection />
-        <LandingDownloadSection />
         <LandingBookingSection />
-        <LandingAboutUsSection />
-        <LandingFeaturesSection />
+        <LandingBlogsSection />
+        <LandingDownloadSection />
+        <LandingFaqSection />
         <LandingFooterSection />
       </main>
     </LandingScrollProvider>

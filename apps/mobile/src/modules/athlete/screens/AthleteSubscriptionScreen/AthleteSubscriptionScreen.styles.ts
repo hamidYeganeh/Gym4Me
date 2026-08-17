@@ -8,7 +8,7 @@ export const athleteSubscriptionScreenVariants = tv({
     introTitle: "tracking-tight text-foreground",
     introSubtitle: "text-muted",
     list: "flex flex-col gap-3",
-    card: "flex flex-col gap-3 rounded-[1.25rem] border-0 bg-surface p-4 shadow-sm shadow-foreground/5",
+    card: "flex flex-col gap-3 rounded-[1.25rem] border-0 bg-surface p-4",
     cardCurrent: "ring-2 ring-accent/40",
     rowTop: "flex items-start justify-between gap-2",
     price: "text-accent",

@@ -5,7 +5,6 @@ export const spotlightCardVariants = tv({
     root: [
       "relative isolate flex min-h-[220px] w-full flex-col overflow-hidden",
       "rounded-[2rem] bg-accent p-5 text-start text-accent-foreground",
-      "shadow-[0_18px_48px_color-mix(in_oklch,var(--accent)_20%,transparent)]",
       "before:pointer-events-none before:absolute before:-end-16 before:-top-16",
       "before:size-48 before:rounded-full before:border-[28px] before:border-accent-foreground/8",
       "after:pointer-events-none after:absolute after:-bottom-24 after:-start-16",

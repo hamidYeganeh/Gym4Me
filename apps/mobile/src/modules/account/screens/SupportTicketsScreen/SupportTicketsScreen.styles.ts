@@ -9,10 +9,10 @@ export const supportTicketsScreenVariants = tv({
     introTitle: "text-balance tracking-tight text-foreground",
     introSubtitle: "max-w-[21rem] text-pretty leading-relaxed text-muted",
     list: "flex flex-col gap-3",
-    item: "flex flex-col gap-1 rounded-[1.25rem] border-0 bg-surface px-4 py-3 text-start shadow-sm shadow-foreground/5",
+    item: "flex flex-col gap-1 rounded-[1.25rem] border-0 bg-surface px-4 py-3 text-start",
     itemMeta: "text-muted",
     empty: "py-16 text-center text-muted",
-    form: "flex flex-col gap-3 rounded-[1.5rem] border-0 bg-surface p-4 shadow-sm shadow-foreground/5",
+    form: "flex flex-col gap-3 rounded-[1.5rem] border-0 bg-surface p-4",
     actions: "mt-2 flex flex-col gap-2",
   },
 });

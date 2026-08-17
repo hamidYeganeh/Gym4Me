@@ -11,11 +11,11 @@ export const ownerClubDetailScreenStyles = {
   sectionTitle: "text-foreground",
   statsGrid: "grid grid-cols-2 gap-4",
   chartCard:
-    "flex flex-col gap-3 rounded-[24px] border-0 bg-surface p-4 shadow-sm shadow-foreground/5",
+    "flex flex-col gap-3 rounded-[24px] border-0 bg-surface p-4",
   chartTitle: "text-foreground",
   chart: "w-full",
   groupCard:
-    "overflow-hidden rounded-[24px] border-0 bg-surface shadow-sm shadow-foreground/5",
+    "overflow-hidden rounded-[24px] border-0 bg-surface",
   row: "flex w-full items-center gap-3 px-4 py-3.5",
   rowBody: "flex min-w-0 flex-1 flex-col gap-0.5",
   rowLabel: "text-foreground",

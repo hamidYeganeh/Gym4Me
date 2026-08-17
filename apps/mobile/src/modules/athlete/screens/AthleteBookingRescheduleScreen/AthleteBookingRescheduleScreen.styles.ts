@@ -5,7 +5,7 @@ export const athleteBookingRescheduleScreenStyles = {
   introTitle: "text-foreground",
   introSubtitle: "text-muted",
   currentCard:
-    "flex flex-col gap-1 rounded-[24px] border-0 bg-surface px-5 py-4 shadow-sm shadow-foreground/5",
+    "flex flex-col gap-1 rounded-[24px] border-0 bg-surface px-5 py-4",
   currentLabel: "text-muted",
   currentValue: "text-foreground",
   weekRow: "flex items-center justify-between gap-3",

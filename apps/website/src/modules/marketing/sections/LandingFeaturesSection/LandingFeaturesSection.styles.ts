@@ -11,14 +11,13 @@ export const landingFeaturesSectionStyles = tv({
     bento: "grid h-full grid-cols-2 gap-4",
     heroCard: [
       "group relative col-span-2 h-[20rem] overflow-hidden rounded-[2rem] md:h-[25rem]",
-      "bg-surface-secondary shadow-[0_10px_28px_color-mix(in_oklch,var(--foreground)_8%,transparent)]",
+      "bg-surface-secondary",
     ],
     heroImg:
       "size-full object-cover transition-transform duration-[1200ms] ease-app will-change-transform group-hover:scale-110",
     mockup: [
       "absolute inset-x-4 -bottom-4 top-4 overflow-hidden rounded-t-[1.25rem]",
       "border-x border-t border-foreground/5 bg-surface",
-      "shadow-[0_-20px_50px_-12px_color-mix(in_oklch,var(--foreground)_15%,transparent)]",
       "md:inset-x-6 md:-bottom-6 md:top-6",
     ],
     chrome:

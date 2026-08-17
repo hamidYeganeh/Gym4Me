@@ -5,7 +5,7 @@ export const reviewCardVariants = tv({
   slots: {
     root: [
       "w-full gap-4 overflow-hidden rounded-[32px] p-6",
-      "border-0 bg-surface text-surface-foreground shadow-sm shadow-foreground/5",
+      "border-0 bg-surface text-surface-foreground",
     ].join(" "),
     header: "flex flex-row items-center gap-3 p-0",
     avatar: "size-12 shrink-0 rounded-[0.875rem]",

@@ -4,7 +4,7 @@ export const coachNutritionPlanScreenStyles = {
   intro: "flex flex-col gap-2",
   introTitle: "tracking-tight text-foreground",
   introSubtitle: "text-muted",
-  mealCard: "flex flex-col gap-2 rounded-[24px] border-0 bg-surface p-4 shadow-sm shadow-foreground/5",
+  mealCard: "flex flex-col gap-2 rounded-[24px] border-0 bg-surface p-4",
   mealTitle: "text-foreground",
   mealMeta: "text-muted",
   itemRow: "text-foreground",

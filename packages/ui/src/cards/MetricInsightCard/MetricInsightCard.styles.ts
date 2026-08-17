@@ -5,7 +5,7 @@ export const metricInsightCardVariants = tv({
   slots: {
     root: [
       "flex flex-col gap-3 rounded-[1.25rem] border-0 bg-surface",
-      "px-4 py-4 text-start shadow-sm shadow-foreground/5",
+      "px-4 py-4 text-start",
     ].join(" "),
     row: "flex items-start justify-between gap-4",
     meta: "flex min-w-0 flex-1 flex-col gap-1",

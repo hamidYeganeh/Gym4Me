@@ -6,7 +6,7 @@ export const reservationCardVariants = tv({
     root: "flex w-full flex-col gap-3",
     card: [
       "flex h-auto w-full items-center gap-3 rounded-[1.25rem] border-0",
-      "bg-surface px-3.5 py-3.5 text-start shadow-sm shadow-foreground/5",
+      "bg-surface px-3.5 py-3.5 text-start",
       "transition-[border-color,background-color,box-shadow,transform] duration-fast ease-app",
       "data-[pressed=true]:scale-[0.995]",
       "[--button-bg:var(--surface)]",

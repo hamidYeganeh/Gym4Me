@@ -31,7 +31,7 @@ export const discoveryClubsReserveScreenStyles = {
   slotsGrid: "grid grid-cols-1 gap-2.5",
   slot: [
     "flex h-auto w-full flex-row items-center gap-3",
-    "rounded-[1.25rem] border-0 bg-surface px-3.5 py-3.5 text-start shadow-sm shadow-foreground/5",
+    "rounded-[1.25rem] border-0 bg-surface px-3.5 py-3.5 text-start",
     "transition-[border-color,background-color,box-shadow]",
     "[--button-bg:var(--surface)]",
     "[--button-bg-hover:color-mix(in_oklab,var(--accent)_8%,var(--surface))]",

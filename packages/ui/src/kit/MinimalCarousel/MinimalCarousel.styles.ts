@@ -7,7 +7,7 @@ export const minimalCarouselVariants = tv({
     stack: "flex w-full flex-col gap-3",
 
     expanded:
-      "relative flex w-full min-h-42.5 flex-col justify-between rounded-[28px] p-4 text-[var(--stats-foreground)] shadow-2xl sm:h-48 sm:rounded-[32px] sm:p-5",
+      "relative flex w-full min-h-42.5 flex-col justify-between rounded-[28px] p-4 text-[var(--stats-foreground)] sm:h-48 sm:rounded-[32px] sm:p-5",
     expandedHeader: "flex items-start justify-between gap-2",
     expandedIcon:
       "flex size-10 shrink-0 items-center justify-center rounded-full sm:size-11",
@@ -36,7 +36,7 @@ export const minimalCarouselVariants = tv({
       "sm:px-4 sm:py-1.5 sm:text-base",
     ].join(" "),
     grid: "grid gap-2 transition-all duration-500 sm:gap-3",
-    tile: "relative flex cursor-pointer flex-col justify-between rounded-[22px] p-3 text-[var(--stats-foreground)] shadow-lg sm:rounded-[28px] sm:p-4",
+    tile: "relative flex cursor-pointer flex-col justify-between rounded-[22px] p-3 text-[var(--stats-foreground)] sm:rounded-[28px] sm:p-4",
     tileHeader: "flex items-start justify-between",
     moreBadge: "rounded-full bg-white/10 p-1 transition-colors sm:p-1.5",
     tileMeta: "mt-1 overflow-hidden",

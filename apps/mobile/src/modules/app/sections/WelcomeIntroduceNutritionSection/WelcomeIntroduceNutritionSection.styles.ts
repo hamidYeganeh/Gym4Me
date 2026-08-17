@@ -5,7 +5,6 @@ export const welcomeIntroduceNutritionSectionVariants = tv({
     root: "relative mx-auto flex w-full max-w-[21.5rem] shrink-0 flex-col items-center gap-3",
     heroCard: [
       "relative z-10 flex w-full overflow-hidden rounded-[1.5rem] bg-surface",
-      "shadow-[0_18px_40px_color-mix(in_oklch,var(--foreground)_12%,transparent)]",
       "ring-1 ring-border/60",
     ],
     heroCopy: "flex min-w-0 flex-1 flex-col gap-3 p-4",
@@ -23,12 +22,12 @@ export const welcomeIntroduceNutritionSectionVariants = tv({
     path: "h-full w-full stroke-border stroke-2 fill-none",
     cta: [
       "relative z-10 rounded-full bg-accent px-4 py-1.5 text-[0.75rem] font-semibold",
-      "text-accent-foreground shadow-[0_8px_20px_color-mix(in_oklch,var(--accent)_35%,transparent)]",
+      "text-accent-foreground",
     ],
     tipCard: [
       "relative z-10 flex w-full items-start gap-3 rounded-[1.25rem] bg-surface p-4",
       "ring-1 ring-border/60",
-      "shadow-[0_12px_28px_color-mix(in_oklch,var(--foreground)_10%,transparent)]",
+      "",
     ],
     tipIcon:
       "flex size-10 shrink-0 items-center justify-center rounded-2xl bg-accent/15 text-accent",

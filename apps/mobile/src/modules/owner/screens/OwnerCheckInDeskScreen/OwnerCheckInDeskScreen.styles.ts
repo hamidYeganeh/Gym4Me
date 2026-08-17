@@ -7,7 +7,7 @@ export const ownerCheckInDeskScreenVariants = tv({
     intro: "flex flex-col gap-2",
     introTitle: "tracking-tight text-foreground",
     introSubtitle: "text-muted",
-    form: "flex flex-col gap-4 rounded-[24px] border-0 bg-surface p-4 shadow-sm shadow-foreground/5",
+    form: "flex flex-col gap-4 rounded-[24px] border-0 bg-surface p-4",
     feedback: "text-center",
     success: "text-success",
     danger: "text-danger",

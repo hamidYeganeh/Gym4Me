@@ -6,7 +6,7 @@ export const welcomeIntroduceCoachSectionVariants = tv({
     avatars: "relative flex h-16 w-[18rem] items-end justify-center",
     avatar: [
       "absolute overflow-hidden rounded-full bg-surface ring-2 ring-background",
-      "shadow-[0_8px_20px_color-mix(in_oklch,var(--foreground)_14%,transparent)]",
+      "",
     ],
     avatarA: "start-[0%] bottom-0 size-8 bg-stats-blue/30",
     avatarB: "start-[16%] bottom-1 size-12 bg-stats-purple/30",
@@ -18,7 +18,7 @@ export const welcomeIntroduceCoachSectionVariants = tv({
     pin: "size-3 rounded-full bg-accent shadow-[0_0_0_4px_color-mix(in_oklch,var(--accent)_30%,transparent)]",
     card: [
       "w-full rounded-[1.5rem] bg-surface p-3",
-      "shadow-[0_16px_40px_color-mix(in_oklch,var(--foreground)_12%,transparent)]",
+      "",
       "ring-1 ring-border/60",
     ],
     cardTop: "flex gap-3",

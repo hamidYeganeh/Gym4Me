@@ -12,7 +12,7 @@ export const ownerClubsCreateScreenVariants = tv({
     stepper: "-mx-1 pt-2",
     stepPanel: "flex flex-col gap-6",
     stepCard:
-      "flex flex-col gap-4 rounded-[24px] border-0 bg-surface p-5 shadow-sm shadow-foreground/5",
+      "flex flex-col gap-4 rounded-[24px] border-0 bg-surface p-5",
     stepTitle: "text-foreground",
     stepHint: "text-muted",
     error: "text-sm text-danger",

@@ -4,7 +4,7 @@ export const profileStatsVariants = tv({
   slots: {
     root: [
       "grid grid-cols-2 gap-px overflow-hidden rounded-[1.5rem]",
-      "bg-border shadow-sm shadow-foreground/5",
+      "bg-border",
     ].join(" "),
     card: [
       "relative flex min-h-[7rem] flex-col justify-between overflow-hidden",

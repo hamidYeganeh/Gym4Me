@@ -9,7 +9,7 @@ export const achievementsScreenVariants = tv({
     introTitle: "text-balance tracking-tight text-foreground",
     introSubtitle: "max-w-[21rem] text-pretty leading-relaxed text-muted",
     summaryCard:
-      "flex flex-col gap-4 rounded-[24px] border-0 bg-surface p-5 shadow-sm shadow-foreground/5",
+      "flex flex-col gap-4 rounded-[24px] border-0 bg-surface p-5",
     summaryBalance: "flex flex-col items-center gap-1 text-center",
     summaryBalanceValue: "text-4xl font-bold tabular-nums text-foreground",
     summaryBalanceLabel: "text-muted",
@@ -22,12 +22,12 @@ export const achievementsScreenVariants = tv({
     sectionTitle: "px-1 text-muted",
     grid: "grid grid-cols-3 gap-3",
     gridItem:
-      "flex flex-col items-center gap-2 rounded-[20px] border-0 bg-surface p-3 text-center shadow-sm shadow-foreground/5",
+      "flex flex-col items-center gap-2 rounded-[20px] border-0 bg-surface p-3 text-center",
     gridItemLocked: "opacity-45",
     gridItemTitle: "line-clamp-2 text-xs font-medium text-foreground",
     gridItemMeta: "text-[11px] tabular-nums text-muted",
     historyCard:
-      "overflow-hidden rounded-[24px] border-0 bg-surface shadow-sm shadow-foreground/5",
+      "overflow-hidden rounded-[24px] border-0 bg-surface",
     historyRow: "flex items-center gap-3 px-4 py-3.5",
     historyBody: "flex min-w-0 flex-1 flex-col gap-0.5",
     historyLabel: "truncate text-sm text-foreground",

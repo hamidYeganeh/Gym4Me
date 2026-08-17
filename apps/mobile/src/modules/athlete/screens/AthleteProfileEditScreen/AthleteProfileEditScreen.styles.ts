@@ -8,7 +8,7 @@ export const athleteProfileEditScreenVariants = tv({
     intro: "flex flex-col gap-2",
     title: "tracking-tight text-foreground",
     subtitle: "text-balance text-muted",
-    form: "flex flex-col gap-4 rounded-[24px] border-0 bg-surface p-5 shadow-sm shadow-foreground/5",
+    form: "flex flex-col gap-4 rounded-[24px] border-0 bg-surface p-5",
     field: "flex w-full flex-col gap-2",
     actions: "flex flex-col gap-3 pt-1",
     error: "text-sm text-danger",

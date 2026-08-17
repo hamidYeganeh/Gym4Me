@@ -11,7 +11,7 @@ export const settingsScreenVariants = tv({
     group: "flex flex-col gap-2",
     groupTitle: "px-1 text-muted",
     groupCard:
-      "overflow-hidden rounded-[24px] border-0 bg-surface shadow-sm shadow-foreground/5",
+      "overflow-hidden rounded-[24px] border-0 bg-surface",
     row: "flex w-full items-center gap-3 px-4 py-3.5",
     rowPressable: "h-auto justify-start rounded-none text-start font-normal",
     rowIcon:

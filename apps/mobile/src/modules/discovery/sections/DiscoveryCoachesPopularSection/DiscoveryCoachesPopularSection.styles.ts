@@ -6,6 +6,6 @@ export const discoveryCoachesPopularSectionStyles = {
   hint: "text-muted",
   seeAll:
     "shrink-0 cursor-pointer text-sm font-semibold text-accent no-underline shadow-none",
-  list: "overflow-hidden rounded-[24px] border-0 bg-surface shadow-sm shadow-foreground/5",
+  list: "overflow-hidden rounded-[24px] border-0 bg-surface",
   divider: "mx-4 h-px bg-border last:hidden",
 } as const;

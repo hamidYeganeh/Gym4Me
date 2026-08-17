@@ -55,9 +55,9 @@ export const discoveryHomeScreenStyles = {
   equipmentGrid: "flex flex-wrap gap-2",
   sportsBento: "grid grid-cols-2 gap-2",
   sportCard:
-    "!h-[13.75rem] !w-full !rounded-[1.35rem] snap-start shadow-[0_10px_28px_color-mix(in_oklch,var(--foreground)_8%,transparent)]",
+    "!h-[13.75rem] !w-full !rounded-[1.35rem] snap-start",
   sportCardFeatured:
-    "!h-[13.75rem] !w-full !rounded-[1.35rem] col-span-2 shadow-[0_12px_32px_color-mix(in_oklch,var(--accent)_22%,transparent)]",
+    "!h-[13.75rem] !w-full !rounded-[1.35rem] col-span-2",
   articleCard: "w-[min(17.5rem,78vw)] shrink-0 snap-start",
   galleryCard: "w-[10rem] shrink-0 snap-start",
   emptyInline: "px-1 text-muted",

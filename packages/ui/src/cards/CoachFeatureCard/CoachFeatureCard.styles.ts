@@ -5,7 +5,6 @@ export const coachFeatureCardVariants = tv({
   slots: {
     root: [
       "relative flex aspect-[3/4] w-full flex-col overflow-hidden rounded-[28px]",
-      "shadow-[0_14px_34px_color-mix(in_oklch,var(--foreground)_12%,transparent)]",
       "outline-none transition-transform duration-fast ease-app",
       "data-[pressable=true]:cursor-pointer",
       "data-[pressable=true]:active:scale-[0.985]",
@@ -24,7 +23,7 @@ export const coachFeatureCardVariants = tv({
       "[&_.chip__label]:text-xs [&_.chip__label]:font-semibold",
     ].join(" "),
     closeButton: [
-      "size-9 shrink-0 rounded-full bg-overlay/90 text-overlay-foreground shadow-sm",
+      "size-9 shrink-0 rounded-full bg-overlay/90 text-overlay-foreground",
       "hover:bg-overlay data-[hovered=true]:bg-overlay",
       "data-[pressed=true]:scale-[0.96]",
     ].join(" "),

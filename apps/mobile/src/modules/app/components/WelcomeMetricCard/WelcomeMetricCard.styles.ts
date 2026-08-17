@@ -6,7 +6,6 @@ export const welcomeMetricCardVariants = tv({
     root: [
       "relative flex w-full flex-col gap-3.5 overflow-hidden rounded-[2rem] p-5",
       "border border-white/10 text-white",
-      "shadow-[0_16px_36px_-18px_rgba(0,0,0,0.55)]",
     ],
     header: "flex w-full flex-row items-center justify-between gap-2 p-0",
     titleRow: "flex min-w-0 items-center gap-2",
@@ -35,7 +34,6 @@ export const welcomeMetricCardVariants = tv({
         root: [
           "border-transparent",
           "[background:linear-gradient(#000,#000)_padding-box,linear-gradient(105deg,#ff2d55_0%,#e11d48_40%,#9333ea_100%)_border-box]",
-          "shadow-[0_0_0_1px_rgba(255,45,85,0.2),0_0_36px_-4px_rgba(255,45,85,0.55)]",
         ],
         periodIcon: "size-4 text-rose-500",
       },

@@ -8,7 +8,7 @@ export const ownerMembersScreenStyles = {
   statsGrid: "grid grid-cols-2 gap-4",
   search: "w-full",
   groupCard:
-    "overflow-hidden rounded-[24px] border-0 bg-surface shadow-sm shadow-foreground/5",
+    "overflow-hidden rounded-[24px] border-0 bg-surface",
   row: "flex w-full items-start gap-3 px-4 py-3.5",
   avatar:
     "size-11 shrink-0 overflow-hidden rounded-full bg-default object-cover",
@@ -26,7 +26,7 @@ export const ownerMembersScreenStyles = {
   rowEnd: "flex shrink-0 flex-col items-end gap-2",
   divider: "mx-4 h-px bg-border",
   empty:
-    "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center shadow-sm shadow-foreground/5",
+    "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center",
   emptyTitle: "text-foreground",
   emptyBody: "text-muted",
 } as const;

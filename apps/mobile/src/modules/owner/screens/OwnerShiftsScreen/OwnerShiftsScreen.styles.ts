@@ -9,7 +9,7 @@ export const ownerShiftsScreenVariants = tv({
     introSubtitle: "text-muted",
     section: "flex flex-col gap-3",
     sectionTitle: "text-foreground",
-    card: "overflow-hidden rounded-[24px] border-0 bg-surface shadow-sm shadow-foreground/5",
+    card: "overflow-hidden rounded-[24px] border-0 bg-surface",
     row: "flex items-start justify-between gap-3 px-4 py-3.5",
     rowBody: "flex min-w-0 flex-1 flex-col gap-0.5",
     rowLabel: "text-foreground",

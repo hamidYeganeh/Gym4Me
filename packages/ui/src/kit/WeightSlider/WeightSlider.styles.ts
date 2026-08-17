@@ -4,7 +4,7 @@ export const weightSliderVariants = tv({
   slots: {
     root: [
       "relative flex h-[220px] w-full touch-none flex-col items-center",
-      "overflow-hidden rounded-[28px] border-0 bg-surface shadow-sm shadow-foreground/5",
+      "overflow-hidden rounded-[28px] border-0 bg-surface",
       "text-surface-foreground font-sans transition-colors duration-moderate ease-app select-none",
       "sm:h-[260px] sm:rounded-[36px]",
     ].join(" "),

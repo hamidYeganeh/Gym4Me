@@ -10,17 +10,17 @@ export const onboardingPermissionSheetVariants = tv({
     subtitle: "max-w-[20rem] text-sm leading-relaxed text-muted",
     stage: "relative mt-1 flex h-[14.5rem] w-full max-w-[17rem] items-end justify-center",
     phone:
-      "relative h-[13.5rem] w-[10.5rem] overflow-hidden rounded-[1.85rem] border-[3px] border-foreground/12 bg-surface shadow-[0_18px_40px_-24px_rgba(0,0,0,0.35)]",
+      "relative h-[13.5rem] w-[10.5rem] overflow-hidden rounded-[1.85rem] border-[3px] border-foreground/12 bg-surface",
     phoneBezel:
       "absolute inset-0 rounded-[1.6rem] bg-gradient-to-b from-default/40 to-transparent",
     phoneIsland:
       "absolute left-1/2 top-3 z-10 h-5 w-16 -translate-x-1/2 rounded-full bg-foreground/90",
     phoneScreen: "absolute inset-0 bg-background",
     banner:
-      "absolute left-1/2 top-[3.35rem] z-20 w-[min(100%,17.5rem)] -translate-x-1/2 rounded-2xl border border-border/70 bg-background px-3.5 py-3 shadow-[0_14px_36px_-12px_rgba(0,0,0,0.28)]",
+      "absolute left-1/2 top-[3.35rem] z-20 w-[min(100%,17.5rem)] -translate-x-1/2 rounded-2xl border border-border/70 bg-background px-3.5 py-3",
     bannerTop: "flex items-start gap-3",
     bannerIcon:
-      "flex size-11 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground shadow-sm",
+      "flex size-11 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground",
     bannerCopy: "min-w-0 flex-1",
     bannerTitleRow: "flex items-start justify-between gap-2",
     bannerTitle: "text-[0.92rem] leading-snug text-foreground",

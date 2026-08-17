@@ -6,7 +6,7 @@ export const clubRouteMapCardVariants = tv({
   slots: {
     root: [
       "relative flex w-full flex-col overflow-hidden rounded-[28px] p-0",
-      "border border-border/70 text-default-foreground shadow-sm",
+      "border border-border/70 text-default-foreground",
       "bg-linear-to-b from-surface via-default to-[color-mix(in_oklch,var(--accent)_12%,var(--default))]",
     ].join(" "),
     mapShell: "relative w-full overflow-hidden bg-map-land p-0",
@@ -23,7 +23,6 @@ export const clubRouteMapCardVariants = tv({
       "size-10 min-w-10 rounded-2xl",
       "bg-overlay/70 text-overlay-foreground backdrop-blur-md",
       "hover:bg-overlay/85 data-[hovered=true]:bg-overlay/85",
-      "shadow-sm",
     ].join(" "),
     footer: [
       "relative z-10 flex items-end justify-between gap-4 px-5 pb-5 pt-4",

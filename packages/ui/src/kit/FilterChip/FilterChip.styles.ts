@@ -21,7 +21,6 @@ export const filterChipVariants = tv({
       false: {
         root: [
           "border-transparent bg-surface text-foreground",
-          "shadow-sm shadow-foreground/5",
           "hover:bg-surface-secondary data-[hovered=true]:bg-surface-secondary",
           "[--button-fg:var(--foreground)]",
           "[--button-bg:var(--surface)]",

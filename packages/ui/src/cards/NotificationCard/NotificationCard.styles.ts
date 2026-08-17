@@ -6,7 +6,6 @@ export const notificationCardVariants = tv({
     root: [
       "flex w-full gap-3 rounded-[28px] border-0 bg-surface",
       "p-4 text-start sm:gap-4 sm:rounded-[32px] sm:p-5",
-      "shadow-sm shadow-foreground/5",
     ].join(" "),
     iconWrap: [
       "flex size-12 shrink-0 items-center justify-center rounded-[1rem]",

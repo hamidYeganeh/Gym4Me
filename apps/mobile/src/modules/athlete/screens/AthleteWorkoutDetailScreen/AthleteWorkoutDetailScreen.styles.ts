@@ -10,7 +10,7 @@ export const athleteWorkoutDetailScreenVariants = tv({
     metaRow: "flex flex-wrap items-center gap-2",
     sectionTitle: "text-muted",
     list: "flex flex-col gap-3",
-    card: "flex flex-col gap-2 rounded-[24px] border-0 bg-surface p-4 shadow-sm shadow-foreground/5",
+    card: "flex flex-col gap-2 rounded-[24px] border-0 bg-surface p-4",
     sessionCard:
       "flex flex-col gap-3 rounded-[24px] border border-warning/30 bg-warning/5 p-4",
     sessionForm: "flex flex-col gap-3",
@@ -22,6 +22,6 @@ export const athleteWorkoutDetailScreenVariants = tv({
     cardTop: "flex items-start justify-between gap-2",
     meta: "text-muted",
     empty:
-      "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center shadow-sm shadow-foreground/5",
+      "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center",
   },
 });

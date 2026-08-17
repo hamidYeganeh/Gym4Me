@@ -6,7 +6,6 @@ export const clubBranchCardVariants = tv({
     root: [
       "relative flex flex-col justify-end overflow-hidden",
       "bg-surface-tertiary text-foreground",
-      "shadow-[0_14px_34px_color-mix(in_oklch,var(--foreground)_10%,transparent)]",
     ].join(" "),
     media: "absolute inset-0 overflow-hidden",
     image:

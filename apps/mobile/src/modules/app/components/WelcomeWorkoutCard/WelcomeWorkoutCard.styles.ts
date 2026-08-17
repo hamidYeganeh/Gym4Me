@@ -4,8 +4,7 @@ export const welcomeWorkoutCardVariants = tv({
   slots: {
     root: [
       "relative flex h-full min-h-[min(48dvh,22rem)] w-full flex-col justify-between overflow-hidden",
-      "rounded-[1.75rem] border-0 bg-surface p-4 text-surface-foreground shadow-sm shadow-foreground/5",
-      "shadow-[0_16px_40px_-18px_color-mix(in_oklab,var(--foreground)_18%,transparent)]",
+      "rounded-[1.75rem] border-0 bg-surface p-4 text-surface-foreground",
     ],
     header: "flex w-full flex-row items-start justify-between gap-3 p-0",
     category:

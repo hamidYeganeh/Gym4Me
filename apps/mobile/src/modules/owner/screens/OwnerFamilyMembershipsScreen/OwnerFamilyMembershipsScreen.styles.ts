@@ -9,7 +9,7 @@ export const ownerFamilyMembershipsScreenVariants = tv({
     introSubtitle: "text-muted",
     section: "flex flex-col gap-3",
     sectionTitle: "text-foreground",
-    card: "flex flex-col gap-3 rounded-[24px] border-0 bg-surface p-4 shadow-sm shadow-foreground/5",
+    card: "flex flex-col gap-3 rounded-[24px] border-0 bg-surface p-4",
     row: "flex items-start justify-between gap-3",
     rowBody: "flex min-w-0 flex-1 flex-col gap-0.5",
     rowLabel: "text-foreground",

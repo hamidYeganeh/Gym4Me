@@ -6,7 +6,6 @@ export const clubClassCardVariants = tv({
     root: [
       "relative flex flex-col overflow-hidden",
       "text-start whitespace-normal",
-      "shadow-[0_14px_34px_color-mix(in_oklch,var(--foreground)_10%,transparent)]",
     ].join(" "),
     backgroundImage:
       "pointer-events-none absolute inset-0 size-full object-cover select-none",

@@ -5,7 +5,7 @@ export const articleCardVariants = tv({
     root: [
       "group relative overflow-hidden rounded-[1.75rem]",
       "border-0 bg-surface text-start text-foreground",
-      "shadow-sm shadow-foreground/5 transition-colors",
+      "transition-colors",
       "hover:bg-surface-secondary",
     ].join(" "),
     pressable: [

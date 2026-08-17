@@ -13,7 +13,7 @@ export const coachMapVariants = tv({
     zoomControls: [
       "pointer-events-auto absolute end-4 top-[26%] z-20",
       "flex flex-col items-center gap-1 rounded-full bg-overlay/92 p-1.5",
-      "shadow-[var(--overlay-shadow)] backdrop-blur-sm",
+      "backdrop-blur-sm",
     ].join(" "),
     zoomButton: [
       "size-9 min-w-9 rounded-full",

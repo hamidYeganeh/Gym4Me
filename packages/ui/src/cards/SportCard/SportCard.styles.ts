@@ -7,7 +7,6 @@ export const sportCardVariants = tv({
       // Override HeroUI Button defaults (h-10, inline-flex, items-center, etc.)
       "relative !flex flex-col items-stretch justify-between",
       "overflow-hidden text-start whitespace-normal",
-      "shadow-[0_14px_34px_color-mix(in_oklch,var(--foreground)_10%,transparent)]",
       "transition-transform duration-fast ease-app data-[pressed=true]:scale-[0.98]",
       "outline-none",
     ].join(" "),

@@ -9,7 +9,7 @@ export const ownerLifecycleScreenVariants = tv({
     introSubtitle: "text-muted",
     section: "flex flex-col gap-3",
     sectionTitle: "text-foreground",
-    card: "rounded-[1.25rem] border-0 bg-surface p-4 shadow-sm shadow-foreground/5",
+    card: "rounded-[1.25rem] border-0 bg-surface p-4",
     row: "flex items-start justify-between gap-3 border-b border-separator py-3 last:border-b-0 last:pb-0 first:pt-0",
     rowTitle: "text-foreground",
     rowMeta: "text-muted",

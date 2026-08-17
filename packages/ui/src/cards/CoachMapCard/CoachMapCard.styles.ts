@@ -5,7 +5,7 @@ export const coachMapCardVariants = tv({
   slots: {
     root: [
       "relative flex w-full flex-col gap-4 overflow-hidden rounded-[28px]",
-      "bg-surface p-5 text-surface-foreground shadow-[var(--overlay-shadow)]",
+      "bg-surface p-5 text-surface-foreground",
     ].join(" "),
     row: "flex items-start gap-3.5",
     avatarWrap: "relative size-14 shrink-0 overflow-visible rounded-full",

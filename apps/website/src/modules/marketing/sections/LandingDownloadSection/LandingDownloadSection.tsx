@@ -1,15 +1,42 @@
 "use client";
 
+import { useGSAP } from "@gsap/react";
 import { Avatar, Badge, Button, Typography } from "@heroui/react";
-import { Bell1, Calendar1, Fire1 } from "@repo/icons";
+import {
+  BarbellHorizontal,
+  Bell1,
+  Calendar1,
+  Chat,
+  Fire1,
+  FootSteps,
+  Scan1,
+  Ticket,
+  Wallet,
+} from "@repo/icons";
 import { CallToActionCard } from "@repo/ui/cards/CallToActionCard";
+import { MetricCard } from "@repo/ui/cards/MetricCard";
+import { QuickActionCard } from "@repo/ui/cards/QuickActionCard";
 import { SpotlightCard } from "@repo/ui/cards/SpotlightCard";
 import { TodoCard, type TodoCardItem } from "@repo/ui/cards/TodoCard";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useTranslations } from "next-intl";
+import { useRef } from "react";
 import { LANDING_ASSETS } from "../../lib/landing-assets";
 import { ClipReveal, InViewRise } from "../../lib/landing-reveal";
+import { usePrefersReducedMotion } from "../../lib/landing-motion";
+import { useScrollSmootherReady } from "../../lib/marketing-scroll-smoother";
 import { landingDownloadSectionStyles } from "./LandingDownloadSection.styles";
 import type { LandingDownloadSectionProps } from "./LandingDownloadSection.types";
+
+gsap.registerPlugin(useGSAP, ScrollTrigger);
+
+const WEEKDAY_LABELS = ["ش", "ی", "د", "س", "چ", "پ", "ج"] as const;
+const QUICK_ICON_SIZE = 16;
+/** Multiply phone overflow so the scrub doesn't feel rushed. */
+const PIN_OVERFLOW_SCALE = 1.35;
+/** Minimum pin travel when the phone has scrollable content. */
+const PIN_MIN_VH = 0.85;
 
 function AppStoreMark({ className }: { className: string }) {
   return (
@@ -43,12 +70,28 @@ export function LandingDownloadSection({
   const t = useTranslations("MarketingLanding.download");
   const app = useTranslations("AthleteHome");
   const slots = landingDownloadSectionStyles();
+  const reducedMotion = usePrefersReducedMotion();
+  const smootherReady = useScrollSmootherReady();
+  const sectionRef = useRef<HTMLElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   const profileName = app("profileName");
   const setupItems: TodoCardItem[] = [
     {
       id: "assessment",
       label: app("todoItemAssessment"),
       status: "completed",
+    },
+    {
+      id: "profile",
+      label: app("todoItemProfile"),
+      status: "completed",
+    },
+    {
+      id: "verify",
+      label: app("todoItemVerify"),
+      status: "pending",
     },
     {
       id: "first-exercise",
@@ -59,22 +102,129 @@ export function LandingDownloadSection({
   const setupDone = setupItems.filter((item) => item.status === "completed")
     .length;
 
+  useGSAP(
+    () => {
+      if (!smootherReady || reducedMotion) return;
+
+      const section = sectionRef.current;
+      const viewport = viewportRef.current;
+      const track = scrollRef.current;
+      if (!section || !viewport || !track) return;
+
+      const mm = gsap.matchMedia();
+
+      mm.add(
+        {
+          isDesktop: "(min-width: 768px)",
+          reduceMotion: "(prefers-reduced-motion: reduce)",
+        },
+        (ctx) => {
+          const { isDesktop, reduceMotion: prefersReduced } =
+            ctx.conditions as {
+              isDesktop: boolean;
+              reduceMotion: boolean;
+            };
+
+          if (prefersReduced) {
+            gsap.set(track, { clearProps: "transform" });
+            return;
+          }
+
+          const measureOverflow = () =>
+            Math.max(0, track.scrollHeight - viewport.clientHeight);
+
+          const pinDistance = () => {
+            const overflow = measureOverflow();
+            if (overflow < 8) return 1;
+            return Math.max(
+              Math.round(overflow * PIN_OVERFLOW_SCALE),
+              Math.round(window.innerHeight * PIN_MIN_VH),
+            );
+          };
+
+          gsap.set(track, { y: 0, force3D: true });
+
+          const tween = gsap.to(track, {
+            y: () => -measureOverflow(),
+            ease: "none",
+            scrollTrigger: {
+              id: "landing-download-phone-scroll",
+              trigger: section,
+              start: "top top",
+              end: () => `+=${pinDistance()}`,
+              pin: true,
+              pinSpacing: true,
+              scrub: isDesktop ? 0.55 : 0.4,
+              anticipatePin: 1,
+              invalidateOnRefresh: true,
+              // Late on the page — refresh after earlier triggers/spacers.
+              refreshPriority: 40,
+            },
+          });
+
+          let refreshRaf = 0;
+          const refresh = () => {
+            cancelAnimationFrame(refreshRaf);
+            refreshRaf = requestAnimationFrame(() => {
+              ScrollTrigger.refresh();
+            });
+          };
+
+          // Layout can settle after MetricCard charts / images mount.
+          requestAnimationFrame(() => requestAnimationFrame(refresh));
+          const ro = new ResizeObserver(() => refresh());
+          ro.observe(track);
+          ro.observe(viewport);
+
+          const images = Array.from(track.querySelectorAll("img"));
+          images.forEach((img) => {
+            if (!img.complete) {
+              img.addEventListener("load", refresh, { once: true });
+            }
+          });
+
+          return () => {
+            cancelAnimationFrame(refreshRaf);
+            ro.disconnect();
+            images.forEach((img) =>
+              img.removeEventListener("load", refresh),
+            );
+            tween.scrollTrigger?.kill();
+            tween.kill();
+          };
+        },
+      );
+
+      return () => mm.revert();
+    },
+    {
+      scope: sectionRef,
+      dependencies: [smootherReady, reducedMotion],
+      revertOnUpdate: true,
+    },
+  );
+
   return (
-    <section id="download" className={slots.root({ className })}>
-      <div className={slots.inner()}>
-        <div className={slots.copy()}>
-          <ClipReveal
-            id="download-title"
-            as="h2"
-            mode="lines"
-            text={"اپ را نصب کن\nو رزرو را شروع کن"}
-            className={slots.title()}
-          />
-          <p className={slots.hint()}>
-            باشگاه، مربی و کلاس را پیدا کن. پرداخت و تمدید عضویت همان‌جا تمام
-            می‌شود — درست مثل تجربه اپ.
-          </p>
-          <InViewRise delayIn={120} fromY={18} className={slots.actions()}>
+    <section
+      ref={sectionRef}
+      id="download"
+      className={slots.root({ className })}
+    >
+      <div className={slots.panel()}>
+        <div className={slots.inner()}>
+          <div className={slots.copy()}>
+            <ClipReveal
+              id="download-title"
+              as="h2"
+              mode="lines"
+              text={"اپ را نصب کن\nو رزرو را شروع کن"}
+              className={slots.title()}
+            />
+            <p className={slots.hint()}>
+              باشگاه، مربی و کلاس را پیدا کن. پرداخت و تمدید عضویت همان‌جا تمام
+              می‌شود — درست مثل تجربه اپ.
+            </p>
+            <InViewRise delayIn={120} fromY={18} className={slots.actions()}>
             <Button
               size="lg"
               aria-label={`${t("appStoreLabel")} ${t("appStoreTitle")}`}
@@ -155,88 +305,162 @@ export function LandingDownloadSection({
               <div className={slots.notch()}>
                 <div className={slots.notchDot()} />
               </div>
-              <div className={slots.screenInner()}>
-                <div className={slots.phoneHeader()}>
-                  <div className={slots.phoneIdentity()}>
-                    <Avatar className={slots.phoneAvatar()} color="accent">
-                      <Avatar.Image
-                        alt={profileName}
-                        src={LANDING_ASSETS.coaches[0]?.src}
-                      />
-                      <Avatar.Fallback>{profileName.slice(0, 1)}</Avatar.Fallback>
-                    </Avatar>
-                    <div className="min-w-0 flex-1 text-start">
-                      <Typography
-                        type="body-sm"
-                        weight="bold"
-                        className="truncate tracking-tight text-foreground"
-                      >
-                        {profileName}
-                      </Typography>
-                      <Typography
-                        type="body-xs"
-                        className="line-clamp-1 text-muted"
-                      >
-                        {app("subtitle")}
-                      </Typography>
+              <div ref={viewportRef} className={slots.phoneViewport()}>
+                <div ref={scrollRef} className={slots.phoneScroll()}>
+                  <div className={slots.phoneHeader()}>
+                    <div className={slots.phoneIdentity()}>
+                      <Avatar className={slots.phoneAvatar()} color="accent">
+                        <Avatar.Image
+                          alt={profileName}
+                          src={LANDING_ASSETS.coaches[0]?.src}
+                        />
+                        <Avatar.Fallback>
+                          {profileName.slice(0, 1)}
+                        </Avatar.Fallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1 text-start">
+                        <Typography
+                          type="body-sm"
+                          weight="bold"
+                          className="truncate tracking-tight text-foreground"
+                        >
+                          {profileName}
+                        </Typography>
+                        <Typography
+                          type="body-xs"
+                          className="line-clamp-1 text-muted"
+                        >
+                          {app("subtitle")}
+                        </Typography>
+                      </div>
                     </div>
+                    <Badge.Anchor>
+                      <Button
+                        isIconOnly
+                        size="lg"
+                        variant="tertiary"
+                        aria-label={app("notifications")}
+                        className={slots.phoneNotify()}
+                      >
+                        <Bell1 size={16} />
+                      </Button>
+                      <Badge
+                        aria-label={app("notifications")}
+                        color="danger"
+                        placement="bottom-right"
+                        size="sm"
+                      >
+                        <Badge.Label>۹+</Badge.Label>
+                      </Badge>
+                    </Badge.Anchor>
                   </div>
-                  <Badge.Anchor>
-                    <Button
-                      isIconOnly
-                      size="lg"
-                      variant="tertiary"
-                      aria-label={app("notifications")}
-                      className={slots.phoneNotify()}
-                    >
-                      <Bell1 size={16} />
-                    </Button>
-                    <Badge
-                      aria-label={app("notifications")}
-                      color="danger"
-                      placement="bottom-right"
-                      size="sm"
-                    >
-                      <Badge.Label>۹+</Badge.Label>
-                    </Badge>
-                  </Badge.Anchor>
+
+                  <SpotlightCard
+                    actionAriaLabel={app("heroAction")}
+                    actionLabel={app("heroAction")}
+                    className={slots.phoneSpotlight()}
+                    eyebrow={app("heroEyebrow")}
+                    progress={72}
+                    progressLabel={app("heroProgressLabel")}
+                    title={app("heroTitle")}
+                    unit={app("heroUnit")}
+                    value={app("heroValue")}
+                  />
+
+                  <div className={slots.phoneMetrics()}>
+                    <MetricCard
+                      chart={{
+                        type: "bars",
+                        series: [0.42, 0.58, 0.48, 0.76, 0.64, 0.88, 0.72],
+                      }}
+                      className={slots.phoneMetric()}
+                      color="var(--accent)"
+                      dayLabels={WEEKDAY_LABELS}
+                      icon={<FootSteps size={16} />}
+                      periodLabel={app("today")}
+                      status={app("stepsStatus")}
+                      title={app("stepsTitle")}
+                      unit={app("stepsUnit")}
+                      value={app("stepsValue")}
+                      variant="vertical"
+                    />
+                    <MetricCard
+                      chart={{
+                        type: "line",
+                        series: [18, 24, 21, 32, 28, 38, 34],
+                      }}
+                      className={slots.phoneMetric()}
+                      color="var(--foreground)"
+                      dayLabels={WEEKDAY_LABELS}
+                      icon={<Fire1 size={16} />}
+                      periodLabel={app("today")}
+                      status={app("activeMinutesStatus")}
+                      title={app("activeMinutesTitle")}
+                      unit={app("activeMinutesUnit")}
+                      value={app("activeMinutesValue")}
+                      variant="vertical"
+                    />
+                  </div>
+
+                  <CallToActionCard
+                    actionLabel={app("bookingsAction")}
+                    actionType="icon"
+                    className={slots.phoneCta()}
+                    icon={<Calendar1 size={16} />}
+                    subtitle={app("bookingsDescription")}
+                    title={app("bookingsTitle")}
+                    variant="outlined"
+                  />
+
+                  <Typography type="body-xs" className={slots.phoneQuickLabel()}>
+                    {app("quickLinksTitle")}
+                  </Typography>
+                  <div className={slots.phoneQuick()}>
+                    <QuickActionCard
+                      className={slots.phoneQuickItem()}
+                      icon={<BarbellHorizontal size={QUICK_ICON_SIZE} />}
+                      label={app("workoutsTitle")}
+                    />
+                    <QuickActionCard
+                      className={slots.phoneQuickItem()}
+                      icon={<Calendar1 size={QUICK_ICON_SIZE} />}
+                      label={app("bookingsTitle")}
+                    />
+                    <QuickActionCard
+                      className={slots.phoneQuickItem()}
+                      icon={<Wallet size={QUICK_ICON_SIZE} />}
+                      label={app("walletTitle")}
+                    />
+                    <QuickActionCard
+                      className={slots.phoneQuickItem()}
+                      icon={<Ticket size={QUICK_ICON_SIZE} />}
+                      label={app("membershipsTitle")}
+                    />
+                    <QuickActionCard
+                      className={slots.phoneQuickItem()}
+                      icon={<Scan1 size={QUICK_ICON_SIZE} />}
+                      label={app("checkInsTitle")}
+                    />
+                    <QuickActionCard
+                      className={slots.phoneQuickItem()}
+                      icon={<Chat size={QUICK_ICON_SIZE} />}
+                      label={app("messagesTitle")}
+                    />
+                  </div>
+
+                  <TodoCard
+                    className={slots.phoneTodo()}
+                    items={setupItems}
+                    progressLabel={app("todoProgressLabel")}
+                    stepLabel={app("todoStepLabel", {
+                      current: setupDone,
+                      total: setupItems.length,
+                    })}
+                    title={app("todoTitle")}
+                  />
                 </div>
-
-                <SpotlightCard
-                  actionAriaLabel={app("heroAction")}
-                  actionLabel={app("heroAction")}
-                  className={slots.phoneSpotlight()}
-                  eyebrow={app("heroEyebrow")}
-                  progress={72}
-                  progressLabel={app("heroProgressLabel")}
-                  title={app("heroTitle")}
-                  unit={app("heroUnit")}
-                  value={app("heroValue")}
-                />
-
-                <CallToActionCard
-                  actionLabel={app("bookingsAction")}
-                  actionType="icon"
-                  className={slots.phoneCta()}
-                  icon={<Calendar1 size={16} />}
-                  subtitle={app("bookingsDescription")}
-                  title={app("bookingsTitle")}
-                  variant="outlined"
-                />
-
-                <TodoCard
-                  className={slots.phoneTodo()}
-                  items={setupItems}
-                  progressLabel={app("todoProgressLabel")}
-                  stepLabel={app("todoStepLabel", {
-                    current: setupDone,
-                    total: setupItems.length,
-                  })}
-                  title={app("todoTitle")}
-                />
-
-                <div className={slots.homeIndicator()} />
               </div>
+              <div className={slots.homeIndicator()} aria-hidden />
             </div>
           </div>
 
@@ -262,6 +486,7 @@ export function LandingDownloadSection({
             </div>
           </div>
         </InViewRise>
+        </div>
       </div>
     </section>
   );

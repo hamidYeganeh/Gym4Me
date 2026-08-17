@@ -1,24 +1,42 @@
 "use client";
 
+import { ScrollShadow, type ScrollShadowVisibility } from "@heroui/react";
 import { ClubCard } from "@repo/ui/cards/ClubCard";
+import useEmblaCarousel from "embla-carousel-react";
 import { useEffect, useRef, useState } from "react";
-import { LANDING_ASSETS, LANDING_AVATAR_DOTS, LANDING_CLUBS } from "../../lib/landing-assets";
+import { LANDING_ASSETS, LANDING_CLUBS } from "../../lib/landing-assets";
 import { BrandMark } from "../../lib/landing-controls";
-import { CarouselDots, ClipReveal, InViewRise } from "../../lib/landing-reveal";
+import { ClipReveal, InViewRise } from "../../lib/landing-reveal";
 import { useLandingScroll } from "../../lib/landing-scroll";
 import { MarketingThemeToggle } from "../../lib/marketing-theme-toggle";
 import { landingHeroSectionStyles } from "./LandingHeroSection.styles";
 import type { LandingHeroSectionProps } from "./LandingHeroSection.types";
 
-const HERO_CLUBS = LANDING_CLUBS.slice(0, 3);
+const HERO_CLUBS = LANDING_CLUBS.slice(0, 5);
+
+function shadowFromEmbla(
+  canPrev: boolean,
+  canNext: boolean,
+): ScrollShadowVisibility {
+  if (canPrev && canNext) return "both";
+  if (canPrev) return "left";
+  if (canNext) return "right";
+  return "none";
+}
 
 export function LandingHeroSection({ className }: LandingHeroSectionProps) {
   const slots = landingHeroSectionStyles();
   const { ready, openMenu, scrollTo } = useLandingScroll();
   const sectionRef = useRef<HTMLElement>(null);
   const parallaxRef = useRef<HTMLDivElement>(null);
-  const [slide, setSlide] = useState(0);
-  const [cardKey, setCardKey] = useState(0);
+  const [shadowVisibility, setShadowVisibility] =
+    useState<ScrollShadowVisibility>("auto");
+
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    align: "start",
+    containScroll: "trimSnaps",
+    direction: "rtl",
+  });
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -50,15 +68,25 @@ export function LandingHeroSection({ className }: LandingHeroSectionProps) {
   }, []);
 
   useEffect(() => {
-    if (!ready) return;
-    const id = window.setInterval(() => {
-      setSlide((s) => (s + 1) % HERO_CLUBS.length);
-      setCardKey((k) => k + 1);
-    }, 3800);
-    return () => window.clearInterval(id);
-  }, [ready]);
+    if (!emblaApi) return;
 
-  const featured = HERO_CLUBS[slide]!;
+    const syncShadow = () => {
+      setShadowVisibility(
+        shadowFromEmbla(emblaApi.canScrollPrev(), emblaApi.canScrollNext()),
+      );
+    };
+
+    syncShadow();
+    emblaApi.on("select", syncShadow);
+    emblaApi.on("reInit", syncShadow);
+    emblaApi.on("scroll", syncShadow);
+
+    return () => {
+      emblaApi.off("select", syncShadow);
+      emblaApi.off("reInit", syncShadow);
+      emblaApi.off("scroll", syncShadow);
+    };
+  }, [emblaApi]);
 
   return (
     <section ref={sectionRef} className={slots.root({ className })}>
@@ -139,7 +167,7 @@ export function LandingHeroSection({ className }: LandingHeroSectionProps) {
           id="hero-title"
           as="h1"
           mode="lines"
-          text={"باشگاهت را\nپیدا کن"}
+          text={"باشگاهت را پیدا کن"}
           className={slots.title()}
           active={ready}
           stagger={140}
@@ -159,61 +187,48 @@ export function LandingHeroSection({ className }: LandingHeroSectionProps) {
           duration={900}
         />
 
-        <div className={slots.cluster()}>
-          <InViewRise className={slots.slider()} delayIn={650} fromY={28}>
-            <div key={cardKey} className="landing-card-crossfade">
-              <ClubCard
-                actionLabel="مشاهده"
-                className={slots.clubCard()}
-                features={[...featured.features]}
-                image={featured.image}
-                imageAlt={featured.title}
-                onAction={() => scrollTo("#clubs")}
-                orientation="vertical"
-                price={featured.price}
-                pricePrefix="از"
-                priceSuffix="تومان"
-                rating={featured.rating}
-                ratingCount={featured.ratingCount}
-                subtitle={featured.subtitle}
-                title={featured.title}
-              />
-            </div>
-            <CarouselDots
-              count={HERO_CLUBS.length}
-              active={slide}
-              tone="light"
-              onSelect={(i) => {
-                setSlide(i);
-                setCardKey((k) => k + 1);
-              }}
-            />
-          </InViewRise>
-
-          <InViewRise delayIn={780} fromY={28}>
-            <article className={slots.memberCard()}>
-              <div className={slots.memberCopy()}>
-                <p className={slots.memberValue()}>۹هزار+</p>
-                <div className={slots.memberDots()} aria-hidden>
-                  {LANDING_AVATAR_DOTS.map((color) => (
-                    <span
-                      key={color}
-                      className={slots.memberDot()}
-                      style={{ backgroundColor: color }}
+        <InViewRise className={slots.slider()} delayIn={650} fromY={28}>
+          <ScrollShadow
+            className={slots.carouselShadow()}
+            hideScrollBar
+            isEnabled={false}
+            orientation="horizontal"
+            size={56}
+            visibility={shadowVisibility}
+          >
+            <div
+              aria-label="باشگاه‌های پیشنهادی"
+              aria-roledescription="carousel"
+              className={slots.carousel()}
+              dir="rtl"
+              ref={emblaRef}
+              role="group"
+            >
+              <div className={slots.carouselTrack()}>
+                {HERO_CLUBS.map((club) => (
+                  <div className={slots.slide()} key={club.title}>
+                    <ClubCard
+                      actionLabel="مشاهده"
+                      className={slots.clubCard()}
+                      features={[...club.features]}
+                      image={club.image}
+                      imageAlt={club.title}
+                      onAction={() => scrollTo("#clubs")}
+                      orientation="vertical"
+                      price={club.price}
+                      pricePrefix="از"
+                      priceSuffix="تومان"
+                      rating={club.rating}
+                      ratingCount={club.ratingCount}
+                      subtitle={club.subtitle}
+                      title={club.title}
                     />
-                  ))}
-                </div>
-                <p className={slots.memberCaption()}>عضو در حال تمرین</p>
+                  </div>
+                ))}
               </div>
-              <img
-                src={LANDING_ASSETS.membership}
-                alt="ورزشکار آماده برای جلسه بعد"
-                className={slots.memberImg()}
-                loading="lazy"
-              />
-            </article>
-          </InViewRise>
-        </div>
+            </div>
+          </ScrollShadow>
+        </InViewRise>
       </div>
     </section>
   );

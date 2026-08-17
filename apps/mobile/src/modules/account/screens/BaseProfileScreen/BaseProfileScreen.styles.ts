@@ -15,7 +15,7 @@ export const baseProfileScreenVariants = tv({
       "relative z-10 -mt-14 flex items-end justify-center gap-5 px-screen",
     sideAction: [
       "size-12 shrink-0 rounded-[1rem] border-0 bg-surface",
-      "text-foreground shadow-sm shadow-foreground/5",
+      "text-foreground",
     ].join(" "),
     avatarWrap: "relative shrink-0",
     avatar: [
@@ -52,7 +52,7 @@ export const baseProfileScreenVariants = tv({
     chatButton: "rounded-[1rem] border-accent font-semibold text-accent",
     postsCard: [
       "mt-1 flex min-h-64 flex-col overflow-hidden rounded-[1.5rem]",
-      "border-0 bg-surface shadow-sm shadow-foreground/5",
+      "border-0 bg-surface",
     ].join(" "),
     postsBody:
       "flex flex-1 flex-col items-center justify-center gap-2 px-6 py-10 text-center",

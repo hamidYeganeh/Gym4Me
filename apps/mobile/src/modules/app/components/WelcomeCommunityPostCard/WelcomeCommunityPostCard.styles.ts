@@ -4,8 +4,7 @@ export const welcomeCommunityPostCardVariants = tv({
   slots: {
     root: [
       "relative flex w-full flex-col gap-4 overflow-hidden rounded-[1.75rem]",
-      "border-0 bg-surface p-5 text-surface-foreground shadow-sm shadow-foreground/5",
-      "shadow-[0_18px_44px_-18px_color-mix(in_oklab,var(--foreground)_18%,transparent)]",
+      "border-0 bg-surface p-5 text-surface-foreground",
     ],
     header: "flex w-full flex-row items-start justify-between gap-3 p-0",
     authorBlock: "flex min-w-0 flex-col gap-0.5",

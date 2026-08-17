@@ -39,7 +39,7 @@ export const discoveryClubsDetailCalendarSectionVariants = tv({
       "transition-[background-color,box-shadow,color,transform] duration-200",
       "active:scale-[0.97]",
       "bg-surface text-foreground",
-      "shadow-[0_8px_16px_0_color-mix(in_oklch,var(--foreground)_5%,transparent)]",
+      "",
     ].join(" "),
     dayButtonSelected: [
       "bg-accent! text-accent-foreground!",
@@ -103,7 +103,7 @@ export const discoveryClubsDetailCalendarSectionVariants = tv({
     skeletonCards: "flex min-w-0 flex-col gap-3 pb-5",
     skeletonCard: [
       "flex h-[5.25rem] w-full items-center gap-3 rounded-[22px]",
-      "border-0 bg-surface px-3 py-3 shadow-sm shadow-foreground/5",
+      "border-0 bg-surface px-3 py-3",
     ].join(" "),
     skeletonThumb: "size-14 shrink-0 rounded-2xl",
     skeletonLines: "flex min-w-0 flex-1 flex-col gap-2",

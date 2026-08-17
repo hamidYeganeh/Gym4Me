@@ -31,7 +31,7 @@ export const landingTestimonialsSectionStyles = tv({
     ],
     reviewOverlay: [
       "pointer-events-none absolute inset-x-5 bottom-5 rounded-xl bg-(--brand-light)",
-      "p-4 opacity-0 shadow-[0_10px_20px_rgba(0,0,0,0.1)]",
+      "p-4 opacity-0",
       "translate-y-5 transition-all duration-[400ms]",
       "ease-[cubic-bezier(0.175,0.885,0.32,1.275)]",
       "group-hover:translate-y-0 group-hover:opacity-100",

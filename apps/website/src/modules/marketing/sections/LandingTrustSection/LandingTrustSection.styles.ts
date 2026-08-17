@@ -6,11 +6,11 @@ export const landingTrustSectionStyles = tv({
     badges:
       "relative z-20 flex flex-col justify-between gap-6 sm:flex-row sm:items-start",
     percent:
-      "grid size-28 place-content-center rounded-full bg-surface-secondary text-center shadow-sm shadow-foreground/5 sm:size-32",
+      "grid size-28 place-content-center rounded-full bg-surface-secondary text-center sm:size-32",
     percentValue: "text-2xl font-bold text-foreground",
     percentCaption: "mx-auto max-w-[8em] text-[0.6rem] text-muted",
     badgeCard:
-      "flex max-w-md gap-4 rounded-[1.5rem] bg-surface p-5 shadow-sm shadow-foreground/5 sm:gap-5 sm:p-6",
+      "flex max-w-md gap-4 rounded-[1.5rem] bg-surface p-5 sm:gap-5 sm:p-6",
     chip: "rounded-[0.875rem] bg-background px-4 py-2 text-xl font-bold text-foreground",
     badgeTitle: "text-lg font-bold text-foreground",
     badgeBody: "mt-1 text-xs leading-relaxed text-muted",

@@ -2,7 +2,7 @@ import { tv } from "tailwind-variants";
 
 export const landingBookingSectionStyles = tv({
   slots: {
-    root: "w-full bg-background px-6 pb-2.5 pt-[140px] font-sans",
+    root: "relative z-0 w-full bg-background px-6 pb-2.5 pt-[140px] font-sans",
     inner: "landing-container",
     banner: [
       "relative flex min-h-[260px] flex-col overflow-hidden rounded-2xl",

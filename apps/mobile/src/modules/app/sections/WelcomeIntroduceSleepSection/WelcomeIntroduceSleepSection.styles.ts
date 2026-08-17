@@ -6,7 +6,7 @@ export const welcomeIntroduceSleepSectionVariants = tv({
     card: [
       "rounded-[1.25rem] bg-surface p-4",
       "ring-1 ring-border/60",
-      "shadow-[0_12px_28px_color-mix(in_oklch,var(--foreground)_10%,transparent)]",
+      "",
     ],
     breakdownHeader: "mb-3 flex items-center justify-between gap-2",
     breakdownTitle: "text-[0.75rem] font-semibold text-foreground",

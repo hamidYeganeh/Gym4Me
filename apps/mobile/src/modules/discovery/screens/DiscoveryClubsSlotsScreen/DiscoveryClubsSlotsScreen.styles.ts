@@ -8,7 +8,7 @@ export const discoveryClubsSlotsScreenStyles = {
   list: "flex flex-col gap-3",
   card: "w-full",
   empty:
-    "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center shadow-sm shadow-foreground/5",
+    "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center",
   emptyTitle: "text-foreground",
   emptyBody: "text-muted",
   status: "flex items-center justify-center gap-2 py-10 text-sm text-muted",

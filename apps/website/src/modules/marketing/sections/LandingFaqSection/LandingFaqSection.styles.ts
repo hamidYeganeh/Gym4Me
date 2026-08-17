@@ -16,8 +16,6 @@ export const landingFaqSectionStyles = tv({
       "bg-surface-secondary transition-all duration-moderate ease-app",
       "has-[[aria-expanded=true]]:border-border",
       "has-[[aria-expanded=true]]:bg-surface",
-      "has-[[aria-expanded=true]]:shadow-sm",
-      "has-[[aria-expanded=true]]:shadow-foreground/5",
     ].join(" "),
     trigger: [
       "group flex h-auto min-h-[88px] w-full cursor-pointer items-center",

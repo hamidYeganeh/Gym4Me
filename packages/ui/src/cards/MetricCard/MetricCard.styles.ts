@@ -7,7 +7,7 @@ export const metricCardVariants = tv({
       // Override HeroUI `.card` (flex-col gap-3 p-4)
       "relative !flex !flex-col !gap-0 border-0 bg-surface",
       "overflow-hidden rounded-[24px] text-start text-surface-foreground",
-      "shadow-sm shadow-foreground/5 outline-none shrink-0",
+      "outline-none shrink-0",
       "data-[pressable=true]:cursor-pointer",
       "data-[pressable=true]:transition-transform data-[pressable=true]:active:scale-[0.99]",
     ].join(" "),

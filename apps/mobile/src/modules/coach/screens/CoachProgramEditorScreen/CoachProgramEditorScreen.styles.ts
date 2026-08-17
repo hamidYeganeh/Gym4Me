@@ -5,7 +5,7 @@ export const coachProgramEditorScreenStyles = {
   introTitle: "tracking-tight text-foreground",
   introSubtitle: "text-muted",
   actions: "flex flex-col gap-2",
-  weekCard: "flex flex-col gap-3 rounded-[24px] border-0 bg-surface p-4 shadow-sm shadow-foreground/5",
+  weekCard: "flex flex-col gap-3 rounded-[24px] border-0 bg-surface p-4",
   weekTitle: "text-foreground",
   dayCard: "flex flex-col gap-2 rounded-[16px] bg-background p-3",
   dayTitle: "text-foreground",

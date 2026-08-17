@@ -8,12 +8,12 @@ export const athleteProgressPhotosScreenVariants = tv({
     introTitle: "tracking-tight text-foreground",
     introSubtitle: "text-muted",
     grid: "grid grid-cols-2 gap-3",
-    card: "flex flex-col gap-2 rounded-[1.25rem] border-0 bg-surface p-3 shadow-sm shadow-foreground/5",
+    card: "flex flex-col gap-2 rounded-[1.25rem] border-0 bg-surface p-3",
     thumb:
       "flex aspect-square items-center justify-center rounded-xl bg-accent/10 text-accent",
     meta: "text-muted",
     empty:
-      "flex flex-col items-center gap-2 rounded-[1.25rem] border-0 bg-surface px-6 py-10 text-center shadow-sm shadow-foreground/5",
+      "flex flex-col items-center gap-2 rounded-[1.25rem] border-0 bg-surface px-6 py-10 text-center",
     actions: "flex flex-col gap-2",
   },
 });

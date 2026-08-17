@@ -18,7 +18,7 @@ export const marketingClubsSectionStyles = tv({
     description:
       "max-w-lg text-xs leading-relaxed font-semibold text-accent/80 sm:text-sm md:text-base",
     gallery: "relative z-10 h-full w-full",
-    card: "club-card absolute overflow-hidden rounded-xl shadow-lg",
+    card: "club-card absolute overflow-hidden rounded-xl",
     cardScale: "club-card-scale absolute top-0 left-0",
   },
 });

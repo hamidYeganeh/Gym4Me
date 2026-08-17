@@ -6,7 +6,6 @@ export const welcomeActivityCardVariants = tv({
     root: [
       "flex h-[9.25rem] w-[8.25rem] flex-col justify-between rounded-[2rem] p-4",
       "border border-white/10 bg-[#18181b] text-white",
-      "shadow-[0_18px_40px_-18px_rgba(0,0,0,0.65)]",
       "dark:border-white/10 dark:bg-[#18181b]",
     ],
     icon: "size-9 text-zinc-500",

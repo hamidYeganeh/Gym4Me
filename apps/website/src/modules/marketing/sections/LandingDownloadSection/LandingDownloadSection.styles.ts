@@ -2,17 +2,26 @@ import { tv } from "tailwind-variants";
 
 export const landingDownloadSectionStyles = tv({
   slots: {
-    root: [
-      "landing-download mt-3 overflow-hidden rounded-(--radius-card-lg)",
-      "bg-accent px-6 py-20 text-accent-foreground sm:px-10 sm:py-24",
+    /**
+     * Pin target — no overflow/rounding here (breaks ScrollSmoother pins).
+     * High z-index keeps following sections from painting over the transform pin.
+     */
+    root: "landing-download relative z-30 mt-3 w-full min-h-svh py-4",
+    panel: [
+      "relative flex h-full items-center overflow-hidden",
+      "rounded-(--radius-card-lg) bg-accent px-6 py-16 text-accent-foreground",
+      "sm:px-10 sm:py-20",
     ].join(" "),
     inner:
-      "mx-auto grid w-full max-w-[1200px] items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16",
-    copy: "flex flex-col items-start text-start",
-    title:
-      "text-5xl font-medium leading-[0.92] tracking-tight text-accent-foreground sm:text-6xl",
-    hint: "mt-4 max-w-md text-sm text-accent-foreground/75",
-    actions: "mt-10 flex w-full max-w-md flex-col gap-3 sm:flex-row sm:items-center",
+      "mx-auto grid w-full max-w-[1200px] items-center gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16",
+    copy: "relative z-10 flex flex-col items-start text-start max-lg:order-2",
+    title: [
+      "text-4xl font-medium leading-[0.98] tracking-tight text-accent-foreground",
+      "sm:text-5xl lg:text-6xl",
+    ].join(" "),
+    hint: "mt-3 max-w-md text-sm text-accent-foreground/75 sm:mt-4",
+    actions:
+      "mt-8 flex w-full max-w-md flex-col gap-3 sm:mt-10 sm:flex-row sm:items-center",
     store: [
       "group h-auto w-full justify-center gap-3 rounded-full",
       "bg-foreground px-6 py-3.5 text-background",
@@ -29,29 +38,37 @@ export const landingDownloadSectionStyles = tv({
     storeIconPlay: "h-6 w-6 shrink-0",
     storeKicker: "-mb-0.5 text-start text-[0.65rem] tracking-wider opacity-70",
     storeTitle: "text-start text-base leading-none tracking-tight",
-    stage: "relative mx-auto flex w-full max-w-[22rem] items-center justify-center lg:max-w-none",
+    stage:
+      "relative z-10 mx-auto flex w-full max-w-[22rem] items-center justify-center max-lg:order-1 lg:max-w-none",
     bezel:
-      "relative z-10 flex h-[34rem] w-[17rem] flex-col rounded-[2.5rem] bg-accent-foreground shadow-[0_28px_60px_-20px_color-mix(in_oklab,var(--color-accent-foreground)_45%,transparent)] sm:h-[36rem] sm:w-[18rem]",
+      "relative z-10 flex h-[30rem] w-[15.5rem] flex-col rounded-[2.5rem] bg-accent-foreground shadow-[0_28px_60px_-20px_color-mix(in_oklab,var(--color-accent-foreground)_45%,transparent)] sm:h-[34rem] sm:w-[17rem] lg:h-[36rem] lg:w-[18rem]",
     screen:
       "absolute inset-[6px] z-10 overflow-hidden rounded-[2.15rem] bg-background text-foreground",
     notch:
       "absolute top-[5px] left-1/2 z-50 flex h-6 w-[5.5rem] -translate-x-1/2 items-center justify-start rounded-full bg-accent-foreground px-3",
     notchDot: "h-1.5 w-1.5 rounded-full bg-foreground/80",
-    screenInner:
-      "relative flex h-full w-full flex-col gap-2.5 overflow-hidden px-3 pt-10 pb-6",
+    phoneViewport: "absolute inset-0 overflow-hidden",
+    phoneScroll:
+      "relative flex w-full flex-col gap-2.5 px-3 pt-10 pb-10 will-change-transform",
     phoneHeader: "flex items-center justify-between gap-2",
     phoneIdentity: "flex min-w-0 flex-1 items-center gap-2",
     phoneAvatar: "size-9 shrink-0",
     phoneNotify:
       "size-9 min-w-9 rounded-full border border-border bg-surface text-foreground",
-    phoneSpotlight: "!min-h-0 shrink-0 !rounded-[1.15rem] !p-3 !shadow-sm",
+    phoneSpotlight: "!min-h-0 shrink-0 !rounded-[1.15rem] !p-3 !shadow-none",
+    phoneMetrics: "grid grid-cols-1 gap-2.5",
+    phoneMetric: "!min-h-0 !rounded-[1.15rem] !p-2.5 !shadow-none",
     phoneCta: "!min-h-0 shrink-0 !rounded-[1.15rem] !p-3",
-    phoneTodo: "min-h-0 flex-1 overflow-hidden !gap-2 !rounded-[1.15rem] !p-3",
+    phoneQuickLabel:
+      "px-0.5 text-start text-[0.65rem] font-semibold tracking-wide text-muted",
+    phoneQuick:
+      "grid grid-cols-3 gap-2 rounded-[1.15rem] border border-border bg-surface p-2.5",
+    phoneQuickItem: "!min-h-0 !gap-1.5 !p-0",
+    phoneTodo: "!min-h-0 !gap-2 !rounded-[1.15rem] !p-3",
     homeIndicator:
-      "absolute bottom-2 left-1/2 h-1 w-24 -translate-x-1/2 rounded-full bg-foreground/20",
+      "pointer-events-none absolute bottom-2 left-1/2 z-20 h-1 w-24 -translate-x-1/2 rounded-full bg-foreground/20",
     floatingBadge:
-      "absolute z-20 hidden items-center gap-2 rounded-2xl border border-border bg-surface p-2.5 text-surface-foreground shadow-lg sm:flex",
-    badgeIcon:
-      "flex size-8 shrink-0 items-center justify-center rounded-full",
+      "absolute z-20 hidden items-center gap-2 rounded-2xl border border-border bg-surface p-2.5 text-surface-foreground sm:flex",
+    badgeIcon: "flex size-8 shrink-0 items-center justify-center rounded-full",
   },
 });

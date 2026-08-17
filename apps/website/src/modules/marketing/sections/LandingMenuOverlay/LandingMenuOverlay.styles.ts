@@ -2,7 +2,7 @@ import { tv } from "tailwind-variants";
 
 export const landingMenuOverlayStyles = tv({
   slots: {
-    root: "fixed inset-0 z-70 flex flex-col",
+    root: "fixed inset-0 z-999 flex flex-col",
     backdrop:
       "absolute inset-0 bg-(--brand-deep) transition-opacity duration-moderate ease-app",
     panel: [

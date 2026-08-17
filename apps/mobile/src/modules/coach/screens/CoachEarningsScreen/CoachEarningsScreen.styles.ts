@@ -5,7 +5,7 @@ export const coachEarningsScreenStyles = {
   introTitle: "tracking-tight text-foreground",
   introSubtitle: "text-muted",
   balanceCard:
-    "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-7 text-center shadow-sm shadow-foreground/5",
+    "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-7 text-center",
   balanceLabel: "text-muted",
   balanceRow: "flex items-baseline gap-2",
   balanceValue: "tracking-tight text-foreground",
@@ -15,9 +15,9 @@ export const coachEarningsScreenStyles = {
   section: "flex flex-col gap-3",
   sectionTitle: "text-foreground",
   chartCard:
-    "rounded-[24px] border-0 bg-surface p-4 shadow-sm shadow-foreground/5",
+    "rounded-[24px] border-0 bg-surface p-4",
   groupCard:
-    "overflow-hidden rounded-[24px] border-0 bg-surface shadow-sm shadow-foreground/5",
+    "overflow-hidden rounded-[24px] border-0 bg-surface",
   row: "flex items-center justify-between gap-3 px-4 py-3.5",
   rowLabel: "text-foreground",
   rowLabelMuted: "text-muted",

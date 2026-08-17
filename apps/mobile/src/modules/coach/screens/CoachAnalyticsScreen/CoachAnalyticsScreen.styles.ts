@@ -8,16 +8,16 @@ export const coachAnalyticsScreenStyles = {
   section: "flex flex-col gap-3",
   sectionTitle: "text-foreground",
   chartCard:
-    "rounded-[24px] border-0 bg-surface p-4 shadow-sm shadow-foreground/5",
+    "rounded-[24px] border-0 bg-surface p-4",
   hoursCard:
-    "flex flex-col gap-4 rounded-[24px] border-0 bg-surface p-4 shadow-sm shadow-foreground/5",
+    "flex flex-col gap-4 rounded-[24px] border-0 bg-surface p-4",
   hourRow: "flex items-center gap-3",
   hourLabel: "w-24 shrink-0 text-muted",
   hourTrack: "h-2 flex-1 overflow-hidden rounded-full bg-default",
   hourFill: "h-full rounded-full bg-accent",
   hourValue: "w-16 shrink-0 text-end text-muted",
   ratingCard:
-    "flex flex-col gap-4 rounded-[24px] border-0 bg-surface p-4 shadow-sm shadow-foreground/5",
+    "flex flex-col gap-4 rounded-[24px] border-0 bg-surface p-4",
   ratingTop: "flex items-center gap-4",
   ratingAverage: "tracking-tight text-foreground",
   ratingMeta: "flex flex-col gap-0.5",

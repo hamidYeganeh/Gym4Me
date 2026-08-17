@@ -237,7 +237,13 @@
 @utility app-surface {
   border-radius: var(--surface-radius);
   background: var(--surface);
-  box-shadow: 0 12px 32px color-mix(in oklch, var(--foreground) 6%, transparent);
+}
+
+/*
+ * Cards: no elevation shadows (HeroUI `.card` defaults to `shadow-surface`).
+ */
+.card {
+  box-shadow: none;
 }
 
 @utility app-surface-compact {

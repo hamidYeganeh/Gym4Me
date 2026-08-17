@@ -15,8 +15,7 @@ export const landingHeroSectionStyles = tv({
       "absolute inset-0",
       "bg-[linear-gradient(to_bottom,color-mix(in_oklab,var(--brand-deep)_65%,transparent),color-mix(in_oklab,var(--brand-deep)_35%,transparent),color-mix(in_oklab,var(--brand-deep)_75%,transparent))]",
     ],
-    header:
-      "relative z-20 flex items-start px-6 pt-6 text-xs sm:px-10 sm:pt-8",
+    header: "relative z-20 flex items-start px-6 pt-6 text-xs sm:px-10 sm:pt-8",
     navLeft: "hidden flex-1 gap-8 lg:flex",
     navLink:
       "text-(--on-brand) opacity-90 transition-opacity duration-fast ease-app hover:opacity-100",
@@ -30,29 +29,21 @@ export const landingHeroSectionStyles = tv({
     burger:
       "grid size-10 place-items-center gap-[5px] rounded-full bg-(--glass-fill) backdrop-blur transition-opacity duration-moderate ease-app hover:bg-(--glass-border)",
     burgerBar: "block h-px w-4 bg-(--on-brand)",
-    titleWrap: "relative z-10 px-6 pt-4 sm:px-10",
-    title: [
-      "text-[clamp(2.75rem,10vw,8rem)] font-medium leading-[0.85] tracking-[-0.02em]",
-    ],
+    titleWrap:
+      "relative z-10 flex flex-1 items-center justify-center px-6_ text-center sm:px-10",
+    title: ["text-center text-[clamp(2.5rem,10vw,6rem)] font-bold"],
     bottom: [
       "relative z-10 mt-auto flex flex-col gap-6 px-6 pb-8",
       "sm:flex-row sm:items-end sm:justify-between sm:px-10 sm:pb-10",
     ],
     tagline:
       "text-[2.4rem] font-medium leading-[0.95] tracking-tight text-(--on-brand-muted)",
-    cluster: "flex items-end gap-4",
-    slider: "hidden w-64 shrink-0 flex-col gap-3 md:flex",
-    clubCard: "w-full max-w-none shadow-lg shadow-foreground/20",
-    memberCard: [
-      "flex w-full max-w-80 items-stretch gap-3 rounded-[1.5rem] border border-(--glass-border)",
-      "bg-(--glass-fill) p-3 shadow-lg shadow-(--brand-deep)/20 backdrop-blur sm:max-w-60",
-    ],
-    memberCopy: "flex flex-1 flex-col justify-between",
-    memberValue: "text-3xl font-medium leading-none",
-    memberDots: "flex",
-    memberDot: "size-5 rounded-full border border-(--brand-deep)/40 -ms-2 first:ms-0",
-    memberCaption: "text-[0.65rem] opacity-80",
-    memberImg:
-      "aspect-[3/4] w-16 shrink-0 rounded-xl object-cover",
+    slider: "hidden w-[min(37.5rem,calc(100vw-4rem))] shrink-0 md:block",
+    carouselShadow: "w-full max-w-none",
+    carousel: "overflow-hidden",
+    carouselTrack: "flex touch-pan-y gap-3",
+    /** 2.5 cards: (100% − 2×gap-3) / 2.5 */
+    slide: "min-w-0 shrink-0 basis-[calc((100%-1.5rem)/2.5)]",
+    clubCard: "w-full max-w-none",
   },
 });

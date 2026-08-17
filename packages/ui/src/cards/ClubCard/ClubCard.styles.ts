@@ -5,7 +5,6 @@ export const clubCardVariants = tv({
   slots: {
     root: [
       "relative flex overflow-hidden rounded-[24px]",
-      "shadow-[0_14px_34px_color-mix(in_oklch,var(--foreground)_10%,transparent)]",
     ].join(" "),
     media: "absolute inset-0 overflow-hidden",
     image:

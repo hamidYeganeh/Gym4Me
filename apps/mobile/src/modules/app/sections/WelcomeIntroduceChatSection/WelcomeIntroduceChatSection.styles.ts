@@ -10,11 +10,11 @@ export const welcomeIntroduceChatSectionVariants = tv({
     avatarInner: "flex size-full items-center justify-center",
     bubbleOut: [
       "max-w-[17.8rem] rounded-[1.25rem] rounded-se-md bg-accent px-2.5 py-2.5",
-      "text-accent-foreground shadow-[0_8px_24px_color-mix(in_oklch,var(--accent)_28%,transparent)]",
+      "text-accent-foreground",
     ],
     bubbleIn: [
       "max-w-[17.8rem] rounded-[1.25rem] rounded-ss-md bg-surface px-2.5 py-2.5",
-      "text-surface-foreground shadow-[0_10px_28px_color-mix(in_oklch,var(--foreground)_10%,transparent)]",
+      "text-surface-foreground",
       "ring-1 ring-border/60",
     ],
     message: "text-[0.8125rem] leading-snug",

@@ -5,7 +5,7 @@ export const fileItemVariants = tv({
   slots: {
     root: [
       "flex w-full items-center gap-3 rounded-[24px] border-0",
-      "bg-surface p-4 text-start shadow-sm shadow-foreground/5",
+      "bg-surface p-4 text-start",
     ].join(" "),
     iconWrap:
       "flex size-12 shrink-0 items-center justify-center rounded-[1rem]",
