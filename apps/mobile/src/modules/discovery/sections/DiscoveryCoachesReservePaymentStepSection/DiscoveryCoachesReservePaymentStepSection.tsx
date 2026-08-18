@@ -1,6 +1,10 @@
 "use client";
 
-import { Button, Input, Label, TextField, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Input } from "@heroui/react/input";
+import { Label } from "@heroui/react/label";
+import { TextField } from "@heroui/react/textfield";
+import { Typography } from "@heroui/react/typography";
 import { Check } from "@repo/icons/Check";
 import { useTranslations } from "next-intl";
 import { formatJalaliDateShort } from "../../lib/club-calendar-data";

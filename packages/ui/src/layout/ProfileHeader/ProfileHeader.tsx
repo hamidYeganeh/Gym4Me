@@ -1,6 +1,9 @@
 "use client";
 
-import { Avatar, Badge, Button, Typography } from "@heroui/react";
+import { Avatar } from "@heroui/react/avatar";
+import { Badge } from "@heroui/react/badge";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { Bell1 } from "@repo/icons/Bell1";
 import { spring } from "@repo/theme";
 import {

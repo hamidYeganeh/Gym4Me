@@ -1,7 +1,9 @@
 "use client";
 
-import { Button, Typography } from "@heroui/react";
-import { ChevronLeft, ChevronRight } from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
+import { ChevronLeft } from "@repo/icons/ChevronLeft";
+import { ChevronRight } from "@repo/icons/ChevronRight";
 import { spring } from "@repo/theme";
 import { ProgressiveBlur } from "@repo/ui/kit/ProgressiveBlur";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";

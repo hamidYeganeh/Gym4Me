@@ -1,4 +1,4 @@
-import { ShapeCircle } from "@repo/icons";
+import { ShapeCircle } from "@repo/icons/ShapeCircle";
 import { useTranslations } from "next-intl";
 import { Ltr } from "../../lib/marketing-bidi";
 import { MarketingGlyph } from "../../lib/marketing-glyph";

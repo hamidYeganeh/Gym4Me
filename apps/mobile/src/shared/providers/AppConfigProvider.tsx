@@ -3,8 +3,9 @@
 import { App } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
 import { Preferences } from "@capacitor/preferences";
-import { Button, Typography } from "@heroui/react";
-import { createAppConfigApi, type AppBootstrap } from "@repo/api";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
+import { createAppConfigApi, type AppBootstrap } from "@repo/api/app-config";
 import {
   createContext,
   type ReactNode,
@@ -14,7 +15,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { apiClient } from "@/shared/lib/api";
+import { apiClient } from "@/shared/lib/api-client";
 
 export type Gym4MeFeatureKey =
   | "athlete.self_tracking"

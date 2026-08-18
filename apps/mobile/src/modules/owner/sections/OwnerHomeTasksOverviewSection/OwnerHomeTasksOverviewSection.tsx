@@ -1,7 +1,11 @@
 "use client";
 
-import { Button, Card, Link, Typography } from "@heroui/react";
-import { ArrowUpRight, Clipboard } from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { Card } from "@heroui/react/card";
+import { Link } from "@heroui/react/link";
+import { Typography } from "@heroui/react/typography";
+import { ArrowUpRight } from "@repo/icons/ArrowUpRight";
+import { Clipboard } from "@repo/icons/Clipboard";
 import { ownerHomeTasksOverviewSectionStyles as styles } from "./OwnerHomeTasksOverviewSection.styles";
 import type { OwnerHomeTasksOverviewSectionProps } from "./OwnerHomeTasksOverviewSection.types";
 

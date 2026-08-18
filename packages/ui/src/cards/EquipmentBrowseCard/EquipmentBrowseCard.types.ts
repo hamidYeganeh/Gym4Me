@@ -1,4 +1,4 @@
-import type { ButtonProps } from "@heroui/react";
+import type { ButtonProps } from "@heroui/react/button";
 import type { ReactNode } from "react";
 import type { EquipmentBrowseCardVariantProps } from "./EquipmentBrowseCard.styles";
 

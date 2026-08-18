@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Link, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Link } from "@heroui/react/link";
+import { Typography } from "@heroui/react/typography";
 import { ApiError } from "@repo/api";
 import type { SetPasswordInput } from "@repo/api";
-import { ChevronLeft } from "@repo/icons";
+import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { toast } from "@repo/ui/kit/Toast";
 import {
   AuthLayout,
@@ -13,7 +15,7 @@ import {
 } from "@repo/ui/layout/AuthLayout";
 import { useTranslations } from "next-intl";
 import { AuthSetPasswordForm } from "@/modules/auth/components/AuthSetPasswordForm";
-import { accountAuth } from "@/shared/lib/api";
+import { accountAuth } from "@/shared/lib/api-client";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { setPasswordScreenVariants } from "./SetPasswordScreen.styles";
 import type { SetPasswordScreenProps } from "./SetPasswordScreen.types";

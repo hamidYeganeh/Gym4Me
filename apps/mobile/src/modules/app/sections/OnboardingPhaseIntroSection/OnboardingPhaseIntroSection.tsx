@@ -1,6 +1,6 @@
 "use client";
 
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { FormStepper } from "@repo/ui/kit/FormStepper";
 import Image from "next/image";
 import { onboardingPhaseIntroSectionVariants } from "./OnboardingPhaseIntroSection.styles";

@@ -1,6 +1,6 @@
 "use client";
 
-import { Spinner } from "@heroui/react";
+import { Spinner } from "@heroui/react/spinner";
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { CoachExercisesScreen } from "../screens/CoachExercisesScreen";

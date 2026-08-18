@@ -1,4 +1,4 @@
-import { Button } from "@heroui/react";
+import { Button } from "@heroui/react/button";
 import { ownerClubDetailTabsSectionVariants } from "./OwnerClubDetailTabsSection.styles";
 import type { OwnerClubDetailTabsSectionProps } from "./OwnerClubDetailTabsSection.types";
 

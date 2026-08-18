@@ -1,4 +1,4 @@
-import type { ButtonProps } from "@heroui/react";
+import type { ButtonProps } from "@heroui/react/button";
 
 export type OwnerHomeQuickLinksSectionProps = {
   onClubsPress?: ButtonProps["onPress"];

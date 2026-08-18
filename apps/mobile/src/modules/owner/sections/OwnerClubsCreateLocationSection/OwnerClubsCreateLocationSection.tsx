@@ -1,7 +1,10 @@
 "use client";
 
 import { Controller } from "react-hook-form";
-import { Input, Label, TextField, Typography } from "@heroui/react";
+import { Input } from "@heroui/react/input";
+import { Label } from "@heroui/react/label";
+import { TextField } from "@heroui/react/textfield";
+import { Typography } from "@heroui/react/typography";
 import { LocationPickerMap } from "@repo/ui/kit/LocationPickerMap";
 import { useTranslations } from "next-intl";
 import { ownerClubsCreateLocationSectionVariants } from "./OwnerClubsCreateLocationSection.styles";

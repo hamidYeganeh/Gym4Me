@@ -1,4 +1,5 @@
-import { Card, Typography } from "@heroui/react";
+import { Card } from "@heroui/react/card";
+import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
 import { pointsLedgerOverviewSectionVariants } from "./PointsLedgerOverviewSection.styles";
 import type { PointsLedgerOverviewSectionProps } from "./PointsLedgerOverviewSection.types";

@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { ScheduleWorkoutCard } from "@repo/ui/cards/ScheduleWorkoutCard";
 import { Vaporize } from "@repo/ui/kit/Vaporize";
 import { coachCalendarWeeklyDaysSectionStyles as styles } from "./CoachCalendarWeeklyDaysSection.styles";

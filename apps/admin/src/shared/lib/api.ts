@@ -1,4 +1,3 @@
-import { createAdminAuthApi } from "@repo/api/auth";
 import {
   createAdminAnalyticsApi,
   createAdminAuditApi,
@@ -22,25 +21,11 @@ import {
   createAdminVerificationApi,
 } from "@repo/api/admin";
 import { createAppConfigApi } from "@repo/api/app-config";
-import { createApiClient } from "@repo/api/client";
 import { createMediaApi } from "@repo/api/media";
-import { ADMIN_SESSION_KEY, createLocalStorage } from "@repo/api/storage";
-import { getApiBaseUrl } from "./env";
+import { apiClient } from "./api-client";
 
-const storage = createLocalStorage(ADMIN_SESSION_KEY);
+export { adminAuth, apiClient } from "./api-client";
 
-export const apiClient = createApiClient({
-  baseUrl: getApiBaseUrl(),
-  storage,
-  onUnauthorized: () => {
-    storage.set(null);
-    if (typeof window !== "undefined" && !window.location.pathname.startsWith("/sign-in")) {
-      window.location.assign("/sign-in");
-    }
-  },
-});
-
-export const adminAuth = createAdminAuthApi(apiClient);
 export const adminUsers = createAdminUsersApi(apiClient);
 export const adminBasics = createAdminBasicsApi(apiClient);
 export const adminClubs = createAdminClubsApi(apiClient);

@@ -1,4 +1,4 @@
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
 import { supportTicketsHeaderSectionVariants } from "./SupportTicketsHeaderSection.styles";
 import type { SupportTicketsHeaderSectionProps } from "./SupportTicketsHeaderSection.types";

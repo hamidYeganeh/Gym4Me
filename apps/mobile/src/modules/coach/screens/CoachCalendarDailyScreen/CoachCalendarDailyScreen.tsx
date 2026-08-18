@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@heroui/react";
+import { Button } from "@heroui/react/button";
 import { Calendar2 } from "@repo/icons/Calendar2";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { Plus } from "@repo/icons/Plus";

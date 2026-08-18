@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Chip } from "@heroui/react";
+import { Chip } from "@heroui/react/chip";
 import type { PointTransactionItem } from "@repo/api";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";

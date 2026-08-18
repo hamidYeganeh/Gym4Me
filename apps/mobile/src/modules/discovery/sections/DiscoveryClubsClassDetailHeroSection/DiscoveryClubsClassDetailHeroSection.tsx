@@ -1,6 +1,9 @@
 "use client";
 
-import { Button, Chip, Surface, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Chip } from "@heroui/react/chip";
+import { Surface } from "@heroui/react/surface";
+import { Typography } from "@heroui/react/typography";
 import { Clock } from "@repo/icons/Clock";
 import { DotThreeHorizontal } from "@repo/icons/DotThreeHorizontal";
 import { StarFull } from "@repo/icons/StarFull";

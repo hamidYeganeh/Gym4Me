@@ -1,6 +1,6 @@
 "use client";
 
-import { Spinner } from "@heroui/react";
+import { Spinner } from "@heroui/react/spinner";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { accountBookings } from "@/shared/lib/api";

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@heroui/react";
+import { Button } from "@heroui/react/button";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { MediaImage } from "@repo/ui/common/MediaImage";
 import { AuthLayout } from "@repo/ui/layout/AuthLayout";

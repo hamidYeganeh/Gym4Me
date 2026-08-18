@@ -1,5 +1,9 @@
 import { useState } from "react";
-import { Button, Input, Label, TextField, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Input } from "@heroui/react/input";
+import { Label } from "@heroui/react/label";
+import { TextField } from "@heroui/react/textfield";
+import { Typography } from "@heroui/react/typography";
 import type { BannerLinkKind, BannerSlideInput } from "@repo/api";
 import { Uploader } from "@repo/ui/kit/Uploader";
 import { mediaApi } from "@/shared/lib/api";

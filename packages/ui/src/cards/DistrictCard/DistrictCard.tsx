@@ -1,6 +1,8 @@
 "use client";
 
-import { Button, Card, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Card } from "@heroui/react/card";
+import { Typography } from "@heroui/react/typography";
 import { MediaImage } from "../../common/MediaImage";
 import { districtCardVariants } from "./DistrictCard.styles";
 import type { DistrictCardProps, DistrictCardSize } from "./DistrictCard.types";

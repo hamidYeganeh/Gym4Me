@@ -1,4 +1,4 @@
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
 import { AdminConfirmDialog } from "@/shared/components";
 import type { FoodItemsArchiveDialogSectionProps } from "./FoodItemsArchiveDialogSection.types";

@@ -1,6 +1,6 @@
 "use client";
 
-import { Skeleton } from "@heroui/react";
+import { Skeleton } from "@heroui/react/skeleton";
 import { coachExpertCardVariants } from "./CoachExpertCard.styles";
 
 export type CoachExpertCardSkeletonProps = {

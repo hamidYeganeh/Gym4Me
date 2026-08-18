@@ -1,7 +1,10 @@
 "use client";
 
-import { Typography } from "@heroui/react";
-import { Building2, UsersThree, UsersTwo, Wallet } from "@repo/icons";
+import { Typography } from "@heroui/react/typography";
+import { Building2 } from "@repo/icons/Building2";
+import { UsersThree } from "@repo/icons/UsersThree";
+import { UsersTwo } from "@repo/icons/UsersTwo";
+import { Wallet } from "@repo/icons/Wallet";
 import { QuickActionCard } from "@repo/ui/cards/QuickActionCard";
 import { useTranslations } from "next-intl";
 import { ownerHomeQuickLinksSectionVariants } from "./OwnerHomeQuickLinksSection.styles";

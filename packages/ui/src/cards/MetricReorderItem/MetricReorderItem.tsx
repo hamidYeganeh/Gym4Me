@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { Dragger } from "@repo/icons/Dragger";
 import { Minus } from "@repo/icons/Minus";
 import { metricReorderItemVariants } from "./MetricReorderItem.styles";

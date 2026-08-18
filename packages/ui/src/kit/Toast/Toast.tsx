@@ -1,11 +1,7 @@
 "use client";
 
 import type { ComponentProps, ReactNode } from "react";
-import {
-  Toast as HeroToast,
-  toast as heroToast,
-  type ToastContentValue,
-} from "@heroui/react";
+import { Toast as HeroToast, toast as heroToast, type ToastContentValue } from "@heroui/react/toast";
 import { ArrowRotateClockwise1 } from "@repo/icons/ArrowRotateClockwise1";
 import { ShapeCircle } from "@repo/icons/ShapeCircle";
 import { toastVariants } from "./Toast.styles";

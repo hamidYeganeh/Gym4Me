@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import type { Role } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";

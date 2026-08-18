@@ -1,40 +1,36 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import {
-  Avatar,
-  Badge,
-  Breadcrumbs,
-  Button,
-  SearchField,
-  Tooltip,
-  Typography,
-} from "@heroui/react";
-import {
-  ArrowSignOut1,
-  BarbellHorizontal,
-  Building2,
-  Calendar2,
-  ChartTrendUp,
-  Database,
-  Gear1,
-  Headset1,
-  House1,
-  Image1,
-  ListThreeSquare,
-  MapPin2,
-  Moon,
-  Newspaper1,
-  PriceTag,
-  ShieldCheck,
-  SliderLineThreeHorizontal,
-  Sun,
-  Ticket,
-  Trophy1,
-  User,
-  UsersThree,
-  Wallet,
-} from "@repo/icons";
+import { Avatar } from "@heroui/react/avatar";
+import { Badge } from "@heroui/react/badge";
+import { Breadcrumbs } from "@heroui/react/breadcrumbs";
+import { Button } from "@heroui/react/button";
+import { SearchField } from "@heroui/react/search-field";
+import { Tooltip } from "@heroui/react/tooltip";
+import { Typography } from "@heroui/react/typography";
+import { ArrowSignOut1 } from "@repo/icons/ArrowSignOut1";
+import { BarbellHorizontal } from "@repo/icons/BarbellHorizontal";
+import { Building2 } from "@repo/icons/Building2";
+import { Calendar2 } from "@repo/icons/Calendar2";
+import { ChartTrendUp } from "@repo/icons/ChartTrendUp";
+import { Database } from "@repo/icons/Database";
+import { Gear1 } from "@repo/icons/Gear1";
+import { Headset1 } from "@repo/icons/Headset1";
+import { House1 } from "@repo/icons/House1";
+import { Image1 } from "@repo/icons/Image1";
+import { ListThreeSquare } from "@repo/icons/ListThreeSquare";
+import { MapPin2 } from "@repo/icons/MapPin2";
+import { Moon } from "@repo/icons/Moon";
+import { Newspaper1 } from "@repo/icons/Newspaper1";
+import { PriceTag } from "@repo/icons/PriceTag";
+import { ShieldCheck } from "@repo/icons/ShieldCheck";
+import { SliderLineThreeHorizontal } from "@repo/icons/SliderLineThreeHorizontal";
+import { Sun } from "@repo/icons/Sun";
+import { Ticket } from "@repo/icons/Ticket";
+import { Trophy1 } from "@repo/icons/Trophy1";
+import { User } from "@repo/icons/User";
+import { UsersThree } from "@repo/icons/UsersThree";
+import { Wallet } from "@repo/icons/Wallet";
 import { useTheme } from "@repo/theme";
 import { Logo } from "../../common/Logo";
 import { adminDashboardLayoutVariants } from "./AdminDashboardLayout.styles";

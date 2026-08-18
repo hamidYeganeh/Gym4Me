@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { ClubClassCard } from "@repo/ui/cards/ClubClassCard";
 import { useTranslations } from "next-intl";
 import { LANDING_CLASSES } from "../../lib/landing-assets";

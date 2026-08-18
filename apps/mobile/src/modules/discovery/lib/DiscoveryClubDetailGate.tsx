@@ -1,7 +1,8 @@
 "use client";
 
 import type { ComponentType } from "react";
-import { Spinner, Typography } from "@heroui/react";
+import { Spinner } from "@heroui/react/spinner";
+import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
 import { DiscoveryClubsBranchesScreen } from "../screens/DiscoveryClubsBranchesScreen";
 import { DiscoveryClubsClassesScreen } from "../screens/DiscoveryClubsClassesScreen";

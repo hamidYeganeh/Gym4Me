@@ -159,10 +159,16 @@ frontend-only deployment.
 ```bash
 mkdir -p /opt/backups/gym4me
 
-docker compose --env-file .env.production \
-  -f docker-compose.production.yml exec -T mongo \
-  mongodump --archive --gzip \
-  > /opt/backups/gym4me/mongo-$(date +%F-%H%M).archive.gz
+# Atlas (default): dump with the production URI
+set -a && source .env.production && set +a
+mongodump --uri="$MONGODB_URI" \
+  --archive=/opt/backups/gym4me/mongo-$(date +%F-%H%M).archive.gz --gzip
+
+# Self-hosted mongo (--profile local-mongo) alternative:
+# docker compose --env-file .env.production \
+#   -f docker-compose.production.yml --profile local-mongo exec -T mongo \
+#   mongodump --archive --gzip \
+#   > /opt/backups/gym4me/mongo-$(date +%F-%H%M).archive.gz
 
 docker run --rm \
   -v gym4me_gym4me_uploads:/data:ro \

@@ -1,6 +1,9 @@
 "use client";
 
-import { Button, Chip, ProgressBar, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Chip } from "@heroui/react/chip";
+import { ProgressBar } from "@heroui/react/progress-bar";
+import { Typography } from "@heroui/react/typography";
 import { Bell1 } from "@repo/icons/Bell1";
 import { notificationCardVariants } from "./NotificationCard.styles";
 import type {

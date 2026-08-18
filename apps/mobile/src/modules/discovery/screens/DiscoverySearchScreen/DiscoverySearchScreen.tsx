@@ -1,6 +1,8 @@
 "use client";
 
-import { Button, SearchField, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { SearchField } from "@heroui/react/search-field";
+import { Typography } from "@heroui/react/typography";
 import { ArrowUpRight } from "@repo/icons/ArrowUpRight";
 import { ChevronDown } from "@repo/icons/ChevronDown";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";

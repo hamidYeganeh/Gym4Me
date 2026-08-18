@@ -1,21 +1,23 @@
 "use client";
 
-import { Button, Card, Chip, Link, Surface } from "@heroui/react";
-import {
-  BarbellHorizontal,
-  ChevronLeft,
-  Diamond1,
-  DotThreeHorizontal,
-  Calendar1,
-  Gear1,
-  Heart,
-  House1,
-  Kettlebell,
-  LightningBolt1,
-  Pencil1,
-  User,
-  WifiFull,
-} from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { Card } from "@heroui/react/card";
+import { Chip } from "@heroui/react/chip";
+import { Link } from "@heroui/react/link";
+import { Surface } from "@heroui/react/surface";
+import { BarbellHorizontal } from "@repo/icons/BarbellHorizontal";
+import { ChevronLeft } from "@repo/icons/ChevronLeft";
+import { Diamond1 } from "@repo/icons/Diamond1";
+import { DotThreeHorizontal } from "@repo/icons/DotThreeHorizontal";
+import { Calendar1 } from "@repo/icons/Calendar1";
+import { Gear1 } from "@repo/icons/Gear1";
+import { Heart } from "@repo/icons/Heart";
+import { House1 } from "@repo/icons/House1";
+import { Kettlebell } from "@repo/icons/Kettlebell";
+import { LightningBolt1 } from "@repo/icons/LightningBolt1";
+import { Pencil1 } from "@repo/icons/Pencil1";
+import { User } from "@repo/icons/User";
+import { WifiFull } from "@repo/icons/WifiFull";
 import { statsColors } from "@repo/theme";
 import {
   AchievementTag,
@@ -23,7 +25,9 @@ import {
   type AchievementTagSize,
   type AchievementTagVariant,
 } from "@repo/ui/cards/AchievementTag";
+import { ArticleCard } from "@repo/ui/cards/ArticleCard";
 import { CallToActionCard } from "@repo/ui/cards/CallToActionCard";
+import { ClassCard } from "@repo/ui/cards/ClassCard";
 import { CityCard } from "@repo/ui/cards/CityCard";
 import { ClubAmenityCard } from "@repo/ui/cards/ClubAmenityCard";
 import { ClubBranchCard } from "@repo/ui/cards/ClubBranchCard";
@@ -258,12 +262,32 @@ type ThemeDemoLabels = {
   clubClassCardAuthor: string;
   clubClassCardDuration: string;
   clubClassCardAction: string;
+  classCardLabel: string;
+  classCardBadge: string;
+  classCardTitle: string;
+  classCardAuthor: string;
+  classCardKcal: string;
+  classCardKcalLabel: string;
+  classCardMinutes: string;
+  classCardMinutesLabel: string;
+  classCardScore: string;
+  classCardScoreLabel: string;
+  classCardAction: string;
   workoutCardLabel: string;
   workoutCardCategory: string;
   workoutCardTitle: string;
   workoutCardSets: string;
   workoutCardDuration: string;
   workoutCardPlay: string;
+  articleCardLabel: string;
+  articleCardTitle: string;
+  articleCardExcerpt: string;
+  articleCardAuthor: string;
+  articleCardReadTime: string;
+  articleCardCategory: string;
+  articleCardTag: string;
+  articleCardMenu: string;
+  articleCardAction: string;
   clubLocationCardLabel: string;
   clubLocationCardOpen: string;
   clubLocationCardHours: string;
@@ -484,6 +508,7 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
     { href: "#demo-stats-card", label: labels.statsCardLabel },
     { href: "#demo-metric-card", label: labels.metricCardLabel },
     { href: "#demo-club-card", label: labels.clubCardLabel },
+    { href: "#demo-article-card", label: labels.articleCardLabel },
     { href: "#demo-coach-cards", label: labels.coachFeatureCardLabel },
     { href: "#demo-call-to-action", label: labels.callToActionLabel },
     { href: "#demo-muscle-card", label: labels.muscleCardLabel },
@@ -1022,6 +1047,106 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
           sets={labels.workoutCardSets}
           title={labels.workoutCardTitle}
         />
+      </section>
+
+      <section className="flex flex-col gap-3" id="demo-article-card">
+        <h2 className="text-lg font-medium text-foreground">
+          {labels.articleCardLabel}
+        </h2>
+        <div className="flex flex-col gap-6">
+          <div className="w-full max-w-sm">
+            <ArticleCard
+              actionLabel={labels.articleCardAction}
+              author={{ name: labels.articleCardAuthor }}
+              category={labels.articleCardCategory}
+              coverSrc={PLACEHOLDER_IMAGE}
+              excerpt={labels.articleCardExcerpt}
+              menuLabel={labels.articleCardMenu}
+              orientation="vertical"
+              readingTimeLabel={labels.articleCardReadTime}
+              tags={[
+                { key: "1", label: labels.articleCardTag },
+                { key: "2", label: labels.articleCardTag },
+                { key: "3", label: labels.articleCardTag },
+              ]}
+              title={labels.articleCardTitle}
+              type="cover"
+              onMenuPress={() => undefined}
+            />
+          </div>
+          <ArticleCard
+            actionLabel={labels.articleCardAction}
+            author={{ name: labels.articleCardAuthor }}
+            category={labels.articleCardCategory}
+            coverSrc={PLACEHOLDER_IMAGE}
+            excerpt={labels.articleCardExcerpt}
+            menuLabel={labels.articleCardMenu}
+            orientation="horizontal"
+            readingTimeLabel={labels.articleCardReadTime}
+            tags={[
+              { key: "1", label: labels.articleCardTag },
+              { key: "2", label: labels.articleCardTag },
+              { key: "3", label: labels.articleCardTag },
+            ]}
+            title={labels.articleCardTitle}
+            type="cover"
+            onMenuPress={() => undefined}
+          />
+          <ArticleCard
+            actionLabel={labels.articleCardAction}
+            author={{ name: labels.articleCardAuthor }}
+            category={labels.articleCardCategory}
+            excerpt={labels.articleCardExcerpt}
+            menuLabel={labels.articleCardMenu}
+            readingTimeLabel={labels.articleCardReadTime}
+            tags={[
+              { key: "1", label: labels.articleCardTag },
+              { key: "2", label: labels.articleCardTag },
+              { key: "3", label: labels.articleCardTag },
+            ]}
+            title={labels.articleCardTitle}
+            type="text"
+            onMenuPress={() => undefined}
+          />
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-medium text-foreground">
+          {labels.classCardLabel}
+        </h2>
+        <div className="flex flex-wrap items-end gap-4">
+          <ClassCard
+            actionLabel={labels.classCardAction}
+            author={{ name: labels.classCardAuthor }}
+            badge={labels.classCardBadge}
+            image={PLACEHOLDER_IMAGE}
+            imageAlt={labels.classCardTitle}
+            kcal={labels.classCardKcal}
+            kcalLabel={labels.classCardKcalLabel}
+            minutes={labels.classCardMinutes}
+            minutesLabel={labels.classCardMinutesLabel}
+            score={labels.classCardScore}
+            scoreLabel={labels.classCardScoreLabel}
+            title={labels.classCardTitle}
+            variant="dark"
+          />
+          <ClassCard
+            actionLabel={labels.classCardAction}
+            author={{ name: labels.classCardAuthor }}
+            badge={labels.classCardBadge}
+            image={PLACEHOLDER_IMAGE}
+            imageAlt={labels.classCardTitle}
+            kcal={labels.classCardKcal}
+            kcalLabel={labels.classCardKcalLabel}
+            minutes={labels.classCardMinutes}
+            minutesLabel={labels.classCardMinutesLabel}
+            score={labels.classCardScore}
+            scoreLabel={labels.classCardScoreLabel}
+            title={labels.classCardTitle}
+            variant="light"
+          />
+        </div>
       </section>
 
       <section className="flex flex-col gap-3">

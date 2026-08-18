@@ -1,6 +1,6 @@
 "use client";
 
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { discoveryCoachesIntroSectionStyles as styles } from "./DiscoveryCoachesIntroSection.styles";
 import type { DiscoveryCoachesIntroSectionProps } from "./DiscoveryCoachesIntroSection.types";
 

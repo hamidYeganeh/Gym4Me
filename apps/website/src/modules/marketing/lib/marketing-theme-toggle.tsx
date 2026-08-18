@@ -1,7 +1,8 @@
 "use client";
 
-import { Button } from "@heroui/react";
-import { Moon, Sun } from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { Moon } from "@repo/icons/Moon";
+import { Sun } from "@repo/icons/Sun";
 import { useThemeTransition } from "@repo/theme";
 import { useTranslations } from "next-intl";
 

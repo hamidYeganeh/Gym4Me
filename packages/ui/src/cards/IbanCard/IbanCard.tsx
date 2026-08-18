@@ -1,6 +1,7 @@
 "use client";
 
-import { Card, Typography } from "@heroui/react";
+import { Card } from "@heroui/react/card";
+import { Typography } from "@heroui/react/typography";
 import { WifiHigh } from "@repo/icons/WifiHigh";
 import { LogoMark } from "../../common/LogoMark";
 import { IbanCardMastercard } from "./IbanCard.mastercard";

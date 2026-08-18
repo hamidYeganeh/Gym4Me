@@ -1,7 +1,8 @@
 "use client";
 
-import type { Key } from "@heroui/react";
-import { ToggleButton, ToggleButtonGroup } from "@heroui/react";
+import type { Key } from "@heroui/react/rac";
+import { ToggleButton } from "@heroui/react/toggle-button";
+import { ToggleButtonGroup } from "@heroui/react/toggle-button-group";
 import { AreaLineChart } from "@repo/ui/kit/AreaLineChart";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";

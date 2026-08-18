@@ -1,5 +1,7 @@
-import { Button, Typography } from "@heroui/react";
-import { ArrowRight, ShieldCheck } from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
+import { ArrowRight } from "@repo/icons/ArrowRight";
+import { ShieldCheck } from "@repo/icons/ShieldCheck";
 import { kycStatusOutcomeSectionVariants } from "./KycStatusOutcomeSection.styles";
 import type { KycStatusOutcomeSectionProps } from "./KycStatusOutcomeSection.types";
 

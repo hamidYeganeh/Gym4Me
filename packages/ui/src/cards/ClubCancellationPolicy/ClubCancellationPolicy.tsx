@@ -1,6 +1,7 @@
 "use client";
 
-import { Card, Typography } from "@heroui/react";
+import { Card } from "@heroui/react/card";
+import { Typography } from "@heroui/react/typography";
 import { clubCancellationPolicyVariants } from "./ClubCancellationPolicy.styles";
 import type {
   ClubCancellationPolicyProps,

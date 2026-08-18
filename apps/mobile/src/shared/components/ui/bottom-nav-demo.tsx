@@ -1,27 +1,25 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Button } from "@heroui/react";
-import {
-  BarbellHorizontal,
-  BookOpen,
-  Building2,
-  Calendar1,
-  ChartBar2,
-  Chat,
-  Clipboard,
-  HeartEcg,
-  House1,
-  Kettlebell,
-  Leaf,
-  Megaphone,
-  Newspaper1,
-  PersonRunning,
-  SleepZzz,
-  User,
-  UsersThree,
-  Whistle,
-} from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { BarbellHorizontal } from "@repo/icons/BarbellHorizontal";
+import { BookOpen } from "@repo/icons/BookOpen";
+import { Building2 } from "@repo/icons/Building2";
+import { Calendar1 } from "@repo/icons/Calendar1";
+import { ChartBar2 } from "@repo/icons/ChartBar2";
+import { Chat } from "@repo/icons/Chat";
+import { Clipboard } from "@repo/icons/Clipboard";
+import { HeartEcg } from "@repo/icons/HeartEcg";
+import { House1 } from "@repo/icons/House1";
+import { Kettlebell } from "@repo/icons/Kettlebell";
+import { Leaf } from "@repo/icons/Leaf";
+import { Megaphone } from "@repo/icons/Megaphone";
+import { Newspaper1 } from "@repo/icons/Newspaper1";
+import { PersonRunning } from "@repo/icons/PersonRunning";
+import { SleepZzz } from "@repo/icons/SleepZzz";
+import { User } from "@repo/icons/User";
+import { UsersThree } from "@repo/icons/UsersThree";
+import { Whistle } from "@repo/icons/Whistle";
 import { Logo } from "@repo/ui/common/Logo";
 import {
   BottomNavigation,

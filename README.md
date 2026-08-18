@@ -37,10 +37,18 @@ npm install
 npm run docker:up          # mongo + redis
 cp apps/api/.env.example apps/api/.env   # if needed
 npm run db:seed:all -w api
+
+# Default: API + mobile only (lighter on RAM)
+npm run dev
+
+# Or start apps individually:
 npm run dev:api
 npm run dev:mobile
 npm run dev:admin
 npm run dev:website
+
+# All four apps at once (heavy — avoid on low-RAM machines):
+npm run dev:all
 ```
 
 Frontend API base URLs come from each app’s `.env.development` / `.env.production`

@@ -1,5 +1,5 @@
 import { Link as RouterLink } from "react-router-dom";
-import { Button } from "@heroui/react";
+import { Button } from "@heroui/react/button";
 import { useTranslations } from "next-intl";
 import { AdminEvidenceGallery, AdminFormDrawer } from "@/shared/components";
 import { routes } from "@/shared/lib/routes";

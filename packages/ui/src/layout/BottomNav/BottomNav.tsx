@@ -1,6 +1,9 @@
 "use client";
 
-import { Button, Link, Popover, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Link } from "@heroui/react/link";
+import { Popover } from "@heroui/react/popover";
+import { Typography } from "@heroui/react/typography";
 import { useState, type ReactNode } from "react";
 import { ProgressiveBlur } from "../../kit/ProgressiveBlur";
 import { bottomNavVariants } from "./BottomNav.styles";

@@ -1,7 +1,8 @@
 "use client";
 
-import { Calendar, Typography } from "@heroui/react";
-import { Cake } from "@repo/icons";
+import { Calendar } from "@heroui/react/calendar";
+import { Typography } from "@heroui/react/typography";
+import { Cake } from "@repo/icons/Cake";
 import {
   CalendarDate,
   type DateValue,

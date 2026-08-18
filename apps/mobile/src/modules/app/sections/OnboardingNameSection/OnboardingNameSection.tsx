@@ -1,7 +1,9 @@
 "use client";
 
-import { Input, TextField, Typography } from "@heroui/react";
-import { IdentityCard1 } from "@repo/icons";
+import { Input } from "@heroui/react/input";
+import { TextField } from "@heroui/react/textfield";
+import { Typography } from "@heroui/react/typography";
+import { IdentityCard1 } from "@repo/icons/IdentityCard1";
 import { onboardingNameSectionVariants } from "./OnboardingNameSection.styles";
 import type { OnboardingNameSectionProps } from "./OnboardingNameSection.types";
 

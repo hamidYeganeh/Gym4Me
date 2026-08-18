@@ -1,5 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
-import { Button, Chip, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Chip } from "@heroui/react/chip";
+import { Typography } from "@heroui/react/typography";
 import type {
   AdminCoachService,
   CoachStudent,

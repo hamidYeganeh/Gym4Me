@@ -1,6 +1,9 @@
 "use client";
 
-import { Button, Chip, Skeleton, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Chip } from "@heroui/react/chip";
+import { Skeleton } from "@heroui/react/skeleton";
+import { Typography } from "@heroui/react/typography";
 import { MediaImage } from "../../common/MediaImage";
 import { emptyStateVariants } from "./EmptyState.styles";
 import type {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import type { AdminAnalyticsOverview } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { AdminShell } from "@/shared/components";

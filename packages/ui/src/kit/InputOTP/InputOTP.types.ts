@@ -1,5 +1,5 @@
 import type { ComponentPropsWithoutRef } from "react";
-import type { InputOTP as HeroInputOTP } from "@heroui/react";
+import type { InputOTP as HeroInputOTP } from "@heroui/react/input-otp";
 import type { InputOTPVariantProps } from "./InputOTP.styles";
 
 type HeroInputOTPProps = ComponentPropsWithoutRef<typeof HeroInputOTP>;

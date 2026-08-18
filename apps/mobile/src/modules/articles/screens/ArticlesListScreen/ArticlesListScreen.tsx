@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import type {
   ArticleAudience,
   ArticleFacets,
@@ -23,7 +24,7 @@ import {
   formatCount,
   formatRelativeTime,
 } from "@/modules/articles/lib/format-article";
-import { articlesApi } from "@/shared/lib/api";
+import { articlesApi, mediaFileUrl } from "@/shared/lib/api";
 import { articlesListScreenVariants } from "./ArticlesListScreen.styles";
 import type { ArticlesListScreenProps } from "./ArticlesListScreen.types";
 
@@ -156,9 +157,16 @@ export function ArticlesListScreen({ className }: ArticlesListScreenProps) {
               <ArticleCard
                 key={article.id}
                 actionLabel={article.title}
+                author={{
+                  name: article.author.name,
+                  avatarSrc: mediaFileUrl(article.author.avatarMediaId),
+                }}
                 category={formatCategoryLabel(article.taxonomy.category)}
                 commentsLabel={formatCount(article.engagement.commentsCount)}
+                coverSrc={mediaFileUrl(article.coverMediaId)}
+                excerpt={article.excerpt ?? undefined}
                 likesLabel={formatCount(article.engagement.likesCount)}
+                orientation="vertical"
                 publishedAtLabel={formatRelativeTime(
                   article.publishedAt ?? article.createdAt,
                 )}
@@ -166,8 +174,12 @@ export function ArticlesListScreen({ className }: ArticlesListScreenProps) {
                   minutes: article.readingTimeMinutes,
                 })}
                 saveLabel={t("save")}
+                tags={article.tags.map((tag) => ({
+                  key: tag,
+                  label: formatCategoryLabel(tag),
+                }))}
                 title={article.title}
-                variant="feed"
+                type="cover"
                 viewsLabel={formatCount(article.engagement.viewsCount)}
                 onPress={() => router.push(articleDetailHref(article.slug))}
               />

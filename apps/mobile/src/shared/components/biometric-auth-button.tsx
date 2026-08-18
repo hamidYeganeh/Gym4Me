@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@heroui/react";
-import { FaceId } from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { FaceId } from "@repo/icons/FaceId";
 import { useState } from "react";
 import { authenticateBiometric } from "@/shared/lib/biometric";
 

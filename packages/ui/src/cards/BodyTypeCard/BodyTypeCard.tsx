@@ -1,6 +1,6 @@
 "use client";
 
-import { ToggleButton } from "@heroui/react";
+import { ToggleButton } from "@heroui/react/toggle-button";
 import { MediaImage } from "../../common/MediaImage";
 import { getBodyTypeArt } from "./art";
 import { bodyTypeCardVariants } from "./BodyTypeCard.styles";

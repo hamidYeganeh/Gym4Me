@@ -1,5 +1,7 @@
-import type { TouchPoint } from "@repo/api";
-import { analyticsApi } from "@/shared/lib/api";
+import { createAnalyticsApi, type TouchPoint } from "@repo/api/analytics";
+import { apiClient } from "@/shared/lib/api-client";
+
+const analyticsApi = createAnalyticsApi(apiClient);
 
 const ATTRIBUTION_SENT_KEY = "gym4me.attribution.sent";
 

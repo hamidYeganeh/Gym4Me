@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Link, Typography } from "@heroui/react";
+import { Link } from "@heroui/react/link";
+import { Typography } from "@heroui/react/typography";
 import { ApiError } from "@repo/api";
 import type { RequestOtpInput } from "@repo/api";
 import {

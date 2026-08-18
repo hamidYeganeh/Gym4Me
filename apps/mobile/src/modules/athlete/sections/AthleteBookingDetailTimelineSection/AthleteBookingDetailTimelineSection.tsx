@@ -1,4 +1,4 @@
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { Check } from "@repo/icons/Check";
 import { BOOKING_TIMELINE_STEPS } from "@/modules/athlete/lib/booking-detail-helpers";
 import { athleteBookingDetailTimelineSectionVariants } from "./AthleteBookingDetailTimelineSection.styles";

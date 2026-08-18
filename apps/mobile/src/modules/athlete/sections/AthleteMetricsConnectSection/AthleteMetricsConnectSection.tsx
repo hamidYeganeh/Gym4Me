@@ -1,6 +1,9 @@
 "use client";
 
-import { Button, Chip, Spinner, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Chip } from "@heroui/react/chip";
+import { Spinner } from "@heroui/react/spinner";
+import { Typography } from "@heroui/react/typography";
 import { SmartWatchPlus } from "@repo/icons/SmartWatchPlus";
 import { athleteMetricsConnectSectionStyles as styles } from "./AthleteMetricsConnectSection.styles";
 import type { AthleteMetricsConnectSectionProps } from "./AthleteMetricsConnectSection.types";

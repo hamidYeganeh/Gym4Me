@@ -35,14 +35,17 @@ export function DiscoveryHomeArticlesSection({
           category={article.category}
           className={slots.card()}
           coverSrc={article.coverSrc ?? PLACEHOLDER_IMAGE}
+          excerpt={article.excerpt ?? undefined}
           key={article.id}
           likesLabel={article.likesLabel}
+          orientation="vertical"
           publishedAtLabel={article.publishedAtLabel}
           readingTimeLabel={t("readingTime", {
             minutes: article.readingTimeMinutes,
           })}
+          tags={article.tags.map((tag) => ({ key: tag, label: tag }))}
           title={article.title}
-          variant="stacked"
+          type="cover"
           viewsLabel={article.viewsLabel}
           onPress={() =>
             router.push(

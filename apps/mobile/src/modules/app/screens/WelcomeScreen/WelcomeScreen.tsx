@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@heroui/react";
-import { ArrowRight } from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { ArrowRight } from "@repo/icons/ArrowRight";
 import { AuthLayout, type AuthLayoutLabels } from "@repo/ui/layout/AuthLayout";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";

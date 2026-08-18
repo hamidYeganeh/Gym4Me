@@ -1,10 +1,10 @@
-import { Button, Spinner, Typography } from "@heroui/react";
-import {
-  ArrowRotateClockwise1,
-  CalendarCheck,
-  CreditCard,
-  UsersThree,
-} from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { Spinner } from "@heroui/react/spinner";
+import { Typography } from "@heroui/react/typography";
+import { ArrowRotateClockwise1 } from "@repo/icons/ArrowRotateClockwise1";
+import { CalendarCheck } from "@repo/icons/CalendarCheck";
+import { CreditCard } from "@repo/icons/CreditCard";
+import { UsersThree } from "@repo/icons/UsersThree";
 import { useTranslations } from "next-intl";
 import { dashboardHomeHeaderSectionVariants } from "./DashboardHomeHeaderSection.styles";
 import type { DashboardHomeHeaderSectionProps } from "./DashboardHomeHeaderSection.types";

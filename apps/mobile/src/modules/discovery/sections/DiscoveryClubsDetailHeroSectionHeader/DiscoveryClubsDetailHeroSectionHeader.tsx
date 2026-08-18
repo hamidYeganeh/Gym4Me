@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@heroui/react";
+import { Button } from "@heroui/react/button";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { Heart } from "@repo/icons/Heart";
 import { Share1 } from "@repo/icons/Share1";

@@ -1,4 +1,4 @@
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { statsColors } from "@repo/theme";
 import { StatsCard } from "@repo/ui/cards/StatsCard";
 import { AreaLineChart } from "@repo/ui/kit/AreaLineChart";

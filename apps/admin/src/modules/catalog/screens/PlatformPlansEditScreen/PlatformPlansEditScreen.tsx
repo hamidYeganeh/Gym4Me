@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Spinner, Typography } from "@heroui/react";
+import { Spinner } from "@heroui/react/spinner";
+import { Typography } from "@heroui/react/typography";
 import type { PlatformPlan } from "@repo/api";
 import { toast } from "@repo/ui/kit/Toast";
 import { useTranslations } from "next-intl";

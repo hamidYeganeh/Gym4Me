@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { ArrowForward2 } from "@repo/icons/ArrowForward2";
 import { StickyBottomActions } from "@repo/ui/kit/StickyBottomActions";
 import NumberFlow from "@number-flow/react";

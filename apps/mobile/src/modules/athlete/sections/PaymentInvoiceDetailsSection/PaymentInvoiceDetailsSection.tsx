@@ -1,4 +1,4 @@
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
 import { paymentInvoiceDetailsSectionVariants } from "./PaymentInvoiceDetailsSection.styles";
 import type { PaymentInvoiceDetailsSectionProps } from "./PaymentInvoiceDetailsSection.types";

@@ -1,7 +1,7 @@
 "use client";
 
-import { Typography } from "@heroui/react";
-import { ChevronDoubleRight } from "@repo/icons";
+import { Typography } from "@heroui/react/typography";
+import { ChevronDoubleRight } from "@repo/icons/ChevronDoubleRight";
 import { spring } from "@repo/theme";
 import {
   animate,

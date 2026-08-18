@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { Eye } from "@repo/icons/Eye";
 import { File1 } from "@repo/icons/File1";
 import { Play } from "@repo/icons/Play";

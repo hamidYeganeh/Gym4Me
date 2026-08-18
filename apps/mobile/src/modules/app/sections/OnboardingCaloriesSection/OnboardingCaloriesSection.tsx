@@ -1,7 +1,11 @@
 "use client";
 
-import { Button, Separator, Typography } from "@heroui/react";
-import { Fire1, Minus, Plus } from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { Separator } from "@heroui/react/separator";
+import { Typography } from "@heroui/react/typography";
+import { Fire1 } from "@repo/icons/Fire1";
+import { Minus } from "@repo/icons/Minus";
+import { Plus } from "@repo/icons/Plus";
 import { onboardingCaloriesSectionVariants } from "./OnboardingCaloriesSection.styles";
 import type { OnboardingCaloriesSectionProps } from "./OnboardingCaloriesSection.types";
 

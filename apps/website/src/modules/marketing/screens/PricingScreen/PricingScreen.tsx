@@ -1,5 +1,5 @@
 import type { PlatformPlan } from "@repo/api";
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { getTranslations } from "next-intl/server";
 import {
   PublicSiteFooter,

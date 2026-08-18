@@ -1,7 +1,9 @@
 "use client";
 
-import { Button, Typography } from "@heroui/react";
-import { Copy1, DotThreeHorizontal } from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
+import { Copy1 } from "@repo/icons/Copy1";
+import { DotThreeHorizontal } from "@repo/icons/DotThreeHorizontal";
 import {
   AnimatePresence,
   motion,

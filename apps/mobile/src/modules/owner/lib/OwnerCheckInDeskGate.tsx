@@ -1,6 +1,7 @@
 "use client";
 
-import { Spinner, Typography } from "@heroui/react";
+import { Spinner } from "@heroui/react/spinner";
+import { Typography } from "@heroui/react/typography";
 import { useCallback, useEffect, useState } from "react";
 import { accountCheckin, accountClubs } from "@/shared/lib/api";
 import { useAuth } from "@/shared/providers/AuthProvider";

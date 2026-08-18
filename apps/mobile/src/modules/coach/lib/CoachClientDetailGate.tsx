@@ -1,6 +1,7 @@
 "use client";
 
-import { Spinner, Typography } from "@heroui/react";
+import { Spinner } from "@heroui/react/spinner";
+import { Typography } from "@heroui/react/typography";
 import type { CoachStudent } from "@repo/api";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { useTranslations } from "next-intl";

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { ReviewCard } from "@repo/ui/cards/ReviewCard";
 import { StatsCard } from "@repo/ui/cards/StatsCard";

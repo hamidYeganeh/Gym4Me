@@ -1,21 +1,23 @@
-import { Avatar, Button } from "@heroui/react";
-import { ArrowUpload } from "@repo/icons/ArrowUpload";
-import { ChartPie1 } from "@repo/icons/ChartPie1";
+import { Avatar } from "@heroui/react/avatar";
+import { Button } from "@heroui/react/button";
 import { Gear1 } from "@repo/icons/Gear1";
-import { Image1 } from "@repo/icons/Image1";
+import { Moon } from "@repo/icons/Moon";
+import { Pencil1 } from "@repo/icons/Pencil1";
 import { User } from "@repo/icons/User";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import { baseProfileHeroSectionVariants } from "./BaseProfileHeroSection.styles";
 import type { BaseProfileHeroSectionProps } from "./BaseProfileHeroSection.types";
 
 const ICON = 20;
 const AVATAR_ICON = 40;
+const COVER_SRC = "/welcome/hero-athletes.png";
 
 export function BaseProfileHeroSection({
   displayName,
   avatarSrc,
   onSettingsPress,
-  onAnalyticsPress,
+  onThemePress,
   onEditPress,
   className,
 }: BaseProfileHeroSectionProps) {
@@ -25,7 +27,15 @@ export function BaseProfileHeroSection({
   return (
     <section className={styles.root({ className })}>
       <div aria-hidden className={styles.cover()}>
-        <Image1 className={styles.coverIcon()} size={36} />
+        <Image
+          alt=""
+          className={styles.coverImage()}
+          fill
+          priority
+          sizes="100vw"
+          src={COVER_SRC}
+        />
+        <div className={styles.coverOverlay()} />
       </div>
 
       <div className={styles.avatarRow()}>
@@ -61,19 +71,19 @@ export function BaseProfileHeroSection({
             size="lg"
             variant="tertiary"
           >
-            <ArrowUpload size={14} />
+            <Pencil1 size={14} />
           </Button>
         </div>
 
         <Button
-          aria-label={t("analytics")}
+          aria-label={t("theme")}
           className={styles.sideAction()}
           isIconOnly
-          onPress={onAnalyticsPress}
+          onPress={onThemePress}
           size="lg"
           variant="secondary"
         >
-          <ChartPie1 size={ICON} />
+          <Moon size={ICON} />
         </Button>
       </div>
     </section>

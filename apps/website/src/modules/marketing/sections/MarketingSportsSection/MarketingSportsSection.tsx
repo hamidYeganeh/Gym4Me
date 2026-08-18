@@ -1,24 +1,22 @@
 "use client";
 
-import { Button } from "@heroui/react";
-import {
-  BarbellHorizontal,
-  Basketball,
-  Boxing,
-  HeartEcg,
-  JumpingRope,
-  Kettlebell,
-  MapPin1,
-  Medal,
-  PersonBiking,
-  PersonRunning,
-  PersonSwimming,
-  PersonYoga,
-  Soccer,
-  Stopwatch,
-  Tennis,
-  Trophy1,
-} from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { BarbellHorizontal } from "@repo/icons/BarbellHorizontal";
+import { Basketball } from "@repo/icons/Basketball";
+import { Boxing } from "@repo/icons/Boxing";
+import { HeartEcg } from "@repo/icons/HeartEcg";
+import { JumpingRope } from "@repo/icons/JumpingRope";
+import { Kettlebell } from "@repo/icons/Kettlebell";
+import { MapPin1 } from "@repo/icons/MapPin1";
+import { Medal } from "@repo/icons/Medal";
+import { PersonBiking } from "@repo/icons/PersonBiking";
+import { PersonRunning } from "@repo/icons/PersonRunning";
+import { PersonSwimming } from "@repo/icons/PersonSwimming";
+import { PersonYoga } from "@repo/icons/PersonYoga";
+import { Soccer } from "@repo/icons/Soccer";
+import { Stopwatch } from "@repo/icons/Stopwatch";
+import { Tennis } from "@repo/icons/Tennis";
+import { Trophy1 } from "@repo/icons/Trophy1";
 import {
   motion,
   useMotionValue,

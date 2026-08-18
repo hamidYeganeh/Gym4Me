@@ -1,4 +1,4 @@
-import { Card } from "@heroui/react";
+import { Card } from "@heroui/react/card";
 import { DonutChart } from "@repo/ui/kit/DonutChart";
 import { useTranslations } from "next-intl";
 import {

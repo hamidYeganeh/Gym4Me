@@ -1,6 +1,8 @@
 "use client";
 
-import { Button, ScrollShadow, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { ScrollShadow } from "@heroui/react/scroll-shadow";
+import { Typography } from "@heroui/react/typography";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { ChevronRight } from "@repo/icons/ChevronRight";
 import { useTranslations } from "next-intl";

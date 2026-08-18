@@ -1,6 +1,6 @@
 "use client";
 
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { ArrowDown } from "@repo/icons/ArrowDown";
 import { metricInsightCardVariants } from "./MetricInsightCard.styles";
 import type { MetricInsightCardProps } from "./MetricInsightCard.types";

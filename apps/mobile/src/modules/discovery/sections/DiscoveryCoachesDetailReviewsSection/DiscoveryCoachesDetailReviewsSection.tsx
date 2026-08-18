@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { SearchField, Typography } from "@heroui/react";
+import { SearchField } from "@heroui/react/search-field";
+import { Typography } from "@heroui/react/typography";
 import { Clock } from "@repo/icons/Clock";
 import { Handshake } from "@repo/icons/Handshake";
 import { ThumbsUp } from "@repo/icons/ThumbsUp";

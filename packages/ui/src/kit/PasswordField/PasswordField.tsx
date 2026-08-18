@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Button,
-  FieldError,
-  InputGroup,
-  Label,
-  TextField,
-} from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { FieldError } from "@heroui/react/field-error";
+import { InputGroup } from "@heroui/react/input-group";
+import { Label } from "@heroui/react/label";
+import { TextField } from "@heroui/react/textfield";
 import { Eye } from "@repo/icons/Eye";
 import { EyeSlash } from "@repo/icons/EyeSlash";
 import { Lock1 } from "@repo/icons/Lock1";
@@ -24,6 +22,7 @@ export function PasswordField({
   isRequired = false,
   errorMessage,
   autoComplete = "current-password",
+  hideLabel = false,
   showPasswordLabel,
   hidePasswordLabel,
   onChange,
@@ -31,7 +30,7 @@ export function PasswordField({
   inputRef,
 }: PasswordFieldProps) {
   const [showPassword, setShowPassword] = useState(false);
-  const styles = passwordFieldVariants();
+  const styles = passwordFieldVariants({ hideLabel });
 
   return (
     <TextField
@@ -51,6 +50,7 @@ export function PasswordField({
           <Lock1 className={styles.prefixIcon()} size={22} />
         </InputGroup.Prefix>
         <InputGroup.Input
+          aria-label={label}
           autoComplete={autoComplete}
           className={styles.input()}
           dir="ltr"

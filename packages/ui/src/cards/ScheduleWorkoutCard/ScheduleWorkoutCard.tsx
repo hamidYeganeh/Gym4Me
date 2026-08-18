@@ -1,6 +1,9 @@
 "use client";
 
-import { Button, Dropdown, Label, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Dropdown } from "@heroui/react/dropdown";
+import { Label } from "@heroui/react/label";
+import { Typography } from "@heroui/react/typography";
 import { ChevronRight } from "@repo/icons/ChevronRight";
 import { DotThreeHorizontal } from "@repo/icons/DotThreeHorizontal";
 import { Fire1 } from "@repo/icons/Fire1";

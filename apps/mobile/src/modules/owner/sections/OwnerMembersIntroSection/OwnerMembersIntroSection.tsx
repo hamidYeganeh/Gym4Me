@@ -1,4 +1,4 @@
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { ownerMembersIntroSectionVariants } from "./OwnerMembersIntroSection.styles";
 import type { OwnerMembersIntroSectionProps } from "./OwnerMembersIntroSection.types";
 

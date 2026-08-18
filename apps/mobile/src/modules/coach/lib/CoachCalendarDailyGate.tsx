@@ -1,6 +1,6 @@
 "use client";
 
-import { Spinner } from "@heroui/react";
+import { Spinner } from "@heroui/react/spinner";
 import type { Booking, CoachSlot } from "@repo/api";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { coachBookings, coachSlots } from "@/shared/lib/api";

@@ -1,9 +1,6 @@
 import { Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes, useParams } from "react-router-dom";
-import { ForgotPasswordScreen } from "@/modules/auth/screens/ForgotPasswordScreen";
-import { OtpScreen } from "@/modules/auth/screens/OtpScreen";
-import { SignInScreen } from "@/modules/auth/screens/SignInScreen";
-import { AdminDocumentMeta } from "@/shared/components";
+import { AdminDocumentMeta } from "@/shared/components/AdminDocumentMeta";
 import { RouteFallback } from "@/shared/components/RouteFallback";
 import {
   isLocationKind,
@@ -50,6 +47,7 @@ import {
   FoodItemsCreateScreen,
   FoodItemsEditScreen,
   FoodItemsScreen,
+  ForgotPasswordScreen,
   KycListScreen,
   LocationsCreateScreen,
   LocationsEditScreen,
@@ -59,6 +57,7 @@ import {
   MetricTypesScreen,
   NotificationTemplatesEditScreen,
   NotificationTemplatesScreen,
+  OtpScreen,
   PaymentsListScreen,
   PayoutsListScreen,
   PlatformPlansCreateScreen,
@@ -73,6 +72,7 @@ import {
   RefsListScreen,
   RefundsListScreen,
   ReleasePoliciesScreen,
+  SignInScreen,
   SocialReportsScreen,
   SportsCreateScreen,
   SportsEditScreen,

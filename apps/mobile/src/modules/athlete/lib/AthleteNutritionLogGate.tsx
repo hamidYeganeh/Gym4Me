@@ -1,6 +1,6 @@
 "use client";
 
-import { Spinner } from "@heroui/react";
+import { Spinner } from "@heroui/react/spinner";
 import type { MealAdherenceStatus } from "@repo/api/nutrition";
 import { useCallback, useEffect, useState } from "react";
 import { accountNutrition } from "@/shared/lib/api";

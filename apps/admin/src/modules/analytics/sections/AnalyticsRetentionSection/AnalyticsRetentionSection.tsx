@@ -1,5 +1,5 @@
 import { Fragment } from "react";
-import { Card } from "@heroui/react";
+import { Card } from "@heroui/react/card";
 import { useTranslations } from "next-intl";
 import {
   formatFaNumber,

@@ -1,6 +1,6 @@
 "use client";
 
-import { Spinner } from "@heroui/react";
+import { Spinner } from "@heroui/react/spinner";
 import type { FaqAudience, PublicFaqItem } from "@repo/api";
 import { useEffect, useState } from "react";
 import { accountSupport } from "@/shared/lib/api";

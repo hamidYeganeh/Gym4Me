@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Avatar, Typography } from "@heroui/react";
+import { Avatar } from "@heroui/react/avatar";
+import { Typography } from "@heroui/react/typography";
 import { ArticleCard } from "@repo/ui/cards/ArticleCard";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -103,11 +104,17 @@ export function ArticleDetailScreen({
                 category={formatCategoryLabel(item.taxonomy.category)}
                 commentsLabel={String(item.engagement.commentsCount)}
                 coverSrc={mediaFileUrl(item.coverMediaId)}
+                excerpt={item.excerpt ?? undefined}
                 likesLabel={String(item.engagement.likesCount)}
+                orientation="horizontal"
                 readingTimeLabel={`${item.readingTimeMinutes}m`}
                 saveLabel={t("save")}
+                tags={item.tags.map((tag) => ({
+                  key: tag,
+                  label: formatCategoryLabel(tag),
+                }))}
                 title={item.title}
-                variant="row"
+                type="cover"
                 viewsLabel={String(item.engagement.viewsCount)}
                 onPress={() => router.push(`/articles/${item.slug}`)}
               />

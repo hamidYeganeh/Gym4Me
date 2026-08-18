@@ -1,6 +1,8 @@
 "use client";
 
-import { Button, Card, Skeleton } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Card } from "@heroui/react/card";
+import { Skeleton } from "@heroui/react/skeleton";
 import { Clock } from "@repo/icons/Clock";
 import { Compass } from "@repo/icons/Compass";
 import { Fire1 } from "@repo/icons/Fire1";

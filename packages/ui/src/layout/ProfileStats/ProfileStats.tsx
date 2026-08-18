@@ -1,6 +1,8 @@
 "use client";
 
-import { Avatar, Button, Typography } from "@heroui/react";
+import { Avatar } from "@heroui/react/avatar";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { ArrowUpRight } from "@repo/icons/ArrowUpRight";
 import { PLACEHOLDER_IMAGE } from "../../common/placeholder";
 import { profileStatsVariants } from "./ProfileStats.styles";

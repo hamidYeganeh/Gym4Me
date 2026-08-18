@@ -1,6 +1,7 @@
 "use client";
 
-import { Accordion, Typography } from "@heroui/react";
+import { Accordion } from "@heroui/react/accordion";
+import { Typography } from "@heroui/react/typography";
 import { Plus } from "@repo/icons/Plus";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";

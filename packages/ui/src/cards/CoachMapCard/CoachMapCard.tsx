@@ -1,6 +1,8 @@
 "use client";
 
-import { Button, Card, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Card } from "@heroui/react/card";
+import { Typography } from "@heroui/react/typography";
 import { Check } from "@repo/icons/Check";
 import { ChevronRight } from "@repo/icons/ChevronRight";
 import { Heart } from "@repo/icons/Heart";

@@ -1,6 +1,8 @@
 "use client";
 
-import { Button, Skeleton, Slider } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Skeleton } from "@heroui/react/skeleton";
+import { Slider } from "@heroui/react/slider";
 import { Minus } from "@repo/icons/Minus";
 import { Plus } from "@repo/icons/Plus";
 import {

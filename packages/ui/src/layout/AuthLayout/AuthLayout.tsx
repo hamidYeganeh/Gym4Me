@@ -1,6 +1,6 @@
 "use client";
 
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { Logo } from "../../common/Logo";
 import { MediaImage } from "../../common/MediaImage";
 import { authLayoutVariants } from "./AuthLayout.styles";

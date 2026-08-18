@@ -1,6 +1,8 @@
 "use client";
 
-import { Button, Card, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Card } from "@heroui/react/card";
+import { Typography } from "@heroui/react/typography";
 import { LogoFacebook } from "@repo/icons/LogoFacebook";
 import { LogoInstagram } from "@repo/icons/LogoInstagram";
 import { LogoLinkedin } from "@repo/icons/LogoLinkedin";

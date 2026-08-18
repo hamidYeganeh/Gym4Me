@@ -1,17 +1,18 @@
 "use client";
 
-import { Avatar, Badge, Button, Typography } from "@heroui/react";
-import {
-  BarbellHorizontal,
-  Bell1,
-  Calendar1,
-  Chat,
-  Fire1,
-  FootSteps,
-  Scan1,
-  Ticket,
-  Wallet,
-} from "@repo/icons";
+import { Avatar } from "@heroui/react/avatar";
+import { Badge } from "@heroui/react/badge";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
+import { BarbellHorizontal } from "@repo/icons/BarbellHorizontal";
+import { Bell1 } from "@repo/icons/Bell1";
+import { Calendar1 } from "@repo/icons/Calendar1";
+import { Chat } from "@repo/icons/Chat";
+import { Fire1 } from "@repo/icons/Fire1";
+import { FootSteps } from "@repo/icons/FootSteps";
+import { Scan1 } from "@repo/icons/Scan1";
+import { Ticket } from "@repo/icons/Ticket";
+import { Wallet } from "@repo/icons/Wallet";
 import { CallToActionCard } from "@repo/ui/cards/CallToActionCard";
 import { MetricCard } from "@repo/ui/cards/MetricCard";
 import { QuickActionCard } from "@repo/ui/cards/QuickActionCard";

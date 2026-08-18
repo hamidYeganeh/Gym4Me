@@ -100,6 +100,7 @@ function mapArticleToHomeItem(article: ArticleSummary): HomeArticleItem {
     id: article.id,
     slug: article.slug,
     title: article.title,
+    excerpt: article.excerpt,
     category: formatArticleCategory(article),
     coverSrc: mediaFileUrl(article.coverMediaId),
     authorName: article.author.name || "Gym4Me",
@@ -110,6 +111,7 @@ function mapArticleToHomeItem(article: ArticleSummary): HomeArticleItem {
     readingTimeMinutes: article.readingTimeMinutes,
     viewsLabel: formatArticleCount(article.engagement.viewsCount),
     likesLabel: formatArticleCount(article.engagement.likesCount),
+    tags: article.tags.slice(0, 3),
   };
 }
 

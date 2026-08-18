@@ -1,14 +1,14 @@
 "use client";
 
-import { Button, Drawer, Typography } from "@heroui/react";
-import {
-  ArrowRight,
-  Camera1,
-  HealthCross1,
-  HeartEcg,
-  InfoCircle,
-  MapPin1,
-} from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { Drawer } from "@heroui/react/drawer";
+import { Typography } from "@heroui/react/typography";
+import { ArrowRight } from "@repo/icons/ArrowRight";
+import { Camera1 } from "@repo/icons/Camera1";
+import { HealthCross1 } from "@repo/icons/HealthCross1";
+import { HeartEcg } from "@repo/icons/HeartEcg";
+import { InfoCircle } from "@repo/icons/InfoCircle";
+import { MapPin1 } from "@repo/icons/MapPin1";
 import type { DevicePermissionKind } from "@/shared/lib/device-permissions";
 import { onboardingPermissionSheetVariants } from "./OnboardingPermissionSheet.styles";
 import type { OnboardingPermissionSheetProps } from "./OnboardingPermissionSheet.types";

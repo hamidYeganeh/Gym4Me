@@ -1,4 +1,5 @@
-import { Chip, Typography } from "@heroui/react";
+import { Chip } from "@heroui/react/chip";
+import { Typography } from "@heroui/react/typography";
 import { ownerClubDetailClassesSectionVariants } from "./OwnerClubDetailClassesSection.styles";
 import type { OwnerClubDetailClassesSectionProps } from "./OwnerClubDetailClassesSection.types";
 

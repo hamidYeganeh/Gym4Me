@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { MediaImage } from "@repo/ui/common/MediaImage";
 import { discoveryHomeHeroSectionVariants } from "./DiscoveryHomeHeroSection.styles";
 import type { DiscoveryHomeHeroSectionProps } from "./DiscoveryHomeHeroSection.types";

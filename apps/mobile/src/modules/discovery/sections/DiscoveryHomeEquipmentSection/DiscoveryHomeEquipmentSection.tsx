@@ -1,6 +1,7 @@
 "use client";
 
-import { Link, Typography } from "@heroui/react";
+import { Link } from "@heroui/react/link";
+import { Typography } from "@heroui/react/typography";
 import { EquipmentBrowseCard } from "@repo/ui/cards/EquipmentBrowseCard";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { useTranslations } from "next-intl";

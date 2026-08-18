@@ -1,4 +1,5 @@
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import type { FoodItemStatus } from "@repo/api";
 import { FilterChip } from "@repo/ui/kit/FilterChip";
 import { useTranslations } from "next-intl";

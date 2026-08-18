@@ -1,6 +1,8 @@
 "use client";
 
-import { Avatar, Chip, Typography } from "@heroui/react";
+import { Avatar } from "@heroui/react/avatar";
+import { Chip } from "@heroui/react/chip";
+import { Typography } from "@heroui/react/typography";
 import { StarFour } from "@repo/icons/StarFour";
 import { profileIdentitySectionVariants } from "./ProfileIdentitySection.styles";
 import type { ProfileIdentitySectionProps } from "./ProfileIdentitySection.types";

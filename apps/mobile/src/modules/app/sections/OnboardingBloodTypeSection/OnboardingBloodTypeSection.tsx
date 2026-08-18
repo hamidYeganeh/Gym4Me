@@ -1,7 +1,9 @@
 "use client";
 
-import { Button, Typography } from "@heroui/react";
-import { Minus, Plus } from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
+import { Minus } from "@repo/icons/Minus";
+import { Plus } from "@repo/icons/Plus";
 import { onboardingBloodTypeSectionVariants } from "./OnboardingBloodTypeSection.styles";
 import type { OnboardingBloodTypeSectionProps } from "./OnboardingBloodTypeSection.types";
 

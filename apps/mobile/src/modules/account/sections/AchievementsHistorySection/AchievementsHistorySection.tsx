@@ -1,4 +1,4 @@
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
 import { achievementsHistorySectionVariants } from "./AchievementsHistorySection.styles";
 import type { AchievementsHistorySectionProps } from "./AchievementsHistorySection.types";

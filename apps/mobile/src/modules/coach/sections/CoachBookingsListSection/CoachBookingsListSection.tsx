@@ -1,4 +1,6 @@
-import { Button, Chip, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Chip } from "@heroui/react/chip";
+import { Typography } from "@heroui/react/typography";
 import { Check } from "@repo/icons/Check";
 import { CloseX } from "@repo/icons/CloseX";
 import { useTranslations } from "next-intl";

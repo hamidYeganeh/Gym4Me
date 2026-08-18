@@ -1,6 +1,7 @@
 "use client";
 
-import { Chip, Typography } from "@heroui/react";
+import { Chip } from "@heroui/react/chip";
+import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
 import type { OwnerSettlementState } from "../../lib/owner-finance-data";
 import { ownerFinanceSettlementsSectionVariants } from "./OwnerFinanceSettlementsSection.styles";

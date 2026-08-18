@@ -1,15 +1,13 @@
 "use client";
 
-import { Typography } from "@heroui/react";
-import {
-  Calendar1,
-  Calendar2,
-  CalendarCheck,
-  Chat,
-  Note1,
-  UsersThree,
-  Wallet,
-} from "@repo/icons";
+import { Typography } from "@heroui/react/typography";
+import { Calendar1 } from "@repo/icons/Calendar1";
+import { Calendar2 } from "@repo/icons/Calendar2";
+import { CalendarCheck } from "@repo/icons/CalendarCheck";
+import { Chat } from "@repo/icons/Chat";
+import { Note1 } from "@repo/icons/Note1";
+import { UsersThree } from "@repo/icons/UsersThree";
+import { Wallet } from "@repo/icons/Wallet";
 import { CallToActionCard } from "@repo/ui/cards/CallToActionCard";
 import { QuickActionCard } from "@repo/ui/cards/QuickActionCard";
 import { TodoCard, type TodoCardItem } from "@repo/ui/cards/TodoCard";

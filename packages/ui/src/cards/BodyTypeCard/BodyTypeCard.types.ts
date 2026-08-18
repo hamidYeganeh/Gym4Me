@@ -1,4 +1,4 @@
-import type { ToggleButtonProps } from "@heroui/react";
+import type { ToggleButtonProps } from "@heroui/react/toggle-button";
 import type { ReactNode } from "react";
 import type { BodyTypeGender, BodyTypeKind } from "./art";
 

@@ -1,12 +1,10 @@
 import { Link as RouterLink } from "react-router-dom";
-import {
-  Button,
-  Chip,
-  Label,
-  TextArea,
-  TextField,
-  Typography,
-} from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Chip } from "@heroui/react/chip";
+import { Label } from "@heroui/react/label";
+import { TextArea } from "@heroui/react/textarea";
+import { TextField } from "@heroui/react/textfield";
+import { Typography } from "@heroui/react/typography";
 import type { SupportTicketPriority } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { AdminFormDrawer } from "@/shared/components";

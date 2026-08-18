@@ -1,6 +1,8 @@
 "use client";
 
-import { Button, Chip, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Chip } from "@heroui/react/chip";
+import { Typography } from "@heroui/react/typography";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import type { CoachNutritionMealSlot, CoachNutritionPlan } from "../../lib/coach-nutrition-data";
 import { AppLayout } from "@repo/ui/layout/AppLayout";

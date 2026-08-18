@@ -1,5 +1,10 @@
-import { Button, Input, Label, TextField, Typography } from "@heroui/react";
-import { ArrowRight, ChevronLeft } from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { Input } from "@heroui/react/input";
+import { Label } from "@heroui/react/label";
+import { TextField } from "@heroui/react/textfield";
+import { Typography } from "@heroui/react/typography";
+import { ArrowRight } from "@repo/icons/ArrowRight";
+import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { kycStatusDetailsSectionVariants } from "./KycStatusDetailsSection.styles";
 import type { KycStatusDetailsSectionProps } from "./KycStatusDetailsSection.types";
 

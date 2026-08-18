@@ -1,4 +1,4 @@
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { headerVariants } from "./Header.styles";
 import type { HeaderProps } from "./Header.types";
 

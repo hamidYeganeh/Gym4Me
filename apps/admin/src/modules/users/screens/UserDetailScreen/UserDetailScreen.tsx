@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { Spinner, Typography } from "@heroui/react";
+import { useParams } from "react-router-dom";
+import { Spinner } from "@heroui/react/spinner";
+import { Typography } from "@heroui/react/typography";
 import { ApiError, type PublicUser, type Role } from "@repo/api";
 import { toast } from "@repo/ui/kit/Toast";
 import { useTranslations } from "next-intl";
 import { AdminShell } from "@/shared/components";
 import { adminUsers } from "@/shared/lib/api";
-import { routes } from "@/shared/lib/routes";
 import { userDisplayName } from "@/shared/lib/user-format";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import type { UsersProfileFormValues } from "../../components/UsersProfileForm";
@@ -15,13 +15,15 @@ import { UsersDetailConfirmDialogsSection } from "../../sections/UsersDetailConf
 import { UsersDetailHeaderSection } from "../../sections/UsersDetailHeaderSection";
 import { UsersDetailProfileSection } from "../../sections/UsersDetailProfileSection";
 import { UsersDetailRolesSection } from "../../sections/UsersDetailRolesSection";
+import { UsersDetailStatusSection } from "../../sections/UsersDetailStatusSection";
 import { userDetailScreenVariants } from "./UserDetailScreen.styles";
 import type { UserDetailScreenProps } from "./UserDetailScreen.types";
+
+const PROFILE_FORM_ID = "users-profile-form";
 
 export function UserDetailScreen({ className }: UserDetailScreenProps) {
   const t = useTranslations("Admin.Users");
   const { userId = "" } = useParams<{ userId: string }>();
-  const navigate = useNavigate();
   const { user: sessionUser } = useAuth();
   const styles = userDetailScreenVariants();
 
@@ -86,6 +88,24 @@ export function UserDetailScreen({ className }: UserDetailScreenProps) {
     }),
     [user],
   );
+
+  const focusProfileForm = () => {
+    document.getElementById(PROFILE_FORM_ID)?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
+
+  const handleShare = async () => {
+    if (!user) return;
+    const payload = user.phone;
+    try {
+      await navigator.clipboard.writeText(payload);
+      toast.success(t("detail.shareCopied"));
+    } catch {
+      toast.error(t("detail.shareFailed"));
+    }
+  };
 
   const handleSaveProfile = async (values: UsersProfileFormValues) => {
     if (!user) return;
@@ -190,9 +210,10 @@ export function UserDetailScreen({ className }: UserDetailScreenProps) {
           canMutateStatus={canMutateStatus}
           user={user}
           onActivate={() => setActivateOpen(true)}
-          onBack={() => navigate(routes.users)}
           onDeactivate={() => setDeactivateOpen(true)}
           onDelete={() => setDeleteOpen(true)}
+          onEdit={focusProfileForm}
+          onShare={() => void handleShare()}
         />
 
         {loading ? (
@@ -201,15 +222,28 @@ export function UserDetailScreen({ className }: UserDetailScreenProps) {
             {t("loading")}
           </div>
         ) : !user ? (
-          <Typography className={styles.error()}>{error || t("detail.notFound")}</Typography>
+          <Typography className={styles.error()}>
+            {error || t("detail.notFound")}
+          </Typography>
         ) : (
           <>
-            {error ? <Typography className={styles.error()}>{error}</Typography> : null}
+            {error ? (
+              <Typography className={styles.error()}>{error}</Typography>
+            ) : null}
 
-            <div className={styles.grid()}>
+            <div className={styles.sections()}>
               <UsersDetailProfileSection
                 defaultValues={profileDefaults}
+                formId={PROFILE_FORM_ID}
+                user={user}
                 onSubmit={handleSaveProfile}
+              />
+              <UsersDetailStatusSection
+                actionPending={actionPending}
+                canMutateStatus={canMutateStatus}
+                user={user}
+                onActivate={() => setActivateOpen(true)}
+                onDeactivate={() => setDeactivateOpen(true)}
               />
               <UsersDetailRolesSection
                 defaultValues={rolesDefaults}

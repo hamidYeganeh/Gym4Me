@@ -1,6 +1,6 @@
 "use client";
 
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { CoachFeatureCard } from "@repo/ui/cards/CoachFeatureCard";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";

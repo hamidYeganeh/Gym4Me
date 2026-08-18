@@ -1,5 +1,6 @@
-import { Button } from "@heroui/react";
-import { ArrowRight, CloseX } from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { ArrowRight } from "@repo/icons/ArrowRight";
+import { CloseX } from "@repo/icons/CloseX";
 import { onboardingFooterSectionVariants } from "./OnboardingFooterSection.styles";
 import type { OnboardingFooterSectionProps } from "./OnboardingFooterSection.types";
 

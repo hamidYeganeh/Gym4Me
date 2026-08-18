@@ -1,4 +1,4 @@
-import { Card } from "@heroui/react";
+import { Card } from "@heroui/react/card";
 import { HorizontalBarChart } from "@repo/ui/kit/HorizontalBarChart";
 import { useTranslations } from "next-intl";
 import { formatFaNumber } from "../../lib/analytics-data";

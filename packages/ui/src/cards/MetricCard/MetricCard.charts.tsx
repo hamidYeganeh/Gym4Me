@@ -22,6 +22,7 @@ import {
 import { metricCardVariants } from "./MetricCard.styles";
 import type {
   MetricCardBarsChart,
+  MetricCardChart,
   MetricCardDotsChart,
   MetricCardLineChart,
   MetricCardMoodsChart,
@@ -472,4 +473,35 @@ export function MoodsChart({
       })}
     </div>
   );
+}
+
+export function MetricCardChartView({
+  chart,
+  accent,
+  slots,
+}: {
+  chart: MetricCardChart;
+  accent: string;
+  slots: Slots;
+}) {
+  switch (chart.type) {
+    case "line":
+      return <LineChart accent={accent} chart={chart} slots={slots} />;
+    case "bars":
+      return <BarsChart accent={accent} chart={chart} slots={slots} />;
+    case "stacked":
+      return <StackedChart accent={accent} chart={chart} slots={slots} />;
+    case "range":
+      return <RangeChart accent={accent} chart={chart} slots={slots} />;
+    case "rings":
+      return <RingsChart accent={accent} chart={chart} slots={slots} />;
+    case "dots":
+      return <DotsChart accent={accent} chart={chart} slots={slots} />;
+    case "moods":
+      return <MoodsChart chart={chart} slots={slots} />;
+    default: {
+      const _exhaustive: never = chart;
+      return _exhaustive;
+    }
+  }
 }

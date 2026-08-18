@@ -950,6 +950,7 @@ export { StarCircle } from "./icons/StarCircle";
 export { StarFour } from "./icons/StarFour";
 export { StarFull } from "./icons/StarFull";
 export { StarHalf } from "./icons/StarHalf";
+export { StarSolid } from "./icons/StarSolid";
 export { StemCell1 } from "./icons/StemCell1";
 export { StemCell2 } from "./icons/StemCell2";
 export { StepSneaker } from "./icons/StepSneaker";

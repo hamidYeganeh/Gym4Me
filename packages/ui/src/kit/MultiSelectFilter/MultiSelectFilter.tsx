@@ -1,7 +1,9 @@
 "use client";
 
 import type { Key } from "react";
-import { Label, ListBox, Select } from "@heroui/react";
+import { Label } from "@heroui/react/label";
+import { ListBox } from "@heroui/react/list-box";
+import { Select } from "@heroui/react/select";
 import { multiSelectFilterVariants } from "./MultiSelectFilter.styles";
 import type { MultiSelectFilterProps } from "./MultiSelectFilter.types";
 

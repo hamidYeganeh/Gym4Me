@@ -1,6 +1,6 @@
 "use client";
 
-import { Card } from "@heroui/react";
+import { Card } from "@heroui/react/card";
 import { BookOpen } from "@repo/icons/BookOpen";
 import { clubAmenityCardVariants } from "./ClubAmenityCard.styles";
 import type { ClubAmenityCardProps } from "./ClubAmenityCard.types";

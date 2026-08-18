@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Button,
-  Label,
-  TextArea,
-  TextField,
-  Typography,
-} from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Label } from "@heroui/react/label";
+import { TextArea } from "@heroui/react/textarea";
+import { TextField } from "@heroui/react/textfield";
+import { Typography } from "@heroui/react/typography";
 import { Bookmark } from "@repo/icons/Bookmark";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { Flag1 } from "@repo/icons/Flag1";

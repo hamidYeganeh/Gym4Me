@@ -1,6 +1,6 @@
 "use client";
 
-import { InputOTP as HeroInputOTP, REGEXP_ONLY_DIGITS } from "@heroui/react";
+import { InputOTP as HeroInputOTP, REGEXP_ONLY_DIGITS } from "@heroui/react/input-otp";
 import { inputOTPVariants } from "./InputOTP.styles";
 import type { InputOTPProps } from "./InputOTP.types";
 

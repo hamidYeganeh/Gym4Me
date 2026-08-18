@@ -1,4 +1,5 @@
-import { Card, Typography } from "@heroui/react";
+import { Card } from "@heroui/react/card";
+import { Typography } from "@heroui/react/typography";
 import { dashboardHomeStatsSectionVariants } from "./DashboardHomeStatsSection.styles";
 import type { DashboardHomeStatsSectionProps } from "./DashboardHomeStatsSection.types";
 

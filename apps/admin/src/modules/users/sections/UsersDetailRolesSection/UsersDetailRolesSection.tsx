@@ -1,4 +1,4 @@
-import { Card } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
 import { formatAdminDate } from "@/shared/lib/user-format";
 import { UsersRolesForm } from "../../components/UsersRolesForm";
@@ -15,44 +15,52 @@ export function UsersDetailRolesSection({
   const styles = usersDetailRolesSectionVariants();
 
   return (
-    <Card className={styles.card({ className })}>
-      <Card.Header>
-        <Card.Title>{t("createModal.roles")}</Card.Title>
-      </Card.Header>
-      <Card.Content className={styles.content()}>
-        <UsersRolesForm defaultValues={defaultValues} onSubmit={onSubmit} />
+    <section className={styles.root({ className })}>
+      <aside className={styles.aside()}>
+        <Typography className={styles.title()} weight="bold">
+          {t("createModal.roles")}
+        </Typography>
+        <Typography className={styles.description()}>
+          {t("detail.rolesHint")}
+        </Typography>
+      </aside>
 
-        <div className={styles.facts()}>
-          <div className={styles.factRow()}>
-            <span className={styles.factLabel()}>{t("detail.code")}</span>
-            <span className={styles.factValue()}>{user.code || "—"}</span>
-          </div>
-          <div className={styles.factRow()}>
-            <span className={styles.factLabel()}>
-              {t("detail.referralCode")}
-            </span>
-            <span className={styles.factValue()}>
-              {user.referralCode || "—"}
-            </span>
-          </div>
-          <div className={styles.factRow()}>
-            <span className={styles.factLabel()}>
-              {t("detail.phoneVerified")}
-            </span>
-            <span className={styles.factValue()}>
-              {user.phoneVerifiedAt
-                ? t("detail.verified")
-                : t("detail.unverified")}
-            </span>
-          </div>
-          <div className={styles.factRow()}>
-            <span className={styles.factLabel()}>{t("columns.createdAt")}</span>
-            <span className={styles.factValue()}>
-              {formatAdminDate(user.createdAt)}
-            </span>
+      <div className={styles.card()}>
+        <div className={styles.content()}>
+          <UsersRolesForm defaultValues={defaultValues} onSubmit={onSubmit} />
+
+          <div className={styles.facts()}>
+            <div className={styles.factRow()}>
+              <span className={styles.factLabel()}>{t("detail.code")}</span>
+              <span className={styles.factValue()}>{user.code || "—"}</span>
+            </div>
+            <div className={styles.factRow()}>
+              <span className={styles.factLabel()}>
+                {t("detail.referralCode")}
+              </span>
+              <span className={styles.factValue()}>
+                {user.referralCode || "—"}
+              </span>
+            </div>
+            <div className={styles.factRow()}>
+              <span className={styles.factLabel()}>
+                {t("detail.phoneVerified")}
+              </span>
+              <span className={styles.factValue()}>
+                {user.phoneVerifiedAt
+                  ? t("detail.verified")
+                  : t("detail.unverified")}
+              </span>
+            </div>
+            <div className={styles.factRow()}>
+              <span className={styles.factLabel()}>{t("columns.createdAt")}</span>
+              <span className={styles.factValue()}>
+                {formatAdminDate(user.createdAt)}
+              </span>
+            </div>
           </div>
         </div>
-      </Card.Content>
-    </Card>
+      </div>
+    </section>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
-import { Chip, Typography } from "@heroui/react";
+import { Chip } from "@heroui/react/chip";
+import { Typography } from "@heroui/react/typography";
 import { Check } from "@repo/icons/Check";
 import { HeartEcg } from "@repo/icons/HeartEcg";
 import { Leaf } from "@repo/icons/Leaf";

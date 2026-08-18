@@ -1,6 +1,6 @@
 "use client";
 
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { AreaLineChart } from "@repo/ui/kit/AreaLineChart";
 import { useTranslations } from "next-intl";
 import { coachClientDetailTrendSectionVariants } from "./CoachClientDetailTrendSection.styles";

@@ -16,6 +16,18 @@ function lazyNamed(
   });
 }
 
+export const SignInScreen = lazyNamed(
+  () => import("@/modules/auth/screens/SignInScreen"),
+  "SignInScreen",
+);
+export const OtpScreen = lazyNamed(
+  () => import("@/modules/auth/screens/OtpScreen"),
+  "OtpScreen",
+);
+export const ForgotPasswordScreen = lazyNamed(
+  () => import("@/modules/auth/screens/ForgotPasswordScreen"),
+  "ForgotPasswordScreen",
+);
 export const DashboardHomeScreen = lazyNamed(
   () => import("@/modules/dashboard/screens/DashboardHomeScreen"),
   "DashboardHomeScreen",

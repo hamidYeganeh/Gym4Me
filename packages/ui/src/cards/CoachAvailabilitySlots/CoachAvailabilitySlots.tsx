@@ -1,6 +1,9 @@
 "use client";
 
-import { Button, Card, Link, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Card } from "@heroui/react/card";
+import { Link } from "@heroui/react/link";
+import { Typography } from "@heroui/react/typography";
 import { coachAvailabilitySlotsVariants } from "./CoachAvailabilitySlots.styles";
 import type {
   CoachAvailabilityDay,

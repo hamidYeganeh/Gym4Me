@@ -74,8 +74,24 @@ chmod 600 .env.production
 Set:
 
 - `WEBSITE_URL`, `APP_URL`, `ADMIN_URL`, `API_PUBLIC_URL`, `CORS_ORIGINS`
+- `MONGODB_URI` — MongoDB Atlas SRV string (see below)
 - `JWT_ACCESS_SECRET` and `JWT_PASSWORD_RESET_SECRET` (the two generated values)
 - `KAVENEGAR_API_KEY`
+
+### MongoDB Atlas (production default)
+
+1. Create a cluster + database user in [MongoDB Atlas](https://cloud.mongodb.com/).
+2. Network Access → add the VPS IP `185.105.239.140` (or your current server IP).
+3. Database → Connect → Drivers → copy the URI, set the password and database name `gym4me`:
+
+```text
+mongodb+srv://USER:PASSWORD@CLUSTER.xxxxx.mongodb.net/gym4me?retryWrites=true&w=majority
+```
+
+4. Put that value in `.env.production` as `MONGODB_URI=...`.
+
+Self-hosted Mongo on the VPS is optional (`--profile local-mongo`) and needs
+`MONGODB_URI=mongodb://mongo:27017/gym4me?replicaSet=rs0` instead.
 
 The API intentionally does not allow mock SMS while running with `NODE_ENV=production`
 and `DEBUG_MODE=false`.
@@ -134,13 +150,27 @@ Use [`update-runbook.md`](./update-runbook.md) for production updates. It includ
 
 ## Backups
 
-Back up MongoDB and uploaded files before updates that change persistent data:
+Back up MongoDB and uploaded files before updates that change persistent data.
+
+Atlas (default) — dump from any machine that can reach the cluster:
 
 ```bash
 mkdir -p /opt/backups/gym4me
+# Load MONGODB_URI from .env.production, then:
+mongodump --uri="$MONGODB_URI" --archive=/opt/backups/gym4me/mongo-$(date +%F).archive.gz --gzip
+```
+
+Self-hosted (`--profile local-mongo`):
+
+```bash
 docker compose --env-file .env.production \
-  -f docker-compose.production.yml exec -T mongo \
+  -f docker-compose.production.yml --profile local-mongo exec -T mongo \
   mongodump --archive --gzip > /opt/backups/gym4me/mongo-$(date +%F).archive.gz
+```
+
+Uploads:
+
+```bash
 docker run --rm \
   -v gym4me_gym4me_uploads:/data:ro \
   -v /opt/backups/gym4me:/backup \

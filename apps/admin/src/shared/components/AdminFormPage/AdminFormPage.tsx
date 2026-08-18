@@ -1,4 +1,4 @@
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { adminFormPageVariants } from "./AdminFormPage.styles";
 import type { AdminFormPageProps } from "./AdminFormPage.types";
 

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Controller, useFieldArray, useWatch } from "react-hook-form";
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { ApiError } from "@repo/api";
 import { FileItem, type FileItemStatus } from "@repo/ui/kit/FileItem";
 import { Uploader } from "@repo/ui/kit/Uploader";

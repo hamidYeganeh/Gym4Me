@@ -1,4 +1,4 @@
-import { Drawer } from "@heroui/react";
+import { Drawer } from "@heroui/react/drawer";
 import { adminFormDrawerVariants } from "./AdminFormDrawer.styles";
 import type { AdminFormDrawerProps } from "./AdminFormDrawer.types";
 

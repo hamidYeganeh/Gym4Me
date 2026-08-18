@@ -1,6 +1,8 @@
 "use client";
 
-import { Button, ProgressBar, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { ProgressBar } from "@heroui/react/progress-bar";
+import { Typography } from "@heroui/react/typography";
 import { Flag1 } from "@repo/icons/Flag1";
 import { Pencil1 } from "@repo/icons/Pencil1";
 import { metricGoalCardVariants } from "./MetricGoalCard.styles";

@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { Archery } from "@repo/icons/Archery";
 import { BarbellHorizontal } from "@repo/icons/BarbellHorizontal";
 import { Basketball } from "@repo/icons/Basketball";

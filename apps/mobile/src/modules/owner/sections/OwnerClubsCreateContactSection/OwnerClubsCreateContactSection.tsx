@@ -1,15 +1,13 @@
 "use client";
 
 import { Controller, useFieldArray } from "react-hook-form";
-import {
-  Button,
-  Input,
-  Label,
-  ListBox,
-  Select,
-  TextField,
-  Typography,
-} from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Input } from "@heroui/react/input";
+import { Label } from "@heroui/react/label";
+import { ListBox } from "@heroui/react/list-box";
+import { Select } from "@heroui/react/select";
+import { TextField } from "@heroui/react/textfield";
+import { Typography } from "@heroui/react/typography";
 import { Plus } from "@repo/icons/Plus";
 import { Trash1 } from "@repo/icons/Trash1";
 import { useTranslations } from "next-intl";

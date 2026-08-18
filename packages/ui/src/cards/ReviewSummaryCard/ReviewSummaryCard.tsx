@@ -1,6 +1,9 @@
 "use client";
 
-import { Card, ProgressBar, Separator, Typography } from "@heroui/react";
+import { Card } from "@heroui/react/card";
+import { ProgressBar } from "@heroui/react/progress-bar";
+import { Separator } from "@heroui/react/separator";
+import { Typography } from "@heroui/react/typography";
 import { StarFull } from "@repo/icons/StarFull";
 import { reviewSummaryCardVariants } from "./ReviewSummaryCard.styles";
 import type { ReviewSummaryCardProps } from "./ReviewSummaryCard.types";

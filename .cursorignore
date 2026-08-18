@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build / cache outputs (heavy for indexing + TS server)
+.next/
+**/.next/
+.turbo/
+**/.turbo/
+dist/
+**/dist/
+out/
+**/out/
+build/
+**/build/
+coverage/
+**/coverage/
+artifacts/
+**/artifacts/
+
+# Native Capacitor / Android / iOS (huge trees, rarely edited in Cursor)
+apps/mobile/android/
+apps/mobile/ios/
+apps/mobile/artifacts/
+
+# Vendored editor assets
+apps/admin/public/tinymce/
+
+# Generated / lock noise
+*.tsbuildinfo
+*.map
+pnpm-lock.yaml
+package-lock.json

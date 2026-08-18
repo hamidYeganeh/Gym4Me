@@ -2,14 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button, Link, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Link } from "@heroui/react/link";
+import { Typography } from "@heroui/react/typography";
 import { ApiError } from "@repo/api";
 import type {
   ForgotPasswordConfirmInput,
   ForgotPasswordInput,
   ResetPasswordInput,
 } from "@repo/api";
-import { ArrowRight, ChevronLeft } from "@repo/icons";
+import { ArrowRight } from "@repo/icons/ArrowRight";
+import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { toast } from "@repo/ui/kit/Toast";
 import {
   AuthLayout,
@@ -19,7 +22,7 @@ import { useTranslations } from "next-intl";
 import { AuthForgotPasswordOtpForm } from "@/modules/auth/components/AuthForgotPasswordOtpForm";
 import { AuthForgotPasswordPhoneForm } from "@/modules/auth/components/AuthForgotPasswordPhoneForm";
 import { AuthForgotPasswordResetForm } from "@/modules/auth/components/AuthForgotPasswordResetForm";
-import { accountAuth } from "@/shared/lib/api";
+import { accountAuth } from "@/shared/lib/api-client";
 import { withAuthNext } from "@/shared/lib/auth-redirect";
 import { forgotPasswordScreenVariants } from "./ForgotPasswordScreen.styles";
 import type {

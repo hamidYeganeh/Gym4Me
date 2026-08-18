@@ -1,5 +1,9 @@
-import { Button, Link, Typography } from "@heroui/react";
-import { ChevronLeft, Hourglass1, Scan1 } from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { Link } from "@heroui/react/link";
+import { Typography } from "@heroui/react/typography";
+import { ChevronLeft } from "@repo/icons/ChevronLeft";
+import { Hourglass1 } from "@repo/icons/Hourglass1";
+import { Scan1 } from "@repo/icons/Scan1";
 import { kycStatusScanSectionVariants } from "./KycStatusScanSection.styles";
 import type { KycStatusScanSectionProps } from "./KycStatusScanSection.types";
 

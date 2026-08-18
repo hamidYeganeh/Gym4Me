@@ -1,6 +1,9 @@
 "use client";
 
-import { Button, Card, Chip, Separator } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Card } from "@heroui/react/card";
+import { Chip } from "@heroui/react/chip";
+import { Separator } from "@heroui/react/separator";
 import { ArrowUpload } from "@repo/icons/ArrowUpload";
 import { Heart } from "@repo/icons/Heart";
 import { MapPin1 } from "@repo/icons/MapPin1";

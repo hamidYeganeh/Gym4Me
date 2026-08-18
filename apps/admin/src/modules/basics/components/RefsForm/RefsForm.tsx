@@ -1,14 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import {
-  Button,
-  FieldError,
-  Input,
-  Label,
-  Switch,
-  TextField,
-  Typography,
-} from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { FieldError } from "@heroui/react/field-error";
+import { Input } from "@heroui/react/input";
+import { Label } from "@heroui/react/label";
+import { Switch } from "@heroui/react/switch";
+import { TextField } from "@heroui/react/textfield";
+import { Typography } from "@heroui/react/typography";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";

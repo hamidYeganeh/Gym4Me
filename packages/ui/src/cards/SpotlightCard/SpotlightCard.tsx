@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { LightningBolt2 } from "@repo/icons/LightningBolt2";
 import { spotlightCardVariants } from "./SpotlightCard.styles";
 import type { SpotlightCardProps } from "./SpotlightCard.types";

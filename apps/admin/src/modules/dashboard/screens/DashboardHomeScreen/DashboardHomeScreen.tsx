@@ -1,16 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { useNavigate } from "react-router-dom";
 import type { AdminAnalyticsOverview } from "@repo/api";
 import { ApiError } from "@repo/api";
-import {
-  Building2,
-  CalendarCheck,
-  CreditCard,
-  ExclamationMarkTriangle,
-  ShieldCheck,
-  UserCheck,
-} from "@repo/icons";
+import { Building2 } from "@repo/icons/Building2";
+import { CalendarCheck } from "@repo/icons/CalendarCheck";
+import { CreditCard } from "@repo/icons/CreditCard";
+import { ExclamationMarkTriangle } from "@repo/icons/ExclamationMarkTriangle";
+import { ShieldCheck } from "@repo/icons/ShieldCheck";
+import { UserCheck } from "@repo/icons/UserCheck";
 import { useTranslations } from "next-intl";
 import { AdminShell } from "@/shared/components";
 import { adminAnalytics } from "@/shared/lib/api";

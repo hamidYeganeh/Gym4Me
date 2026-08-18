@@ -1,7 +1,11 @@
 "use client";
 
-import { Button, Typography } from "@heroui/react";
-import { Check, CheckCircle, Fire1, Handshake } from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
+import { Check } from "@repo/icons/Check";
+import { CheckCircle } from "@repo/icons/CheckCircle";
+import { Fire1 } from "@repo/icons/Fire1";
+import { Handshake } from "@repo/icons/Handshake";
 import { useTranslations } from "next-intl";
 import type { RefObject } from "react";
 import { marketingDownloadSectionStyles } from "./MarketingDownloadSection.styles";

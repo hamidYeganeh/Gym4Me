@@ -1,8 +1,17 @@
-import { Button, Card, Typography } from "@heroui/react";
-import { ArrowForward2 } from "@repo/icons";
-import { AreaLineChart } from "@repo/ui/kit/AreaLineChart";
+import { lazy, Suspense } from "react";
+import { Button } from "@heroui/react/button";
+import { Card } from "@heroui/react/card";
+import { Spinner } from "@heroui/react/spinner";
+import { Typography } from "@heroui/react/typography";
+import { ArrowForward2 } from "@repo/icons/ArrowForward2";
 import { dashboardHomePrimaryGridSectionVariants } from "./DashboardHomePrimaryGridSection.styles";
 import type { DashboardHomePrimaryGridSectionProps } from "./DashboardHomePrimaryGridSection.types";
+
+const AreaLineChart = lazy(() =>
+  import("@repo/ui/kit/AreaLineChart").then((mod) => ({
+    default: mod.AreaLineChart,
+  })),
+);
 
 export function DashboardHomePrimaryGridSection({
   revenueTitle,
@@ -39,12 +48,20 @@ export function DashboardHomePrimaryGridSection({
         </Card.Header>
         <Card.Content className={styles.chartContent()}>
           {chartData.length > 0 ? (
-            <AreaLineChart
-              aria-label={chartAriaLabel}
-              className={styles.chart()}
-              color="var(--accent)"
-              data={chartData}
-            />
+            <Suspense
+              fallback={
+                <div className={styles.chartFallback()}>
+                  <Spinner size="lg" />
+                </div>
+              }
+            >
+              <AreaLineChart
+                aria-label={chartAriaLabel}
+                className={styles.chart()}
+                color="var(--accent)"
+                data={chartData}
+              />
+            </Suspense>
           ) : (
             <Typography className={styles.cardDescription()}>
               {revenueEmptyLabel}

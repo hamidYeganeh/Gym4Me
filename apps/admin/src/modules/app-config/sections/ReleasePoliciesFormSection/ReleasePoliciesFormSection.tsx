@@ -1,12 +1,10 @@
-import {
-  Button,
-  Input,
-  Label,
-  ListBox,
-  Select,
-  TextField,
-  Typography,
-} from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Input } from "@heroui/react/input";
+import { Label } from "@heroui/react/label";
+import { ListBox } from "@heroui/react/list-box";
+import { Select } from "@heroui/react/select";
+import { TextField } from "@heroui/react/textfield";
+import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
 import { AdminFormDrawer } from "@/shared/components";
 import { releasePoliciesFormSectionVariants } from "./ReleasePoliciesFormSection.styles";

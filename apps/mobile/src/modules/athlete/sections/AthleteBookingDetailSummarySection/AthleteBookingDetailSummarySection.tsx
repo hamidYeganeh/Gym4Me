@@ -1,4 +1,5 @@
-import { Chip, Typography } from "@heroui/react";
+import { Chip } from "@heroui/react/chip";
+import { Typography } from "@heroui/react/typography";
 import { athleteBookingDetailSummarySectionVariants } from "./AthleteBookingDetailSummarySection.styles";
 import type { AthleteBookingDetailSummarySectionProps } from "./AthleteBookingDetailSummarySection.types";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { Spinner } from "@heroui/react";
+import { Spinner } from "@heroui/react/spinner";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";

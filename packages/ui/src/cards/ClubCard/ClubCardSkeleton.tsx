@@ -1,6 +1,6 @@
 "use client";
 
-import { Skeleton } from "@heroui/react";
+import { Skeleton } from "@heroui/react/skeleton";
 import { clubCardVariants } from "./ClubCard.styles";
 import type { ClubCardOrientation } from "./ClubCard.types";
 

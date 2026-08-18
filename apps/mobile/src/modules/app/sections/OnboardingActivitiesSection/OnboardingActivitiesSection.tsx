@@ -1,21 +1,19 @@
 "use client";
 
 import type { ComponentType } from "react";
-import { Button } from "@heroui/react";
-import {
-  BarbellHorizontal,
-  Baseball,
-  ForkKnife,
-  PersonBiking,
-  PersonHiking,
-  PersonRowing,
-  PersonRunning,
-  PersonSkating,
-  PersonSoccer,
-  PersonYoga,
-  ShapesTriangleSquareCirclce,
-  Tennis,
-} from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { BarbellHorizontal } from "@repo/icons/BarbellHorizontal";
+import { Baseball } from "@repo/icons/Baseball";
+import { ForkKnife } from "@repo/icons/ForkKnife";
+import { PersonBiking } from "@repo/icons/PersonBiking";
+import { PersonHiking } from "@repo/icons/PersonHiking";
+import { PersonRowing } from "@repo/icons/PersonRowing";
+import { PersonRunning } from "@repo/icons/PersonRunning";
+import { PersonSkating } from "@repo/icons/PersonSkating";
+import { PersonSoccer } from "@repo/icons/PersonSoccer";
+import { PersonYoga } from "@repo/icons/PersonYoga";
+import { ShapesTriangleSquareCirclce } from "@repo/icons/ShapesTriangleSquareCirclce";
+import { Tennis } from "@repo/icons/Tennis";
 import type { OnboardingActivityId } from "@/modules/app/lib/onboarding-data";
 import { onboardingActivitiesSectionVariants } from "./OnboardingActivitiesSection.styles";
 import type { OnboardingActivitiesSectionProps } from "./OnboardingActivitiesSection.types";

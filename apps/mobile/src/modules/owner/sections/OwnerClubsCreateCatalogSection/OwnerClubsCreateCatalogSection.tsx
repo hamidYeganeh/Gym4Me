@@ -1,6 +1,6 @@
 "use client";
 
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { FilterChip } from "@repo/ui/kit/FilterChip";
 import { useTranslations } from "next-intl";
 import { ownerClubsCreateCatalogSectionVariants } from "./OwnerClubsCreateCatalogSection.styles";

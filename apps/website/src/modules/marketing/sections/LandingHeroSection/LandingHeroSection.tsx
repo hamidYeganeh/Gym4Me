@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, ScrollShadow, type ScrollShadowVisibility } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { ScrollShadow, type ScrollShadowVisibility } from "@heroui/react/scroll-shadow";
 import { ClubCard } from "@repo/ui/cards/ClubCard";
 import useEmblaCarousel from "embla-carousel-react";
 import { useTranslations } from "next-intl";

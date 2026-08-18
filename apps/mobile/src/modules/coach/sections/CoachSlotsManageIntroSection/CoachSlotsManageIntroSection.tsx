@@ -1,4 +1,4 @@
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { coachSlotsManageIntroSectionVariants } from "./CoachSlotsManageIntroSection.styles";
 import type { CoachSlotsManageIntroSectionProps } from "./CoachSlotsManageIntroSection.types";
 

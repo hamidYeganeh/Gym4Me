@@ -1,6 +1,7 @@
 "use client";
 
-import { Chip, Typography } from "@heroui/react";
+import { Chip } from "@heroui/react/chip";
+import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
 import type { CoachClientSession } from "../../lib/coach-clients-data";
 import { coachClientDetailSessionsSectionVariants } from "./CoachClientDetailSessionsSection.styles";

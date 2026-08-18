@@ -38,7 +38,7 @@ src/
 9. **Aliases** — every app uses `@/*` → `src/*`.
 10. **No demo / scaffold leftovers** in production routes. Dev galleries live under `/dev` (mobile) and are not the default `/`.
 11. **Code splitting** — Admin screens load with `React.lazy`. Next apps keep routes thin and use `next/dynamic` for heavy client islands (maps, editors, GSAP, dnd-kit, health plugins). Do not eagerly import every screen from the router.
-12. **Import cost** — Icons via `@repo/icons/Name`. UI via `@repo/ui/<category>/<Name>`. API factories via `@repo/api/<domain>`. Do not import `@repo/ui/kit` or `@repo/ui/cards` barrels from screens.
+12. **Import cost** — Icons via `@repo/icons/Name`. HeroUI via `@heroui/react/<component>` (kebab-case, e.g. `@heroui/react/button`). UI via `@repo/ui/<category>/<Name>`. API factories via `@repo/api/<domain>`. Do not import `@heroui/react`, `@repo/ui/kit`, or `@repo/ui/cards` barrels from screens.
 13. **Models** — Request/response shapes come from `@repo/api` DTOs. App `*.types.ts` files hold UI props only; do not duplicate API models.
 
 ## App responsibilities

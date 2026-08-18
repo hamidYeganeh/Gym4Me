@@ -1,4 +1,6 @@
-import { Link, Separator, Typography } from "@heroui/react";
+import { Link } from "@heroui/react/link";
+import { Separator } from "@heroui/react/separator";
+import { Typography } from "@heroui/react/typography";
 import { ArrowDown } from "@repo/icons/ArrowDown";
 import { ArrowUp } from "@repo/icons/ArrowUp";
 import { ChartTrendDown } from "@repo/icons/ChartTrendDown";

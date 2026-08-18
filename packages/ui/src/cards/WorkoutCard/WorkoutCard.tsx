@@ -1,6 +1,9 @@
 "use client";
 
-import { Button, Card, Chip, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Card } from "@heroui/react/card";
+import { Chip } from "@heroui/react/chip";
+import { Typography } from "@heroui/react/typography";
 import { BarbellHorizontal } from "@repo/icons/BarbellHorizontal";
 import { Clock } from "@repo/icons/Clock";
 import { Play } from "@repo/icons/Play";

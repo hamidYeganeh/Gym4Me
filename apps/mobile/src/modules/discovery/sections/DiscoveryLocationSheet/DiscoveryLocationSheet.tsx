@@ -1,6 +1,8 @@
 "use client";
 
-import { Button, Drawer, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Drawer } from "@heroui/react/drawer";
+import { Typography } from "@heroui/react/typography";
 import { Check } from "@repo/icons/Check";
 import { CloseX } from "@repo/icons/CloseX";
 import { House1 } from "@repo/icons/House1";

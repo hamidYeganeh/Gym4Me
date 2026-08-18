@@ -2,21 +2,23 @@ import { tv } from "tailwind-variants";
 
 export const baseProfileHeroSectionVariants = tv({
   slots: {
-    root: "relative -mx-screen",
+    root: "relative -mx-screen -mt-[env(safe-area-inset-top)]",
     cover: [
-      "relative flex h-40 w-full items-center justify-center overflow-hidden",
-      "rounded-b-[2rem] bg-surface-secondary text-muted",
+      "relative h-[calc(13.75rem+env(safe-area-inset-top))] w-full overflow-hidden",
+      "rounded-b-[2rem] bg-foreground",
     ].join(" "),
-    coverIcon: "opacity-45",
+    coverImage: "object-cover object-center grayscale contrast-125 brightness-75",
+    coverOverlay:
+      "absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-black/25",
     avatarRow:
-      "relative z-10 -mt-14 flex items-end justify-center gap-5 px-screen",
+      "relative z-10 -mt-14 flex items-end justify-center gap-6 px-screen",
     sideAction: [
-      "size-12 shrink-0 rounded-[1rem] border-0 bg-surface",
-      "text-foreground",
+      "size-12 shrink-0 rounded-full border border-border bg-surface",
+      "text-muted shadow-sm",
     ].join(" "),
     avatarWrap: "relative shrink-0",
     avatar: [
-      "size-[7.25rem] overflow-hidden rounded-[2rem]",
+      "size-24 overflow-hidden rounded-full",
       "border-[3px] border-background bg-surface shadow-sm",
     ].join(" "),
     avatarImage: "size-full object-cover",

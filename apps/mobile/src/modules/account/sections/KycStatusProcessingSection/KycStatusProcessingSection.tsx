@@ -1,4 +1,4 @@
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { Logo } from "@repo/ui/common/Logo";
 import { kycStatusProcessingSectionVariants } from "./KycStatusProcessingSection.styles";
 import type { KycStatusProcessingSectionProps } from "./KycStatusProcessingSection.types";

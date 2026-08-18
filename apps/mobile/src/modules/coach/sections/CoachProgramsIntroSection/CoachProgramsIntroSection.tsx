@@ -1,4 +1,4 @@
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { CallToActionCard } from "@repo/ui/cards/CallToActionCard";
 import { useTranslations } from "next-intl";
 import { coachProgramsIntroSectionVariants } from "./CoachProgramsIntroSection.styles";

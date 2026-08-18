@@ -8,6 +8,6 @@ export const articlesListScreenStyles = {
   chips: "flex flex-wrap gap-2",
   chip: "rounded-full border border-border px-3 py-1.5 text-sm text-muted transition-colors hover:border-foreground hover:text-foreground",
   chipActive: "border-foreground bg-foreground text-background",
-  list: "flex flex-col gap-3",
+  list: "flex flex-col gap-4",
   empty: "text-muted",
 } as const;

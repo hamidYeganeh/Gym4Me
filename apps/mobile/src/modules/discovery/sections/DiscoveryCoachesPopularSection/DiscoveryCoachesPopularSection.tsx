@@ -1,6 +1,7 @@
 "use client";
 
-import { Link, Typography } from "@heroui/react";
+import { Link } from "@heroui/react/link";
+import { Typography } from "@heroui/react/typography";
 import { CoachPopularItem } from "@repo/ui/cards/CoachPopularItem";
 import { Fragment } from "react";
 import { discoveryCoachesPopularSectionStyles as styles } from "./DiscoveryCoachesPopularSection.styles";

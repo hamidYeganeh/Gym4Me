@@ -13,6 +13,16 @@ export const passwordFieldVariants = tv({
     suffixButton:
       "outline-none data-[hovered=true]:bg-transparent data-[pressed=true]:opacity-70",
   },
+  variants: {
+    hideLabel: {
+      true: {
+        label: "sr-only",
+      },
+    },
+  },
+  defaultVariants: {
+    hideLabel: false,
+  },
 });
 
 export type PasswordFieldVariantProps = VariantProps<

@@ -1,4 +1,4 @@
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { athleteGoalsIntroSectionVariants } from "./AthleteGoalsIntroSection.styles";
 import type { AthleteGoalsIntroSectionProps } from "./AthleteGoalsIntroSection.types";
 

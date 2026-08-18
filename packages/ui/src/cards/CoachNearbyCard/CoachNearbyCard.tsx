@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { CheckCircle } from "@repo/icons/CheckCircle";
 import { ChevronRight } from "@repo/icons/ChevronRight";
 import { CloseXCircle } from "@repo/icons/CloseXCircle";

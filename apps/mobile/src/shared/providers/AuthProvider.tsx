@@ -9,15 +9,21 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { AuthSession, OtpRequested, PublicUser, Role } from "@repo/api";
-import { ApiError } from "@repo/api";
+import type { OtpRequested } from "@repo/api/auth";
+import { ApiError } from "@repo/api/client";
+import type { AuthSession, PublicUser, Role } from "@repo/api";
 import {
   clearBiometricUnlock,
   saveBiometricUnlock,
   readBiometricUnlock,
 } from "@/modules/auth/lib/biometric-unlock";
-import { captureSessionAttribution } from "@/shared/lib/attribution";
-import { accountAuth, apiClient } from "@/shared/lib/api";
+import { accountAuth, apiClient } from "@/shared/lib/api-client";
+
+function captureSessionAttribution() {
+  void import("@/shared/lib/attribution").then((mod) =>
+    mod.captureSessionAttribution(),
+  );
+}
 
 type AuthContextValue = {
   session: AuthSession | null;

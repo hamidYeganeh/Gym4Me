@@ -1,4 +1,5 @@
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { ChevronRight } from "@repo/icons/ChevronRight";
 import { AnimatedThemeToggler } from "@/shared/components/animated-theme-toggler";
 import { settingsPreferencesSectionVariants } from "./SettingsPreferencesSection.styles";

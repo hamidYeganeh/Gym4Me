@@ -1,4 +1,4 @@
-import { Button } from "@heroui/react";
+import { Button } from "@heroui/react/button";
 import { Bookmark } from "@repo/icons/Bookmark";
 import { Chat } from "@repo/icons/Chat";
 import { Heart } from "@repo/icons/Heart";

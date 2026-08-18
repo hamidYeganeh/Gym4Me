@@ -90,6 +90,7 @@ export type HomeArticleItem = {
   id: string;
   slug: string;
   title: string;
+  excerpt: string | null;
   category: string;
   coverSrc: string | null;
   authorName: string;
@@ -98,6 +99,7 @@ export type HomeArticleItem = {
   readingTimeMinutes: number;
   viewsLabel: string;
   likesLabel: string;
+  tags: string[];
 };
 
 export function mapLocationToHomeItem(
@@ -458,6 +460,8 @@ export const MOCK_ARTICLES: HomeArticleItem[] = [
     id: "mock-article-warmup",
     slug: "warmup-guide",
     title: "راهنمای گرم‌کردن قبل از تمرین",
+    excerpt:
+      "قبل از وزنه، بدن را با حرکت‌های پویا آماده کن تا آسیب کمتر و عملکرد بهتر باشد.",
     category: "راهنما",
     coverSrc: PLACEHOLDER_IMAGE,
     authorName: "تیم Gym4Me",
@@ -466,11 +470,14 @@ export const MOCK_ARTICLES: HomeArticleItem[] = [
     readingTimeMinutes: 5,
     viewsLabel: "۱٬۲۴۰",
     likesLabel: "۸۶",
+    tags: ["گرم‌کردن", "تمرین", "راهنما"],
   },
   {
     id: "mock-article-protein",
     slug: "protein-basics",
     title: "پروتئین کافی برای عضله‌سازی",
+    excerpt:
+      "میزان پروتئین روزانه را با هدف و وزن خود هماهنگ کن تا ریکاوری کامل شود.",
     category: "نکته",
     coverSrc: PLACEHOLDER_IMAGE,
     authorName: "مربی سارا",
@@ -479,11 +486,14 @@ export const MOCK_ARTICLES: HomeArticleItem[] = [
     readingTimeMinutes: 7,
     viewsLabel: "۲٬۱۱۰",
     likesLabel: "۱۴۲",
+    tags: ["تغذیه", "عضله", "پروتئین"],
   },
   {
     id: "mock-article-recovery",
     slug: "recovery-sleep",
     title: "خواب و ریکاوری ورزشکاران",
+    excerpt:
+      "خواب کافی همان تمرینی است که دیده نمی‌شود؛ بدون آن پیشرفت کند می‌شود.",
     category: "داستان",
     coverSrc: PLACEHOLDER_IMAGE,
     authorName: "تیم Gym4Me",
@@ -492,11 +502,14 @@ export const MOCK_ARTICLES: HomeArticleItem[] = [
     readingTimeMinutes: 6,
     viewsLabel: "۹۸۰",
     likesLabel: "۷۱",
+    tags: ["خواب", "ریکاوری", "سلامت"],
   },
   {
     id: "mock-article-hiit",
     slug: "hiit-beginners",
     title: "شروع HIIT برای مبتدی‌ها",
+    excerpt:
+      "با اینتروال‌های کوتاه شروع کن و شدت را هفته‌به‌هفته بالا ببر.",
     category: "تمرین",
     coverSrc: PLACEHOLDER_IMAGE,
     authorName: "مربی کاوه",
@@ -505,6 +518,7 @@ export const MOCK_ARTICLES: HomeArticleItem[] = [
     readingTimeMinutes: 4,
     viewsLabel: "۳٬۴۵۰",
     likesLabel: "۲۰۱",
+    tags: ["HIIT", "مبتدی", "کاردیو"],
   },
 ];
 

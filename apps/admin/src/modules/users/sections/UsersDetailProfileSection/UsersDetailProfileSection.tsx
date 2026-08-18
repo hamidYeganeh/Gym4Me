@@ -1,11 +1,13 @@
-import { Card } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
 import { UsersProfileForm } from "../../components/UsersProfileForm";
 import { usersDetailProfileSectionVariants } from "./UsersDetailProfileSection.styles";
 import type { UsersDetailProfileSectionProps } from "./UsersDetailProfileSection.types";
 
 export function UsersDetailProfileSection({
+  user,
   defaultValues,
+  formId,
   onSubmit,
   className,
 }: UsersDetailProfileSectionProps) {
@@ -13,14 +15,24 @@ export function UsersDetailProfileSection({
   const styles = usersDetailProfileSectionVariants();
 
   return (
-    <Card className={styles.card({ className })}>
-      <Card.Header>
-        <Card.Title>{t("detail.title")}</Card.Title>
-        <Card.Description>{t("subtitle")}</Card.Description>
-      </Card.Header>
-      <Card.Content>
-        <UsersProfileForm defaultValues={defaultValues} onSubmit={onSubmit} />
-      </Card.Content>
-    </Card>
+    <section className={styles.root({ className })}>
+      <aside className={styles.aside()}>
+        <Typography className={styles.title()} weight="bold">
+          {t("detail.personalInfo")}
+        </Typography>
+        <Typography className={styles.description()}>
+          {t("detail.personalInfoHint")}
+        </Typography>
+      </aside>
+      <div className={styles.card()}>
+        <UsersProfileForm
+          defaultValues={defaultValues}
+          formId={formId}
+          phone={user.phone}
+          user={user}
+          onSubmit={onSubmit}
+        />
+      </div>
+    </section>
   );
 }

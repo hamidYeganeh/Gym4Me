@@ -1,6 +1,6 @@
 "use client";
 
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { Moon } from "@repo/icons/Moon";
 import type { CSSProperties } from "react";
 import { busyHoursChartVariants } from "./BusyHoursChart.styles";

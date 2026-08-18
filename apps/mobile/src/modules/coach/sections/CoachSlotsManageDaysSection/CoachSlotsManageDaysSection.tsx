@@ -1,6 +1,8 @@
 "use client";
 
-import { Button, Spinner, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Spinner } from "@heroui/react/spinner";
+import { Typography } from "@heroui/react/typography";
 import { CloseX } from "@repo/icons/CloseX";
 import { coachSlotsManageDaysSectionVariants } from "./CoachSlotsManageDaysSection.styles";
 import type { CoachSlotsManageDaysSectionProps } from "./CoachSlotsManageDaysSection.types";

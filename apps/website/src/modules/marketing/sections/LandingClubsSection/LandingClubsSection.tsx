@@ -1,6 +1,6 @@
 "use client";
 
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { ClubCard } from "@repo/ui/cards/ClubCard";
 import { useTranslations } from "next-intl";
 import { LANDING_CLUBS } from "../../lib/landing-assets";

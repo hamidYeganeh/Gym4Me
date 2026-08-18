@@ -1,6 +1,6 @@
 "use client";
 
-import { Spinner } from "@heroui/react";
+import { Spinner } from "@heroui/react/spinner";
 import type { OwnerFinanceAnalytics } from "@repo/api";
 import { statsColors } from "@repo/theme";
 import { useEffect, useState } from "react";

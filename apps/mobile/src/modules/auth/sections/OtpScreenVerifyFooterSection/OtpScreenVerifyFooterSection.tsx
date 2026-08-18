@@ -1,4 +1,5 @@
-import { Link, Typography } from "@heroui/react";
+import { Link } from "@heroui/react/link";
+import { Typography } from "@heroui/react/typography";
 import { Lock1 } from "@repo/icons/Lock1";
 import { otpScreenVerifyFooterSectionVariants } from "./OtpScreenVerifyFooterSection.styles";
 import type { OtpScreenVerifyFooterSectionProps } from "./OtpScreenVerifyFooterSection.types";

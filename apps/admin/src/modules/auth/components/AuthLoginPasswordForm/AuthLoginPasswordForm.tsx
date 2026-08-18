@@ -1,17 +1,19 @@
 import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Link as RouterLink } from "react-router-dom";
-import {
-  Button,
-  Checkbox,
-  FieldError,
-  Input,
-  Label,
-  TextField,
-  Typography,
-} from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Checkbox } from "@heroui/react/checkbox";
+import { FieldError } from "@heroui/react/field-error";
+import { Input } from "@heroui/react/input";
+import { Label } from "@heroui/react/label";
+import { TextField } from "@heroui/react/textfield";
+import { Typography } from "@heroui/react/typography";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRight, Eye, EyeSlash, Lock1, Telephone1 } from "@repo/icons";
+import { ArrowRight } from "@repo/icons/ArrowRight";
+import { Eye } from "@repo/icons/Eye";
+import { EyeSlash } from "@repo/icons/EyeSlash";
+import { Lock1 } from "@repo/icons/Lock1";
+import { Telephone1 } from "@repo/icons/Telephone1";
 import { useTranslations } from "next-intl";
 import { routes } from "@/shared/lib/routes";
 import {

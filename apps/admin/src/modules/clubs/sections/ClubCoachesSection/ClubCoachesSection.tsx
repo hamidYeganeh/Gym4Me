@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Input, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Input } from "@heroui/react/input";
+import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
 import {
   assignClubCoach,

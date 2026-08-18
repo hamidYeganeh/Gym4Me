@@ -1,6 +1,6 @@
 "use client";
 
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { ChevronDown } from "@repo/icons/ChevronDown";
 import { useTranslations } from "next-intl";
 import {

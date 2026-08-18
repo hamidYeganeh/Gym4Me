@@ -1,6 +1,6 @@
 "use client";
 
-import { Spinner } from "@heroui/react";
+import { Spinner } from "@heroui/react/spinner";
 import { statsColors } from "@repo/theme";
 import type { MetricType, ProgressMetric } from "@repo/api";
 import { useEffect, useState } from "react";

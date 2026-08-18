@@ -1,4 +1,6 @@
-import { Button, Chip, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Chip } from "@heroui/react/chip";
+import { Typography } from "@heroui/react/typography";
 import { Calendar1 } from "@repo/icons/Calendar1";
 import { Clock } from "@repo/icons/Clock";
 import { UsersTwo } from "@repo/icons/UsersTwo";

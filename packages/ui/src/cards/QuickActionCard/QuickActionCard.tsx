@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { quickActionCardVariants } from "./QuickActionCard.styles";
 import type { QuickActionCardProps } from "./QuickActionCard.types";
 

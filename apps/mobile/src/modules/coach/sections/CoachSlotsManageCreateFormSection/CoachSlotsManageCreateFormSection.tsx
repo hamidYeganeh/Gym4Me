@@ -1,4 +1,5 @@
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { Plus } from "@repo/icons/Plus";
 import { FilterChip, FilterChipBar } from "@repo/ui/kit/FilterChip";
 import { coachSlotsManageCreateFormSectionVariants } from "./CoachSlotsManageCreateFormSection.styles";

@@ -1,6 +1,7 @@
 "use client";
 
-import { Link, Typography } from "@heroui/react";
+import { Link } from "@heroui/react/link";
+import { Typography } from "@heroui/react/typography";
 import { discoverySectionRailVariants } from "./DiscoverySectionRail.styles";
 import type { DiscoverySectionRailProps } from "./DiscoverySectionRail.types";
 

@@ -1,5 +1,8 @@
 services:
+  # Optional self-hosted Mongo (default production uses Atlas via MONGODB_URI).
+  # Start with: docker compose --env-file .env.production -f docker-compose.production.yml --profile local-mongo up -d
   mongo:
+    profiles: ["local-mongo"]
     image: mongo:7
     restart: unless-stopped
     command: ["--replSet", "rs0", "--bind_ip_all"]
@@ -38,14 +41,13 @@ services:
       dockerfile: apps/api/Dockerfile
     restart: unless-stopped
     depends_on:
-      mongo:
-        condition: service_healthy
       redis:
         condition: service_healthy
     environment:
       NODE_ENV: production
       PORT: "8088"
-      MONGODB_URI: mongodb://mongo:27017/gym4me?replicaSet=rs0
+      # Atlas (production default) or local-mongo profile: mongodb://mongo:27017/gym4me?replicaSet=rs0
+      MONGODB_URI: ${MONGODB_URI:?MONGODB_URI is required}
       REDIS_URL: redis://redis:6379
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?JWT_ACCESS_SECRET is required}
       JWT_PASSWORD_RESET_SECRET: ${JWT_PASSWORD_RESET_SECRET:?JWT_PASSWORD_RESET_SECRET is required}
@@ -180,8 +182,9 @@ services:
       - frontend
 
 networks:
+  # Not internal: API must reach MongoDB Atlas (and other outbound providers).
+  # Local mongo/redis stay unpublished (no host ports).
   backend:
-    internal: true
   frontend:
 
 volumes:

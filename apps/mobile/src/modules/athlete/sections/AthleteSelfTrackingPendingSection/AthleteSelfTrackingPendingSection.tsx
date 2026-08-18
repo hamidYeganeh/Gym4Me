@@ -1,4 +1,5 @@
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { toPersianDigits } from "@/modules/athlete/lib/weight/format";
 import { athleteSelfTrackingPendingSectionVariants } from "./AthleteSelfTrackingPendingSection.styles";
 import type { AthleteSelfTrackingPendingSectionProps } from "./AthleteSelfTrackingPendingSection.types";

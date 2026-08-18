@@ -1,5 +1,7 @@
-import { Button, Typography } from "@heroui/react";
-import { ArrowRotateClockwise1, Plus } from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
+import { ArrowRotateClockwise1 } from "@repo/icons/ArrowRotateClockwise1";
+import { Plus } from "@repo/icons/Plus";
 import { useTranslations } from "next-intl";
 import { usersListHeaderSectionVariants } from "./UsersListHeaderSection.styles";
 import type { UsersListHeaderSectionProps } from "./UsersListHeaderSection.types";

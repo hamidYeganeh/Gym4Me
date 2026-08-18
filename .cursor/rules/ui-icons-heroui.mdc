@@ -14,10 +14,10 @@ All icons must come from the monorepo icons package. Do not use Lucide, react-ic
 // ❌ BAD
 import { Plus } from "lucide-react";
 <svg viewBox="0 0 24 24"><path d="M12 5v14..." /></svg>
+import { Plus } from "@repo/icons";
 
 // ✅ GOOD
-import { Plus } from "@repo/icons";
-// or: import { Plus } from "@repo/icons/Plus";
+import { Plus } from "@repo/icons/Plus";
 
 <Plus size={20} />
 ```
@@ -38,9 +38,12 @@ Prefer HeroUI for: Button, Card, Typography, Surface, Chip, Input / TextField, M
 // ❌ BAD
 <button className="rounded-full bg-warning ...">...</button>
 <h3 className="text-2xl font-bold">Title</h3>
+import { Button, Card, Typography } from "@heroui/react";
 
 // ✅ GOOD
-import { Button, Card, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Card } from "@heroui/react/card";
+import { Typography } from "@heroui/react/typography";
 
 <Button isIconOnly size="lg" variant="primary" onPress={onAction}>
   <Plus size={20} />

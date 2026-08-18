@@ -1,6 +1,8 @@
 "use client";
 
-import { Avatar, Button, Typography } from "@heroui/react";
+import { Avatar } from "@heroui/react/avatar";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { Bookmark } from "@repo/icons/Bookmark";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { Share1 } from "@repo/icons/Share1";

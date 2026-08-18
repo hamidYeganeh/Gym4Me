@@ -1,6 +1,8 @@
 "use client";
 
-import { Button, Chip, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Chip } from "@heroui/react/chip";
+import { Typography } from "@heroui/react/typography";
 import { ChatLine } from "@repo/icons/ChatLine";
 import { Plus } from "@repo/icons/Plus";
 import { callToActionCardVariants } from "./CallToActionCard.styles";

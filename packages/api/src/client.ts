@@ -246,3 +246,5 @@ export class ApiClient {
 export function createApiClient(options: ApiClientOptions): ApiClient {
   return new ApiClient(options);
 }
+
+export { ApiError, KYC_REQUIRED_CODE };

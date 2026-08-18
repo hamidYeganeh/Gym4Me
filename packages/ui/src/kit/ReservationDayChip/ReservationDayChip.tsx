@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { reservationDayChipVariants } from "./ReservationDayChip.styles";
 import type { ReservationDayChipProps } from "./ReservationDayChip.types";
 

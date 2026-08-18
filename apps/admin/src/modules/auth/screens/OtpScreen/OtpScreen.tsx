@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { ApiError } from "@repo/api";
 import type { ConfirmOtpInput } from "@repo/api";
-import { ArrowLeft } from "@repo/icons";
+import { ArrowLeft } from "@repo/icons/ArrowLeft";
 import {
   AuthLayout,
   type AuthLayoutLabels,

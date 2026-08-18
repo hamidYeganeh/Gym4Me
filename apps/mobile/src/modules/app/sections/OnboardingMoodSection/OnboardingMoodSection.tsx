@@ -1,14 +1,13 @@
 "use client";
 
 import type { ComponentType } from "react";
-import { Button, Typography } from "@heroui/react";
-import {
-  FaceDepressed,
-  FaceHappy,
-  FaceNeutral,
-  FaceOverjoyed,
-  FaceSad,
-} from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
+import { FaceDepressed } from "@repo/icons/FaceDepressed";
+import { FaceHappy } from "@repo/icons/FaceHappy";
+import { FaceNeutral } from "@repo/icons/FaceNeutral";
+import { FaceOverjoyed } from "@repo/icons/FaceOverjoyed";
+import { FaceSad } from "@repo/icons/FaceSad";
 import useEmblaCarousel from "embla-carousel-react";
 import { useCallback, useEffect, useMemo } from "react";
 import type { OnboardingMoodId } from "@/modules/app/lib/onboarding-data";

@@ -1,6 +1,6 @@
 "use client";
 
-import { Spinner } from "@heroui/react";
+import { Spinner } from "@heroui/react/spinner";
 import { useDiscoveryMapPins } from "../../lib/use-discovery-map-pins";
 import { DiscoveryMapScreen } from "./DiscoveryMapScreen";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { ClubCard } from "@repo/ui/cards/ClubCard";
 import { ownerHomeClubsSectionStyles as styles } from "./OwnerHomeClubsSection.styles";
 import type { OwnerHomeClubsSectionProps } from "./OwnerHomeClubsSection.types";

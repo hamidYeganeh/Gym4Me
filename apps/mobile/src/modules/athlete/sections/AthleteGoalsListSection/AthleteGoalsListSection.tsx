@@ -1,4 +1,6 @@
-import { Button, Chip, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Chip } from "@heroui/react/chip";
+import { Typography } from "@heroui/react/typography";
 import type { MetricGoalStatus } from "@repo/api";
 import { goalStatusLabel } from "@/modules/athlete/lib/goal-helpers";
 import { athleteGoalsListSectionVariants } from "./AthleteGoalsListSection.styles";

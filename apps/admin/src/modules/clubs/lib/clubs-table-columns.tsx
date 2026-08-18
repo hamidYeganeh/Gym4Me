@@ -1,5 +1,6 @@
 import { createColumnHelper } from "@tanstack/react-table";
-import { Button, Chip } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Chip } from "@heroui/react/chip";
 import type { Club, ClubLifecycleStatus, ClubOperationalStatus } from "@repo/api";
 import { formatAdminDate } from "@/shared/lib/user-format";
 import { categoryLabel, ownerLabel } from "./clubs-data";

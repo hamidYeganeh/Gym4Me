@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { Chat } from "@repo/icons/Chat";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { FaceHappy } from "@repo/icons/FaceHappy";

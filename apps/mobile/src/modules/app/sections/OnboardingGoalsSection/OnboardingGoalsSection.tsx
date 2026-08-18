@@ -1,15 +1,13 @@
 "use client";
 
 import type { ComponentType } from "react";
-import { Button } from "@heroui/react";
-import {
-  Check,
-  HealthCross1,
-  HeartEcg,
-  Mobile,
-  PersonRunning,
-  RobotFace1,
-} from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { Check } from "@repo/icons/Check";
+import { HealthCross1 } from "@repo/icons/HealthCross1";
+import { HeartEcg } from "@repo/icons/HeartEcg";
+import { Mobile } from "@repo/icons/Mobile";
+import { PersonRunning } from "@repo/icons/PersonRunning";
+import { RobotFace1 } from "@repo/icons/RobotFace1";
 import type { OnboardingGoalId } from "@/modules/app/lib/onboarding-data";
 import { onboardingGoalsSectionVariants } from "./OnboardingGoalsSection.styles";
 import type { OnboardingGoalsSectionProps } from "./OnboardingGoalsSection.types";

@@ -1,4 +1,5 @@
-import { Chip, Typography } from "@heroui/react";
+import { Chip } from "@heroui/react/chip";
+import { Typography } from "@heroui/react/typography";
 import { toPersianDigits } from "@/modules/athlete/lib/weight/format";
 import { athleteSelfTrackingSummarySectionVariants } from "./AthleteSelfTrackingSummarySection.styles";
 import type { AthleteSelfTrackingSummarySectionProps } from "./AthleteSelfTrackingSummarySection.types";

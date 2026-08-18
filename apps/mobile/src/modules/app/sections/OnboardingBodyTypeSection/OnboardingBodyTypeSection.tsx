@@ -1,7 +1,7 @@
 "use client";
 
-import { Typography } from "@heroui/react";
-import { HandSwipeLeft } from "@repo/icons";
+import { Typography } from "@heroui/react/typography";
+import { HandSwipeLeft } from "@repo/icons/HandSwipeLeft";
 import {
   BodyTypeCard,
   type BodyTypeGender,

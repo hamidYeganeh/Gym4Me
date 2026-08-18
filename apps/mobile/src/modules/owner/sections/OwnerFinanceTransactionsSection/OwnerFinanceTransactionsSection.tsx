@@ -1,6 +1,6 @@
 "use client";
 
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
 import type { OwnerTransactionKind } from "../../lib/owner-finance-data";
 import { ownerFinanceTransactionsSectionVariants } from "./OwnerFinanceTransactionsSection.styles";

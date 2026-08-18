@@ -1,6 +1,6 @@
 "use client";
 
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { Clock } from "@repo/icons/Clock";
 import { busyHoursCardVariants } from "./BusyHoursCard.styles";
 import type { BusyHoursCardProps } from "./BusyHoursCard.types";

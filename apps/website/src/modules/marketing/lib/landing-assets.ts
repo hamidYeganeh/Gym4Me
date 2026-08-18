@@ -320,6 +320,8 @@ export const LANDING_ARTICLES = [
     id: "warmup",
     slug: "warmup-guide",
     title: "راهنمای گرم‌کردن قبل از تمرین",
+    excerpt:
+      "قبل از وزنه، بدن را با حرکت‌های پویا آماده کن تا آسیب کمتر و عملکرد بهتر باشد.",
     category: "راهنما",
     coverSrc: `${MOCK}/facility-cardio.png`,
     authorName: "تیم Gym4Me",
@@ -327,11 +329,14 @@ export const LANDING_ARTICLES = [
     readingTimeMinutes: 5,
     viewsLabel: "۱٬۲۴۰",
     likesLabel: "۸۶",
+    tags: ["گرم‌کردن", "تمرین", "راهنما"],
   },
   {
     id: "protein",
     slug: "protein-basics",
     title: "پروتئین کافی برای عضله‌سازی",
+    excerpt:
+      "میزان پروتئین روزانه را با هدف و وزن خود هماهنگ کن تا ریکاوری کامل شود.",
     category: "نکته",
     coverSrc: `${MOCK}/collection-1.png`,
     authorName: "سارا نوری",
@@ -339,11 +344,14 @@ export const LANDING_ARTICLES = [
     readingTimeMinutes: 7,
     viewsLabel: "۲٬۱۱۰",
     likesLabel: "۱۴۲",
+    tags: ["تغذیه", "عضله", "پروتئین"],
   },
   {
     id: "recovery",
     slug: "recovery-sleep",
     title: "خواب و ریکاوری ورزشکاران",
+    excerpt:
+      "خواب کافی همان تمرینی است که دیده نمی‌شود؛ بدون آن پیشرفت کند می‌شود.",
     category: "داستان",
     coverSrc: `${MOCK}/collection-2.png`,
     authorName: "تیم Gym4Me",
@@ -351,11 +359,14 @@ export const LANDING_ARTICLES = [
     readingTimeMinutes: 6,
     viewsLabel: "۹۸۰",
     likesLabel: "۷۱",
+    tags: ["خواب", "ریکاوری", "سلامت"],
   },
   {
     id: "hiit",
     slug: "hiit-beginners",
     title: "شروع HIIT برای مبتدی‌ها",
+    excerpt:
+      "با اینتروال‌های کوتاه شروع کن و شدت را هفته‌به‌هفته بالا ببر.",
     category: "تمرین",
     coverSrc: `${MOCK}/hero.png`,
     authorName: "آرمان کاظمی",
@@ -363,6 +374,7 @@ export const LANDING_ARTICLES = [
     readingTimeMinutes: 4,
     viewsLabel: "۳٬۴۵۰",
     likesLabel: "۲۰۱",
+    tags: ["HIIT", "مبتدی", "کاردیو"],
   },
 ] as const;
 

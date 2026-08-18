@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import type { IconProps } from "@repo/icons";
+import type { IconProps } from "@repo/icons/create-icon";
 
 type GlyphProps = {
   icon: ComponentType<IconProps>;

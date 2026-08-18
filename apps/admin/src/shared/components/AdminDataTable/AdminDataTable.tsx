@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Pagination, Spinner, Table, Typography } from "@heroui/react";
+import { Pagination } from "@heroui/react/pagination";
+import { Spinner } from "@heroui/react/spinner";
+import { Table } from "@heroui/react/table";
+import { Typography } from "@heroui/react/typography";
 import {
   flexRender,
   getCoreRowModel,

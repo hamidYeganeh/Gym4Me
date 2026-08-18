@@ -1,4 +1,5 @@
-import { Chip, Typography } from "@heroui/react";
+import { Chip } from "@heroui/react/chip";
+import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
 import { categoryLabel } from "../../lib/clubs-data";
 import { ClubCoachesSection } from "../ClubCoachesSection";

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { ApiError } from "@repo/api";
 import type {
   ForgotPasswordConfirmInput,
@@ -15,7 +16,7 @@ import { useTranslations } from "next-intl";
 import { AuthForgotPasswordOtpForm } from "@/modules/auth/components/AuthForgotPasswordOtpForm";
 import { AuthForgotPasswordPhoneForm } from "@/modules/auth/components/AuthForgotPasswordPhoneForm";
 import { AuthForgotPasswordResetForm } from "@/modules/auth/components/AuthForgotPasswordResetForm";
-import { adminAuth } from "@/shared/lib/api";
+import { adminAuth } from "@/shared/lib/api-client";
 import { routes } from "@/shared/lib/routes";
 import { forgotPasswordScreenVariants } from "./ForgotPasswordScreen.styles";
 import type {

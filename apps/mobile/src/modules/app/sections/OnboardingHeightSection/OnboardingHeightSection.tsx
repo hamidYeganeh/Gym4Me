@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@heroui/react";
+import { Button } from "@heroui/react/button";
 import { HeightSlider } from "@repo/ui/kit/HeightSlider";
 import {
   ONBOARDING_HEIGHT_CM_RANGE,

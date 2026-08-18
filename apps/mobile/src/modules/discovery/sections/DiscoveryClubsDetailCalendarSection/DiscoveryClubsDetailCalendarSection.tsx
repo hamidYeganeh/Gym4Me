@@ -1,14 +1,12 @@
 "use client";
 
-import {
-  Button,
-  Calendar,
-  Drawer,
-  Link,
-  ScrollShadow,
-  Skeleton,
-  Typography,
-} from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Calendar } from "@heroui/react/calendar";
+import { Drawer } from "@heroui/react/drawer";
+import { Link } from "@heroui/react/link";
+import { ScrollShadow } from "@heroui/react/scroll-shadow";
+import { Skeleton } from "@heroui/react/skeleton";
+import { Typography } from "@heroui/react/typography";
 import type { DateValue } from "@internationalized/date";
 import {
   GregorianCalendar,

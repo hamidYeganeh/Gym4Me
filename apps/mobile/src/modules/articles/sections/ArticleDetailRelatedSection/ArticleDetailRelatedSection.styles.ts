@@ -6,6 +6,6 @@ export const articleDetailRelatedSectionVariants = tv({
     title: "tracking-tight",
     scroller:
       "-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-    card: "w-[min(100%,22rem)] shrink-0",
+    card: "w-[min(100%,28rem)] shrink-0",
   },
 });

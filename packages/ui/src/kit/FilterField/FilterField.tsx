@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@heroui/react";
+import { Button } from "@heroui/react/button";
 import { ChevronDown } from "@repo/icons/ChevronDown";
 import { Pencil1 } from "@repo/icons/Pencil1";
 import { filterFieldVariants } from "./FilterField.styles";

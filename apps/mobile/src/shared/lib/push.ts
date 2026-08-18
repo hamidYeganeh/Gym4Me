@@ -1,5 +1,9 @@
 import type { DevicePlatform } from "@repo/api";
-import { accountNotifications } from "./api";
+
+async function notificationsApi() {
+  const { accountNotifications } = await import("./api");
+  return accountNotifications;
+}
 
 const DEVICE_TOKEN_KEY = "gym4me.push.deviceToken";
 const PUSH_PROMPTED_KEY = "gym4me.push.permissionPrompted";
@@ -62,6 +66,7 @@ export async function registerDeviceToken(
   token: string,
   platform: DevicePlatform,
 ): Promise<void> {
+  const accountNotifications = await notificationsApi();
   await accountNotifications.registerDevice({ token, platform });
   window.localStorage.setItem(DEVICE_TOKEN_KEY, token);
 }
@@ -74,6 +79,7 @@ export async function revokeCurrentDeviceToken(): Promise<void> {
   const token = readStoredToken();
   if (!token) return;
   try {
+    const accountNotifications = await notificationsApi();
     await accountNotifications.revokeDevice(token);
   } catch {
     // Losing the revoke is acceptable; the API drops invalid tokens on next send.

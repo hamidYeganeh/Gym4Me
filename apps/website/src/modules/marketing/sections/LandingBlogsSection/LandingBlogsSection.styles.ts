@@ -19,6 +19,6 @@ export const landingBlogsSectionStyles = tv({
       "[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
       "md:flex-wrap",
     ].join(" "),
-    card: "w-[min(17.5rem,78vw)] shrink-0",
+    card: "w-[min(19rem,82vw)] shrink-0",
   },
 });

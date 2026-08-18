@@ -1,4 +1,4 @@
-import type { ButtonProps } from "@heroui/react";
+import type { ButtonProps } from "@heroui/react/button";
 import type { HTMLAttributes, ReactNode } from "react";
 
 export type CallToActionCardVariant = "primary" | "outlined" | "soft";

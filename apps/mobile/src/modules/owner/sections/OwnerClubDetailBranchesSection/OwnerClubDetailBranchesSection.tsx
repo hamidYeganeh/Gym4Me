@@ -1,4 +1,6 @@
-import { Button, Chip, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Chip } from "@heroui/react/chip";
+import { Typography } from "@heroui/react/typography";
 import { Plus } from "@repo/icons/Plus";
 import { ownerClubDetailBranchesSectionVariants } from "./OwnerClubDetailBranchesSection.styles";
 import type { OwnerClubDetailBranchesSectionProps } from "./OwnerClubDetailBranchesSection.types";

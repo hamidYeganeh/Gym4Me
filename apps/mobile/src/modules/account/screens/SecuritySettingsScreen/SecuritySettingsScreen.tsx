@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Switch, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Switch } from "@heroui/react/switch";
+import { Typography } from "@heroui/react/typography";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { Door } from "@repo/icons/Door";
 import { FaceId } from "@repo/icons/FaceId";

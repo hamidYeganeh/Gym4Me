@@ -1,6 +1,9 @@
 "use client";
 
-import { Avatar, Button, Card, Typography } from "@heroui/react";
+import { Avatar } from "@heroui/react/avatar";
+import { Button } from "@heroui/react/button";
+import { Card } from "@heroui/react/card";
+import { Typography } from "@heroui/react/typography";
 import { SealCheck } from "@repo/icons/SealCheck";
 import { StarFull } from "@repo/icons/StarFull";
 import { StarHalf } from "@repo/icons/StarHalf";

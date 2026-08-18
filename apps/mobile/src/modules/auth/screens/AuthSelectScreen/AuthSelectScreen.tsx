@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@heroui/react";
+import { Button } from "@heroui/react/button";
 import { ApiError } from "@repo/api";
-import { BiometricFrame, FaceId, Lock1, Telephone1 } from "@repo/icons";
+import { BiometricFrame } from "@repo/icons/BiometricFrame";
+import { FaceId } from "@repo/icons/FaceId";
+import { Lock1 } from "@repo/icons/Lock1";
+import { Telephone1 } from "@repo/icons/Telephone1";
 import { toast } from "@repo/ui/kit/Toast";
 import { AuthLayout, type AuthLayoutLabels } from "@repo/ui/layout/AuthLayout";
 import { useTranslations } from "next-intl";

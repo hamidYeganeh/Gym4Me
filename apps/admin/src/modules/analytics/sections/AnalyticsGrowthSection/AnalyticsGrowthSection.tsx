@@ -1,4 +1,4 @@
-import { Card } from "@heroui/react";
+import { Card } from "@heroui/react/card";
 import { AreaLineChart } from "@repo/ui/kit/AreaLineChart";
 import { useTranslations } from "next-intl";
 import { analyticsGrowthSectionVariants } from "./AnalyticsGrowthSection.styles";

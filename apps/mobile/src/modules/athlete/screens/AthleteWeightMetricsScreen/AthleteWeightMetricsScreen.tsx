@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { ChartBar1 } from "@repo/icons/ChartBar1";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { WeightScale } from "@repo/icons/WeightScale";

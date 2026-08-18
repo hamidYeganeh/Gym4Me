@@ -1,8 +1,10 @@
 "use client";
 
 import type { Key } from "react";
-import { Button, SearchField, Tabs } from "@heroui/react";
-import { SliderLineThreeHorizontal } from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { SearchField } from "@heroui/react/search-field";
+import { Tabs } from "@heroui/react/tabs";
+import { SliderLineThreeHorizontal } from "@repo/icons/SliderLineThreeHorizontal";
 import { adminSectionHeaderVariants } from "./AdminSectionHeader.styles";
 import type { AdminSectionHeaderProps } from "./AdminSectionHeader.types";
 

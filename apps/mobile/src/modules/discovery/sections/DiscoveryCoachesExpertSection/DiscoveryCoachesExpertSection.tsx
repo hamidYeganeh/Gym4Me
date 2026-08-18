@@ -1,6 +1,7 @@
 "use client";
 
-import { Link, Typography } from "@heroui/react";
+import { Link } from "@heroui/react/link";
+import { Typography } from "@heroui/react/typography";
 import { CoachExpertCard } from "@repo/ui/cards/CoachExpertCard";
 import { discoveryCoachesExpertSectionStyles as styles } from "./DiscoveryCoachesExpertSection.styles";
 import type { DiscoveryCoachesExpertSectionProps } from "./DiscoveryCoachesExpertSection.types";

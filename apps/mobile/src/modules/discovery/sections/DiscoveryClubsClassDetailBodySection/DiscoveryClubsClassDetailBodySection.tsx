@@ -1,6 +1,11 @@
 "use client";
 
-import { Button, Chip, Drawer, Link, ScrollShadow, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Chip } from "@heroui/react/chip";
+import { Drawer } from "@heroui/react/drawer";
+import { Link } from "@heroui/react/link";
+import { ScrollShadow } from "@heroui/react/scroll-shadow";
+import { Typography } from "@heroui/react/typography";
 import { ArrowUpRight } from "@repo/icons/ArrowUpRight";
 import { BarbellHorizontal } from "@repo/icons/BarbellHorizontal";
 import { Calendar1 } from "@repo/icons/Calendar1";

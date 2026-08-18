@@ -1,4 +1,4 @@
-import type { ButtonProps } from "@heroui/react";
+import type { ButtonProps } from "@heroui/react/button";
 import type { CSSProperties, HTMLAttributes, ReactNode } from "react";
 
 export type ClubClassCardSize = "sm" | "md" | "lg";

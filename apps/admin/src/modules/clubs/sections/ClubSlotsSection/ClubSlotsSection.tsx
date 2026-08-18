@@ -1,13 +1,13 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Button,
-  Input,
-  Label,
-  TextField,
-  Typography,
-} from "@heroui/react";
-import { Pencil1, Plus, Trash1 } from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { Input } from "@heroui/react/input";
+import { Label } from "@heroui/react/label";
+import { TextField } from "@heroui/react/textfield";
+import { Typography } from "@heroui/react/typography";
+import { Pencil1 } from "@repo/icons/Pencil1";
+import { Plus } from "@repo/icons/Plus";
+import { Trash1 } from "@repo/icons/Trash1";
 import type { ClubSlot } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { AdminFormDrawer } from "@/shared/components/AdminFormDrawer";

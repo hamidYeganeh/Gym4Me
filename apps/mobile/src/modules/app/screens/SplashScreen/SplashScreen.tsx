@@ -1,6 +1,6 @@
 "use client";
 
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { statsColors } from "@repo/theme";
 import { Logo } from "@repo/ui/common/Logo";
 import { GlyphText } from "@repo/ui/kit/GlyphText";

@@ -8,7 +8,7 @@ import {
 } from "react";
 import type { AuthSession, OtpRequested, PublicUser } from "@repo/api";
 import { ApiError } from "@repo/api";
-import { adminAuth } from "../lib/api";
+import { adminAuth } from "../lib/api-client";
 
 type AuthContextValue = {
   session: AuthSession | null;

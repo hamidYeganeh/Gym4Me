@@ -2,14 +2,12 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Button,
-  Input,
-  InputGroup,
-  Label,
-  TextField,
-  Typography,
-} from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Input } from "@heroui/react/input";
+import { InputGroup } from "@heroui/react/input-group";
+import { Label } from "@heroui/react/label";
+import { TextField } from "@heroui/react/textfield";
+import { Typography } from "@heroui/react/typography";
 import { ApiError } from "@repo/api";
 import { Check } from "@repo/icons/Check";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";

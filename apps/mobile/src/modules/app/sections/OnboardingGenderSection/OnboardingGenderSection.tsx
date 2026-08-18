@@ -1,12 +1,13 @@
 "use client";
 
 import type { ComponentType } from "react";
-import { Button, TextArea, TextField, Typography } from "@heroui/react";
-import {
-  GenderFemale,
-  GenderMale,
-  GenderTransgender,
-} from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { TextArea } from "@heroui/react/textarea";
+import { TextField } from "@heroui/react/textfield";
+import { Typography } from "@heroui/react/typography";
+import { GenderFemale } from "@repo/icons/GenderFemale";
+import { GenderMale } from "@repo/icons/GenderMale";
+import { GenderTransgender } from "@repo/icons/GenderTransgender";
 import type { OnboardingGenderId } from "@/modules/app/lib/onboarding-data";
 import { onboardingGenderSectionVariants } from "./OnboardingGenderSection.styles";
 import type { OnboardingGenderSectionProps } from "./OnboardingGenderSection.types";

@@ -1,16 +1,14 @@
 "use client";
 
-import {
-  Accordion,
-  Button,
-  Chip,
-  Drawer,
-  Label,
-  Radio,
-  RadioGroup,
-  ScrollShadow,
-  Typography,
-} from "@heroui/react";
+import { Accordion } from "@heroui/react/accordion";
+import { Button } from "@heroui/react/button";
+import { Chip } from "@heroui/react/chip";
+import { Drawer } from "@heroui/react/drawer";
+import { Label } from "@heroui/react/label";
+import { Radio } from "@heroui/react/radio";
+import { RadioGroup } from "@heroui/react/radio-group";
+import { ScrollShadow } from "@heroui/react/scroll-shadow";
+import { Typography } from "@heroui/react/typography";
 import { ArrowUpRight } from "@repo/icons/ArrowUpRight";
 import { BarbellHorizontal } from "@repo/icons/BarbellHorizontal";
 import { Briefcase1 } from "@repo/icons/Briefcase1";

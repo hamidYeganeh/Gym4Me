@@ -1,6 +1,6 @@
 "use client";
 
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { Fire1 } from "@repo/icons/Fire1";
 import { FootSteps } from "@repo/icons/FootSteps";
 import { Heart } from "@repo/icons/Heart";

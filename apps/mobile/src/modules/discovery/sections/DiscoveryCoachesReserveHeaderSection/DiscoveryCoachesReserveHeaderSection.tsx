@@ -1,6 +1,7 @@
 "use client";
 
-import { Avatar, Typography } from "@heroui/react";
+import { Avatar } from "@heroui/react/avatar";
+import { Typography } from "@heroui/react/typography";
 import { StarFull } from "@repo/icons/StarFull";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { discoveryCoachesReserveHeaderSectionVariants as styles } from "./DiscoveryCoachesReserveHeaderSection.styles";

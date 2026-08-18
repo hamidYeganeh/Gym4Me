@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { MapTrifold } from "@repo/icons/MapTrifold";
 import { discoveryHomeMapCtaSectionVariants } from "./DiscoveryHomeMapCtaSection.styles";
 import type { DiscoveryHomeMapCtaSectionProps } from "./DiscoveryHomeMapCtaSection.types";

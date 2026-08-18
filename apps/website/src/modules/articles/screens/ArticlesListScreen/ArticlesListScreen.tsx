@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { ArticleCard } from "@repo/ui/cards/ArticleCard";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -12,6 +12,7 @@ import {
   formatCount,
   formatRelativeTime,
 } from "@/modules/articles/lib/format-article";
+import { mediaFileUrl } from "@/shared/lib/api";
 import { articlesListScreenStyles as styles } from "./ArticlesListScreen.styles";
 import type { ArticlesListScreenProps } from "./ArticlesListScreen.types";
 
@@ -110,9 +111,16 @@ export function ArticlesListScreen({
               <ArticleCard
                 key={article.id}
                 actionLabel={article.title}
+                author={{
+                  name: article.author.name,
+                  avatarSrc: mediaFileUrl(article.author.avatarMediaId),
+                }}
                 category={formatCategoryLabel(article.taxonomy.category)}
                 commentsLabel={formatCount(article.engagement.commentsCount)}
+                coverSrc={mediaFileUrl(article.coverMediaId)}
+                excerpt={article.excerpt ?? undefined}
                 likesLabel={formatCount(article.engagement.likesCount)}
+                orientation="vertical"
                 publishedAtLabel={formatRelativeTime(
                   article.publishedAt ?? article.createdAt,
                 )}
@@ -120,8 +128,12 @@ export function ArticlesListScreen({
                   minutes: article.readingTimeMinutes,
                 })}
                 saveLabel={t("save")}
+                tags={article.tags.map((tag) => ({
+                  key: tag,
+                  label: formatCategoryLabel(tag),
+                }))}
                 title={article.title}
-                variant="feed"
+                type="cover"
                 viewsLabel={formatCount(article.engagement.viewsCount)}
                 onPress={() => router.push(`/articles/${article.slug}`)}
               />

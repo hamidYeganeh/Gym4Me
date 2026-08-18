@@ -1,6 +1,8 @@
 "use client";
 
-import { Chip, CloseButton, Typography } from "@heroui/react";
+import { Chip } from "@heroui/react/chip";
+import { CloseButton } from "@heroui/react/close-button";
+import { Typography } from "@heroui/react/typography";
 import { Briefcase1 } from "@repo/icons/Briefcase1";
 import { SealCheck } from "@repo/icons/SealCheck";
 import { StarFull } from "@repo/icons/StarFull";

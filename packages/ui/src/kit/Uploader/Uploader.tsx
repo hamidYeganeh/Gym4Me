@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { ArrowUpload } from "@repo/icons/ArrowUpload";
 import { useCallback, type KeyboardEvent } from "react";
 import { useDropzone, type DropEvent, type FileRejection } from "react-dropzone";

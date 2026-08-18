@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { WeightSlider } from "@repo/ui/kit/WeightSlider";
 import {
   ONBOARDING_WEIGHT_KG_RANGE,

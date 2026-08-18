@@ -1,6 +1,6 @@
 "use client";
 
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { Plus } from "@repo/icons/Plus";
 import { WaterDrop } from "@repo/icons/WaterDrop";
 import type { CSSProperties, HTMLAttributes } from "react";

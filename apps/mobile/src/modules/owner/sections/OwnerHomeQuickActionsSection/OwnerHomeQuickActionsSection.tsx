@@ -1,12 +1,10 @@
 "use client";
 
-import { Typography } from "@heroui/react";
-import {
-  BarbellHorizontal,
-  Calendar1,
-  DotThreeHorizontal,
-  Kettlebell,
-} from "@repo/icons";
+import { Typography } from "@heroui/react/typography";
+import { BarbellHorizontal } from "@repo/icons/BarbellHorizontal";
+import { Calendar1 } from "@repo/icons/Calendar1";
+import { DotThreeHorizontal } from "@repo/icons/DotThreeHorizontal";
+import { Kettlebell } from "@repo/icons/Kettlebell";
 import { QuickActionCard } from "@repo/ui/cards/QuickActionCard";
 import { ownerHomeQuickActionsSectionStyles as styles } from "./OwnerHomeQuickActionsSection.styles";
 import type { OwnerHomeQuickActionsSectionProps } from "./OwnerHomeQuickActionsSection.types";

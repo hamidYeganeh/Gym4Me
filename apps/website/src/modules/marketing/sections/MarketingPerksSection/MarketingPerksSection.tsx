@@ -1,6 +1,8 @@
 "use client";
 
-import { Anchor, Building2, Eye } from "@repo/icons";
+import { Anchor } from "@repo/icons/Anchor";
+import { Building2 } from "@repo/icons/Building2";
+import { Eye } from "@repo/icons/Eye";
 import { useTranslations } from "next-intl";
 import type { CSSProperties } from "react";
 import { Ltr } from "../../lib/marketing-bidi";

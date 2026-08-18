@@ -1,6 +1,6 @@
 "use client";
 
-import { Spinner } from "@heroui/react";
+import { Spinner } from "@heroui/react/spinner";
 import type { Club } from "@repo/api";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { useEffect, useState } from "react";

@@ -1,6 +1,7 @@
 "use client";
 
-import { Link, Typography } from "@heroui/react";
+import { Link } from "@heroui/react/link";
+import { Typography } from "@heroui/react/typography";
 import { MetricHistoryItem } from "@repo/ui/cards/MetricHistoryItem";
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";

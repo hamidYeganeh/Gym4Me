@@ -1,6 +1,6 @@
 "use client";
 
-import { Spinner } from "@heroui/react";
+import { Spinner } from "@heroui/react/spinner";
 import type { CoachAnalyticsOverview, PaymentRecord } from "@repo/api";
 import { useEffect, useState } from "react";
 import { accountCoaching, accountFinance } from "@/shared/lib/api";

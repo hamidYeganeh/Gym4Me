@@ -1,5 +1,7 @@
-import { Button, Typography } from "@heroui/react";
-import { ArrowLeft, Pencil1 } from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
+import { ArrowLeft } from "@repo/icons/ArrowLeft";
+import { Pencil1 } from "@repo/icons/Pencil1";
 import { useTranslations } from "next-intl";
 import { formatAdminDate } from "@/shared/lib/user-format";
 import { ownerLabel } from "../../lib/clubs-data";

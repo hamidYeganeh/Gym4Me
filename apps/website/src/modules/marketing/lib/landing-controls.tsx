@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight } from "@repo/icons";
+import { ArrowRight } from "@repo/icons/ArrowRight";
 import { CloseX } from "@repo/icons/CloseX";
 import { LogoMark } from "@repo/ui/common/LogoMark";
 import { useState } from "react";

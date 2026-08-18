@@ -2,7 +2,10 @@
 
 import { useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Button, Checkbox, Link, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Checkbox } from "@heroui/react/checkbox";
+import { Link } from "@heroui/react/link";
+import { Typography } from "@heroui/react/typography";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "@repo/icons/ArrowRight";
 import { PasswordField } from "@repo/ui/kit/PasswordField";
@@ -53,6 +56,7 @@ export function AuthLoginPasswordForm({
         render={({ field, fieldState }) => (
           <AuthPhoneField
             errorMessage={fieldState.error?.message}
+            hideLabel
             inputRef={field.ref}
             isInvalid={fieldState.invalid}
             label={t("phoneLabel")}
@@ -72,13 +76,14 @@ export function AuthLoginPasswordForm({
           <PasswordField
             autoComplete="current-password"
             errorMessage={fieldState.error?.message}
+            hideLabel
             hidePasswordLabel={t("hidePassword")}
             inputRef={field.ref}
             isInvalid={fieldState.invalid}
             isRequired
             label={t("passwordLabel")}
             name={field.name}
-            placeholder={t("passwordPlaceholder")}
+            placeholder={t("passwordLabel")}
             showPasswordLabel={t("showPassword")}
             value={field.value}
             onBlur={field.onBlur}

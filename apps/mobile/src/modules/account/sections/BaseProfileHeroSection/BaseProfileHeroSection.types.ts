@@ -3,7 +3,7 @@ export type BaseProfileHeroSectionProps = {
   avatarSrc?: string | null;
   roleSegment: string;
   onSettingsPress: () => void;
-  onAnalyticsPress: () => void;
+  onThemePress: () => void;
   onEditPress: () => void;
   className?: string;
 };

@@ -1,4 +1,8 @@
-import { Button, Input, Label, TextField, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Input } from "@heroui/react/input";
+import { Label } from "@heroui/react/label";
+import { TextField } from "@heroui/react/textfield";
+import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
 import { AdminFormDrawer } from "@/shared/components";
 import { SUBJECT_TYPES } from "../../lib/gamification-constants";

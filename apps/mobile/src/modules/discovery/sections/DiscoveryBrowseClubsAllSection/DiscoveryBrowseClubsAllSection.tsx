@@ -1,6 +1,6 @@
 "use client";
 
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { DiscoveryClubRailCard } from "../../components/DiscoveryClubRailCard";

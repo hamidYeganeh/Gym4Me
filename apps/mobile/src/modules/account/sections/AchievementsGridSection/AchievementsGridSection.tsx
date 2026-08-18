@@ -1,4 +1,4 @@
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import type { MyAchievement } from "@repo/api";
 import { AchievementTag } from "@repo/ui/cards/AchievementTag";
 import { useTranslations } from "next-intl";

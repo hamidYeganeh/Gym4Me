@@ -1,6 +1,6 @@
 "use client";
 
-import { Card } from "@heroui/react";
+import { Card } from "@heroui/react/card";
 import { BarbellDiagonal } from "@repo/icons/BarbellDiagonal";
 import { useId, type JSX } from "react";
 // import { Logo } from "../../common/Logo";

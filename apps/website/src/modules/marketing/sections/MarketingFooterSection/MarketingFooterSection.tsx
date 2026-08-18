@@ -1,7 +1,8 @@
 "use client";
 
-import { Typography } from "@heroui/react";
-import { ArrowRecycle, Kettlebell } from "@repo/icons";
+import { Typography } from "@heroui/react/typography";
+import { ArrowRecycle } from "@repo/icons/ArrowRecycle";
+import { Kettlebell } from "@repo/icons/Kettlebell";
 import { useTranslations } from "next-intl";
 import type { CSSProperties } from "react";
 import { Ltr } from "../../lib/marketing-bidi";

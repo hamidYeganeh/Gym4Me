@@ -1,6 +1,6 @@
 "use client";
 
-import { Spinner } from "@heroui/react";
+import { Spinner } from "@heroui/react/spinner";
 import type { WorkoutLogSetInput } from "@repo/api";
 import { useCallback, useEffect, useState } from "react";
 import { accountProgress } from "@/shared/lib/api";

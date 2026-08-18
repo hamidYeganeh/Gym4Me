@@ -1,6 +1,6 @@
 "use client";
 
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { Wallet } from "@repo/icons/Wallet";
 import { StatsCard } from "@repo/ui/cards/StatsCard";
 import { AreaLineChart } from "@repo/ui/kit/AreaLineChart";

@@ -1,6 +1,6 @@
 "use client";
 
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { MetricPromoCard } from "@repo/ui/cards/MetricPromoCard";
 import { athleteMetricsIntroSectionStyles as styles } from "./AthleteMetricsIntroSection.styles";
 import type { AthleteMetricsIntroSectionProps } from "./AthleteMetricsIntroSection.types";

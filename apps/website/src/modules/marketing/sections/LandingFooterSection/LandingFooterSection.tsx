@@ -1,6 +1,6 @@
 "use client";
 
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
 import { BrandMark, LandingPillButton } from "../../lib/landing-controls";
 import { LandingEyebrow } from "../../lib/landing-ui";

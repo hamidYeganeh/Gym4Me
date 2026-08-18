@@ -1,6 +1,6 @@
 "use client";
 
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { ArrowUpRight } from "@repo/icons/ArrowUpRight";
 import { ArticleCard } from "@repo/ui/cards/ArticleCard";
 import { motion, useReducedMotion } from "framer-motion";
@@ -77,11 +77,14 @@ export function LandingBlogsSection({ className }: LandingBlogsSectionProps) {
                 category={article.category}
                 className={slots.card()}
                 coverSrc={article.coverSrc}
+                excerpt={article.excerpt}
                 likesLabel={article.likesLabel}
+                orientation="vertical"
                 publishedAtLabel={article.publishedAtLabel}
                 readingTimeLabel={`${article.readingTimeMinutes} دقیقه مطالعه`}
+                tags={article.tags.map((tag) => ({ key: tag, label: tag }))}
                 title={article.title}
-                variant="stacked"
+                type="cover"
                 viewsLabel={article.viewsLabel}
                 onPress={() => router.push("/articles")}
               />

@@ -1,6 +1,9 @@
 import { useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Button, FieldError, InputOTP, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { FieldError } from "@heroui/react/field-error";
+import { InputOTP } from "@heroui/react/input-otp";
+import { Typography } from "@heroui/react/typography";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import {

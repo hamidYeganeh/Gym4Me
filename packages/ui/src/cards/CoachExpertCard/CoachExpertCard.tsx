@@ -1,6 +1,9 @@
 "use client";
 
-import { Avatar, Badge, Button, Typography } from "@heroui/react";
+import { Avatar } from "@heroui/react/avatar";
+import { Badge } from "@heroui/react/badge";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { Check } from "@repo/icons/Check";
 import { PLACEHOLDER_IMAGE } from "../../common/placeholder";
 import { coachExpertCardVariants } from "./CoachExpertCard.styles";

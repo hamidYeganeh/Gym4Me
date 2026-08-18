@@ -1,4 +1,8 @@
-import { Button, Input, Label, TextField, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Input } from "@heroui/react/input";
+import { Label } from "@heroui/react/label";
+import { TextField } from "@heroui/react/textfield";
+import { Typography } from "@heroui/react/typography";
 import { toPersianDigits } from "@/modules/athlete/lib/weight/format";
 import { PERSONAL_RECORD_TYPES } from "@/modules/athlete/lib/self-tracking-data";
 import { athleteSelfTrackingPersonalRecordSectionVariants } from "./AthleteSelfTrackingPersonalRecordSection.styles";

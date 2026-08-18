@@ -1,6 +1,7 @@
 "use client";
 
-import { Spinner, Typography } from "@heroui/react";
+import { Spinner } from "@heroui/react/spinner";
+import { Typography } from "@heroui/react/typography";
 import type { ReferralInvite } from "@repo/api";
 import { useCallback, useEffect, useState } from "react";
 import { accountReferral } from "@/shared/lib/api";

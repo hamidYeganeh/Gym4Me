@@ -1,16 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  AlertDialog,
-  Button,
-  Card,
-  Chip,
-  Spinner,
-  Table,
-  Typography,
-} from "@heroui/react";
+import { AlertDialog } from "@heroui/react/alert-dialog";
+import { Button } from "@heroui/react/button";
+import { Card } from "@heroui/react/card";
+import { Chip } from "@heroui/react/chip";
+import { Spinner } from "@heroui/react/spinner";
+import { Table } from "@heroui/react/table";
+import { Typography } from "@heroui/react/typography";
 import { ApiError, type RefItem } from "@repo/api";
-import { ArrowRotateClockwise1, Pencil1, Plus, Trash2 } from "@repo/icons";
+import { ArrowRotateClockwise1 } from "@repo/icons/ArrowRotateClockwise1";
+import { Pencil1 } from "@repo/icons/Pencil1";
+import { Plus } from "@repo/icons/Plus";
+import { Trash2 } from "@repo/icons/Trash2";
 import { useTranslations } from "next-intl";
 import { adminBasics } from "@/shared/lib/api";
 import { routes } from "@/shared/lib/routes";

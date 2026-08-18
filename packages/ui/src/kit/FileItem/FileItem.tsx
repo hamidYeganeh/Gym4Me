@@ -1,6 +1,8 @@
 "use client";
 
-import { Button, ProgressBar, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { ProgressBar } from "@heroui/react/progress-bar";
+import { Typography } from "@heroui/react/typography";
 import { ArrowRotateClockwise1 } from "@repo/icons/ArrowRotateClockwise1";
 import { Check } from "@repo/icons/Check";
 import { ExclamationMarkTriangle } from "@repo/icons/ExclamationMarkTriangle";

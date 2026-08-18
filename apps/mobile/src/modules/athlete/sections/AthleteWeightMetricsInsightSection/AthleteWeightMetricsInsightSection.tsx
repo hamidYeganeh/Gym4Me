@@ -1,6 +1,7 @@
 "use client";
 
-import { Link, Typography } from "@heroui/react";
+import { Link } from "@heroui/react/link";
+import { Typography } from "@heroui/react/typography";
 import { MetricInsightCard } from "@repo/ui/cards/MetricInsightCard";
 import { useTranslations } from "next-intl";
 import { athleteWeightMetricsInsightSectionVariants } from "./AthleteWeightMetricsInsightSection.styles";

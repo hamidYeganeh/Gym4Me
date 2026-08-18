@@ -1,7 +1,11 @@
 "use client";
 
 import { Controller } from "react-hook-form";
-import { Input, Label, TextArea, TextField, Typography } from "@heroui/react";
+import { Input } from "@heroui/react/input";
+import { Label } from "@heroui/react/label";
+import { TextArea } from "@heroui/react/textarea";
+import { TextField } from "@heroui/react/textfield";
+import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
 import { ownerClubsCreateIdentitySectionVariants } from "./OwnerClubsCreateIdentitySection.styles";
 import type { OwnerClubsCreateIdentitySectionProps } from "./OwnerClubsCreateIdentitySection.types";

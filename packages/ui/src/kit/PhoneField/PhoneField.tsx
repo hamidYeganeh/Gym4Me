@@ -7,13 +7,16 @@ import {
   type FormEvent,
   type Ref,
 } from "react";
-import { FieldError, InputGroup, Label, TextField } from "@heroui/react";
+import { FieldError } from "@heroui/react/field-error";
+import { InputGroup } from "@heroui/react/input-group";
+import { Label } from "@heroui/react/label";
+import { TextField } from "@heroui/react/textfield";
 import { ChevronDown } from "@repo/icons/ChevronDown";
-import { Flag } from "@repo/ui/common/Flag";
+import { IranFlag } from "../../common/Flag/IranFlag";
 import { phoneFieldVariants } from "./PhoneField.styles";
 import type { PhoneFieldProps } from "./PhoneField.types";
 
-const DEFAULT_COUNTRY_FLAG = <Flag code="IR" rounded size="lg" title="Iran" />;
+const DEFAULT_COUNTRY_FLAG = <IranFlag size="lg" />;
 const IR_MOBILE_NATIONAL_LENGTH = 10;
 
 function setRef<T>(ref: Ref<T> | undefined, value: T | null) {

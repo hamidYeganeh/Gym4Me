@@ -1,6 +1,6 @@
 "use client";
 
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { athleteMetricsReorderIntroSectionStyles as styles } from "./AthleteMetricsReorderIntroSection.styles";
 import type { AthleteMetricsReorderIntroSectionProps } from "./AthleteMetricsReorderIntroSection.types";
 

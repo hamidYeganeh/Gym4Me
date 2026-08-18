@@ -2,35 +2,10 @@ import { Editor } from "@tinymce/tinymce-react";
 import type { Editor as TinyMCEEditor } from "tinymce";
 import { useRef } from "react";
 
-// TinyMCE self-hosted (GPL) — no cloud API key required.
-import "tinymce/tinymce";
-import "tinymce/models/dom";
-import "tinymce/themes/silver";
-import "tinymce/icons/default";
-import "tinymce/skins/ui/oxide/skin.min.css";
-import "tinymce/plugins/advlist";
-import "tinymce/plugins/autolink";
-import "tinymce/plugins/lists";
-import "tinymce/plugins/link";
-import "tinymce/plugins/image";
-import "tinymce/plugins/charmap";
-import "tinymce/plugins/anchor";
-import "tinymce/plugins/searchreplace";
-import "tinymce/plugins/visualblocks";
-import "tinymce/plugins/code";
-import "tinymce/plugins/fullscreen";
-import "tinymce/plugins/insertdatetime";
-import "tinymce/plugins/media";
-import "tinymce/plugins/table";
-import "tinymce/plugins/preview";
-import "tinymce/plugins/help";
-import "tinymce/plugins/wordcount";
-import "tinymce/plugins/directionality";
-import "tinymce/skins/content/default/content.js";
-import "tinymce/skins/ui/oxide/content.js";
-
 import { articleRichTextEditorVariants } from "./ArticleRichTextEditor.styles";
 import type { ArticleRichTextEditorProps } from "./ArticleRichTextEditor.types";
+
+const tinymceBase = `${import.meta.env.BASE_URL}tinymce`;
 
 export function ArticleRichTextEditor({
   value,
@@ -46,12 +21,15 @@ export function ArticleRichTextEditor({
       <Editor
         disabled={disabled}
         licenseKey="gpl"
+        tinymceScriptSrc={`${tinymceBase}/tinymce.min.js`}
         value={value}
         onEditorChange={(content) => onChange(content)}
         onInit={(_evt, editor) => {
           editorRef.current = editor;
         }}
         init={{
+          base_url: tinymceBase.replace(/\/$/, ""),
+          suffix: ".min",
           height: 420,
           menubar: false,
           branding: false,
@@ -59,24 +37,13 @@ export function ArticleRichTextEditor({
           directionality: "rtl",
           language: "en",
           plugins: [
-            "advlist",
-            "autolink",
             "lists",
             "link",
             "image",
-            "charmap",
-            "anchor",
-            "searchreplace",
-            "visualblocks",
+            "table",
+            "directionality",
             "code",
             "fullscreen",
-            "insertdatetime",
-            "media",
-            "table",
-            "preview",
-            "help",
-            "wordcount",
-            "directionality",
           ],
           toolbar:
             "undo redo | blocks | bold italic underline forecolor | " +

@@ -1,4 +1,4 @@
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { Calendar1 } from "@repo/icons/Calendar1";
 import { Clock } from "@repo/icons/Clock";
 import { WeightScale } from "@repo/icons/WeightScale";

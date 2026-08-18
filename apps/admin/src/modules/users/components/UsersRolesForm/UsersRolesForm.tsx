@@ -1,12 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import {
-  Checkbox,
-  CheckboxGroup,
-  FieldError,
-  Label,
-  Typography,
-} from "@heroui/react";
+import { Checkbox } from "@heroui/react/checkbox";
+import { CheckboxGroup } from "@heroui/react/checkbox-group";
+import { FieldError } from "@heroui/react/field-error";
+import { Label } from "@heroui/react/label";
+import { Typography } from "@heroui/react/typography";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";

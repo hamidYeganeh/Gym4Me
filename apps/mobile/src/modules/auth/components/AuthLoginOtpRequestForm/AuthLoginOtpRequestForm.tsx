@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Button } from "@heroui/react";
+import { Button } from "@heroui/react/button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "@repo/icons/ArrowRight";
 import { useTranslations } from "next-intl";

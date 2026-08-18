@@ -1,7 +1,8 @@
 "use client";
 
-import { Button, ProgressBar } from "@heroui/react";
-import { ChevronLeft } from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { ProgressBar } from "@heroui/react/progress-bar";
+import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { onboardingHeaderVariants } from "./OnboardingHeader.styles";
 import type { OnboardingHeaderProps } from "./OnboardingHeader.types";
 

@@ -1,6 +1,7 @@
 "use client";
 
-import { Spinner, Typography } from "@heroui/react";
+import { Spinner } from "@heroui/react/spinner";
+import { Typography } from "@heroui/react/typography";
 import { useCallback, useEffect, useState } from "react";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";

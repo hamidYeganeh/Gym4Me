@@ -1,4 +1,5 @@
-import type { ButtonProps, CardProps } from "@heroui/react";
+import type { ButtonProps } from "@heroui/react/button";
+import type { CardProps } from "@heroui/react/card";
 import type { ReactNode } from "react";
 
 export type SocialMediaItem = {

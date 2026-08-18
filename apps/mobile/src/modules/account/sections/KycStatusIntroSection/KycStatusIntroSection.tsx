@@ -1,5 +1,9 @@
-import { Button, Link, Typography } from "@heroui/react";
-import { Check, CheckCircle, ChevronLeft } from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { Link } from "@heroui/react/link";
+import { Typography } from "@heroui/react/typography";
+import { Check } from "@repo/icons/Check";
+import { CheckCircle } from "@repo/icons/CheckCircle";
+import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import Image from "next/image";
 import { kycStatusIntroSectionVariants } from "./KycStatusIntroSection.styles";
 import type { KycStatusIntroSectionProps } from "./KycStatusIntroSection.types";

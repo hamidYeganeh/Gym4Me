@@ -1,6 +1,6 @@
 "use client";
 
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { ArrowRight } from "@repo/icons/ArrowRight";
 import { CheckCircle } from "@repo/icons/CheckCircle";
 import { CloseXCircle } from "@repo/icons/CloseXCircle";

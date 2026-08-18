@@ -1,6 +1,7 @@
 "use client";
 
-import { Spinner, Typography } from "@heroui/react";
+import { Spinner } from "@heroui/react/spinner";
+import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
 import { DiscoveryClubsClassDetailScreen } from "../screens/DiscoveryClubsClassDetailScreen";
 import { useDiscoveryClassDetail } from "./use-discovery-class-detail";

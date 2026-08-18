@@ -1,4 +1,4 @@
-import { defaultLocale, getMessages } from "@repo/i18n";
+import { defaultLocale, omitMessages } from "@repo/i18n";
 import { getRequestConfig } from "next-intl/server";
 
 export default getRequestConfig(async () => {
@@ -6,6 +6,6 @@ export default getRequestConfig(async () => {
 
   return {
     locale,
-    messages: getMessages(locale),
+    messages: omitMessages(locale, ["Admin", "MarketingLanding"]),
   };
 });

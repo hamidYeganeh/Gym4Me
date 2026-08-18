@@ -1,4 +1,4 @@
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { rolePlaceholderScreenVariants } from "./RolePlaceholderScreen.styles";
 import type { RolePlaceholderScreenProps } from "./RolePlaceholderScreen.types";
 

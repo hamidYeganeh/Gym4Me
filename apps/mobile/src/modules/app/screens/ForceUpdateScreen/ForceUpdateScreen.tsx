@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
 import { forceUpdateScreenVariants } from "./ForceUpdateScreen.styles";
 import type { ForceUpdateScreenProps } from "./ForceUpdateScreen.types";

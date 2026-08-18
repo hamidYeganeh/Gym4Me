@@ -1,5 +1,6 @@
 import { useMemo } from "react";
-import { Button, Chip } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Chip } from "@heroui/react/chip";
 import type { AdminAchievement } from "@repo/api";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";

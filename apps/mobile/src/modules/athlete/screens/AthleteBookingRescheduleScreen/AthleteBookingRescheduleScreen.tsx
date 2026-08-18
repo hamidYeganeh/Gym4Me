@@ -1,6 +1,8 @@
 "use client";
 
-import { Button, Spinner, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Spinner } from "@heroui/react/spinner";
+import { Typography } from "@heroui/react/typography";
 import { ApiError, type Booking } from "@repo/api";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { ChevronRight } from "@repo/icons/ChevronRight";

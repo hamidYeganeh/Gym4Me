@@ -1,11 +1,9 @@
 "use client";
 
-import {
-  Building2,
-  Calendar1,
-  ChartBar2,
-  UsersThree,
-} from "@repo/icons";
+import { Building2 } from "@repo/icons/Building2";
+import { Calendar1 } from "@repo/icons/Calendar1";
+import { ChartBar2 } from "@repo/icons/ChartBar2";
+import { UsersThree } from "@repo/icons/UsersThree";
 import {
   MinimalCarousel,
   type MinimalCarouselCard,

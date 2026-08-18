@@ -1,11 +1,9 @@
-import {
-  Button,
-  Chip,
-  Input,
-  Label,
-  TextField,
-  Typography,
-} from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Chip } from "@heroui/react/chip";
+import { Input } from "@heroui/react/input";
+import { Label } from "@heroui/react/label";
+import { TextField } from "@heroui/react/textfield";
+import { Typography } from "@heroui/react/typography";
 import { toPersianDigits } from "@/modules/athlete/lib/weight/format";
 import { athleteWorkoutDetailSessionSectionVariants } from "./AthleteWorkoutDetailSessionSection.styles";
 import type { AthleteWorkoutDetailSessionSectionProps } from "./AthleteWorkoutDetailSessionSection.types";

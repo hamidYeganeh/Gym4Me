@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import type { Booking } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";

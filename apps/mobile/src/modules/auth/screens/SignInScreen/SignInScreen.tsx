@@ -2,9 +2,13 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button, Link, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Link } from "@heroui/react/link";
+import { Typography } from "@heroui/react/typography";
 import { ApiError } from "@repo/api";
-import { Chat, ChevronLeft } from "@repo/icons";
+import { Chat } from "@repo/icons/Chat";
+import { ChevronLeft } from "@repo/icons/ChevronLeft";
+import { MediaImage } from "@repo/ui/common/MediaImage";
 import { toast } from "@repo/ui/kit/Toast";
 import {
   AuthLayout,
@@ -13,13 +17,14 @@ import {
 import { useTranslations } from "next-intl";
 import { AuthLoginPasswordForm } from "@/modules/auth/components/AuthLoginPasswordForm";
 import type { AuthLoginPasswordPayload } from "@/modules/auth/components/AuthLoginPasswordForm";
+import { OtpScreenAltAuthSection } from "@/modules/auth/sections/OtpScreenAltAuthSection";
 import { withAuthNext } from "@/shared/lib/auth-redirect";
 import { roleHomePath } from "@/shared/lib/role-routes";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { signInScreenVariants } from "./SignInScreen.styles";
 import type { SignInScreenProps } from "./SignInScreen.types";
 
-const HERO_SRC = "/auth-hero.jpg";
+const FIGURE_SRC = "/auth/password-secure.png";
 
 export function SignInScreen({ className }: SignInScreenProps) {
   const t = useTranslations("Mobile.Auth");
@@ -33,7 +38,8 @@ export function SignInScreen({ className }: SignInScreenProps) {
   const otpHref = withAuthNext("/auth/otp", next);
 
   const labels: AuthLayoutLabels = {
-    subtitle: t("subtitle"),
+    title: t("passwordTitle"),
+    subtitle: t("passwordSubtitle"),
     brandAriaLabel: t("brandAriaLabel"),
     heroAlt: t("heroAlt"),
   };
@@ -64,24 +70,22 @@ export function SignInScreen({ className }: SignInScreenProps) {
     <AuthLayout
       className={className}
       belowForm={
-        <div className={styles.altBlock()}>
-          <div className={styles.divider()}>
-            <span className={styles.dividerLine()} />
-            <span className={styles.dividerLabel()}>{t("orSignInWith")}</span>
-            <span className={styles.dividerLine()} />
-          </div>
-          <Button
-            className={styles.altButton()}
-            fullWidth
-            size="lg"
-            type="button"
-            variant="secondary"
-            onPress={() => router.push(otpHref)}
-          >
-            <Chat aria-hidden className={styles.altIcon()} size={20} />
-            {t("useOtpInstead")}
-          </Button>
-        </div>
+        <OtpScreenAltAuthSection
+          buttonLabel={t("useOtpInstead")}
+          dividerLabel={t("orSignInWith")}
+          icon={<Chat size={20} />}
+          onPress={() => router.push(otpHref)}
+        />
+      }
+      figure={
+        <MediaImage
+          alt=""
+          aria-hidden
+          className={styles.figureImage()}
+          image={FIGURE_SRC}
+          priority
+          sizes="208px"
+        />
       }
       footer={
         <Typography className={styles.footer()} type="body-sm">
@@ -94,18 +98,19 @@ export function SignInScreen({ className }: SignInScreenProps) {
           </Link>
         </Typography>
       }
-      heroSrc={HERO_SRC}
+      framed={false}
       labels={labels}
+      showBrand={false}
       tone="plain"
       topStart={
         <Button
           aria-label={t("back")}
           className={styles.backButton()}
           isIconOnly
+          onPress={() => router.replace(withAuthNext("/auth", next))}
           size="lg"
           type="button"
-          variant="ghost"
-          onPress={() => router.replace(withAuthNext("/auth", next))}
+          variant="tertiary"
         >
           <ChevronLeft size={22} />
         </Button>

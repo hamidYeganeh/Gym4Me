@@ -1,4 +1,5 @@
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { ChevronRight } from "@repo/icons/ChevronRight";
 import { settingsNavGroupSectionVariants } from "./SettingsNavGroupSection.styles";
 import type { SettingsNavGroupSectionProps } from "./SettingsNavGroupSection.types";

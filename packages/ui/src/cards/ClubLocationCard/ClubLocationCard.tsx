@@ -1,6 +1,8 @@
 "use client";
 
-import { Card, Chip, Typography } from "@heroui/react";
+import { Card } from "@heroui/react/card";
+import { Chip } from "@heroui/react/chip";
+import { Typography } from "@heroui/react/typography";
 import { MapPin1 } from "@repo/icons/MapPin1";
 import { StarFull } from "@repo/icons/StarFull";
 import { UsersTwo } from "@repo/icons/UsersTwo";

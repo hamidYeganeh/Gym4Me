@@ -1,4 +1,7 @@
-import { Label, TextArea, TextField, Typography } from "@heroui/react";
+import { Label } from "@heroui/react/label";
+import { TextArea } from "@heroui/react/textarea";
+import { TextField } from "@heroui/react/textfield";
+import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
 import { AdminConfirmDialog } from "@/shared/components";
 import { supportTicketsResolveDialogSectionVariants } from "./SupportTicketsResolveDialogSection.styles";

@@ -1,6 +1,6 @@
 "use client";
 
-import { Spinner } from "@heroui/react";
+import { Spinner } from "@heroui/react/spinner";
 import type { CheckIn } from "@repo/api";
 import { useEffect, useState } from "react";
 import { accountCheckin, discoveryClubs } from "@/shared/lib/api";

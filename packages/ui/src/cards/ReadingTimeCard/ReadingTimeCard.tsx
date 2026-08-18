@@ -1,6 +1,6 @@
 "use client";
 
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { Clock } from "@repo/icons/Clock";
 import { readingTimeCardVariants } from "./ReadingTimeCard.styles";
 import type { ReadingTimeCardProps } from "./ReadingTimeCard.types";

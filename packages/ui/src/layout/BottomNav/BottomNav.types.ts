@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { ButtonProps } from "@heroui/react";
+import type { ButtonProps } from "@heroui/react/button";
 
 export type BottomNavItem = {
   key: string;

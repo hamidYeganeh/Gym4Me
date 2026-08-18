@@ -1,4 +1,4 @@
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { ownerClubDetailSlotsSectionVariants } from "./OwnerClubDetailSlotsSection.styles";
 import type { OwnerClubDetailSlotsSectionProps } from "./OwnerClubDetailSlotsSection.types";
 

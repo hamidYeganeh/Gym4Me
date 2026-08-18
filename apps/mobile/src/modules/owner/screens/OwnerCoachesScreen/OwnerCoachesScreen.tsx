@@ -1,13 +1,11 @@
 "use client";
 
-import {
-  Button,
-  Chip,
-  Input,
-  Label,
-  TextField,
-  Typography,
-} from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Chip } from "@heroui/react/chip";
+import { Input } from "@heroui/react/input";
+import { Label } from "@heroui/react/label";
+import { TextField } from "@heroui/react/textfield";
+import { Typography } from "@heroui/react/typography";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { UserPlus } from "@repo/icons/UserPlus";
 import { AppLayout } from "@repo/ui/layout/AppLayout";

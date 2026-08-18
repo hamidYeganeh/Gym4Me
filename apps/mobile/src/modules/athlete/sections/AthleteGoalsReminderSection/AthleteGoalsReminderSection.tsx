@@ -1,4 +1,9 @@
-import { Button, Chip, Input, Label, TextField, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Chip } from "@heroui/react/chip";
+import { Input } from "@heroui/react/input";
+import { Label } from "@heroui/react/label";
+import { TextField } from "@heroui/react/textfield";
+import { Typography } from "@heroui/react/typography";
 import type { MetricReminder } from "@repo/api";
 import { reminderStatusLabel } from "@/modules/athlete/lib/goal-helpers";
 import { athleteGoalsReminderSectionVariants } from "./AthleteGoalsReminderSection.styles";

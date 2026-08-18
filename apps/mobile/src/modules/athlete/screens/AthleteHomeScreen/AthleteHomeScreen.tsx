@@ -1,15 +1,13 @@
 "use client";
 
-import {
-  Calendar1,
-  Chat,
-  Ticket,
-  Wallet,
-  Scan1,
-  BarbellHorizontal,
-  Fire1,
-  FootSteps,
-} from "@repo/icons";
+import { Calendar1 } from "@repo/icons/Calendar1";
+import { Chat } from "@repo/icons/Chat";
+import { Ticket } from "@repo/icons/Ticket";
+import { Wallet } from "@repo/icons/Wallet";
+import { Scan1 } from "@repo/icons/Scan1";
+import { BarbellHorizontal } from "@repo/icons/BarbellHorizontal";
+import { Fire1 } from "@repo/icons/Fire1";
+import { FootSteps } from "@repo/icons/FootSteps";
 import { CallToActionCard } from "@repo/ui/cards/CallToActionCard";
 import { MetricCard } from "@repo/ui/cards/MetricCard";
 import { QuickActionCard } from "@repo/ui/cards/QuickActionCard";

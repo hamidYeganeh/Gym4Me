@@ -1,4 +1,4 @@
-import type { ButtonProps } from "@heroui/react";
+import type { ButtonProps } from "@heroui/react/button";
 
 export type OwnerHomeQuickActionsSectionProps = {
   /** Accessible name for the quick-actions row. */

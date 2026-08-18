@@ -1,6 +1,6 @@
 "use client";
 
-import { Anchor } from "@repo/icons";
+import { Anchor } from "@repo/icons/Anchor";
 import { useTranslations } from "next-intl";
 import { Ltr } from "../../lib/marketing-bidi";
 import { MarketingGlyph } from "../../lib/marketing-glyph";

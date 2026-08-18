@@ -1,6 +1,8 @@
 "use client";
 
-import { Button, Drawer, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Drawer } from "@heroui/react/drawer";
+import { Typography } from "@heroui/react/typography";
 import { SliderLineThreeHorizontal } from "@repo/icons/SliderLineThreeHorizontal";
 import { filterPanelVariants } from "./FilterPanel.styles";
 import type {

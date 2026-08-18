@@ -1,6 +1,9 @@
 "use client";
 
-import { Button, Card, Separator, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Card } from "@heroui/react/card";
+import { Separator } from "@heroui/react/separator";
+import { Typography } from "@heroui/react/typography";
 import { Check } from "@repo/icons/Check";
 import { todoCardVariants } from "./TodoCard.styles";
 import type { TodoCardItem, TodoCardProps } from "./TodoCard.types";

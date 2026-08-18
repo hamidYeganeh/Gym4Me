@@ -1,13 +1,12 @@
 "use client";
 
 import type { ComponentType } from "react";
-import { Button, Typography } from "@heroui/react";
-import {
-  BreadToast,
-  ChickenDrumstick,
-  ForkKnife,
-  Leaf,
-} from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
+import { BreadToast } from "@repo/icons/BreadToast";
+import { ChickenDrumstick } from "@repo/icons/ChickenDrumstick";
+import { ForkKnife } from "@repo/icons/ForkKnife";
+import { Leaf } from "@repo/icons/Leaf";
 import type { OnboardingDietId } from "@/modules/app/lib/onboarding-data";
 import { onboardingDietSectionVariants } from "./OnboardingDietSection.styles";
 import type { OnboardingDietSectionProps } from "./OnboardingDietSection.types";

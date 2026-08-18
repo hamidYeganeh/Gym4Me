@@ -1,8 +1,11 @@
 "use client";
 
 import { useRef } from "react";
-import { Button, ProgressCircle, Typography } from "@heroui/react";
-import { ArrowUpload, User } from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { ProgressCircle } from "@heroui/react/progress-circle";
+import { Typography } from "@heroui/react/typography";
+import { ArrowUpload } from "@repo/icons/ArrowUpload";
+import { User } from "@repo/icons/User";
 import Image from "next/image";
 import { onboardingAvatarSectionVariants } from "./OnboardingAvatarSection.styles";
 import type { OnboardingAvatarSectionProps } from "./OnboardingAvatarSection.types";

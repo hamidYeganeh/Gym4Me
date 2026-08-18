@@ -1,6 +1,6 @@
 "use client";
 
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { pricingPlansSectionVariants } from "./PricingPlansSection.styles";

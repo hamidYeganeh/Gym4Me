@@ -2,6 +2,7 @@ import type { Ref } from "react";
 
 export type PasswordFieldProps = {
   value: string;
+  /** Visible label. Hidden visually when `hideLabel` is true (still used for a11y). */
   label: string;
   placeholder: string;
   name?: string;
@@ -10,6 +11,8 @@ export type PasswordFieldProps = {
   isRequired?: boolean;
   errorMessage?: string;
   autoComplete?: string;
+  /** Hide the visible label (keeps `aria-label` on the input). */
+  hideLabel?: boolean;
   showPasswordLabel: string;
   hidePasswordLabel: string;
   onChange: (value: string) => void;

@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { AchievementTag } from "@repo/ui/cards/AchievementTag";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";

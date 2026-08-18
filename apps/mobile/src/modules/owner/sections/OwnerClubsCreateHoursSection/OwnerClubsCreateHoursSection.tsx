@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Input, Label, TextField, Typography } from "@heroui/react";
+import { Input } from "@heroui/react/input";
+import { Label } from "@heroui/react/label";
+import { TextField } from "@heroui/react/textfield";
+import { Typography } from "@heroui/react/typography";
 import type { OperatingHourAudience } from "@repo/api";
 import { FilterChip } from "@repo/ui/kit/FilterChip";
 import { useTranslations } from "next-intl";

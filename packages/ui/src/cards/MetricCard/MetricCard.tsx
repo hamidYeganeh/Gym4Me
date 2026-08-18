@@ -1,19 +1,18 @@
 "use client";
 
-import { Button, Card, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Card } from "@heroui/react/card";
+import { Typography } from "@heroui/react/typography";
 import { ChevronRight } from "@repo/icons/ChevronRight";
-import type { CSSProperties } from "react";
-import {
-  BarsChart,
-  DotsChart,
-  LineChart,
-  MoodsChart,
-  RangeChart,
-  RingsChart,
-  StackedChart,
-} from "./MetricCard.charts";
+import { lazy, Suspense, type CSSProperties } from "react";
 import { metricCardVariants } from "./MetricCard.styles";
 import type { MetricCardChart, MetricCardProps } from "./MetricCard.types";
+
+const MetricCardChartView = lazy(() =>
+  import("./MetricCard.charts").then((mod) => ({
+    default: mod.MetricCardChartView,
+  })),
+);
 
 const DEFAULT_DAY_LABELS = ["M", "T", "W", "T", "F", "S", "S"] as const;
 
@@ -42,37 +41,6 @@ function defaultAccent(chart: MetricCardChart): string {
 
 function chartColor(chart: MetricCardChart): string | undefined {
   return "color" in chart ? chart.color : undefined;
-}
-
-function ChartView({
-  chart,
-  accent,
-  slots,
-}: {
-  chart: MetricCardChart;
-  accent: string;
-  slots: ReturnType<typeof metricCardVariants>;
-}) {
-  switch (chart.type) {
-    case "line":
-      return <LineChart accent={accent} chart={chart} slots={slots} />;
-    case "bars":
-      return <BarsChart accent={accent} chart={chart} slots={slots} />;
-    case "stacked":
-      return <StackedChart accent={accent} chart={chart} slots={slots} />;
-    case "range":
-      return <RangeChart accent={accent} chart={chart} slots={slots} />;
-    case "rings":
-      return <RingsChart accent={accent} chart={chart} slots={slots} />;
-    case "dots":
-      return <DotsChart accent={accent} chart={chart} slots={slots} />;
-    case "moods":
-      return <MoodsChart chart={chart} slots={slots} />;
-    default: {
-      const _exhaustive: never = chart;
-      return _exhaustive;
-    }
-  }
 }
 
 export function MetricCard({
@@ -156,7 +124,13 @@ export function MetricCard({
         {/* Charts + weekday labels stay LTR (Mon → Sun) */}
         <div className={slots.chart()} dir="ltr">
           <div className={slots.plot()}>
-            <ChartView accent={accent} chart={chart} slots={slots} />
+            <Suspense fallback={null}>
+              <MetricCardChartView
+                accent={accent}
+                chart={chart}
+                slots={slots}
+              />
+            </Suspense>
           </div>
           <div className={slots.days()}>
             {dayLabels.map((label, index) => (

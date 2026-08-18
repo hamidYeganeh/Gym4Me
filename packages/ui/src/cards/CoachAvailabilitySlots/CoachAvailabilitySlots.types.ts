@@ -1,4 +1,6 @@
-import type { ButtonProps, CardProps, LinkProps } from "@heroui/react";
+import type { ButtonProps } from "@heroui/react/button";
+import type { CardProps } from "@heroui/react/card";
+import type { LinkProps } from "@heroui/react/link";
 import type { ReactNode } from "react";
 
 /** Slot booking state — prefer status enum over an `isAvailable` boolean. */

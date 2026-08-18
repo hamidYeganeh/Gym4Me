@@ -2,7 +2,8 @@
 
 import { useMemo } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
-import { Button, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "@repo/icons/ArrowRight";
 import { PasswordField } from "@repo/ui/kit/PasswordField";

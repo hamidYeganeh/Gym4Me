@@ -1,4 +1,6 @@
-import { Label, ListBox, Select } from "@heroui/react";
+import { Label } from "@heroui/react/label";
+import { ListBox } from "@heroui/react/list-box";
+import { Select } from "@heroui/react/select";
 import type { Role, UserStatus } from "@repo/api";
 import { MultiSelectFilter } from "@repo/ui/kit/MultiSelectFilter";
 import { useTranslations } from "next-intl";

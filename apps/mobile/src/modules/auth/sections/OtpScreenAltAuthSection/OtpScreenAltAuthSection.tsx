@@ -1,4 +1,4 @@
-import { Button } from "@heroui/react";
+import { Button } from "@heroui/react/button";
 import { Lock1 } from "@repo/icons/Lock1";
 import { otpScreenAltAuthSectionVariants } from "./OtpScreenAltAuthSection.styles";
 import type { OtpScreenAltAuthSectionProps } from "./OtpScreenAltAuthSection.types";
@@ -7,6 +7,7 @@ export function OtpScreenAltAuthSection({
   dividerLabel,
   buttonLabel,
   onPress,
+  icon,
   className,
 }: OtpScreenAltAuthSectionProps) {
   const styles = otpScreenAltAuthSectionVariants();
@@ -26,7 +27,9 @@ export function OtpScreenAltAuthSection({
         type="button"
         variant="secondary"
       >
-        <Lock1 aria-hidden className={styles.icon()} size={20} />
+        <span aria-hidden className={styles.icon()}>
+          {icon ?? <Lock1 size={20} />}
+        </span>
         {buttonLabel}
       </Button>
     </div>

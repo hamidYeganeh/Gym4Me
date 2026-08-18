@@ -1,17 +1,15 @@
 "use client";
 
-import {
-  Calendar1,
-  ChartBar2,
-  Compass,
-  House1,
-  PaperMoney,
-  PersonWalking,
-  QrCode,
-  Scan1,
-  User,
-  UsersThree,
-} from "@repo/icons";
+import { Calendar1 } from "@repo/icons/Calendar1";
+import { ChartBar2 } from "@repo/icons/ChartBar2";
+import { Compass } from "@repo/icons/Compass";
+import { House1 } from "@repo/icons/House1";
+import { PaperMoney } from "@repo/icons/PaperMoney";
+import { PersonWalking } from "@repo/icons/PersonWalking";
+import { QrCode } from "@repo/icons/QrCode";
+import { Scan1 } from "@repo/icons/Scan1";
+import { User } from "@repo/icons/User";
+import { UsersThree } from "@repo/icons/UsersThree";
 import { Logo } from "@repo/ui/common/Logo";
 import { BottomNav } from "@repo/ui/layout/BottomNav";
 import { useTranslations } from "next-intl";

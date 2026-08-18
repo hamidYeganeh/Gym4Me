@@ -1,7 +1,8 @@
 "use client";
 
-import { buttonVariants } from "@heroui/react";
-import { ArrowForward1, BookOpen } from "@repo/icons";
+import { buttonVariants } from "@heroui/react/button";
+import { ArrowForward1 } from "@repo/icons/ArrowForward1";
+import { BookOpen } from "@repo/icons/BookOpen";
 
 type MarketingCtaButtonProps = {
   href: string;

@@ -1,4 +1,4 @@
-import type { CardProps } from "@heroui/react";
+import type { CardProps } from "@heroui/react/card";
 import type { ReactNode } from "react";
 
 export type IbanCardProps = Omit<

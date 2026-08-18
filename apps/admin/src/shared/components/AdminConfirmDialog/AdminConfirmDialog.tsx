@@ -1,4 +1,5 @@
-import { AlertDialog, Button } from "@heroui/react";
+import { AlertDialog } from "@heroui/react/alert-dialog";
+import { Button } from "@heroui/react/button";
 import { adminConfirmDialogVariants } from "./AdminConfirmDialog.styles";
 import type { AdminConfirmDialogProps } from "./AdminConfirmDialog.types";
 

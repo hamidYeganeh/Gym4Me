@@ -1,4 +1,4 @@
-import { Typography } from "@heroui/react";
+import { Typography } from "@heroui/react/typography";
 import { ArticleCard } from "@repo/ui/cards/ArticleCard";
 import { useTranslations } from "next-intl";
 import { formatCategoryLabel } from "@/modules/articles/lib/format-article";
@@ -33,11 +33,17 @@ export function ArticleDetailRelatedSection({
               category={formatCategoryLabel(item.taxonomy.category)}
               commentsLabel={String(item.engagement.commentsCount)}
               coverSrc={mediaFileUrl(item.coverMediaId)}
+              excerpt={item.excerpt ?? undefined}
               likesLabel={String(item.engagement.likesCount)}
+              orientation="horizontal"
               readingTimeLabel={`${item.readingTimeMinutes}m`}
               saveLabel={t("save")}
+              tags={item.tags.map((tag) => ({
+                key: tag,
+                label: formatCategoryLabel(tag),
+              }))}
               title={item.title}
-              variant="row"
+              type="cover"
               viewsLabel={String(item.engagement.viewsCount)}
               onPress={() => onArticlePress(item.slug)}
             />

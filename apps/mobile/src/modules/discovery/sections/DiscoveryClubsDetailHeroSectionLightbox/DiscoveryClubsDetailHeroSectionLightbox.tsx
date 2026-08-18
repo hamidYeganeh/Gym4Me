@@ -1,6 +1,8 @@
 "use client";
 
-import { Button, Modal, Typography } from "@heroui/react";
+import { Button } from "@heroui/react/button";
+import { Modal } from "@heroui/react/modal";
+import { Typography } from "@heroui/react/typography";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { ChevronRight } from "@repo/icons/ChevronRight";
 import { Heart } from "@repo/icons/Heart";

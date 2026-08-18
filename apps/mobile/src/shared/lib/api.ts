@@ -1,7 +1,3 @@
-import { ACCOUNT_SESSION_KEY, createLocalStorage } from "@repo/api/storage";
-import {
-  createAccountAuthApi,
-} from "@repo/api/auth";
 import {
   createAccountCheckinApi,
 } from "@repo/api/checkin";
@@ -52,10 +48,6 @@ import {
   createAccountCalendarApi,
 } from "@repo/api/calendar";
 import {
-  createAnalyticsApi,
-} from "@repo/api/analytics";
-import { createApiClient } from "@repo/api/client";
-import {
   createBasicsLocationsApi,
   createBasicsRefsApi,
   createBasicsSportsApi,
@@ -73,33 +65,14 @@ import {
   createDiscoveryCoachesApi,
   createDiscoveryCoachSlotsApi,
 } from "@repo/api/discovery";
+import { createAnalyticsApi } from "@repo/api/analytics";
 import { createMediaApi } from "@repo/api/media";
 import { createArticlesApi } from "@repo/api/articles";
 import { createBannersApi } from "@repo/api/banners";
-import { getApiBaseUrl } from "./env";
-import { roleAppPath } from "./role-routes";
+import { apiClient, accountAuth } from "./api-client";
 
-const storage = createLocalStorage(ACCOUNT_SESSION_KEY);
+export { apiClient, accountAuth };
 
-export const apiClient = createApiClient({
-  baseUrl: getApiBaseUrl(),
-  storage,
-  onUnauthorized: () => {
-    storage.set(null);
-    if (typeof window !== "undefined" && !window.location.pathname.startsWith("/auth")) {
-      window.location.assign("/auth");
-    }
-  },
-  onKycRequired: () => {
-    if (typeof window === "undefined") return;
-    const kycPath = roleAppPath(storage.get()?.activeRole, "kyc");
-    if (!window.location.pathname.startsWith(kycPath)) {
-      window.location.assign(kycPath);
-    }
-  },
-});
-
-export const accountAuth = createAccountAuthApi(apiClient);
 export const accountProfile = createAccountProfileApi(apiClient);
 export const accountKyc = createAccountKycApi(apiClient);
 export const accountRoles = createAccountRolesApi(apiClient);

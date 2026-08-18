@@ -1,4 +1,4 @@
-import { Button } from "@heroui/react";
+import { Button } from "@heroui/react/button";
 import { adminFormActionsVariants } from "./AdminFormActions.styles";
 import type { AdminFormActionsProps } from "./AdminFormActions.types";
 

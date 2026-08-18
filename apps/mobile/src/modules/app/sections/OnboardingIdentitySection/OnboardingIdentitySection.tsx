@@ -1,31 +1,27 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Button,
-  Chip,
-  Drawer,
-  Input,
-  InputGroup,
-  Label,
-  TextArea,
-  TextField,
-  Typography,
-} from "@heroui/react";
-import {
-  Building1,
-  Calendar1,
-  Check,
-  ChevronDown,
-  IdentityCard1,
-  Lock1,
-  MapPin1,
-  MedicalCard1,
-  Pencil1,
-  Plus,
-  Telephone1,
-  User,
-} from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { Chip } from "@heroui/react/chip";
+import { Drawer } from "@heroui/react/drawer";
+import { Input } from "@heroui/react/input";
+import { InputGroup } from "@heroui/react/input-group";
+import { Label } from "@heroui/react/label";
+import { TextArea } from "@heroui/react/textarea";
+import { TextField } from "@heroui/react/textfield";
+import { Typography } from "@heroui/react/typography";
+import { Building1 } from "@repo/icons/Building1";
+import { Calendar1 } from "@repo/icons/Calendar1";
+import { Check } from "@repo/icons/Check";
+import { ChevronDown } from "@repo/icons/ChevronDown";
+import { IdentityCard1 } from "@repo/icons/IdentityCard1";
+import { Lock1 } from "@repo/icons/Lock1";
+import { MapPin1 } from "@repo/icons/MapPin1";
+import { MedicalCard1 } from "@repo/icons/MedicalCard1";
+import { Pencil1 } from "@repo/icons/Pencil1";
+import { Plus } from "@repo/icons/Plus";
+import { Telephone1 } from "@repo/icons/Telephone1";
+import { User } from "@repo/icons/User";
 import { HeightSlider } from "@repo/ui/kit/HeightSlider";
 import { LocationPickerMap } from "@repo/ui/kit/LocationPickerMap";
 import { WeightSlider } from "@repo/ui/kit/WeightSlider";

@@ -1,7 +1,8 @@
 "use client";
 
-import { Button, Typography } from "@heroui/react";
-import { Check } from "@repo/icons";
+import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
+import { Check } from "@repo/icons/Check";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { CloseIconButton, LandingPillButton } from "../../lib/landing-controls";
