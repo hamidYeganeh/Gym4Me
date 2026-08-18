@@ -57,6 +57,8 @@ check "athlete password login" "true" "$([ -n "$ATH_TOKEN" ] && echo true || ech
 echo "── A3: profile ──"
 ME=$(jget_auth /account/profile/me "$ATH_TOKEN")
 check "profile me name" "علی" "$(echo "$ME" | jq -r '.name.first // .user.name.first // empty')"
+SETTINGS=$(jget_auth /account/profile/settings "$ATH_TOKEN")
+check "profile settings categorized as units" "true" "$(echo "$SETTINGS" | jq -r 'has("units") and (.units | type == "object") and (has("updatedAt") | not)')"
 
 echo "── A5: KYC status ──"
 KYC=$(jget_auth /account/kyc "$ATH_TOKEN")
@@ -109,6 +111,8 @@ check "admin club verification queue responds" "true" "$(echo "$CLUBQ" | is_list
 echo "── basics + faq (public) ──"
 CHOICES=$(jget "/basics/choices")
 check "choices include gender" "true" "$(echo "$CHOICES" | jq -r '[(.result // .)[] | select(.value == "gender" or .key == "gender")] | length >= 1')"
+UNIT_CHOICES=$(jget "/basics/choices/units")
+check "choices/units lists unit groups" "true" "$(echo "$UNIT_CHOICES" | jq -r '[(.result // .)[] | select((.value // .key) | tostring | endswith("_unit"))] | length >= 1')"
 FAQ=$(jget "/support/faq")
 check "public faq >= 3" "true" "$([ "$(echo "$FAQ" | list_len)" -ge 3 ] && echo true || echo false)"
 

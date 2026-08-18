@@ -124,7 +124,9 @@ export function BaseProfileScreen({
 
   const inviteHref = roleSegment === "athlete" ? "/athlete/referral" : null;
   const streakHref =
-    roleSegment === "athlete" ? "/athlete/check-ins" : `/${roleSegment}/achievements`;
+    roleSegment === "athlete"
+      ? "/athlete/check-ins"
+      : `/${roleSegment}/achievements`;
 
   return (
     <AppLayout className={styles.root({ className })}>

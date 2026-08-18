@@ -75,12 +75,12 @@ const STAT_LABEL_KEYS = {
 >;
 
 const SERVICE_ICONS: Record<CoachDetailServiceIconKey, ReactNode> = {
-  online: <Video size={36} />,
-  inPerson: <BarbellHorizontal size={36} />,
-  nutrition: <Weight size={36} />,
-  program: <ListTwoCheck size={36} />,
-  assessment: <Medal size={36} />,
-  group: <UsersTwo size={36} />,
+  online: <Video size={48} />,
+  inPerson: <BarbellHorizontal size={48} />,
+  nutrition: <Weight size={48} />,
+  program: <ListTwoCheck size={48} />,
+  assessment: <Medal size={48} />,
+  group: <UsersTwo size={48} />,
 };
 
 function StatIcon({ labelKey }: { labelKey: CoachDetailStatKey }) {

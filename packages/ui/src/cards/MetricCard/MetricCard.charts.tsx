@@ -1,24 +1,20 @@
 "use client";
 
+import { curveMonotoneX, curveStepAfter } from "@visx/curve";
 import { Check } from "@repo/icons/Check";
 import { SmileDepressed } from "@repo/icons/SmileDepressed";
 import { SmileHappy } from "@repo/icons/SmileHappy";
 import { SmileNeutral } from "@repo/icons/SmileNeutral";
 import { SmileOverjoyed } from "@repo/icons/SmileOverjoyed";
 import { SmileSad } from "@repo/icons/SmileSad";
-import { useId, type CSSProperties, type ReactNode } from "react";
-import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  Cell,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-} from "recharts";
+import type { CSSProperties, ReactNode } from "react";
+import { Area } from "../../components/charts/area";
+import { AreaChart } from "../../components/charts/area-chart";
+import { Bar } from "../../components/charts/bar";
+import { BarChart } from "../../components/charts/bar-chart";
+import { Ring } from "../../components/charts/ring";
+import { RingChart } from "../../components/charts/ring-chart";
+import { CHART_MARGIN, toIndexedTimeSeries } from "../../lib/chart-series";
 import { metricCardVariants } from "./MetricCard.styles";
 import type {
   MetricCardBarsChart,
@@ -34,12 +30,8 @@ import type {
 
 type Slots = ReturnType<typeof metricCardVariants>;
 
-const CHART_MARGIN = { top: 0, right: 0, bottom: 0, left: 0 };
-const BAR_SIZE = 10;
-const BAR_RADIUS = 999;
-const TRACK_FILL = "var(--surface-secondary)";
-const RING_TRACK = "var(--default)";
 const DEFAULT_STACK_OPACITIES = [1, 0.72, 0.45] as const;
+const TRACK_FILL = "var(--surface-secondary)";
 
 function accentStyle(color: string): CSSProperties {
   return { ["--metric-accent" as string]: color };
@@ -50,8 +42,8 @@ function normalizeSeries(series: readonly number[]): number[] {
   return series.map((value) => Math.min(1, Math.max(0, value / max)));
 }
 
-function gradientIdFrom(useReactId: string): string {
-  return `metric-area-${useReactId.replace(/:/g, "")}`;
+function mixAccent(color: string, opacity: number): string {
+  return `color-mix(in oklab, ${color} ${Math.round(opacity * 100)}%, transparent)`;
 }
 
 const MOOD_ICONS: Record<
@@ -74,41 +66,32 @@ export function LineChart({
   accent: string;
   slots: Omit<Slots, "day">;
 }) {
-  const reactId = useId();
-  const gradientId = gradientIdFrom(reactId);
   const color = chart.color ?? accent;
-  const series = chart.series;
-  const min = series.length > 0 ? Math.min(...series) * 0.92 : 0;
-  const max = series.length > 0 ? Math.max(...series) * 1.05 : 1;
-  const data = series.map((value, index) => ({ index, value }));
-  const curve = chart.curve ?? "monotone";
+  const series = toIndexedTimeSeries(chart.series);
+  const curve = chart.curve === "step" ? curveStepAfter : curveMonotoneX;
 
   return (
     <div className={slots.linePlot()} style={accentStyle(color)}>
-      <ResponsiveContainer height="100%" width="100%">
-        <AreaChart data={data} margin={{ top: 4, right: 2, bottom: 2, left: 2 }}>
-          <defs>
-            <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity={0.35} />
-              <stop offset="100%" stopColor={color} stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <XAxis dataKey="index" hide />
-          <YAxis domain={[min, max]} hide type="number" />
-          <Area
-            activeDot={false}
-            dataKey="value"
-            dot={false}
-            fill={`url(#${gradientId})`}
-            isAnimationActive={false}
-            stroke={color}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2.25}
-            type={curve === "step" ? "stepAfter" : "monotone"}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
+      <AreaChart
+        animationDuration={0}
+        aspectRatio="auto"
+        className="h-full w-full"
+        data={series}
+        margin={CHART_MARGIN.sparkline}
+        style={{ height: "100%" }}
+        xDataKey="date"
+      >
+        <Area
+          animate={false}
+          curve={curve}
+          dataKey="value"
+          fill={color}
+          fillOpacity={0.35}
+          showHighlight={false}
+          stroke={color}
+          strokeWidth={2.25}
+        />
+      </AreaChart>
     </div>
   );
 }
@@ -125,33 +108,28 @@ export function BarsChart({
   const color = chart.color ?? accent;
   const heights = normalizeSeries(chart.series);
   const data = heights.map((height, index) => ({
-    index,
+    name: String(index),
     value: Math.max(height, height > 0 ? 0.14 : 0),
   }));
-  const trackFill = chart.trackColor ?? TRACK_FILL;
 
   return (
-    <div
-      aria-hidden
-      className={slots.chartPlot()}
-      style={accentStyle(color)}
-    >
-      <div className="h-full min-w-0 flex-1">
-        <ResponsiveContainer height="100%" width="100%">
-          <BarChart data={data} margin={CHART_MARGIN}>
-            <XAxis dataKey="index" hide />
-            <YAxis domain={[0, 1]} hide type="number" />
-            <Bar
-              background={{ fill: trackFill, radius: BAR_RADIUS }}
-              barSize={BAR_SIZE}
-              dataKey="value"
-              fill={color}
-              isAnimationActive={false}
-              radius={BAR_RADIUS}
-            />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+    <div aria-hidden className={slots.chartPlot()} style={accentStyle(color)}>
+      <BarChart
+        animationDuration={0}
+        aspectRatio="auto"
+        className="h-full min-w-0 flex-1"
+        data={data}
+        margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
+        xDataKey="name"
+      >
+        <Bar
+          animate={false}
+          dataKey="value"
+          fill={color}
+          lineCap="round"
+          minBarHeight={6}
+        />
+      </BarChart>
     </div>
   );
 }
@@ -165,7 +143,6 @@ export function StackedChart({
   accent: string;
   slots: Omit<Slots, "day">;
 }) {
-  const reactId = useId();
   const color = chart.color ?? accent;
   const opacities = chart.opacities ?? DEFAULT_STACK_OPACITIES;
   const maxSegments = Math.max(
@@ -174,7 +151,7 @@ export function StackedChart({
   );
 
   const data = chart.series.map((segments, index) => {
-    const row: Record<string, number> = { index };
+    const row: Record<string, number | string> = { name: String(index) };
     for (let i = 0; i < maxSegments; i += 1) {
       row[`s${i}`] = Math.max(segments[i] ?? 0, 0);
     }
@@ -182,65 +159,31 @@ export function StackedChart({
   });
 
   return (
-    <div
-      aria-hidden
-      className={slots.chartPlot()}
-      style={accentStyle(color)}
-    >
-      <div className="h-full min-w-0 flex-1">
-        <ResponsiveContainer height="100%" width="100%">
-          <BarChart data={data} margin={CHART_MARGIN}>
-            <defs>
-              {Array.from({ length: maxSegments }, (_, segmentIndex) => {
-                const opacity =
-                  opacities[Math.min(segmentIndex, opacities.length - 1)] ?? 1;
-                const id = `metric-stack-${reactId.replace(/:/g, "")}-${segmentIndex}`;
-                return (
-                  <linearGradient
-                    id={id}
-                    key={id}
-                    x1="0"
-                    x2="0"
-                    y1="1"
-                    y2="0"
-                  >
-                    <stop offset="0%" stopColor={color} stopOpacity={opacity} />
-                    <stop
-                      offset="100%"
-                      stopColor={color}
-                      stopOpacity={Math.min(1, opacity + 0.08)}
-                    />
-                  </linearGradient>
-                );
-              })}
-            </defs>
-            <XAxis dataKey="index" hide />
-            <YAxis hide type="number" />
-            {Array.from({ length: maxSegments }, (_, segmentIndex) => {
-              const id = `metric-stack-${reactId.replace(/:/g, "")}-${segmentIndex}`;
-              const isTop = segmentIndex === maxSegments - 1;
-              const isBottom = segmentIndex === 0;
-              const radius: [number, number, number, number] = isTop
-                ? [BAR_RADIUS, BAR_RADIUS, 0, 0]
-                : isBottom
-                  ? [0, 0, BAR_RADIUS, BAR_RADIUS]
-                  : [0, 0, 0, 0];
-
-              return (
-                <Bar
-                  barSize={BAR_SIZE}
-                  dataKey={`s${segmentIndex}`}
-                  fill={`url(#${id})`}
-                  isAnimationActive={false}
-                  key={`s${segmentIndex}`}
-                  radius={radius}
-                  stackId="hydration"
-                />
-              );
-            })}
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+    <div aria-hidden className={slots.chartPlot()} style={accentStyle(color)}>
+      <BarChart
+        animationDuration={0}
+        aspectRatio="auto"
+        className="h-full min-w-0 flex-1"
+        data={data}
+        margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
+        stacked
+        xDataKey="name"
+      >
+        {Array.from({ length: maxSegments }, (_, segmentIndex) => {
+          const opacity =
+            opacities[Math.min(segmentIndex, opacities.length - 1)] ?? 1;
+          const isTop = segmentIndex === maxSegments - 1;
+          return (
+            <Bar
+              animate={false}
+              dataKey={`s${segmentIndex}`}
+              fill={mixAccent(color, opacity)}
+              key={`s${segmentIndex}`}
+              lineCap={isTop ? "round" : "butt"}
+            />
+          );
+        })}
+      </BarChart>
     </div>
   );
 }
@@ -254,8 +197,6 @@ export function RangeChart({
   accent: string;
   slots: Omit<Slots, "day">;
 }) {
-  const reactId = useId();
-  const gradientId = `metric-range-${reactId.replace(/:/g, "")}`;
   const color = chart.color ?? accent;
   const lows = chart.series.map((item) => item.low);
   const highs = chart.series.map((item) => item.high);
@@ -266,105 +207,27 @@ export function RangeChart({
 
   const data = chart.series.map((item, index) => {
     const naturalMid = Math.max(item.high - item.low, 0);
-    // Keep a minimum visible pill height (matches prior 10% floor).
     const mid = Math.min(Math.max(naturalMid, span * 0.1), span);
     const maxBase = Math.max(span - mid, 0);
     const base = Math.min(Math.max(item.low - min, 0), maxBase);
-    return { index, base, mid };
+    return { name: String(index), base, mid };
   });
 
   return (
-    <div
-      aria-hidden
-      className={slots.chartPlot()}
-      style={accentStyle(color)}
-    >
-      <div className="h-full min-w-0 flex-1">
-        <ResponsiveContainer height="100%" width="100%">
-          <BarChart data={data} margin={CHART_MARGIN}>
-            <defs>
-              <linearGradient id={gradientId} x1="0" x2="0" y1="1" y2="0">
-                <stop offset="0%" stopColor={color} stopOpacity={0.55} />
-                <stop offset="100%" stopColor={color} stopOpacity={1} />
-              </linearGradient>
-            </defs>
-            <XAxis dataKey="index" hide />
-            <YAxis domain={[0, span]} hide type="number" />
-            <Bar
-              background={{ fill: trackFill, radius: BAR_RADIUS }}
-              barSize={BAR_SIZE}
-              dataKey="base"
-              fill="transparent"
-              isAnimationActive={false}
-              stackId="range"
-            />
-            <Bar
-              barSize={BAR_SIZE}
-              dataKey="mid"
-              fill={`url(#${gradientId})`}
-              isAnimationActive={false}
-              radius={BAR_RADIUS}
-              stackId="range"
-            />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
-  );
-}
-
-function RingProgress({
-  value,
-  color,
-  size,
-  className,
-}: {
-  value: number;
-  color: string;
-  size: number;
-  className?: string;
-}) {
-  const stroke = size >= 24 ? 3 : 2.25;
-  const outerRadius = size / 2;
-  const innerRadius = Math.max(outerRadius - stroke, 1);
-  const progress = Math.min(1, Math.max(0, value));
-  const data = [
-    { key: "value", value: progress },
-    { key: "rest", value: 1 - progress },
-  ];
-
-  return (
-    <PieChart className={className} height={size} width={size}>
-      <Pie
-        cx="50%"
-        cy="50%"
-        data={[{ key: "track", value: 1 }]}
-        dataKey="value"
-        endAngle={-270}
-        fill={RING_TRACK}
-        innerRadius={innerRadius}
-        isAnimationActive={false}
-        outerRadius={outerRadius}
-        startAngle={90}
-        stroke="none"
-      />
-      <Pie
-        cx="50%"
-        cy="50%"
+    <div aria-hidden className={slots.chartPlot()} style={accentStyle(color)}>
+      <BarChart
+        animationDuration={0}
+        aspectRatio="auto"
+        className="h-full min-w-0 flex-1"
         data={data}
-        dataKey="value"
-        endAngle={-270}
-        innerRadius={innerRadius}
-        isAnimationActive={false}
-        outerRadius={outerRadius}
-        paddingAngle={0}
-        startAngle={90}
-        stroke="none"
+        margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
+        stacked
+        xDataKey="name"
       >
-        <Cell fill={color} />
-        <Cell fill="transparent" />
-      </Pie>
-    </PieChart>
+        <Bar animate={false} dataKey="base" fill={trackFill} lineCap="butt" />
+        <Bar animate={false} dataKey="mid" fill={color} lineCap="round" />
+      </BarChart>
+    </div>
   );
 }
 
@@ -378,7 +241,6 @@ export function RingsChart({
   slots: Omit<Slots, "day">;
 }) {
   const color = chart.color ?? accent;
-  // Match ringCol slot sizes: vertical 18px, horizontal 20px.
   const ringSize = 18;
 
   return (
@@ -388,12 +250,23 @@ export function RingsChart({
 
         return (
           <div className={slots.ringCol()} key={`${index}-${item.value}`}>
-            <RingProgress
+            <RingChart
+              baseInnerRadius={5}
               className={slots.ringSvg()}
-              color={color}
+              data={[
+                {
+                  label: "",
+                  value: item.value,
+                  maxValue: 1,
+                  color,
+                },
+              ]}
+              ringGap={0}
               size={ringSize}
-              value={item.value}
-            />
+              strokeWidth={2.25}
+            >
+              <Ring index={0} showGlow={false} />
+            </RingChart>
             {met ? (
               <span className={slots.ringStatus()}>
                 <Check

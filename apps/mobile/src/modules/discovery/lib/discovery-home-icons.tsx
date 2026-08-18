@@ -17,7 +17,7 @@ import type {
 } from "./home-browse-data";
 
 const FEATURE_ICON_SIZE = 20;
-const AMENITY_ICON_SIZE = 36;
+const AMENITY_ICON_SIZE = 48;
 
 export function discoveryFeatureIcon(
   iconKey: HomeFeatureItem["iconKey"],

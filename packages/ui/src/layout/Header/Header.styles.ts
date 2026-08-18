@@ -4,20 +4,35 @@ export const headerVariants = tv({
   slots: {
     root: [
       "sticky top-0 z-30 shrink-0 border-b-0",
-      "bg-linear-to-t from-transparent via-background/90 to-background",
-      "backdrop-blur-xl",
       "pt-[env(safe-area-inset-top)]",
     ].join(" "),
-    bar: "relative z-10 flex min-h-16 items-center gap-3 px-screen py-2.5",
+    /** Fixed 72px content row — title always centered between side slots. */
+    bar: [
+      "relative z-10 grid h-[72px] min-h-[72px] w-full",
+      "grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-center gap-2 px-screen",
+    ].join(" "),
     start: [
-      "relative z-10 flex w-11 shrink-0 items-center justify-start",
-      "[&_button]:rounded-[0.875rem] [&_a]:rounded-[0.875rem]",
+      "relative z-10 flex size-11 shrink-0 items-center justify-start",
+      "[&_button]:rounded-full [&_a]:rounded-full",
     ].join(" "),
     title:
-      "pointer-events-none absolute inset-x-0 top-1/2 z-0 min-w-0 -translate-y-1/2 truncate px-16 text-center text-foreground tracking-tight",
+      "z-0 min-w-0 truncate text-center text-base font-semibold leading-tight tracking-tight text-foreground",
     end: [
-      "relative z-10 ms-auto flex w-11 shrink-0 items-center justify-end gap-2",
-      "[&_button]:rounded-[0.875rem] [&_a]:rounded-[0.875rem]",
+      "relative z-10 flex size-11 shrink-0 items-center justify-end gap-2",
+      "[&_button]:rounded-full [&_a]:rounded-full",
     ].join(" "),
+  },
+  variants: {
+    appearance: {
+      fade: {
+        root: "bg-linear-to-t from-transparent via-background/90 to-background backdrop-blur-xl",
+      },
+      bar: {
+        root: "overflow-hidden rounded-b-[2.5rem] bg-surface/95 backdrop-blur-md",
+      },
+    },
+  },
+  defaultVariants: {
+    appearance: "fade",
   },
 });

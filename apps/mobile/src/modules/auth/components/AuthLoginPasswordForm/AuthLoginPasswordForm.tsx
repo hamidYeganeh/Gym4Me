@@ -5,7 +5,6 @@ import { Controller, useForm } from "react-hook-form";
 import { Button } from "@heroui/react/button";
 import { Checkbox } from "@heroui/react/checkbox";
 import { Link } from "@heroui/react/link";
-import { Typography } from "@heroui/react/typography";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "@repo/icons/ArrowRight";
 import { PasswordField } from "@repo/ui/kit/PasswordField";
@@ -49,7 +48,7 @@ export function AuthLoginPasswordForm({
   });
 
   return (
-    <form className={styles.form({ className })} onSubmit={handleSubmit}>
+    <form autoComplete="off" className={styles.form({ className })} onSubmit={handleSubmit}>
       <Controller
         control={form.control}
         name="phone"
@@ -74,7 +73,6 @@ export function AuthLoginPasswordForm({
         name="password"
         render={({ field, fieldState }) => (
           <PasswordField
-            autoComplete="current-password"
             errorMessage={fieldState.error?.message}
             hideLabel
             hidePasswordLabel={t("hidePassword")}
@@ -98,18 +96,16 @@ export function AuthLoginPasswordForm({
           name="remember"
           render={({ field }) => (
             <Checkbox
+              className={styles.remember()}
               isSelected={field.value}
               name={field.name}
-              onBlur={field.onBlur}
               onChange={field.onChange}
             >
               <Checkbox.Content>
                 <Checkbox.Control>
                   <Checkbox.Indicator />
                 </Checkbox.Control>
-                <Typography className={styles.remember()} type="body-sm">
-                  {t("remember")}
-                </Typography>
+                {t("remember")}
               </Checkbox.Content>
             </Checkbox>
           )}

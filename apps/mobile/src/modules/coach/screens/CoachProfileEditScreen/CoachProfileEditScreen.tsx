@@ -100,30 +100,23 @@ export function CoachProfileEditScreen({
       className={styles.root({ className })}
       header={
         <Header
+          appearance="bar"
           startContent={
             <Button
               aria-label={t("back")}
               isIconOnly
               onPress={() => router.push("/coach/profile")}
               size="lg"
-              variant="ghost"
+              variant="tertiary"
             >
               <ChevronLeft className="text-foreground" size={22} />
             </Button>
           }
+          title={t("title")}
         />
       }
     >
       <div className={styles.content()}>
-        <header className={styles.intro()}>
-          <Typography className={styles.title()} type="h1" weight="bold">
-            {t("title")}
-          </Typography>
-          <Typography className={styles.subtitle()} type="body">
-            {t("subtitle")}
-          </Typography>
-        </header>
-
         {profile ? (
           <div className={styles.status()}>
             {t("verificationStatus")}: {profile.verification.status}

@@ -9,8 +9,10 @@ export const baseProfileHighlightsSectionVariants = tv({
     ].join(" "),
     inviteCopy: "z-10 flex min-w-0 flex-1 flex-col justify-center gap-2 p-4",
     inviteTitle: "max-w-[11.5rem] text-start leading-snug text-foreground",
-    inviteCta: "h-auto min-h-0 justify-start px-0 py-0 font-semibold text-accent",
-    inviteMedia: "relative w-[42%] shrink-0 self-stretch bg-black",
+    inviteCta:
+      "h-auto min-h-0 justify-start px-0 py-0 font-semibold text-accent",
+    inviteMedia:
+      "relative min-h-[7.5rem] w-[42%] shrink-0 self-stretch bg-black",
     inviteImage: "object-cover object-top",
     block: "flex flex-col gap-2",
     blockHeader: "flex items-center justify-between gap-3 px-1",

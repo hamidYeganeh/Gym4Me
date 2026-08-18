@@ -29,12 +29,15 @@ import {
   CoachProfileDocument,
 } from '../../schemas/coach-profile.schema';
 import { UsersService } from '../../users/users.service';
+import { ChoicesService } from '../../basics/choices/choices.service';
 import {
   SubmitCoachVerificationDto,
   UpdateAthleteProfileDto,
   UpdateCoachProfileDto,
   UpdateMeDto,
 } from './dto/update-me.dto';
+import { UpdateProfileSettingsDto } from './dto/update-profile-settings.dto';
+import { isUnitChoiceKey, unitsToPlain } from './profile-settings.util';
 
 @Injectable()
 export class ProfileService {
@@ -44,6 +47,7 @@ export class ProfileService {
     @InjectModel(CoachProfile.name)
     private readonly coachModel: Model<CoachProfileDocument>,
     private readonly users: UsersService,
+    private readonly choices: ChoicesService,
     private readonly audit: AuditService,
     private readonly events: EventWriterService,
   ) {}
@@ -128,6 +132,68 @@ export class ProfileService {
     }
 
     return publicUser;
+  }
+
+  async getSettings(userId: string) {
+    const user = await this.users.findById(userId);
+    return this.toPublicSettings(user);
+  }
+
+  async updateSettings(
+    userId: string,
+    dto: UpdateProfileSettingsDto,
+    request: Request,
+  ) {
+    const user = await this.users.findById(userId);
+    if (dto.units) {
+      await this.applyUnitSettings(dto.units, user);
+    }
+    await user.save();
+    this.audit.log({
+      action: AuditAction.PROFILE_SETTINGS_UPDATED,
+      actorId: userId,
+      metadata: { keys: Object.keys(dto.units ?? {}) },
+      request,
+    });
+    return this.toPublicSettings(user);
+  }
+
+  private async applyUnitSettings(
+    units: Record<string, string>,
+    user: Awaited<ReturnType<UsersService['findById']>>,
+  ) {
+    const groups = await this.choices.listUnitGroups();
+    const byKey = new Map(groups.map((group) => [group.value, group]));
+    if (!user.settings) user.settings = { units: {} };
+    if (!user.settings.units) user.settings.units = {};
+
+    for (const [key, value] of Object.entries(units)) {
+      if (!isUnitChoiceKey(key)) {
+        throw new BadRequestException(`Unknown unit setting: ${key}`);
+      }
+      if (typeof value !== 'string' || !value.trim()) {
+        throw new BadRequestException(`Invalid unit value for ${key}`);
+      }
+      const group = byKey.get(key);
+      if (!group) {
+        throw new BadRequestException(`Unknown unit setting: ${key}`);
+      }
+      const option = group.options.find((item) => item.value === value);
+      if (!option) {
+        throw new BadRequestException(`Invalid unit value for ${key}`);
+      }
+      if (!option.isActive) {
+        throw new BadRequestException(`Unit value is disabled for ${key}`);
+      }
+      user.settings.units[key] = value;
+    }
+    user.markModified('settings');
+  }
+
+  private toPublicSettings(
+    user: Awaited<ReturnType<UsersService['findById']>>,
+  ) {
+    return { units: unitsToPlain(user.settings?.units) };
   }
 
   async ensureAthleteProfile(userId: string) {

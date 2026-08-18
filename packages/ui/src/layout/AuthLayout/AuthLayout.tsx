@@ -15,6 +15,7 @@ export function AuthLayout({
   framed: framedProp,
   topStart,
   figure,
+  figurePlacement = "afterHeader",
   footer,
   belowForm,
   className,
@@ -23,7 +24,8 @@ export function AuthLayout({
     ? (toneProp ?? "hero")
     : (toneProp ?? "plain");
   const framed = framedProp ?? tone !== "hero";
-  const styles = authLayoutVariants({ tone, framed });
+  const figureFirst = figurePlacement === "beforeHeader";
+  const styles = authLayoutVariants({ tone, framed, figureFirst });
   const showBrandName = showBrand && !labels.title;
 
   return (
@@ -72,6 +74,10 @@ export function AuthLayout({
           <div className={styles.spacer()} aria-hidden />
         ) : null}
 
+        {figureFirst && figure ? (
+          <div className={styles.figure()}>{figure}</div>
+        ) : null}
+
         {labels.title || labels.subtitle ? (
           <header className={styles.header()}>
             {labels.title ? (
@@ -92,7 +98,9 @@ export function AuthLayout({
           </header>
         ) : null}
 
-        {figure ? <div className={styles.figure()}>{figure}</div> : null}
+        {!figureFirst && figure ? (
+          <div className={styles.figure()}>{figure}</div>
+        ) : null}
 
         <div className={styles.body()}>
           <div className={styles.formSlot()}>{children}</div>

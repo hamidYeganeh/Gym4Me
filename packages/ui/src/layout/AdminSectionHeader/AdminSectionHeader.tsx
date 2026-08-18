@@ -55,6 +55,7 @@ export function AdminSectionHeader({
       <div className="flex min-w-0 items-center gap-2 sm:gap-3">
         <SearchField
           aria-label={searchAriaLabel}
+          autoComplete="off"
           className={styles.search()}
           name="admin-section-search"
           value={searchValue}
@@ -64,8 +65,12 @@ export function AdminSectionHeader({
           <SearchField.Group className={styles.searchGroup()}>
             <SearchField.SearchIcon className={styles.searchIcon()} />
             <SearchField.Input
+              autoComplete="off"
+              autoCapitalize="none"
+              autoCorrect="off"
               className={styles.searchInput()}
               placeholder={searchPlaceholder}
+              spellCheck={false}
             />
             <Button
               isIconOnly

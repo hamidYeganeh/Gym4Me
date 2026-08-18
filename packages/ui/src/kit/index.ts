@@ -15,6 +15,7 @@ export * from "./FilterPanel";
 export * from "./FormBanner";
 export * from "./FormStepper";
 export * from "./FractionalPicker";
+export * from "./FunnelChart";
 export * from "./GlyphText";
 export * from "./HeightSlider";
 export * from "./InputOTP";

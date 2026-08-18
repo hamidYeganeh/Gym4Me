@@ -8,8 +8,10 @@ export type DiscoverySectionRailProps = {
   onSeeAll?: () => void;
   children: ReactNode;
   scrollerClassName?: string;
-  /** Accent bar beside the title (home rails). Default true. */
+  /** Accent icon beside the title (home rails). Default true. */
   accent?: boolean;
+  /** Optional override for the accent icon. Defaults to Sparkle1. */
+  accentIcon?: ReactNode;
   titleSize?: "h3" | "h4";
   className?: string;
 };

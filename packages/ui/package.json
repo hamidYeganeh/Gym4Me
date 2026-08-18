@@ -3,6 +3,11 @@
   "version": "0.0.0",
   "private": true,
   "sideEffects": false,
+  "imports": {
+    "#components/*": "./src/components/*",
+    "#lib/*": "./src/lib/*.ts",
+    "#hooks/*": "./src/hooks/*"
+  },
   "exports": {
     "./cards": "./src/cards/index.ts",
     "./cards/*": "./src/cards/*/index.ts",
@@ -12,6 +17,7 @@
     "./layout/*": "./src/layout/*/index.ts",
     "./kit": "./src/kit/index.ts",
     "./kit/*": "./src/kit/*/index.ts",
+    "./lib/*": "./src/lib/*.ts",
     "./assets/*": "./assets/*"
   },
   "scripts": {
@@ -26,6 +32,8 @@
   "devDependencies": {
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*",
+    "@types/d3-array": "^3.2.1",
+    "@types/d3-shape": "^3.1.6",
     "@types/leaflet": "^1.9.22",
     "@types/node": "^22.15.3",
     "@types/react": "19.2.2",
@@ -35,11 +43,24 @@
   },
   "dependencies": {
     "@heroui/react": "^3.0.0",
+    "@number-flow/react": "^0.6.2",
     "@react-aria/i18n": "^3.13.1",
     "@react-aria/ssr": "^3.10.1",
     "@react-aria/utils": "^3.34.1",
     "@repo/icons": "*",
     "@repo/theme": "*",
+    "@visx/curve": "^4.0.1-alpha.0",
+    "@visx/event": "^4.0.1-alpha.0",
+    "@visx/gradient": "^4.0.1-alpha.0",
+    "@visx/grid": "^4.0.1-alpha.0",
+    "@visx/group": "^4.0.1-alpha.0",
+    "@visx/pattern": "^4.0.1-alpha.0",
+    "@visx/responsive": "^4.0.1-alpha.0",
+    "@visx/scale": "^4.0.1-alpha.0",
+    "@visx/shape": "^4.0.1-alpha.0",
+    "clsx": "^2.1.1",
+    "d3-array": "^3.2.4",
+    "d3-shape": "^3.2.0",
     "embla-carousel-react": "^8.6.0",
     "html-to-image": "^1.11.13",
     "leaflet": "^1.9.4",
@@ -47,7 +68,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-dropzone": "^19.2.0",
-    "recharts": "^3.10.1",
+    "tailwind-merge": "^3.4.0",
     "tailwind-variants": "^3.3.0"
   }
 }

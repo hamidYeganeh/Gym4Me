@@ -3,6 +3,8 @@ import { tv } from "tailwind-variants";
 
 export const setPasswordScreenVariants = tv({
   slots: {
+    root: "bg-background before:hidden",
+    content: "flex flex-col gap-5 pb-12 pt-2",
     form: "flex w-full flex-col gap-5",
     field: "flex w-full flex-col gap-2",
     label: "text-sm font-bold text-foreground",
@@ -21,14 +23,10 @@ export const setPasswordScreenVariants = tv({
     strengthMessage: "text-sm text-foreground/90",
     error:
       "rounded-2xl border border-danger/40 bg-danger/15 px-4 py-3 text-center text-sm font-semibold text-danger",
-    notice: "text-center text-sm leading-6 text-muted",
+    notice: "text-sm leading-6 text-muted",
     submit:
       "min-h-14 rounded-full text-base font-bold text-accent-foreground",
     submitIcon: "ms-2 size-5",
-    backButton:
-      "text-foreground outline-none data-[hovered=true]:bg-transparent data-[pressed=true]:opacity-70",
-    footerLink:
-      "font-semibold text-accent underline underline-offset-4 outline-none data-[hovered=true]:opacity-80",
   },
 });
 

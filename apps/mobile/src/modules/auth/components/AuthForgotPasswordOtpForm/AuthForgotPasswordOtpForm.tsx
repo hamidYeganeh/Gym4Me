@@ -64,7 +64,7 @@ export function AuthForgotPasswordOtpForm({
   });
 
   return (
-    <form className={styles.form({ className })} onSubmit={handleSubmit}>
+    <form autoComplete="off" className={styles.form({ className })} onSubmit={handleSubmit}>
       <Typography className={styles.hint()} type="body-sm">
         {t("sentTo")}{" "}
         <Typography

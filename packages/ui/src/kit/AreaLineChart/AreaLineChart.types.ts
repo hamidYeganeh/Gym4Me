@@ -5,7 +5,7 @@ export type AreaLineChartPoint = {
 
 export type AreaLineChartProps = {
   data: AreaLineChartPoint[];
-  /** Stroke / marker color. Defaults to success token. */
+  /** Stroke / marker color. Defaults to `--chart-line-primary` (accent). */
   color?: string;
   /** Accessible label for the chart. */
   "aria-label"?: string;

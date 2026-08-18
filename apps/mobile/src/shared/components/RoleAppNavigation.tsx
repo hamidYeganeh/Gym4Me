@@ -113,6 +113,12 @@ export function RoleAppNavigation({
           icon: <ChartBar2 size={ICON_SIZE} />,
           href: "/athlete/metrics",
         },
+        {
+          key: "community",
+          label: t("community"),
+          icon: <UsersThree size={ICON_SIZE} />,
+          href: "/community",
+        },
       ],
     },
     coach: {
@@ -160,6 +166,12 @@ export function RoleAppNavigation({
           label: t("messages"),
           icon: <UsersThree size={ICON_SIZE} />,
           href: "/coach/messages",
+        },
+        {
+          key: "community",
+          label: t("community"),
+          icon: <UsersThree size={ICON_SIZE} />,
+          href: "/community",
         },
       ],
     },

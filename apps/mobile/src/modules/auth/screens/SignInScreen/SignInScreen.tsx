@@ -3,8 +3,6 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@heroui/react/button";
-import { Link } from "@heroui/react/link";
-import { Typography } from "@heroui/react/typography";
 import { ApiError } from "@repo/api";
 import { Chat } from "@repo/icons/Chat";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
@@ -86,17 +84,6 @@ export function SignInScreen({ className }: SignInScreenProps) {
           priority
           sizes="208px"
         />
-      }
-      footer={
-        <Typography className={styles.footer()} type="body-sm">
-          {t("noAccount")}{" "}
-          <Link
-            className={styles.footerLink()}
-            onPress={() => router.push(otpHref)}
-          >
-            {t("signUp")}
-          </Link>
-        </Typography>
       }
       framed={false}
       labels={labels}

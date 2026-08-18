@@ -65,12 +65,13 @@ export function AuthLoginPasswordForm({
   };
 
   return (
-    <form className={styles.form({ className })} onSubmit={handleSubmit}>
+    <form autoComplete="off" className={styles.form({ className })} onSubmit={handleSubmit}>
       <Controller
         control={form.control}
         name="phone"
         render={({ field, fieldState }) => (
           <TextField
+            autoComplete="off"
             className={styles.field()}
             fullWidth
             isInvalid={fieldState.invalid}
@@ -85,10 +86,13 @@ export function AuthLoginPasswordForm({
             <div className={styles.inputWrap()}>
               <Telephone1 className={styles.inputIcon()} size={24} />
               <Input
-                autoComplete="tel"
+                autoComplete="off"
+                autoCapitalize="none"
+                autoCorrect="off"
                 className={styles.input()}
                 placeholder={t("phonePlaceholder")}
                 ref={field.ref}
+                spellCheck={false}
               />
             </div>
             <FieldError>{fieldState.error?.message}</FieldError>
@@ -101,6 +105,7 @@ export function AuthLoginPasswordForm({
         name="password"
         render={({ field, fieldState }) => (
           <TextField
+            autoComplete="off"
             className={styles.field()}
             fullWidth
             isInvalid={fieldState.invalid}
@@ -115,11 +120,14 @@ export function AuthLoginPasswordForm({
             <div className={styles.inputWrap()}>
               <Lock1 className={styles.inputIcon()} size={24} />
               <Input
-                autoComplete="current-password"
+                autoComplete="off"
+                autoCapitalize="none"
+                autoCorrect="off"
                 className={`${styles.input()} ${styles.inputWithSuffix()}`}
                 dir="ltr"
                 placeholder={t("passwordPlaceholder")}
                 ref={field.ref}
+                spellCheck={false}
               />
               <Button
                 isIconOnly

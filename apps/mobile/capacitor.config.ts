@@ -1,4 +1,6 @@
+/// <reference types="@capacitor/keyboard" />
 import type { CapacitorConfig } from "@capacitor/cli";
+import { KeyboardResize } from "@capacitor/keyboard";
 
 const config: CapacitorConfig = {
   appId: "com.gym4me.app",
@@ -35,6 +37,12 @@ const config: CapacitorConfig = {
       // Light icons/text for dark brand background
       style: "LIGHT",
       backgroundColor: "#1f1f1f",
+    },
+    Keyboard: {
+      // Shrink the WebView so `dvh`/`vh` shells reflow above the keyboard (iOS).
+      resize: KeyboardResize.Native,
+      // Required when StatusBar overlaysWebView — otherwise Android never resizes.
+      resizeOnFullScreen: true,
     },
   },
 };

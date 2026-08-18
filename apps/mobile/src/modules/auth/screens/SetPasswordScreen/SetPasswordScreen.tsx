@@ -3,16 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@heroui/react/button";
-import { Link } from "@heroui/react/link";
 import { Typography } from "@heroui/react/typography";
 import { ApiError } from "@repo/api";
 import type { SetPasswordInput } from "@repo/api";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { toast } from "@repo/ui/kit/Toast";
-import {
-  AuthLayout,
-  type AuthLayoutLabels,
-} from "@repo/ui/layout/AuthLayout";
+import { AppLayout } from "@repo/ui/layout/AppLayout";
+import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
 import { AuthSetPasswordForm } from "@/modules/auth/components/AuthSetPasswordForm";
 import { accountAuth } from "@/shared/lib/api-client";
@@ -31,12 +28,6 @@ export function SetPasswordScreen({
   const { logout } = useAuth();
 
   const [isPending, setIsPending] = useState(false);
-
-  const labels: AuthLayoutLabels = {
-    subtitle: t("subtitle"),
-    brandAriaLabel: t("brandAriaLabel"),
-    heroAlt: t("heroAlt"),
-  };
 
   const handleSubmit = async (payload: SetPasswordInput) => {
     setIsPending(true);
@@ -58,41 +49,32 @@ export function SetPasswordScreen({
   };
 
   return (
-    <AuthLayout
-      className={className}
-      footer={
-        <Typography type="body-sm">
-          <Link
-            className={styles.footerLink()}
-            onPress={() => router.push(`/${roleSegment}/profile/security`)}
-          >
-            {t("backToSecurity")}
-          </Link>
-        </Typography>
-      }
-      labels={labels}
-      tone="dark"
-      topStart={
-        <Button
-          aria-label={t("back")}
-          className={styles.backButton()}
-          isIconOnly
-          size="lg"
-          type="button"
-          variant="ghost"
-          onPress={() => router.push(`/${roleSegment}/profile/security`)}
-        >
-          <ChevronLeft size={22} />
-        </Button>
+    <AppLayout
+      className={styles.root({ className })}
+      header={
+        <Header
+          appearance="bar"
+          startContent={
+            <Button
+              aria-label={t("back")}
+              isIconOnly
+              onPress={() => router.push(`/${roleSegment}/profile/security`)}
+              size="lg"
+              variant="tertiary"
+            >
+              <ChevronLeft className="text-foreground" size={22} />
+            </Button>
+          }
+          title={t("title")}
+        />
       }
     >
-      <Typography className={styles.notice()} type="body-sm">
-        {t("reloginNote")}
-      </Typography>
-      <AuthSetPasswordForm
-        isPending={isPending}
-        onSubmit={handleSubmit}
-      />
-    </AuthLayout>
+      <div className={styles.content()}>
+        <Typography className={styles.notice()} type="body-sm">
+          {t("reloginNote")}
+        </Typography>
+        <AuthSetPasswordForm isPending={isPending} onSubmit={handleSubmit} />
+      </div>
+    </AppLayout>
   );
 }

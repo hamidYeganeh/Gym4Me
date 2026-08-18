@@ -9,6 +9,7 @@ import { TextField } from "@heroui/react/textfield";
 import { Eye } from "@repo/icons/Eye";
 import { EyeSlash } from "@repo/icons/EyeSlash";
 import { Lock1 } from "@repo/icons/Lock1";
+import { browserAutofillOffProps } from "@repo/theme";
 import { passwordFieldVariants } from "./PasswordField.styles";
 import type { PasswordFieldProps } from "./PasswordField.types";
 
@@ -21,7 +22,7 @@ export function PasswordField({
   isInvalid = false,
   isRequired = false,
   errorMessage,
-  autoComplete = "current-password",
+  autoComplete = browserAutofillOffProps.autoComplete,
   hideLabel = false,
   showPasswordLabel,
   hidePasswordLabel,
@@ -30,10 +31,13 @@ export function PasswordField({
   inputRef,
 }: PasswordFieldProps) {
   const [showPassword, setShowPassword] = useState(false);
+  const [suppressAutofill, setSuppressAutofill] = useState(true);
   const styles = passwordFieldVariants({ hideLabel });
+  const unlockAutofill = () => setSuppressAutofill(false);
 
   return (
     <TextField
+      autoComplete={autoComplete}
       className={styles.root({ className })}
       fullWidth
       isInvalid={isInvalid}
@@ -50,12 +54,16 @@ export function PasswordField({
           <Lock1 className={styles.prefixIcon()} size={22} />
         </InputGroup.Prefix>
         <InputGroup.Input
+          {...browserAutofillOffProps}
           aria-label={label}
           autoComplete={autoComplete}
           className={styles.input()}
           dir="ltr"
           placeholder={placeholder}
+          readOnly={suppressAutofill}
           ref={inputRef}
+          onFocus={unlockAutofill}
+          onPointerDown={unlockAutofill}
         />
         <InputGroup.Suffix>
           <Button

@@ -65,7 +65,7 @@ export function AuthLoginOtpForm({
   });
 
   return (
-    <form className={styles.form({ className })} onSubmit={handleSubmit}>
+    <form autoComplete="off" className={styles.form({ className })} onSubmit={handleSubmit}>
       <div className={styles.codeArea()}>
         <Controller
           control={form.control}

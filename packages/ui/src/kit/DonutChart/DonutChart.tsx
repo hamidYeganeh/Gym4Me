@@ -1,24 +1,19 @@
 "use client";
 
-import {
-  Cell,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-} from "recharts";
+import { PieChart } from "../../components/charts/pie-chart";
+import { PieSlice } from "../../components/charts/pie-slice";
 import { donutChartVariants } from "./DonutChart.styles";
 import type { DonutChartProps } from "./DonutChart.types";
 
 const FALLBACK_COLORS = [
-  "var(--accent)",
-  "var(--stats-blue)",
-  "var(--stats-purple)",
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)",
   "var(--success)",
   "var(--warning)",
   "var(--danger)",
-  "var(--stats-orange)",
-  "var(--muted)",
 ];
 
 export function DonutChart({
@@ -29,50 +24,29 @@ export function DonutChart({
 }: DonutChartProps) {
   const slots = donutChartVariants();
   const chartData = data.map((item, index) => ({
-    ...item,
+    label: item.label,
+    value: item.value,
     color: item.color ?? FALLBACK_COLORS[index % FALLBACK_COLORS.length],
   }));
 
   return (
     <div className={slots.root({ className })}>
       <div aria-label={ariaLabel} className={slots.chart()} role="img">
-        <ResponsiveContainer height="100%" width="100%">
-          <PieChart>
-            <Pie
-              cx="50%"
-              cy="50%"
-              data={chartData}
-              dataKey="value"
-              innerRadius="58%"
-              nameKey="label"
-              outerRadius="82%"
-              paddingAngle={2}
-              stroke="var(--surface)"
-              strokeWidth={2}
-            >
-              {chartData.map((item) => (
-                <Cell fill={item.color} key={item.id} />
-              ))}
-            </Pie>
-            <Tooltip
-              contentStyle={{
-                background: "var(--popover)",
-                border: "1px solid var(--border)",
-                borderRadius: 12,
-                color: "var(--popover-foreground)",
-              }}
-              formatter={(value) =>
-                formatValue && typeof value === "number"
-                  ? formatValue(value)
-                  : value
-              }
-            />
-          </PieChart>
-        </ResponsiveContainer>
+        <PieChart
+          className="h-full w-full"
+          cornerRadius={6}
+          data={chartData}
+          innerRadius={72}
+          padAngle={0.035}
+        >
+          {chartData.map((item, index) => (
+            <PieSlice index={index} key={`${item.label}-${index}`} />
+          ))}
+        </PieChart>
       </div>
       <ul className={slots.legend()}>
-        {chartData.map((item) => (
-          <li className={slots.legendItem()} key={item.id}>
+        {chartData.map((item, index) => (
+          <li className={slots.legendItem()} key={`${item.label}-${index}`}>
             <span className={slots.legendLabel()}>
               <span
                 aria-hidden

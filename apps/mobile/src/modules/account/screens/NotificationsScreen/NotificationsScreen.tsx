@@ -123,30 +123,23 @@ export function NotificationsScreen({
       className={styles.root}
       header={
         <Header
+          appearance="bar"
           startContent={
             <Button
               aria-label={t("back")}
               isIconOnly
               onPress={() => router.back()}
               size="lg"
-              variant="ghost"
+              variant="tertiary"
             >
               <ChevronLeft className="text-foreground" size={22} />
             </Button>
           }
+          title={t("title")}
         />
       }
     >
       <div className={styles.content}>
-        <section className={styles.intro}>
-          <Typography className={styles.introTitle} type="h1" weight="bold">
-            {t("title")}
-          </Typography>
-          <Typography className={styles.introSubtitle} type="body">
-            {t("subtitle")}
-          </Typography>
-        </section>
-
         <FilterChipBar aria-label={t("filtersLabel")}>
           {FILTER_IDS.map((filterId) => (
             <FilterChip

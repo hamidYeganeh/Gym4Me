@@ -7,6 +7,14 @@ export type { LocationChildrenResponse, LocationNode } from "./locations.dto";
 export { basicsLocationsKeys } from "./locations.keys";
 
 export {
+  createBasicsChoicesApi,
+  type BasicsChoicesApi,
+} from "./choices.client";
+export { basicsChoicesEndpoints } from "./choices.endpoint";
+export type { PublicChoiceGroup } from "./choices.dto";
+export { basicsChoicesKeys } from "./choices.keys";
+
+export {
   createBasicsSportsApi,
   type BasicsSportsApi,
 } from "./sports.client";

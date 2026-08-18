@@ -174,22 +174,22 @@ export type RefType =
 /** Mirrors `RefStatus` in apps/api. */
 export type RefStatus = "approved" | "pending";
 
-/** Admin choice option (includes inactive options + order). */
+/** Public/admin choice option. Public omits `order`. */
 export type ChoiceOption = {
   name: string;
   value: string;
-  order: number;
   isActive: boolean;
+  order?: number;
 };
 
-/** Mirrors `ChoicesService.toPublic` admin shape (`value` = group key). */
+/** Mirrors `ChoicesService.toPublic` (`value` = group key). */
 export type ChoiceGroup = {
   name: string;
   value: string;
   description: string | null;
   isSystem: boolean;
   options: ChoiceOption[];
-  isActive: boolean;
+  isActive?: boolean;
 };
 
 export type GeoCoordinates = {

@@ -8,6 +8,12 @@ import {
 import { useApiClient } from "../react";
 import type { LocationNode, Paginated, RefType, SportNode } from "../types";
 import {
+  createBasicsChoicesApi,
+  type BasicsChoicesApi,
+} from "./choices.client";
+import type { PublicChoiceGroup } from "./choices.dto";
+import { basicsChoicesKeys } from "./choices.keys";
+import {
   createBasicsLocationsApi,
   type BasicsLocationsApi,
 } from "./locations.client";
@@ -26,6 +32,11 @@ import {
 import type { ListSportsQuery, SportChildrenResponse } from "./sports.dto";
 import { basicsSportsKeys } from "./sports.keys";
 
+function useBasicsChoicesApi(): BasicsChoicesApi {
+  const client = useApiClient();
+  return useMemo(() => createBasicsChoicesApi(client), [client]);
+}
+
 function useBasicsLocationsApi(): BasicsLocationsApi {
   const client = useApiClient();
   return useMemo(() => createBasicsLocationsApi(client), [client]);
@@ -39,6 +50,34 @@ function useBasicsSportsApi(): BasicsSportsApi {
 function useBasicsRefsApi(): BasicsRefsApi {
   const client = useApiClient();
   return useMemo(() => createBasicsRefsApi(client), [client]);
+}
+
+export function useBasicsChoiceGroups(
+  options?: Omit<
+    UseQueryOptions<Paginated<PublicChoiceGroup>, Error>,
+    "queryKey" | "queryFn"
+  >,
+) {
+  const api = useBasicsChoicesApi();
+  return useQuery({
+    queryKey: basicsChoicesKeys.list(),
+    queryFn: () => api.list(),
+    ...options,
+  });
+}
+
+export function useBasicsUnitChoiceGroups(
+  options?: Omit<
+    UseQueryOptions<PublicChoiceGroup[], Error>,
+    "queryKey" | "queryFn"
+  >,
+) {
+  const api = useBasicsChoicesApi();
+  return useQuery({
+    queryKey: basicsChoicesKeys.units(),
+    queryFn: () => api.listUnitGroups(),
+    ...options,
+  });
 }
 
 export function useBasicsCountries(

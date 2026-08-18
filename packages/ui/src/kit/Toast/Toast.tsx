@@ -1,11 +1,48 @@
 "use client";
 
 import type { ComponentProps, ReactNode } from "react";
+import { useEffect, useState } from "react";
+import { I18nProvider } from "@react-aria/i18n";
 import { Toast as HeroToast, toast as heroToast, type ToastContentValue } from "@heroui/react/toast";
 import { ArrowRotateClockwise1 } from "@repo/icons/ArrowRotateClockwise1";
 import { ShapeCircle } from "@repo/icons/ShapeCircle";
 import { toastVariants } from "./Toast.styles";
 import type { ToasterProps, ToastIconType, ToastVisualVariant } from "./Toast.types";
+
+type DocumentLocale = {
+  dir: "ltr" | "rtl";
+  locale: string;
+};
+
+function readDocumentLocale(): DocumentLocale {
+  if (typeof document === "undefined") {
+    return { dir: "rtl", locale: "fa-IR" };
+  }
+
+  const root = document.documentElement;
+  const dir = root.getAttribute("dir") === "ltr" ? "ltr" : "rtl";
+  const lang = root.getAttribute("lang") || (dir === "rtl" ? "fa" : "en");
+  const locale = lang === "fa" || lang.startsWith("fa-") ? "fa-IR" : lang;
+
+  return { dir, locale };
+}
+
+function useDocumentLocale(): DocumentLocale {
+  const [locale, setLocale] = useState<DocumentLocale>(readDocumentLocale);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const sync = () => setLocale(readDocumentLocale());
+    const observer = new MutationObserver(sync);
+    observer.observe(root, {
+      attributes: true,
+      attributeFilter: ["dir", "lang"],
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  return locale;
+}
 
 function DefaultToastIcon({
   type,
@@ -68,9 +105,11 @@ export const toast: {
 
 function ToastView({
   content,
+  dir,
   toastItem,
 }: {
   content: ToastContentValue;
+  dir: DocumentLocale["dir"];
   toastItem: ComponentProps<typeof HeroToast>["toast"];
 }) {
   const variant: ToastVisualVariant = content.variant ?? "default";
@@ -78,7 +117,12 @@ function ToastView({
   const isLoading = content.isLoading === true;
 
   return (
-    <HeroToast className={styles.root()} toast={toastItem} variant={variant}>
+    <HeroToast
+      className={styles.root()}
+      dir={dir}
+      toast={toastItem}
+      variant={variant}
+    >
       {content.indicator === null ? null : (
         <HeroToast.Indicator className={styles.indicator()} variant={variant}>
           {isLoading ? (
@@ -110,17 +154,22 @@ export function Toaster({
   placement = "bottom end",
   width = "min(22.5rem, calc(100vw - 2rem))",
 }: ToasterProps) {
+  const { dir, locale } = useDocumentLocale();
+
   return (
     <>
       {children}
-      <HeroToast.Provider placement={placement} width={width}>
-        {({ toast: toastItem }) => (
-          <ToastView
-            content={(toastItem.content ?? {}) as ToastContentValue}
-            toastItem={toastItem}
-          />
-        )}
-      </HeroToast.Provider>
+      <I18nProvider locale={locale}>
+        <HeroToast.Provider dir={dir} placement={placement} width={width}>
+          {({ toast: toastItem }) => (
+            <ToastView
+              content={(toastItem.content ?? {}) as ToastContentValue}
+              dir={dir}
+              toastItem={toastItem}
+            />
+          )}
+        </HeroToast.Provider>
+      </I18nProvider>
     </>
   );
 }

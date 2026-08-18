@@ -64,6 +64,16 @@ export class UserAddress {
 
 export const UserAddressSchema = SchemaFactory.createForClass(UserAddress);
 
+/** Display preferences (units keyed by choice-group key). */
+@Schema({ _id: false })
+export class UserSettings {
+  /** e.g. `{ height_unit: "cm", nutrition_unit: "kcal" }` */
+  @Prop({ type: Object, default: () => ({}) })
+  units!: Record<string, string>;
+}
+
+export const UserSettingsSchema = SchemaFactory.createForClass(UserSettings);
+
 @Schema({ timestamps: true, collection: 'users' })
 export class User {
   /** E.164 Iran mobile — kept top-level for unique index. */
@@ -85,6 +95,9 @@ export class User {
 
   @Prop({ type: UserAddressSchema, default: () => ({}) })
   address!: UserAddress;
+
+  @Prop({ type: UserSettingsSchema, default: () => ({ units: {} }) })
+  settings!: UserSettings;
 
   @Prop({ unique: true, sparse: true, match: /^\d{10}$/ })
   nationalId?: string;

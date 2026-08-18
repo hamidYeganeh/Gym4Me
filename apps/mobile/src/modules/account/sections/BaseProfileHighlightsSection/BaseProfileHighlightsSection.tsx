@@ -1,6 +1,6 @@
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
-import { ArrowRight } from "@repo/icons/ArrowRight";
+import { ChevronRight } from "@repo/icons/ChevronRight";
 import { Fire1 } from "@repo/icons/Fire1";
 import { AchievementTag } from "@repo/ui/cards/AchievementTag";
 import { useTranslations } from "next-intl";
@@ -35,7 +35,11 @@ export function BaseProfileHighlightsSection({
       {inviteHref ? (
         <article className={styles.invite()}>
           <div className={styles.inviteCopy()}>
-            <Typography className={styles.inviteTitle()} type="body" weight="bold">
+            <Typography
+              className={styles.inviteTitle()}
+              type="body"
+              weight="bold"
+            >
               {t("inviteTitle")}
             </Typography>
             <Button
@@ -44,7 +48,7 @@ export function BaseProfileHighlightsSection({
               variant="ghost"
             >
               {t("inviteCta")}
-              <ArrowRight size={16} />
+              <ChevronRight size={16} />
             </Button>
           </div>
           <div aria-hidden className={styles.inviteMedia()}>
@@ -85,7 +89,11 @@ export function BaseProfileHighlightsSection({
             <Typography className={styles.streakLabel()} type="body-sm">
               {t("totalStreak")}
             </Typography>
-            <Typography className={styles.streakValue()} type="body" weight="bold">
+            <Typography
+              className={styles.streakValue()}
+              type="body"
+              weight="bold"
+            >
               {typeof streakDays === "number"
                 ? t("streakDays", { count: streakDays })
                 : t("streakEmptyValue")}
@@ -113,12 +121,16 @@ export function BaseProfileHighlightsSection({
               {preview.map((item, index) => (
                 <AchievementTag
                   color={
-                    ACHIEVEMENT_TAG_COLORS[index % ACHIEVEMENT_TAG_COLORS.length]
+                    ACHIEVEMENT_TAG_COLORS[
+                      index % ACHIEVEMENT_TAG_COLORS.length
+                    ]
                   }
                   key={item.id}
                   size="md"
                   variant={
-                    ACHIEVEMENT_TAG_VARIANTS[index % ACHIEVEMENT_TAG_VARIANTS.length]
+                    ACHIEVEMENT_TAG_VARIANTS[
+                      index % ACHIEVEMENT_TAG_VARIANTS.length
+                    ]
                   }
                 />
               ))}

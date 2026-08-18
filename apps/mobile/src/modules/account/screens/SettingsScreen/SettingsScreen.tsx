@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@heroui/react/button";
-import { Typography } from "@heroui/react/typography";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { Door } from "@repo/icons/Door";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
@@ -32,30 +31,23 @@ export function SettingsScreen({
       className={styles.root({ className })}
       header={
         <Header
+          appearance="bar"
           startContent={
             <Button
               aria-label={nav.t("back")}
               isIconOnly
               onPress={() => router.back()}
               size="lg"
-              variant="ghost"
+              variant="tertiary"
             >
               <ChevronLeft className="text-foreground" size={22} />
             </Button>
           }
+          title={nav.t("title")}
         />
       }
     >
       <div className={styles.content()}>
-        <section className={styles.intro()}>
-          <Typography className={styles.introTitle()} type="h1" weight="bold">
-            {nav.t("title")}
-          </Typography>
-          <Typography className={styles.introSubtitle()} type="body">
-            {nav.t("subtitle")}
-          </Typography>
-        </section>
-
         <SettingsNavGroupSection
           rows={nav.accountRows}
           title={nav.t("accountGroup")}

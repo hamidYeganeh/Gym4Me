@@ -29,9 +29,9 @@ export const HOME_SPORT_THEMES = [
     actionForegroundColor: "var(--stats-foreground)",
   },
   {
-    color: "var(--foreground)",
-    foregroundColor: "var(--background)",
-    actionColor: "var(--accent)",
-    actionForegroundColor: "var(--accent-foreground)",
+    color: "var(--stats-purple)",
+    foregroundColor: "var(--stats-foreground)",
+    actionColor: "var(--eclipse)",
+    actionForegroundColor: "var(--stats-foreground)",
   },
 ] as const;

@@ -1,4 +1,5 @@
 export { ThemeProvider } from "./theme-provider";
+export { browserAutofillOffProps } from "./disable-browser-autofill";
 export { useTheme } from "@teispace/next-themes";
 export { useThemeTransition } from "./use-theme-transition";
 export { statsColorHex, statsColors } from "./stats-colors";

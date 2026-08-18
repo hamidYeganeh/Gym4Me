@@ -32,11 +32,20 @@ html {
   background: var(--background);
   cursor: var(--pointer-cursor);
   scroll-behavior: smooth;
+  /* Soft keyboard inset from Capacitor Keyboard / visualViewport */
+  --keyboard-height: 0px;
 }
 
 body {
   font-family: var(--font-sans);
   cursor: var(--pointer-cursor);
+}
+
+/* Hide fixed bottom chrome while typing so it does not sit on the keyboard. */
+html[data-keyboard-open] [data-keyboard-hide] {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
 }
 
 h1,

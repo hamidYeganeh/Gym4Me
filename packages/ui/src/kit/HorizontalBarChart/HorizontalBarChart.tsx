@@ -1,29 +1,22 @@
 "use client";
 
-import {
-  Bar,
-  BarChart,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { Bar } from "../../components/charts/bar";
+import { BarChart } from "../../components/charts/bar-chart";
+import { BarYAxis } from "../../components/charts/bar-y-axis";
+import { chartCssVars } from "../../components/charts/chart-context";
+import { ChartTooltip } from "../../components/charts/tooltip";
+import { CHART_MARGIN } from "../../lib/chart-series";
 import { horizontalBarChartVariants } from "./HorizontalBarChart.styles";
 import type { HorizontalBarChartProps } from "./HorizontalBarChart.types";
 
 export function HorizontalBarChart({
   data,
-  color = "var(--accent)",
+  color = chartCssVars.linePrimary,
   "aria-label": ariaLabel = "Chart",
   className,
   formatValue,
 }: HorizontalBarChartProps) {
   const slots = horizontalBarChartVariants();
-  const chartData = data.map((item) => ({
-    ...item,
-    name: item.label,
-  }));
   const height = Math.max(192, data.length * 44);
 
   return (
@@ -33,42 +26,30 @@ export function HorizontalBarChart({
       role="img"
       style={{ height }}
     >
-      <ResponsiveContainer height="100%" width="100%">
-        <BarChart
-          data={chartData}
-          layout="vertical"
-          margin={{ top: 8, right: 16, bottom: 8, left: 8 }}
-        >
-          <XAxis hide type="number" />
-          <YAxis
-            axisLine={false}
-            dataKey="name"
-            tick={{ fill: "var(--muted)", fontSize: 12 }}
-            tickLine={false}
-            type="category"
-            width={96}
-          />
-          <Tooltip
-            contentStyle={{
-              background: "var(--popover)",
-              border: "1px solid var(--border)",
-              borderRadius: 12,
-              color: "var(--popover-foreground)",
-            }}
-            cursor={{ fill: "color-mix(in oklab, var(--accent) 8%, transparent)" }}
-            formatter={(value) =>
-              formatValue && typeof value === "number"
-                ? formatValue(value)
-                : value
-            }
-          />
-          <Bar barSize={14} dataKey="value" radius={[0, 8, 8, 0]}>
-            {chartData.map((item) => (
-              <Cell fill={item.color ?? color} key={item.id} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+      <BarChart
+        aspectRatio="auto"
+        className="h-full"
+        data={data}
+        margin={CHART_MARGIN.horizontalBar}
+        orientation="horizontal"
+        xDataKey="label"
+      >
+        <Bar dataKey="value" fill={color} lineCap={8} />
+        <BarYAxis />
+        <ChartTooltip
+          content={({ point }) => (
+            <div className={slots.tooltip()}>
+              <div className="font-medium">{String(point.label ?? "")}</div>
+              <div className="tabular-nums">
+                {formatValue && typeof point.value === "number"
+                  ? formatValue(point.value)
+                  : (point.value as number)}
+              </div>
+            </div>
+          )}
+          showDatePill={false}
+        />
+      </BarChart>
     </div>
   );
 }

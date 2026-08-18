@@ -12,6 +12,7 @@ import { InputGroup } from "@heroui/react/input-group";
 import { Label } from "@heroui/react/label";
 import { TextField } from "@heroui/react/textfield";
 import { ChevronDown } from "@repo/icons/ChevronDown";
+import { browserAutofillOffProps } from "@repo/theme";
 import { IranFlag } from "../../common/Flag/IranFlag";
 import { phoneFieldVariants } from "./PhoneField.styles";
 import type { PhoneFieldProps } from "./PhoneField.types";
@@ -138,12 +139,14 @@ export function PhoneField({
       targetDigitCount = deleteIndex;
     }
 
-    caretDigitCountRef.current = targetDigitCount;
+    // Fallback when `onInput` did not run (some React Aria paths): keep caret at end.
+    caretDigitCountRef.current = targetDigitCount ?? nextDigits.length;
     onChange(formatIranMobileNational(nextDigits));
   };
 
   return (
     <TextField
+      autoComplete={browserAutofillOffProps.autoComplete}
       className={styles.root({ className })}
       fullWidth
       isInvalid={isInvalid}
@@ -155,7 +158,7 @@ export function PhoneField({
       onChange={handleChange}
     >
       <Label className={styles.label()}>{label}</Label>
-      <InputGroup className={styles.group()} fullWidth>
+      <InputGroup className={styles.group()} dir="ltr" fullWidth lang="en">
         <InputGroup.Prefix className={styles.country()}>
           <span className={styles.countryFlag()}>{countryFlag}</span>
           {showCountryChevron ? (
@@ -165,11 +168,12 @@ export function PhoneField({
           <span className={styles.countryCode()}>{countryCode}</span>
         </InputGroup.Prefix>
         <InputGroup.Input
+          {...browserAutofillOffProps}
           aria-label={label}
-          autoComplete="tel"
           className={styles.input()}
           dir="ltr"
           inputMode="numeric"
+          lang="en"
           placeholder={placeholder}
           ref={handleInputRef}
           onInput={handleInput}

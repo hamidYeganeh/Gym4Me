@@ -9,6 +9,8 @@ export default [
       "dist/**",
       "src/**/art/**/*.mjs",
       "turbo/generators/**",
+      "src/components/charts/**",
+      "src/components/shimmering-text.tsx",
     ],
   },
   {

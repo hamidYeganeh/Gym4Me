@@ -41,7 +41,8 @@ const GAP_CONTROL_AVATAR = 10;
 const GAP_AVATAR_NAME = 12;
 const IDENTITY_FALLBACK = 40;
 const COLLAPSED_TITLE_LINE = 22;
-const COLLAPSED_STAGE = PAD_Y * 2 + CONTROL_SIZE;
+/** Collapsed sticky header — matches `@repo/ui` Header bar. */
+const COLLAPSED_STAGE = 72;
 /** Expanded name starts inset like the sheet title (`px-5`). */
 const EXPANDED_NAME_INSET = 20;
 /** Space before avatar: screen pad + back button + gap. */
@@ -167,10 +168,14 @@ export function DiscoveryCoachesDetailHeroSectionHeader({
 
   /** Hero name rests at the bottom of the stage, then eases into the toolbar. */
   const identityTop = expandedStageHeight - PAD_Y - identityHeight;
-  const collapsedTitleTop =
-    PAD_Y + Math.max(0, (CONTROL_SIZE - COLLAPSED_TITLE_LINE) / 2);
-  const collapsedAvatarTop =
-    PAD_Y + Math.max(0, (CONTROL_SIZE - AVATAR_COLLAPSED) / 2);
+  const collapsedTitleTop = Math.max(
+    0,
+    (COLLAPSED_STAGE - COLLAPSED_TITLE_LINE) / 2,
+  );
+  const collapsedAvatarTop = Math.max(
+    0,
+    (COLLAPSED_STAGE - AVATAR_COLLAPSED) / 2,
+  );
   const identityY = useTransform(
     morph,
     (p) => (collapsedTitleTop - identityTop) * p,
@@ -315,7 +320,7 @@ export function DiscoveryCoachesDetailHeroSectionHeader({
           </Avatar>
         </motion.div>
 
-        <div className={styles.bar} style={{ top: PAD_Y }}>
+        <div className={styles.bar}>
           <div className={styles.barStart}>
             <Button
               aria-label={t("back")}

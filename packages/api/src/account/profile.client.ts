@@ -3,10 +3,12 @@ import type { PublicUser } from "../types";
 import type {
   AthleteProfile,
   CoachProfile,
+  ProfileSettings,
   SubmitCoachVerificationInput,
   UpdateAthleteProfileInput,
   UpdateCoachProfileInput,
   UpdateMeInput,
+  UpdateProfileSettingsInput,
 } from "./profile.dto";
 import { accountProfileEndpoints as ep } from "./profile.endpoint";
 
@@ -19,6 +21,17 @@ export function createAccountProfileApi(client: ApiClient) {
 
     updateMe(input: UpdateMeInput) {
       return client.request<PublicUser>(ep.me, {
+        method: "PATCH",
+        body: input,
+      });
+    },
+
+    getSettings() {
+      return client.request<ProfileSettings>(ep.settings);
+    },
+
+    updateSettings(input: UpdateProfileSettingsInput) {
+      return client.request<ProfileSettings>(ep.settings, {
         method: "PATCH",
         body: input,
       });

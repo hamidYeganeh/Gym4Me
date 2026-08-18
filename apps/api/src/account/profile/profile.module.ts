@@ -8,6 +8,7 @@ import {
   CoachProfile,
   CoachProfileSchema,
 } from '../../schemas/coach-profile.schema';
+import { BasicsModule } from '../../basics/basics.module';
 import { UsersModule } from '../../users/users.module';
 import { ProfileController } from './profile.controller';
 import { ProfileService } from './profile.service';
@@ -19,6 +20,7 @@ import { ProfileService } from './profile.service';
       { name: CoachProfile.name, schema: CoachProfileSchema },
     ]),
     UsersModule,
+    BasicsModule,
   ],
   controllers: [ProfileController],
   providers: [ProfileService],

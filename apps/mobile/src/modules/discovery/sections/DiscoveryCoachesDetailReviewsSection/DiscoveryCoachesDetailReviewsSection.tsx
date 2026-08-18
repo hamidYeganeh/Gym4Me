@@ -126,6 +126,7 @@ export function DiscoveryCoachesDetailReviewsSection({
 
       <SearchField
         aria-label={t("searchReviews")}
+        autoComplete="off"
         className={styles.search()}
         value={query}
         variant="secondary"
@@ -133,7 +134,13 @@ export function DiscoveryCoachesDetailReviewsSection({
       >
         <SearchField.Group>
           <SearchField.SearchIcon />
-          <SearchField.Input placeholder={t("searchReviews")} />
+          <SearchField.Input
+            autoComplete="off"
+            autoCapitalize="none"
+            autoCorrect="off"
+            placeholder={t("searchReviews")}
+            spellCheck={false}
+          />
           <SearchField.ClearButton />
         </SearchField.Group>
       </SearchField>

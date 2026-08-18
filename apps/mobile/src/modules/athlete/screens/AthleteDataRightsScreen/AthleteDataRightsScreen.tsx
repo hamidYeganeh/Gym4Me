@@ -82,31 +82,23 @@ export function AthleteDataRightsScreen({
       className={styles.root()}
       header={
         <Header
+          appearance="bar"
           startContent={
             <Button
               aria-label="بازگشت"
               isIconOnly
               onPress={() => router.back()}
               size="lg"
-              variant="ghost"
+              variant="tertiary"
             >
-              <ChevronLeft size={22} />
+              <ChevronLeft className="text-foreground" size={22} />
             </Button>
           }
+          title="حقوق داده"
         />
       }
     >
       <div className={styles.content()}>
-        <section className={styles.intro()}>
-          <Typography type="h1" weight="bold">
-            حقوق داده
-          </Typography>
-          <Typography className={styles.subtitle()} type="body">
-            خروجی JSON متریک‌ها، عکس‌ها، grantها و اهداف — بدون دادهٔ مالی.
-            حذف متریک‌ها برگشت‌ناپذیر است و در AuditLog ثبت می‌شود.
-          </Typography>
-        </section>
-
         <section className={styles.card()}>
           <Typography type="h3" weight="semibold">
             خروجی داده

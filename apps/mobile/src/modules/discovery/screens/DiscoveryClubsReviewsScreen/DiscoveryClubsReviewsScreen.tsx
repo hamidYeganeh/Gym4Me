@@ -4,6 +4,8 @@ import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { ReviewCard } from "@repo/ui/cards/ReviewCard";
+import { AppLayout } from "@repo/ui/layout/AppLayout";
+import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { discoveryClubsReviewsScreenStyles as styles } from "./DiscoveryClubsReviewsScreen.styles";
@@ -16,22 +18,25 @@ export function DiscoveryClubsReviewsScreen({
   const router = useRouter();
 
   return (
-    <div className={styles.root}>
-      <header className={styles.header}>
-        <Button
-          aria-label={t("back")}
-          isIconOnly
-          onPress={() => router.back()}
-          size="lg"
-          variant="secondary"
-        >
-          <ChevronLeft size={20} />
-        </Button>
-        <Typography className={styles.title} type="h4" weight="semibold">
-          {t("reviewsPageTitle")}
-        </Typography>
-      </header>
-
+    <AppLayout
+      className={styles.root}
+      header={
+        <Header
+          startContent={
+            <Button
+              aria-label={t("back")}
+              isIconOnly
+              onPress={() => router.back()}
+              size="lg"
+              variant="ghost"
+            >
+              <ChevronLeft className="text-foreground" size={22} />
+            </Button>
+          }
+          title={t("reviewsPageTitle")}
+        />
+      }
+    >
       {club.reviews.length === 0 ? (
         <Typography className={styles.empty} type="body-sm">
           {t("notFound")}
@@ -58,6 +63,6 @@ export function DiscoveryClubsReviewsScreen({
           ))}
         </div>
       )}
-    </div>
+    </AppLayout>
   );
 }

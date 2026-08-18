@@ -5,7 +5,7 @@ export const authLoginPasswordFormVariants = tv({
   slots: {
     form: "flex w-full flex-col gap-5",
     row: "flex items-center justify-between gap-3",
-    remember: "text-foreground",
+    remember: "text-sm text-foreground",
     forgot:
       "shrink-0 text-sm font-bold text-accent outline-none data-[hovered=true]:opacity-80",
     submit:

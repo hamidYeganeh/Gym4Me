@@ -1,8 +1,9 @@
 "use client";
 
 import { Button } from "@heroui/react/button";
-import { Typography } from "@heroui/react/typography";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
+import { AppLayout } from "@repo/ui/layout/AppLayout";
+import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { DiscoveryCoachesDetailReviewsSection } from "../../sections/DiscoveryCoachesDetailReviewsSection";
@@ -16,25 +17,28 @@ export function DiscoveryCoachesReviewsScreen({
   const router = useRouter();
 
   return (
-    <div className={styles.root}>
-      <header className={styles.header}>
-        <Button
-          aria-label={t("back")}
-          isIconOnly
-          onPress={() => router.back()}
-          size="lg"
-          variant="secondary"
-        >
-          <ChevronLeft size={20} />
-        </Button>
-        <Typography className={styles.title} type="h4" weight="semibold">
-          {t("reviewsPageTitle")}
-        </Typography>
-      </header>
-
+    <AppLayout
+      className={styles.root}
+      header={
+        <Header
+          startContent={
+            <Button
+              aria-label={t("back")}
+              isIconOnly
+              onPress={() => router.back()}
+              size="lg"
+              variant="ghost"
+            >
+              <ChevronLeft className="text-foreground" size={22} />
+            </Button>
+          }
+          title={t("reviewsPageTitle")}
+        />
+      }
+    >
       <div className={styles.body}>
         <DiscoveryCoachesDetailReviewsSection coach={coach} />
       </div>
-    </div>
+    </AppLayout>
   );
 }

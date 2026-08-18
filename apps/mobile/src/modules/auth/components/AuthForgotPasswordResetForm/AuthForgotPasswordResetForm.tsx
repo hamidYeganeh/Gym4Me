@@ -57,13 +57,12 @@ export function AuthForgotPasswordResetForm({
   });
 
   return (
-    <form className={styles.form({ className })} onSubmit={handleSubmit}>
+    <form autoComplete="off" className={styles.form({ className })} onSubmit={handleSubmit}>
       <Controller
         control={form.control}
         name="password"
         render={({ field, fieldState }) => (
           <PasswordField
-            autoComplete="new-password"
             errorMessage={fieldState.error?.message}
             hidePasswordLabel={t("hidePassword")}
             inputRef={field.ref}
@@ -85,7 +84,6 @@ export function AuthForgotPasswordResetForm({
         name="confirmPassword"
         render={({ field, fieldState }) => (
           <PasswordField
-            autoComplete="new-password"
             errorMessage={fieldState.error?.message}
             hidePasswordLabel={t("hidePassword")}
             inputRef={field.ref}

@@ -4,13 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@heroui/react/button";
 import { Switch } from "@heroui/react/switch";
-import { Typography } from "@heroui/react/typography";
+import { ArrowSignIn1 } from "@repo/icons/ArrowSignIn1";
+import { ArrowSignOut1 } from "@repo/icons/ArrowSignOut1";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
-import { Door } from "@repo/icons/Door";
 import { FaceId } from "@repo/icons/FaceId";
 import { Fingerprint1 } from "@repo/icons/Fingerprint1";
 import { Key1 } from "@repo/icons/Key1";
-import { Lock1 } from "@repo/icons/Lock1";
 import { User } from "@repo/icons/User";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
@@ -22,6 +21,29 @@ import type { SecuritySettingsScreenProps } from "./SecuritySettingsScreen.types
 
 const ICON = 22;
 
+function SecuritySwitch({
+  label,
+  isSelected,
+  onChange,
+}: {
+  label: string;
+  isSelected: boolean;
+  onChange: (value: boolean) => void;
+}) {
+  return (
+    <Switch
+      aria-label={label}
+      isSelected={isSelected}
+      onChange={onChange}
+      size="sm"
+    >
+      <Switch.Control>
+        <Switch.Thumb />
+      </Switch.Control>
+    </Switch>
+  );
+}
+
 export function SecuritySettingsScreen({
   className,
   roleSegment = "athlete",
@@ -31,127 +53,102 @@ export function SecuritySettingsScreen({
   const router = useRouter();
   const { logout } = useAuth();
   const [pinEnabled, setPinEnabled] = useState(false);
+  const [biometricEnabled, setBiometricEnabled] = useState(false);
   const [rememberLogin, setRememberLogin] = useState(true);
   const [faceId, setFaceId] = useState(false);
-  const [accountRecovery, setAccountRecovery] = useState(true);
 
   return (
     <AppLayout
       className={styles.root({ className })}
       header={
         <Header
+          appearance="bar"
           startContent={
             <Button
               aria-label={t("back")}
               isIconOnly
               onPress={() => router.push(`/${roleSegment}/profile`)}
               size="lg"
-              variant="ghost"
+              variant="tertiary"
             >
               <ChevronLeft className="text-foreground" size={22} />
             </Button>
           }
+          title={t("title")}
         />
       }
     >
       <div className={styles.content()}>
-        <section className={styles.intro()}>
-          <Typography className={styles.introTitle()} type="h1" weight="bold">
-            {t("title")}
-          </Typography>
-          <Typography className={styles.introSubtitle()} type="body">
-            {t("subtitle")}
-          </Typography>
-        </section>
-
         <div className={styles.stack()}>
           <ProfileMenuRow
-            hint={t("setPasswordHint")}
-            icon={<Lock1 size={ICON} />}
-            label={t("setPassword")}
-            onPress={() =>
-              router.push(`/${roleSegment}/profile/security/password`)
-            }
-          />
-          <ProfileMenuRow
+            className={styles.row()}
             hint={t("pinHint")}
             icon={<Key1 size={ICON} />}
             label={t("enablePin")}
             showChevron={false}
             trailing={
-              <Switch
-                aria-label={t("enablePin")}
+              <SecuritySwitch
                 isSelected={pinEnabled}
+                label={t("enablePin")}
                 onChange={setPinEnabled}
-              >
-                <Switch.Control>
-                  <Switch.Thumb />
-                </Switch.Control>
-              </Switch>
+              />
             }
           />
           <ProfileMenuRow
+            className={styles.row()}
             hint={t("biometricHint")}
             icon={<Fingerprint1 size={ICON} />}
             label={t("biometric")}
-            onPress={() => undefined}
+            showChevron={false}
+            trailing={
+              <SecuritySwitch
+                isSelected={biometricEnabled}
+                label={t("biometric")}
+                onChange={setBiometricEnabled}
+              />
+            }
           />
           <ProfileMenuRow
+            className={styles.row()}
+            icon={<ArrowSignIn1 size={ICON} />}
+            label={t("rememberLogin")}
+            showChevron={false}
+            trailing={
+              <SecuritySwitch
+                isSelected={rememberLogin}
+                label={t("rememberLogin")}
+                onChange={setRememberLogin}
+              />
+            }
+          />
+          <ProfileMenuRow
+            className={styles.row()}
+            icon={<FaceId size={ICON} />}
+            label={t("useFaceId")}
+            showChevron={false}
+            trailing={
+              <SecuritySwitch
+                isSelected={faceId}
+                label={t("useFaceId")}
+                onChange={setFaceId}
+              />
+            }
+          />
+          <ProfileMenuRow
+            className={styles.row()}
+            icon={<User size={ICON} />}
+            label={t("accountRecovery")}
+            onPress={() => router.push(`/${roleSegment}/profile/help`)}
+          />
+          <ProfileMenuRow
+            className={styles.row()}
             hint={t("logoutAllHint")}
-            icon={<Door size={ICON} />}
+            icon={<ArrowSignOut1 size={ICON} />}
             label={t("logoutAll")}
             onPress={async () => {
               await logout({ revoke: true });
               router.replace("/auth");
             }}
-          />
-          <ProfileMenuRow
-            icon={<Lock1 size={ICON} />}
-            label={t("rememberLogin")}
-            showChevron={false}
-            trailing={
-              <Switch
-                aria-label={t("rememberLogin")}
-                isSelected={rememberLogin}
-                onChange={setRememberLogin}
-              >
-                <Switch.Control>
-                  <Switch.Thumb />
-                </Switch.Control>
-              </Switch>
-            }
-          />
-          <ProfileMenuRow
-            icon={<FaceId size={ICON} />}
-            label={t("useFaceId")}
-            showChevron={false}
-            trailing={
-              <Switch
-                aria-label={t("useFaceId")}
-                isSelected={faceId}
-                onChange={setFaceId}
-              >
-                <Switch.Control>
-                  <Switch.Thumb />
-                </Switch.Control>
-              </Switch>
-            }
-          />
-          <ProfileMenuRow
-            icon={<User size={ICON} />}
-            label={t("accountRecovery")}
-            showChevron={false}
-            trailing={
-              <Switch
-                aria-label={t("accountRecovery")}
-                isSelected={accountRecovery}
-                onChange={setAccountRecovery}
-              >
-                <Switch.Control>
-                  <Switch.Thumb />
-                </Switch.Control>
-              </Switch>
-            }
           />
         </div>
       </div>

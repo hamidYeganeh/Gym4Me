@@ -5,6 +5,8 @@ import { Typography } from "@heroui/react/typography";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { ClubBranchCard } from "@repo/ui/cards/ClubBranchCard";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
+import { AppLayout } from "@repo/ui/layout/AppLayout";
+import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { discoveryClubsBranchesScreenStyles as styles } from "./DiscoveryClubsBranchesScreen.styles";
@@ -17,22 +19,25 @@ export function DiscoveryClubsBranchesScreen({
   const router = useRouter();
 
   return (
-    <div className={styles.root}>
-      <header className={styles.header}>
-        <Button
-          aria-label={t("back")}
-          isIconOnly
-          onPress={() => router.back()}
-          size="lg"
-          variant="secondary"
-        >
-          <ChevronLeft size={20} />
-        </Button>
-        <Typography className={styles.title} type="h4" weight="semibold">
-          {t("branchesPageTitle")}
-        </Typography>
-      </header>
-
+    <AppLayout
+      className={styles.root}
+      header={
+        <Header
+          startContent={
+            <Button
+              aria-label={t("back")}
+              isIconOnly
+              onPress={() => router.back()}
+              size="lg"
+              variant="ghost"
+            >
+              <ChevronLeft className="text-foreground" size={22} />
+            </Button>
+          }
+          title={t("branchesPageTitle")}
+        />
+      }
+    >
       {club.branches.length === 0 ? (
         <Typography className={styles.empty} type="body-sm">
           {t("notFound")}
@@ -52,6 +57,6 @@ export function DiscoveryClubsBranchesScreen({
           ))}
         </div>
       )}
-    </div>
+    </AppLayout>
   );
 }

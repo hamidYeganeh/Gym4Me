@@ -1,6 +1,7 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Public } from '../../common/decorators/public.decorator';
+import { asSinglePageResult } from '../../common/utils/pagination.util';
 import { ChoicesService } from './choices.service';
 
 @ApiTags('basics')
@@ -15,6 +16,12 @@ export class ChoicesController {
   })
   list() {
     return this.choices.listPublic();
+  }
+
+  @Get('units')
+  @ApiOperation({ summary: 'List active unit choice groups' })
+  async listUnits() {
+    return asSinglePageResult(await this.choices.listUnitGroups());
   }
 
   @Get(':key')

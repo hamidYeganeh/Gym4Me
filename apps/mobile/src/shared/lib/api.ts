@@ -51,6 +51,7 @@ import {
   createBasicsLocationsApi,
   createBasicsRefsApi,
   createBasicsSportsApi,
+  createBasicsChoicesApi,
 } from "@repo/api/basics";
 import {
   createAccountBookingsApi,
@@ -108,6 +109,7 @@ export const coachSlots = createCoachSlotsApi(apiClient);
 export const basicsLocations = createBasicsLocationsApi(apiClient);
 export const basicsSports = createBasicsSportsApi(apiClient);
 export const basicsRefs = createBasicsRefsApi(apiClient);
+export const basicsChoices = createBasicsChoicesApi(apiClient);
 export const analyticsApi = createAnalyticsApi(apiClient);
 export const mediaApi = createMediaApi(apiClient);
 export const articlesApi = createArticlesApi(apiClient);

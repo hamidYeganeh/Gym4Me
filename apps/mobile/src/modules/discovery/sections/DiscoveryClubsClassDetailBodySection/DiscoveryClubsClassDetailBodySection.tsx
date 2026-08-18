@@ -71,12 +71,12 @@ const EQUIPMENT_ICONS: Record<string, ReactNode> = {
 };
 
 const AMENITY_ICONS: Record<ClubDetailAmenityIconKey, ReactNode> = {
-  wifi: <WifiHigh size={36} />,
-  parking: <Sparkle1 size={36} />,
-  shower: <Shower1 size={36} />,
-  locker: <Lock1 size={36} />,
-  ac: <Snowflake1 size={36} />,
-  cafe: <Sparkle1 size={36} />,
+  wifi: <WifiHigh size={48} />,
+  parking: <Sparkle1 size={48} />,
+  shower: <Shower1 size={48} />,
+  locker: <Lock1 size={48} />,
+  ac: <Snowflake1 size={48} />,
+  cafe: <Sparkle1 size={48} />,
 };
 
 function SectionTitle({

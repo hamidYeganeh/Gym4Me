@@ -4,35 +4,39 @@ import { tv } from "tailwind-variants";
 export const authLayoutVariants = tv({
   slots: {
     shell:
-      "relative flex min-h-dvh flex-col overflow-x-hidden overflow-y-auto bg-background text-foreground",
+      "relative flex h-dvh max-h-dvh flex-col overflow-hidden bg-background text-foreground",
     media: "pointer-events-none fixed inset-0",
     mediaImage:
       "absolute inset-0 size-full object-cover object-[center_45%] grayscale",
     mediaOverlay: "pointer-events-none absolute inset-0",
     mediaVignette: "pointer-events-none absolute inset-0",
-    panel:
-      "relative z-10 mx-auto flex min-h-dvh w-full max-w-md flex-col px-6 pb-[max(1.75rem,env(safe-area-inset-bottom))] pt-[max(2.5rem,env(safe-area-inset-top))] sm:max-w-lg sm:px-8",
-    topBar: "mb-1 flex min-h-11 items-center",
-    brand: "relative flex flex-col items-center gap-3 self-center",
+    panel: [
+      "relative z-10 mx-auto flex h-full min-h-0 w-full max-w-md flex-col overflow-hidden",
+      "px-6 pb-[max(1.75rem,env(safe-area-inset-bottom))] pt-[max(2.5rem,env(safe-area-inset-top))]",
+      "sm:max-w-lg sm:px-8",
+    ].join(" "),
+    topBar: "mb-1 flex min-h-11 shrink-0 items-center",
+    brand: "relative flex shrink-0 flex-col items-center gap-3 self-center",
     brandGlow:
       "pointer-events-none absolute top-[42%] left-1/2 size-28 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/30 blur-3xl dark:bg-accent/25",
     brandMark: "relative text-accent",
     brandName:
       "relative text-center text-[1.85rem] font-bold tracking-tight text-foreground sm:text-[2.125rem]",
     header:
-      "mt-1.5 flex max-w-full flex-col items-center gap-2 self-center text-center",
+      "mt-1.5 flex max-w-full shrink-0 flex-col items-center gap-2 self-center text-center",
     title:
       "text-balance text-[1.65rem] font-bold tracking-tight text-foreground sm:text-[1.85rem] sm:leading-tight",
     subtitle:
       "max-w-full text-pretty text-[0.95rem] text-center leading-relaxed text-muted sm:max-w-xs sm:text-base",
     figure:
-      "mx-auto mt-2 mb-8 flex w-full max-w-[11.5rem] items-center justify-center sm:max-w-[13rem]",
+      "mx-auto mt-2 mb-6 flex w-full max-w-[11.5rem] shrink-0 items-center justify-center sm:max-w-[13rem]",
     figureImage: "h-auto w-full object-contain",
-    spacer: "min-h-8 flex-1",
-    body: "flex w-full flex-col gap-6 pb-2",
+    spacer: "min-h-0 flex-1",
+    /** Natural height; shrinks + scrolls only when the viewport is too short. */
+    body: "flex min-h-0 w-full shrink flex-col gap-6 overflow-y-auto overscroll-contain pb-2",
     formSlot: "flex w-full flex-col gap-5",
     belowForm: "flex w-full flex-col gap-4",
-    footer: "pt-2 text-center text-sm sm:text-base",
+    footer: "shrink-0 pt-2 text-center text-sm sm:text-base",
   },
   variants: {
     tone: {
@@ -40,7 +44,6 @@ export const authLayoutVariants = tv({
         shell: "bg-background",
         brand: "mb-2",
         header: "mb-6",
-        spacer: "min-h-8",
         footer: "text-muted",
         mediaOverlay:
           "bg-[linear-gradient(to_bottom,color-mix(in_oklch,var(--background)_92%,transparent)_0%,color-mix(in_oklch,var(--background)_78%,transparent)_45%,color-mix(in_oklch,var(--background)_94%,transparent)_100%)]",
@@ -54,7 +57,6 @@ export const authLayoutVariants = tv({
         header: "mb-8",
         title: "text-white",
         subtitle: "text-white/65",
-        spacer: "min-h-10",
         footer: "text-white/65",
         mediaOverlay:
           "bg-[linear-gradient(to_bottom,color-mix(in_oklch,black_88%,transparent)_0%,color-mix(in_oklch,black_72%,transparent)_50%,color-mix(in_oklch,black_92%,transparent)_100%)]",
@@ -71,24 +73,38 @@ export const authLayoutVariants = tv({
           "max-w-[21.5rem] text-balance text-center text-[2rem] leading-[1.2] font-bold tracking-tight text-white",
         subtitle:
           "max-w-[21.5rem] text-pretty text-center text-[0.9375rem] leading-[1.4] text-white/70",
-        spacer: "min-h-[48dvh] flex-[1.35]",
-        body: "gap-0 bg-transparent p-0 text-white shadow-none backdrop-blur-none",
+        spacer: "min-h-0 flex-1",
+        body: "shrink-0 gap-0 overflow-visible bg-transparent p-0 text-white shadow-none backdrop-blur-none",
         formSlot: "gap-0",
         footer: "pt-5 text-center text-[0.875rem] text-white/70",
         media: "pointer-events-none absolute inset-x-0 top-0 h-[58dvh]",
         mediaOverlay:
           "bg-[linear-gradient(to_bottom,transparent_0%,transparent_55%,rgba(0,0,0,0.65)_78%,#000_100%)]",
         mediaVignette: "bg-transparent",
-        panel:
-          "relative z-10 mx-auto flex min-h-dvh w-full max-w-md flex-col px-4 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(0.5rem,env(safe-area-inset-top))] sm:max-w-lg",
+        panel: [
+          "relative z-10 mx-auto flex h-full min-h-0 w-full max-w-md flex-col overflow-hidden",
+          "px-4 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(0.5rem,env(safe-area-inset-top))]",
+          "sm:max-w-lg",
+        ].join(" "),
         mediaImage: "absolute inset-0 size-full object-cover object-top",
       },
     },
     framed: {
       true: {},
       false: {
-        body: "bg-transparent p-0 shadow-none backdrop-blur-none",
+        /**
+         * Keep a 2px gutter so HeroUI `ring-2` field focus rings are not
+         * clipped by this scrollport (`overflow-y-auto` also clips the x-axis).
+         */
+        body: "bg-transparent p-0.5 shadow-none backdrop-blur-none",
       },
+    },
+    figureFirst: {
+      true: {
+        figure: "mt-4 mb-5 sm:mt-6",
+        header: "mb-8",
+      },
+      false: {},
     },
   },
   compoundVariants: [
@@ -113,6 +129,7 @@ export const authLayoutVariants = tv({
   defaultVariants: {
     tone: "plain",
     framed: true,
+    figureFirst: false,
   },
 });
 

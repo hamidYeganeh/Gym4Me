@@ -15,6 +15,8 @@ export const viewport: Viewport = {
   colorScheme: "light dark",
   /** Required for `env(safe-area-inset-*)` on iOS Capacitor / PWA */
   viewportFit: "cover",
+  /** Let the layout viewport shrink with the soft keyboard (Android Chrome / WK). */
+  interactiveWidget: "resizes-content",
 };
 
 export async function generateMetadata(): Promise<Metadata> {

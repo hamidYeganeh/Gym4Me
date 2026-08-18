@@ -437,6 +437,7 @@ export { FileX } from "./icons/FileX";
 export { FilmStrip } from "./icons/FilmStrip";
 export { Fingerprint1 } from "./icons/Fingerprint1";
 export { Fingerprint2 } from "./icons/Fingerprint2";
+export { FingerprintScan } from "./icons/FingerprintScan";
 export { Fire1 } from "./icons/Fire1";
 export { Fire2 } from "./icons/Fire2";
 export { FireTruck } from "./icons/FireTruck";

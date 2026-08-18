@@ -2,14 +2,36 @@
 
 import { useTheme } from "@repo/theme";
 import { useEffect } from "react";
+import { setupCapacitorKeyboard } from "@/shared/lib/capacitor-keyboard";
 
 /**
  * Initializes Capacitor native plugins once the WebView is ready.
  * Keeps the status bar in sync with the active light/dark theme.
- * No-ops when running in a regular browser.
+ * Keyboard handling also runs in the browser via visualViewport.
  */
 export function CapacitorProvider() {
   const { resolvedTheme } = useTheme();
+
+  useEffect(() => {
+    let cancelled = false;
+    let teardownKeyboard: (() => void) | undefined;
+
+    async function setupKeyboard() {
+      const cleanup = await setupCapacitorKeyboard();
+      if (cancelled) {
+        cleanup();
+        return;
+      }
+      teardownKeyboard = cleanup;
+    }
+
+    void setupKeyboard();
+
+    return () => {
+      cancelled = true;
+      teardownKeyboard?.();
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;

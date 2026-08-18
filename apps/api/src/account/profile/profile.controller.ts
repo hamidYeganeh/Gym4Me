@@ -1,5 +1,10 @@
 import { Body, Controller, Get, Patch, Post, Req } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import type { Request } from 'express';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { JwtUser } from '../../common/types';
@@ -9,6 +14,10 @@ import {
   UpdateCoachProfileDto,
   UpdateMeDto,
 } from './dto/update-me.dto';
+import {
+  ProfileSettingsDto,
+  UpdateProfileSettingsDto,
+} from './dto/update-profile-settings.dto';
 import { ProfileService } from './profile.service';
 
 @ApiTags('profile')
@@ -27,6 +36,24 @@ export class ProfileController {
   @ApiOperation({ summary: 'Update current user base profile' })
   updateMe(@CurrentUser() user: JwtUser, @Body() dto: UpdateMeDto) {
     return this.profile.updateMe(user.sub, dto, user);
+  }
+
+  @Get('settings')
+  @ApiOkResponse({ type: ProfileSettingsDto })
+  @ApiOperation({ summary: 'Get current user display settings' })
+  getSettings(@CurrentUser('sub') userId: string) {
+    return this.profile.getSettings(userId);
+  }
+
+  @Patch('settings')
+  @ApiOkResponse({ type: ProfileSettingsDto })
+  @ApiOperation({ summary: 'Update current user display settings' })
+  updateSettings(
+    @CurrentUser('sub') userId: string,
+    @Body() dto: UpdateProfileSettingsDto,
+    @Req() request: Request,
+  ) {
+    return this.profile.updateSettings(userId, dto, request);
   }
 
   @Get('athlete')

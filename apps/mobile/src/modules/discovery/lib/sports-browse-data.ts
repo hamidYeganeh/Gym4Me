@@ -33,8 +33,8 @@ const SPORT_THEMES = [
     foregroundColor: statsColors.foreground,
   },
   {
-    color: "var(--foreground)",
-    foregroundColor: "var(--background)",
+    color: statsColors.purple,
+    foregroundColor: statsColors.foreground,
   },
   {
     color: statsColors.red,

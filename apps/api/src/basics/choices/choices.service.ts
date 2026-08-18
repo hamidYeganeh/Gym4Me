@@ -43,6 +43,14 @@ export class ChoicesService {
     return this.toPublic(group, true);
   }
 
+  async listUnitGroups() {
+    const items = await this.choiceModel
+      .find({ isActive: true, key: /_unit$/ })
+      .sort({ key: 1 })
+      .lean();
+    return items.map((group) => this.toPublic(group, true));
+  }
+
   async listAdmin() {
     const items = await this.choiceModel.find().sort({ key: 1 });
     return asSinglePageResult(items.map((g) => this.toPublic(g, false)));
@@ -176,13 +184,16 @@ export class ChoicesService {
     group: ChoiceGroup & { _id?: unknown },
     activeOptionsOnly: boolean,
   ) {
+    const includeInactiveOptions =
+      !activeOptionsOnly || group.key.endsWith('_unit');
     const options = (group.options ?? [])
-      .filter((o) => (activeOptionsOnly ? o.isActive !== false : true))
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      .filter((o) => includeInactiveOptions || o.isActive !== false)
       .map((o) => ({
         name: o.name,
         value: o.value,
-        ...(activeOptionsOnly ? {} : { order: o.order, isActive: o.isActive }),
+        isActive: o.isActive !== false,
+        ...(activeOptionsOnly ? {} : { order: o.order }),
       }));
 
     return {

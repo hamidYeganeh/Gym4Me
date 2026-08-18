@@ -127,7 +127,7 @@ export function LandingContactModal({ className }: LandingContactModalProps) {
             </LandingPillButton>
           </div>
         ) : (
-          <form className={slots.form()} noValidate onSubmit={onSubmit}>
+          <form autoComplete="off" className={slots.form()} noValidate onSubmit={onSubmit}>
             <label className={slots.field()}>
               <span className={slots.label()}>{t("nameLabel")}</span>
               <input
@@ -137,6 +137,10 @@ export function LandingContactModal({ className }: LandingContactModalProps) {
                 placeholder={t("namePlaceholder")}
                 className={slots.input()}
                 required
+                autoComplete="off"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
               />
             </label>
             <label className={slots.field()}>
@@ -148,6 +152,10 @@ export function LandingContactModal({ className }: LandingContactModalProps) {
                 className={slots.input()}
                 required
                 dir="ltr"
+                autoComplete="off"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
               />
             </label>
             <label className={slots.field()}>
@@ -157,6 +165,10 @@ export function LandingContactModal({ className }: LandingContactModalProps) {
                 rows={3}
                 placeholder={t("notePlaceholder")}
                 className={slots.input()}
+                autoComplete="off"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
               />
             </label>
             <Button

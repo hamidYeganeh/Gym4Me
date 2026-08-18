@@ -53,7 +53,7 @@ export function AuthLoginOtpRequestForm({
   });
 
   return (
-    <form className={styles.form({ className })} onSubmit={handleSubmit}>
+    <form autoComplete="off" className={styles.form({ className })} onSubmit={handleSubmit}>
       <Controller
         control={form.control}
         name="phone"

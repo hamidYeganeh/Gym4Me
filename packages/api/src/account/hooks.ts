@@ -2,10 +2,12 @@ export {
   useAccountAthleteProfile,
   useAccountCoachProfile,
   useAccountProfileMe,
+  useAccountProfileSettings,
   useSubmitCoachVerification,
   useUpdateAccountAthleteProfile,
   useUpdateAccountCoachProfile,
   useUpdateAccountProfileMe,
+  useUpdateAccountProfileSettings,
 } from "./profile.hooks";
 export {
   useAccountKycDocuments,

@@ -2,212 +2,205 @@
 
 import { Button } from "@heroui/react/button";
 import { SearchField } from "@heroui/react/search-field";
-import { Typography } from "@heroui/react/typography";
-import { ArrowUpRight } from "@repo/icons/ArrowUpRight";
-import { ChevronDown } from "@repo/icons/ChevronDown";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
-import { Clock } from "@repo/icons/Clock";
-import { Funnel1 } from "@repo/icons/Funnel1";
-import { MapPin1 } from "@repo/icons/MapPin1";
+import { Gear1 } from "@repo/icons/Gear1";
+import { SliderDotThreeHorizontal } from "@repo/icons/SliderDotThreeHorizontal";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
+import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import type { PublicUser } from "@repo/api";
+import { useMemo, useState } from "react";
+import { roleAppPath } from "@/shared/lib/role-routes";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import {
-  DISCOVERY_MOCK_ADDRESSES,
-  formatAddressLine,
-  type DiscoveryAddressItem,
-} from "../../lib/discovery-addresses-data";
-import {
-  pushDiscoverySearchHistory,
-  readDiscoverySearchHistory,
-  type DiscoverySearchHistoryItem,
-} from "../../lib/discovery-search-history";
-import { DiscoveryLocationSheet } from "../../sections/DiscoveryLocationSheet";
-import { discoverySearchScreenStyles as styles } from "./DiscoverySearchScreen.styles";
+  DISCOVERY_SEARCH_TOPICS,
+  DISCOVERY_SEARCH_USERS,
+  filterDiscoverySearchTopics,
+  filterDiscoverySearchUsers,
+  topicIdForQuery,
+  type DiscoverySearchTopic,
+  type DiscoverySearchUser,
+} from "../../lib/discovery-search-data";
+import { DiscoverySearchTopicsSection } from "../../sections/DiscoverySearchTopicsSection";
+import { DiscoverySearchUsersSection } from "../../sections/DiscoverySearchUsersSection";
+import { discoverySearchScreenVariants } from "./DiscoverySearchScreen.styles";
 import type { DiscoverySearchScreenProps } from "./DiscoverySearchScreen.types";
-
-function profileAddressItem(
-  user: PublicUser | null,
-  label: string,
-): DiscoveryAddressItem | null {
-  if (!user) return null;
-  const line = formatAddressLine(user.address);
-  if (!line) return null;
-  return {
-    id: "profile",
-    label,
-    line,
-    city: user.address.city?.trim() || label,
-  };
-}
 
 export function DiscoverySearchScreen({
   className,
 }: DiscoverySearchScreenProps) {
   const t = useTranslations("DiscoverySearch");
-  const tHome = useTranslations("DiscoveryHome");
   const router = useRouter();
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated, activeRole } = useAuth();
+  const slots = discoverySearchScreenVariants();
 
   const [query, setQuery] = useState("");
-  const [history, setHistory] = useState<DiscoverySearchHistoryItem[]>([]);
-  const [isLocationOpen, setIsLocationOpen] = useState(false);
-  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(
-    null,
+  const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
+  const [followingIds, setFollowingIds] = useState<Set<string>>(
+    () => new Set(),
   );
 
-  useEffect(() => {
-    setHistory(readDiscoverySearchHistory());
-  }, []);
+  const topics = useMemo(
+    () =>
+      filterDiscoverySearchTopics(
+        DISCOVERY_SEARCH_TOPICS,
+        query,
+        selectedTopicId,
+      ),
+    [query, selectedTopicId],
+  );
 
-  const profile = profileAddressItem(user, tHome("locationProfileLabel"));
-  const addresses = profile
-    ? [
-        profile,
-        ...DISCOVERY_MOCK_ADDRESSES.filter((item) => item.id !== "home"),
-      ]
-    : DISCOVERY_MOCK_ADDRESSES;
+  const users = useMemo(
+    () =>
+      filterDiscoverySearchUsers(
+        DISCOVERY_SEARCH_USERS,
+        query,
+        selectedTopicId,
+      ),
+    [query, selectedTopicId],
+  );
 
-  const selectedAddress =
-    addresses.find((item) => item.id === selectedAddressId) ??
-    addresses[0] ??
-    null;
+  const updateQuery = (value: string) => {
+    setQuery(value);
+    setSelectedTopicId(topicIdForQuery(DISCOVERY_SEARCH_TOPICS, value));
+  };
 
-  const locationLine =
-    selectedAddress?.line ||
-    selectedAddress?.city ||
-    selectedAddress?.label ||
-    tHome("locationFallback");
-
-  const commitSearch = (raw: string) => {
-    const trimmed = raw.trim();
-    if (!trimmed) return;
-    setHistory(pushDiscoverySearchHistory(trimmed));
-    setQuery(trimmed);
+  const openFilters = () => {
+    const trimmed = query.trim();
     router.push(
-      `/discovery/coaches?q=${encodeURIComponent(trimmed)}`,
+      trimmed
+        ? `/discovery/coaches?q=${encodeURIComponent(trimmed)}`
+        : "/discovery/coaches",
     );
+  };
+
+  const selectTopic = (topic: DiscoverySearchTopic) => {
+    if (selectedTopicId === topic.id) {
+      setSelectedTopicId(null);
+      setQuery("");
+      return;
+    }
+    setSelectedTopicId(topic.id);
+    setQuery(topic.label);
+  };
+
+  const openUser = (user: DiscoverySearchUser) => {
+    router.push(`/discovery/coaches/${user.id}`);
+  };
+
+  const toggleFollow = (user: DiscoverySearchUser) => {
+    if (!isAuthenticated) {
+      router.push("/auth/login");
+      return;
+    }
+    setFollowingIds((current) => {
+      const next = new Set(current);
+      if (next.has(user.id)) next.delete(user.id);
+      else next.add(user.id);
+      return next;
+    });
   };
 
   return (
     <AppLayout
-      className={[styles.root, className].filter(Boolean).join(" ")}
+      className={slots.root({ className })}
       header={
-        <>
-          <div aria-hidden className={styles.headerSpacer} />
-          <header className={styles.header}>
-            <div className={styles.headerInner}>
-              <div className={styles.toolbar}>
-                <Button
-                  aria-label={t("back")}
-                  className={styles.iconButton}
-                  isIconOnly
-                  onPress={() => router.back()}
-                  size="lg"
-                  variant="ghost"
-                >
-                  <ChevronLeft size={22} />
-                </Button>
-
-                <SearchField
-                  aria-label={t("searchAria")}
-                  autoFocus
-                  className={styles.searchField}
-                  name="discovery-search"
-                  value={query}
-                  variant="secondary"
-                  onChange={setQuery}
-                  onSubmit={commitSearch}
-                >
-                  <SearchField.Group className={styles.searchGroup}>
-                    <SearchField.SearchIcon />
-                    <SearchField.Input placeholder={t("placeholder")} />
-                    <SearchField.ClearButton />
-                  </SearchField.Group>
-                </SearchField>
-
-                <Button
-                  aria-label={t("filterAria")}
-                  className={styles.iconButton}
-                  isIconOnly
-                  onPress={() => router.push("/discovery/coaches")}
-                  size="lg"
-                  variant="ghost"
-                >
-                  <Funnel1 size={22} />
-                </Button>
-              </div>
-
-              <Button
-                aria-expanded={isLocationOpen}
-                aria-haspopup="dialog"
-                aria-label={t("locationAria", { location: locationLine })}
-                className={styles.locationButton}
-                onPress={() => setIsLocationOpen(true)}
-                variant="secondary"
-              >
-                <MapPin1 className={styles.locationPin} size={20} />
-                <span className={styles.locationLabel}>{locationLine}</span>
-                <ChevronDown className={styles.locationChevron} size={16} />
-              </Button>
-            </div>
-          </header>
-
-          <DiscoveryLocationSheet
-            addresses={addresses}
-            addLabel={tHome("locationSheetAdd")}
-            closeLabel={tHome("locationSheetClose")}
-            description={tHome("locationSheetDescription")}
-            emptyLabel={tHome("locationSheetEmpty")}
-            isOpen={isLocationOpen}
-            onAddNew={() =>
-              router.push(
-                isAuthenticated ? "/athlete/profile/edit" : "/auth/login",
-              )
-            }
-            onOpenChange={setIsLocationOpen}
-            onSelect={setSelectedAddressId}
-            selectedId={selectedAddress?.id ?? ""}
-            title={tHome("locationSheetTitle")}
-            updateLabel={tHome("locationSheetUpdate")}
-          />
-        </>
+        <Header
+          endContent={
+            <Button
+              aria-label={t("settingsAria")}
+              isIconOnly
+              onPress={() =>
+                router.push(
+                  isAuthenticated
+                    ? roleAppPath(activeRole, "profile")
+                    : "/auth/login",
+                )
+              }
+              size="lg"
+              variant="ghost"
+            >
+              <Gear1 className="text-foreground" size={22} />
+            </Button>
+          }
+          startContent={
+            <Button
+              aria-label={t("back")}
+              isIconOnly
+              onPress={() => router.back()}
+              size="lg"
+              variant="ghost"
+            >
+              <ChevronLeft className="text-foreground" size={22} />
+            </Button>
+          }
+          title={t("pageTitle")}
+        />
       }
     >
-      <div className={styles.content}>
-        <Typography className={styles.sectionTitle} type="h4" weight="bold">
-          {t("latestTitle")}
-        </Typography>
+      <div className={slots.content()}>
+        <SearchField
+          aria-label={t("searchAria")}
+          autoComplete="off"
+          autoFocus
+          className={slots.searchField()}
+          fullWidth
+          name="discovery-search"
+          value={query}
+          variant="secondary"
+          onChange={updateQuery}
+          onSubmit={updateQuery}
+        >
+          <SearchField.Group className={slots.searchGroup()}>
+            <SearchField.SearchIcon />
+            <SearchField.Input
+              autoComplete="off"
+              autoCapitalize="none"
+              autoCorrect="off"
+              placeholder={t("placeholder")}
+              spellCheck={false}
+            />
+            <SearchField.ClearButton />
+            <Button
+              aria-label={t("filterAria")}
+              className={slots.filterButton()}
+              isIconOnly
+              onPress={openFilters}
+              size="lg"
+              variant="ghost"
+            >
+              <SliderDotThreeHorizontal size={20} />
+            </Button>
+          </SearchField.Group>
+        </SearchField>
 
-        {history.length === 0 ? (
-          <Typography className={styles.empty} type="body-sm">
-            {t("latestEmpty")}
-          </Typography>
-        ) : (
-          <div className={styles.historyList} role="list">
-            {history.map((item) => (
-              <div key={`${item.query}-${item.savedAt}`} role="listitem">
-                <Button
-                  aria-label={t("latestItemAria", { query: item.query })}
-                  className={styles.historyItem}
-                  variant="ghost"
-                  onPress={() => commitSearch(item.query)}
-                >
-                  <Clock className={styles.historyIcon} size={18} />
-                  <span className={styles.historyQuery}>{item.query}</span>
-                  <ArrowUpRight
-                    aria-hidden
-                    className={styles.historyAction}
-                    size={18}
-                  />
-                </Button>
-              </div>
-            ))}
-          </div>
-        )}
+        <DiscoverySearchTopicsSection
+          emptyLabel={t("emptyTopics")}
+          selectedTopicId={selectedTopicId}
+          title={t("topicsTitle")}
+          topicAria={(topic) => t("topicAria", { topic })}
+          topics={topics}
+          onSelect={selectTopic}
+        />
+
+        <DiscoverySearchUsersSection
+          emptyLabel={t("emptyUsers")}
+          followAria={(name) => t("followAria", { name })}
+          followLabel={t("follow")}
+          followingIds={followingIds}
+          followingLabel={t("following")}
+          joinedLabel={(year) =>
+            t("joined", {
+              year: year.toLocaleString("fa-IR", { useGrouping: false }),
+            })
+          }
+          openUserAria={(name) => t("openUserAria", { name })}
+          title={t("usersTitle")}
+          unfollowAria={(name) => t("unfollowAria", { name })}
+          users={users}
+          onFollow={toggleFollow}
+          onOpen={openUser}
+        />
       </div>
     </AppLayout>
   );

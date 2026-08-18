@@ -10,8 +10,8 @@ export const discoveryClubsClassDetailHeroSectionHeaderStyles = {
   ].join(" "),
   blur: "pointer-events-none absolute inset-0 z-0",
   bar: [
-    "pointer-events-auto relative z-10 flex items-center justify-between",
-    "px-4 pt-3.5 pb-8",
+    "pointer-events-auto relative z-10 flex h-[72px] min-h-[72px] items-center justify-between",
+    "px-screen",
   ].join(" "),
   actions: "flex items-center gap-2",
   control: [

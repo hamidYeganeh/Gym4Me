@@ -15,6 +15,12 @@ export type FilterPanelProps = {
   submitLabel: ReactNode;
   /** Called when the primary CTA is pressed. */
   onSubmit?: () => void;
+  /** Disable the primary CTA while a mutation is in flight. */
+  isPending?: boolean;
+  /** Extra disabled state for the primary CTA. */
+  isSubmitDisabled?: boolean;
+  /** Close the drawer after submit. Defaults to true. */
+  closeOnSubmit?: boolean;
   /** Optional icon after the submit label. */
   submitIcon?: ReactNode;
   children: ReactNode;

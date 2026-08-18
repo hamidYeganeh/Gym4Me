@@ -554,6 +554,7 @@ export enum AuditAction {
   CLUB_USER_REVIEW_MODERATED = 'club.user_review_moderated',
   ACHIEVEMENT_GRANTED = 'club.achievement_granted',
   MEDIA_UPLOADED = 'media.uploaded',
+  PROFILE_SETTINGS_UPDATED = 'profile.settings_updated',
   CHOICE_CREATED = 'basics.choice_created',
   CHOICE_UPDATED = 'basics.choice_updated',
   CHOICE_DELETED = 'basics.choice_deleted',

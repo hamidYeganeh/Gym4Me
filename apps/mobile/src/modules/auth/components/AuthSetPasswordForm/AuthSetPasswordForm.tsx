@@ -56,7 +56,7 @@ export function AuthSetPasswordForm({
   });
 
   return (
-    <form className={styles.form({ className })} onSubmit={handleSubmit}>
+    <form autoComplete="off" className={styles.form({ className })} onSubmit={handleSubmit}>
       <Typography className={styles.notice()} type="body-sm">
         {t("reloginNote")}
       </Typography>
@@ -66,7 +66,6 @@ export function AuthSetPasswordForm({
         name="currentPassword"
         render={({ field, fieldState }) => (
           <PasswordField
-            autoComplete="current-password"
             errorMessage={fieldState.error?.message}
             hidePasswordLabel={t("hidePassword")}
             inputRef={field.ref}
@@ -87,7 +86,6 @@ export function AuthSetPasswordForm({
         name="password"
         render={({ field, fieldState }) => (
           <PasswordField
-            autoComplete="new-password"
             errorMessage={fieldState.error?.message}
             hidePasswordLabel={t("hidePassword")}
             inputRef={field.ref}
@@ -109,7 +107,6 @@ export function AuthSetPasswordForm({
         name="confirmPassword"
         render={({ field, fieldState }) => (
           <PasswordField
-            autoComplete="new-password"
             errorMessage={fieldState.error?.message}
             hidePasswordLabel={t("hidePassword")}
             inputRef={field.ref}

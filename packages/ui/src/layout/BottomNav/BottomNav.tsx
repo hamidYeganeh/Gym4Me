@@ -193,10 +193,15 @@ export function BottomNav({
         <div
           aria-hidden
           className={slots.backdrop()}
+          data-keyboard-hide=""
           onClick={() => setActionsOpen(false)}
         />
       ) : null}
-      <nav aria-label={ariaLabel} className={slots.root({ className })}>
+      <nav
+        aria-label={ariaLabel}
+        className={slots.root({ className })}
+        data-keyboard-hide=""
+      >
         <ProgressiveBlur
           blurIntensity={0.85}
           blurLayers={12}

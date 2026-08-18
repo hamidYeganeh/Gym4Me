@@ -2,9 +2,9 @@
 
 import type { ComponentType } from "react";
 import { Button } from "@heroui/react/button";
+import { Description } from "@heroui/react/description";
 import { TextArea } from "@heroui/react/textarea";
 import { TextField } from "@heroui/react/textfield";
-import { Typography } from "@heroui/react/typography";
 import { GenderFemale } from "@repo/icons/GenderFemale";
 import { GenderMale } from "@repo/icons/GenderMale";
 import { GenderTransgender } from "@repo/icons/GenderTransgender";
@@ -72,9 +72,9 @@ export function OnboardingGenderSection({
             maxLength={otherMax}
             placeholder={otherPlaceholder}
           />
-          <Typography className={base.counter()}>
+          <Description className={base.counter()}>
             {otherValue.length}/{otherMax}
-          </Typography>
+          </Description>
         </TextField>
       ) : null}
     </div>

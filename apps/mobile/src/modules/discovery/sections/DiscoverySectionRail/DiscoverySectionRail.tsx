@@ -2,8 +2,11 @@
 
 import { Link } from "@heroui/react/link";
 import { Typography } from "@heroui/react/typography";
+import { Sparkle1 } from "@repo/icons/Sparkle1";
 import { discoverySectionRailVariants } from "./DiscoverySectionRail.styles";
 import type { DiscoverySectionRailProps } from "./DiscoverySectionRail.types";
+
+const ACCENT_ICON_SIZE = 20;
 
 export function DiscoverySectionRail({
   title,
@@ -14,6 +17,7 @@ export function DiscoverySectionRail({
   children,
   scrollerClassName,
   accent = true,
+  accentIcon,
   titleSize = "h3",
   className,
 }: DiscoverySectionRailProps) {
@@ -23,7 +27,11 @@ export function DiscoverySectionRail({
     <section className={slots.root({ className })}>
       <div className={slots.header()}>
         <div className={slots.titleRow()}>
-          {accent ? <span aria-hidden className={slots.accent()} /> : null}
+          {accent ? (
+            <span aria-hidden className={slots.accent()}>
+              {accentIcon ?? <Sparkle1 size={ACCENT_ICON_SIZE} />}
+            </span>
+          ) : null}
           <div className={slots.titleBlock()}>
             <Typography
               className={slots.title()}

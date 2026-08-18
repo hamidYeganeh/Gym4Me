@@ -89,16 +89,12 @@ export function useProfileMenu({
         label: t("subscription"),
         onPress: () => router.push(billingHref),
       },
-      ...(roleSegment === "athlete"
-        ? [
-            {
-              key: "units",
-              icon: <Ruler1 size={icon} />,
-              label: t("unitsMetrics"),
-              onPress: () => router.push("/athlete/metrics"),
-            } satisfies ProfileMenuItem,
-          ]
-        : []),
+      {
+        key: "units",
+        icon: <Ruler1 size={icon} />,
+        label: t("unitsMetrics"),
+        onPress: () => router.push(`/${roleSegment}/profile/settings/units`),
+      },
       {
         key: "preferences",
         icon: <Equalizer size={icon} />,

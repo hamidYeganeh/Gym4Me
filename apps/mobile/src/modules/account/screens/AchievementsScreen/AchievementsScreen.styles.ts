@@ -3,7 +3,7 @@ import { tv } from "tailwind-variants";
 
 export const achievementsScreenVariants = tv({
   slots: {
-    root: "bg-background",
+    root: "bg-background before:hidden",
     content: "flex flex-col gap-7 pb-12 pt-2",
     intro: "flex flex-col gap-1",
     introTitle: "text-balance tracking-tight text-foreground",

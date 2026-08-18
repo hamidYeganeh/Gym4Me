@@ -1,7 +1,7 @@
 import { Card } from "@heroui/react/card";
-import { HorizontalBarChart } from "@repo/ui/kit/HorizontalBarChart";
+import { FunnelChart } from "@repo/ui/kit/FunnelChart";
 import { useTranslations } from "next-intl";
-import { formatFaNumber } from "../../lib/analytics-data";
+import { formatFaNumber, formatFaPercent } from "../../lib/analytics-data";
 import { analyticsFunnelSectionVariants } from "./AnalyticsFunnelSection.styles";
 import type { AnalyticsFunnelSectionProps } from "./AnalyticsFunnelSection.types";
 
@@ -21,14 +21,14 @@ export function AnalyticsFunnelSection({
         </Card.Description>
       </Card.Header>
       <Card.Content className={styles.content()}>
-        <HorizontalBarChart
+        <FunnelChart
           aria-label={t("title")}
-          color="var(--stats-blue)"
+          color="var(--chart-2)"
           data={steps.map((step) => ({
-            id: step.id,
             label: t(`steps.${step.id}`),
             value: step.count,
           }))}
+          formatPercentage={(pct) => formatFaPercent(pct)}
           formatValue={(value) => formatFaNumber(value)}
         />
       </Card.Content>

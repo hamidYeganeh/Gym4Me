@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@heroui/react/button";
 import { Link } from "@heroui/react/link";
-import { Typography } from "@heroui/react/typography";
 import { ApiError } from "@repo/api";
 import type {
   ForgotPasswordConfirmInput,
@@ -13,6 +12,7 @@ import type {
 } from "@repo/api";
 import { ArrowRight } from "@repo/icons/ArrowRight";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
+import { MediaImage } from "@repo/ui/common/MediaImage";
 import { toast } from "@repo/ui/kit/Toast";
 import {
   AuthLayout,
@@ -30,7 +30,7 @@ import type {
   ForgotPasswordStep,
 } from "./ForgotPasswordScreen.types";
 
-const SUPPORT_HREF = "mailto:support@gym4me.ir";
+const FIGURE_SRC = "/auth/password-secure.png";
 
 export function ForgotPasswordScreen({ className }: ForgotPasswordScreenProps) {
   const t = useTranslations("Mobile.ForgotPassword");
@@ -56,13 +56,11 @@ export function ForgotPasswordScreen({ className }: ForgotPasswordScreenProps) {
   }, [step]);
 
   const labels: AuthLayoutLabels = {
-    title: step === "reset" ? undefined : t(`steps.${step}.title`),
+    title: t(`steps.${step}.title`),
     subtitle: t(`steps.${step}.subtitle`),
     brandAriaLabel: t("brandAriaLabel"),
     heroAlt: t("heroAlt"),
   };
-
-  const showBrand = step === "reset" || step === "done";
 
   const getRequestError = (err: unknown) => {
     if (err instanceof ApiError && err.status === 429) {
@@ -160,44 +158,59 @@ export function ForgotPasswordScreen({ className }: ForgotPasswordScreenProps) {
     router.replace(withAuthNext("/auth/login", next));
   };
 
+  const goToLogin = () => {
+    router.replace(withAuthNext("/auth/login", next));
+  };
+
+  const supportPhone = t("supportPhone");
   const footer =
     step === "phone" ? (
       <div className={styles.footerCopy()}>
         <span>{t("forgotPhoneHelp")}</span>
-        <Link className={styles.footerLink()} href={SUPPORT_HREF}>
-          {t("contactSupport")}
-        </Link>
+        <span>
+          {t("contactSupportLead")}{" "}
+          <Link className={styles.footerLink()} href={`tel:${supportPhone}`}>
+            {supportPhone}
+          </Link>
+        </span>
       </div>
     ) : (
-      <Typography type="body-sm">
-        <Link
-          className={styles.footerLink()}
-          onPress={() =>
-            router.replace(withAuthNext("/auth/login", next))
-          }
-        >
-          {t("backToSignIn")}
-        </Link>
-      </Typography>
+      <Link className={styles.footerLink()} onPress={goToLogin}>
+        {t("backToSignIn")}
+      </Link>
     );
 
   return (
     <AuthLayout
       className={className}
+      figure={
+        step === "phone" ? (
+          <MediaImage
+            alt=""
+            aria-hidden
+            className={styles.figureImage()}
+            image={FIGURE_SRC}
+            priority
+            sizes="208px"
+          />
+        ) : null
+      }
+      figurePlacement="beforeHeader"
       footer={footer}
+      framed={false}
       labels={labels}
-      showBrand={showBrand}
-      tone="dark"
+      showBrand={false}
+      tone="plain"
       topStart={
         step !== "done" ? (
           <Button
             aria-label={t("back")}
             className={styles.backButton()}
             isIconOnly
+            onPress={goBack}
             size="lg"
             type="button"
-            variant="ghost"
-            onPress={goBack}
+            variant="tertiary"
           >
             <ChevronLeft size={22} />
           </Button>
@@ -232,17 +245,12 @@ export function ForgotPasswordScreen({ className }: ForgotPasswordScreenProps) {
 
       {step === "done" ? (
         <div className={styles.form()}>
-          <Typography className={styles.success()} type="body-sm">
-            {t("success")}
-          </Typography>
           <Button
             className={styles.submit()}
             fullWidth
             size="lg"
             variant="primary"
-            onPress={() =>
-              router.replace(withAuthNext("/auth/login", next))
-            }
+            onPress={goToLogin}
           >
             {t("backToSignIn")}
             <ArrowRight className={styles.submitIcon()} size={20} />

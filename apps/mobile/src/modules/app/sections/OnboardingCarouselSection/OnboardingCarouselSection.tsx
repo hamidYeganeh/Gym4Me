@@ -107,6 +107,7 @@ export function OnboardingCarouselSection({
 
           return (
             <OnboardingSlideShell
+              bleed={stepId === "personalIntro"}
               isActive={isActive}
               key={stepId}
               showChrome={!slideOwnsChrome(stepId)}

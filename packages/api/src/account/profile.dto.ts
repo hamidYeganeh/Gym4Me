@@ -26,6 +26,14 @@ export type UpdateMeInput = {
   code?: string;
 };
 
+export type ProfileSettings = {
+  units: Record<string, string>;
+};
+
+export type UpdateProfileSettingsInput = {
+  units?: Record<string, string>;
+};
+
 export type AthleteLifestyle = {
   bodyType: AthleteBodyType | null;
   experience: AthleteExperience | null;

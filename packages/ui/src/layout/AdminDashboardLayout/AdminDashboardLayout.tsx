@@ -247,6 +247,7 @@ export function AdminDashboardLayout({
               <div className={styles.headerActions()}>
                 <SearchField
                   aria-label={labels.searchAriaLabel}
+                  autoComplete="off"
                   className={styles.search()}
                   name="admin-search"
                   variant="secondary"
@@ -254,8 +255,12 @@ export function AdminDashboardLayout({
                   <SearchField.Group className={styles.searchGroup()}>
                     <SearchField.SearchIcon />
                     <SearchField.Input
+                      autoComplete="off"
+                      autoCapitalize="none"
+                      autoCorrect="off"
                       className={styles.searchInput()}
                       placeholder={labels.searchPlaceholder}
+                      spellCheck={false}
                     />
                     <Button
                       isIconOnly

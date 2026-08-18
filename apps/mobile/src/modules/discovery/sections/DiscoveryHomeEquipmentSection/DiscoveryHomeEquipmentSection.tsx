@@ -2,12 +2,15 @@
 
 import { Link } from "@heroui/react/link";
 import { Typography } from "@heroui/react/typography";
+import { Sparkle1 } from "@repo/icons/Sparkle1";
 import { EquipmentBrowseCard } from "@repo/ui/cards/EquipmentBrowseCard";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { discoveryHomeEquipmentSectionVariants } from "./DiscoveryHomeEquipmentSection.styles";
 import type { DiscoveryHomeEquipmentSectionProps } from "./DiscoveryHomeEquipmentSection.types";
+
+const ACCENT_ICON_SIZE = 20;
 
 export function DiscoveryHomeEquipmentSection({
   equipment,
@@ -22,7 +25,9 @@ export function DiscoveryHomeEquipmentSection({
     <section aria-label={t("equipmentTitle")} className={slots.root()}>
       <div className={slots.header()}>
         <div className={slots.titleRow()}>
-          <span aria-hidden className={slots.accent()} />
+          <span aria-hidden className={slots.accent()}>
+            <Sparkle1 size={ACCENT_ICON_SIZE} />
+          </span>
           <Typography className={slots.title()} type="h3" weight="bold">
             {t("equipmentTitle")}
           </Typography>

@@ -5,8 +5,8 @@ import { Controller, useForm } from "react-hook-form";
 import { Button } from "@heroui/react/button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Key1 } from "@repo/icons/Key1";
-import { PhoneField } from "@repo/ui/kit/PhoneField";
 import { useTranslations } from "next-intl";
+import { AuthPhoneField } from "@/modules/auth/sections/AuthPhoneField";
 import {
   authForgotPasswordPhoneFormDefaults,
   createAuthForgotPasswordPhoneFormSchema,
@@ -43,12 +43,12 @@ export function AuthForgotPasswordPhoneForm({
   });
 
   return (
-    <form className={styles.form({ className })} onSubmit={handleSubmit}>
+    <form autoComplete="off" className={styles.form({ className })} onSubmit={handleSubmit}>
       <Controller
         control={form.control}
         name="phone"
         render={({ field, fieldState }) => (
-          <PhoneField
+          <AuthPhoneField
             errorMessage={fieldState.error?.message}
             inputRef={field.ref}
             isInvalid={fieldState.invalid}

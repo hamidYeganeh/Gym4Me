@@ -34,6 +34,51 @@
   --stats-orange: #ea580c;
   --stats-foreground: #ffffff;
 
+  /*
+   * Bklit chart tokens — always resolve to Gym4Me / HeroUI theme colors.
+   * Tailwind: bg-chart-1, text-chart-label, bg-popover, …
+   */
+  --chart-1: var(--accent);
+  --chart-2: var(--stats-blue);
+  --chart-3: var(--stats-purple);
+  --chart-4: var(--warning);
+  --chart-5: var(--stats-orange);
+  --chart-background: var(--surface);
+  --chart-foreground: var(--foreground);
+  --chart-foreground-muted: var(--muted);
+  --chart-line-primary: var(--accent);
+  --chart-line-secondary: var(--success);
+  --chart-crosshair: var(--foreground);
+  --chart-grid: var(--border);
+  --chart-brush-border: var(--border);
+  --chart-tooltip-background: var(--overlay);
+  --chart-tooltip-foreground: var(--overlay-foreground);
+  --chart-tooltip-muted: var(--muted);
+  --chart-marker-background: var(--overlay);
+  --chart-marker-border: var(--border);
+  --chart-marker-foreground: var(--overlay-foreground);
+  --chart-marker-badge-background: var(--accent);
+  --chart-marker-badge-foreground: var(--accent-foreground);
+  --chart-label: var(--muted);
+  --chart-indicator-color: var(--accent);
+  --chart-indicator-secondary-color: var(--success);
+  --chart-segment-background: color-mix(
+    in oklab,
+    var(--foreground) 6%,
+    transparent
+  );
+  --chart-segment-line: color-mix(in oklab, var(--foreground) 25%, transparent);
+  --chart-scale-01: color-mix(in oklab, var(--accent) 10%, var(--surface));
+  --chart-scale-02: color-mix(in oklab, var(--accent) 28%, var(--surface));
+  --chart-scale-03: color-mix(in oklab, var(--accent) 48%, var(--surface));
+  --chart-scale-04: color-mix(in oklab, var(--accent) 72%, var(--surface));
+  --chart-scale-05: var(--accent);
+  --chart-scale-pattern-color: var(--border);
+
+  /* shadcn/bklit tooltip surfaces → HeroUI overlay */
+  --popover: var(--overlay);
+  --popover-foreground: var(--overlay-foreground);
+
   /* App surface radii (beyond HeroUI --radius / --field-radius) */
   --surface-radius: 1.5rem;
   --surface-radius-compact: 0.875rem;
@@ -132,6 +177,37 @@
   --color-stats-purple: var(--stats-purple);
   --color-stats-orange: var(--stats-orange);
   --color-stats-foreground: var(--stats-foreground);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-background: var(--chart-background);
+  --color-chart-foreground: var(--chart-foreground);
+  --color-chart-foreground-muted: var(--chart-foreground-muted);
+  --color-chart-line-primary: var(--chart-line-primary);
+  --color-chart-line-secondary: var(--chart-line-secondary);
+  --color-chart-crosshair: var(--chart-crosshair);
+  --color-chart-grid: var(--chart-grid);
+  --color-chart-brush-border: var(--chart-brush-border);
+  --color-chart-tooltip-background: var(--chart-tooltip-background);
+  --color-chart-tooltip-foreground: var(--chart-tooltip-foreground);
+  --color-chart-tooltip-muted: var(--chart-tooltip-muted);
+  --color-chart-marker-background: var(--chart-marker-background);
+  --color-chart-marker-border: var(--chart-marker-border);
+  --color-chart-marker-foreground: var(--chart-marker-foreground);
+  --color-chart-label: var(--chart-label);
+  --color-chart-scale-01: var(--chart-scale-01);
+  --color-chart-scale-02: var(--chart-scale-02);
+  --color-chart-scale-03: var(--chart-scale-03);
+  --color-chart-scale-04: var(--chart-scale-04);
+  --color-chart-scale-05: var(--chart-scale-05);
+  --color-chart-scale-pattern-color: var(--chart-scale-pattern-color);
+
+  --color-popover: var(--overlay);
+  --color-popover-foreground: var(--overlay-foreground);
+  --color-muted-foreground: var(--muted);
 
   --color-toast-default: var(--toast-default);
   --color-toast-accent: var(--toast-accent);
@@ -288,6 +364,37 @@ textarea,
 [contenteditable="true"] {
   user-select: text;
   -webkit-user-select: text;
+}
+
+/*
+ * Hide browser autofill chrome (Safari/Chrome contact + password buttons)
+ * and neutralize the yellow/blue autofill wash.
+ */
+input::-webkit-contacts-auto-fill-button,
+input::-webkit-credentials-auto-fill-button,
+input::-webkit-strong-password-auto-fill-button,
+input::-webkit-caps-lock-indicator {
+  display: none !important;
+  visibility: hidden;
+  pointer-events: none;
+  position: absolute;
+  width: 0;
+  height: 0;
+  margin: 0;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill {
+  -webkit-text-fill-color: var(--field-foreground, var(--foreground));
+  caret-color: var(--field-foreground, var(--foreground));
+  box-shadow: 0 0 0 1000px var(--field-background, var(--surface)) inset;
+  transition: background-color 99999s ease-out 0s;
 }
 
 /*

@@ -32,7 +32,7 @@ export function ClubAmenityCard({
       </div>
 
       <span aria-hidden className={slots.iconBadge()}>
-        {icon ?? <BookOpen className={slots.icon()} size={36} />}
+        {icon ?? <BookOpen className={slots.icon()} size={48} />}
       </span>
     </Card>
   );

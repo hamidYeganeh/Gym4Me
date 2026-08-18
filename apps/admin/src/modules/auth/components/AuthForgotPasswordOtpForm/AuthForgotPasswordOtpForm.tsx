@@ -53,7 +53,7 @@ export function AuthForgotPasswordOtpForm({
   });
 
   return (
-    <form className={styles.form({ className })} onSubmit={handleSubmit}>
+    <form autoComplete="off" className={styles.form({ className })} onSubmit={handleSubmit}>
       <Typography className={styles.hint()}>
         {t("sentTo")} <span dir="ltr">{phone}</span>
       </Typography>

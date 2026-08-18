@@ -9,7 +9,7 @@ export const authForgotPasswordOtpFormVariants = tv({
       "text-foreground [direction:ltr] [unicode-bidi:isolate]",
     otpWrap: "flex w-full flex-col items-center gap-2",
     submit:
-      "min-h-14 rounded-full text-base font-bold text-accent-foreground",
+      "min-h-14 bg-accent text-base font-bold text-accent-foreground data-[hovered=true]:opacity-90",
     submitIcon: "ms-2 size-5",
     resendRow:
       "flex min-h-10 items-center justify-center gap-2 text-muted",

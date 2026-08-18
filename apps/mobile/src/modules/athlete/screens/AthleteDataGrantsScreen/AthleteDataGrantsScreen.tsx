@@ -84,31 +84,23 @@ export function AthleteDataGrantsScreen({
       className={styles.root()}
       header={
         <Header
+          appearance="bar"
           startContent={
             <Button
               aria-label="بازگشت"
               isIconOnly
               onPress={() => router.back()}
               size="lg"
-              variant="ghost"
+              variant="tertiary"
             >
-              <ChevronLeft size={22} />
+              <ChevronLeft className="text-foreground" size={22} />
             </Button>
           }
+          title="اشتراک‌گذاری داده با مربی"
         />
       }
     >
       <div className={styles.content()}>
-        <section className={styles.intro()}>
-          <Typography type="h1" weight="bold">
-            اشتراک‌گذاری داده با مربی
-          </Typography>
-          <Typography className={styles.subtitle()} type="body">
-            مشخص کن کدام متریک‌ها و لاگ‌ها برای مربی فعال قابل مشاهده باشد.
-            لغو دسترسی فوری است.
-          </Typography>
-        </section>
-
         <section className={styles.card()}>
           <Typography type="h3" weight="semibold">
             ایجاد دسترسی جدید

@@ -15,10 +15,12 @@ import {
 import type {
   AthleteProfile,
   CoachProfile,
+  ProfileSettings,
   SubmitCoachVerificationInput,
   UpdateAthleteProfileInput,
   UpdateCoachProfileInput,
   UpdateMeInput,
+  UpdateProfileSettingsInput,
 } from "./profile.dto";
 import { accountProfileKeys } from "./profile.keys";
 
@@ -49,6 +51,42 @@ export function useUpdateAccountProfileMe(
     mutationFn: (input) => api.updateMe(input),
     onSuccess: (data, vars, onMutateResult, context) => {
       void queryClient.invalidateQueries({ queryKey: accountProfileKeys.me() });
+      onSuccess?.(data, vars, onMutateResult, context);
+    },
+  });
+}
+
+export function useAccountProfileSettings(
+  options?: Omit<
+    UseQueryOptions<ProfileSettings, Error>,
+    "queryKey" | "queryFn"
+  >,
+) {
+  const api = useAccountProfileApi();
+  return useQuery({
+    queryKey: accountProfileKeys.settings(),
+    queryFn: () => api.getSettings(),
+    ...options,
+  });
+}
+
+export function useUpdateAccountProfileSettings(
+  options?: UseMutationOptions<
+    ProfileSettings,
+    Error,
+    UpdateProfileSettingsInput
+  >,
+) {
+  const api = useAccountProfileApi();
+  const queryClient = useQueryClient();
+  const { onSuccess, ...rest } = options ?? {};
+  return useMutation({
+    ...rest,
+    mutationFn: (input) => api.updateSettings(input),
+    onSuccess: (data, vars, onMutateResult, context) => {
+      void queryClient.invalidateQueries({
+        queryKey: accountProfileKeys.settings(),
+      });
       onSuccess?.(data, vars, onMutateResult, context);
     },
   });

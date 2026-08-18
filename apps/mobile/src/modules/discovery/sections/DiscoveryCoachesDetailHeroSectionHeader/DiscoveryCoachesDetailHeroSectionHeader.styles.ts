@@ -12,8 +12,8 @@ export const discoveryCoachesDetailHeroSectionHeaderStyles = {
   stage: "relative z-10 w-full",
   bar: [
     "pointer-events-none absolute inset-x-0 top-0 z-30",
-    "flex h-11 items-center justify-between gap-2.5",
-    "px-4",
+    "flex h-[72px] min-h-[72px] items-center justify-between gap-2.5",
+    "px-screen",
   ].join(" "),
   barStart: "pointer-events-auto relative z-40 shrink-0",
   barEnd: "pointer-events-auto relative z-40 flex shrink-0 items-center gap-2",

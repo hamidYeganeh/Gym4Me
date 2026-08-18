@@ -4,8 +4,8 @@ export const discoveryHomeEquipmentSectionVariants = tv({
   slots: {
     root: "flex flex-col gap-4",
     header: "flex items-start justify-between gap-3",
-    titleRow: "flex min-w-0 flex-1 items-start gap-3",
-    accent: "mt-1.5 h-8 w-1 shrink-0 rounded-full bg-accent",
+    titleRow: "flex min-w-0 flex-1 items-center gap-2",
+    accent: "mt-0.5 shrink-0 text-accent",
     title:
       "min-w-0 flex-1 text-[1.35rem] leading-tight tracking-tight text-foreground",
     seeAll:

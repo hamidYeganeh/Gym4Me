@@ -38,8 +38,13 @@ export type AuthLayoutProps = {
   framed?: boolean;
   /** Optional control pinned top-start (e.g. back button). */
   topStart?: ReactNode;
-  /** Optional illustration between header and form (e.g. OTP setup art). */
+  /**
+   * Optional illustration. Defaults to between header and form.
+   * Pass `beforeHeader` for lock-first screens (e.g. forgot password).
+   */
   figure?: ReactNode;
+  /** Where to render `figure`. Default `afterHeader`. */
+  figurePlacement?: "beforeHeader" | "afterHeader";
   /** Optional content below the form (e.g. sign-up link) */
   footer?: ReactNode;
   /** Optional content between form and footer (e.g. social providers) */

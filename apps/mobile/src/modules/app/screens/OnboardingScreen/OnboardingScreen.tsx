@@ -14,60 +14,65 @@ export function OnboardingScreen({ className }: OnboardingScreenProps) {
 
   return (
     <main className={styles.root({ className })}>
-      <div className={styles.content()}>
-        <OnboardingHeader
-          backLabel={onboarding.t("back")}
-          className={styles.header()}
-          progress={onboarding.progress}
-          progressLabel={onboarding.t("progressLabel")}
-          showProgress={onboarding.showHeaderProgress}
-          skipLabel={onboarding.t("skip")}
-          onBack={onboarding.goPrev}
-          onSkip={onboarding.requestFinish}
-        />
+      <OnboardingCarouselSection {...onboarding} />
 
-        <OnboardingCarouselSection {...onboarding} />
-
-        {onboarding.activePermissionKind ? (
-          <OnboardingPermissionSheet
-            isOpen
-            isRequesting={onboarding.isRequestingPermission}
-            kind={onboarding.activePermissionKind}
-            labels={{
-              title: onboarding.t(
-                `permissions.${onboarding.activePermissionKind}.title`,
-              ),
-              subtitle: onboarding.t(
-                `permissions.${onboarding.activePermissionKind}.subtitle`,
-              ),
-              sampleTitle: onboarding.t(
-                `permissions.${onboarding.activePermissionKind}.sampleTitle`,
-              ),
-              sampleBody: onboarding.t(
-                `permissions.${onboarding.activePermissionKind}.sampleBody`,
-              ),
-              sampleAction: onboarding.t(
-                `permissions.${onboarding.activePermissionKind}.sampleAction`,
-              ),
-              sampleTime: onboarding.t(
-                `permissions.${onboarding.activePermissionKind}.sampleTime`,
-              ),
-              info: onboarding.t("permissions.info"),
-              continue: onboarding.t("permissions.continue"),
-              skip: onboarding.t("permissions.skip"),
-            }}
-            onContinue={onboarding.handlePermissionContinue}
-            onOpenChange={(open) => {
-              if (!open && !onboarding.isRequestingPermission) {
-                onboarding.handlePermissionSkip();
-              }
-            }}
-            onSkip={onboarding.handlePermissionSkip}
+      <div className={styles.overlay()}>
+        <div className={styles.header()}>
+          <OnboardingHeader
+            backLabel={onboarding.t("back")}
+            progress={onboarding.progress}
+            progressLabel={onboarding.t("progressLabel")}
+            showProgress={onboarding.showHeaderProgress}
+            skipLabel={onboarding.t("skip")}
+            onBack={onboarding.goPrev}
+            onSkip={onboarding.requestFinish}
           />
-        ) : null}
+        </div>
 
-        <OnboardingFooterSection {...onboarding} />
+        <div className={styles.overlayFill()} />
+
+        <div className={styles.footer()}>
+          <OnboardingFooterSection {...onboarding} />
+        </div>
       </div>
+
+      {onboarding.activePermissionKind ? (
+        <OnboardingPermissionSheet
+          isOpen
+          isRequesting={onboarding.isRequestingPermission}
+          kind={onboarding.activePermissionKind}
+          labels={{
+            title: onboarding.t(
+              `permissions.${onboarding.activePermissionKind}.title`,
+            ),
+            subtitle: onboarding.t(
+              `permissions.${onboarding.activePermissionKind}.subtitle`,
+            ),
+            sampleTitle: onboarding.t(
+              `permissions.${onboarding.activePermissionKind}.sampleTitle`,
+            ),
+            sampleBody: onboarding.t(
+              `permissions.${onboarding.activePermissionKind}.sampleBody`,
+            ),
+            sampleAction: onboarding.t(
+              `permissions.${onboarding.activePermissionKind}.sampleAction`,
+            ),
+            sampleTime: onboarding.t(
+              `permissions.${onboarding.activePermissionKind}.sampleTime`,
+            ),
+            info: onboarding.t("permissions.info"),
+            continue: onboarding.t("permissions.continue"),
+            skip: onboarding.t("permissions.skip"),
+          }}
+          onContinue={onboarding.handlePermissionContinue}
+          onOpenChange={(open) => {
+            if (!open && !onboarding.isRequestingPermission) {
+              onboarding.handlePermissionSkip();
+            }
+          }}
+          onSkip={onboarding.handlePermissionSkip}
+        />
+      ) : null}
     </main>
   );
 }

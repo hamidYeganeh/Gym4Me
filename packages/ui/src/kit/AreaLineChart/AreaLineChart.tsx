@@ -1,26 +1,23 @@
 "use client";
 
-import { useId } from "react";
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { Area } from "../../components/charts/area";
+import { AreaChart } from "../../components/charts/area-chart";
+import { chartCssVars } from "../../components/charts/chart-context";
+import { Grid } from "../../components/charts/grid";
+import { ChartTooltip } from "../../components/charts/tooltip";
+import { XAxis } from "../../components/charts/x-axis";
+import { CHART_MARGIN, toTimeSeries } from "../../lib/chart-series";
 import { areaLineChartVariants } from "./AreaLineChart.styles";
 import type { AreaLineChartProps } from "./AreaLineChart.types";
 
 export function AreaLineChart({
   data,
-  color = "var(--success)",
+  color = chartCssVars.linePrimary,
   "aria-label": ariaLabel = "Chart",
   className,
 }: AreaLineChartProps) {
   const slots = areaLineChartVariants();
-  const gradientId = useId().replace(/:/g, "");
+  const series = toTimeSeries(data);
 
   return (
     <div
@@ -29,55 +26,33 @@ export function AreaLineChart({
       dir="ltr"
       role="img"
     >
-      <div className={slots.chart()}>
-        <ResponsiveContainer height="100%" width="100%">
-          <AreaChart
-            data={data}
-            margin={{ top: 8, right: 8, bottom: 0, left: 0 }}
-          >
-            <defs>
-              <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stopColor={color} stopOpacity={0.28} />
-                <stop offset="100%" stopColor={color} stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid
-              stroke="var(--border)"
-              strokeDasharray="4 6"
-              vertical={false}
-            />
-            <XAxis
-              axisLine={false}
-              dataKey="label"
-              tick={{ fill: "var(--muted)", fontSize: 11 }}
-              tickLine={false}
-            />
-            <YAxis
-              axisLine={false}
-              tick={{ fill: "var(--muted)", fontSize: 11 }}
-              tickLine={false}
-              width={36}
-            />
-            <Tooltip
-              contentStyle={{
-                background: "var(--popover)",
-                border: "1px solid var(--border)",
-                borderRadius: 12,
-                color: "var(--popover-foreground)",
-              }}
-            />
-            <Area
-              dataKey="value"
-              fill={`url(#${gradientId})`}
-              stroke={color}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2.5}
-              type="monotone"
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
+      <AreaChart
+        aspectRatio="auto"
+        className={slots.chart()}
+        data={series}
+        margin={CHART_MARGIN.compact}
+        style={{ height: "100%" }}
+        xDataKey="date"
+      >
+        <Grid horizontal />
+        <Area
+          dataKey="value"
+          fill={color}
+          fillOpacity={0.28}
+          stroke={color}
+          strokeWidth={2.5}
+        />
+        <XAxis />
+        <ChartTooltip
+          content={({ point }) => (
+            <div className={slots.tooltip()}>
+              <div className="font-medium">{String(point.label ?? "")}</div>
+              <div className="tabular-nums">{point.value as number}</div>
+            </div>
+          )}
+          showDatePill={false}
+        />
+      </AreaChart>
     </div>
   );
 }

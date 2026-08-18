@@ -37,6 +37,9 @@ export function FilterPanel({
   submitLabel,
   onSubmit,
   submitIcon,
+  isPending = false,
+  isSubmitDisabled = false,
+  closeOnSubmit = true,
   children,
   className,
 }: FilterPanelProps) {
@@ -70,11 +73,14 @@ export function FilterPanel({
             <Button
               className={slots.submit()}
               fullWidth
+              isDisabled={isSubmitDisabled}
+              isPending={isPending}
               onPress={() => {
                 onSubmit?.();
-                onOpenChange(false);
+                if (closeOnSubmit) onOpenChange(false);
               }}
               size="lg"
+              type="button"
               variant="primary"
             >
               {submitLabel}

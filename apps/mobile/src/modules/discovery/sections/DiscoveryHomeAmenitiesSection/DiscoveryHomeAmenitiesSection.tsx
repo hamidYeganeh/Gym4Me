@@ -37,7 +37,6 @@ export function DiscoveryHomeAmenitiesSection({
           }
         >
           <ClubAmenityCard
-            className="w-full"
             icon={discoveryAmenityIcon(amenity.iconKey)}
             subtitle={amenity.subtitle}
             title={amenity.name}

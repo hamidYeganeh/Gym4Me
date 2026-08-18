@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@heroui/react/button";
 import { ApiError } from "@repo/api";
 import { BiometricFrame } from "@repo/icons/BiometricFrame";
-import { FaceId } from "@repo/icons/FaceId";
+import { FingerprintScan } from "@repo/icons/FingerprintScan";
 import { Lock1 } from "@repo/icons/Lock1";
 import { Telephone1 } from "@repo/icons/Telephone1";
 import { toast } from "@repo/ui/kit/Toast";
@@ -103,25 +103,26 @@ export function AuthSelectScreen({ className }: AuthSelectScreenProps) {
       <div className={styles.actions()}>
         {showBiometric ? (
           <div className={styles.biometric()}>
-            <BiometricFrame
-              aria-hidden
-              className={styles.biometricFrame()}
-              size={140}
-            />
             <Button
+              aria-label={t("continueWithBiometric")}
               className={styles.biometricButton()}
-              fullWidth
+              isIconOnly
               isPending={isBiometricPending}
               size="lg"
-              variant="secondary"
+              variant="ghost"
               onPress={() => void handleBiometric()}
             >
-              <FaceId
-                aria-hidden
-                className={styles.biometricIcon()}
-                size={20}
-              />
-              {t("continueWithBiometric")}
+              <span aria-hidden className={styles.biometricMark()}>
+                <BiometricFrame
+                  className={styles.biometricFrame()}
+                  size={160}
+                />
+                <FingerprintScan
+                  className={styles.biometricGlyph()}
+                  height={140}
+                  width={112}
+                />
+              </span>
             </Button>
           </div>
         ) : null}

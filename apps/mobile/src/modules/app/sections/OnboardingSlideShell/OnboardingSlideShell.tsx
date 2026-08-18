@@ -14,14 +14,19 @@ export function OnboardingSlideShell({
   title,
   subtitle,
   showChrome = true,
+  bleed = false,
   isActive,
   children,
 }: OnboardingSlideShellProps) {
-  const styles = onboardingSlideShellVariants();
+  const styles = onboardingSlideShellVariants({ bleed });
   const reduceMotion = useReducedMotion();
 
   return (
-    <section aria-label={title} className={styles.root({ className })}>
+    <section
+      aria-label={title}
+      className={styles.root({ className })}
+      {...(!bleed ? { "data-onboarding-nested-scroll": true } : {})}
+    >
       <motion.div
         animate={reduceMotion || isActive ? "active" : "inactive"}
         className={styles.stack()}

@@ -5,6 +5,8 @@ export const areaLineChartVariants = tv({
   slots: {
     root: "flex w-full flex-col gap-2",
     chart: "relative h-[180px] w-full",
+    tooltip:
+      "rounded-xl border border-border bg-popover px-3 py-2 text-xs text-popover-foreground",
   },
 });
 

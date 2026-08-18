@@ -51,6 +51,7 @@ async function seed() {
     {
       key: 'weight_unit',
       name: 'واحد وزن',
+      description: 'واحد نمایش وزن را انتخاب کنید.',
       isSystem: true,
       options: [
         { value: 'kg', name: 'کیلوگرم', order: 0 },
@@ -60,10 +61,71 @@ async function seed() {
     {
       key: 'height_unit',
       name: 'واحد قد',
+      description: 'واحد نمایش قد را انتخاب کنید.',
       isSystem: true,
       options: [
         { value: 'cm', name: 'سانتی‌متر', order: 0 },
         { value: 'ft_in', name: 'فوت/اینچ', order: 1 },
+      ],
+    },
+    {
+      key: 'distance_unit',
+      name: 'واحد مسافت',
+      description: 'واحد نمایش مسافت را انتخاب کنید.',
+      isSystem: true,
+      options: [
+        { value: 'km', name: 'کیلومتر', order: 0 },
+        { value: 'mi', name: 'مایل', order: 1 },
+      ],
+    },
+    {
+      key: 'speed_unit',
+      name: 'واحد سرعت',
+      description: 'واحد نمایش سرعت را انتخاب کنید.',
+      isSystem: true,
+      options: [
+        { value: 'km_h', name: 'کیلومتر بر ساعت', order: 0 },
+        { value: 'mph', name: 'مایل بر ساعت', order: 1 },
+      ],
+    },
+    {
+      key: 'blood_pressure_unit',
+      name: 'واحد فشار خون',
+      description: 'واحد نمایش فشار خون را انتخاب کنید.',
+      isSystem: true,
+      options: [
+        { value: 'mmhg', name: 'میلی‌متر جیوه', order: 0 },
+        { value: 'kpa', name: 'کیلوپاسکال', order: 1 },
+      ],
+    },
+    {
+      key: 'nutrition_unit',
+      name: 'واحد تغذیه',
+      description: 'واحد نمایش انرژی تغذیه را انتخاب کنید.',
+      isSystem: true,
+      options: [
+        { value: 'kcal', name: 'کیلوکالری', order: 0 },
+        { value: 'kj', name: 'کیلوژول', order: 1, isActive: false },
+      ],
+    },
+    {
+      key: 'calorie_unit',
+      name: 'واحد کالری',
+      description: 'واحد نمایش کالری را انتخاب کنید.',
+      isSystem: true,
+      options: [
+        { value: 'kcal', name: 'کیلوکالری', order: 0, isActive: false },
+        { value: 'kj', name: 'کیلوژول', order: 1, isActive: false },
+      ],
+    },
+    {
+      key: 'glucose_unit',
+      name: 'واحد قند خون',
+      description: 'واحد نمایش قند خون را انتخاب کنید.',
+      isSystem: true,
+      options: [
+        { value: 'mg_dl', name: 'میلی‌گرم بر دسی‌لیتر', order: 0 },
+        { value: 'mmol_l', name: 'میلی‌مول بر لیتر', order: 1 },
       ],
     },
     {

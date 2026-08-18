@@ -3,9 +3,9 @@ import { tv } from "tailwind-variants";
 
 export const authForgotPasswordPhoneFormVariants = tv({
   slots: {
-    form: "flex w-full flex-col gap-5",
+    form: "flex w-full flex-col gap-8",
     submit:
-      "min-h-14 rounded-full text-base font-bold text-accent-foreground",
+      "mt-1 min-h-14 bg-accent text-base font-bold text-accent-foreground data-[hovered=true]:opacity-90",
     submitIcon: "ms-2 size-5",
   },
 });

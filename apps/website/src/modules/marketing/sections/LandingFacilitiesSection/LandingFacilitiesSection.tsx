@@ -24,13 +24,13 @@ import type { LandingFacilitiesSectionProps } from "./LandingFacilitiesSection.t
 
 const AMENITY_ICONS: Record<(typeof LANDING_AMENITIES)[number]["id"], ReactNode> =
   {
-    parking: <Car1 size={36} />,
-    shower: <Shower1 size={36} />,
-    locker: <Lock1 size={36} />,
-    sauna: <Moon size={36} />,
-    wifi: <WifiFull size={36} />,
-    cafe: <Coffee size={36} />,
-    open24: <Moon size={36} />,
+    parking: <Car1 size={48} />,
+    shower: <Shower1 size={48} />,
+    locker: <Lock1 size={48} />,
+    sauna: <Moon size={48} />,
+    wifi: <WifiFull size={48} />,
+    cafe: <Coffee size={48} />,
+    open24: <Moon size={48} />,
   };
 
 export function LandingFacilitiesSection({

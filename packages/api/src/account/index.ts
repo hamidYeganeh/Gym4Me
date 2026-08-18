@@ -9,6 +9,7 @@ export type {
   AthleteLifestyle,
   AthleteProfile,
   CoachProfile,
+  ProfileSettings,
   SubmitCoachVerificationInput,
   UpdateAddressInput,
   UpdateAthleteHealthInput,
@@ -16,6 +17,7 @@ export type {
   UpdateAthleteProfileInput,
   UpdateCoachProfileInput,
   UpdateMeInput,
+  UpdateProfileSettingsInput,
 } from "./profile.dto";
 export { accountProfileKeys } from "./profile.keys";
 

@@ -4,6 +4,7 @@ import {
   ThemeProvider as NextThemesProvider,
   type ThemeProviderProps,
 } from "@teispace/next-themes";
+import { BrowserAutofillGuard } from "./browser-autofill-guard";
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
   return (
@@ -16,6 +17,7 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
       storage="local"
       {...props}
     >
+      <BrowserAutofillGuard />
       {children}
     </NextThemesProvider>
   );

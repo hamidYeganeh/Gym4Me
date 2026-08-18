@@ -8,9 +8,9 @@ export const discoveryClubsDetailHeroSectionLightboxVariants = tv({
     ].join(" "),
     root: "flex h-dvh w-full flex-col",
     header: [
-      "relative z-20 grid grid-cols-[2.75rem_1fr_2.75rem] items-center gap-2",
-      "bg-background",
-      "px-screen pb-3 pt-[max(0.75rem,env(safe-area-inset-top))]",
+      "relative z-20 grid h-[72px] min-h-[72px] grid-cols-[2.75rem_1fr_2.75rem] items-center gap-2",
+      "bg-background px-screen",
+      "mt-[env(safe-area-inset-top)]",
     ].join(" "),
     headerTitle: "text-center text-foreground",
     headerSide: "flex items-center justify-center",

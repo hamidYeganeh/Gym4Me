@@ -42,34 +42,28 @@ export function NotificationSettingsScreen({
       className={styles.root({ className })}
       header={
         <Header
+          appearance="bar"
           startContent={
             <Button
               aria-label={t("back")}
               isIconOnly
               onPress={() => router.push(`/${roleSegment}/profile`)}
               size="lg"
-              variant="ghost"
+              variant="tertiary"
             >
               <ChevronLeft className="text-foreground" size={22} />
             </Button>
           }
+          title={t("title")}
         />
       }
     >
       <div className={styles.content()}>
-        <section className={styles.intro()}>
-          <Typography className={styles.introTitle()} type="h1" weight="bold">
-            {t("title")}
+        {error ? (
+          <Typography className="text-danger" type="body-sm">
+            {t("errorSave")}
           </Typography>
-          <Typography className={styles.introSubtitle()} type="body">
-            {t("subtitle")}
-          </Typography>
-          {error ? (
-            <Typography className="text-danger" type="body-sm">
-              {t("errorSave")}
-            </Typography>
-          ) : null}
-        </section>
+        ) : null}
 
         <section className={styles.group()}>
           <Typography className={styles.groupTitle()} type="body-sm">
