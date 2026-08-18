@@ -17,7 +17,7 @@ const OTP_TTL_SECONDS = 120;
 /** Align with authMinute throttler (3/min) — allow a send about every 20s. */
 const RESEND_COOLDOWN_SECONDS = 20;
 const MAX_ATTEMPTS = 5;
-const OTP_DIGITS = 6;
+const OTP_DIGITS = 5;
 /** Max OTP SMS sends per phone per rolling 24h (all purposes). */
 const DAILY_OTP_LIMIT = 7;
 const DAILY_OTP_WINDOW_SECONDS = 86_400;

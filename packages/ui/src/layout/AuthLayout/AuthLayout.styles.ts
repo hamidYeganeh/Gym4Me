@@ -20,13 +20,14 @@ export const authLayoutVariants = tv({
     brandName:
       "relative text-center text-[1.85rem] font-bold tracking-tight text-foreground sm:text-[2.125rem]",
     header:
-      "mt-1.5 flex max-w-sm flex-col items-center gap-2 self-center text-center",
+      "mt-1.5 flex max-w-full flex-col items-center gap-2 self-center text-center",
     title:
       "text-balance text-[1.65rem] font-bold tracking-tight text-foreground sm:text-[1.85rem] sm:leading-tight",
     subtitle:
-      "max-w-[17rem] text-pretty text-[0.95rem] leading-relaxed text-muted sm:max-w-xs sm:text-base",
+      "max-w-full text-pretty text-[0.95rem] text-center leading-relaxed text-muted sm:max-w-xs sm:text-base",
     figure:
-      "mx-auto mt-6 mb-2 flex w-full max-w-[16rem] items-center justify-center sm:max-w-[18rem]",
+      "mx-auto mt-2 mb-8 flex w-full max-w-[11.5rem] items-center justify-center sm:max-w-[13rem]",
+    figureImage: "h-auto w-full object-contain",
     spacer: "min-h-8 flex-1",
     body: "flex w-full flex-col gap-6 pb-2",
     formSlot: "flex w-full flex-col gap-5",
@@ -38,13 +39,9 @@ export const authLayoutVariants = tv({
       plain: {
         shell: "bg-background",
         brand: "mb-2",
-        header: "mb-8",
+        header: "mb-6",
         spacer: "min-h-8",
         footer: "text-muted",
-        body: [
-          "rounded-[1.75rem] bg-surface/92 p-4 sm:p-5",
-          "shadow-[0_18px_48px_color-mix(in_oklch,var(--foreground)_8%,transparent)] backdrop-blur-xl",
-        ].join(" "),
         mediaOverlay:
           "bg-[linear-gradient(to_bottom,color-mix(in_oklch,var(--background)_92%,transparent)_0%,color-mix(in_oklch,var(--background)_78%,transparent)_45%,color-mix(in_oklch,var(--background)_94%,transparent)_100%)]",
         mediaVignette:
@@ -59,7 +56,6 @@ export const authLayoutVariants = tv({
         subtitle: "text-white/65",
         spacer: "min-h-10",
         footer: "text-white/65",
-        body: "rounded-[1.75rem] bg-white/6 p-4 shadow-2xl backdrop-blur-xl sm:p-5",
         mediaOverlay:
           "bg-[linear-gradient(to_bottom,color-mix(in_oklch,black_88%,transparent)_0%,color-mix(in_oklch,black_72%,transparent)_50%,color-mix(in_oklch,black_92%,transparent)_100%)]",
         mediaVignette:
@@ -88,9 +84,35 @@ export const authLayoutVariants = tv({
         mediaImage: "absolute inset-0 size-full object-cover object-top",
       },
     },
+    framed: {
+      true: {},
+      false: {
+        body: "bg-transparent p-0 shadow-none backdrop-blur-none",
+      },
+    },
   },
+  compoundVariants: [
+    {
+      tone: "plain",
+      framed: true,
+      class: {
+        body: [
+          "rounded-[1.75rem] bg-surface/92 p-4 sm:p-5",
+          "shadow-[0_18px_48px_color-mix(in_oklch,var(--foreground)_8%,transparent)] backdrop-blur-xl",
+        ].join(" "),
+      },
+    },
+    {
+      tone: "dark",
+      framed: true,
+      class: {
+        body: "rounded-[1.75rem] bg-white/6 p-4 shadow-2xl backdrop-blur-xl sm:p-5",
+      },
+    },
+  ],
   defaultVariants: {
     tone: "plain",
+    framed: true,
   },
 });
 

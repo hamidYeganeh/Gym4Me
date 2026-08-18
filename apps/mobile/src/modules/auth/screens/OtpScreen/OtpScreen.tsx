@@ -2,6 +2,7 @@
 
 import { Button } from "@heroui/react";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
+import { MediaImage } from "@repo/ui/common/MediaImage";
 import { AuthLayout } from "@repo/ui/layout/AuthLayout";
 import { AuthLoginOtpForm } from "@/modules/auth/components/AuthLoginOtpForm";
 import { AuthLoginOtpRequestForm } from "@/modules/auth/components/AuthLoginOtpRequestForm";
@@ -11,21 +12,34 @@ import { OtpScreenVerifyFooterSection } from "@/modules/auth/sections/OtpScreenV
 import { otpScreenVariants } from "./OtpScreen.styles";
 import type { OtpScreenProps } from "./OtpScreen.types";
 
-const HERO_SRC = "/auth-hero.jpg";
+const FIGURE_SRC = "/auth/otp-secure.png";
 
 export function OtpScreen({ className }: OtpScreenProps) {
   const styles = otpScreenVariants();
   const otp = useOtpScreen();
+  const isRequest = otp.step === "request";
 
   return (
     <AuthLayout
       className={className}
       belowForm={
-        otp.step === "request" ? (
+        isRequest ? (
           <OtpScreenAltAuthSection
             buttonLabel={otp.tAuth("usePasswordInstead")}
             dividerLabel={otp.tAuth("orSignInWith")}
             onPress={otp.navigateToLogin}
+          />
+        ) : null
+      }
+      figure={
+        isRequest ? (
+          <MediaImage
+            alt=""
+            aria-hidden
+            className={styles.figureImage()}
+            image={FIGURE_SRC}
+            priority
+            sizes="208px"
           />
         ) : null
       }
@@ -37,8 +51,9 @@ export function OtpScreen({ className }: OtpScreenProps) {
           />
         ) : null
       }
-      heroSrc={HERO_SRC}
+      framed={false}
       labels={otp.labels}
+      showBrand={false}
       tone="plain"
       topStart={
         <Button
@@ -48,29 +63,24 @@ export function OtpScreen({ className }: OtpScreenProps) {
           onPress={otp.goBack}
           size="lg"
           type="button"
-          variant="ghost"
+          variant="tertiary"
         >
           <ChevronLeft size={22} />
         </Button>
       }
     >
-      {otp.step === "request" ? (
+      {isRequest ? (
         <AuthLoginOtpRequestForm
           defaultPhone={otp.phone}
-          error={otp.error}
           isPending={otp.isPending}
-          onDismissError={otp.clearError}
           onSubmit={otp.handleRequest}
         />
       ) : (
         <AuthLoginOtpForm
           debugCode={otp.debugCode}
-          error={otp.error}
           isPending={otp.isPending}
           isResending={otp.isResending}
           key={otp.otpFormKey}
-          notice={otp.notice}
-          onDismissError={otp.clearError}
           onResend={() => void otp.handleResend()}
           onSubmit={otp.handleVerify}
           phone={otp.phone}

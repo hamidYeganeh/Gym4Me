@@ -11,7 +11,7 @@ export interface InputOTPProps
   > {
   /** Number of digit slots. Defaults to 4. */
   length?: number;
-  /** `lg` = showcase; `md` = auth (6 digits on 375 frame). */
+  /** `lg` = fixed showcase; `md` = auth (`flex-1` square slots). */
   size?: NonNullable<InputOTPVariantProps["size"]>;
   className?: string;
 }

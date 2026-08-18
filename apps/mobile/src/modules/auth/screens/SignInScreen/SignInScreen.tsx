@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button, Link, Typography } from "@heroui/react";
 import { ApiError } from "@repo/api";
 import { Chat, ChevronLeft } from "@repo/icons";
+import { toast } from "@repo/ui/kit/Toast";
 import {
   AuthLayout,
   type AuthLayoutLabels,
@@ -26,7 +27,6 @@ export function SignInScreen({ className }: SignInScreenProps) {
   const { login } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [error, setError] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
 
   const next = searchParams.get("next");
@@ -39,7 +39,6 @@ export function SignInScreen({ className }: SignInScreenProps) {
   };
 
   const handleSubmit = async (payload: AuthLoginPasswordPayload) => {
-    setError(null);
     setIsPending(true);
     try {
       const session = await login(payload.phone, payload.password);
@@ -50,11 +49,12 @@ export function SignInScreen({ className }: SignInScreenProps) {
           : roleHomePath(session.activeRole),
       );
     } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.message || t("errorInvalid"));
-      } else {
-        setError(t("errorInvalid"));
-      }
+      toast.error(t("toastErrorTitle"), {
+        description:
+          err instanceof ApiError
+            ? err.message || t("errorInvalid")
+            : t("errorInvalid"),
+      });
     } finally {
       setIsPending(false);
     }
@@ -112,9 +112,7 @@ export function SignInScreen({ className }: SignInScreenProps) {
       }
     >
       <AuthLoginPasswordForm
-        error={error}
         isPending={isPending}
-        onDismissError={() => setError(null)}
         onForgotPassword={() =>
           router.push(withAuthNext("/auth/forgot-password", next))
         }

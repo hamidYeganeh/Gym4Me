@@ -18,6 +18,7 @@ import { QuickActionCard } from "@repo/ui/cards/QuickActionCard";
 import { SpotlightCard } from "@repo/ui/cards/SpotlightCard";
 import { TodoCard, type TodoCardItem } from "@repo/ui/cards/TodoCard";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import type { RefObject } from "react";
 import { LANDING_ASSETS } from "../../lib/landing-assets";
 import { InViewRise } from "../../lib/landing-reveal";
@@ -90,10 +91,23 @@ export function LandingDownloadPhoneMockup({
       </div>
 
       <div className={slots.bezel()}>
+        <Image
+          alt=""
+          aria-hidden
+          className={`${slots.frame()} dark:hidden`}
+          fill
+          sizes="(min-width: 1024px) 320px, 248px"
+          src={LANDING_ASSETS.phone.frameLight}
+        />
+        <Image
+          alt=""
+          aria-hidden
+          className={`${slots.frame()} hidden dark:block`}
+          fill
+          sizes="(min-width: 1024px) 320px, 248px"
+          src={LANDING_ASSETS.phone.frameDark}
+        />
         <div className={slots.screen()}>
-          <div className={slots.notch()}>
-            <div className={slots.notchDot()} />
-          </div>
           <div ref={viewportRef} className={slots.phoneViewport()}>
             <div ref={scrollRef} className={slots.phoneScroll()}>
               <div className={slots.phoneHeader()}>
@@ -251,6 +265,22 @@ export function LandingDownloadPhoneMockup({
           </div>
           <div className={slots.homeIndicator()} aria-hidden />
         </div>
+        <Image
+          alt=""
+          aria-hidden
+          className={`${slots.island()} dark:hidden`}
+          height={67}
+          src={LANDING_ASSETS.phone.islandLight}
+          width={231}
+        />
+        <Image
+          alt=""
+          aria-hidden
+          className={`${slots.island()} hidden dark:block`}
+          height={67}
+          src={LANDING_ASSETS.phone.islandDark}
+          width={231}
+        />
       </div>
 
       <div

@@ -8,9 +8,17 @@ export type ToastPlacement =
   | "bottom start"
   | "bottom end";
 
+export type ToastVisualVariant =
+  | "default"
+  | "accent"
+  | "success"
+  | "warning"
+  | "danger";
+
 export type ToasterProps = {
   children?: ReactNode;
   placement?: ToastPlacement;
+  width?: number | string;
 };
 
 export type ToastIconType =

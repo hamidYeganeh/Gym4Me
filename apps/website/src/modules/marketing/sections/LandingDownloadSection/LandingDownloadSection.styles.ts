@@ -39,17 +39,27 @@ export const landingDownloadSectionStyles = tv({
     storeKicker: "-mb-0.5 text-start text-[0.65rem] tracking-wider opacity-70",
     storeTitle: "text-start text-base leading-none tracking-tight",
     stage:
-      "relative z-10 mx-auto flex w-full max-w-[22rem] items-center justify-center max-lg:order-1 lg:max-w-none",
-    bezel:
-      "relative z-10 flex h-[30rem] w-[15.5rem] flex-col rounded-[2.5rem] bg-accent-foreground shadow-[0_28px_60px_-20px_color-mix(in_oklab,var(--color-accent-foreground)_45%,transparent)] sm:h-[34rem] sm:w-[17rem] lg:h-[36rem] lg:w-[18rem]",
-    screen:
-      "absolute inset-[6px] z-10 overflow-hidden rounded-[2.15rem] bg-background text-foreground",
-    notch:
-      "absolute top-[5px] left-1/2 z-50 flex h-6 w-[5.5rem] -translate-x-1/2 items-center justify-start rounded-full bg-accent-foreground px-3",
-    notchDot: "h-1.5 w-1.5 rounded-full bg-foreground/80",
+      "relative z-10 mx-auto flex w-full max-w-[20rem] items-center justify-center max-lg:order-1 lg:max-w-none",
+    /**
+     * Device chrome: 402×817 mockup, scaled down in the section.
+     * Inner screen is 361×783 (5.1% sides, 2.08% top/bottom).
+     */
+    bezel: [
+      "relative z-10 [container-type:inline-size]",
+      "aspect-[402/817] w-[min(100%,14rem)]",
+      "sm:w-[15.5rem] lg:w-[20rem]",
+      "drop-shadow-[0_28px_48px_color-mix(in_oklab,var(--color-accent-foreground)_40%,transparent)]",
+    ].join(" "),
+    frame: "pointer-events-none absolute inset-0 z-0 size-full select-none object-contain",
+    island:
+      "pointer-events-none absolute top-[3.43%] left-1/2 z-30 h-auto w-[28.73%] -translate-x-1/2 select-none",
+    screen: [
+      "absolute z-10 overflow-hidden bg-background text-foreground",
+      "inset-[2.08%_5.1%] rounded-[10.7cqi]",
+    ].join(" "),
     phoneViewport: "absolute inset-0 overflow-hidden",
     phoneScroll:
-      "relative flex w-full flex-col gap-2.5 px-3 pt-10 pb-10 will-change-transform",
+      "relative flex w-full flex-col gap-2.5 px-3 pt-14 pb-10 will-change-transform",
     phoneHeader: "flex items-center justify-between gap-2",
     phoneIdentity: "flex min-w-0 flex-1 items-center gap-2",
     phoneAvatar: "size-9 shrink-0",

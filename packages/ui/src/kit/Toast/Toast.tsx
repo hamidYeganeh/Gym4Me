@@ -1,42 +1,27 @@
 "use client";
 
-import type { ReactNode } from "react";
-import { Toast as HeroToast, toast as heroToast } from "@heroui/react";
+import type { ComponentProps, ReactNode } from "react";
 import {
-  ArrowRotateClockwise1,
-  CheckCircle,
-  CloseXCircle,
-  ExclamationMarkTriangle,
-  Info,
-} from "@repo/icons";
+  Toast as HeroToast,
+  toast as heroToast,
+  type ToastContentValue,
+} from "@heroui/react";
+import { ArrowRotateClockwise1 } from "@repo/icons/ArrowRotateClockwise1";
+import { ShapeCircle } from "@repo/icons/ShapeCircle";
 import { toastVariants } from "./Toast.styles";
-import type { ToasterProps, ToastIconType } from "./Toast.types";
+import type { ToasterProps, ToastIconType, ToastVisualVariant } from "./Toast.types";
 
-const styles = toastVariants();
-
-function ToastIcon({ type }: { type: ToastIconType | string | undefined }) {
-  if (type === "success") {
-    return <CheckCircle aria-hidden size={18} />;
-  }
-  if (type === "info") {
-    return <Info aria-hidden size={18} />;
-  }
-  if (type === "warning") {
-    return <ExclamationMarkTriangle aria-hidden size={18} />;
-  }
-  if (type === "error" || type === "danger") {
-    return <CloseXCircle aria-hidden className="text-danger" size={18} />;
-  }
+function DefaultToastIcon({
+  type,
+}: {
+  type: ToastIconType | string | undefined;
+}) {
   if (type === "loading") {
     return (
-      <ArrowRotateClockwise1
-        aria-hidden
-        className="animate-spin"
-        size={18}
-      />
+      <ArrowRotateClockwise1 aria-hidden className="animate-spin" size={20} />
     );
   }
-  return null;
+  return <ShapeCircle aria-hidden size={20} />;
 }
 
 export type NotifyOptions = {
@@ -47,11 +32,7 @@ export type NotifyOptions = {
 function withIcon(type: ToastIconType, options?: NotifyOptions) {
   return {
     description: options?.description,
-    indicator: options?.indicator ?? (
-      <span className={styles.icon()}>
-        <ToastIcon type={type} />
-      </span>
-    ),
+    indicator: options?.indicator ?? <DefaultToastIcon type={type} />,
   };
 }
 
@@ -89,14 +70,61 @@ export const toast: {
   },
 };
 
+function ToastView({
+  content,
+  toastItem,
+}: {
+  content: ToastContentValue;
+  toastItem: ComponentProps<typeof HeroToast>["toast"];
+}) {
+  const variant: ToastVisualVariant = content.variant ?? "default";
+  const styles = toastVariants({ variant });
+  const isLoading = content.isLoading === true;
+
+  return (
+    <HeroToast className={styles.root()} toast={toastItem} variant={variant}>
+      {content.indicator === null ? null : (
+        <HeroToast.Indicator className={styles.indicator()} variant={variant}>
+          {isLoading ? (
+            <DefaultToastIcon type="loading" />
+          ) : (
+            (content.indicator ?? <DefaultToastIcon type={variant} />)
+          )}
+        </HeroToast.Indicator>
+      )}
+      <HeroToast.Content className={styles.content()}>
+        {content.title ? (
+          <HeroToast.Title className={styles.title()}>
+            {content.title}
+          </HeroToast.Title>
+        ) : null}
+        {content.description ? (
+          <HeroToast.Description className={styles.description()}>
+            {content.description}
+          </HeroToast.Description>
+        ) : null}
+      </HeroToast.Content>
+      <HeroToast.CloseButton className={styles.close()} />
+    </HeroToast>
+  );
+}
+
 export function Toaster({
   children,
   placement = "bottom end",
+  width = "min(22.5rem, calc(100vw - 2rem))",
 }: ToasterProps) {
   return (
     <>
       {children}
-      <HeroToast.Provider placement={placement} />
+      <HeroToast.Provider placement={placement} width={width}>
+        {({ toast: toastItem }) => (
+          <ToastView
+            content={(toastItem.content ?? {}) as ToastContentValue}
+            toastItem={toastItem}
+          />
+        )}
+      </HeroToast.Provider>
     </>
   );
 }

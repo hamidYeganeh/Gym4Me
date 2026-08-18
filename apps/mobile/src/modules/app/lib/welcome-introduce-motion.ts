@@ -20,13 +20,3 @@ export const welcomeIntroduceFadeUpVariants: Variants = {
     transition: spring.gentle,
   },
 };
-
-export const welcomeIntroduceStageItemVariants: Variants = {
-  inactive: { opacity: 0, y: 28, scale: 0.94 },
-  active: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: spring.gentle,
-  },
-};

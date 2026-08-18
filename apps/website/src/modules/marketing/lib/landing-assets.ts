@@ -1,8 +1,15 @@
 const MOCK = "/assets/images/landing/mock";
+const PHONE = "/assets/images/landing/phone";
 
 /** Local generated mock imagery (no remote Unsplash). */
 export const LANDING_ASSETS = {
   hero: `${MOCK}/hero.png`,
+  phone: {
+    frameDark: `${PHONE}/phone-frame-dark.png`,
+    frameLight: `${PHONE}/phone-frame-light.png`,
+    islandDark: `${PHONE}/phone-island-dark.png`,
+    islandLight: `${PHONE}/phone-island-light.png`,
+  },
   membership: `${MOCK}/membership.png`,
   collection: [
     {

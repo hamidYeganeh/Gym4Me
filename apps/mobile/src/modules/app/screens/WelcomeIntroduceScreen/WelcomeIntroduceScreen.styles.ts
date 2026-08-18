@@ -1,15 +1,22 @@
 import { tv } from "tailwind-variants";
 
-/** Introduce shell — dark charcoal + orange floor glow (Sandow welcome). */
+/** Introduce shell — Embla image carousel + action sheet overlay. */
 export const welcomeIntroduceScreenVariants = tv({
   slots: {
-    root: "relative flex min-h-dvh flex-col overflow-hidden bg-background text-foreground dark:bg-black",
-    glow: [
-      "pointer-events-none absolute inset-0",
-      "bg-[linear-gradient(to_bottom,var(--background)_0%,var(--background)_42%,color-mix(in_oklch,var(--accent)_22%,var(--background))_100%)]",
-      "dark:bg-[radial-gradient(120%_55%_at_50%_100%,color-mix(in_srgb,var(--stats-orange)_42%,transparent)_0%,transparent_58%),linear-gradient(to_bottom,#000_0%,#000_48%,#0a0a0a_100%)]",
+    root: "relative flex min-h-dvh flex-col overflow-hidden bg-background text-foreground",
+    header: "pointer-events-none absolute inset-x-0 top-0 z-10",
+    headerFade: "pointer-events-none absolute inset-x-0 top-0 h-44",
+    headerBlur: "pointer-events-none absolute inset-0",
+    headerWash: [
+      "absolute inset-0",
+      "bg-[linear-gradient(to_bottom,var(--background)_0%,color-mix(in_oklch,var(--background)_78%,transparent)_48%,transparent_100%)]",
+    ],
+    brand: [
+      "relative z-10 flex justify-center",
+      "pt-[max(1.25rem,env(safe-area-inset-top))] pb-10",
     ],
     content:
-      "relative z-10 flex min-h-dvh flex-col pt-[max(1.5rem,env(safe-area-inset-top))]",
+      "pointer-events-none relative z-10 flex min-h-dvh flex-col justify-end",
+    footerHost: "pointer-events-auto",
   },
 });

@@ -26,7 +26,7 @@ export class RequestOtpDto extends PhoneDto {}
 
 export class ConfirmOtpDto extends PhoneDto {
   @IsString()
-  @Length(6, 6)
+  @Length(5, 5)
   code!: string;
 
   @IsOptional()
@@ -71,7 +71,7 @@ export class ForgotPasswordDto extends PhoneDto {}
 
 export class ForgotPasswordConfirmDto extends PhoneDto {
   @IsString()
-  @Length(6, 6)
+  @Length(5, 5)
   code!: string;
 }
 

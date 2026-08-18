@@ -3,6 +3,6 @@ import { PhoneDto } from '../../../account/auth/dto/auth.dto';
 
 export class AdminConfirmOtpDto extends PhoneDto {
   @IsString()
-  @Length(6, 6)
+  @Length(5, 5)
   code!: string;
 }

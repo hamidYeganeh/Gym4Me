@@ -12,6 +12,7 @@ export function AuthLayout({
   heroSrc,
   tone: toneProp,
   showBrand = true,
+  framed: framedProp,
   topStart,
   figure,
   footer,
@@ -21,7 +22,8 @@ export function AuthLayout({
   const tone: AuthLayoutTone = heroSrc
     ? (toneProp ?? "hero")
     : (toneProp ?? "plain");
-  const styles = authLayoutVariants({ tone });
+  const framed = framedProp ?? tone !== "hero";
+  const styles = authLayoutVariants({ tone, framed });
   const showBrandName = showBrand && !labels.title;
 
   return (
@@ -66,8 +68,6 @@ export function AuthLayout({
           </div>
         ) : null}
 
-        {figure ? <div className={styles.figure()}>{figure}</div> : null}
-
         {tone === "hero" ? (
           <div className={styles.spacer()} aria-hidden />
         ) : null}
@@ -82,13 +82,17 @@ export function AuthLayout({
             {labels.subtitle ? (
               <Typography
                 className={styles.subtitle()}
-                {...(tone === "dark" || tone === "hero" ? {} : { color: "muted" as const })}
+                {...(tone === "dark" || tone === "hero"
+                  ? {}
+                  : { color: "muted" as const })}
               >
                 {labels.subtitle}
               </Typography>
             ) : null}
           </header>
         ) : null}
+
+        {figure ? <div className={styles.figure()}>{figure}</div> : null}
 
         <div className={styles.body()}>
           <div className={styles.formSlot()}>{children}</div>

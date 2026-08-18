@@ -17,7 +17,7 @@ export function InputOTP({
     <HeroInputOTP
       maxLength={length}
       pattern={pattern}
-      variant="secondary"
+      variant="primary"
       className={styles.root({ className })}
       {...props}
     >

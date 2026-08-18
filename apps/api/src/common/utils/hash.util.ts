@@ -9,8 +9,8 @@ export function randomToken(bytes = 48): string {
   return randomBytes(bytes).toString('base64url');
 }
 
-/** Numeric OTP code, default 6 digits. */
-export function randomOtpCode(length = 6): string {
+/** Numeric OTP code, default 5 digits. */
+export function randomOtpCode(length = 5): string {
   return randomInt(10 ** (length - 1), 10 ** length).toString();
 }
 

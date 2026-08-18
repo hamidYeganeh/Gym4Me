@@ -9,7 +9,6 @@ export const authSelectScreenVariants = tv({
     biometricButton:
       "min-h-14 w-full justify-center gap-3 rounded-full bg-white/10 px-5 text-base font-semibold text-white backdrop-blur-sm data-[hovered=true]:bg-white/15 data-[pressed=true]:opacity-80",
     biometricIcon: "size-5 shrink-0 text-accent",
-    biometricError: "text-center text-sm font-medium text-danger",
     method:
       "min-h-14 w-full justify-start gap-3 rounded-full px-5 text-base font-semibold",
     methodLogin:

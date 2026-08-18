@@ -4,35 +4,30 @@ import { tv } from "tailwind-variants";
 export const phoneFieldVariants = tv({
   slots: {
     root: "flex w-full flex-col gap-2",
-    label: "text-sm font-bold text-foreground",
-    field: [
-      "flex min-h-[var(--auth-field-height)] flex-row items-center gap-3",
-      "rounded-[var(--auth-field-radius)] border border-border bg-field px-4",
-      "[direction:ltr] transition-[border-color,box-shadow,background-color]",
-      "duration-fast ease-app",
-      "focus-within:border-accent focus-within:shadow-[var(--auth-focus-ring)]",
-      "dark:border-border/80 dark:bg-surface",
-    ].join(" "),
+    label: "text-sm font-bold",
+    group:
+      "min-h-[var(--auth-field-height)] rounded-[var(--auth-field-radius)] [direction:ltr]",
     country:
-      "flex shrink-0 flex-row items-center gap-1.5 text-sm font-semibold text-foreground",
-    countryFlag: "text-base leading-none",
+      "flex shrink-0 flex-row items-center gap-1.5 text-sm font-semibold",
+    countryFlag:
+      "flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full text-base leading-none [&_svg]:size-full",
+    countryChevron: "size-3.5 shrink-0",
     countryCode: "tracking-wide",
-    divider: "h-6 w-px bg-border",
-    input: [
-      "min-h-12 flex-1 border-0 bg-transparent px-0 text-base text-foreground",
-      "shadow-none outline-none placeholder:text-muted",
-    ].join(" "),
+    divider: "mx-0.5 h-5 w-px shrink-0 bg-current opacity-20",
+    input: "min-w-0 text-base tabular-nums sm:text-base",
+    helpTrigger:
+      "inline-flex size-6 shrink-0 items-center justify-center rounded-full outline-none data-[pressed=true]:opacity-80",
+    helpIcon: "size-5",
   },
   variants: {
-    isInvalid: {
+    hideLabel: {
       true: {
-        field:
-          "border-danger focus-within:border-danger focus-within:shadow-[0_0_0_4px_color-mix(in_oklch,var(--danger)_22%,transparent)]",
+        label: "sr-only",
       },
     },
   },
   defaultVariants: {
-    isInvalid: false,
+    hideLabel: false,
   },
 });
 

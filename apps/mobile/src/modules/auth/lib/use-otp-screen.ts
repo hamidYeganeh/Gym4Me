@@ -4,6 +4,8 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ApiError } from "@repo/api";
 import type { ConfirmOtpInput, RequestOtpInput } from "@repo/api";
+import { toast } from "@repo/ui/kit/Toast";
+import type { AuthLayoutLabels } from "@repo/ui/layout/AuthLayout";
 import { useTranslations } from "next-intl";
 import {
   clearOtpPending,
@@ -14,7 +16,6 @@ import {
 import { withAuthNext } from "@/shared/lib/auth-redirect";
 import { roleHomePath } from "@/shared/lib/role-routes";
 import { useAuth } from "@/shared/providers/AuthProvider";
-import type { AuthLayoutLabels } from "@repo/ui/layout/AuthLayout";
 
 const subscribeOtpPending = () => () => {};
 
@@ -69,8 +70,6 @@ export function useOtpScreen() {
   );
 
   const [session, setSession] = useState<OtpSession | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [otpFormKey, setOtpFormKey] = useState(0);
@@ -86,7 +85,8 @@ export function useOtpScreen() {
     const timer = window.setInterval(() => {
       setSession((current) => {
         const base = current ?? sessionFromPending(readOtpPending());
-        if (base.step !== "verify" || base.remainingSeconds <= 0) return current ?? base;
+        if (base.step !== "verify" || base.remainingSeconds <= 0)
+          return current ?? base;
         return {
           ...base,
           remainingSeconds: Math.max(0, base.remainingSeconds - 1),
@@ -99,11 +99,13 @@ export function useOtpScreen() {
   const labels: AuthLayoutLabels =
     step === "verify"
       ? {
+          title: t("title"),
           subtitle: t("sentToMasked", { phone: maskPhone(phone) }),
           brandAriaLabel: t("brandAriaLabel"),
           heroAlt: t("heroAlt"),
         }
       : {
+          title: t("requestTitle"),
           subtitle: t("requestSubtitle"),
           brandAriaLabel: t("brandAriaLabel"),
           heroAlt: t("heroAlt"),
@@ -119,9 +121,13 @@ export function useOtpScreen() {
     return step === "verify" ? t("errorInvalid") : tAuth("errorOtpRequest");
   };
 
+  const notifyError = (err: unknown) => {
+    toast.error(tAuth("toastErrorTitle"), {
+      description: getErrorMessage(err),
+    });
+  };
+
   const handleRequest = async (payload: RequestOtpInput) => {
-    setError(null);
-    setNotice(null);
     setIsPending(true);
     try {
       const result = await requestOtp(payload.phone);
@@ -137,15 +143,13 @@ export function useOtpScreen() {
         debugCode: result.debugCode ?? null,
       });
     } catch (err) {
-      setError(getErrorMessage(err));
+      notifyError(err);
     } finally {
       setIsPending(false);
     }
   };
 
   const handleVerify = async (payload: ConfirmOtpInput) => {
-    setError(null);
-    setNotice(null);
     setIsPending(true);
     try {
       const authSession = await loginWithOtp(payload.phone, payload.code);
@@ -160,7 +164,7 @@ export function useOtpScreen() {
       }
       router.replace(returnPath);
     } catch (err) {
-      setError(getErrorMessage(err));
+      notifyError(err);
     } finally {
       setIsPending(false);
     }
@@ -168,8 +172,6 @@ export function useOtpScreen() {
 
   const handleResend = async () => {
     if (remainingSeconds > 0 || isResending) return;
-    setError(null);
-    setNotice(null);
     setIsResending(true);
     try {
       const result = await requestOtp(phone);
@@ -179,7 +181,9 @@ export function useOtpScreen() {
         remainingSeconds: result.expiresInSeconds,
         debugCode: result.debugCode ?? null,
       });
-      setNotice(t("resent"));
+      toast.success(tAuth("toastSuccessTitle"), {
+        description: t("resent"),
+      });
       setOtpFormKey((current) => current + 1);
       saveOtpPending({
         phone,
@@ -187,7 +191,7 @@ export function useOtpScreen() {
         debugCode: result.debugCode,
       });
     } catch (err) {
-      setError(getErrorMessage(err));
+      notifyError(err);
     } finally {
       setIsResending(false);
     }
@@ -202,8 +206,6 @@ export function useOtpScreen() {
         remainingSeconds: 0,
         debugCode: null,
       });
-      setError(null);
-      setNotice(null);
       return;
     }
     router.replace(withAuthNext("/auth", next));
@@ -216,8 +218,6 @@ export function useOtpScreen() {
     phone,
     remainingSeconds,
     debugCode,
-    error,
-    notice,
     isPending,
     isResending,
     otpFormKey,
@@ -227,7 +227,6 @@ export function useOtpScreen() {
     handleRequest,
     handleVerify,
     handleResend,
-    clearError: () => setError(null),
     navigateToLogin: () => router.push(loginHref),
   };
 }

@@ -1,5 +1,5 @@
 /**
- * Stats / chart palette — CSS variables defined in `heroui.css`.
+ * Stats / chart palette — CSS variables defined in `tokens.css`.
  * Prefer these over hard-coded hex in components.
  */
 export const statsColors = {

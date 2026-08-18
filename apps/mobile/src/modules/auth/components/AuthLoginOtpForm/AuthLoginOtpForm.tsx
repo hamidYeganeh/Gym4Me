@@ -5,7 +5,6 @@ import { Controller, useForm, useWatch } from "react-hook-form";
 import { Button, FieldError, Typography } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "@repo/icons/ArrowRight";
-import { FormBanner } from "@repo/ui/kit/FormBanner";
 import { InputOTP } from "@repo/ui/kit/InputOTP";
 import { useTranslations } from "next-intl";
 import {
@@ -35,16 +34,12 @@ export function AuthLoginOtpForm({
   phone,
   debugCode = null,
   remainingSeconds,
-  notice = null,
-  error = null,
   isPending = false,
   isResending = false,
   onSubmit,
   onResend,
-  onDismissError,
 }: AuthLoginOtpFormProps) {
   const t = useTranslations("Mobile.Otp");
-  const tAuth = useTranslations("Mobile.Auth");
   const styles = authLoginOtpFormVariants();
 
   const schema = useMemo(
@@ -106,7 +101,7 @@ export function AuthLoginOtpForm({
               </Typography>
             </Typography>
           ) : (
-            <Typography className={styles.resendMuted()} type="body-sm">
+            <Typography className={styles.resendLine()} type="body-sm">
               {t("didNotReceive")}{" "}
               <Button
                 className={styles.resend()}
@@ -120,11 +115,6 @@ export function AuthLoginOtpForm({
               </Button>
             </Typography>
           )}
-          {notice ? (
-            <Typography className={styles.notice()} role="status" type="body-sm">
-              {notice}
-            </Typography>
-          ) : null}
         </div>
       </div>
 
@@ -150,15 +140,6 @@ export function AuthLoginOtpForm({
         </aside>
       ) : null}
 
-      {error ? (
-        <FormBanner
-          dismissLabel={tAuth("dismissError")}
-          onDismiss={onDismissError}
-        >
-          {tAuth("errorPrefix")} {error}
-        </FormBanner>
-      ) : null}
-
       <Button
         className={styles.submit()}
         fullWidth
@@ -168,7 +149,7 @@ export function AuthLoginOtpForm({
         type="submit"
         variant="primary"
       >
-        {t("submit")}
+        {t("continue")}
         <ArrowRight className={styles.submitIcon()} size={22} />
       </Button>
     </form>

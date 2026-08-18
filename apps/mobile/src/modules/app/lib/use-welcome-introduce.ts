@@ -95,7 +95,6 @@ export function useWelcomeIntroduce() {
     t,
     emblaRef,
     slide,
-    textDirection,
     isRtl,
     onLeftPress,
     onRightPress,

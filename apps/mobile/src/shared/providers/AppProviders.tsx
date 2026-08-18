@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { MediaImageProvider } from "@repo/ui/common/MediaImage";
+import { Toaster } from "@repo/ui/kit/Toast";
 import { AuthProvider } from "./AuthProvider";
 import { AppConfigProvider } from "./AppConfigProvider";
 import { NextMediaImageAdapter } from "./NextMediaImageAdapter";
@@ -12,8 +13,10 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <MediaImageProvider adapter={NextMediaImageAdapter}>
       <AppConfigProvider>
         <AuthProvider>
-          <PushNotificationsProvider />
-          {children}
+          <Toaster placement="top">
+            <PushNotificationsProvider />
+            {children}
+          </Toaster>
         </AuthProvider>
       </AppConfigProvider>
     </MediaImageProvider>

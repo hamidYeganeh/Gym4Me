@@ -1,5 +1,7 @@
 "use client";
 
+import { Logo } from "@repo/ui/common/Logo";
+import { ProgressiveBlur } from "@repo/ui/kit/ProgressiveBlur";
 import { WELCOME_INTRODUCE_SLIDE_COUNT } from "@/modules/app/lib/welcome-introduce-data";
 import { useWelcomeIntroduce } from "@/modules/app/lib/use-welcome-introduce";
 import { WelcomeIntroduceCarouselSection } from "@/modules/app/sections/WelcomeIntroduceCarouselSection";
@@ -15,25 +17,40 @@ export function WelcomeIntroduceScreen({
 
   return (
     <main className={styles.root({ className })}>
-      <div aria-hidden className={styles.glow()} />
+      <WelcomeIntroduceCarouselSection
+        emblaRef={welcome.emblaRef}
+        t={welcome.t}
+      />
+
+      <div className={styles.header()}>
+        <div aria-hidden className={styles.headerFade()}>
+          <ProgressiveBlur
+            blurIntensity={2}
+            blurLayers={8}
+            className={styles.headerBlur()}
+            direction="top"
+          />
+          <div className={styles.headerWash()} />
+        </div>
+        <div className={styles.brand()}>
+          <Logo size="xl" title={welcome.t("brandAriaLabel")} />
+        </div>
+      </div>
 
       <div className={styles.content()}>
-        <WelcomeIntroduceCarouselSection
-          emblaRef={welcome.emblaRef}
-          slide={welcome.slide}
-          t={welcome.t}
-          textDirection={welcome.textDirection}
-        />
-
-        <WelcomeIntroduceFooterSection
-          isRtl={welcome.isRtl}
-          leftLabel={welcome.leftLabel}
-          onLeftPress={welcome.onLeftPress}
-          onRightPress={welcome.onRightPress}
-          rightLabel={welcome.rightLabel}
-          slide={welcome.slide}
-          slideCount={WELCOME_INTRODUCE_SLIDE_COUNT}
-        />
+        <div className={styles.footerHost()}>
+          <WelcomeIntroduceFooterSection
+            isRtl={welcome.isRtl}
+            leftLabel={welcome.leftLabel}
+            onLeftPress={welcome.onLeftPress}
+            onRightPress={welcome.onRightPress}
+            rightLabel={welcome.rightLabel}
+            slide={welcome.slide}
+            slideCount={WELCOME_INTRODUCE_SLIDE_COUNT}
+            subtitle={welcome.t(`slides.${welcome.slide}.subtitle`)}
+            title={welcome.t(`slides.${welcome.slide}.title`)}
+          />
+        </div>
       </div>
     </main>
   );

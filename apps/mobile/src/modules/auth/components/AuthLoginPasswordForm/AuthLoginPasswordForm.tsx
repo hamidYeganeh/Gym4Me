@@ -5,7 +5,6 @@ import { Controller, useForm } from "react-hook-form";
 import { Button, Checkbox, Link, Typography } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "@repo/icons/ArrowRight";
-import { FormBanner } from "@repo/ui/kit/FormBanner";
 import { PasswordField } from "@repo/ui/kit/PasswordField";
 import { useTranslations } from "next-intl";
 import { AuthPhoneField } from "@/modules/auth/sections/AuthPhoneField";
@@ -20,11 +19,9 @@ import type { AuthLoginPasswordFormProps } from "./AuthLoginPasswordForm.types";
 
 export function AuthLoginPasswordForm({
   className,
-  error = null,
   isPending = false,
   onForgotPassword,
   onSubmit,
-  onDismissError,
 }: AuthLoginPasswordFormProps) {
   const t = useTranslations("Mobile.Auth");
   const styles = authLoginPasswordFormVariants();
@@ -119,15 +116,6 @@ export function AuthLoginPasswordForm({
           </Link>
         ) : null}
       </div>
-
-      {error ? (
-        <FormBanner
-          dismissLabel={t("dismissError")}
-          onDismiss={onDismissError}
-        >
-          {t("errorPrefix")} {error}
-        </FormBanner>
-      ) : null}
 
       <Button
         className={styles.submit()}

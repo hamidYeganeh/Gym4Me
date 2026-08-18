@@ -1,7 +1,7 @@
 /** Mirrors API `IR_PHONE` / `normalizeIranPhone` without Nest throws. */
 export const IR_PHONE = /^\+989\d{9}$/;
 
-export const OTP_LENGTH = 6;
+export const OTP_LENGTH = 5;
 export const OTP_PATTERN = "^[0-9۰-۹٠-٩]+$";
 
 /** Convert Persian/Arabic digits to ASCII and strip non-digits, capped at OTP length. */

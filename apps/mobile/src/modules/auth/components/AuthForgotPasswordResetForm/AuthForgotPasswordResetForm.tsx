@@ -5,7 +5,6 @@ import { Controller, useForm, useWatch } from "react-hook-form";
 import { Button, Typography } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "@repo/icons/ArrowRight";
-import { FormBanner } from "@repo/ui/kit/FormBanner";
 import { PasswordField } from "@repo/ui/kit/PasswordField";
 import { useTranslations } from "next-intl";
 import {
@@ -24,7 +23,6 @@ import type { AuthForgotPasswordResetFormProps } from "./AuthForgotPasswordReset
 export function AuthForgotPasswordResetForm({
   className,
   resetToken,
-  error = null,
   isPending = false,
   onSubmit,
 }: AuthForgotPasswordResetFormProps) {
@@ -120,8 +118,6 @@ export function AuthForgotPasswordResetForm({
           </Typography>
         ) : null}
       </div>
-
-      {error ? <FormBanner>{error}</FormBanner> : null}
 
       <Button
         className={styles.submit()}

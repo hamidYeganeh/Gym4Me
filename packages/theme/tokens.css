@@ -1,0 +1,303 @@
+/*
+ * Gym4Me product tokens (not HeroUI theme variables)
+ * Import after `@repo/theme/heroui.css` in each app’s global CSS.
+ */
+
+:root,
+.light,
+.default,
+[data-theme="light"],
+[data-theme="default"] {
+  /*
+   * Map basemap palette (Figma map SVG roles → theme tokens)
+   * Light = inverted roles of the dark SVG (#212121 land / #E5E5E5 roads).
+   * Tailwind: bg-map-land, text-map-road, …
+   */
+  --map-land: var(--background);
+  --map-feature: var(--default);
+  --map-building: var(--surface-tertiary);
+  --map-building-elevated: var(--border);
+  --map-road: var(--foreground);
+  --map-road-muted: var(--muted);
+  --map-highlight: var(--surface-foreground);
+  /* Neutralize Carto Voyager toward the monochrome SVG look */
+  --map-tile-filter: grayscale(1) contrast(0.94) brightness(1.06);
+
+  /*
+   * Stats / chart palette (exact hex from design)
+   * Tailwind: bg-stats-red, text-stats-blue, …
+   */
+  --stats-red: #dc2626;
+  --stats-blue: #2563eb;
+  --stats-yellow: #ca8a04;
+  --stats-purple: #9333ea;
+  --stats-orange: #ea580c;
+  --stats-foreground: #ffffff;
+
+  /* App surface radii (beyond HeroUI --radius / --field-radius) */
+  --surface-radius: 1.5rem;
+  --surface-radius-compact: 0.875rem;
+
+  /*
+   * Screen layout grid (design frame 375×812)
+   * Margins 24px · gutters 16px · 3 columns
+   */
+  --screen-width: 375px;
+  --screen-height: 812px;
+  --screen-margin: 24px;
+  --screen-gutter: 16px;
+  --screen-columns: 3;
+
+  /*
+   * OTP slots (Gym4Me design system)
+   * lg = gallery / fixed showcase · md = auth (flex-1 square slots; gap only)
+   */
+  --otp-slot-lg-width: 88px;
+  --otp-slot-lg-height: 104px;
+  --otp-slot-lg-radius: 32px;
+  --otp-slot-lg-font: 40px;
+  --otp-slot-lg-gap: 12px;
+  --otp-slot-md-radius: 16px;
+  --otp-slot-md-font: 24px;
+  --otp-slot-md-gap: 10px;
+
+  /* Auth field sizing — shared by PhoneField / PasswordField (colors from HeroUI) */
+  --auth-field-height: 56px;
+  --auth-field-radius: 1rem;
+
+  /*
+   * Toast (solid pill variants — white foreground on vivid fills)
+   * Tailwind: bg-toast-default, text-toast-foreground, …
+   */
+  --toast-default: #212121;
+  --toast-accent: #f97316;
+  --toast-danger: #f43f5e;
+  --toast-warning: #f59e0b;
+  --toast-success: #65a30d;
+  --toast-foreground: #ffffff;
+
+  /*
+   * Motion — durations + app ease alias
+   * JS counterparts: @repo/theme `duration` / `ease` / `spring` / `transition` / `stagger`
+   * Default Motion spring (`transition` / `spring.default`) is ProfileHeader morph feel
+   * Tailwind: duration-instant | duration-fast | … | ease-app
+   */
+  --duration-instant: 75ms;
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-moderate: 300ms;
+  --duration-slow: 350ms;
+  /* Same curve as HeroUI --ease-out-fluid (Apple-style); literal so it
+     resolves at runtime — HeroUI’s token is @theme inline only */
+  --ease-app: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* Disable focus ring offset (touch-first; no keyboard focus chrome) */
+  --ring-offset-width: 0px;
+}
+
+.dark,
+[data-theme="dark"] {
+  /*
+   * Map basemap palette — dark SVG: #212121 land, #181818 feature,
+   * #2A2A2A / #3C3C3C buildings, #E5E5E5 / #DADADA / #F5F5F5 roads.
+   */
+  --map-land: var(--surface-secondary);
+  --map-feature: var(--surface);
+  --map-building: var(--default);
+  --map-building-elevated: var(--border);
+  --map-road: color-mix(in oklab, var(--foreground) 92%, var(--background));
+  --map-road-muted: color-mix(
+    in oklab,
+    var(--foreground) 86%,
+    var(--background)
+  );
+  --map-highlight: var(--foreground);
+  /* Strip Carto Dark Matter blue cast → label-free midnight greys */
+  --map-tile-filter: grayscale(1) brightness(0.78) contrast(1.18) saturate(0);
+
+  /* Stats / chart palette (same in dark — saturated cards stay vivid) */
+  --stats-red: #dc2626;
+  --stats-blue: #2563eb;
+  --stats-yellow: #ca8a04;
+  --stats-purple: #9333ea;
+  --stats-orange: #ea580c;
+  --stats-foreground: #ffffff;
+}
+
+/* Expose stats palette + screen spacing + motion to Tailwind v4 utilities */
+@theme inline {
+  --color-stats-red: var(--stats-red);
+  --color-stats-blue: var(--stats-blue);
+  --color-stats-yellow: var(--stats-yellow);
+  --color-stats-purple: var(--stats-purple);
+  --color-stats-orange: var(--stats-orange);
+  --color-stats-foreground: var(--stats-foreground);
+
+  --color-toast-default: var(--toast-default);
+  --color-toast-accent: var(--toast-accent);
+  --color-toast-danger: var(--toast-danger);
+  --color-toast-warning: var(--toast-warning);
+  --color-toast-success: var(--toast-success);
+  --color-toast-foreground: var(--toast-foreground);
+
+  --color-map-land: var(--map-land);
+  --color-map-feature: var(--map-feature);
+  --color-map-building: var(--map-building);
+  --color-map-building-elevated: var(--map-building-elevated);
+  --color-map-road: var(--map-road);
+  --color-map-road-muted: var(--map-road-muted);
+  --color-map-highlight: var(--map-highlight);
+
+  /* px-screen / mx-screen / p-screen → 24px page margins */
+  --spacing-screen: var(--screen-margin);
+  /* gap-gutter / space-x-gutter → 16px column gutters */
+  --spacing-gutter: var(--screen-gutter);
+  /* max-w-screen-frame → design canvas width */
+  --container-screen-frame: var(--screen-width);
+
+  /* Motion — duration-instant / duration-fast / … / ease-app */
+  --duration-instant: var(--duration-instant);
+  --duration-fast: var(--duration-fast);
+  --duration-normal: var(--duration-normal);
+  --duration-moderate: var(--duration-moderate);
+  --duration-slow: var(--duration-slow);
+  --ease-app: var(--ease-app);
+}
+
+/* Discovery map — expanding ring behind the nearest club pin */
+@keyframes g4m-map-pin-pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.45);
+    opacity: 0.55;
+  }
+  70% {
+    opacity: 0.12;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.35);
+    opacity: 0;
+  }
+}
+
+/**
+ * 3-column screen grid — 16px gutters, pair with px-screen (24px margins).
+ * Use for layouts that span the design columns.
+ */
+@utility screen-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--screen-columns), minmax(0, 1fr));
+  column-gap: var(--screen-gutter);
+  row-gap: var(--screen-gutter);
+}
+
+@utility app-surface {
+  border-radius: var(--surface-radius);
+  background: var(--surface);
+}
+
+/*
+ * Cards: no elevation shadows (HeroUI `.card` defaults to `shadow-surface`).
+ */
+.card {
+  box-shadow: none;
+}
+
+/*
+ * HeroUI Toast — solid pill look (always-visible close, white type).
+ * Slot classes from `@repo/ui/kit/Toast` compose on top of these.
+ */
+.toast-region--top,
+.toast-region--top-start,
+.toast-region--top-end {
+  top: max(1rem, env(safe-area-inset-top, 0px));
+}
+
+.toast--default {
+  background-color: var(--toast-default);
+}
+
+.toast--accent {
+  background-color: var(--toast-accent);
+}
+
+.toast--danger {
+  background-color: var(--toast-danger);
+}
+
+.toast--warning {
+  background-color: var(--toast-warning);
+}
+
+.toast--success {
+  background-color: var(--toast-success);
+}
+
+.toast .toast__title,
+.toast--accent .toast__title,
+.toast--success .toast__title,
+.toast--warning .toast__title,
+.toast--danger .toast__title {
+  color: var(--toast-foreground);
+}
+
+.toast .toast__description {
+  color: rgb(255 255 255 / 0.9);
+}
+
+.toast .toast__indicator,
+.toast--accent .toast__indicator,
+.toast--success .toast__indicator,
+.toast--warning .toast__indicator,
+.toast--danger .toast__indicator {
+  color: var(--toast-foreground);
+}
+
+.toast .toast__close-button,
+.toast[data-frontmost="true"] .toast__close-button,
+.toast[data-frontmost="true"]:hover .toast__close-button {
+  pointer-events: auto;
+  position: static;
+  inset: auto;
+  opacity: 1;
+  border: 0;
+  background: transparent;
+  color: var(--toast-foreground);
+  box-shadow: none;
+}
+
+@utility app-surface-compact {
+  border-radius: var(--surface-radius-compact);
+  background: var(--surface);
+}
+
+/*
+ * Mobile interaction reset:
+ * - No text selection on UI chrome
+ * - No focus rings / outlines (touch-first app)
+ */
+*,
+*::before,
+*::after {
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+input,
+textarea,
+[contenteditable="true"] {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/*
+ * Directional icons (@repo/icons data-rtl-mirror):
+ * Flip in RTL. Nearest [dir] wins — LTR islands keep the original orientation.
+ */
+[dir="rtl"] svg[data-rtl-mirror] {
+  transform: scaleX(-1);
+}
+
+[dir="ltr"] svg[data-rtl-mirror] {
+  transform: none;
+}

@@ -10,6 +10,7 @@ import type {
   ResetPasswordInput,
 } from "@repo/api";
 import { ArrowRight, ChevronLeft } from "@repo/icons";
+import { toast } from "@repo/ui/kit/Toast";
 import {
   AuthLayout,
   type AuthLayoutLabels,
@@ -30,6 +31,7 @@ const SUPPORT_HREF = "mailto:support@gym4me.ir";
 
 export function ForgotPasswordScreen({ className }: ForgotPasswordScreenProps) {
   const t = useTranslations("Mobile.ForgotPassword");
+  const tAuth = useTranslations("Mobile.Auth");
   const styles = forgotPasswordScreenVariants();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -40,7 +42,6 @@ export function ForgotPasswordScreen({ className }: ForgotPasswordScreenProps) {
   const [resetToken, setResetToken] = useState("");
   const [debugCode, setDebugCode] = useState<string | null>(null);
   const [remainingSeconds, setRemainingSeconds] = useState(0);
-  const [error, setError] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
 
   useEffect(() => {
@@ -68,8 +69,11 @@ export function ForgotPasswordScreen({ className }: ForgotPasswordScreenProps) {
     return t("errorRequest");
   };
 
+  const notifyError = (message: string) => {
+    toast.error(tAuth("toastErrorTitle"), { description: message });
+  };
+
   const requestCode = async (payload: ForgotPasswordInput) => {
-    setError(null);
     setIsPending(true);
     try {
       const result = await accountAuth.forgotPassword(payload);
@@ -78,42 +82,43 @@ export function ForgotPasswordScreen({ className }: ForgotPasswordScreenProps) {
       setDebugCode(result.debugCode ?? null);
       setStep("otp");
     } catch (err) {
-      setError(getRequestError(err));
+      notifyError(getRequestError(err));
     } finally {
       setIsPending(false);
     }
   };
 
   const confirmCode = async (payload: ForgotPasswordConfirmInput) => {
-    setError(null);
     setIsPending(true);
     try {
       const result = await accountAuth.forgotPasswordConfirm(payload);
       setResetToken(result.resetToken);
       setStep("reset");
     } catch (err) {
-      if (err instanceof ApiError && err.message) {
-        setError(err.message);
-      } else {
-        setError(t("errorOtpInvalid"));
-      }
+      notifyError(
+        err instanceof ApiError && err.message
+          ? err.message
+          : t("errorOtpInvalid"),
+      );
     } finally {
       setIsPending(false);
     }
   };
 
   const submitPassword = async (payload: ResetPasswordInput) => {
-    setError(null);
     setIsPending(true);
     try {
       await accountAuth.resetPassword(payload);
+      toast.success(tAuth("toastSuccessTitle"), {
+        description: t("success"),
+      });
       setStep("done");
     } catch (err) {
-      if (err instanceof ApiError && err.message) {
-        setError(err.message);
-      } else {
-        setError(t("errorReset"));
-      }
+      notifyError(
+        err instanceof ApiError && err.message
+          ? err.message
+          : t("errorReset"),
+      );
     } finally {
       setIsPending(false);
     }
@@ -121,21 +126,22 @@ export function ForgotPasswordScreen({ className }: ForgotPasswordScreenProps) {
 
   const resendCode = async () => {
     if (remainingSeconds > 0 || isPending) return;
-    setError(null);
     setIsPending(true);
     try {
       const result = await accountAuth.forgotPassword({ phone });
       setRemainingSeconds(result.expiresInSeconds);
       setDebugCode(result.debugCode ?? null);
+      toast.success(tAuth("toastSuccessTitle"), {
+        description: t("resent"),
+      });
     } catch (err) {
-      setError(getRequestError(err));
+      notifyError(getRequestError(err));
     } finally {
       setIsPending(false);
     }
   };
 
   const goBack = () => {
-    setError(null);
     if (step === "phone") {
       router.replace(withAuthNext("/auth/login", next));
       return;
@@ -197,7 +203,6 @@ export function ForgotPasswordScreen({ className }: ForgotPasswordScreenProps) {
     >
       {step === "phone" ? (
         <AuthForgotPasswordPhoneForm
-          error={error}
           isPending={isPending}
           onSubmit={requestCode}
         />
@@ -206,7 +211,6 @@ export function ForgotPasswordScreen({ className }: ForgotPasswordScreenProps) {
       {step === "otp" ? (
         <AuthForgotPasswordOtpForm
           debugCode={debugCode}
-          error={error}
           isPending={isPending}
           phone={phone}
           remainingSeconds={remainingSeconds}
@@ -217,7 +221,6 @@ export function ForgotPasswordScreen({ className }: ForgotPasswordScreenProps) {
 
       {step === "reset" ? (
         <AuthForgotPasswordResetForm
-          error={error}
           isPending={isPending}
           resetToken={resetToken}
           onSubmit={submitPassword}

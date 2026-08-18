@@ -6,6 +6,7 @@ import { Button, Link, Typography } from "@heroui/react";
 import { ApiError } from "@repo/api";
 import type { SetPasswordInput } from "@repo/api";
 import { ChevronLeft } from "@repo/icons";
+import { toast } from "@repo/ui/kit/Toast";
 import {
   AuthLayout,
   type AuthLayoutLabels,
@@ -22,11 +23,11 @@ export function SetPasswordScreen({
   roleSegment = "athlete",
 }: SetPasswordScreenProps) {
   const t = useTranslations("Mobile.SetPassword");
+  const tAuth = useTranslations("Mobile.Auth");
   const styles = setPasswordScreenVariants();
   const router = useRouter();
   const { logout } = useAuth();
 
-  const [error, setError] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
 
   const labels: AuthLayoutLabels = {
@@ -36,20 +37,19 @@ export function SetPasswordScreen({
   };
 
   const handleSubmit = async (payload: SetPasswordInput) => {
-    setError(null);
     setIsPending(true);
     try {
       await accountAuth.setPassword(payload);
       await logout({ revoke: true });
       router.replace("/auth/login");
     } catch (err) {
-      if (err instanceof ApiError && err.status === 401) {
-        setError(t("errorCurrentInvalid"));
-      } else if (err instanceof ApiError && err.message) {
-        setError(err.message);
-      } else {
-        setError(t("errorSet"));
-      }
+      const description =
+        err instanceof ApiError && err.status === 401
+          ? t("errorCurrentInvalid")
+          : err instanceof ApiError && err.message
+            ? err.message
+            : t("errorSet");
+      toast.error(tAuth("toastErrorTitle"), { description });
     } finally {
       setIsPending(false);
     }
@@ -88,7 +88,6 @@ export function SetPasswordScreen({
         {t("reloginNote")}
       </Typography>
       <AuthSetPasswordForm
-        error={error}
         isPending={isPending}
         onSubmit={handleSubmit}
       />

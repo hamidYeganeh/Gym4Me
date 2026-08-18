@@ -81,7 +81,7 @@ describe('OtpService', () => {
 
     expect(sms.sendOtp).not.toHaveBeenCalled();
     expect(result.expiresInSeconds).toBe(120);
-    expect(result.debugCode).toMatch(/^\d{6}$/);
+    expect(result.debugCode).toMatch(/^\d{5}$/);
   });
 
   it('preserves the provider error if rollback also fails', async () => {

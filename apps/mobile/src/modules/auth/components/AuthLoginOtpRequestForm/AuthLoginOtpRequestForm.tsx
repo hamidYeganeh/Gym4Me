@@ -5,7 +5,6 @@ import { Controller, useForm } from "react-hook-form";
 import { Button } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "@repo/icons/ArrowRight";
-import { FormBanner } from "@repo/ui/kit/FormBanner";
 import { useTranslations } from "next-intl";
 import { AuthPhoneField } from "@/modules/auth/sections/AuthPhoneField";
 import {
@@ -20,10 +19,8 @@ import type { AuthLoginOtpRequestFormProps } from "./AuthLoginOtpRequestForm.typ
 export function AuthLoginOtpRequestForm({
   className,
   defaultPhone = "",
-  error = null,
   isPending = false,
   onSubmit,
-  onDismissError,
 }: AuthLoginOtpRequestFormProps) {
   const t = useTranslations("Mobile.Otp");
   const tAuth = useTranslations("Mobile.Auth");
@@ -63,26 +60,20 @@ export function AuthLoginOtpRequestForm({
         render={({ field, fieldState }) => (
           <AuthPhoneField
             errorMessage={fieldState.error?.message}
+            helpLabel={t("phoneHelp")}
+            helpText={t("phoneHelpTooltip")}
+            hideLabel
             inputRef={field.ref}
             isInvalid={fieldState.invalid}
             label={tAuth("phoneLabel")}
             name={field.name}
-            placeholder={tAuth("phonePlaceholder")}
+            placeholder={t("phonePlaceholder")}
             value={field.value}
             onBlur={field.onBlur}
             onChange={field.onChange}
           />
         )}
       />
-
-      {error ? (
-        <FormBanner
-          dismissLabel={tAuth("dismissError")}
-          onDismiss={onDismissError}
-        >
-          {tAuth("errorPrefix")} {error}
-        </FormBanner>
-      ) : null}
 
       <Button
         className={styles.submit()}
@@ -92,7 +83,7 @@ export function AuthLoginOtpRequestForm({
         type="submit"
         variant="primary"
       >
-        {tAuth("otpSubmit")}
+        {t("continue")}
         <ArrowRight className={styles.submitIcon()} size={22} />
       </Button>
     </form>

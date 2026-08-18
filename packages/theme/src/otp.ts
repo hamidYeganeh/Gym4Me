@@ -1,4 +1,4 @@
-/** OTP slot tokens — mirrors CSS vars in `heroui.css` (375×812 auth frame). */
+/** OTP slot tokens — mirrors CSS vars in `tokens.css` (375×812 auth frame). */
 export const otp = {
   lg: {
     width: 88,
@@ -7,12 +7,11 @@ export const otp = {
     font: 40,
     gap: 12,
   },
+  /** Auth slots use `flex-1` + `aspect-square`; only radius / font / gap are fixed. */
   md: {
-    width: 48,
-    height: 56,
-    radius: 18,
-    font: 22,
-    gap: 8,
+    radius: 16,
+    font: 24,
+    gap: 10,
   },
 } as const;
 

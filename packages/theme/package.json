@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./heroui.css": "./heroui.css"
+    "./heroui.css": "./heroui.css",
+    "./tokens.css": "./tokens.css"
   },
   "scripts": {
     "check-types": "tsc --noEmit"

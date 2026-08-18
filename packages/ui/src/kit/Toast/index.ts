@@ -4,5 +4,6 @@ export type {
   ToasterProps,
   ToastIconType,
   ToastPlacement,
+  ToastVisualVariant,
 } from "./Toast.types";
 export type { NotifyOptions } from "./Toast";

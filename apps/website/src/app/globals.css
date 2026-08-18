@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "@heroui/styles";
 @import "@repo/theme/heroui.css";
+@import "@repo/theme/tokens.css";
 
 @source "../../../../packages/ui/src";
 
@@ -11,7 +12,7 @@
 
 /*
  * Website marketing pages need selectable text.
- * @repo/theme/heroui.css disables selection for the touch app — restore here.
+ * @repo/theme/tokens.css disables selection for the touch app — restore here.
  */
 html,
 body,

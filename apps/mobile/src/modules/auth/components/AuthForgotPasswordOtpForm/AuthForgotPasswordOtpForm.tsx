@@ -5,7 +5,6 @@ import { Controller, useForm, useWatch } from "react-hook-form";
 import { Button, FieldError, Typography } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "@repo/icons/ArrowRight";
-import { FormBanner } from "@repo/ui/kit/FormBanner";
 import { InputOTP } from "@repo/ui/kit/InputOTP";
 import { useTranslations } from "next-intl";
 import {
@@ -35,7 +34,6 @@ export function AuthForgotPasswordOtpForm({
   phone,
   debugCode = null,
   remainingSeconds,
-  error = null,
   isPending = false,
   onSubmit,
   onResend,
@@ -104,8 +102,6 @@ export function AuthForgotPasswordOtpForm({
           </div>
         )}
       />
-
-      {error ? <FormBanner>{error}</FormBanner> : null}
 
       <Button
         className={styles.submit()}

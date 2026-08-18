@@ -5,7 +5,6 @@ import { Controller, useForm } from "react-hook-form";
 import { Button } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Key1 } from "@repo/icons/Key1";
-import { FormBanner } from "@repo/ui/kit/FormBanner";
 import { PhoneField } from "@repo/ui/kit/PhoneField";
 import { useTranslations } from "next-intl";
 import {
@@ -19,7 +18,6 @@ import type { AuthForgotPasswordPhoneFormProps } from "./AuthForgotPasswordPhone
 
 export function AuthForgotPasswordPhoneForm({
   className,
-  error = null,
   isPending = false,
   onSubmit,
 }: AuthForgotPasswordPhoneFormProps) {
@@ -63,8 +61,6 @@ export function AuthForgotPasswordPhoneForm({
           />
         )}
       />
-
-      {error ? <FormBanner>{error}</FormBanner> : null}
 
       <Button
         className={styles.submit()}

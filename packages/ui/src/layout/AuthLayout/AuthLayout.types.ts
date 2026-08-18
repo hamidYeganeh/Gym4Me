@@ -30,6 +30,12 @@ export type AuthLayoutProps = {
   tone?: AuthLayoutTone;
   /** Show logo (+ brand name when no title). Default true. */
   showBrand?: boolean;
+  /**
+   * Wrap the form body in the frosted panel used by plain/dark tones.
+   * Defaults to true for `plain` / `dark`, false for `hero`.
+   * Pass `false` for flat setup screens (e.g. phone OTP).
+   */
+  framed?: boolean;
   /** Optional control pinned top-start (e.g. back button). */
   topStart?: ReactNode;
   /** Optional illustration between header and form (e.g. OTP setup art). */

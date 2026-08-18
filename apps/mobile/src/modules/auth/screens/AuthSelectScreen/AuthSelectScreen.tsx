@@ -1,13 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button, Link, Typography } from "@heroui/react";
+import { Button } from "@heroui/react";
 import { ApiError } from "@repo/api";
 import { BiometricFrame, FaceId, Lock1, Telephone1 } from "@repo/icons";
-import {
-  AuthLayout,
-  type AuthLayoutLabels,
-} from "@repo/ui/layout/AuthLayout";
+import { toast } from "@repo/ui/kit/Toast";
+import { AuthLayout, type AuthLayoutLabels } from "@repo/ui/layout/AuthLayout";
 import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import { hasLoggedInBefore } from "@/modules/auth/lib/biometric-unlock";
@@ -31,9 +29,8 @@ export function AuthSelectScreen({ className }: AuthSelectScreenProps) {
   const next = searchParams.get("next");
   const { loginWithBiometricUnlock } = useAuth();
 
-  const [showBiometric, setShowBiometric] = useState(false);
+  const [showBiometric, setShowBiometric] = useState(true);
   const [isBiometricPending, setIsBiometricPending] = useState(false);
-  const [biometricError, setBiometricError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -61,7 +58,6 @@ export function AuthSelectScreen({ className }: AuthSelectScreenProps) {
   };
 
   const handleBiometric = async () => {
-    setBiometricError(null);
     setIsBiometricPending(true);
     try {
       const result = await authenticateBiometric({
@@ -73,26 +69,26 @@ export function AuthSelectScreen({ className }: AuthSelectScreenProps) {
 
       if (!result.ok) {
         if (result.reason === "cancel") return;
-        setBiometricError(
-          result.reason === "unavailable"
-            ? t("biometricUnavailable")
-            : t("biometricFailed"),
-        );
+        toast.error(t("toastErrorTitle"), {
+          description:
+            result.reason === "unavailable"
+              ? t("biometricUnavailable")
+              : t("biometricFailed"),
+        });
         return;
       }
 
       const session = await loginWithBiometricUnlock();
       router.replace(
-        next && next.startsWith("/")
-          ? next
-          : roleHomePath(session.activeRole),
+        next && next.startsWith("/") ? next : roleHomePath(session.activeRole),
       );
     } catch (error) {
-      setBiometricError(
-        error instanceof ApiError
-          ? t("biometricUnlockExpired")
-          : t("biometricFailed"),
-      );
+      toast.error(t("toastErrorTitle"), {
+        description:
+          error instanceof ApiError
+            ? t("biometricUnlockExpired")
+            : t("biometricFailed"),
+      });
       setShowBiometric(false);
     } finally {
       setIsBiometricPending(false);
@@ -100,22 +96,7 @@ export function AuthSelectScreen({ className }: AuthSelectScreenProps) {
   };
 
   return (
-    <AuthLayout
-      className={className}
-      footer={
-        <Typography className={styles.footer()} type="body-sm">
-          {t("noAccount")}{" "}
-          <Link
-            className={styles.footerLink()}
-            onPress={() => router.push(withAuthNext("/auth/otp", next))}
-          >
-            {t("signUp")}
-          </Link>
-        </Typography>
-      }
-      heroSrc={HERO_SRC}
-      labels={labels}
-    >
+    <AuthLayout className={className} heroSrc={HERO_SRC} labels={labels}>
       <div className={styles.actions()}>
         {showBiometric ? (
           <div className={styles.biometric()}>
@@ -132,18 +113,13 @@ export function AuthSelectScreen({ className }: AuthSelectScreenProps) {
               variant="secondary"
               onPress={() => void handleBiometric()}
             >
-              <FaceId aria-hidden className={styles.biometricIcon()} size={20} />
+              <FaceId
+                aria-hidden
+                className={styles.biometricIcon()}
+                size={20}
+              />
               {t("continueWithBiometric")}
             </Button>
-            {biometricError ? (
-              <Typography
-                className={styles.biometricError()}
-                role="alert"
-                type="body-sm"
-              >
-                {biometricError}
-              </Typography>
-            ) : null}
           </div>
         ) : null}
 

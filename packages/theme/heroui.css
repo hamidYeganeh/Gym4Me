@@ -1,11 +1,10 @@
 /*
- * HeroUI Theme Customization (v3)
- * Import after @heroui/styles in your global.css
+ * HeroUI Theme Customization
+ * Add this to your global.css after importing @heroui/styles
+ * Only includes variables users need to customize
  * @see https://heroui.com/docs/react/getting-started/theming
- * @see https://heroui.com/docs/react/getting-started/design-principles
  *
- * Customize with CSS variables (oklch). Prefer semantic variants
- * (primary / secondary / tertiary / danger) over visual style names.
+ * Gym4Me product tokens live in `@repo/theme/tokens.css` — import after this file.
  */
 
 :root,
@@ -14,119 +13,41 @@
 [data-theme="light"],
 [data-theme="default"] {
   /* Theme Colors (Light Mode) */
-  --accent: oklch(87.43% 0.246 148.26);
-  --accent-foreground: oklch(15% 0.03 148.26);
-  --background: oklch(97.02% 0 148.26);
-  --border: oklch(90% 0 148.26);
+  --accent: oklch(87.44% 0.2457 148.29);
+  --accent-foreground: oklch(15% 0.0300 148.29);
+  --background: oklch(97.02% 0.0000 148.29);
+  --border: oklch(90.00% 0.0000 148.29);
   --danger: oklch(65.32% 0.2328 13.07);
   --danger-foreground: oklch(99.11% 0 0);
-  --default: oklch(94% 0 148.26);
-  --default-foreground: oklch(21.03% 0.0059 148.26);
-  --field-background: oklch(100% 0 148.26);
+  --default: oklch(94.00% 0.0000 148.29);
+  --default-foreground: oklch(21.03% 0.0059 148.29);
+  --field-background: oklch(100.00% 0.0000 148.29);
   --field-border: transparent;
-  --field-foreground: oklch(21.03% 0 148.26);
-  --field-placeholder: oklch(55.17% 0 148.26);
-  --focus: oklch(87.43% 0.246 148.26);
-  --foreground: oklch(21.03% 0 148.26);
-  --muted: oklch(55.17% 0 148.26);
-  --overlay: oklch(100% 0 148.26);
-  --overlay-foreground: oklch(21.03% 0 148.26);
-  --scrollbar: oklch(87.1% 0 148.26);
-  --segment: oklch(100% 0 148.26);
-  --segment-foreground: oklch(21.03% 0 148.26);
-  --separator: oklch(92% 0 148.26);
+  --field-foreground: oklch(21.03% 0.0000 148.29);
+  --field-placeholder: oklch(55.17% 0.0000 148.29);
+  --focus: oklch(87.44% 0.2457 148.29);
+  --foreground: oklch(21.03% 0.0000 148.29);
+  --muted: oklch(55.17% 0.0000 148.29);
+  --overlay: oklch(100.00% 0.0000 148.29);
+  --overlay-foreground: oklch(21.03% 0.0000 148.29);
+  --scrollbar: oklch(87.10% 0.0000 148.29);
+  --segment: oklch(100.00% 0.0000 148.29);
+  --segment-foreground: oklch(21.03% 0.0000 148.29);
+  --separator: oklch(92.00% 0.0000 148.29);
   --success: oklch(73.29% 0.1935 138.14);
   --success-foreground: oklch(21.03% 0.0059 138.14);
-  --surface: oklch(100% 0 148.26);
-  --surface-foreground: oklch(21.03% 0 148.26);
-  --surface-secondary: oklch(95.24% 0 148.26);
-  --surface-secondary-foreground: oklch(21.03% 0 148.26);
-  --surface-tertiary: oklch(93.73% 0 148.26);
-  --surface-tertiary-foreground: oklch(21.03% 0 148.26);
-  /* Brand uses accent; keep HeroUI `warning` API aliased to accent */
-  --warning: var(--accent);
-  --warning-foreground: var(--accent-foreground);
-
-  /*
-   * Map basemap palette (Figma map SVG roles → theme tokens)
-   * Light = inverted roles of the dark SVG (#212121 land / #E5E5E5 roads).
-   * Tailwind: bg-map-land, text-map-road, …
-   */
-  --map-land: var(--background);
-  --map-feature: var(--default);
-  --map-building: var(--surface-tertiary);
-  --map-building-elevated: var(--border);
-  --map-road: var(--foreground);
-  --map-road-muted: var(--muted);
-  --map-highlight: var(--surface-foreground);
-  /* Neutralize Carto Voyager toward the monochrome SVG look */
-  --map-tile-filter: grayscale(1) contrast(0.94) brightness(1.06);
-
-  /*
-   * Stats / chart palette (exact hex from design)
-   * Tailwind: bg-stats-red, text-stats-blue, …
-   */
-  --stats-red: #dc2626;
-  --stats-blue: #2563eb;
-  --stats-yellow: #ca8a04;
-  --stats-purple: #9333ea;
-  --stats-orange: #ea580c;
-  --stats-foreground: #ffffff;
+  --surface: oklch(100.00% 0.0000 148.29);
+  --surface-foreground: oklch(21.03% 0.0000 148.29);
+  --surface-secondary: oklch(95.24% 0.0000 148.29);
+  --surface-secondary-foreground: oklch(21.03% 0.0000 148.29);
+  --surface-tertiary: oklch(93.73% 0.0000 148.29);
+  --surface-tertiary-foreground: oklch(21.03% 0.0000 148.29);
+  --warning: oklch(78.19% 0.1585 59.66);
+  --warning-foreground: oklch(21.03% 0.0059 59.66);
 
   /* Border Radius */
-  --radius: 1rem;
-  --field-radius: 1.125rem;
-  --surface-radius: 1.5rem;
-  --surface-radius-compact: 0.875rem;
-
-  /*
-   * Screen layout grid (design frame 375×812)
-   * Margins 24px · gutters 16px · 3 columns
-   */
-  --screen-width: 375px;
-  --screen-height: 812px;
-  --screen-margin: 24px;
-  --screen-gutter: 16px;
-  --screen-columns: 3;
-
-  /*
-   * OTP slots (Gym4Me design system)
-   * lg = gallery / 4-digit showcase · md = auth (6 digits on 375 frame)
-   * Content width ≈ screen − 2×margin = 327px → 6×48 + 5×8 gaps
-   */
-  --otp-slot-lg-width: 88px;
-  --otp-slot-lg-height: 104px;
-  --otp-slot-lg-radius: 32px;
-  --otp-slot-lg-font: 40px;
-  --otp-slot-lg-gap: 12px;
-  --otp-slot-md-width: 48px;
-  --otp-slot-md-height: 56px;
-  --otp-slot-md-radius: 18px;
-  --otp-slot-md-font: 22px;
-  --otp-slot-md-gap: 8px;
-
-  /* Auth field chrome — shared by PhoneField / PasswordField */
-  --auth-field-height: 56px;
-  --auth-field-radius: 1rem;
-  --auth-focus-ring: 0 0 0 4px color-mix(in oklch, var(--accent) 22%, transparent);
-
-  /*
-   * Motion — durations + app ease alias
-   * JS counterparts: @repo/theme `duration` / `ease` / `spring` / `transition` / `stagger`
-   * Default Motion spring (`transition` / `spring.default`) is ProfileHeader morph feel
-   * Tailwind: duration-instant | duration-fast | … | ease-app
-   */
-  --duration-instant: 75ms;
-  --duration-fast: 150ms;
-  --duration-normal: 200ms;
-  --duration-moderate: 300ms;
-  --duration-slow: 350ms;
-  /* Same curve as HeroUI --ease-out-fluid (Apple-style); literal so it
-     resolves at runtime — HeroUI’s token is @theme inline only */
-  --ease-app: cubic-bezier(0.32, 0.72, 0, 1);
-
-  /* Disable focus ring offset (touch-first; no keyboard focus chrome) */
-  --ring-offset-width: 0px;
+  --radius: 0.5rem;
+  --field-radius: 0.75rem;
 
   /* Font Family — load IRANSansX via @repo/fonts in the app layout */
   --font-sans: var(--font-iran-sans-x);
@@ -136,185 +57,35 @@
 [data-theme="dark"] {
   color-scheme: dark;
   /* Theme Colors (Dark Mode) */
-  --accent: oklch(87.43% 0.246 148.26);
-  --accent-foreground: oklch(15% 0.03 148.26);
-  --background: oklch(12% 0 148.26);
-  --border: oklch(28% 0 148.26);
-  --danger: oklch(59.4% 0.1967 11.96);
+  --accent: oklch(87.44% 0.2457 148.29);
+  --accent-foreground: oklch(15% 0.0300 148.29);
+  --background: oklch(12.00% 0.0000 148.29);
+  --border: oklch(28.00% 0.0000 148.29);
+  --danger: oklch(59.40% 0.1967 11.96);
   --danger-foreground: oklch(99.11% 0 0);
-  --default: oklch(27.4% 0 148.26);
+  --default: oklch(27.40% 0.0000 148.29);
   --default-foreground: oklch(99.11% 0 0);
-  --field-background: oklch(21.03% 0 148.26);
+  --field-background: oklch(21.03% 0.0000 148.29);
   --field-border: transparent;
-  --field-foreground: oklch(99.11% 0 148.26);
-  --field-placeholder: oklch(70.5% 0 148.26);
-  --focus: oklch(87.43% 0.246 148.26);
-  --foreground: oklch(99.11% 0 148.26);
-  --muted: oklch(70.5% 0 148.26);
-  --overlay: oklch(21.03% 0 148.26);
-  --overlay-foreground: oklch(99.11% 0 148.26);
-  --scrollbar: oklch(70.5% 0 148.26);
-  --segment: oklch(39.64% 0 148.26);
-  --segment-foreground: oklch(99.11% 0 148.26);
-  --separator: oklch(25% 0 148.26);
+  --field-foreground: oklch(99.11% 0.0000 148.29);
+  --field-placeholder: oklch(70.50% 0.0000 148.29);
+  --focus: oklch(87.44% 0.2457 148.29);
+  --foreground: oklch(99.11% 0.0000 148.29);
+  --muted: oklch(70.50% 0.0000 148.29);
+  --overlay: oklch(21.03% 0.0000 148.29);
+  --overlay-foreground: oklch(99.11% 0.0000 148.29);
+  --scrollbar: oklch(70.50% 0.0000 148.29);
+  --segment: oklch(39.64% 0.0000 148.29);
+  --segment-foreground: oklch(99.11% 0.0000 148.29);
+  --separator: oklch(25.00% 0.0000 148.29);
   --success: oklch(73.29% 0.1935 138.14);
   --success-foreground: oklch(21.03% 0.0059 138.14);
-  --surface: oklch(21.03% 0 148.26);
-  --surface-foreground: oklch(99.11% 0 148.26);
-  --surface-secondary: oklch(25.7% 0 148.26);
-  --surface-secondary-foreground: oklch(99.11% 0 148.26);
-  --surface-tertiary: oklch(27.21% 0 148.26);
-  --surface-tertiary-foreground: oklch(99.11% 0 148.26);
-  /* Brand uses accent; keep HeroUI `warning` API aliased to accent */
-  --warning: var(--accent);
-  --warning-foreground: var(--accent-foreground);
-
-  /*
-   * Map basemap palette — dark SVG: #212121 land, #181818 feature,
-   * #2A2A2A / #3C3C3C buildings, #E5E5E5 / #DADADA / #F5F5F5 roads.
-   */
-  --map-land: var(--surface-secondary);
-  --map-feature: var(--surface);
-  --map-building: var(--default);
-  --map-building-elevated: var(--border);
-  --map-road: color-mix(in oklab, var(--foreground) 92%, var(--background));
-  --map-road-muted: color-mix(
-    in oklab,
-    var(--foreground) 86%,
-    var(--background)
-  );
-  --map-highlight: var(--foreground);
-  /* Strip Carto Dark Matter blue cast → label-free midnight greys */
-  --map-tile-filter: grayscale(1) brightness(0.78) contrast(1.18) saturate(0);
-
-  /* Stats / chart palette (same in dark — saturated cards stay vivid) */
-  --stats-red: #dc2626;
-  --stats-blue: #2563eb;
-  --stats-yellow: #ca8a04;
-  --stats-purple: #9333ea;
-  --stats-orange: #ea580c;
-  --stats-foreground: #ffffff;
-}
-
-/* Expose stats palette + screen spacing + motion to Tailwind v4 utilities */
-@theme inline {
-  --color-stats-red: var(--stats-red);
-  --color-stats-blue: var(--stats-blue);
-  --color-stats-yellow: var(--stats-yellow);
-  --color-stats-purple: var(--stats-purple);
-  --color-stats-orange: var(--stats-orange);
-  --color-stats-foreground: var(--stats-foreground);
-
-  --color-map-land: var(--map-land);
-  --color-map-feature: var(--map-feature);
-  --color-map-building: var(--map-building);
-  --color-map-building-elevated: var(--map-building-elevated);
-  --color-map-road: var(--map-road);
-  --color-map-road-muted: var(--map-road-muted);
-  --color-map-highlight: var(--map-highlight);
-
-  /* px-screen / mx-screen / p-screen → 24px page margins */
-  --spacing-screen: var(--screen-margin);
-  /* gap-gutter / space-x-gutter → 16px column gutters */
-  --spacing-gutter: var(--screen-gutter);
-  /* max-w-screen-frame → design canvas width */
-  --container-screen-frame: var(--screen-width);
-
-  /* Motion — duration-instant / duration-fast / … / ease-app */
-  --duration-instant: var(--duration-instant);
-  --duration-fast: var(--duration-fast);
-  --duration-normal: var(--duration-normal);
-  --duration-moderate: var(--duration-moderate);
-  --duration-slow: var(--duration-slow);
-  --ease-app: var(--ease-app);
-}
-
-/* Discovery map — expanding ring behind the nearest club pin */
-@keyframes g4m-map-pin-pulse {
-  0% {
-    transform: translate(-50%, -50%) scale(0.45);
-    opacity: 0.55;
-  }
-  70% {
-    opacity: 0.12;
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(2.35);
-    opacity: 0;
-  }
-}
-
-/**
- * 3-column screen grid — 16px gutters, pair with px-screen (24px margins).
- * Use for layouts that span the design columns.
- */
-@utility screen-grid {
-  display: grid;
-  grid-template-columns: repeat(var(--screen-columns), minmax(0, 1fr));
-  column-gap: var(--screen-gutter);
-  row-gap: var(--screen-gutter);
-}
-
-@utility app-surface {
-  border-radius: var(--surface-radius);
-  background: var(--surface);
-}
-
-/*
- * Cards: no elevation shadows (HeroUI `.card` defaults to `shadow-surface`).
- */
-.card {
-  box-shadow: none;
-}
-
-@utility app-surface-compact {
-  border-radius: var(--surface-radius-compact);
-  background: var(--surface);
-}
-
-/*
- * Mobile interaction reset:
- * - No text selection on UI chrome
- * - No focus rings / outlines (touch-first app)
- */
-*,
-*::before,
-*::after {
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-input,
-textarea,
-[contenteditable="true"] {
-  user-select: text;
-  -webkit-user-select: text;
-}
-
-*:focus,
-*:focus-visible,
-*:focus-within,
-[data-focused],
-[data-focus-visible],
-[data-focus-within] {
-  outline: none !important;
-  outline-offset: 0 !important;
-  --tw-ring-color: transparent !important;
-  --tw-ring-shadow: 0 0 #0000 !important;
-  --tw-ring-offset-shadow: 0 0 #0000 !important;
-  --tw-ring-offset-width: 0px !important;
-  --ring-offset-width: 0px;
-}
-
-/*
- * Directional icons (@repo/icons data-rtl-mirror):
- * Flip in RTL. Nearest [dir] wins — LTR islands keep the original orientation.
- */
-[dir="rtl"] svg[data-rtl-mirror] {
-  transform: scaleX(-1);
-}
-
-[dir="ltr"] svg[data-rtl-mirror] {
-  transform: none;
+  --surface: oklch(21.03% 0.0000 148.29);
+  --surface-foreground: oklch(99.11% 0.0000 148.29);
+  --surface-secondary: oklch(25.70% 0.0000 148.29);
+  --surface-secondary-foreground: oklch(99.11% 0.0000 148.29);
+  --surface-tertiary: oklch(27.21% 0.0000 148.29);
+  --surface-tertiary-foreground: oklch(99.11% 0.0000 148.29);
+  --warning: oklch(82.03% 0.1388 63.67);
+  --warning-foreground: oklch(21.03% 0.0059 63.67);
 }

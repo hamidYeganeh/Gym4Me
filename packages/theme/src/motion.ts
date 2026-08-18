@@ -1,6 +1,6 @@
 /**
  * Shared motion tokens — durations, eases, and Motion spring configs.
- * CSS counterparts live in `heroui.css` (`--duration-*`, `--ease-app`).
+ * CSS counterparts live in `tokens.css` (`--duration-*`, `--ease-app`).
  */
 
 /** Durations in seconds (Motion / JS). */

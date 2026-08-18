@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Button, FieldError, Input, Label, TextField } from "@heroui/react";
+import {
+  Button,
+  FieldError,
+  InputGroup,
+  Label,
+  TextField,
+} from "@heroui/react";
 import { Eye } from "@repo/icons/Eye";
 import { EyeSlash } from "@repo/icons/EyeSlash";
 import { Lock1 } from "@repo/icons/Lock1";
@@ -25,7 +31,7 @@ export function PasswordField({
   inputRef,
 }: PasswordFieldProps) {
   const [showPassword, setShowPassword] = useState(false);
-  const styles = passwordFieldVariants({ isInvalid });
+  const styles = passwordFieldVariants();
 
   return (
     <TextField
@@ -40,27 +46,31 @@ export function PasswordField({
       onChange={onChange}
     >
       <Label className={styles.label()}>{label}</Label>
-      <div className={styles.inputWrap()}>
-        <Lock1 className={styles.inputIcon()} size={22} />
-        <Input
+      <InputGroup className={styles.group()} fullWidth>
+        <InputGroup.Prefix>
+          <Lock1 className={styles.prefixIcon()} size={22} />
+        </InputGroup.Prefix>
+        <InputGroup.Input
           autoComplete={autoComplete}
-          className={`${styles.input()} ${styles.inputWithSuffix()}`}
+          className={styles.input()}
           dir="ltr"
           placeholder={placeholder}
           ref={inputRef}
         />
-        <Button
-          aria-label={showPassword ? hidePasswordLabel : showPasswordLabel}
-          className={styles.suffixButton()}
-          isIconOnly
-          size="lg"
-          type="button"
-          variant="ghost"
-          onPress={() => setShowPassword((prev) => !prev)}
-        >
-          {showPassword ? <EyeSlash size={22} /> : <Eye size={22} />}
-        </Button>
-      </div>
+        <InputGroup.Suffix>
+          <Button
+            aria-label={showPassword ? hidePasswordLabel : showPasswordLabel}
+            className={styles.suffixButton()}
+            isIconOnly
+            size="lg"
+            type="button"
+            variant="ghost"
+            onPress={() => setShowPassword((prev) => !prev)}
+          >
+            {showPassword ? <EyeSlash size={22} /> : <Eye size={22} />}
+          </Button>
+        </InputGroup.Suffix>
+      </InputGroup>
       {errorMessage ? <FieldError>{errorMessage}</FieldError> : null}
     </TextField>
   );
