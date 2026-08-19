@@ -10,5 +10,7 @@ export type OnboardingSleepSectionProps = {
   options: OnboardingSleepOption[];
   value: OnboardingSleepLevel;
   onChange: (value: OnboardingSleepLevel) => void;
+  /** Accessible name for the level tabs. */
+  tabsLabel: string;
   className?: string;
 };

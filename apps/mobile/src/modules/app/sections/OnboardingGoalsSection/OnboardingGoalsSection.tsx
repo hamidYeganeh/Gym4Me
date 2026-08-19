@@ -38,7 +38,7 @@ export function OnboardingGoalsSection({
         {options.map((option) => {
           const isSelected = selected.includes(option.id);
           const styles = onboardingGoalsSectionVariants({ selected: isSelected });
-          const Icon = GOAL_ICONS[option.id];
+          const Icon = GOAL_ICONS[option.id] ?? HealthCross1;
 
           return (
             <Button

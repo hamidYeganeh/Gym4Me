@@ -1,8 +1,12 @@
 export type OnboardingNameSectionProps = {
-  label: string;
-  placeholder: string;
+  firstNameLabel: string;
+  lastNameLabel: string;
+  firstNamePlaceholder: string;
+  lastNamePlaceholder: string;
   hint: string;
-  value: string;
-  onChange: (value: string) => void;
+  firstName: string;
+  lastName: string;
+  onFirstNameChange: (value: string) => void;
+  onLastNameChange: (value: string) => void;
   className?: string;
 };

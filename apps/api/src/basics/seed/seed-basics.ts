@@ -48,6 +48,27 @@ async function seed() {
       ],
     },
     {
+      key: 'onboarding_goal',
+      name: 'هدف از اپ',
+      description: 'هدف کاربر از استفاده از اپلیکیشن را انتخاب کنید.',
+      isSystem: true,
+      options: [
+        { value: 'overallHealth', name: 'بهبود سلامت کلی', order: 0 },
+        { value: 'trackMetrics', name: 'پیگیری شاخص‌های سلامتی', order: 1 },
+        {
+          value: 'aiAssistant',
+          name: 'می‌خواهم دستیار هوش مصنوعی را امتحان کنم',
+          order: 2,
+        },
+        { value: 'sportsActivity', name: 'تحلیل فعالیت ورزشی', order: 3 },
+        {
+          value: 'justTrying',
+          name: 'فقط می‌خواهم اپ را امتحان کنم',
+          order: 4,
+        },
+      ],
+    },
+    {
       key: 'body_type',
       name: 'تیپ بدنی',
       description: 'تیپ بدنی فعلی ورزشکار را انتخاب کنید.',
@@ -295,11 +316,18 @@ async function seed() {
     slug: 'combat',
     order: 2,
   });
+  const outdoor = await sports.upsertSeed({
+    kind: SportKind.CATEGORY,
+    name: 'فضای باز',
+    slug: 'outdoor',
+    order: 3,
+  });
 
   const football = await sports.upsertSeed({
     kind: SportKind.SPORT,
     name: 'فوتبال',
     slug: 'football',
+    icon: 'soccer',
     parentId: ball._id.toString(),
     order: 0,
   });
@@ -307,13 +335,31 @@ async function seed() {
     kind: SportKind.SPORT,
     name: 'والیبال',
     slug: 'volleyball',
+    icon: 'volleyball',
     parentId: ball._id.toString(),
     order: 1,
   });
   await sports.upsertSeed({
     kind: SportKind.SPORT,
+    name: 'تنیس',
+    slug: 'tennis',
+    icon: 'tennis',
+    parentId: ball._id.toString(),
+    order: 2,
+  });
+  await sports.upsertSeed({
+    kind: SportKind.SPORT,
+    name: 'بیسبال',
+    slug: 'baseball',
+    icon: 'baseball',
+    parentId: ball._id.toString(),
+    order: 3,
+  });
+  await sports.upsertSeed({
+    kind: SportKind.SPORT,
     name: 'بدنسازی',
     slug: 'bodybuilding',
+    icon: 'fitness',
     parentId: fitness._id.toString(),
     order: 0,
   });
@@ -321,15 +367,65 @@ async function seed() {
     kind: SportKind.SPORT,
     name: 'کراسفیت',
     slug: 'crossfit',
+    icon: 'fitness',
     parentId: fitness._id.toString(),
     order: 1,
   });
   await sports.upsertSeed({
     kind: SportKind.SPORT,
+    name: 'یوگا',
+    slug: 'yoga',
+    icon: 'yoga',
+    parentId: fitness._id.toString(),
+    order: 2,
+  });
+  await sports.upsertSeed({
+    kind: SportKind.SPORT,
+    name: 'پاروزنی',
+    slug: 'rowing',
+    icon: 'rowing',
+    parentId: fitness._id.toString(),
+    order: 3,
+  });
+  await sports.upsertSeed({
+    kind: SportKind.SPORT,
     name: 'کیک‌بوکسینگ',
     slug: 'kickboxing',
+    icon: 'kickboxing',
     parentId: combat._id.toString(),
     order: 0,
+  });
+  await sports.upsertSeed({
+    kind: SportKind.SPORT,
+    name: 'دویدن',
+    slug: 'jogging',
+    icon: 'jogging',
+    parentId: outdoor._id.toString(),
+    order: 0,
+  });
+  await sports.upsertSeed({
+    kind: SportKind.SPORT,
+    name: 'دوچرخه‌سواری',
+    slug: 'cycling',
+    icon: 'cycling',
+    parentId: outdoor._id.toString(),
+    order: 1,
+  });
+  await sports.upsertSeed({
+    kind: SportKind.SPORT,
+    name: 'کوهنوردی',
+    slug: 'hiking',
+    icon: 'hiking',
+    parentId: outdoor._id.toString(),
+    order: 2,
+  });
+  await sports.upsertSeed({
+    kind: SportKind.SPORT,
+    name: 'اسکیت',
+    slug: 'skating',
+    icon: 'skating',
+    parentId: outdoor._id.toString(),
+    order: 3,
   });
 
   await sports.upsertSeed({

@@ -11,7 +11,6 @@ import {
   slideSubtitleKey,
   slideTitleKey,
 } from "@/modules/app/lib/onboarding-helpers";
-import { OnboardingActivitiesSection } from "@/modules/app/sections/OnboardingActivitiesSection";
 import { OnboardingAvatarSection } from "@/modules/app/sections/OnboardingAvatarSection";
 import { OnboardingBirthdateSection } from "@/modules/app/sections/OnboardingBirthdateSection";
 import { OnboardingBloodTypeSection } from "@/modules/app/sections/OnboardingBloodTypeSection";
@@ -29,6 +28,7 @@ import { OnboardingPhaseIntroSection } from "@/modules/app/sections/OnboardingPh
 import { OnboardingReviewSection } from "@/modules/app/sections/OnboardingReviewSection";
 import { OnboardingSleepSection } from "@/modules/app/sections/OnboardingSleepSection";
 import { OnboardingSlideShell } from "@/modules/app/sections/OnboardingSlideShell";
+import { OnboardingSportsSection } from "@/modules/app/sections/OnboardingSportsSection";
 import { OnboardingWeightSection } from "@/modules/app/sections/OnboardingWeightSection";
 import { onboardingCarouselSectionVariants } from "./OnboardingCarouselSection.styles";
 import type { OnboardingCarouselSectionProps } from "./OnboardingCarouselSection.types";
@@ -38,7 +38,8 @@ export function OnboardingCarouselSection({
   emblaRef,
   slide,
   age,
-  fullName,
+  firstName,
+  lastName,
   gender,
   birthdate,
   heightCm,
@@ -48,7 +49,7 @@ export function OnboardingCarouselSection({
   bodyType,
   sleep,
   mood,
-  activities,
+  sportIds,
   diet,
   calories,
   goals,
@@ -65,10 +66,12 @@ export function OnboardingCarouselSection({
   weightUnitOptions,
   heightUnitOptions,
   sleepOptions,
-  activityOptions,
+  sportOptions,
+  sportsStatus,
   moodOptions,
   dietOptions,
-  setFullName,
+  setFirstName,
+  setLastName,
   setGender,
   setBirthdate,
   setHeightCm,
@@ -85,7 +88,7 @@ export function OnboardingCarouselSection({
   uploadAvatar,
   choosePremadeAvatar,
   toggleGoal,
-  toggleActivity,
+  toggleSport,
   handleCaloriesChange,
   requestFinish,
   carouselClassName,
@@ -124,11 +127,15 @@ export function OnboardingCarouselSection({
 
               {mountStage && stepId === "name" ? (
                 <OnboardingNameSection
+                  firstName={firstName}
+                  firstNameLabel={t("name.firstName")}
+                  firstNamePlaceholder={t("name.firstPlaceholder")}
                   hint={t("name.hint")}
-                  label={t("name.title")}
-                  placeholder={t("name.placeholder")}
-                  value={fullName}
-                  onChange={setFullName}
+                  lastName={lastName}
+                  lastNameLabel={t("name.lastName")}
+                  lastNamePlaceholder={t("name.lastPlaceholder")}
+                  onFirstNameChange={setFirstName}
+                  onLastNameChange={setLastName}
                 />
               ) : null}
 
@@ -190,6 +197,7 @@ export function OnboardingCarouselSection({
               {mountStage && stepId === "sleep" ? (
                 <OnboardingSleepSection
                   options={sleepOptions}
+                  tabsLabel={t("sleep.title")}
                   value={sleep}
                   onChange={setSleep}
                 />
@@ -203,12 +211,16 @@ export function OnboardingCarouselSection({
                 />
               ) : null}
 
-              {mountStage && stepId === "activities" ? (
-                <OnboardingActivitiesSection
-                  label={t("activities.title")}
-                  options={activityOptions}
-                  selected={activities}
-                  onToggle={toggleActivity}
+              {mountStage && stepId === "sports" ? (
+                <OnboardingSportsSection
+                  emptyLabel={t("sports.empty")}
+                  errorLabel={t("sports.error")}
+                  isError={sportsStatus === "error"}
+                  isLoading={sportsStatus === "loading"}
+                  label={t("sports.title")}
+                  options={sportOptions}
+                  selected={sportIds}
+                  onToggle={toggleSport}
                 />
               ) : null}
 

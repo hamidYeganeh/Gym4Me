@@ -9,7 +9,7 @@ export type OnboardingStepId =
   | "experience"
   | "sleep"
   | "mood"
-  | "activities"
+  | "sports"
   | "diet"
   | "calories"
   | "goals"
@@ -53,23 +53,10 @@ export type OnboardingDietId =
   | "protein"
   | "glutenFree";
 
-export type OnboardingActivityId =
-  | "jogging"
-  | "cycling"
-  | "hiking"
-  | "yoga"
-  | "eating"
-  | "fitness"
-  | "rowing"
-  | "skating"
-  | "tennis"
-  | "soccer"
-  | "baseball"
-  | "other";
-
 export const ONBOARDING_STEPS: OnboardingStepId[] = [
   "review",
   "name",
+  "goals",
   "gender",
   "bodyType",
   "weight",
@@ -79,10 +66,9 @@ export const ONBOARDING_STEPS: OnboardingStepId[] = [
   "experience",
   "sleep",
   "mood",
-  "activities",
+  "sports",
   "diet",
   "calories",
-  "goals",
   "personalIntro",
   "identity",
   "avatar",
@@ -181,21 +167,6 @@ export const ONBOARDING_DIETS: OnboardingDietId[] = [
   "vegetarian",
   "protein",
   "glutenFree",
-];
-
-export const ONBOARDING_ACTIVITIES: OnboardingActivityId[] = [
-  "jogging",
-  "cycling",
-  "hiking",
-  "yoga",
-  "eating",
-  "fitness",
-  "rowing",
-  "skating",
-  "tennis",
-  "soccer",
-  "baseball",
-  "other",
 ];
 
 /** Default Jalali birthdate ≈ 19 years old in typical mockups. */

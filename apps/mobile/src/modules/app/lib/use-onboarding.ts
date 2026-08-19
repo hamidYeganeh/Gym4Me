@@ -6,7 +6,6 @@ import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  ONBOARDING_ACTIVITIES,
   ONBOARDING_BLOOD_GROUPS,
   ONBOARDING_BODY_TYPES,
   ONBOARDING_DEFAULT_ALLERGIES,
@@ -27,7 +26,6 @@ import {
   ONBOARDING_SLIDE_COUNT,
   ONBOARDING_STEPS,
   onboardingPhaseForStep,
-  type OnboardingActivityId,
   type OnboardingBloodGroup,
   type OnboardingBodyTypeId,
   type OnboardingDietId,
@@ -65,10 +63,12 @@ import {
   accountProfile,
   basicsChoices,
   basicsLocations,
+  basicsSports,
   isDiscoveryApiId,
   mediaApi,
   mediaFileUrl,
 } from "@/shared/lib/api";
+import type { OnboardingSportOption } from "@/modules/app/sections/OnboardingSportsSection";
 import { roleHomePath } from "@/shared/lib/role-routes";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import type {
@@ -94,10 +94,15 @@ export function useOnboarding() {
   const [permissionIndex, setPermissionIndex] = useState<number | null>(null);
   const [isRequestingPermission, setIsRequestingPermission] = useState(false);
 
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [gender, setGender] = useState<OnboardingGenderId | null>(null);
   const [apiGenderOptions, setApiGenderOptions] = useState<Array<{
     id: OnboardingGenderId;
+    label: string;
+  }> | null>(null);
+  const [apiGoalOptions, setApiGoalOptions] = useState<Array<{
+    id: OnboardingGoalId;
     label: string;
   }> | null>(null);
   const [apiBodyTypeOptions, setApiBodyTypeOptions] = useState<Array<{
@@ -125,9 +130,11 @@ export function useOnboarding() {
     ONBOARDING_DEFAULT_SLEEP,
   );
   const [mood, setMood] = useState<OnboardingMoodId>(ONBOARDING_DEFAULT_MOOD);
-  const [activities, setActivities] = useState<OnboardingActivityId[]>([
-    "other",
-  ]);
+  const [sportIds, setSportIds] = useState<string[]>([]);
+  const [sportOptions, setSportOptions] = useState<OnboardingSportOption[]>([]);
+  const [sportsStatus, setSportsStatus] = useState<
+    "loading" | "ready" | "error"
+  >("loading");
   const [diet, setDiet] = useState<OnboardingDietId>(ONBOARDING_DEFAULT_DIET);
   const [calories, setCalories] = useState(ONBOARDING_DEFAULT_CALORIES);
   const [caloriesKnown, setCaloriesKnown] = useState(true);
@@ -239,6 +246,31 @@ export function useOnboarding() {
     let cancelled = false;
     void (async () => {
       try {
+        const group = await basicsChoices.get("onboarding_goal");
+        if (cancelled) return;
+        const next = group.options
+          .filter((option) => option.isActive !== false)
+          .slice()
+          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+          .map((option) => ({
+            id: option.value as OnboardingGoalId,
+            label: option.name,
+          }))
+          .filter((option) => ONBOARDING_GOALS.includes(option.id));
+        if (next.length > 0) setApiGoalOptions(next);
+      } catch {
+        // Keep i18n fallback goal options.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
         const group = await basicsChoices.get("body_type");
         if (cancelled) return;
         const next = group.options
@@ -324,6 +356,36 @@ export function useOnboarding() {
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    setSportsStatus("loading");
+    void (async () => {
+      try {
+        const page = await basicsSports.listSports();
+        if (cancelled) return;
+        const next = page.result
+          .filter((item) => item.isActive !== false)
+          .slice()
+          .sort((a, b) => a.order - b.order || a.name.localeCompare(b.name))
+          .map((item) => ({
+            id: item.id,
+            label: item.name,
+            slug: item.slug,
+            icon: item.icon,
+          }));
+        setSportOptions(next);
+        setSportsStatus("ready");
+      } catch {
+        if (cancelled) return;
+        setSportOptions([]);
+        setSportsStatus("error");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const step = ONBOARDING_STEPS[slide] as OnboardingStepId;
   const phase = onboardingPhaseForStep(step);
   const progress = (slide + 1) / ONBOARDING_SLIDE_COUNT;
@@ -332,6 +394,15 @@ export function useOnboarding() {
   const isCaloriesStep = step === "calories";
   const isAvatarUploading = step === "avatar" && avatar.mode === "uploading";
   const showHeaderProgress = phase === "assessment";
+
+  const fullName = useMemo(
+    () =>
+      [firstName, lastName]
+        .map((part) => part.trim())
+        .filter(Boolean)
+        .join(" "),
+    [firstName, lastName],
+  );
 
   const phaseSteps = useMemo(
     () =>
@@ -434,7 +505,11 @@ export function useOnboarding() {
   );
 
   const patchIdentity = (patch: Partial<OnboardingIdentityValue>) => {
-    if (patch.fullName !== undefined) setFullName(patch.fullName);
+    if (patch.fullName !== undefined) {
+      const parts = patch.fullName.trim().split(/\s+/).filter(Boolean);
+      setFirstName(parts[0] ?? "");
+      setLastName(parts.slice(1).join(" "));
+    }
     if (patch.gender !== undefined) setGender(patch.gender);
     if (patch.nationalId !== undefined) setNationalId(patch.nationalId);
     if (patch.phone !== undefined) setPhone(patch.phone);
@@ -511,14 +586,15 @@ export function useOnboarding() {
     });
   };
 
-  const goalOptions = useMemo(
-    () =>
-      ONBOARDING_GOALS.map((id) => ({
-        id,
-        label: t(`goals.options.${id}`),
-      })),
-    [t],
-  );
+  const goalOptions = useMemo(() => {
+    if (apiGoalOptions && apiGoalOptions.length > 0) {
+      return apiGoalOptions;
+    }
+    return ONBOARDING_GOALS.map((id) => ({
+      id,
+      label: t(`goals.options.${id}`),
+    }));
+  }, [apiGoalOptions, t]);
 
   const bodyTypeOptions = useMemo(() => {
     const source =
@@ -566,15 +642,6 @@ export function useOnboarding() {
     [t],
   );
 
-  const activityOptions = useMemo(
-    () =>
-      ONBOARDING_ACTIVITIES.map((id) => ({
-        id,
-        label: t(`activities.options.${id}`),
-      })),
-    [t],
-  );
-
   const moodOptions = useMemo(
     () =>
       ONBOARDING_MOODS.map((id) => ({
@@ -597,7 +664,7 @@ export function useOnboarding() {
   const canContinue =
     !isAvatarUploading &&
     (step === "review" ||
-      (step === "name" && fullName.trim().length > 1) ||
+      (step === "name" && firstName.trim().length > 1) ||
       (step === "gender" && gender != null) ||
       step === "birthdate" ||
       step === "height" ||
@@ -605,19 +672,18 @@ export function useOnboarding() {
       step === "bodyType" ||
       step === "sleep" ||
       step === "mood" ||
-      (step === "activities" && activities.length > 0) ||
+      (step === "sports" && sportIds.length > 0) ||
       step === "diet" ||
       step === "calories" ||
       (step === "goals" && goals.length > 0) ||
       step === "bloodType" ||
       step === "personalIntro" ||
-      (step === "identity" && fullName.trim().length > 1) ||
+      (step === "identity" && firstName.trim().length > 1) ||
       step === "avatar");
 
   const buildMeInput = (): UpdateMeInput => {
-    const trimmedName = fullName.trim();
-    const [first = "", ...rest] = trimmedName.split(/\s+/);
-    const last = rest.join(" ");
+    const first = firstName.trim();
+    const last = lastName.trim();
 
     const address: UpdateAddressInput = {};
     if (provinceId && isDiscoveryApiId(provinceId)) {
@@ -647,6 +713,7 @@ export function useOnboarding() {
   const buildAthleteInput = (): UpdateAthleteProfileInput => ({
     body: { heightCm, weightKg },
     goalKeys: goals,
+    sportIds,
     lifestyle: {
       bodyType,
       ...(experience ? { experience } : {}),
@@ -654,7 +721,6 @@ export function useOnboarding() {
       mood,
       diet: diet === "glutenFree" ? "gluten_free" : diet,
       dailyCalories: caloriesKnown && calories > 0 ? calories : null,
-      activityKeys: activities,
     },
     health: {
       bloodType: { group: bloodGroup, rh: bloodRh },
@@ -750,8 +816,8 @@ export function useOnboarding() {
     );
   };
 
-  const toggleActivity = (id: OnboardingActivityId) => {
-    setActivities((current) =>
+  const toggleSport = (id: string) => {
+    setSportIds((current) =>
       current.includes(id)
         ? current.filter((item) => item !== id)
         : [...current, id],
@@ -783,6 +849,8 @@ export function useOnboarding() {
     canContinue,
     calories,
     caloriesKnown,
+    firstName,
+    lastName,
     fullName,
     gender,
     birthdate,
@@ -793,7 +861,9 @@ export function useOnboarding() {
     bodyType,
     sleep,
     mood,
-    activities,
+    sportIds,
+    sportOptions,
+    sportsStatus,
     diet,
     goals,
     bloodGroup,
@@ -809,12 +879,12 @@ export function useOnboarding() {
     weightUnitOptions,
     heightUnitOptions,
     sleepOptions,
-    activityOptions,
     moodOptions,
     dietOptions,
     activePermissionKind,
     isRequestingPermission,
-    setFullName,
+    setFirstName,
+    setLastName,
     setGender,
     setBirthdate,
     setHeightCm,
@@ -831,7 +901,7 @@ export function useOnboarding() {
     uploadAvatar,
     choosePremadeAvatar,
     toggleGoal,
-    toggleActivity,
+    toggleSport,
     goPrev,
     goNext,
     chooseExperience,

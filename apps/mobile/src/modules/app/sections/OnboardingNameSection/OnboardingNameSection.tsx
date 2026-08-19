@@ -8,27 +8,44 @@ import { onboardingNameSectionVariants } from "./OnboardingNameSection.styles";
 import type { OnboardingNameSectionProps } from "./OnboardingNameSection.types";
 
 export function OnboardingNameSection({
-  label,
-  placeholder,
+  firstNameLabel,
+  lastNameLabel,
+  firstNamePlaceholder,
+  lastNamePlaceholder,
   hint,
-  value,
-  onChange,
+  firstName,
+  lastName,
+  onFirstNameChange,
+  onLastNameChange,
   className,
 }: OnboardingNameSectionProps) {
   const styles = onboardingNameSectionVariants();
 
   return (
     <div className={styles.root({ className })}>
-      <TextField
-        aria-label={label}
-        className={styles.field()}
-        fullWidth
-        name="fullName"
-        value={value}
-        onChange={onChange}
-      >
-        <Input className={styles.input()} placeholder={placeholder} />
-      </TextField>
+      <div className={styles.fields()}>
+        <TextField
+          aria-label={firstNameLabel}
+          className={styles.field()}
+          fullWidth
+          name="firstName"
+          value={firstName}
+          onChange={onFirstNameChange}
+        >
+          <Input className={styles.input()} placeholder={firstNamePlaceholder} />
+        </TextField>
+
+        <TextField
+          aria-label={lastNameLabel}
+          className={styles.field()}
+          fullWidth
+          name="lastName"
+          value={lastName}
+          onChange={onLastNameChange}
+        >
+          <Input className={styles.input()} placeholder={lastNamePlaceholder} />
+        </TextField>
+      </div>
 
       <div className={styles.hintBlock()}>
         <IdentityCard1 aria-hidden className={styles.hintIcon()} size={28} />
