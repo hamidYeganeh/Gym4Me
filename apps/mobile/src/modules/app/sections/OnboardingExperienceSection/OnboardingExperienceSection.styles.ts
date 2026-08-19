@@ -2,9 +2,21 @@ import { tv } from "tailwind-variants";
 
 export const onboardingExperienceSectionVariants = tv({
   slots: {
-    root: "flex w-full max-w-md flex-col items-center justify-center",
-    figure:
-      "relative flex w-full max-w-xs items-end justify-center overflow-hidden rounded-[2rem] bg-foreground sm:max-w-sm",
-    image: "h-auto w-full object-contain object-bottom",
+    root: "relative flex h-full min-h-0 w-full flex-col overflow-hidden bg-background",
+    media: "pointer-events-none absolute inset-0",
+    image: "object-cover object-center size-full",
+    topFade: "pointer-events-none absolute inset-x-0 top-0 z-[1] h-56",
+    topBlur: "pointer-events-none absolute inset-0",
+    topWash: [
+      "absolute inset-0",
+      "bg-[linear-gradient(to_bottom,var(--background)_0%,color-mix(in_oklch,var(--background)_78%,transparent)_48%,transparent_100%)]",
+    ],
+    content: [
+      "relative z-10 flex w-full flex-col items-center gap-3",
+      "px-5 pt-[calc(3.5rem+env(safe-area-inset-top))]",
+      "text-center",
+    ],
+    title:
+      "text-balance text-[1.55rem] leading-tight font-bold text-foreground sm:text-[1.75rem]",
   },
 });

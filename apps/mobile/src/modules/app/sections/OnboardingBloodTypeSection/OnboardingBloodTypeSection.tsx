@@ -40,10 +40,14 @@ export function OnboardingBloodTypeSection({
       </div>
 
       <div aria-live="polite" className={base.preview()}>
-        <Typography className={base.letter()}>{group}</Typography>
         <span aria-hidden className={base.rhBadge()}>
-          {rh === "positive" ? "+" : "−"}
+          {rh === "positive" ? (
+            <Plus className={base.rhBadgeIcon()} size={20} />
+          ) : (
+            <Minus className={base.rhBadgeIcon()} size={20} />
+          )}
         </span>
+        <Typography className={base.letter()}>{group}</Typography>
       </div>
 
       <div aria-label={rhAria} className={base.rhRow()} role="group">

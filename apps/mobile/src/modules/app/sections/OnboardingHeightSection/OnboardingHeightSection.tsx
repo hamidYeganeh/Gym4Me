@@ -3,7 +3,7 @@
 import NumberFlow from "@number-flow/react";
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
-import { HeightSlider } from "@repo/ui/kit/HeightSlider";
+import { FractionalPicker } from "@repo/ui/kit/FractionalPicker";
 import {
   ONBOARDING_HEIGHT_CM_RANGE,
   ONBOARDING_HEIGHT_IN_RANGE,
@@ -61,7 +61,7 @@ export function OnboardingHeightSection({
         <Typography className={base.unit()}>{unitLabel}</Typography>
       </div>
 
-      <HeightSlider
+      <FractionalPicker
         aria-label={label}
         className={base.slider()}
         max={range.max}

@@ -183,6 +183,7 @@ export function OnboardingCarouselSection({
               {mountStage && stepId === "experience" ? (
                 <OnboardingExperienceSection
                   imageAlt={t("experience.imageAlt")}
+                  title={t("experience.title")}
                 />
               ) : null}
 

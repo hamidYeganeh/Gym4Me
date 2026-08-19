@@ -52,4 +52,6 @@ export const bodyTypeCardVariants = tv({
   },
 });
 
-export type BodyTypeCardVariantProps = VariantProps<typeof bodyTypeCardVariants>;
+export type BodyTypeCardVariantProps = VariantProps<
+  typeof bodyTypeCardVariants
+>;

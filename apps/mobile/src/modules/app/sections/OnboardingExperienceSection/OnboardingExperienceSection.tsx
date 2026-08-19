@@ -1,5 +1,7 @@
 "use client";
 
+import { Typography } from "@heroui/react/typography";
+import { ProgressiveBlur } from "@repo/ui/kit/ProgressiveBlur";
 import Image from "next/image";
 import { onboardingExperienceSectionVariants } from "./OnboardingExperienceSection.styles";
 import type { OnboardingExperienceSectionProps } from "./OnboardingExperienceSection.types";
@@ -7,6 +9,7 @@ import type { OnboardingExperienceSectionProps } from "./OnboardingExperienceSec
 const FITNESS_SRC = "/onboarding-fitness.png";
 
 export function OnboardingExperienceSection({
+  title,
   imageAlt,
   className,
 }: OnboardingExperienceSectionProps) {
@@ -14,14 +17,31 @@ export function OnboardingExperienceSection({
 
   return (
     <div className={styles.root({ className })}>
-      <div className={styles.figure()}>
+      <div className={styles.media()}>
         <Image
           alt={imageAlt}
           className={styles.image()}
-          height={480}
+          fill
+          priority
+          sizes="100vw"
           src={FITNESS_SRC}
-          width={384}
         />
+      </div>
+
+      <div aria-hidden className={styles.topFade()}>
+        <ProgressiveBlur
+          blurIntensity={2}
+          blurLayers={8}
+          className={styles.topBlur()}
+          direction="top"
+        />
+        <div className={styles.topWash()} />
+      </div>
+
+      <div className={styles.content()}>
+        <Typography className={styles.title()} type="h1" weight="bold">
+          {title}
+        </Typography>
       </div>
     </div>
   );
