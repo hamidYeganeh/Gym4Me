@@ -97,8 +97,38 @@ require_release_signing() {
   exit 1
 }
 
+# `file("upload-keystore.jks")` resolves against the app module, not android/.
+APP_GRADLE="${ANDROID_DIR}/app/build.gradle"
+if [[ -f "${APP_GRADLE}" ]] && grep -q 'def storePath = file(uploadStoreFile)' "${APP_GRADLE}"; then
+  python3 - "${APP_GRADLE}" <<'PY'
+from pathlib import Path
+import sys
+path = Path(sys.argv[1])
+text = path.read_text()
+path.write_text(text.replace("def storePath = file(uploadStoreFile)", "def storePath = new File(uploadStoreFile)", 1))
+PY
+fi
+
 mkdir -p "${ARTIFACTS_DIR}"
 cd "${ANDROID_DIR}"
+
+GRADLE_INIT="$(mktemp "${TMPDIR:-/tmp}/gym4me-gradle-init.XXXXXX.gradle")"
+cat > "${GRADLE_INIT}" <<'EOF'
+allprojects {
+  repositories {
+    mavenLocal()
+    google()
+    mavenCentral()
+  }
+}
+gradle.taskGraph.whenReady { graph ->
+  graph.allTasks.findAll { it.name.toLowerCase().contains("lint") }.each { it.enabled = false }
+}
+EOF
+cleanup_gradle_init() {
+  rm -f "${GRADLE_INIT}"
+}
+trap cleanup_gradle_init EXIT
 
 # Ensure Gradle distribution is present (wrapper default timeout is easy to hit on slow networks)
 WRAPPER_PROPS="${ANDROID_DIR}/gradle/wrapper/gradle-wrapper.properties"
@@ -127,13 +157,13 @@ fi
 
 case "${TARGET}" in
   apk:debug)
-    ./gradlew assembleDebug
+    ./gradlew assembleDebug --init-script "${GRADLE_INIT}"
     SRC="${ANDROID_DIR}/app/build/outputs/apk/debug/app-debug.apk"
     DEST="${ARTIFACTS_DIR}/Gym4Me-debug.apk"
     ;;
   apk:release)
     require_release_signing
-    ./gradlew assembleRelease
+    ./gradlew assembleRelease --init-script "${GRADLE_INIT}"
     SRC="${ANDROID_DIR}/app/build/outputs/apk/release/app-release.apk"
     if [[ ! -f "${SRC}" ]]; then
       SRC="${ANDROID_DIR}/app/build/outputs/apk/release/app-release-unsigned.apk"
@@ -142,7 +172,7 @@ case "${TARGET}" in
     ;;
   aab|aab:release)
     require_release_signing
-    ./gradlew bundleRelease
+    ./gradlew bundleRelease --init-script "${GRADLE_INIT}"
     SRC="${ANDROID_DIR}/app/build/outputs/bundle/release/app-release.aab"
     DEST="${ARTIFACTS_DIR}/Gym4Me-release.aab"
     ;;

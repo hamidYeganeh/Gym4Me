@@ -50,7 +50,6 @@ export function OnboardingGenderSection({
               aria-label={option.label}
               className={styles.card()}
               key={option.id}
-              role="radio"
               variant="ghost"
               onPress={() => onChange(option.id)}
             >

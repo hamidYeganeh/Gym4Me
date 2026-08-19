@@ -3535,6 +3535,7 @@
   },
   "CoachProgramEditor": {
     "pageTitle": "ویرایش برنامه",
+    "editPageTitle": "ویرایش برنامه",
     "back": "بازگشت",
     "viewSubtitle": "ساختار هفته، روز و حرکات برنامه را ببینید.",
     "editSubtitle": "حرکت اضافه کنید یا برنامه را منتشر کنید.",
@@ -4610,6 +4611,22 @@
     "viewSport": "مشاهده باشگاه‌ها",
     "emptyTitle": "رشته‌ای پیدا نشد",
     "emptyBody": "فیلتر دیگری را امتحان کنید."
+  },
+  "DiscoverySportDetail": {
+    "notFound": "این رشته پیدا نشد.",
+    "back": "بازگشت",
+    "subtitleFallback": "باشگاه‌های مرتبط با این رشته را ببینید.",
+    "browseClubs": "مشاهده باشگاه‌ها",
+    "sportLabel": "ورزش",
+    "clubsTitle": "باشگاه‌های این رشته",
+    "clubsHint": "باشگاه‌هایی که این ورزش را ارائه می‌دهند.",
+    "emptyTitle": "باشگاهی پیدا نشد",
+    "emptyBody": "فعلاً باشگاهی برای این رشته ثبت نشده است.",
+    "viewClub": "مشاهده باشگاه",
+    "favoriteLabel": "علاقه‌مندی",
+    "shareLabel": "اشتراک‌گذاری",
+    "pricePrefix": "از",
+    "priceSuffix": "تومان / ماه"
   },
   "DiscoveryClasses": {
     "pageTitle": "کلاس‌ها",

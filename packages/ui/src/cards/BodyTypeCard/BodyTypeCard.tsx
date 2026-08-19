@@ -1,16 +1,17 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { ToggleButton } from "@heroui/react/toggle-button";
 import { MediaImage } from "../../common/MediaImage";
 import { getBodyTypeArt } from "./art";
 import { bodyTypeCardVariants } from "./BodyTypeCard.styles";
 import type { BodyTypeCardProps } from "./BodyTypeCard.types";
 
-const ACTIVE_ART_VARS = {
+const ACTIVE_ART_VARS: Record<string, string> = {
   "--body-type-body": "#DBEAFE",
   "--body-type-body-soft": "#EFF6FF",
   "--body-type-stroke": "#2563EB",
-} as const;
+};
 
 export function BodyTypeCard({
   bodyType = "mesomorph",
@@ -26,6 +27,10 @@ export function BodyTypeCard({
   const slots = bodyTypeCardVariants({ selected: isSelected });
   const hasCustomImage = image != null && image !== "";
   const artSvg = !hasCustomImage ? getBodyTypeArt(bodyType, gender) : null;
+  const mergedStyle = {
+    ...(isSelected ? ACTIVE_ART_VARS : {}),
+    ...(typeof style === "object" && style ? style : {}),
+  } as CSSProperties;
 
   return (
     <ToggleButton
@@ -33,10 +38,7 @@ export function BodyTypeCard({
       aria-label={actionLabel}
       className={slots.root({ className })}
       isSelected={isSelected}
-      style={{
-        ...(isSelected ? ACTIVE_ART_VARS : null),
-        ...style,
-      }}
+      style={mergedStyle}
       variant="ghost"
     >
       <span className={slots.media()}>

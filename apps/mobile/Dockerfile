@@ -29,7 +29,8 @@ RUN --mount=type=cache,target=/root/.npm printf '%s\n' \
     @types/node@20 \
     @types/react@19 \
     @types/react-dom@19 \
-    babel-plugin-react-compiler@1.0.0
+    babel-plugin-react-compiler@1.0.0 \
+    @tailwindcss/postcss@4
 
 FROM node:22-bookworm-slim AS builder
 WORKDIR /app

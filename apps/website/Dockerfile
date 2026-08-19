@@ -56,6 +56,8 @@ RUN groupadd --system --gid 1001 nodejs \
 COPY --from=builder --chown=nextjs:nodejs /app/apps/website/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/apps/website/.next/static ./apps/website/.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/apps/website/public ./apps/website/public
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/@swc/helpers ./node_modules/@swc/helpers
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/@swc/helpers ./node_modules/next/node_modules/@swc/helpers
 
 USER nextjs
 EXPOSE 8080

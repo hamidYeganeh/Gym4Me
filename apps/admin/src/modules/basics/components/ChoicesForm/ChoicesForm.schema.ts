@@ -78,7 +78,7 @@ export function choiceToFormValues(item: ChoiceGroup): ChoicesFormValues {
     key: item.value,
     name: item.name,
     description: item.description ?? "",
-    isActive: item.isActive,
+    isActive: item.isActive !== false,
     options:
       item.options.length > 0
         ? item.options.map((option, index) => ({

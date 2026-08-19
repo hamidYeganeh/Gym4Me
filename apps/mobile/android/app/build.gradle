@@ -55,7 +55,7 @@ android {
     signingConfigs {
         if (hasReleaseSigning) {
             release {
-                def storePath = file(uploadStoreFile)
+                def storePath = new File(uploadStoreFile)
                 if (!storePath.isAbsolute()) {
                     storePath = rootProject.file(uploadStoreFile)
                 }
