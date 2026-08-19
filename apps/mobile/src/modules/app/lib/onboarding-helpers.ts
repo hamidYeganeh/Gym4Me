@@ -34,14 +34,27 @@ export function slideTitleKey(step: OnboardingStepId): string {
 }
 
 export function slideSubtitleKey(step: OnboardingStepId): string | null {
-  if (step === "review" || step === "gender") return `${step}.subtitle`;
+  if (step === "review") return `${step}.subtitle`;
   return null;
 }
 
 export function slideOwnsChrome(step: OnboardingStepId): boolean {
   return (
-    step === "personalIntro" || step === "identity" || step === "avatar"
+    step === "review" ||
+    step === "personalIntro" ||
+    step === "identity" ||
+    step === "avatar"
   );
+}
+
+/** Full-bleed photo slides that need a footer scrim for the CTA. */
+export function slideIsHeroBleed(step: OnboardingStepId): boolean {
+  return step === "review" || step === "personalIntro";
+}
+
+/** Slides that fill the stage edge-to-edge (hero photos). */
+export function slideIsBleed(step: OnboardingStepId): boolean {
+  return slideIsHeroBleed(step);
 }
 
 export function formatJalaliDisplay(value: OnboardingBirthdateValue): string {

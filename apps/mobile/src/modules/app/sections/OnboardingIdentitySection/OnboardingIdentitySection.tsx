@@ -38,7 +38,6 @@ import type {
 
 type DrawerKind = "province" | "address" | null;
 
-const GENDERS: OnboardingGenderId[] = ["female", "male", "other"];
 const FIELD_ICON = 18;
 
 export function OnboardingIdentitySection({
@@ -143,9 +142,13 @@ export function OnboardingIdentitySection({
           className={styles.trigger()}
           variant="ghost"
           onPress={() => {
-            const current = value.gender ?? "female";
-            const index = GENDERS.indexOf(current);
-            const next = GENDERS[(index + 1) % GENDERS.length]!;
+            const genders = Object.keys(
+              labels.genderOptions,
+            ) as OnboardingGenderId[];
+            if (genders.length === 0) return;
+            const current = value.gender ?? genders[0]!;
+            const index = Math.max(0, genders.indexOf(current));
+            const next = genders[(index + 1) % genders.length]!;
             onChange({ gender: next });
           }}
         >

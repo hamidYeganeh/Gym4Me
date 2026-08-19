@@ -45,7 +45,17 @@ async function seed() {
       options: [
         { value: 'male', name: 'مرد', order: 0 },
         { value: 'female', name: 'زن', order: 1 },
-        { value: 'other', name: 'سایر', order: 2 },
+      ],
+    },
+    {
+      key: 'body_type',
+      name: 'تیپ بدنی',
+      description: 'تیپ بدنی فعلی ورزشکار را انتخاب کنید.',
+      isSystem: true,
+      options: [
+        { value: 'endomorph', name: 'اندومورف', order: 0 },
+        { value: 'ectomorph', name: 'اکتومورف', order: 1 },
+        { value: 'mesomorph', name: 'مزومورف', order: 2 },
       ],
     },
     {

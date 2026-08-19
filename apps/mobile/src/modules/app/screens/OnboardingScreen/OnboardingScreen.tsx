@@ -1,5 +1,6 @@
 "use client";
 
+import { slideIsHeroBleed } from "@/modules/app/lib/onboarding-helpers";
 import { useOnboarding } from "@/modules/app/lib/use-onboarding";
 import { OnboardingCarouselSection } from "@/modules/app/sections/OnboardingCarouselSection";
 import { OnboardingFooterSection } from "@/modules/app/sections/OnboardingFooterSection";
@@ -11,6 +12,7 @@ import type { OnboardingScreenProps } from "./OnboardingScreen.types";
 export function OnboardingScreen({ className }: OnboardingScreenProps) {
   const styles = onboardingScreenVariants();
   const onboarding = useOnboarding();
+  const showFooterScrim = slideIsHeroBleed(onboarding.step);
 
   return (
     <main className={styles.root({ className })}>
@@ -32,7 +34,12 @@ export function OnboardingScreen({ className }: OnboardingScreenProps) {
         <div className={styles.overlayFill()} />
 
         <div className={styles.footer()}>
-          <OnboardingFooterSection {...onboarding} />
+          {showFooterScrim ? (
+            <div aria-hidden className={styles.footerScrim()} />
+          ) : null}
+          <div className={styles.footerActions()}>
+            <OnboardingFooterSection {...onboarding} />
+          </div>
         </div>
       </div>
 

@@ -2,8 +2,7 @@
 
 import { useEffect, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { authHref } from "@/shared/lib/auth-redirect";
-import { roleHomePath } from "@/shared/lib/role-routes";
+import { authHref, postAuthPath } from "@/shared/lib/auth-redirect";
 import { useAuth } from "@/shared/providers/AuthProvider";
 
 type RequireAuthProps = {
@@ -24,7 +23,7 @@ function AuthGateShell() {
 }
 
 export function RequireAuth({ children, guestOnly = false }: RequireAuthProps) {
-  const { isAuthenticated, activeRole, isReady } = useAuth();
+  const { isAuthenticated, activeRole, isReady, session } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -33,7 +32,20 @@ export function RequireAuth({ children, guestOnly = false }: RequireAuthProps) {
 
     if (guestOnly) {
       if (isAuthenticated) {
-        router.replace(roleHomePath(activeRole));
+        // Match OTP/login success routing so guestOnly does not race past /onboarding.
+        const next =
+          typeof window !== "undefined"
+            ? new URLSearchParams(window.location.search).get("next")
+            : null;
+        router.replace(
+          postAuthPath(
+            {
+              activeRole: session?.activeRole ?? activeRole,
+              isNewUser: session?.isNewUser,
+            },
+            next,
+          ),
+        );
       }
       return;
     }
@@ -41,7 +53,16 @@ export function RequireAuth({ children, guestOnly = false }: RequireAuthProps) {
     if (!isAuthenticated) {
       router.replace(authHref(pathname || "/"));
     }
-  }, [activeRole, guestOnly, isAuthenticated, isReady, pathname, router]);
+  }, [
+    activeRole,
+    guestOnly,
+    isAuthenticated,
+    isReady,
+    pathname,
+    router,
+    session?.activeRole,
+    session?.isNewUser,
+  ]);
 
   if (!isReady) {
     return <AuthGateShell />;

@@ -1,6 +1,8 @@
 "use client";
 
+import NumberFlow from "@number-flow/react";
 import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { HeightSlider } from "@repo/ui/kit/HeightSlider";
 import {
   ONBOARDING_HEIGHT_CM_RANGE,
@@ -9,7 +11,6 @@ import {
 import {
   displayHeight,
   inchesToCm,
-  type OnboardingHeightUnit,
 } from "@/modules/app/lib/onboarding-units";
 import { onboardingHeightSectionVariants } from "./OnboardingHeightSection.styles";
 import type { OnboardingHeightSectionProps } from "./OnboardingHeightSection.types";
@@ -18,8 +19,7 @@ export function OnboardingHeightSection({
   label,
   unit,
   heightCm,
-  unitCmLabel,
-  unitFtLabel,
+  unitOptions,
   onUnitChange,
   onHeightCmChange,
   className,
@@ -28,25 +28,37 @@ export function OnboardingHeightSection({
   const display = displayHeight(heightCm, unit);
   const range =
     unit === "cm" ? ONBOARDING_HEIGHT_CM_RANGE : ONBOARDING_HEIGHT_IN_RANGE;
+  const unitLabel =
+    unitOptions.find((option) => option.id === unit)?.label ?? unit;
 
   return (
     <div className={base.root({ className })} data-onboarding-nested-scroll>
       <div aria-label={label} className={base.unitTrack()} role="group">
-        {(["ft", "cm"] as const).map((option) => {
-          const selected = option === unit;
+        {unitOptions.map((option) => {
+          const selected = option.id === unit;
           const styles = onboardingHeightSectionVariants({ selected });
           return (
             <Button
-              key={option}
+              key={option.id}
               aria-pressed={selected}
               className={styles.unitItem()}
               variant="ghost"
-              onPress={() => onUnitChange(option)}
+              onPress={() => onUnitChange(option.id)}
             >
-              {option === "cm" ? unitCmLabel : unitFtLabel}
+              {option.label}
             </Button>
           );
         })}
+      </div>
+
+      <div className={base.valueRow()}>
+        <NumberFlow
+          className={base.value()}
+          locales="en-US"
+          style={{ color: "var(--foreground)" }}
+          value={display}
+        />
+        <Typography className={base.unit()}>{unitLabel}</Typography>
       </div>
 
       <HeightSlider

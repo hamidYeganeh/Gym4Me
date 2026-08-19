@@ -3,10 +3,10 @@ import {
   ONBOARDING_CALORIES_RANGE,
   ONBOARDING_CALORIES_STEP,
   ONBOARDING_CALORIE_PRESETS,
-  ONBOARDING_GENDER_OTHER_MAX,
   ONBOARDING_STEPS,
 } from "@/modules/app/lib/onboarding-data";
 import {
+  slideIsBleed,
   slideOwnsChrome,
   slideSubtitleKey,
   slideTitleKey,
@@ -40,7 +40,6 @@ export function OnboardingCarouselSection({
   age,
   fullName,
   gender,
-  genderOther,
   birthdate,
   heightCm,
   heightUnit,
@@ -63,13 +62,14 @@ export function OnboardingCarouselSection({
   goalOptions,
   genderOptions,
   bodyTypeOptions,
+  weightUnitOptions,
+  heightUnitOptions,
   sleepOptions,
   activityOptions,
   moodOptions,
   dietOptions,
   setFullName,
   setGender,
-  setGenderOther,
   setBirthdate,
   setHeightCm,
   setHeightUnit,
@@ -107,7 +107,7 @@ export function OnboardingCarouselSection({
 
           return (
             <OnboardingSlideShell
-              bleed={stepId === "personalIntro"}
+              bleed={slideIsBleed(stepId)}
               isActive={isActive}
               key={stepId}
               showChrome={!slideOwnsChrome(stepId)}
@@ -115,7 +115,11 @@ export function OnboardingCarouselSection({
               title={t(slideTitleKey(stepId))}
             >
               {mountStage && stepId === "review" ? (
-                <OnboardingReviewSection artAlt={t("review.artAlt")} />
+                <OnboardingReviewSection
+                  artAlt={t("review.artAlt")}
+                  subtitle={t("review.subtitle")}
+                  title={t("review.title")}
+                />
               ) : null}
 
               {mountStage && stepId === "name" ? (
@@ -131,12 +135,8 @@ export function OnboardingCarouselSection({
               {mountStage && stepId === "gender" ? (
                 <OnboardingGenderSection
                   options={genderOptions}
-                  otherMax={ONBOARDING_GENDER_OTHER_MAX}
-                  otherPlaceholder={t("gender.otherPlaceholder")}
-                  otherValue={genderOther}
                   value={gender}
                   onChange={setGender}
-                  onOtherChange={setGenderOther}
                 />
               ) : null}
 
@@ -154,8 +154,7 @@ export function OnboardingCarouselSection({
                   heightCm={heightCm}
                   label={t("height.title")}
                   unit={heightUnit}
-                  unitCmLabel={t("height.unitCm")}
-                  unitFtLabel={t("height.unitFt")}
+                  unitOptions={heightUnitOptions}
                   onHeightCmChange={setHeightCm}
                   onUnitChange={setHeightUnit}
                 />
@@ -165,8 +164,7 @@ export function OnboardingCarouselSection({
                 <OnboardingWeightSection
                   label={t("weight.title")}
                   unit={weightUnit}
-                  unitKgLabel={t("weight.unitKg")}
-                  unitLbsLabel={t("weight.unitLbs")}
+                  unitOptions={weightUnitOptions}
                   weightKg={weightKg}
                   onUnitChange={setWeightUnit}
                   onWeightKgChange={setWeightKg}
@@ -177,7 +175,6 @@ export function OnboardingCarouselSection({
                 <OnboardingBodyTypeSection
                   gender={gender}
                   options={bodyTypeOptions}
-                  swipeHint={t("bodyType.swipeHint")}
                   value={bodyType}
                   onChange={setBodyType}
                 />

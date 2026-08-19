@@ -6,6 +6,12 @@ import { getBodyTypeArt } from "./art";
 import { bodyTypeCardVariants } from "./BodyTypeCard.styles";
 import type { BodyTypeCardProps } from "./BodyTypeCard.types";
 
+const ACTIVE_ART_VARS = {
+  "--body-type-body": "#DBEAFE",
+  "--body-type-body-soft": "#EFF6FF",
+  "--body-type-stroke": "#2563EB",
+} as const;
+
 export function BodyTypeCard({
   bodyType = "mesomorph",
   gender = "male",
@@ -13,9 +19,11 @@ export function BodyTypeCard({
   actionLabel,
   className,
   imageClassName,
+  isSelected = false,
+  style,
   ...props
 }: BodyTypeCardProps) {
-  const slots = bodyTypeCardVariants();
+  const slots = bodyTypeCardVariants({ selected: isSelected });
   const hasCustomImage = image != null && image !== "";
   const artSvg = !hasCustomImage ? getBodyTypeArt(bodyType, gender) : null;
 
@@ -24,6 +32,11 @@ export function BodyTypeCard({
       {...props}
       aria-label={actionLabel}
       className={slots.root({ className })}
+      isSelected={isSelected}
+      style={{
+        ...(isSelected ? ACTIVE_ART_VARS : null),
+        ...style,
+      }}
       variant="ghost"
     >
       <span className={slots.media()}>

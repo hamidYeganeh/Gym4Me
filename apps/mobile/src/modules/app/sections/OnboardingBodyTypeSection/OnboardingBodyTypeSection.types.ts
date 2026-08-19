@@ -13,7 +13,6 @@ export type OnboardingBodyTypeSectionProps = {
   options: OnboardingBodyTypeOption[];
   value: OnboardingBodyTypeId;
   gender: OnboardingGenderId | null;
-  swipeHint: string;
   onChange: (value: OnboardingBodyTypeId) => void;
   className?: string;
 };

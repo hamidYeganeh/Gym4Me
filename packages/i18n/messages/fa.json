@@ -186,7 +186,6 @@
       },
       "bodyType": {
         "title": "تیپ بدنی فعلی شما چیست؟",
-        "swipeHint": "برای انتخاب بکشید",
         "options": {
           "endomorph": {
             "label": "اندومورف",

@@ -1,8 +1,36 @@
 export type OnboardingWeightUnit = "kg" | "lbs";
 export type OnboardingHeightUnit = "cm" | "ft";
 
+export type OnboardingWeightUnitOption = {
+  id: OnboardingWeightUnit;
+  label: string;
+};
+
+export type OnboardingHeightUnitOption = {
+  id: OnboardingHeightUnit;
+  label: string;
+};
+
 const LBS_PER_KG = 2.2046226218;
 const CM_PER_IN = 2.54;
+
+/** Map basics `weight_unit` choice values onto onboarding unit ids. */
+export function normalizeWeightUnit(
+  value: string,
+): OnboardingWeightUnit | null {
+  if (value === "kg") return "kg";
+  if (value === "lb" || value === "lbs") return "lbs";
+  return null;
+}
+
+/** Map basics `height_unit` choice values onto onboarding unit ids. */
+export function normalizeHeightUnit(
+  value: string,
+): OnboardingHeightUnit | null {
+  if (value === "cm") return "cm";
+  if (value === "ft" || value === "ft_in" || value === "in") return "ft";
+  return null;
+}
 
 export function kgToLbs(kg: number): number {
   return Math.round(kg * LBS_PER_KG);

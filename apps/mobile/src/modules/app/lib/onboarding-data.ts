@@ -27,7 +27,7 @@ export type OnboardingGoalId =
   | "sportsActivity"
   | "justTrying";
 
-export type OnboardingGenderId = "male" | "female" | "other";
+export type OnboardingGenderId = "male" | "female";
 
 export type OnboardingBodyTypeId = "endomorph" | "ectomorph" | "mesomorph";
 
@@ -71,10 +71,10 @@ export const ONBOARDING_STEPS: OnboardingStepId[] = [
   "review",
   "name",
   "gender",
-  "birthdate",
-  "height",
-  "weight",
   "bodyType",
+  "weight",
+  "height",
+  "birthdate",
   "experience",
   "sleep",
   "mood",
@@ -151,11 +151,7 @@ export const ONBOARDING_GOALS: OnboardingGoalId[] = [
   "justTrying",
 ];
 
-export const ONBOARDING_GENDERS: OnboardingGenderId[] = [
-  "male",
-  "female",
-  "other",
-];
+export const ONBOARDING_GENDERS: OnboardingGenderId[] = ["male", "female"];
 
 export const ONBOARDING_BODY_TYPES: OnboardingBodyTypeId[] = [
   "endomorph",
@@ -201,8 +197,6 @@ export const ONBOARDING_ACTIVITIES: OnboardingActivityId[] = [
   "baseball",
   "other",
 ];
-
-export const ONBOARDING_GENDER_OTHER_MAX = 300;
 
 /** Default Jalali birthdate ≈ 19 years old in typical mockups. */
 export const ONBOARDING_DEFAULT_BIRTH = {

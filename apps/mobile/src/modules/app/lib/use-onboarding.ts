@@ -47,9 +47,13 @@ import {
   readDocumentDirection,
 } from "@/modules/app/lib/onboarding-helpers";
 import { markOnboardingDone } from "@/modules/app/lib/onboarding-storage";
-import type {
-  OnboardingHeightUnit,
-  OnboardingWeightUnit,
+import {
+  normalizeHeightUnit,
+  normalizeWeightUnit,
+  type OnboardingHeightUnit,
+  type OnboardingHeightUnitOption,
+  type OnboardingWeightUnit,
+  type OnboardingWeightUnitOption,
 } from "@/modules/app/lib/onboarding-units";
 import type { OnboardingAvatarValue } from "@/modules/app/sections/OnboardingAvatarSection";
 import type { OnboardingBirthdateValue } from "@/modules/app/sections/OnboardingBirthdateSection";
@@ -59,6 +63,7 @@ import type {
 } from "@/modules/app/sections/OnboardingIdentitySection";
 import {
   accountProfile,
+  basicsChoices,
   basicsLocations,
   isDiscoveryApiId,
   mediaApi,
@@ -91,7 +96,20 @@ export function useOnboarding() {
 
   const [fullName, setFullName] = useState("");
   const [gender, setGender] = useState<OnboardingGenderId | null>(null);
-  const [genderOther, setGenderOther] = useState("");
+  const [apiGenderOptions, setApiGenderOptions] = useState<Array<{
+    id: OnboardingGenderId;
+    label: string;
+  }> | null>(null);
+  const [apiBodyTypeOptions, setApiBodyTypeOptions] = useState<Array<{
+    id: OnboardingBodyTypeId;
+    label: string;
+  }> | null>(null);
+  const [apiWeightUnitOptions, setApiWeightUnitOptions] = useState<
+    OnboardingWeightUnitOption[] | null
+  >(null);
+  const [apiHeightUnitOptions, setApiHeightUnitOptions] = useState<
+    OnboardingHeightUnitOption[] | null
+  >(null);
   const [birthdate, setBirthdate] = useState<OnboardingBirthdateValue>({
     ...ONBOARDING_DEFAULT_BIRTH,
   });
@@ -149,15 +167,8 @@ export function useOnboarding() {
     containScroll: "trimSnaps",
     direction: textDirection,
     duration: reduceMotion ? 0 : 22,
-    watchDrag: (_api, event) => {
-      const target = event.target;
-      if (!(target instanceof Element)) return true;
-      return !(
-        target.closest("[data-onboarding-nested-carousel]") ||
-        target.closest("[data-onboarding-nested-scroll]") ||
-        target.closest("input, textarea, [contenteditable=true]")
-      );
-    },
+    // Advance only via continue / back controls — no pan swipe.
+    watchDrag: false,
   });
 
   const onSelect = useCallback(() => {
@@ -192,6 +203,120 @@ export function useOnboarding() {
         );
       } catch {
         // Keep offline fallback provinces.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const group = await basicsChoices.get("gender");
+        if (cancelled) return;
+        const next = group.options
+          .filter((option) => option.isActive !== false)
+          .slice()
+          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+          .map((option) => ({
+            id: option.value as OnboardingGenderId,
+            label: option.name,
+          }))
+          .filter((option) => ONBOARDING_GENDERS.includes(option.id));
+        if (next.length > 0) setApiGenderOptions(next);
+      } catch {
+        // Keep i18n fallback gender options.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const group = await basicsChoices.get("body_type");
+        if (cancelled) return;
+        const next = group.options
+          .filter((option) => option.isActive !== false)
+          .slice()
+          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+          .map((option) => ({
+            id: option.value as OnboardingBodyTypeId,
+            label: option.name,
+          }))
+          .filter((option) => ONBOARDING_BODY_TYPES.includes(option.id));
+        if (next.length > 0) setApiBodyTypeOptions(next);
+      } catch {
+        // Keep i18n fallback body-type options.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const group = await basicsChoices.get("weight_unit");
+        if (cancelled) return;
+        const next = group.options
+          .filter((option) => option.isActive !== false)
+          .slice()
+          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+          .flatMap((option) => {
+            const id = normalizeWeightUnit(option.value);
+            if (!id) return [];
+            return [{ id, label: option.name }];
+          });
+        if (next.length > 0) {
+          setApiWeightUnitOptions(next);
+          setWeightUnit((current) =>
+            next.some((option) => option.id === current)
+              ? current
+              : (next[0]?.id ?? current),
+          );
+        }
+      } catch {
+        // Keep i18n fallback weight units.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const group = await basicsChoices.get("height_unit");
+        if (cancelled) return;
+        const next = group.options
+          .filter((option) => option.isActive !== false)
+          .slice()
+          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+          .flatMap((option) => {
+            const id = normalizeHeightUnit(option.value);
+            if (!id) return [];
+            return [{ id, label: option.name }];
+          });
+        if (next.length > 0) {
+          setApiHeightUnitOptions(next);
+          setHeightUnit((current) =>
+            next.some((option) => option.id === current)
+              ? current
+              : (next[0]?.id ?? current),
+          );
+        }
+      } catch {
+        // Keep i18n fallback height units.
       }
     })();
     return () => {
@@ -260,6 +385,16 @@ export function useOnboarding() {
     ],
   );
 
+  const genderOptions = useMemo(() => {
+    if (apiGenderOptions && apiGenderOptions.length > 0) {
+      return apiGenderOptions;
+    }
+    return ONBOARDING_GENDERS.map((id) => ({
+      id,
+      label: t(`gender.options.${id}`),
+    }));
+  }, [apiGenderOptions, t]);
+
   const identityLabels = useMemo(
     () => ({
       title: t("identity.title"),
@@ -291,13 +426,11 @@ export function useOnboarding() {
       zoomOut: t("identity.zoomOut"),
       zoom: t("identity.zoom"),
       securityNote: t("identity.securityNote"),
-      genderOptions: {
-        male: t("gender.options.male"),
-        female: t("gender.options.female"),
-        other: t("gender.options.other"),
-      },
+      genderOptions: Object.fromEntries(
+        genderOptions.map((option) => [option.id, option.label]),
+      ) as Record<OnboardingGenderId, string>,
     }),
-    [t],
+    [genderOptions, t],
   );
 
   const patchIdentity = (patch: Partial<OnboardingIdentityValue>) => {
@@ -387,24 +520,41 @@ export function useOnboarding() {
     [t],
   );
 
-  const genderOptions = useMemo(
-    () =>
-      ONBOARDING_GENDERS.map((id) => ({
-        id,
-        label: t(`gender.options.${id}`),
-      })),
-    [t],
-  );
+  const bodyTypeOptions = useMemo(() => {
+    const source =
+      apiBodyTypeOptions && apiBodyTypeOptions.length > 0
+        ? apiBodyTypeOptions
+        : ONBOARDING_BODY_TYPES.map((id) => ({
+            id,
+            label: t(`bodyType.options.${id}.label`),
+          }));
 
-  const bodyTypeOptions = useMemo(
-    () =>
-      ONBOARDING_BODY_TYPES.map((id) => ({
-        id,
-        label: t(`bodyType.options.${id}.label`),
-        statement: t(`bodyType.options.${id}.statement`),
-      })),
-    [t],
-  );
+    return source.map((option) => ({
+      id: option.id,
+      label: option.label,
+      statement: t(`bodyType.options.${option.id}.statement`),
+    }));
+  }, [apiBodyTypeOptions, t]);
+
+  const weightUnitOptions = useMemo<OnboardingWeightUnitOption[]>(() => {
+    if (apiWeightUnitOptions && apiWeightUnitOptions.length > 0) {
+      return apiWeightUnitOptions;
+    }
+    return [
+      { id: "lbs", label: t("weight.unitLbs") },
+      { id: "kg", label: t("weight.unitKg") },
+    ];
+  }, [apiWeightUnitOptions, t]);
+
+  const heightUnitOptions = useMemo<OnboardingHeightUnitOption[]>(() => {
+    if (apiHeightUnitOptions && apiHeightUnitOptions.length > 0) {
+      return apiHeightUnitOptions;
+    }
+    return [
+      { id: "ft", label: t("height.unitFt") },
+      { id: "cm", label: t("height.unitCm") },
+    ];
+  }, [apiHeightUnitOptions, t]);
 
   const sleepOptions = useMemo(
     () =>
@@ -635,7 +785,6 @@ export function useOnboarding() {
     caloriesKnown,
     fullName,
     gender,
-    genderOther,
     birthdate,
     heightCm,
     heightUnit,
@@ -657,6 +806,8 @@ export function useOnboarding() {
     goalOptions,
     genderOptions,
     bodyTypeOptions,
+    weightUnitOptions,
+    heightUnitOptions,
     sleepOptions,
     activityOptions,
     moodOptions,
@@ -665,7 +816,6 @@ export function useOnboarding() {
     isRequestingPermission,
     setFullName,
     setGender,
-    setGenderOther,
     setBirthdate,
     setHeightCm,
     setHeightUnit,

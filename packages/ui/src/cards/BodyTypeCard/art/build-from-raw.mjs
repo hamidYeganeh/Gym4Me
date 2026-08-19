@@ -10,9 +10,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function themeBodyTypeSvg(rawSvg) {
   let svg = rawSvg.trim();
+  // #FAFAFA = primary body; white = softer highlight (matches active Figma blues)
   svg = svg.replaceAll('fill="#FAFAFA"', 'fill="var(--body-type-body)"');
-  svg = svg.replaceAll('fill="white"', 'fill="var(--body-type-body)"');
-  svg = svg.replaceAll('fill="#FFFFFF"', 'fill="var(--body-type-body)"');
+  svg = svg.replaceAll('fill="white"', 'fill="var(--body-type-body-soft)"');
+  svg = svg.replaceAll('fill="#FFFFFF"', 'fill="var(--body-type-body-soft)"');
   svg = svg.replaceAll('stroke="#D4D4D8"', 'stroke="var(--body-type-stroke)"');
   svg = svg.replace(
     /<svg\b([^>]*)>/,

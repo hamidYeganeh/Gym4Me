@@ -1,5 +1,6 @@
 "use client";
 
+import NumberFlow from "@number-flow/react";
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import { WeightSlider } from "@repo/ui/kit/WeightSlider";
@@ -10,7 +11,6 @@ import {
 import {
   displayWeight,
   lbsToKg,
-  type OnboardingWeightUnit,
 } from "@/modules/app/lib/onboarding-units";
 import { onboardingWeightSectionVariants } from "./OnboardingWeightSection.styles";
 import type { OnboardingWeightSectionProps } from "./OnboardingWeightSection.types";
@@ -19,8 +19,7 @@ export function OnboardingWeightSection({
   label,
   unit,
   weightKg,
-  unitKgLabel,
-  unitLbsLabel,
+  unitOptions,
   onUnitChange,
   onWeightKgChange,
   className,
@@ -29,30 +28,36 @@ export function OnboardingWeightSection({
   const display = displayWeight(weightKg, unit);
   const range =
     unit === "kg" ? ONBOARDING_WEIGHT_KG_RANGE : ONBOARDING_WEIGHT_LBS_RANGE;
-  const unitLabel = unit === "kg" ? unitKgLabel : unitLbsLabel;
+  const unitLabel =
+    unitOptions.find((option) => option.id === unit)?.label ?? unit;
 
   return (
     <div className={base.root({ className })} data-onboarding-nested-scroll>
       <div aria-label={label} className={base.unitTrack()} role="group">
-        {(["lbs", "kg"] as const).map((option) => {
-          const selected = option === unit;
+        {unitOptions.map((option) => {
+          const selected = option.id === unit;
           const styles = onboardingWeightSectionVariants({ selected });
           return (
             <Button
-              key={option}
+              key={option.id}
               aria-pressed={selected}
               className={styles.unitItem()}
               variant="ghost"
-              onPress={() => onUnitChange(option)}
+              onPress={() => onUnitChange(option.id)}
             >
-              {option === "kg" ? unitKgLabel : unitLbsLabel}
+              {option.label}
             </Button>
           );
         })}
       </div>
 
       <div className={base.valueRow()}>
-        <Typography className={base.value()}>{display}</Typography>
+        <NumberFlow
+          className={base.value()}
+          locales="en-US"
+          style={{ color: "var(--foreground)" }}
+          value={display}
+        />
         <Typography className={base.unit()}>{unitLabel}</Typography>
       </div>
 

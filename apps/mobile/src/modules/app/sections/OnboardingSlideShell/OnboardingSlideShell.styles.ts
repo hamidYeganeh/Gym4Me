@@ -15,6 +15,7 @@ export const onboardingSlideShellVariants = tv({
     bleed: {
       true: {
         root: "overflow-hidden",
+        copy: "px-5 pt-[calc(3.5rem+env(safe-area-inset-top))]",
         stage: "items-stretch",
       },
       false: {

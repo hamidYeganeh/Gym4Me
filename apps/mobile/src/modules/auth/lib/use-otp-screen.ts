@@ -13,8 +13,7 @@ import {
   saveOtpPending,
   type OtpPendingState,
 } from "@/modules/auth/lib/otp-pending";
-import { withAuthNext } from "@/shared/lib/auth-redirect";
-import { roleHomePath } from "@/shared/lib/role-routes";
+import { postAuthPath, withAuthNext } from "@/shared/lib/auth-redirect";
 import { useAuth } from "@/shared/providers/AuthProvider";
 
 const subscribeOtpPending = () => () => {};
@@ -154,15 +153,8 @@ export function useOtpScreen() {
     try {
       const authSession = await loginWithOtp(payload.phone, payload.code);
       clearOtpPending();
-      const returnPath =
-        next && next.startsWith("/")
-          ? next
-          : roleHomePath(authSession.activeRole);
-      if (authSession.isNewUser) {
-        router.replace(`/onboarding?next=${encodeURIComponent(returnPath)}`);
-        return;
-      }
-      router.replace(returnPath);
+      // isNewUser → /onboarding; otherwise → /{role} (or ?next= deep link).
+      router.replace(postAuthPath(authSession, next));
     } catch (err) {
       notifyError(err);
     } finally {
