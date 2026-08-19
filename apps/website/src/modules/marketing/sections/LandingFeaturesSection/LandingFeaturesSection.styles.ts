@@ -4,13 +4,13 @@ export const landingFeaturesSectionStyles = tv({
   slots: {
     root: [
       "relative z-10 mt-3 overflow-hidden rounded-(--radius-card-lg)",
-      "bg-background px-6 py-[6.25rem] text-foreground md:px-[3.75rem]",
+      "bg-background px-5 py-16 text-foreground sm:px-6 md:px-[3.75rem] md:py-[6.25rem]",
     ],
     inner:
-      "landing-container grid grid-cols-1 items-center gap-[3.75rem] lg:grid-cols-[1.5fr_1fr] lg:gap-[6.25rem]",
-    bento: "grid h-full grid-cols-2 gap-4",
+      "landing-container grid grid-cols-1 items-center gap-12 lg:grid-cols-[1.5fr_1fr] lg:gap-[6.25rem]",
+    bento: "grid h-full grid-cols-1 gap-4 sm:grid-cols-2",
     heroCard: [
-      "group relative col-span-2 h-[20rem] overflow-hidden rounded-[2rem] md:h-[25rem]",
+      "group relative col-span-1 h-[18rem] overflow-hidden rounded-[2rem] sm:col-span-2 md:h-[25rem]",
       "bg-surface-secondary",
     ],
     heroImg:
@@ -28,8 +28,8 @@ export const landingFeaturesSectionStyles = tv({
     mockupStage: "flex h-full items-start justify-center bg-background px-3 pt-3",
     mockupClub: "w-[min(100%,16rem)] max-w-none shadow-none",
     quoteCard: [
-      "landing-dark flex h-[21.25rem] flex-col justify-between rounded-[2rem]",
-      "bg-(--brand-deep) p-8 text-(--on-brand) md:h-[26.25rem] md:p-10",
+      "landing-dark flex min-h-[16rem] flex-col justify-between rounded-[2rem]",
+      "bg-(--brand-deep) p-6 text-(--on-brand) md:h-[26.25rem] md:p-10",
     ],
     quote:
       "text-[1.125rem] font-medium leading-[1.3] tracking-tight text-(--on-brand) md:text-[1.375rem]",
@@ -37,18 +37,18 @@ export const landingFeaturesSectionStyles = tv({
     avatar: "size-12 rounded-full object-cover opacity-90",
     authorName: "text-[0.9375rem] font-semibold text-(--on-brand)",
     authorRole: "text-[0.8125rem] text-(--on-brand-muted)",
-    portraitCard: "h-[21.25rem] overflow-hidden rounded-[2rem] md:h-[26.25rem]",
+    portraitCard: "h-[16rem] overflow-hidden rounded-[2rem] md:h-[26.25rem]",
     portraitImg:
       "size-full object-cover transition-transform duration-[1200ms] ease-app will-change-transform hover:scale-105",
     content: "flex flex-col",
     heading: [
-      "mb-8 max-w-[33.7rem] text-[2.75rem] font-medium leading-[1.1]",
-      "tracking-[-0.035em] text-foreground md:text-[3.25rem]",
+      "mb-6 max-w-[33.7rem] text-[clamp(1.75rem,6vw,3.25rem)] font-medium leading-[1.1]",
+      "tracking-[-0.035em] text-balance text-foreground md:mb-8",
     ],
     body: "mb-12 max-w-[30rem] text-[1.0625rem] leading-relaxed text-muted md:text-[1.125rem]",
-    actions: "mb-16 flex flex-wrap items-center gap-4",
+    actions: "mb-10 flex flex-col items-stretch gap-3 sm:mb-16 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4",
     primaryBtn: [
-      "group h-14 gap-6 rounded-[0.875rem] ps-8 pe-2 py-2",
+      "group h-14 w-full gap-6 rounded-[0.875rem] ps-8 pe-2 py-2 sm:w-auto",
       "bg-foreground text-[1rem] font-medium text-background shadow-lg",
       "[--button-bg:var(--foreground)] [--button-fg:var(--background)]",
       "[--button-bg-hover:var(--foreground)] [--button-bg-pressed:var(--foreground)]",
@@ -62,7 +62,7 @@ export const landingFeaturesSectionStyles = tv({
       "transition-transform duration-moderate ease-app group-hover:-translate-x-0.5",
     ],
     secondaryBtn: [
-      "h-14 rounded-[0.875rem] border border-separator bg-surface px-8 py-3.5",
+      "h-14 w-full rounded-[0.875rem] border border-separator bg-surface px-8 py-3.5 sm:w-auto",
       "text-[1rem] font-medium text-foreground shadow-none",
       "transition-[transform,background-color] duration-moderate ease-app",
       "hover:bg-surface-secondary hover:scale-[1.02]",

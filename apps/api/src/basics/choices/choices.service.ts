@@ -15,6 +15,7 @@ import {
   ChoiceGroupDocument,
   ChoiceOption,
 } from '../../schemas/choice-group.schema';
+import { DEFAULT_CHOICE_GROUPS } from './choice-defaults';
 import { CreateChoiceGroupDto, UpdateChoiceGroupDto } from './dto/choices.dto';
 
 @Injectable()
@@ -66,7 +67,7 @@ export class ChoicesService {
       key: dto.key,
       name: dto.name,
       description: dto.description,
-      isSystem: dto.isSystem ?? false,
+      isSystem: false,
       options: this.normalizeOptions(dto.options),
       isActive: dto.isActive ?? true,
     });
@@ -141,6 +142,69 @@ export class ChoicesService {
     });
 
     return { success: true };
+  }
+
+  /**
+   * Idempotent: create missing default groups, lock system flags, and
+   * append any missing default option values without overwriting labels.
+   */
+  async seedDefaults(adminId?: string, request?: Request) {
+    const created: string[] = [];
+    const updated: string[] = [];
+    const skipped: string[] = [];
+
+    for (const seed of DEFAULT_CHOICE_GROUPS) {
+      const existing = await this.choiceModel.findOne({ key: seed.key });
+      if (!existing) {
+        await this.choiceModel.create({
+          key: seed.key,
+          name: seed.name,
+          description: seed.description,
+          isSystem: seed.isSystem,
+          options: this.normalizeOptions(seed.options),
+          isActive: true,
+        });
+        created.push(seed.key);
+        continue;
+      }
+
+      let changed = false;
+      if (seed.isSystem && !existing.isSystem) {
+        existing.isSystem = true;
+        changed = true;
+      }
+
+      const existingValues = new Set(existing.options.map((option) => option.value));
+      const missing = seed.options.filter(
+        (option) => !existingValues.has(option.value),
+      );
+      if (missing.length > 0) {
+        existing.options = [
+          ...existing.options,
+          ...this.normalizeOptions(missing),
+        ];
+        changed = true;
+      }
+
+      if (!changed) {
+        skipped.push(seed.key);
+        continue;
+      }
+
+      await existing.save();
+      updated.push(seed.key);
+    }
+
+    if (adminId && request) {
+      this.audit.log({
+        action: AuditAction.CHOICE_DEFAULTS_SEEDED,
+        actorId: adminId,
+        metadata: { created, updated, skipped },
+        request,
+      });
+    }
+
+    return { created, updated, skipped };
   }
 
   /** Used by the seed script — upserts without overwriting admin edits to names. */

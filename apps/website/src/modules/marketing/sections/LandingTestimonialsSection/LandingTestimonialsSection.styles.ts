@@ -3,9 +3,9 @@ import { tv } from "tailwind-variants";
 export const landingTestimonialsSectionStyles = tv({
   slots: {
     root: [
-      "mt-3 flex min-h-svh w-full items-start justify-center",
+      "mt-3 flex w-full items-start justify-center",
       "rounded-(--radius-card-lg) bg-surface px-5 py-16 sm:px-10 sm:py-20",
-      "box-border",
+      "box-border md:min-h-svh",
     ],
     container: "landing-container",
     header: "mb-12 flex flex-col items-center text-center",
@@ -31,10 +31,10 @@ export const landingTestimonialsSectionStyles = tv({
     ],
     reviewOverlay: [
       "pointer-events-none absolute inset-x-5 bottom-5 rounded-xl bg-(--brand-light)",
-      "p-4 opacity-0",
-      "translate-y-5 transition-all duration-[400ms]",
-      "ease-[cubic-bezier(0.175,0.885,0.32,1.275)]",
-      "group-hover:translate-y-0 group-hover:opacity-100",
+      "p-4 opacity-100 translate-y-0",
+      "transition-all duration-[400ms] ease-[cubic-bezier(0.175,0.885,0.32,1.275)]",
+      "[@media(hover:hover)]:translate-y-5 [@media(hover:hover)]:opacity-0",
+      "[@media(hover:hover)]:group-hover:translate-y-0 [@media(hover:hover)]:group-hover:opacity-100",
     ],
     reviewStars: "mb-1 text-sm text-foreground",
     reviewText: "text-[13px] font-semibold leading-[1.4] text-foreground",

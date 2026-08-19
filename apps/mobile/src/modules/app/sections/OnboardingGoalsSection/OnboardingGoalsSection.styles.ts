@@ -4,6 +4,8 @@ export const onboardingGoalsSectionVariants = tv({
   slots: {
     root: "flex w-full max-w-md flex-col",
     list: "flex w-full flex-col gap-3",
+    status: "flex min-h-40 w-full items-center justify-center",
+    statusText: "text-center text-sm text-muted",
     option: [
       "flex w-full items-center gap-3 rounded-2xl border p-4",
       "outline-none transition-[border-color,background-color,transform] duration-fast ease-app",

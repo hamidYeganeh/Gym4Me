@@ -16,8 +16,8 @@ export class ChoiceOptionDto {
   @IsString()
   @MinLength(1)
   @MaxLength(60)
-  @Matches(/^[a-z0-9_]+$/, {
-    message: 'option value must be snake_case lowercase',
+  @Matches(/^[a-z][a-zA-Z0-9_]*$/, {
+    message: 'option value must start with a letter and be alphanumeric',
   })
   value!: string;
 

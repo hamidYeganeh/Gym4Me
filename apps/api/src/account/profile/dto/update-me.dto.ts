@@ -15,7 +15,6 @@ import {
 } from 'class-validator';
 import {
   AthleteBodyType,
-  AthleteDiet,
   AthleteExperience,
   AthleteMood,
   BloodGroup,
@@ -174,8 +173,9 @@ export class AthleteLifestyleDto {
   mood?: AthleteMood;
 
   @IsOptional()
-  @IsEnum(AthleteDiet)
-  diet?: AthleteDiet;
+  @IsString()
+  @MaxLength(80)
+  diet?: string;
 
   /** null clears the value (user doesn't know their intake). */
   @IsOptional()

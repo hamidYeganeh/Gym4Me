@@ -2,7 +2,6 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import {
   AthleteBodyType,
-  AthleteDiet,
   AthleteExperience,
   AthleteMood,
   BloodGroup,
@@ -63,8 +62,9 @@ export class AthleteLifestyle {
   @Prop({ type: String, enum: AthleteMood })
   mood?: AthleteMood;
 
-  @Prop({ type: String, enum: AthleteDiet })
-  diet?: AthleteDiet;
+  /** Choice key from `athlete_diet`. */
+  @Prop({ trim: true, maxlength: 80 })
+  diet?: string;
 
   /** Daily calorie intake in kcal; absent = user doesn't know. */
   @Prop({ type: Number, min: 0 })

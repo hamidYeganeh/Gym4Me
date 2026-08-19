@@ -42,7 +42,7 @@ export type EmptyStateProps = Omit<
    * - `compact` — badge + copy without hero media (update required)
    */
   layout?: EmptyStateLayout;
-  /** Large illustration — URL string or custom node. */
+  /** Large illustration — URL string or custom node. Defaults to the no-data treadmill. */
   illustration?: string | ReactNode;
   /** Accessible alt when `illustration` is a URL. */
   illustrationAlt?: string;

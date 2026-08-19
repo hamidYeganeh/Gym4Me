@@ -7,6 +7,7 @@ export type FoodItemsTableSectionProps = {
   fetchingMore: boolean;
   hasMore: boolean;
   error: string | null;
+  categoryLabels?: Record<string, string>;
   onLoadMore: () => void;
   onEdit: (row: FoodItem) => void;
   onArchive: (row: FoodItem) => void;

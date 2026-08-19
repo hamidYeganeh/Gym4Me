@@ -194,7 +194,7 @@ export function NotificationsScreen({
         ) : (
           <EmptyState
             description={t("emptyBody")}
-            illustration={EMPTY_STATE_ILLUSTRATIONS.calendar}
+            illustration={EMPTY_STATE_ILLUSTRATIONS.empty}
             illustrationAlt=""
             layout="media"
             title={t("emptyTitle")}

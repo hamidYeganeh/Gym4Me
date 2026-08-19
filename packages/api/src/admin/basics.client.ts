@@ -15,6 +15,7 @@ import type {
   AdminCreateSportInput,
   AdminRefListResponse,
   AdminUpdateChoiceGroupInput,
+  SeedChoiceDefaultsResult,
   AdminUpdateLocationInput,
   AdminUpdateRefItemInput,
   AdminUpdateSportInput,
@@ -49,6 +50,12 @@ export function createAdminBasicsApi(client: ApiClient) {
     deleteChoice(key: string) {
       return client.request<SuccessResponse>(ep.choiceByKey(key), {
         method: "DELETE",
+      });
+    },
+
+    seedChoiceDefaults() {
+      return client.request<SeedChoiceDefaultsResult>(ep.seedChoiceDefaults, {
+        method: "POST",
       });
     },
 

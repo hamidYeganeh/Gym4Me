@@ -91,6 +91,7 @@ export const viewport: Viewport = {
   colorScheme: "dark light",
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default async function RootLayout({
@@ -104,11 +105,11 @@ export default async function RootLayout({
     <html
       lang={locale}
       dir="rtl"
-      className={`${iranSansX.variable} h-full antialiased`}
+      className={`${iranSansX.variable} min-h-dvh antialiased`}
       suppressHydrationWarning
     >
       <body
-        className={`${iranSansX.className} flex h-full min-h-full flex-col bg-background font-sans text-foreground antialiased`}
+        className={`${iranSansX.className} flex min-h-dvh flex-col bg-background font-sans text-foreground antialiased`}
       >
         <ThemeProvider>
           <NextIntlClientProvider>

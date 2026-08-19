@@ -91,6 +91,18 @@ export class AdminBasicsController {
     return this.choices.create(dto, adminId, request);
   }
 
+  @Post('choices/seed-defaults')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Create missing default choice groups without overwriting existing ones',
+  })
+  seedChoiceDefaults(
+    @CurrentUser('sub') adminId: string,
+    @Req() request: Request,
+  ) {
+    return this.choices.seedDefaults(adminId, request);
+  }
+
   @Patch('choices/:key')
   @ApiOperation({ summary: 'Update a choice group' })
   updateChoice(

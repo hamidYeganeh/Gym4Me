@@ -4,7 +4,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import { useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ONBOARDING_BLOOD_GROUPS,
   ONBOARDING_BODY_TYPES,
@@ -17,7 +17,6 @@ import {
   ONBOARDING_DEFAULT_WEIGHT_KG,
   ONBOARDING_FALLBACK_PROVINCES,
   ONBOARDING_GENDERS,
-  ONBOARDING_GOALS,
   ONBOARDING_MOODS,
   ONBOARDING_PHASES,
   ONBOARDING_SLEEP_LEVELS,
@@ -27,7 +26,6 @@ import {
   type OnboardingBloodGroup,
   type OnboardingBodyTypeId,
   type OnboardingGenderId,
-  type OnboardingGoalId,
   type OnboardingMoodId,
   type OnboardingRhFactor,
   type OnboardingSleepLevel,
@@ -40,6 +38,16 @@ import {
   PREMADE_AVATARS,
   readDocumentDirection,
 } from "@/modules/app/lib/onboarding-helpers";
+import {
+  minStepVisibleMs,
+  runOnboardingSaveStep,
+  selectOnboardingSaveSteps,
+  waitRemaining,
+  type OnboardingSaveContext,
+  type OnboardingSaveStepId,
+  type OnboardingSaveStepStatus,
+  type OnboardingSaveStepView,
+} from "@/modules/app/lib/onboarding-save";
 import { markOnboardingDone } from "@/modules/app/lib/onboarding-storage";
 import {
   normalizeHeightUnit,
@@ -53,13 +61,13 @@ import type { OnboardingAthleteLevelOption } from "@/modules/app/sections/Onboar
 import type { OnboardingAvatarValue } from "@/modules/app/sections/OnboardingAvatarSection";
 import type { OnboardingBirthdateValue } from "@/modules/app/sections/OnboardingBirthdateSection";
 import type { OnboardingDietOption } from "@/modules/app/sections/OnboardingDietSection";
+import type { OnboardingGoalOption } from "@/modules/app/sections/OnboardingGoalsSection";
 import type {
   OnboardingIdentityValue,
   OnboardingProvinceOption,
 } from "@/modules/app/sections/OnboardingIdentitySection";
 import type { OnboardingSportOption } from "@/modules/app/sections/OnboardingSportsSection";
 import {
-  accountProfile,
   basicsChoices,
   basicsLocations,
   basicsSports,
@@ -103,16 +111,20 @@ export function useOnboarding() {
   const [slide, setSlide] = useState(0);
   const [permissionIndex, setPermissionIndex] = useState<number | null>(null);
   const [isRequestingPermission, setIsRequestingPermission] = useState(false);
+  const [savePhase, setSavePhase] = useState<"idle" | "running">("idle");
+  const [saveSteps, setSaveSteps] = useState<OnboardingSaveStepView[]>([]);
+  const saveMutationIdsRef = useRef<
+    Partial<Record<OnboardingSaveStepId, string>>
+  >({});
+  const saveContextRef = useRef<OnboardingSaveContext | null>(null);
+  const saveStepsRef = useRef<OnboardingSaveStepView[]>([]);
+  const persistInFlightRef = useRef(false);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [gender, setGender] = useState<OnboardingGenderId | null>(null);
   const [apiGenderOptions, setApiGenderOptions] = useState<Array<{
     id: OnboardingGenderId;
-    label: string;
-  }> | null>(null);
-  const [apiGoalOptions, setApiGoalOptions] = useState<Array<{
-    id: OnboardingGoalId;
     label: string;
   }> | null>(null);
   const [apiBodyTypeOptions, setApiBodyTypeOptions] = useState<Array<{
@@ -157,7 +169,11 @@ export function useOnboarding() {
   );
   const [calories, setCalories] = useState(ONBOARDING_DEFAULT_CALORIES);
   const [caloriesKnown, setCaloriesKnown] = useState(true);
-  const [goals, setGoals] = useState<OnboardingGoalId[]>(["overallHealth"]);
+  const [goals, setGoals] = useState<string[]>([]);
+  const [goalOptions, setGoalOptions] = useState<OnboardingGoalOption[]>([]);
+  const [goalsStatus, setGoalsStatus] = useState<"loading" | "ready" | "error">(
+    "loading",
+  );
   const [bloodGroup, setBloodGroup] = useState<OnboardingBloodGroup>("A");
   const [bloodRh, setBloodRh] = useState<OnboardingRhFactor>("negative");
   const [nationalId, setNationalId] = useState("");
@@ -263,6 +279,7 @@ export function useOnboarding() {
 
   useEffect(() => {
     let cancelled = false;
+    setGoalsStatus("loading");
     void (async () => {
       try {
         const group = await basicsChoices.get("onboarding_goal");
@@ -272,13 +289,18 @@ export function useOnboarding() {
           .slice()
           .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
           .map((option) => ({
-            id: option.value as OnboardingGoalId,
+            id: option.value,
             label: option.name,
-          }))
-          .filter((option) => ONBOARDING_GOALS.includes(option.id));
-        if (next.length > 0) setApiGoalOptions(next);
+          }));
+        setGoalOptions(next);
+        setGoals((current) =>
+          current.filter((id) => next.some((option) => option.id === id)),
+        );
+        setGoalsStatus("ready");
       } catch {
-        // Keep i18n fallback goal options.
+        if (cancelled) return;
+        setGoalOptions([]);
+        setGoalsStatus("error");
       }
     })();
     return () => {
@@ -675,16 +697,6 @@ export function useOnboarding() {
     });
   };
 
-  const goalOptions = useMemo(() => {
-    if (apiGoalOptions && apiGoalOptions.length > 0) {
-      return apiGoalOptions;
-    }
-    return ONBOARDING_GOALS.map((id) => ({
-      id,
-      label: t(`goals.options.${id}`),
-    }));
-  }, [apiGoalOptions, t]);
-
   const bodyTypeOptions = useMemo(() => {
     const source =
       apiBodyTypeOptions && apiBodyTypeOptions.length > 0
@@ -790,10 +802,8 @@ export function useOnboarding() {
     return input;
   };
 
-  const buildAthleteInput = (): UpdateAthleteProfileInput => ({
+  const buildAthleteCoreInput = (): UpdateAthleteProfileInput => ({
     body: { heightCm, weightKg },
-    goalKeys: goals,
-    sportIds,
     ...(athleteLevel ? { levelKey: athleteLevel } : {}),
     lifestyle: {
       bodyType,
@@ -811,14 +821,83 @@ export function useOnboarding() {
     },
   });
 
+  const snapshotSaveContext = (): OnboardingSaveContext => ({
+    weightKg,
+    heightCm,
+    sleep,
+    mood,
+    calories,
+    caloriesKnown,
+    goals,
+    sportIds,
+    meInput: buildMeInput(),
+    athleteInput: buildAthleteCoreInput(),
+  });
+
+  const replaceSaveSteps = (next: OnboardingSaveStepView[]) => {
+    saveStepsRef.current = next;
+    setSaveSteps(next);
+  };
+
+  const patchSaveStep = (
+    id: OnboardingSaveStepId,
+    status: OnboardingSaveStepStatus,
+  ) => {
+    replaceSaveSteps(
+      saveStepsRef.current.map((step) =>
+        step.id === id ? { ...step, status } : step,
+      ),
+    );
+  };
+
+  const persistOnboarding = async () => {
+    if (persistInFlightRef.current) return;
+    persistInFlightRef.current = true;
+
+    if (!saveContextRef.current) {
+      saveContextRef.current = snapshotSaveContext();
+    }
+    const ctx = saveContextRef.current;
+
+    if (saveStepsRef.current.length === 0) {
+      replaceSaveSteps(
+        selectOnboardingSaveSteps(ctx).map((id) => ({
+          id,
+          status: "pending",
+        })),
+      );
+    }
+    setSavePhase("running");
+
+    const minVisible = minStepVisibleMs(reduceMotion);
+    try {
+      const stepIds = saveStepsRef.current.map((step) => step.id);
+      for (const id of stepIds) {
+        if (
+          saveStepsRef.current.find((step) => step.id === id)?.status === "done"
+        ) {
+          continue;
+        }
+        patchSaveStep(id, "active");
+        const startedAt = Date.now();
+        await runOnboardingSaveStep(id, ctx, saveMutationIdsRef.current);
+        await waitRemaining(startedAt, minVisible);
+        patchSaveStep(id, "done");
+      }
+      await waitRemaining(Date.now(), reduceMotion ? 0 : 280);
+      persistInFlightRef.current = false;
+      setPermissionIndex(0);
+    } catch {
+      const active = saveStepsRef.current.find(
+        (step) => step.status === "active",
+      );
+      if (active) patchSaveStep(active.id, "error");
+      persistInFlightRef.current = false;
+    }
+  };
+
   const completeOnboarding = () => {
     markOnboardingDone();
-    if (isAuthenticated) {
-      void Promise.allSettled([
-        accountProfile.updateMe(buildMeInput()),
-        accountProfile.updateAthlete(buildAthleteInput()),
-      ]);
-    }
     const next = searchParams.get("next");
     const fallback = isAuthenticated
       ? roleHomePath(activeRole)
@@ -842,7 +921,19 @@ export function useOnboarding() {
   };
 
   const requestFinish = () => {
-    setPermissionIndex(0);
+    if (persistInFlightRef.current) return;
+    if (
+      saveStepsRef.current.length > 0 &&
+      saveStepsRef.current.every((step) => step.status === "done")
+    ) {
+      setPermissionIndex(0);
+      return;
+    }
+    if (!isAuthenticated) {
+      setPermissionIndex(0);
+      return;
+    }
+    void persistOnboarding();
   };
 
   const handlePermissionContinue = () => {
@@ -879,7 +970,7 @@ export function useOnboarding() {
     emblaApi?.scrollNext();
   };
 
-  const toggleGoal = (id: OnboardingGoalId) => {
+  const toggleGoal = (id: string) => {
     setGoals((current) =>
       current.includes(id)
         ? current.filter((item) => item !== id)
@@ -941,6 +1032,8 @@ export function useOnboarding() {
     dietOptions,
     dietStatus,
     goals,
+    goalOptions,
+    goalsStatus,
     bloodGroup,
     bloodRh,
     avatar,
@@ -948,7 +1041,6 @@ export function useOnboarding() {
     identityLabels,
     provinces,
     phaseSteps,
-    goalOptions,
     genderOptions,
     bodyTypeOptions,
     weightUnitOptions,
@@ -957,6 +1049,12 @@ export function useOnboarding() {
     moodOptions,
     activePermissionKind,
     isRequestingPermission,
+    isSavingView: savePhase !== "idle",
+    saveSteps: saveSteps.map((step) => ({
+      ...step,
+      label: t(`saving.steps.${step.id}`),
+    })),
+    retrySave: persistOnboarding,
     setFirstName,
     setLastName,
     setGender,

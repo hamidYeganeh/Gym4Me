@@ -87,7 +87,7 @@ export function DiscoverySportsScreen({
           <EmptyState
             className={styles.empty}
             description={t("emptyBody")}
-            illustration={EMPTY_STATE_ILLUSTRATIONS.search}
+            illustration={EMPTY_STATE_ILLUSTRATIONS.empty}
             illustrationAlt=""
             title={t("emptyTitle")}
           />

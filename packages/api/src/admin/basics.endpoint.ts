@@ -3,6 +3,7 @@ export const adminBasicsEndpoints = {
   choices: "/admin/basics/choices",
   choiceByKey: (key: string) =>
     `/admin/basics/choices/${encodeURIComponent(key)}`,
+  seedChoiceDefaults: "/admin/basics/choices/seed-defaults",
   location: "/admin/basics/location",
   locationById: (id: string) => `/admin/basics/location/${id}`,
   sport: "/admin/basics/sport",

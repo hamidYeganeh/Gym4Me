@@ -19,7 +19,7 @@ export function DiscoveryBrowseClubsEmptySection({
   return (
     <EmptyState
       description={t("emptyBody")}
-      illustration={EMPTY_STATE_ILLUSTRATIONS.search}
+      illustration={EMPTY_STATE_ILLUSTRATIONS.empty}
       illustrationAlt=""
       layout="media"
       primaryAction={{

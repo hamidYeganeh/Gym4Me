@@ -30,6 +30,7 @@ export type OnboardingCarouselSectionProps = Pick<
   | "provinces"
   | "phaseSteps"
   | "goalOptions"
+  | "goalsStatus"
   | "genderOptions"
   | "bodyTypeOptions"
   | "weightUnitOptions"

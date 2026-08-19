@@ -5,6 +5,7 @@ import { Chip } from "@heroui/react/chip";
 import { Skeleton } from "@heroui/react/skeleton";
 import { Typography } from "@heroui/react/typography";
 import { MediaImage } from "../../common/MediaImage";
+import { EMPTY_STATE_ILLUSTRATIONS } from "./empty-state-illustrations";
 import { emptyStateVariants } from "./EmptyState.styles";
 import type {
   EmptyStateProps,
@@ -30,7 +31,10 @@ export function EmptyState({
   ...props
 }: EmptyStateProps) {
   const slots = emptyStateVariants({ status, layout });
-  const showMedia = layout === "media" && illustration != null;
+  const resolvedIllustration =
+    illustration ??
+    (layout === "media" ? EMPTY_STATE_ILLUSTRATIONS.empty : undefined);
+  const showMedia = layout === "media" && resolvedIllustration != null;
   const showIcon = layout === "icon" && icon != null;
   const showBadge = badge != null && badge !== "";
   const showSuggestions = suggestions != null && suggestions.length > 0;
@@ -39,14 +43,14 @@ export function EmptyState({
     <section className={slots.root({ className })} {...props}>
       {showMedia ? (
         <div className={slots.media()}>
-          {typeof illustration === "string" ? (
+          {typeof resolvedIllustration === "string" ? (
             <MediaImage
               alt={illustrationAlt}
               className={slots.illustration()}
-              image={illustration}
+              image={resolvedIllustration}
             />
           ) : (
-            <div className={slots.illustration()}>{illustration}</div>
+            <div className={slots.illustration()}>{resolvedIllustration}</div>
           )}
         </div>
       ) : null}

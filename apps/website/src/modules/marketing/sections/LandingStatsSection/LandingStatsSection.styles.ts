@@ -11,7 +11,8 @@ export const landingStatsSectionStyles = tv({
       "lg:flex-row lg:items-end lg:justify-between lg:gap-16",
     ],
     copy: "max-w-xl shrink-0",
-    title: "mt-4 text-5xl font-medium leading-[0.95] tracking-tight",
+    title:
+      "mt-4 text-balance text-3xl font-medium leading-[0.95] tracking-tight sm:text-5xl",
     hint: "mt-4 max-w-xl text-sm text-(--on-brand-muted)",
     stack: "flex w-full max-w-[380px] flex-col gap-3 self-center lg:self-end",
     item: "w-full min-w-0",

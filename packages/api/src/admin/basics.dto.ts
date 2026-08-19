@@ -42,6 +42,12 @@ export type AdminUpdateChoiceGroupInput = {
   isActive?: boolean;
 };
 
+export type SeedChoiceDefaultsResult = {
+  created: string[];
+  updated: string[];
+  skipped: string[];
+};
+
 export type AdminCreateLocationInput = {
   kind: LocationKind;
   name: string;

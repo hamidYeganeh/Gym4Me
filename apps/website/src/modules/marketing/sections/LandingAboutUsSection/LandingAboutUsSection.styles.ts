@@ -33,8 +33,8 @@ export const landingAboutUsSectionStyles = tv({
     middleCol: "w-full flex-1",
     statRow: "mb-5 flex items-center gap-4",
     statValue: [
-      "text-[72px] font-extrabold leading-none tracking-tighter",
-      "text-foreground lg:text-[84px]",
+      "text-[48px] font-extrabold leading-none tracking-tighter",
+      "text-foreground sm:text-[72px] lg:text-[84px]",
     ].join(" "),
     statMeta: "flex flex-col justify-center",
     statLine: [

@@ -179,6 +179,19 @@ const DEFAULT_METRIC_TYPES: {
     validation: { min: 1, max: 500 },
   },
   {
+    key: 'height_cm',
+    name: 'Height',
+    valueKind: MetricValueKind.NUMBER,
+    unit: 'cm',
+    canonicalUnit: 'cm',
+    sortHint: 11,
+    chartKind: 'line',
+    aggregation: MetricAggregation.LATEST,
+    periodKind: MetricPeriodKind.POINT,
+    privacyClass: MetricPrivacyClass.HEALTH,
+    validation: { min: 50, max: 250 },
+  },
+  {
     key: 'heart_rate',
     name: 'Heart rate',
     valueKind: MetricValueKind.NUMBER,
@@ -275,6 +288,19 @@ const DEFAULT_METRIC_TYPES: {
     aggregation: MetricAggregation.SUM,
     periodKind: MetricPeriodKind.DAILY_TOTAL,
     privacyClass: MetricPrivacyClass.WELLNESS,
+  },
+  {
+    key: 'calories_kcal',
+    name: 'Calories',
+    valueKind: MetricValueKind.NUMBER,
+    unit: 'kcal',
+    canonicalUnit: 'kcal',
+    sortHint: 61,
+    chartKind: 'bars',
+    aggregation: MetricAggregation.SUM,
+    periodKind: MetricPeriodKind.DAILY_TOTAL,
+    privacyClass: MetricPrivacyClass.WELLNESS,
+    validation: { min: 0, max: 20_000 },
   },
   {
     key: 'mood',
@@ -1908,12 +1934,15 @@ export class ProgressService {
       (
         {
           weight_kg: { min: 1, max: 500 },
+          height_cm: { min: 50, max: 250 },
           water_ml: { min: 0, max: 20_000 },
           steps: { min: 0, max: 200_000, integer: true },
           walking_distance_km: { min: 0, max: 500 },
           walking_duration_min: { min: 0, max: 1_440 },
           sleep_duration_min: { min: 0, max: 1_440 },
           sleep_quality: { min: 1, max: 5, integer: true },
+          calories_kcal: { min: 0, max: 20_000 },
+          mood: { min: 1, max: 5, integer: true },
         } as Record<string, { min?: number; max?: number; integer?: boolean }>
       )[metricKey.trim()];
     if (!range) return;

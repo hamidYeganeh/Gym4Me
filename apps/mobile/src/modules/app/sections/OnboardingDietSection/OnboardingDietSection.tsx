@@ -8,6 +8,7 @@ import { BreadToast } from "@repo/icons/BreadToast";
 import { ChickenDrumstick } from "@repo/icons/ChickenDrumstick";
 import { ForkKnife } from "@repo/icons/ForkKnife";
 import { Leaf } from "@repo/icons/Leaf";
+import { EmptyState } from "@repo/ui/kit/EmptyState";
 import { onboardingDietSectionVariants } from "./OnboardingDietSection.styles";
 import type { OnboardingDietSectionProps } from "./OnboardingDietSection.types";
 
@@ -73,7 +74,7 @@ export function OnboardingDietSection({
   if (options.length === 0) {
     return (
       <div className={base.root({ className })}>
-        <Typography className={base.statusText()}>{emptyLabel}</Typography>
+        <EmptyState title={emptyLabel} />
       </div>
     );
   }

@@ -13,6 +13,10 @@ import {
   formatRelativeTime,
 } from "@/modules/articles/lib/format-article";
 import { mediaFileUrl } from "@/shared/lib/api";
+import {
+  PublicSiteFooter,
+  PublicSiteHeader,
+} from "@/shared/components/PublicSiteHeader";
 import { articlesListScreenStyles as styles } from "./ArticlesListScreen.styles";
 import type { ArticlesListScreenProps } from "./ArticlesListScreen.types";
 
@@ -36,8 +40,10 @@ export function ArticlesListScreen({
   const router = useRouter();
 
   return (
-    <main className={styles.root}>
-      <div className={styles.container}>
+    <>
+      <PublicSiteHeader />
+      <main className={styles.root}>
+        <div className={styles.container}>
         <header className={styles.intro}>
           <Typography className={styles.title} type="h1" weight="bold">
             {t("listTitle")}
@@ -140,7 +146,9 @@ export function ArticlesListScreen({
             ))}
           </div>
         )}
-      </div>
-    </main>
+        </div>
+      </main>
+      <PublicSiteFooter />
+    </>
   );
 }

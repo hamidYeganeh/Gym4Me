@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { FoodItem, FoodItemStatus } from "@repo/api";
 import { ApiError } from "@repo/api";
@@ -7,6 +7,10 @@ import { AdminShell } from "@/shared/components";
 import { useAdminInfiniteQuery } from "@/shared/hooks";
 import { adminNutrition } from "@/shared/lib/api";
 import { routes } from "@/shared/lib/routes";
+import {
+  loadNutritionCategoryOptions,
+  nutritionCategoryLabels,
+} from "../../lib/nutrition-categories";
 import { FoodItemsArchiveDialogSection } from "../../sections/FoodItemsArchiveDialogSection";
 import { FoodItemsHeaderSection } from "../../sections/FoodItemsHeaderSection";
 import { FoodItemsTableSection } from "../../sections/FoodItemsTableSection";
@@ -27,6 +31,23 @@ export function FoodItemsScreen({ className }: FoodItemsScreenProps) {
   const [archiving, setArchiving] = useState<FoodItem | null>(null);
   const [archivePending, setArchivePending] = useState(false);
   const [archiveError, setArchiveError] = useState<string | null>(null);
+  const [categoryLabels, setCategoryLabels] = useState<Record<string, string>>(
+    {},
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    void loadNutritionCategoryOptions()
+      .then((options) => {
+        if (!cancelled) setCategoryLabels(nutritionCategoryLabels(options));
+      })
+      .catch(() => {
+        if (!cancelled) setCategoryLabels({});
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const queryKey = useMemo(
     () => JSON.stringify({ statusFilter, search, pageSize: PAGE_SIZE }),
@@ -97,6 +118,7 @@ export function FoodItemsScreen({ className }: FoodItemsScreenProps) {
         />
 
         <FoodItemsTableSection
+          categoryLabels={categoryLabels}
           error={error}
           fetchingMore={fetchingMore}
           hasMore={hasMore}

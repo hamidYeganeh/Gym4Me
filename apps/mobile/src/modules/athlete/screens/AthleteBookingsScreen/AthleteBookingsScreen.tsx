@@ -156,11 +156,7 @@ export function AthleteBookingsScreen({ bookings }: AthleteBookingsScreenProps) 
         ) : (
           <EmptyState
             description={t(`empty.${activeFilter}`)}
-            illustration={
-              activeFilter === "upcoming"
-                ? EMPTY_STATE_ILLUSTRATIONS.session
-                : EMPTY_STATE_ILLUSTRATIONS.calendar
-            }
+            illustration={EMPTY_STATE_ILLUSTRATIONS.empty}
             illustrationAlt=""
             layout="media"
             primaryAction={

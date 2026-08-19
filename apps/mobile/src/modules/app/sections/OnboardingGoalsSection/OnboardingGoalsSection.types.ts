@@ -1,14 +1,16 @@
-import type { OnboardingGoalId } from "@/modules/app/lib/onboarding-data";
-
 export type OnboardingGoalOption = {
-  id: OnboardingGoalId;
+  id: string;
   label: string;
 };
 
 export type OnboardingGoalsSectionProps = {
   label: string;
   options: OnboardingGoalOption[];
-  selected: OnboardingGoalId[];
-  onToggle: (id: OnboardingGoalId) => void;
+  selected: string[];
+  onToggle: (id: string) => void;
+  isLoading?: boolean;
+  isError?: boolean;
+  emptyLabel: string;
+  errorLabel: string;
   className?: string;
 };

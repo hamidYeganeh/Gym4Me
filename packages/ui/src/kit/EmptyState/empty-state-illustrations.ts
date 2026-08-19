@@ -4,6 +4,7 @@
  * Source assets: `@repo/ui/assets/empty-states/`.
  */
 export const EMPTY_STATE_ILLUSTRATIONS = {
+  empty: "/empty-states/no-data.png",
   search: "/empty-states/search-empty.png",
   calendar: "/empty-states/calendar-empty.png",
   session: "/empty-states/session-empty.png",

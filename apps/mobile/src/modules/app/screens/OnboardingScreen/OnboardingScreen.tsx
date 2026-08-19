@@ -6,6 +6,7 @@ import { OnboardingCarouselSection } from "@/modules/app/sections/OnboardingCaro
 import { OnboardingFooterSection } from "@/modules/app/sections/OnboardingFooterSection";
 import { OnboardingHeader } from "@/modules/app/sections/OnboardingHeader";
 import { OnboardingPermissionSheet } from "@/modules/app/sections/OnboardingPermissionSheet";
+import { OnboardingSavingSection } from "@/modules/app/sections/OnboardingSavingSection";
 import { onboardingScreenVariants } from "./OnboardingScreen.styles";
 import type { OnboardingScreenProps } from "./OnboardingScreen.types";
 
@@ -16,32 +17,44 @@ export function OnboardingScreen({ className }: OnboardingScreenProps) {
 
   return (
     <main className={styles.root({ className })}>
-      <OnboardingCarouselSection {...onboarding} />
+      {onboarding.isSavingView ? (
+        <OnboardingSavingSection
+          ariaLabel={onboarding.t("saving.aria")}
+          errorLabel={onboarding.t("saving.error")}
+          retryLabel={onboarding.t("saving.retry")}
+          steps={onboarding.saveSteps}
+          onRetry={onboarding.retrySave}
+        />
+      ) : (
+        <>
+          <OnboardingCarouselSection {...onboarding} />
 
-      <div className={styles.overlay()}>
-        <div className={styles.header()}>
-          <OnboardingHeader
-            backLabel={onboarding.t("back")}
-            progress={onboarding.progress}
-            progressLabel={onboarding.t("progressLabel")}
-            showProgress={onboarding.showHeaderProgress}
-            skipLabel={onboarding.t("skip")}
-            onBack={onboarding.goPrev}
-            onSkip={onboarding.requestFinish}
-          />
-        </div>
+          <div className={styles.overlay()}>
+            <div className={styles.header()}>
+              <OnboardingHeader
+                backLabel={onboarding.t("back")}
+                progress={onboarding.progress}
+                progressLabel={onboarding.t("progressLabel")}
+                showProgress={onboarding.showHeaderProgress}
+                skipLabel={onboarding.t("skip")}
+                onBack={onboarding.goPrev}
+                onSkip={onboarding.requestFinish}
+              />
+            </div>
 
-        <div className={styles.overlayFill()} />
+            <div className={styles.overlayFill()} />
 
-        <div className={styles.footer()}>
-          {showFooterScrim ? (
-            <div aria-hidden className={styles.footerScrim()} />
-          ) : null}
-          <div className={styles.footerActions()}>
-            <OnboardingFooterSection {...onboarding} />
+            <div className={styles.footer()}>
+              {showFooterScrim ? (
+                <div aria-hidden className={styles.footerScrim()} />
+              ) : null}
+              <div className={styles.footerActions()}>
+                <OnboardingFooterSection {...onboarding} />
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        </>
+      )}
 
       {onboarding.activePermissionKind ? (
         <OnboardingPermissionSheet

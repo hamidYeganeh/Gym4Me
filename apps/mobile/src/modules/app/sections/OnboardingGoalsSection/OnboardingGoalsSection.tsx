@@ -2,35 +2,80 @@
 
 import type { ComponentType } from "react";
 import { Button } from "@heroui/react/button";
+import { Spinner } from "@heroui/react/spinner";
+import { Typography } from "@heroui/react/typography";
 import { Check } from "@repo/icons/Check";
 import { HealthCross1 } from "@repo/icons/HealthCross1";
 import { HeartEcg } from "@repo/icons/HeartEcg";
 import { Mobile } from "@repo/icons/Mobile";
 import { PersonRunning } from "@repo/icons/PersonRunning";
 import { RobotFace1 } from "@repo/icons/RobotFace1";
-import type { OnboardingGoalId } from "@/modules/app/lib/onboarding-data";
+import { EmptyState } from "@repo/ui/kit/EmptyState";
 import { onboardingGoalsSectionVariants } from "./OnboardingGoalsSection.styles";
 import type { OnboardingGoalsSectionProps } from "./OnboardingGoalsSection.types";
 
-const GOAL_ICONS: Record<
-  OnboardingGoalId,
-  ComponentType<{ className?: string; size?: number; "aria-hidden"?: boolean }>
-> = {
-  overallHealth: HealthCross1,
-  trackMetrics: HeartEcg,
-  aiAssistant: RobotFace1,
-  sportsActivity: PersonRunning,
-  justTrying: Mobile,
+type IconComponent = ComponentType<{
+  className?: string;
+  size?: number;
+  "aria-hidden"?: boolean;
+}>;
+
+const GOAL_ICONS: Record<string, IconComponent> = {
+  overallhealth: HealthCross1,
+  health: HealthCross1,
+  trackmetrics: HeartEcg,
+  metrics: HeartEcg,
+  aiassistant: RobotFace1,
+  ai: RobotFace1,
+  sportsactivity: PersonRunning,
+  sports: PersonRunning,
+  justtrying: Mobile,
+  trying: Mobile,
 };
+
+function resolveGoalIcon(id: string): IconComponent {
+  const key = id.toLowerCase().replace(/[^a-z0-9]/g, "");
+  return GOAL_ICONS[key] ?? HealthCross1;
+}
 
 export function OnboardingGoalsSection({
   label,
   options,
   selected,
   onToggle,
+  isLoading = false,
+  isError = false,
+  emptyLabel,
+  errorLabel,
   className,
 }: OnboardingGoalsSectionProps) {
   const base = onboardingGoalsSectionVariants();
+
+  if (isLoading) {
+    return (
+      <div className={base.root({ className })}>
+        <div className={base.status()}>
+          <Spinner size="lg" />
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className={base.root({ className })}>
+        <Typography className={base.statusText()}>{errorLabel}</Typography>
+      </div>
+    );
+  }
+
+  if (options.length === 0) {
+    return (
+      <div className={base.root({ className })}>
+        <EmptyState title={emptyLabel} />
+      </div>
+    );
+  }
 
   return (
     <div className={base.root({ className })}>
@@ -38,13 +83,14 @@ export function OnboardingGoalsSection({
         {options.map((option) => {
           const isSelected = selected.includes(option.id);
           const styles = onboardingGoalsSectionVariants({ selected: isSelected });
-          const Icon = GOAL_ICONS[option.id] ?? HealthCross1;
+          const Icon = resolveGoalIcon(option.id);
 
           return (
             <Button
               key={option.id}
               aria-pressed={isSelected}
               className={styles.option()}
+              fullWidth
               variant="ghost"
               onPress={() => onToggle(option.id)}
             >

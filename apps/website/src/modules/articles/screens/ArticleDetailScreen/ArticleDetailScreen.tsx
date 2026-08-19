@@ -12,6 +12,10 @@ import {
   formatCategoryLabel,
 } from "@/modules/articles/lib/format-article";
 import { mediaFileUrl } from "@/shared/lib/api";
+import {
+  PublicSiteFooter,
+  PublicSiteHeader,
+} from "@/shared/components/PublicSiteHeader";
 import { articleDetailScreenStyles as styles } from "./ArticleDetailScreen.styles";
 import type { ArticleDetailScreenProps } from "./ArticleDetailScreen.types";
 
@@ -24,8 +28,10 @@ export function ArticleDetailScreen({
   const router = useRouter();
 
   return (
-    <main className={styles.root}>
-      <article className={styles.article}>
+    <>
+      <PublicSiteHeader />
+      <main className={styles.root}>
+        <article className={styles.article}>
         <Link className={styles.back} href="/articles">
           {t("backToList")}
         </Link>
@@ -122,6 +128,8 @@ export function ArticleDetailScreen({
           </div>
         </section>
       ) : null}
-    </main>
+      </main>
+      <PublicSiteFooter />
+    </>
   );
 }

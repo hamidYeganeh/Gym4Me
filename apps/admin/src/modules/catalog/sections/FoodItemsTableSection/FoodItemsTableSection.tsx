@@ -20,6 +20,7 @@ export function FoodItemsTableSection({
   fetchingMore,
   hasMore,
   error,
+  categoryLabels = {},
   onLoadMore,
   onEdit,
   onArchive,
@@ -39,7 +40,11 @@ export function FoodItemsTableSection({
             </span>
           ),
         }),
-        columnHelper.accessor((row) => row.categoryKey ?? "—", {
+        columnHelper.accessor((row) => {
+          const key = row.categoryKey;
+          if (!key) return "—";
+          return categoryLabels[key] ?? key;
+        }, {
           id: "category",
           header: t("food.columns.category"),
         }),
@@ -97,7 +102,7 @@ export function FoodItemsTableSection({
           },
         }),
       ] as ColumnDef<FoodItem, unknown>[],
-    [t],
+    [t, categoryLabels],
   );
 
   const meta: FoodTableMeta = {

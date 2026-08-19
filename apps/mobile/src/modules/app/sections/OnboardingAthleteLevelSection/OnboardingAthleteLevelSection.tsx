@@ -5,6 +5,7 @@ import { Spinner } from "@heroui/react/spinner";
 import { Typography } from "@heroui/react/typography";
 import { HandSwipeRight } from "@repo/icons/HandSwipeRight";
 import { AdaptiveSlider } from "@repo/ui/kit/AdaptiveSlider";
+import { EmptyState } from "@repo/ui/kit/EmptyState";
 import { onboardingAthleteLevelSectionVariants } from "./OnboardingAthleteLevelSection.styles";
 import type { OnboardingAthleteLevelSectionProps } from "./OnboardingAthleteLevelSection.types";
 
@@ -50,7 +51,7 @@ export function OnboardingAthleteLevelSection({
   if (options.length === 0 || !selected) {
     return (
       <div className={styles.root({ className })}>
-        <Typography className={styles.statusText()}>{emptyLabel}</Typography>
+        <EmptyState title={emptyLabel} />
       </div>
     );
   }

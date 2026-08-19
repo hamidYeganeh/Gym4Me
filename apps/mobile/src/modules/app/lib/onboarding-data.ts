@@ -20,13 +20,6 @@ export type OnboardingStepId =
 
 export type OnboardingPhaseId = "assessment" | "personal" | "plan";
 
-export type OnboardingGoalId =
-  | "overallHealth"
-  | "trackMetrics"
-  | "aiAssistant"
-  | "sportsActivity"
-  | "justTrying";
-
 export type OnboardingGenderId = "male" | "female";
 
 export type OnboardingBodyTypeId = "endomorph" | "ectomorph" | "mesomorph";
@@ -118,14 +111,6 @@ export const ONBOARDING_CALORIES_STEP = 50;
 export const ONBOARDING_CALORIE_PRESETS = [1500, 2000, 2500] as const;
 
 export const ONBOARDING_SLIDE_COUNT = ONBOARDING_STEPS.length;
-
-export const ONBOARDING_GOALS: OnboardingGoalId[] = [
-  "overallHealth",
-  "trackMetrics",
-  "aiAssistant",
-  "sportsActivity",
-  "justTrying",
-];
 
 export const ONBOARDING_GENDERS: OnboardingGenderId[] = ["male", "female"];
 

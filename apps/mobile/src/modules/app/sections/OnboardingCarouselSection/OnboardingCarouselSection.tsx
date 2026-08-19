@@ -74,6 +74,7 @@ export function OnboardingCarouselSection({
   moodOptions,
   dietOptions,
   dietStatus,
+  goalsStatus,
   setFirstName,
   setLastName,
   setGender,
@@ -267,6 +268,10 @@ export function OnboardingCarouselSection({
 
               {mountStage && stepId === "goals" ? (
                 <OnboardingGoalsSection
+                  emptyLabel={t("goals.empty")}
+                  errorLabel={t("goals.error")}
+                  isError={goalsStatus === "error"}
+                  isLoading={goalsStatus === "loading"}
                   label={t("goals.title")}
                   options={goalOptions}
                   selected={goals}

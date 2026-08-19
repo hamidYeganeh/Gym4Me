@@ -4,27 +4,20 @@ html.landing-page {
   font-size: 16px;
 }
 
-@media (max-width: 1920px) {
+/*
+ * Fluid rem only on tablet/desktop. Phone stays at 16px so Tailwind
+ * clamps and svh layout stay predictable (the old 4.44vw scale blew
+ * type up to ~28px at 640px and shrank tablet type below 12px).
+ */
+@media (min-width: 768px) and (max-width: 1440px) {
+  html.landing-page {
+    font-size: clamp(15px, 1.111111vw, 16px);
+  }
+}
+
+@media (min-width: 1441px) and (max-width: 1920px) {
   html.landing-page {
     font-size: 0.833333vw;
-  }
-}
-
-@media (max-width: 1440px) {
-  html.landing-page {
-    font-size: 1.111111vw;
-  }
-}
-
-@media (max-width: 1024px) {
-  html.landing-page {
-    font-size: 1.5625vw;
-  }
-}
-
-@media (max-width: 640px) {
-  html.landing-page {
-    font-size: 4.444444vw;
   }
 }
 

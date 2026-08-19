@@ -1,6 +1,5 @@
 import type {
   AthleteBodyType,
-  AthleteDiet,
   AthleteExperience,
   AthleteMood,
   BloodGroup,
@@ -39,7 +38,7 @@ export type AthleteLifestyle = {
   experience: AthleteExperience | null;
   sleepLevel: number | null;
   mood: AthleteMood | null;
-  diet: AthleteDiet | null;
+  diet: string | null;
   dailyCalories: number | null;
   activityKeys: string[];
 };
@@ -75,7 +74,7 @@ export type UpdateAthleteLifestyleInput = {
   experience?: AthleteExperience;
   sleepLevel?: number;
   mood?: AthleteMood;
-  diet?: AthleteDiet;
+  diet?: string;
   /** null clears the value (user doesn't know their intake). */
   dailyCalories?: number | null;
   activityKeys?: string[];

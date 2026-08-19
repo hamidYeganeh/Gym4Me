@@ -2,7 +2,7 @@ import { tv } from "tailwind-variants";
 
 export const landingTrustSectionStyles = tv({
   slots: {
-    root: "relative isolate mt-3 overflow-hidden rounded-(--radius-card-lg) bg-background px-6 py-16 sm:px-10 sm:py-20",
+    root: "relative isolate mt-3 overflow-hidden rounded-(--radius-card-lg) bg-background px-5 py-16 sm:px-10 sm:py-20",
     badges:
       "relative z-20 flex flex-col justify-between gap-6 sm:flex-row sm:items-start",
     percent:
@@ -15,7 +15,7 @@ export const landingTrustSectionStyles = tv({
     badgeTitle: "text-lg font-bold text-foreground",
     badgeBody: "mt-1 text-xs leading-relaxed text-muted",
     ghost:
-      "pointer-events-none relative z-0 mx-auto mt-12 max-w-[88rem] select-none text-[8.2vw] font-bold leading-[1.02] tracking-tight uppercase",
+      "pointer-events-none relative z-0 mx-auto mt-8 max-w-[88rem] select-none text-[clamp(1.5rem,8.2vw,6rem)] font-bold leading-[1.02] tracking-tight uppercase sm:mt-12",
     ghostRow: "flex justify-between gap-4",
     ghostWord: "will-change-transform text-(--ghost)",
     coachWrap:

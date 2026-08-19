@@ -6,17 +6,17 @@ export const landingDownloadSectionStyles = tv({
      * Pin target — no overflow/rounding here (breaks ScrollSmoother pins).
      * High z-index keeps following sections from painting over the transform pin.
      */
-    root: "landing-download relative z-30 mt-3 w-full min-h-svh py-4",
+    root: "landing-download relative z-30 mt-3 w-full min-h-0 py-4 md:min-h-svh",
     panel: [
       "relative flex h-full items-center overflow-hidden",
-      "rounded-(--radius-card-lg) bg-accent px-6 py-16 text-accent-foreground",
+      "rounded-(--radius-card-lg) bg-accent px-5 py-14 text-accent-foreground",
       "sm:px-10 sm:py-20",
     ].join(" "),
     inner:
       "mx-auto grid w-full max-w-[1200px] items-center gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16",
     copy: "relative z-10 flex flex-col items-start text-start max-lg:order-2",
     title: [
-      "text-4xl font-medium leading-[0.98] tracking-tight text-accent-foreground",
+      "text-3xl font-medium leading-[0.98] tracking-tight text-balance text-accent-foreground",
       "sm:text-5xl lg:text-6xl",
     ].join(" "),
     hint: "mt-3 max-w-md text-sm text-accent-foreground/75 sm:mt-4",

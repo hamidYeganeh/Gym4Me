@@ -18,6 +18,7 @@ import { ShapesTriangleSquareCirclce } from "@repo/icons/ShapesTriangleSquareCir
 import { Tennis } from "@repo/icons/Tennis";
 import { Volleyball } from "@repo/icons/Volleyball";
 import { SportSelectCard } from "@repo/ui/cards/SportSelectCard";
+import { EmptyState } from "@repo/ui/kit/EmptyState";
 import { onboardingSportsSectionVariants } from "./OnboardingSportsSection.styles";
 import type { OnboardingSportsSectionProps } from "./OnboardingSportsSection.types";
 
@@ -111,7 +112,7 @@ export function OnboardingSportsSection({
   if (options.length === 0) {
     return (
       <div className={styles.root({ className })}>
-        <Typography className={styles.statusText()}>{emptyLabel}</Typography>
+        <EmptyState title={emptyLabel} />
       </div>
     );
   }

@@ -558,6 +558,7 @@ export enum AuditAction {
   CHOICE_CREATED = 'basics.choice_created',
   CHOICE_UPDATED = 'basics.choice_updated',
   CHOICE_DELETED = 'basics.choice_deleted',
+  CHOICE_DEFAULTS_SEEDED = 'basics.choice_defaults_seeded',
   LOCATION_CREATED = 'basics.location_created',
   LOCATION_UPDATED = 'basics.location_updated',
   LOCATION_DELETED = 'basics.location_deleted',

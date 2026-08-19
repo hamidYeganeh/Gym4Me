@@ -2,11 +2,11 @@ import { tv } from "tailwind-variants";
 
 export const landingBookingSectionStyles = tv({
   slots: {
-    root: "relative z-0 w-full bg-background px-6 pb-2.5 pt-[140px] font-sans",
+    root: "relative z-0 w-full bg-background px-5 pb-2.5 pt-16 font-sans sm:px-6 md:pt-[140px]",
     inner: "landing-container",
     banner: [
-      "relative flex min-h-[260px] flex-col overflow-hidden rounded-2xl",
-      "bg-accent p-10 md:flex-row md:px-[60px] md:py-12",
+      "relative flex min-h-[220px] flex-col overflow-hidden rounded-2xl",
+      "bg-accent p-6 sm:p-10 md:flex-row md:px-[60px] md:py-12",
     ].join(" "),
     squiggle:
       "pointer-events-none absolute inset-0 z-0 size-full text-accent-foreground opacity-[0.08]",
