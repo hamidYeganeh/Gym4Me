@@ -41,7 +41,6 @@ export function slideSubtitleKey(step: OnboardingStepId): string | null {
 export function slideOwnsChrome(step: OnboardingStepId): boolean {
   return (
     step === "review" ||
-    step === "experience" ||
     step === "personalIntro" ||
     step === "identity" ||
     step === "avatar"
@@ -50,9 +49,7 @@ export function slideOwnsChrome(step: OnboardingStepId): boolean {
 
 /** Full-bleed photo slides that need a footer scrim for the CTA. */
 export function slideIsHeroBleed(step: OnboardingStepId): boolean {
-  return (
-    step === "review" || step === "experience" || step === "personalIntro"
-  );
+  return step === "review" || step === "personalIntro";
 }
 
 /** Slides that fill the stage edge-to-edge (hero photos). */

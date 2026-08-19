@@ -27,6 +27,11 @@ export class ChoiceOptionDto {
   name!: string;
 
   @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  description?: string;
+
+  @IsOptional()
   @Type(() => Number)
   @IsInt()
   order?: number;

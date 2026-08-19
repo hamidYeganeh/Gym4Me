@@ -48,13 +48,12 @@ export function AdaptiveSlider({
   const range = max - min;
   const percentage = range === 0 ? 0 : ((current - min) / range) * 100;
 
-  const dots = useMemo(
-    () =>
-      Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className={slots.dot()} />
-      )),
-    [slots],
-  );
+  const dots = useMemo(() => {
+    const count = Math.max(2, Math.floor((max - min) / step) + 1);
+    return Array.from({ length: Math.min(count, 12) }).map((_, i) => (
+      <div key={i} className={slots.dot()} />
+    ));
+  }, [max, min, slots, step]);
 
   const handleSliderChange = (e: ChangeEvent<HTMLInputElement>) => {
     const next = Number(e.target.value);

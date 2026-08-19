@@ -11,12 +11,10 @@ import {
   ONBOARDING_DEFAULT_ALLERGIES,
   ONBOARDING_DEFAULT_BIRTH,
   ONBOARDING_DEFAULT_CALORIES,
-  ONBOARDING_DEFAULT_DIET,
   ONBOARDING_DEFAULT_HEIGHT_CM,
   ONBOARDING_DEFAULT_MOOD,
   ONBOARDING_DEFAULT_SLEEP,
   ONBOARDING_DEFAULT_WEIGHT_KG,
-  ONBOARDING_DIETS,
   ONBOARDING_FALLBACK_PROVINCES,
   ONBOARDING_GENDERS,
   ONBOARDING_GOALS,
@@ -28,8 +26,6 @@ import {
   onboardingPhaseForStep,
   type OnboardingBloodGroup,
   type OnboardingBodyTypeId,
-  type OnboardingDietId,
-  type OnboardingExperienceId,
   type OnboardingGenderId,
   type OnboardingGoalId,
   type OnboardingMoodId,
@@ -53,12 +49,15 @@ import {
   type OnboardingWeightUnit,
   type OnboardingWeightUnitOption,
 } from "@/modules/app/lib/onboarding-units";
+import type { OnboardingAthleteLevelOption } from "@/modules/app/sections/OnboardingAthleteLevelSection";
 import type { OnboardingAvatarValue } from "@/modules/app/sections/OnboardingAvatarSection";
 import type { OnboardingBirthdateValue } from "@/modules/app/sections/OnboardingBirthdateSection";
+import type { OnboardingDietOption } from "@/modules/app/sections/OnboardingDietSection";
 import type {
   OnboardingIdentityValue,
   OnboardingProvinceOption,
 } from "@/modules/app/sections/OnboardingIdentitySection";
+import type { OnboardingSportOption } from "@/modules/app/sections/OnboardingSportsSection";
 import {
   accountProfile,
   basicsChoices,
@@ -68,10 +67,10 @@ import {
   mediaApi,
   mediaFileUrl,
 } from "@/shared/lib/api";
-import type { OnboardingSportOption } from "@/modules/app/sections/OnboardingSportsSection";
 import { roleHomePath } from "@/shared/lib/role-routes";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import type {
+  AthleteDiet,
   UpdateAddressInput,
   UpdateAthleteProfileInput,
   UpdateMeInput,
@@ -82,6 +81,17 @@ import {
   skipDevicePermission,
   type DevicePermissionKind,
 } from "@/shared/lib/device-permissions";
+
+const ATHLETE_DIETS: readonly AthleteDiet[] = [
+  "balanced",
+  "vegetarian",
+  "protein",
+  "gluten_free",
+];
+
+function isAthleteDiet(value: string): value is AthleteDiet {
+  return (ATHLETE_DIETS as readonly string[]).includes(value);
+}
 
 export function useOnboarding() {
   const t = useTranslations("Mobile.Onboarding");
@@ -124,8 +134,13 @@ export function useOnboarding() {
   const [weightUnit, setWeightUnit] = useState<OnboardingWeightUnit>("kg");
   const [bodyType, setBodyType] =
     useState<OnboardingBodyTypeId>("ectomorph");
-  const [experience, setExperience] =
-    useState<OnboardingExperienceId | null>(null);
+  const [athleteLevel, setAthleteLevel] = useState<string | null>(null);
+  const [athleteLevelOptions, setAthleteLevelOptions] = useState<
+    OnboardingAthleteLevelOption[]
+  >([]);
+  const [athleteLevelStatus, setAthleteLevelStatus] = useState<
+    "loading" | "ready" | "error"
+  >("loading");
   const [sleep, setSleep] = useState<OnboardingSleepLevel>(
     ONBOARDING_DEFAULT_SLEEP,
   );
@@ -135,7 +150,11 @@ export function useOnboarding() {
   const [sportsStatus, setSportsStatus] = useState<
     "loading" | "ready" | "error"
   >("loading");
-  const [diet, setDiet] = useState<OnboardingDietId>(ONBOARDING_DEFAULT_DIET);
+  const [diet, setDiet] = useState<string | null>(null);
+  const [dietOptions, setDietOptions] = useState<OnboardingDietOption[]>([]);
+  const [dietStatus, setDietStatus] = useState<"loading" | "ready" | "error">(
+    "loading",
+  );
   const [calories, setCalories] = useState(ONBOARDING_DEFAULT_CALORIES);
   const [caloriesKnown, setCaloriesKnown] = useState(true);
   const [goals, setGoals] = useState<OnboardingGoalId[]>(["overallHealth"]);
@@ -358,6 +377,41 @@ export function useOnboarding() {
 
   useEffect(() => {
     let cancelled = false;
+    setAthleteLevelStatus("loading");
+    void (async () => {
+      try {
+        const group = await basicsChoices.get("athlete_level");
+        if (cancelled) return;
+        const next = group.options
+          .filter((option) => option.isActive !== false)
+          .slice()
+          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+          .map((option) => ({
+            value: option.value,
+            name: option.name,
+            description: option.description?.trim() ?? "",
+          }));
+        setAthleteLevelOptions(next);
+        setAthleteLevel((current) => {
+          if (current && next.some((option) => option.value === current)) {
+            return current;
+          }
+          return next[Math.min(3, next.length - 1)]?.value ?? next[0]?.value ?? null;
+        });
+        setAthleteLevelStatus("ready");
+      } catch {
+        if (cancelled) return;
+        setAthleteLevelOptions([]);
+        setAthleteLevelStatus("error");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
     setSportsStatus("loading");
     void (async () => {
       try {
@@ -386,11 +440,46 @@ export function useOnboarding() {
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    setDietStatus("loading");
+    void (async () => {
+      try {
+        const group = await basicsChoices.get("athlete_diet");
+        if (cancelled) return;
+        const next = group.options
+          .filter((option) => option.isActive !== false)
+          .slice()
+          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+          .map((option) => ({
+            id: option.value,
+            title: option.name,
+            description: option.description?.trim() ?? "",
+            icon: option.value,
+          }));
+        setDietOptions(next);
+        setDiet((current) => {
+          if (current && next.some((option) => option.id === current)) {
+            return current;
+          }
+          return next[0]?.id ?? null;
+        });
+        setDietStatus("ready");
+      } catch {
+        if (cancelled) return;
+        setDietOptions([]);
+        setDietStatus("error");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const step = ONBOARDING_STEPS[slide] as OnboardingStepId;
   const phase = onboardingPhaseForStep(step);
   const progress = (slide + 1) / ONBOARDING_SLIDE_COUNT;
   const age = ageFromJalali(birthdate);
-  const isExperienceStep = step === "experience";
   const isCaloriesStep = step === "calories";
   const isAvatarUploading = step === "avatar" && avatar.mode === "uploading";
   const showHeaderProgress = phase === "assessment";
@@ -651,16 +740,6 @@ export function useOnboarding() {
     [t],
   );
 
-  const dietOptions = useMemo(
-    () =>
-      ONBOARDING_DIETS.map((id) => ({
-        id,
-        title: t(`diet.options.${id}.title`),
-        description: t(`diet.options.${id}.description`),
-      })),
-    [t],
-  );
-
   const canContinue =
     !isAvatarUploading &&
     (step === "review" ||
@@ -670,10 +749,11 @@ export function useOnboarding() {
       step === "height" ||
       step === "weight" ||
       step === "bodyType" ||
+      (step === "athleteLevel" && athleteLevel != null) ||
       step === "sleep" ||
       step === "mood" ||
       (step === "sports" && sportIds.length > 0) ||
-      step === "diet" ||
+      (step === "diet" && diet != null) ||
       step === "calories" ||
       (step === "goals" && goals.length > 0) ||
       step === "bloodType" ||
@@ -714,12 +794,12 @@ export function useOnboarding() {
     body: { heightCm, weightKg },
     goalKeys: goals,
     sportIds,
+    ...(athleteLevel ? { levelKey: athleteLevel } : {}),
     lifestyle: {
       bodyType,
-      ...(experience ? { experience } : {}),
       sleepLevel: sleep,
       mood,
-      diet: diet === "glutenFree" ? "gluten_free" : diet,
+      ...(diet && isAthleteDiet(diet) ? { diet } : {}),
       dailyCalories: caloriesKnown && calories > 0 ? calories : null,
     },
     health: {
@@ -799,15 +879,6 @@ export function useOnboarding() {
     emblaApi?.scrollNext();
   };
 
-  const chooseExperience = (value: OnboardingExperienceId) => {
-    setExperience(value);
-    if (slide >= ONBOARDING_SLIDE_COUNT - 1) {
-      requestFinish();
-      return;
-    }
-    emblaApi?.scrollNext();
-  };
-
   const toggleGoal = (id: OnboardingGoalId) => {
     setGoals((current) =>
       current.includes(id)
@@ -843,7 +914,6 @@ export function useOnboarding() {
     progress,
     age,
     showHeaderProgress,
-    isExperienceStep,
     isCaloriesStep,
     isAvatarUploading,
     canContinue,
@@ -859,12 +929,17 @@ export function useOnboarding() {
     weightKg,
     weightUnit,
     bodyType,
+    athleteLevel,
+    athleteLevelOptions,
+    athleteLevelStatus,
     sleep,
     mood,
     sportIds,
     sportOptions,
     sportsStatus,
     diet,
+    dietOptions,
+    dietStatus,
     goals,
     bloodGroup,
     bloodRh,
@@ -880,7 +955,6 @@ export function useOnboarding() {
     heightUnitOptions,
     sleepOptions,
     moodOptions,
-    dietOptions,
     activePermissionKind,
     isRequestingPermission,
     setFirstName,
@@ -892,6 +966,7 @@ export function useOnboarding() {
     setWeightKg,
     setWeightUnit,
     setBodyType,
+    setAthleteLevel,
     setSleep,
     setMood,
     setDiet,
@@ -904,7 +979,6 @@ export function useOnboarding() {
     toggleSport,
     goPrev,
     goNext,
-    chooseExperience,
     handleCaloriesUnknown,
     handleCaloriesChange,
     requestFinish,

@@ -11,13 +11,13 @@ import {
   slideSubtitleKey,
   slideTitleKey,
 } from "@/modules/app/lib/onboarding-helpers";
+import { OnboardingAthleteLevelSection } from "@/modules/app/sections/OnboardingAthleteLevelSection";
 import { OnboardingAvatarSection } from "@/modules/app/sections/OnboardingAvatarSection";
 import { OnboardingBirthdateSection } from "@/modules/app/sections/OnboardingBirthdateSection";
 import { OnboardingBloodTypeSection } from "@/modules/app/sections/OnboardingBloodTypeSection";
 import { OnboardingBodyTypeSection } from "@/modules/app/sections/OnboardingBodyTypeSection";
 import { OnboardingCaloriesSection } from "@/modules/app/sections/OnboardingCaloriesSection";
 import { OnboardingDietSection } from "@/modules/app/sections/OnboardingDietSection";
-import { OnboardingExperienceSection } from "@/modules/app/sections/OnboardingExperienceSection";
 import { OnboardingGenderSection } from "@/modules/app/sections/OnboardingGenderSection";
 import { OnboardingGoalsSection } from "@/modules/app/sections/OnboardingGoalsSection";
 import { OnboardingHeightSection } from "@/modules/app/sections/OnboardingHeightSection";
@@ -47,6 +47,7 @@ export function OnboardingCarouselSection({
   weightKg,
   weightUnit,
   bodyType,
+  athleteLevel,
   sleep,
   mood,
   sportIds,
@@ -66,10 +67,13 @@ export function OnboardingCarouselSection({
   weightUnitOptions,
   heightUnitOptions,
   sleepOptions,
+  athleteLevelOptions,
+  athleteLevelStatus,
   sportOptions,
   sportsStatus,
   moodOptions,
   dietOptions,
+  dietStatus,
   setFirstName,
   setLastName,
   setGender,
@@ -79,6 +83,7 @@ export function OnboardingCarouselSection({
   setWeightKg,
   setWeightUnit,
   setBodyType,
+  setAthleteLevel,
   setSleep,
   setMood,
   setDiet,
@@ -187,10 +192,20 @@ export function OnboardingCarouselSection({
                 />
               ) : null}
 
-              {mountStage && stepId === "experience" ? (
-                <OnboardingExperienceSection
-                  imageAlt={t("experience.imageAlt")}
-                  title={t("experience.title")}
+              {mountStage && stepId === "athleteLevel" ? (
+                <OnboardingAthleteLevelSection
+                  dragHint={t("athleteLevel.dragHint")}
+                  emptyLabel={t("athleteLevel.empty")}
+                  errorLabel={t("athleteLevel.error")}
+                  isError={athleteLevelStatus === "error"}
+                  isLoading={athleteLevelStatus === "loading"}
+                  label={t("athleteLevel.title")}
+                  levelLabel={(level) =>
+                    t("athleteLevel.level", { level })
+                  }
+                  options={athleteLevelOptions}
+                  value={athleteLevel}
+                  onChange={setAthleteLevel}
                 />
               ) : null}
 
@@ -226,6 +241,10 @@ export function OnboardingCarouselSection({
 
               {mountStage && stepId === "diet" ? (
                 <OnboardingDietSection
+                  emptyLabel={t("diet.empty")}
+                  errorLabel={t("diet.error")}
+                  isError={dietStatus === "error"}
+                  isLoading={dietStatus === "loading"}
                   label={t("diet.title")}
                   options={dietOptions}
                   value={diet}
@@ -240,7 +259,6 @@ export function OnboardingCarouselSection({
                   min={ONBOARDING_CALORIES_RANGE.min}
                   presets={ONBOARDING_CALORIE_PRESETS}
                   step={ONBOARDING_CALORIES_STEP}
-                  summaryTemplate={t("calories.summary")}
                   unitLabel={t("calories.unitLabel")}
                   value={calories}
                   onChange={handleCaloriesChange}

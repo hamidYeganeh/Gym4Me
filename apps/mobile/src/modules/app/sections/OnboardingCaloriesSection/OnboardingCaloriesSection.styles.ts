@@ -10,6 +10,7 @@ export const onboardingCaloriesSectionVariants = tv({
     value: "min-w-[7rem] text-center text-4xl font-bold tabular-nums text-foreground",
     divider: "w-full max-w-xs bg-border",
     summary: "text-center text-sm text-muted",
+    summaryValue: "inline-block font-semibold tabular-nums text-foreground",
     presets: "flex w-full flex-wrap items-center justify-center gap-2",
     preset:
       "min-h-10 rounded-full border px-4 text-sm font-semibold outline-none transition-[border-color,background-color,color] duration-fast ease-app",

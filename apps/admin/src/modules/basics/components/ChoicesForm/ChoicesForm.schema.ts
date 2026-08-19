@@ -20,6 +20,7 @@ export function createChoicesFormSchema(
         z.object({
           value: z.string(),
           name: z.string(),
+          description: z.string(),
           order: z.number(),
           isActive: z.boolean(),
         }),
@@ -59,6 +60,7 @@ export type ChoicesFormValues = z.infer<
 export const emptyChoiceOption = (order: number) => ({
   value: "",
   name: "",
+  description: "",
   order,
   isActive: true,
 });
@@ -82,6 +84,7 @@ export function choiceToFormValues(item: ChoiceGroup): ChoicesFormValues {
         ? item.options.map((option, index) => ({
             value: option.value,
             name: option.name,
+            description: option.description ?? "",
             order: option.order ?? index,
             isActive: option.isActive !== false,
           }))
@@ -94,6 +97,9 @@ export function normalizedChoiceOptions(values: ChoicesFormValues) {
     .map((option, index) => ({
       value: option.value.trim(),
       name: option.name.trim(),
+      ...(option.description.trim()
+        ? { description: option.description.trim() }
+        : {}),
       order: option.order ?? index,
       isActive: option.isActive,
     }))

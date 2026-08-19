@@ -1,7 +1,6 @@
 export type OnboardingCaloriesSectionProps = {
   label: string;
   unitLabel: string;
-  summaryTemplate: string;
   value: number;
   presets: readonly number[];
   min: number;

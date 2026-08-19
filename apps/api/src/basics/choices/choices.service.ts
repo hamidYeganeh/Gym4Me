@@ -161,6 +161,7 @@ export class ChoicesService {
     options: {
       value: string;
       name: string;
+      description?: string;
       order?: number;
       isActive?: boolean;
     }[],
@@ -168,6 +169,9 @@ export class ChoicesService {
     return options.map((o, i) => ({
       value: o.value,
       name: o.name,
+      ...(o.description?.trim()
+        ? { description: o.description.trim() }
+        : {}),
       order: o.order ?? i,
       isActive: o.isActive ?? true,
     }));
@@ -192,6 +196,7 @@ export class ChoicesService {
       .map((o) => ({
         name: o.name,
         value: o.value,
+        description: o.description ?? null,
         isActive: o.isActive !== false,
         ...(activeOptionsOnly ? {} : { order: o.order }),
       }));

@@ -1,19 +1,16 @@
 import { Button } from "@heroui/react/button";
 import { ArrowRight } from "@repo/icons/ArrowRight";
-import { CloseX } from "@repo/icons/CloseX";
 import { onboardingFooterSectionVariants } from "./OnboardingFooterSection.styles";
 import type { OnboardingFooterSectionProps } from "./OnboardingFooterSection.types";
 
 export function OnboardingFooterSection({
   t,
-  isExperienceStep,
   isCaloriesStep,
   isAvatarUploading,
   canContinue,
   calories,
   caloriesKnown,
   goNext,
-  chooseExperience,
   handleCaloriesUnknown,
   className,
 }: OnboardingFooterSectionProps) {
@@ -23,38 +20,7 @@ export function OnboardingFooterSection({
 
   return (
     <div className={styles.root({ className })}>
-      {isExperienceStep ? (
-        <div className={styles.experienceActions()}>
-          <Button
-            className={styles.experienceYes()}
-            fullWidth
-            size="lg"
-            variant="primary"
-            onPress={() => chooseExperience("experienced")}
-          >
-            {t("experience.yes")}
-            <ArrowRight
-              aria-hidden
-              className={styles.experienceYesIcon()}
-              size={20}
-            />
-          </Button>
-          <Button
-            className={styles.experienceNo()}
-            fullWidth
-            size="lg"
-            variant="secondary"
-            onPress={() => chooseExperience("beginner")}
-          >
-            <CloseX
-              aria-hidden
-              className={styles.experienceNoIcon()}
-              size={20}
-            />
-            {t("experience.no")}
-          </Button>
-        </div>
-      ) : isCaloriesStep ? (
+      {isCaloriesStep ? (
         <div className={styles.caloriesFooter()}>
           <Button
             className={

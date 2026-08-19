@@ -164,10 +164,68 @@ async function seed() {
       name: 'سطح ورزشکار',
       isSystem: false,
       options: [
-        { value: 'beginner', name: 'مبتدی', order: 0 },
-        { value: 'intermediate', name: 'متوسط', order: 1 },
-        { value: 'advanced', name: 'پیشرفته', order: 2 },
-        { value: 'pro', name: 'حرفه‌ای', order: 3 },
+        {
+          value: 'beginner',
+          name: 'مبتدی',
+          description: 'تقریباً ورزش نمی‌کنم یا تازه شروع کرده‌ام.',
+          order: 0,
+        },
+        {
+          value: 'novice',
+          name: 'تازه‌کار',
+          description: 'هفته‌ای ۱ تا ۲ جلسه ورزش سبک دارم.',
+          order: 1,
+        },
+        {
+          value: 'intermediate',
+          name: 'متوسط',
+          description: 'هفته‌ای ۲ تا ۳ جلسه تمرین منظم دارم.',
+          order: 2,
+        },
+        {
+          value: 'athletic',
+          name: 'ورزشکار',
+          description: 'هفته‌ای ۳ تا ۴ جلسه تمرین می‌کنم.',
+          order: 3,
+        },
+        {
+          value: 'pro',
+          name: 'حرفه‌ای',
+          description: 'بیش از ۴ جلسه در هفته تمرین جدی دارم.',
+          order: 4,
+        },
+      ],
+    },
+    {
+      key: 'athlete_diet',
+      name: 'رژیم غذایی',
+      description: 'عادت غذایی ورزشکار را انتخاب کنید.',
+      isSystem: false,
+      options: [
+        {
+          value: 'balanced',
+          name: 'رژیم متعادل',
+          description: 'رژیم غذایی متعادلی دارم.',
+          order: 0,
+        },
+        {
+          value: 'vegetarian',
+          name: 'گیاه‌خواری',
+          description: 'ترجیح می‌دهم گیاهی غذا بخورم.',
+          order: 1,
+        },
+        {
+          value: 'protein',
+          name: 'پروتئین‌محور',
+          description: 'روی پروتئین تمرکز دارم.',
+          order: 2,
+        },
+        {
+          value: 'gluten_free',
+          name: 'بدون گلوتن',
+          description: 'از غذاهای بدون گلوتن استفاده می‌کنم.',
+          order: 3,
+        },
       ],
     },
     {

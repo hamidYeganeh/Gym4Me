@@ -21,6 +21,7 @@ export type ListAdminSportsQuery = {
 export type AdminChoiceOptionInput = {
   value: string;
   name: string;
+  description?: string;
   order?: number;
   isActive?: boolean;
 };

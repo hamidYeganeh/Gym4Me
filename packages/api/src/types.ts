@@ -178,6 +178,7 @@ export type RefStatus = "approved" | "pending";
 export type ChoiceOption = {
   name: string;
   value: string;
+  description?: string | null;
   isActive: boolean;
   order?: number;
 };

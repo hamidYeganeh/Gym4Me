@@ -6,7 +6,7 @@ export type OnboardingStepId =
   | "height"
   | "weight"
   | "bodyType"
-  | "experience"
+  | "athleteLevel"
   | "sleep"
   | "mood"
   | "sports"
@@ -35,9 +35,6 @@ export type OnboardingBloodGroup = "A" | "B" | "AB" | "O";
 
 export type OnboardingRhFactor = "positive" | "negative";
 
-/** Prior training background — enum, not a boolean. */
-export type OnboardingExperienceId = "experienced" | "beginner";
-
 export type OnboardingSleepLevel = 1 | 2 | 3 | 4 | 5;
 
 export type OnboardingMoodId =
@@ -46,12 +43,6 @@ export type OnboardingMoodId =
   | "neutral"
   | "happy"
   | "overjoyed";
-
-export type OnboardingDietId =
-  | "balanced"
-  | "vegetarian"
-  | "protein"
-  | "glutenFree";
 
 export const ONBOARDING_STEPS: OnboardingStepId[] = [
   "review",
@@ -63,7 +54,7 @@ export const ONBOARDING_STEPS: OnboardingStepId[] = [
   "height",
   "bloodType",
   "birthdate",
-  "experience",
+  "athleteLevel",
   "sleep",
   "mood",
   "sports",
@@ -116,7 +107,6 @@ export const ONBOARDING_DEFAULT_HEIGHT_CM = 162;
 export const ONBOARDING_DEFAULT_WEIGHT_KG = 64;
 export const ONBOARDING_DEFAULT_SLEEP: OnboardingSleepLevel = 5;
 export const ONBOARDING_DEFAULT_MOOD: OnboardingMoodId = "neutral";
-export const ONBOARDING_DEFAULT_DIET: OnboardingDietId = "balanced";
 export const ONBOARDING_DEFAULT_CALORIES = 0;
 
 export const ONBOARDING_HEIGHT_CM_RANGE = { min: 120, max: 220 } as const;
@@ -160,13 +150,6 @@ export const ONBOARDING_MOODS: OnboardingMoodId[] = [
   "neutral",
   "happy",
   "overjoyed",
-];
-
-export const ONBOARDING_DIETS: OnboardingDietId[] = [
-  "balanced",
-  "vegetarian",
-  "protein",
-  "glutenFree",
 ];
 
 /** Default Jalali birthdate ≈ 19 years old in typical mockups. */

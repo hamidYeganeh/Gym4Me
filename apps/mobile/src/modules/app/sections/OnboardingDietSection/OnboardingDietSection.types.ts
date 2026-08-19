@@ -1,15 +1,18 @@
-import type { OnboardingDietId } from "@/modules/app/lib/onboarding-data";
-
 export type OnboardingDietOption = {
-  id: OnboardingDietId;
+  id: string;
   title: string;
   description: string;
+  icon?: string | null;
 };
 
 export type OnboardingDietSectionProps = {
   label: string;
   options: OnboardingDietOption[];
-  value: OnboardingDietId;
-  onChange: (value: OnboardingDietId) => void;
+  value: string | null;
+  onChange: (value: string) => void;
+  isLoading?: boolean;
+  isError?: boolean;
+  emptyLabel: string;
+  errorLabel: string;
   className?: string;
 };

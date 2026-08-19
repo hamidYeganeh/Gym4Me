@@ -11,6 +11,9 @@ export class ChoiceOption {
   @Prop({ required: true, trim: true })
   name!: string;
 
+  @Prop({ trim: true })
+  description?: string;
+
   @Prop({ default: 0 })
   order!: number;
 

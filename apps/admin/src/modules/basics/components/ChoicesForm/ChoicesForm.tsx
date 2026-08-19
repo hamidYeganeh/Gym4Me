@@ -200,6 +200,23 @@ export function ChoicesForm({
                 </TextField>
               )}
             />
+            <Controller
+              control={form.control}
+              name={`options.${index}.description`}
+              render={({ field, fieldState }) => (
+                <TextField
+                  isInvalid={fieldState.invalid}
+                  name={field.name}
+                  value={field.value}
+                  onBlur={field.onBlur}
+                  onChange={field.onChange}
+                >
+                  <Label>{t("fields.optionDescription")}</Label>
+                  <Input ref={field.ref} />
+                  <FieldError>{fieldState.error?.message}</FieldError>
+                </TextField>
+              )}
+            />
             <div className={styles.optionActions()}>
               <Controller
                 control={form.control}

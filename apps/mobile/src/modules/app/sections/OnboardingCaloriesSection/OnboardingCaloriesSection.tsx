@@ -1,22 +1,19 @@
 "use client";
 
+import NumberFlow from "@number-flow/react";
 import { Button } from "@heroui/react/button";
 import { Separator } from "@heroui/react/separator";
 import { Typography } from "@heroui/react/typography";
 import { Fire1 } from "@repo/icons/Fire1";
 import { Minus } from "@repo/icons/Minus";
 import { Plus } from "@repo/icons/Plus";
+import { useTranslations } from "next-intl";
 import { onboardingCaloriesSectionVariants } from "./OnboardingCaloriesSection.styles";
 import type { OnboardingCaloriesSectionProps } from "./OnboardingCaloriesSection.types";
-
-function formatCalories(value: number): string {
-  return value.toLocaleString("fa-IR");
-}
 
 export function OnboardingCaloriesSection({
   label,
   unitLabel,
-  summaryTemplate,
   value,
   presets,
   min,
@@ -25,10 +22,8 @@ export function OnboardingCaloriesSection({
   onChange,
   className,
 }: OnboardingCaloriesSectionProps) {
+  const t = useTranslations("Mobile.Onboarding.calories");
   const styles = onboardingCaloriesSectionVariants();
-  const display = formatCalories(value);
-  const summary = summaryTemplate.replace("{value}", display);
-
   const clamp = (next: number) => Math.min(max, Math.max(min, next));
 
   return (
@@ -47,7 +42,13 @@ export function OnboardingCaloriesSection({
           <Minus size={22} />
         </Button>
 
-        <Typography className={styles.value()}>{display}</Typography>
+        <NumberFlow
+          className={styles.value()}
+          format={{ maximumFractionDigits: 0 }}
+          locales="fa-IR"
+          style={{ color: "var(--foreground)" }}
+          value={value}
+        />
 
         <Button
           aria-label="+"
@@ -63,7 +64,19 @@ export function OnboardingCaloriesSection({
 
       <Separator className={styles.divider()} />
 
-      <Typography className={styles.summary()}>{summary}</Typography>
+      <Typography className={styles.summary()}>
+        {t.rich("summary", {
+          kcal: () => (
+            <NumberFlow
+              className={styles.summaryValue()}
+              format={{ maximumFractionDigits: 0 }}
+              locales="fa-IR"
+              style={{ color: "var(--foreground)" }}
+              value={value}
+            />
+          ),
+        })}
+      </Typography>
 
       <div className={styles.presets()}>
         {[...presets].reverse().map((preset) => {
@@ -77,7 +90,11 @@ export function OnboardingCaloriesSection({
               variant="ghost"
               onPress={() => onChange(preset)}
             >
-              {preset.toLocaleString("fa-IR")}
+              <NumberFlow
+                format={{ maximumFractionDigits: 0 }}
+                locales="fa-IR"
+                value={preset}
+              />
               <Fire1
                 aria-hidden
                 className={presetStyles.presetIcon()}
