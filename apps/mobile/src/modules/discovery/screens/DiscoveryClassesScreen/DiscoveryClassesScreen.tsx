@@ -3,11 +3,11 @@
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
-import { ClubClassCard } from "@repo/ui/cards/ClubClassCard";
 import {
-  EMPTY_STATE_ILLUSTRATIONS,
-  EmptyState,
-} from "@repo/ui/kit/EmptyState";
+  ClubClassCard,
+  ClubClassCardSkeleton,
+} from "@repo/ui/cards/ClubClassCard";
+import { EMPTY_STATE_ILLUSTRATIONS, EmptyState } from "@repo/ui/kit/EmptyState";
 import { FilterChip, FilterChipBar } from "@repo/ui/kit/FilterChip";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
@@ -76,9 +76,9 @@ export function DiscoveryClassesScreen({
 
         {isLoading && classes.length === 0 ? (
           <div className={styles.list}>
-            <div className="h-40 animate-pulse rounded-3xl bg-surface" />
-            <div className="h-40 animate-pulse rounded-3xl bg-surface" />
-            <div className="h-40 animate-pulse rounded-3xl bg-surface" />
+            <ClubClassCardSkeleton className={styles.card} size="md" />
+            <ClubClassCardSkeleton className={styles.card} size="md" />
+            <ClubClassCardSkeleton className={styles.card} size="md" />
           </div>
         ) : classes.length === 0 ? (
           <EmptyState

@@ -18,6 +18,7 @@ import { Ruler1 } from "@repo/icons/Ruler1";
 import { Sparkle1 } from "@repo/icons/Sparkle1";
 import { Trash1 } from "@repo/icons/Trash1";
 import { User } from "@repo/icons/User";
+import { UserPlus } from "@repo/icons/UserPlus";
 import { VolumeHigh } from "@repo/icons/VolumeHigh";
 import { toast } from "@repo/ui/kit/Toast";
 import { useTranslations } from "next-intl";
@@ -72,6 +73,13 @@ export function useProfileMenu({
         icon: <User size={icon} />,
         label: t("profileSettings"),
         onPress: () => router.push(path("edit")),
+      },
+      {
+        key: "roles",
+        icon: <UserPlus size={icon} />,
+        label: t("applyRole"),
+        hint: t("applyRoleHint"),
+        onPress: () => router.push(path("roles")),
       },
       ...(roleSegment === "athlete" && deviceSyncEnabled
         ? [

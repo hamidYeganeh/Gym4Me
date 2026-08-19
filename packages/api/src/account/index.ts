@@ -39,6 +39,20 @@ export {
 } from "./roles.client";
 export { accountRolesEndpoints } from "./roles.endpoint";
 export type { ApplyRoleInput, ApplyRoleResponse } from "./roles.dto";
+export type {
+  ListRoleRequestsQuery,
+  ReviewRoleRequestInput,
+  RoleAction,
+  RoleActionNextStep,
+  RoleAvailability,
+  RoleOverviewResponse,
+  RoleRequest,
+  RoleRequestAdminItem,
+  RoleRequestApplication,
+  RoleRequestReview,
+  SubmitRoleRequestInput,
+  SubmitRoleRequestResponse,
+} from "./roles.dto";
 export { accountRolesKeys } from "./roles.keys";
 
 export {

@@ -5,4 +5,6 @@ export const adminVerificationEndpoints = {
     `/admin/coaches/${userId}/verification`,
   clubVerificationList: "/admin/clubs/verification",
   clubVerification: (id: string) => `/admin/clubs/${id}/verification`,
+  roleRequests: "/admin/role-requests",
+  roleRequest: (id: string) => `/admin/role-requests/${id}`,
 } as const;

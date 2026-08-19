@@ -52,6 +52,10 @@ export const CoachVerificationsScreen = lazyNamed(
   () => import("@/modules/users/screens/CoachVerificationsScreen"),
   "CoachVerificationsScreen",
 );
+export const RoleRequestsScreen = lazyNamed(
+  () => import("@/modules/users/screens/RoleRequestsScreen"),
+  "RoleRequestsScreen",
+);
 export const ClubReviewsScreen = lazyNamed(
   () => import("@/modules/users/screens/ClubReviewsScreen"),
   "ClubReviewsScreen",

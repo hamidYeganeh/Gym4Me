@@ -2,6 +2,12 @@ import type { ApiClient } from "../client";
 import type { Paginated } from "../types";
 import type { Club } from "../account/clubs.dto";
 import type {
+  ListRoleRequestsQuery,
+  ReviewRoleRequestInput,
+  RoleRequest,
+  RoleRequestAdminItem,
+} from "../account/roles.dto";
+import type {
   CoachVerificationItem,
   ListClubReviewsQuery,
   ListCoachVerificationsQuery,
@@ -35,6 +41,19 @@ export function createAdminVerificationApi(client: ApiClient) {
 
     reviewClub(id: string, input: ReviewVerificationInput) {
       return client.request<Club>(ep.clubVerification(id), {
+        method: "PATCH",
+        body: input,
+      });
+    },
+
+    listRoleRequests(query: ListRoleRequestsQuery = {}) {
+      return client.request<Paginated<RoleRequestAdminItem>>(ep.roleRequests, {
+        query,
+      });
+    },
+
+    reviewRoleRequest(id: string, input: ReviewRoleRequestInput) {
+      return client.request<RoleRequest>(ep.roleRequest(id), {
         method: "PATCH",
         body: input,
       });

@@ -35,6 +35,7 @@ import {
   ClubSlotsEditScreen,
   CoachingListsScreen,
   CoachVerificationsScreen,
+  RoleRequestsScreen,
   DashboardHomeScreen,
   ExercisesCatalogScreen,
   ExercisesCreateScreen,
@@ -153,6 +154,10 @@ export function AppRouter() {
               <Route
                 element={<CoachVerificationsScreen />}
                 path="/dashboard/users/coach-verifications"
+              />
+              <Route
+                element={<RoleRequestsScreen />}
+                path="/dashboard/users/role-requests"
               />
               <Route
                 element={<ClubReviewsScreen />}

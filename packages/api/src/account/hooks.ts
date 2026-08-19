@@ -17,6 +17,10 @@ export {
 } from "./kyc.hooks";
 export { useApplyAccountRole } from "./roles.hooks";
 export {
+  useAccountRolesOverview,
+  useSubmitAccountRoleRequest,
+} from "./roles.hooks";
+export {
   useInviteReferral,
   useMyReferral,
   useReferralInvites,

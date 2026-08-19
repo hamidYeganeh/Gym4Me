@@ -1,8 +1,14 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import type { QueryFilter } from 'mongoose';
 import type { Request } from 'express';
+import { RoleMembershipService } from '../account/roles/role-membership.service';
+import { ProfileService } from '../account/profile/profile.service';
 import { EventWriterService } from '../analytics/event-writer.service';
 import { AuditService } from '../audit/audit.service';
 import {
@@ -23,7 +29,6 @@ import {
   CoachProfileDocument,
 } from '../schemas/coach-profile.schema';
 import { User, UserDocument } from '../schemas/user.schema';
-import { ProfileService } from '../account/profile/profile.service';
 import { UsersService } from '../users/users.service';
 import {
   ListCoachVerificationsQueryDto,
@@ -48,6 +53,7 @@ export class AdminVerificationService {
     private readonly userModel: Model<UserDocument>,
     private readonly profiles: ProfileService,
     private readonly users: UsersService,
+    private readonly roles: RoleMembershipService,
     private readonly audit: AuditService,
     private readonly events: EventWriterService,
   ) {}
@@ -98,7 +104,7 @@ export class AdminVerificationService {
     ]);
 
     const summaries = await this.users.findSummariesByIds(
-      items.map((p) => p.userId),
+      items.map((item) => item.userId),
     );
     const byId = new Map(
       summaries.map((u) => [
@@ -120,12 +126,13 @@ export class AdminVerificationService {
           userId,
           user: byId.get(userId) ?? { id: userId },
           verification: {
-            status: p.verification?.status,
+            status: p.verification?.status ?? VerificationStatus.UNSUBMITTED,
             submittedAt: p.verification?.submittedAt ?? null,
+            reviewedAt: p.verification?.reviewedAt ?? null,
+            reviewNote: p.verification?.reviewNote ?? null,
             documentMediaIds: (p.verification?.documentMediaIds ?? []).map(
               (id) => id.toString(),
             ),
-            reviewNote: p.verification?.reviewNote ?? null,
           },
           experience: p.experience ?? {},
           bio: p.bio ?? null,
@@ -143,9 +150,34 @@ export class AdminVerificationService {
     adminId: string,
     request: Request,
   ) {
+    if (dto.action === 'reject' && !dto.reviewNote?.trim()) {
+      throw new BadRequestException('Reject reason is required');
+    }
+
     const profile = await this.profiles.getCoachProfileByUserId(userId);
     if (profile.verification.status !== VerificationStatus.PENDING) {
       throw new ConflictException('Coach verification is not pending');
+    }
+
+    // Prefer RoleRequest path (grants role + notifies + syncs verification).
+    const handled = await this.roles.syncFromCoachVerificationReview(
+      userId,
+      dto.action,
+      adminId,
+      dto.reviewNote,
+      request,
+    );
+
+    if (handled) {
+      const refreshed = await this.profiles.getCoachProfileByUserId(userId);
+      return {
+        userId,
+        verification: {
+          status: refreshed.verification.status,
+          reviewedAt: refreshed.verification.reviewedAt,
+          reviewNote: refreshed.verification.reviewNote ?? null,
+        },
+      };
     }
 
     profile.verification.status =

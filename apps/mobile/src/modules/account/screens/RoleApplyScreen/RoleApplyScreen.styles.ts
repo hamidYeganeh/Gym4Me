@@ -3,10 +3,13 @@ import { tv } from "tailwind-variants";
 
 export const roleApplyScreenVariants = tv({
   slots: {
-    root: "flex min-h-dvh flex-col gap-6 bg-background px-6 py-8",
-    header: "flex flex-col gap-2",
-    title: "text-2xl font-bold text-foreground",
-    subtitle: "text-sm text-muted",
+    root: "bg-background",
+    content: "flex flex-col gap-8 pb-12 pt-2",
+    header: "flex flex-col gap-1",
+    subtitle: "max-w-[21rem] text-pretty leading-relaxed text-muted",
+    section: "flex flex-col gap-3",
+    sectionTitle: "text-foreground",
+    sectionHint: "text-pretty text-muted",
     list: "flex flex-col gap-3",
     error: "text-sm text-danger",
   },

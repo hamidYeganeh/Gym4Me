@@ -9,6 +9,7 @@ export const routes = {
   users: "/dashboard/users",
   usersKyc: "/dashboard/users/kyc",
   usersCoachVerifications: "/dashboard/users/coach-verifications",
+  usersRoleRequests: "/dashboard/users/role-requests",
   usersClubReviews: "/dashboard/users/club-reviews",
   user: (userId: string) => `/dashboard/users/${userId}`,
   usersNew: "/dashboard/users/new",

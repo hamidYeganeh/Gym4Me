@@ -97,6 +97,12 @@ export const DEFAULT_NOTIFICATION_TEMPLATES: DefaultNotificationTemplate[] = [
     channels: { push, inbox, sms: NotificationSmsSetting.CRITICAL_FALLBACK },
   },
   {
+    key: NotificationTemplateKey.ROLE_REQUEST_RESULT,
+    title: 'نتیجه درخواست نقش',
+    body: 'درخواست نقش «{roleLabel}» شما: {result}',
+    channels: { push, inbox, sms: NotificationSmsSetting.CRITICAL_FALLBACK },
+  },
+  {
     key: NotificationTemplateKey.PAYOUT_SETTLED,
     title: 'تسویه انجام شد',
     body: 'تسویه دوره {period} به مبلغ {amount} تومان انجام شد.',

@@ -1,5 +1,6 @@
 "use client";
 
+import { ClubClassCardSkeleton } from "@repo/ui/cards/ClubClassCard";
 import { useSearchParams } from "next/navigation";
 import { useDiscoveryClassesBrowse } from "../../lib/use-discovery-classes-browse";
 import { DiscoveryClassesScreen } from "./DiscoveryClassesScreen";
@@ -12,9 +13,9 @@ function DiscoveryClassesPageSkeleton() {
       className="flex flex-col gap-4 px-screen py-6"
       role="status"
     >
-      <div className="h-40 animate-pulse rounded-3xl bg-surface" />
-      <div className="h-40 animate-pulse rounded-3xl bg-surface" />
-      <div className="h-40 animate-pulse rounded-3xl bg-surface" />
+      <ClubClassCardSkeleton className="w-full" size="md" />
+      <ClubClassCardSkeleton className="w-full" size="md" />
+      <ClubClassCardSkeleton className="w-full" size="md" />
     </div>
   );
 }

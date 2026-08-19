@@ -1,6 +1,6 @@
 "use client";
 
-import { SportCategoryCardSkeleton } from "@repo/ui/cards/SportCategoryCard";
+import { SportCardSkeleton } from "@repo/ui/cards/SportCard";
 import { useSearchParams } from "next/navigation";
 import { useDiscoverySportsBrowse } from "../../lib/use-discovery-sports-browse";
 import { DiscoverySportsScreen } from "./DiscoverySportsScreen";
@@ -10,13 +10,25 @@ function DiscoverySportsPageSkeleton() {
     <div
       aria-busy="true"
       aria-live="polite"
-      className="grid grid-cols-2 gap-3 px-screen py-6"
+      className="mx-auto grid w-full max-w-lg grid-cols-2 gap-2 px-screen py-6"
       role="status"
     >
-      <SportCategoryCardSkeleton />
-      <SportCategoryCardSkeleton />
-      <SportCategoryCardSkeleton />
-      <SportCategoryCardSkeleton />
+      <SportCardSkeleton
+        className="col-span-2 !h-[14rem] !w-full !rounded-[1.35rem]"
+        size="sm"
+      />
+      <SportCardSkeleton
+        className="!h-[14rem] !w-full !rounded-[1.35rem]"
+        size="sm"
+      />
+      <SportCardSkeleton
+        className="!h-[14rem] !w-full !rounded-[1.35rem]"
+        size="sm"
+      />
+      <SportCardSkeleton
+        className="!h-[14rem] !w-full !rounded-[1.35rem]"
+        size="sm"
+      />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from '../account/auth/auth.module';
 import { KycModule } from '../account/kyc/kyc.module';
 import { ProfileModule } from '../account/profile/profile.module';
+import { RolesModule } from '../account/roles/roles.module';
 import { Booking, BookingSchema } from '../schemas/booking.schema';
 import { Club, ClubSchema } from '../schemas/club.schema';
 import {
@@ -44,6 +45,7 @@ import { AdminAuthService } from './auth/admin-auth.service';
     KycModule,
     AuthModule,
     ProfileModule,
+    RolesModule,
     MongooseModule.forFeature([
       { name: ImpersonationSession.name, schema: ImpersonationSessionSchema },
       { name: User.name, schema: UserSchema },

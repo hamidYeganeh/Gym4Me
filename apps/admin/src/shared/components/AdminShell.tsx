@@ -20,7 +20,7 @@ import {
 import { routes } from "@/shared/lib/routes";
 import { useAuth } from "@/shared/providers/AuthProvider";
 
-export type UsersSectionTabId = "users" | "kyc" | "coach" | "clubs";
+export type UsersSectionTabId = "users" | "kyc" | "coach" | "clubs" | "roles";
 
 export type SupportSectionTabId = "tickets" | "faq";
 
@@ -164,6 +164,7 @@ export function AdminShell({
       { id: "users", label: t("Users.tabs.users") },
       { id: "kyc", label: t("Users.tabs.kyc") },
       { id: "coach", label: t("Users.tabs.coach") },
+      { id: "roles", label: t("Users.tabs.roles") },
       { id: "clubs", label: t("Users.tabs.clubs") },
     ],
     [t],
@@ -173,6 +174,7 @@ export function AdminShell({
     users: routes.users,
     kyc: routes.usersKyc,
     coach: routes.usersCoachVerifications,
+    roles: routes.usersRoleRequests,
     clubs: routes.usersClubReviews,
   };
 

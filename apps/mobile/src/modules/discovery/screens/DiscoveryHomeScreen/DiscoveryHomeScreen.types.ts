@@ -27,5 +27,4 @@ export type DiscoveryHomeScreenProps = {
   sports: HomeSportItem[];
   articles: HomeArticleItem[];
   galleryItems: HomeGalleryItem[];
-  isLoading?: boolean;
 };

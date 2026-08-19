@@ -1,6 +1,5 @@
 "use client";
 
-import { Spinner } from "@heroui/react/spinner";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -40,7 +39,6 @@ export function DiscoveryHomeScreen({
   sports,
   articles,
   galleryItems,
-  isLoading,
 }: DiscoveryHomeScreenProps) {
   const t = useTranslations("DiscoveryHome");
   const router = useRouter();
@@ -70,12 +68,6 @@ export function DiscoveryHomeScreen({
         <DiscoveryHomeQuickNavSection />
 
         <DiscoveryHomeBannersSection banners={banners} />
-
-        {isLoading ? (
-          <div className="flex justify-center py-8">
-            <Spinner size="lg" />
-          </div>
-        ) : null}
 
         <DiscoveryHomeSportsSection sports={sports} />
         <DiscoveryHomeFeaturesSection features={features} />

@@ -3,12 +3,8 @@
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
-import { SportCard } from "@repo/ui/cards/SportCard";
-import { SportCategoryCardSkeleton } from "@repo/ui/cards/SportCategoryCard";
-import {
-  EMPTY_STATE_ILLUSTRATIONS,
-  EmptyState,
-} from "@repo/ui/kit/EmptyState";
+import { SportCard, SportCardSkeleton } from "@repo/ui/cards/SportCard";
+import { EMPTY_STATE_ILLUSTRATIONS, EmptyState } from "@repo/ui/kit/EmptyState";
 import { FilterChip, FilterChipBar } from "@repo/ui/kit/FilterChip";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
@@ -78,10 +74,10 @@ export function DiscoverySportsScreen({
 
         {isLoading && sports.length === 0 ? (
           <div className={styles.grid}>
-            <SportCategoryCardSkeleton className={styles.card} />
-            <SportCategoryCardSkeleton className={styles.card} />
-            <SportCategoryCardSkeleton className={styles.card} />
-            <SportCategoryCardSkeleton className={styles.card} />
+            <SportCardSkeleton className={styles.cardFeatured} size="sm" />
+            <SportCardSkeleton className={styles.card} size="sm" />
+            <SportCardSkeleton className={styles.card} size="sm" />
+            <SportCardSkeleton className={styles.card} size="sm" />
           </div>
         ) : sports.length === 0 ? (
           <EmptyState
@@ -98,9 +94,7 @@ export function DiscoverySportsScreen({
               return (
                 <SportCard
                   actionLabel={t("viewSport")}
-                  className={
-                    index === 0 ? styles.cardFeatured : styles.card
-                  }
+                  className={index === 0 ? styles.cardFeatured : styles.card}
                   color={theme.color}
                   foregroundColor={theme.foregroundColor}
                   key={sport.id}

@@ -38,6 +38,11 @@ import {
   ListCoachVerificationsQueryDto,
   ReviewVerificationDto,
 } from './dto/admin-review.dto';
+import {
+  ListRoleRequestsQueryDto,
+  ReviewRoleRequestDto,
+} from '../account/roles/dto/roles.dto';
+import { RoleMembershipService } from '../account/roles/role-membership.service';
 
 @ApiTags('admin')
 @ApiBearerAuth('access-token')
@@ -48,6 +53,7 @@ export class AdminController {
     private readonly adminUsers: AdminUsersService,
     private readonly adminKyc: AdminKycService,
     private readonly adminVerification: AdminVerificationService,
+    private readonly roleMembership: RoleMembershipService,
     private readonly impersonation: AdminImpersonationService,
     private readonly audit: AuditService,
   ) {}
@@ -203,6 +209,27 @@ export class AdminController {
     @Req() request: Request,
   ) {
     return this.adminVerification.reviewCoach(userId, dto, adminId, request);
+  }
+
+  // ── Role requests (coach / club_owner) ─────────
+
+  @Get('role-requests')
+  @ApiOperation({ summary: 'List pending role applications' })
+  listRoleRequests(@Query() query: ListRoleRequestsQueryDto) {
+    return this.roleMembership.listForAdmin(query);
+  }
+
+  @Patch('role-requests/:id')
+  @ApiOperation({
+    summary: 'Approve or reject a role request (grants role + notifies on approve)',
+  })
+  reviewRoleRequest(
+    @Param('id') id: string,
+    @Body() dto: ReviewRoleRequestDto,
+    @CurrentUser('sub') adminId: string,
+    @Req() request: Request,
+  ) {
+    return this.roleMembership.review(id, dto, adminId, request);
   }
 
   // ── Audit logs ─────────────────────────────────

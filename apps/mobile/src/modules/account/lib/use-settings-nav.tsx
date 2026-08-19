@@ -192,7 +192,7 @@ export function useSettingsNav(
         icon: <UsersTwo size={icon} />,
         label: t("roles"),
         hint: t("rolesHint"),
-        onPress: () => router.push(`/${roleSegment}/roles`),
+        onPress: () => router.push(`/${roleSegment}/profile/roles`),
       },
       {
         key: "achievements",
