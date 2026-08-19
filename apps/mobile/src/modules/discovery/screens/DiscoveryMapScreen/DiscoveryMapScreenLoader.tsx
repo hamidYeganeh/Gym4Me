@@ -3,7 +3,7 @@
 import { Skeleton } from "@heroui/react/skeleton";
 import { CoachMapCardSkeleton } from "@repo/ui/cards/CoachMapCard";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { useDiscoveryMapPins } from "../../lib/use-discovery-map-pins";
 import { DiscoveryMapScreen } from "./DiscoveryMapScreen";
@@ -13,7 +13,12 @@ function DiscoveryMapPageSkeleton() {
   const t = useTranslations("DiscoveryMap");
 
   return (
-    <AppLayout className={styles.root} header={<Header title={t("title")} />}>
+    <AppLayout
+      className={styles.root}
+      header={
+        <SecondaryPageHeader showBack={false} title={t("title")} />
+      }
+    >
       <div
         aria-busy="true"
         aria-live="polite"

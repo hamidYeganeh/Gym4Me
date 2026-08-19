@@ -13,7 +13,7 @@ import { Ruler1 } from "@repo/icons/Ruler1";
 import { WeightScale } from "@repo/icons/WeightScale";
 import { Wind } from "@repo/icons/Wind";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { useUnitsSettings } from "@/modules/account/lib/use-units-settings";
 import { unitIconKey } from "@/modules/account/lib/units-settings";
@@ -50,19 +50,9 @@ export function UnitsSettingsScreen({
     <AppLayout
       className={styles.root({ className })}
       header={
-        <Header
-          appearance="bar"
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={() => router.back()}
-              size="lg"
-              variant="tertiary"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
-            </Button>
-          }
+        <SecondaryPageHeader
+          backAriaLabel={t("back")}
+          onBack={() => router.back()}
           title={t("title")}
         />
       }

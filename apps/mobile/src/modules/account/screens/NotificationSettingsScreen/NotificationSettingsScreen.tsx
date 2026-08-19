@@ -11,7 +11,7 @@ import { Envelope1 } from "@repo/icons/Envelope1";
 import { Megaphone } from "@repo/icons/Megaphone";
 import { Telephone1 } from "@repo/icons/Telephone1";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { ProfileMenuRow } from "@/modules/account/components/ProfileMenuRow";
 import { notificationSettingsScreenVariants } from "./NotificationSettingsScreen.styles";
@@ -41,19 +41,9 @@ export function NotificationSettingsScreen({
     <AppLayout
       className={styles.root({ className })}
       header={
-        <Header
-          appearance="bar"
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={() => router.push(`/${roleSegment}/profile`)}
-              size="lg"
-              variant="tertiary"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
-            </Button>
-          }
+        <SecondaryPageHeader
+          backAriaLabel={t("back")}
+          onBack={() => router.push(`/${roleSegment}/profile`)}
           title={t("title")}
         />
       }

@@ -17,7 +17,7 @@ import {
 } from "@repo/ui/kit/EmptyState";
 import { FilterChip, FilterChipBar } from "@repo/ui/kit/FilterChip";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
@@ -122,19 +122,9 @@ export function NotificationsScreen({
     <AppLayout
       className={styles.root}
       header={
-        <Header
-          appearance="bar"
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={() => router.back()}
-              size="lg"
-              variant="tertiary"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
-            </Button>
-          }
+        <SecondaryPageHeader
+          backAriaLabel={t("back")}
+          onBack={() => router.back()}
           title={t("title")}
         />
       }

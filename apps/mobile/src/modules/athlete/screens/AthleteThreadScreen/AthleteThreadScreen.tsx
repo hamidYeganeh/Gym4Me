@@ -9,7 +9,7 @@ import { Typography } from "@heroui/react/typography";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { PaperPlaneHorizontal } from "@repo/icons/PaperPlaneHorizontal";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { athleteThreadScreenVariants } from "./AthleteThreadScreen.styles";
@@ -32,18 +32,9 @@ export function AthleteThreadScreen({
     <AppLayout
       className={styles.root({ className })}
       header={
-        <Header
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={() => router.push("/athlete/messages")}
-              size="lg"
-              variant="ghost"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
-            </Button>
-          }
+        <SecondaryPageHeader
+          backAriaLabel={t("back")}
+          onBack={() => router.push("/athlete/messages")}
           title={thread.title}
         />
       }

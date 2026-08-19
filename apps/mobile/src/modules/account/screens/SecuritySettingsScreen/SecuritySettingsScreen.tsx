@@ -12,7 +12,7 @@ import { Fingerprint1 } from "@repo/icons/Fingerprint1";
 import { Key1 } from "@repo/icons/Key1";
 import { User } from "@repo/icons/User";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { ProfileMenuRow } from "@/modules/account/components/ProfileMenuRow";
 import { useAuth } from "@/shared/providers/AuthProvider";
@@ -61,19 +61,9 @@ export function SecuritySettingsScreen({
     <AppLayout
       className={styles.root({ className })}
       header={
-        <Header
-          appearance="bar"
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={() => router.push(`/${roleSegment}/profile`)}
-              size="lg"
-              variant="tertiary"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
-            </Button>
-          }
+        <SecondaryPageHeader
+          backAriaLabel={t("back")}
+          onBack={() => router.push(`/${roleSegment}/profile`)}
           title={t("title")}
         />
       }

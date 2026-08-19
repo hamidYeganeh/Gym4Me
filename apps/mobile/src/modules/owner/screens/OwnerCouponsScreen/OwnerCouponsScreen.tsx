@@ -8,7 +8,7 @@ import { TextField } from "@heroui/react/textfield";
 import { Typography } from "@heroui/react/typography";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import type { OwnerCouponStatus } from "../../lib/owner-coupons-data";
@@ -48,18 +48,9 @@ export function OwnerCouponsScreen({
     <AppLayout
       className={[styles.root(), className].filter(Boolean).join(" ")}
       header={
-        <Header
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={() => router.back()}
-              size="lg"
-              variant="ghost"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
-            </Button>
-          }
+        <SecondaryPageHeader
+          backAriaLabel={t("back")}
+          onBack={() => router.back()}
         />
       }
     >

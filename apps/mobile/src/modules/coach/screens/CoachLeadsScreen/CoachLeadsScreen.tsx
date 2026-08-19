@@ -11,7 +11,7 @@ import {
   type CoachLeadStage,
 } from "../../lib/coach-leads-data";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { coachLeadsScreenStyles as styles } from "./CoachLeadsScreen.styles";
@@ -59,18 +59,9 @@ export function CoachLeadsScreen({
     <AppLayout
       className={styles.root}
       header={
-        <Header
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={() => router.back()}
-              size="lg"
-              variant="ghost"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
-            </Button>
-          }
+        <SecondaryPageHeader
+          backAriaLabel={t("back")}
+          onBack={() => router.back()}
           title={t("title")}
         />
       }

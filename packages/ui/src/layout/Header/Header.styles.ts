@@ -28,7 +28,7 @@ export const headerVariants = tv({
         root: "bg-linear-to-t from-transparent via-background/90 to-background backdrop-blur-xl",
       },
       bar: {
-        root: "overflow-hidden rounded-b-[2.5rem] bg-surface/95 backdrop-blur-md",
+        root: "overflow-hidden rounded-b-[2.5rem] bg-surface",
       },
     },
   },

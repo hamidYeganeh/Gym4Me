@@ -7,7 +7,7 @@ import { ClubCard } from "@repo/ui/cards/ClubCard";
 import { SportCard } from "@repo/ui/cards/SportCard";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { discoverySportsDetailScreenStyles as styles } from "./DiscoverySportsDetailScreen.styles";
@@ -27,18 +27,9 @@ export function DiscoverySportsDetailScreen({
     <AppLayout
       className={styles.root}
       header={
-        <Header
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={() => router.back()}
-              size="lg"
-              variant="ghost"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
-            </Button>
-          }
+        <SecondaryPageHeader
+          backAriaLabel={t("back")}
+          onBack={() => router.back()}
         />
       }
     >

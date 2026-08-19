@@ -6,7 +6,7 @@ import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { Gear1 } from "@repo/icons/Gear1";
 import { SliderDotThreeHorizontal } from "@repo/icons/SliderDotThreeHorizontal";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -105,7 +105,10 @@ export function DiscoverySearchScreen({
     <AppLayout
       className={slots.root({ className })}
       header={
-        <Header
+        <SecondaryPageHeader
+          backAriaLabel={t("back")}
+          onBack={() => router.back()}
+          title={t("pageTitle")}
           endContent={
             <Button
               aria-label={t("settingsAria")}
@@ -123,18 +126,6 @@ export function DiscoverySearchScreen({
               <Gear1 className="text-foreground" size={22} />
             </Button>
           }
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={() => router.back()}
-              size="lg"
-              variant="ghost"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
-            </Button>
-          }
-          title={t("pageTitle")}
         />
       }
     >

@@ -1,10 +1,9 @@
 "use client";
 
 import { Button } from "@heroui/react/button";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { Door } from "@repo/icons/Door";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useRouter } from "next/navigation";
 import { useSettingsNav } from "@/modules/account/lib/use-settings-nav";
 import { SettingsNavGroupSection } from "@/modules/account/sections/SettingsNavGroupSection";
@@ -30,19 +29,9 @@ export function SettingsScreen({
     <AppLayout
       className={styles.root({ className })}
       header={
-        <Header
-          appearance="bar"
-          startContent={
-            <Button
-              aria-label={nav.t("back")}
-              isIconOnly
-              onPress={() => router.back()}
-              size="lg"
-              variant="tertiary"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
-            </Button>
-          }
+        <SecondaryPageHeader
+          backAriaLabel={nav.t("back")}
+          onBack={() => router.back()}
           title={nav.t("title")}
         />
       }

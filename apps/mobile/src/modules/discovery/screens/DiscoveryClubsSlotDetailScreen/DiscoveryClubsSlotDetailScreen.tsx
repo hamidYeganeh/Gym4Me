@@ -12,7 +12,6 @@ import { User } from "@repo/icons/User";
 import { UsersThree } from "@repo/icons/UsersThree";
 import { UsersTwo } from "@repo/icons/UsersTwo";
 import { StickyBottomActions } from "@repo/ui/kit/StickyBottomActions";
-import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -63,19 +62,9 @@ export function DiscoveryClubsSlotDetailScreen({
   return (
     <div className={styles.root}>
       <div className={styles.scroll}>
-        <Header
-          className="absolute inset-x-0 top-0 z-20"
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={() => router.back()}
-              size="lg"
-              variant="secondary"
-            >
-              <ChevronLeft size={20} />
-            </Button>
-          }
+        <SecondaryPageHeader
+          backAriaLabel={t("back")}
+          onBack={() => router.back()}
         />
 
         <div className={styles.hero}>

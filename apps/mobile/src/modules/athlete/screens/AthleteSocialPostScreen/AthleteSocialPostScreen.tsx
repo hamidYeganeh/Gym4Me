@@ -12,7 +12,7 @@ import { Flag1 } from "@repo/icons/Flag1";
 import { Heart } from "@repo/icons/Heart";
 import { Image1 } from "@repo/icons/Image1";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { toPersianDigits } from "@/modules/athlete/lib/weight/format";
@@ -38,18 +38,9 @@ export function AthleteSocialPostScreen({
     <AppLayout
       className={styles.root({ className })}
       header={
-        <Header
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={() => router.back()}
-              size="lg"
-              variant="ghost"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
-            </Button>
-          }
+        <SecondaryPageHeader
+          backAriaLabel={t("back")}
+          onBack={() => router.back()}
         />
       }
     >

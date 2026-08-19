@@ -10,7 +10,7 @@ import { Heart } from "@repo/icons/Heart";
 import { Image1 } from "@repo/icons/Image1";
 import { Plus } from "@repo/icons/Plus";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { toPersianDigits } from "@/modules/athlete/lib/weight/format";
@@ -33,7 +33,9 @@ export function AthleteSocialFeedScreen({
     <AppLayout
       className={styles.root({ className })}
       header={
-        <Header
+        <SecondaryPageHeader
+          backAriaLabel={t("back")}
+          onBack={() => router.back()}
           endContent={
             <Button
               aria-label={t("create")}
@@ -43,17 +45,6 @@ export function AthleteSocialFeedScreen({
               variant="ghost"
             >
               <Plus className="text-foreground" size={22} />
-            </Button>
-          }
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={() => router.back()}
-              size="lg"
-              variant="ghost"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
             </Button>
           }
         />

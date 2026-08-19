@@ -3,7 +3,7 @@
 import { Button } from "@heroui/react/button";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useRouter } from "next/navigation";
 import { formatSummaryValue } from "@/modules/athlete/lib/self-tracking-helpers";
 import { useAthleteSelfTracking } from "@/modules/athlete/lib/use-athlete-self-tracking";
@@ -25,18 +25,9 @@ export function AthleteSelfTrackingScreen(props: AthleteSelfTrackingScreenProps)
     <AppLayout
       className={styles.root}
       header={
-        <Header
-          startContent={
-            <Button
-              aria-label="بازگشت"
-              isIconOnly
-              onPress={() => router.back()}
-              size="lg"
-              variant="ghost"
-            >
-              <ChevronLeft size={22} />
-            </Button>
-          }
+        <SecondaryPageHeader
+          backAriaLabel={بازگشت}
+          onBack={() => router.back()}
         />
       }
     >

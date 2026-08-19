@@ -13,7 +13,7 @@ import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { ArticleCard } from "@repo/ui/cards/ArticleCard";
 import { FilterChip } from "@repo/ui/kit/FilterChip";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import {
@@ -74,18 +74,9 @@ export function ArticlesListScreen({ className }: ArticlesListScreenProps) {
     <AppLayout
       className={styles.root({ className })}
       header={
-        <Header
-          startContent={
-            <Button
-              aria-label={t("backToList")}
-              isIconOnly
-              size="lg"
-              variant="ghost"
-              onPress={() => router.back()}
-            >
-              <ChevronLeft size={22} />
-            </Button>
-          }
+        <SecondaryPageHeader
+          backAriaLabel={t("backToList")}
+          onBack={() => router.back()}
           title={t("listTitle")}
         />
       }

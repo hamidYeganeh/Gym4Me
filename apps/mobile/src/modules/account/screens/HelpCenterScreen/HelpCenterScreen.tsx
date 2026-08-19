@@ -1,13 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Button } from "@heroui/react/button";
 import { Chat } from "@repo/icons/Chat";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { FaceHappy } from "@repo/icons/FaceHappy";
 import { QuestionMark } from "@repo/icons/QuestionMark";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { ProfileMenuRow } from "@/modules/account/components/ProfileMenuRow";
 import { helpCenterScreenVariants } from "./HelpCenterScreen.styles";
@@ -27,19 +25,9 @@ export function HelpCenterScreen({
     <AppLayout
       className={styles.root({ className })}
       header={
-        <Header
-          appearance="bar"
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={() => router.push(`/${roleSegment}/profile`)}
-              size="lg"
-              variant="tertiary"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
-            </Button>
-          }
+        <SecondaryPageHeader
+          backAriaLabel={t("back")}
+          onBack={() => router.push(`/${roleSegment}/profile`)}
           title={t("title")}
         />
       }

@@ -4,14 +4,22 @@ import { Button } from "@heroui/react/button";
 import { Link } from "@heroui/react/link";
 import { Popover } from "@heroui/react/popover";
 import { Typography } from "@heroui/react/typography";
-import { useState, type ReactNode } from "react";
+import {
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+} from "react";
 import { ProgressiveBlur } from "../../kit/ProgressiveBlur";
 import { bottomNavVariants } from "./BottomNav.styles";
 import type {
+  BottomNavHoldMenuOption,
   BottomNavItem,
   BottomNavProps,
   BottomNavQuickAction,
 } from "./BottomNav.types";
+
+const HOLD_MENU_DELAY_MS = 500;
 
 export function BottomNav({
   items,
@@ -28,7 +36,12 @@ export function BottomNav({
   const hasActionsMenu = actions.length > 0;
 
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const [holdMenuKey, setHoldMenuKey] = useState<string | null>(null);
+  const longPressTriggeredRef = useRef(false);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const actionsOpen = isActionsOpen ?? uncontrolledOpen;
+  const holdMenuOpen = holdMenuKey !== null;
+  const overlayOpen = (hasActionsMenu && actionsOpen) || holdMenuOpen;
   const setActionsOpen = (open: boolean) => {
     if (isActionsOpen === undefined) {
       setUncontrolledOpen(open);
@@ -44,51 +57,18 @@ export function BottomNav({
     </span>
   );
 
-  const renderItem = (item: BottomNavItem) => {
-    const itemSlots = bottomNavVariants({ isActive: Boolean(item.isActive) });
-
-    return (
-      <div key={item.key} className={itemSlots.item()}>
-        {item.href ? (
-          <Link
-            aria-current={item.isActive ? "page" : undefined}
-            aria-label={item.label}
-            className={slots.itemButton()}
-            href={item.href}
-            onPress={item.onPress}
-          >
-            {item.icon}
-          </Link>
-        ) : (
-          <Button
-            aria-current={item.isActive ? "page" : undefined}
-            aria-label={item.label}
-            className={slots.itemButton()}
-            isIconOnly
-            onPress={item.onPress}
-            size="lg"
-            variant="ghost"
-          >
-            {item.icon}
-          </Button>
-        )}
-        <Typography
-          align="center"
-          className={slots.itemLabel()}
-          truncate
-          type="body-xs"
-          weight="medium"
-        >
-          {item.label}
-        </Typography>
-      </div>
-    );
+  const closeOverlay = () => {
+    setActionsOpen(false);
+    setHoldMenuKey(null);
   };
 
-  const renderQuickAction = (action: BottomNavQuickAction) => {
-    const handlePress: BottomNavQuickAction["onPress"] = (e) => {
-      setActionsOpen(false);
-      action.onPress?.(e);
+  const renderMenuAction = (
+    action: BottomNavQuickAction,
+    onClose: () => void,
+  ) => {
+    const handlePress: BottomNavQuickAction["onPress"] = (event) => {
+      onClose();
+      action.onPress?.(event);
     };
 
     return (
@@ -127,12 +107,168 @@ export function BottomNav({
     );
   };
 
+  const renderHoldMenuAction = (
+    option: BottomNavHoldMenuOption,
+    onClose: () => void,
+  ) => {
+    const handlePress: BottomNavHoldMenuOption["onPress"] = (event) => {
+      onClose();
+      option.onPress?.(event);
+    };
+
+    return (
+      <Button
+        key={option.key}
+        aria-label={option.label}
+        className={slots.holdMenuItem()}
+        onPress={handlePress}
+        variant="secondary"
+      >
+        <span aria-hidden className={slots.holdMenuItemIcon()}>
+          {option.icon}
+        </span>
+        <Typography
+          className={slots.holdMenuItemLabel()}
+          truncate
+          type="body-sm"
+          weight="medium"
+        >
+          {option.label}
+        </Typography>
+      </Button>
+    );
+  };
+
+  const renderItem = (item: BottomNavItem) => {
+    const itemSlots = bottomNavVariants({ isActive: Boolean(item.isActive) });
+    const holdOptions = item.holdMenu?.options ?? [];
+    const hasHoldMenu = holdOptions.length > 0;
+    const isHoldOpen = holdMenuKey === item.key;
+
+    const clearLongPress = () => {
+      if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current);
+        longPressTimerRef.current = null;
+      }
+    };
+
+    const handleLongPressStart = () => {
+      if (!hasHoldMenu) return;
+      longPressTriggeredRef.current = false;
+      clearLongPress();
+      longPressTimerRef.current = setTimeout(() => {
+        longPressTriggeredRef.current = true;
+        setActionsOpen(false);
+        setHoldMenuKey(item.key);
+      }, HOLD_MENU_DELAY_MS);
+    };
+
+    const longPressHandlers = hasHoldMenu
+      ? {
+          onPointerDown: (event: ReactPointerEvent) => {
+            if (event.pointerType === "mouse" && event.button !== 0) return;
+            handleLongPressStart();
+          },
+          onPointerUp: clearLongPress,
+          onPointerLeave: clearLongPress,
+          onPointerCancel: clearLongPress,
+        }
+      : {};
+
+    const consumeLongPress = () => {
+      if (!longPressTriggeredRef.current) return false;
+      longPressTriggeredRef.current = false;
+      return true;
+    };
+
+    const handleItemPress: BottomNavItem["onPress"] = (event) => {
+      if (consumeLongPress()) return;
+      item.onPress?.(event);
+    };
+
+    const triggerNode = item.href ? (
+      <Link
+        aria-current={item.isActive ? "page" : undefined}
+        aria-label={item.label}
+        className={slots.itemButton()}
+        href={item.href}
+        onPress={handleItemPress}
+        {...longPressHandlers}
+      >
+        {item.icon}
+      </Link>
+    ) : (
+      <Button
+        aria-current={item.isActive ? "page" : undefined}
+        aria-label={item.label}
+        className={slots.itemButton()}
+        isIconOnly
+        onPress={handleItemPress}
+        size="lg"
+        variant="ghost"
+        {...longPressHandlers}
+      >
+        {item.icon}
+      </Button>
+    );
+
+    const itemNode = hasHoldMenu ? (
+      <Popover
+        isOpen={isHoldOpen}
+        onOpenChange={(open) => {
+          if (!open) setHoldMenuKey(null);
+        }}
+      >
+        {triggerNode}
+        <Popover.Content className={slots.holdMenu()} offset={18} placement="top">
+          <Popover.Dialog className={slots.holdMenuDialog()}>
+            <Popover.Arrow className={slots.menuArrow()} />
+            <Popover.Heading className={slots.menuHeading()}>
+              {item.holdMenu?.label ?? item.label}
+            </Popover.Heading>
+            <div className={slots.holdMenuList()}>
+              {holdOptions.map((option) =>
+                renderHoldMenuAction(option, () => setHoldMenuKey(null)),
+              )}
+            </div>
+          </Popover.Dialog>
+        </Popover.Content>
+      </Popover>
+    ) : (
+      triggerNode
+    );
+
+    return (
+      <div key={item.key} className={itemSlots.item()}>
+        {itemNode}
+        <Typography
+          align="center"
+          className={slots.itemLabel()}
+          truncate
+          type="body-xs"
+          weight="medium"
+        >
+          {item.label}
+        </Typography>
+      </div>
+    );
+  };
+
+  const renderQuickAction = (action: BottomNavQuickAction) =>
+    renderMenuAction(action, closeOverlay);
+
   let centerNode: ReactNode = null;
   if (centerAction) {
     centerNode = (
       <div className={slots.centerSlot()}>
         {hasActionsMenu ? (
-          <Popover isOpen={actionsOpen} onOpenChange={setActionsOpen}>
+          <Popover
+            isOpen={actionsOpen}
+            onOpenChange={(open) => {
+              if (open) setHoldMenuKey(null);
+              setActionsOpen(open);
+            }}
+          >
             <Button
               aria-expanded={actionsOpen}
               aria-label={centerAction.label}
@@ -189,12 +325,12 @@ export function BottomNav({
 
   return (
     <>
-      {hasActionsMenu && actionsOpen ? (
+      {overlayOpen ? (
         <div
           aria-hidden
           className={slots.backdrop()}
           data-keyboard-hide=""
-          onClick={() => setActionsOpen(false)}
+          onClick={closeOverlay}
         />
       ) : null}
       <nav

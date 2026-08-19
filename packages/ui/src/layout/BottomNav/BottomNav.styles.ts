@@ -55,6 +55,25 @@ export const bottomNavVariants = tv({
       "hover:bg-default/80 data-[hovered=true]:bg-default/80",
     ].join(" "),
     menuItemLabel: "max-w-full px-0.5 text-foreground",
+    holdMenu: [
+      "z-50 w-[min(18rem,calc(100vw-2rem))] overflow-visible",
+      "rounded-[1.75rem] border-0 bg-surface p-0",
+      "shadow-[0_18px_48px_color-mix(in_oklch,var(--foreground)_14%,transparent)]",
+    ].join(" "),
+    holdMenuDialog: "relative p-4 sm:p-5",
+    holdMenuList: "flex flex-col gap-2.5",
+    holdMenuItem: [
+      "h-auto min-h-14 w-full justify-start gap-3 rounded-[1.125rem]",
+      "px-3 py-3 text-start",
+      "bg-default text-foreground shadow-none",
+      "hover:bg-default/80 data-[hovered=true]:bg-default/80",
+    ].join(" "),
+    holdMenuItemIcon: [
+      "flex size-14 shrink-0 items-center justify-center rounded-[1rem]",
+      "bg-background text-foreground",
+      "[&_svg]:pointer-events-none [&_svg]:!size-[1.625rem]",
+    ].join(" "),
+    holdMenuItemLabel: "min-w-0 flex-1 text-foreground",
   },
   variants: {
     isActive: {

@@ -9,7 +9,7 @@ import { Typography } from "@heroui/react/typography";
 import type { AthleteDataGrantScope } from "@repo/api";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
@@ -83,20 +83,9 @@ export function AthleteDataGrantsScreen({
     <AppLayout
       className={styles.root()}
       header={
-        <Header
-          appearance="bar"
-          startContent={
-            <Button
-              aria-label="بازگشت"
-              isIconOnly
-              onPress={() => router.back()}
-              size="lg"
-              variant="tertiary"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
-            </Button>
-          }
-          title="اشتراک‌گذاری داده با مربی"
+        <SecondaryPageHeader
+          backAriaLabel={بازگشت}
+          onBack={() => router.back()}
         />
       }
     >

@@ -1,5 +1,6 @@
 export * from "./BottomNav";
 export * from "./Header";
+export * from "./SecondaryPageHeader";
 export * from "./ProfileHeader";
 export * from "./ProfileStats";
 export * from "./AppLayout";

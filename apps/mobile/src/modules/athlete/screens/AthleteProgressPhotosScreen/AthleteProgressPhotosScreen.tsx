@@ -7,7 +7,7 @@ import { Camera1 } from "@repo/icons/Camera1";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { Image1 } from "@repo/icons/Image1";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import type { ProgressPhotoPrivacy } from "../../lib/progress-photos-data";
@@ -46,18 +46,9 @@ export function AthleteProgressPhotosScreen({
     <AppLayout
       className={styles.root({ className })}
       header={
-        <Header
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={() => router.back()}
-              size="lg"
-              variant="ghost"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
-            </Button>
-          }
+        <SecondaryPageHeader
+          backAriaLabel={t("back")}
+          onBack={() => router.back()}
         />
       }
     >

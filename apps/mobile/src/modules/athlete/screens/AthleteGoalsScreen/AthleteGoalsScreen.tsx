@@ -4,7 +4,7 @@ import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useRouter } from "next/navigation";
 import { useAthleteGoals } from "@/modules/athlete/lib/use-athlete-goals";
 import { AthleteGoalsCreateSection } from "@/modules/athlete/sections/AthleteGoalsCreateSection";
@@ -23,18 +23,9 @@ export function AthleteGoalsScreen(props: AthleteGoalsScreenProps) {
     <AppLayout
       className={styles.root()}
       header={
-        <Header
-          startContent={
-            <Button
-              aria-label="بازگشت"
-              isIconOnly
-              onPress={() => router.back()}
-              size="lg"
-              variant="ghost"
-            >
-              <ChevronLeft size={22} />
-            </Button>
-          }
+        <SecondaryPageHeader
+          backAriaLabel={بازگشت}
+          onBack={() => router.back()}
         />
       }
     >

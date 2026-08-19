@@ -1,6 +1,19 @@
 import type { ReactNode } from "react";
 import type { ButtonProps } from "@heroui/react/button";
 
+export type BottomNavHoldMenuOption = {
+  key: string;
+  label: string;
+  icon: ReactNode;
+  onPress?: ButtonProps["onPress"];
+};
+
+export type BottomNavItemHoldMenu = {
+  /** Accessible name for the hold menu dialog. */
+  label?: string;
+  options: BottomNavHoldMenuOption[];
+};
+
 export type BottomNavItem = {
   key: string;
   label: string;
@@ -8,6 +21,8 @@ export type BottomNavItem = {
   isActive?: boolean;
   href?: string;
   onPress?: ButtonProps["onPress"];
+  /** Long-press opens a compact menu (e.g. profile role switcher). */
+  holdMenu?: BottomNavItemHoldMenu;
 };
 
 /** Role-specific (or any) quick action shown in the center menu grid. */

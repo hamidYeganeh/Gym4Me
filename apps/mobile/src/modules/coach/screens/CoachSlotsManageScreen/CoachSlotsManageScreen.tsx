@@ -3,7 +3,7 @@
 import { Button } from "@heroui/react/button";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useRouter } from "next/navigation";
 import {
   COACH_SLOT_DURATIONS_MINUTES,
@@ -26,18 +26,9 @@ export function CoachSlotsManageScreen() {
     <AppLayout
       className={styles.root}
       header={
-        <Header
-          startContent={
-            <Button
-              aria-label={slots.t("back")}
-              isIconOnly
-              onPress={() => router.back()}
-              size="lg"
-              variant="ghost"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
-            </Button>
-          }
+        <SecondaryPageHeader
+          backAriaLabel={slots.t("back")}
+          onBack={() => router.back()}
         />
       }
     >

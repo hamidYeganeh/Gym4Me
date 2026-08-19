@@ -5,7 +5,7 @@ import { Calendar2 } from "@repo/icons/Calendar2";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { Plus } from "@repo/icons/Plus";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -51,7 +51,10 @@ export function CoachCalendarWeeklyScreen({
     <AppLayout
       className={styles.root}
       header={
-        <Header
+        <SecondaryPageHeader
+          backAriaLabel={t("back")}
+          onBack={() => router.back()}
+          title={t("title")}
           endContent={
             <Button
               aria-label={t("calendar")}
@@ -62,18 +65,6 @@ export function CoachCalendarWeeklyScreen({
               <Calendar2 size={22} />
             </Button>
           }
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={() => router.back()}
-              size="lg"
-              variant="ghost"
-            >
-              <ChevronLeft size={22} />
-            </Button>
-          }
-          title={t("title")}
         />
       }
     >

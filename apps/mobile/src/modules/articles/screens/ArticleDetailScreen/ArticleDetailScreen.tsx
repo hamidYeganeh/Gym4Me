@@ -8,7 +8,7 @@ import { ApiError } from "@repo/api";
 import { Bookmark } from "@repo/icons/Bookmark";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import { articleDetailHref } from "@/modules/articles/lib/format-article";
@@ -127,7 +127,10 @@ export function ArticleDetailScreen({ className }: ArticleDetailScreenProps) {
     <AppLayout
       className={styles.root({ className })}
       header={
-        <Header
+        <SecondaryPageHeader
+          backAriaLabel={t("backToList")}
+          onBack={() => router.back()}
+          title={t("detailTitle")}
           endContent={
             article ? (
               <Button
@@ -143,18 +146,7 @@ export function ArticleDetailScreen({ className }: ArticleDetailScreenProps) {
               </Button>
             ) : null
           }
-          startContent={
-            <Button
-              aria-label={t("backToList")}
-              isIconOnly
-              size="lg"
-              variant="ghost"
-              onPress={() => router.back()}
-            >
-              <ChevronLeft size={22} />
-            </Button>
-          }
-          title={t("detailTitle")}
+          className={saved ? styles.actionActive() : undefined}
         />
       }
     >

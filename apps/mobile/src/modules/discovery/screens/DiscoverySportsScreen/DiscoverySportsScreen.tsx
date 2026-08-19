@@ -1,13 +1,11 @@
 "use client";
 
-import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { SportCard, SportCardSkeleton } from "@repo/ui/cards/SportCard";
 import { EMPTY_STATE_ILLUSTRATIONS, EmptyState } from "@repo/ui/kit/EmptyState";
 import { FilterChip, FilterChipBar } from "@repo/ui/kit/FilterChip";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { discoverySportsScreenStyles as styles } from "./DiscoverySportsScreen.styles";
@@ -28,27 +26,16 @@ export function DiscoverySportsScreen({
     <AppLayout
       className={styles.root}
       header={
-        <Header
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={() => router.back()}
-              size="lg"
-              variant="ghost"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
-            </Button>
-          }
+        <SecondaryPageHeader
+          backAriaLabel={t("back")}
+          onBack={() => router.back()}
+          title={t("title")}
         />
       }
     >
       <div className={styles.content}>
         <section className={styles.intro}>
           <span aria-hidden className={styles.introAccent} />
-          <Typography className={styles.introTitle} type="h1" weight="bold">
-            {t("title")}
-          </Typography>
           <Typography className={styles.introSubtitle} type="body">
             {t("subtitle")}
           </Typography>

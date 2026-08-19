@@ -10,7 +10,7 @@ import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { CallToActionCard } from "@repo/ui/cards/CallToActionCard";
 import type { CallToActionCardVariant } from "@repo/ui/cards/CallToActionCard";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { accountRoles } from "@/shared/lib/api";
 import { roleHomePath } from "@/shared/lib/role-routes";
@@ -142,19 +142,9 @@ export function RoleApplyScreen({
     <AppLayout
       className={styles.root({ className })}
       header={
-        <Header
-          appearance="bar"
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={() => router.push(`/${roleSegment}/profile`)}
-              size="lg"
-              variant="tertiary"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
-            </Button>
-          }
+        <SecondaryPageHeader
+          backAriaLabel={t("back")}
+          onBack={() => router.push(`/${roleSegment}/profile`)}
           title={t("title")}
         />
       }

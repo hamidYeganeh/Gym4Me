@@ -1,13 +1,11 @@
 "use client";
 
-import { Button } from "@heroui/react/button";
 import { Spinner } from "@heroui/react/spinner";
 import { Typography } from "@heroui/react/typography";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { ScheduleWorkoutCard } from "@repo/ui/cards/ScheduleWorkoutCard";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useDiscoveryClubSlots } from "../../lib/use-discovery-club-slots";
@@ -31,26 +29,15 @@ export function DiscoveryClubsSlotsScreen({
     <AppLayout
       className={styles.root}
       header={
-        <Header
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={() => router.back()}
-              size="lg"
-              variant="ghost"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
-            </Button>
-          }
+        <SecondaryPageHeader
+          backAriaLabel={t("back")}
+          onBack={() => router.back()}
+          title={t("slotsPageTitle")}
         />
       }
     >
       <div className={styles.content}>
         <section className={styles.intro}>
-          <Typography className={styles.introTitle} type="h1" weight="bold">
-            {t("slotsPageTitle")}
-          </Typography>
           <Typography className={styles.introSubtitle} type="body">
             {club.title}
           </Typography>

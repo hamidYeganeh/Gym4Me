@@ -6,7 +6,7 @@ import { ChartBar1 } from "@repo/icons/ChartBar1";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { WeightScale } from "@repo/icons/WeightScale";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { AthleteWeightMetricsChartSection } from "../../sections/AthleteWeightMetricsChartSection";
@@ -27,7 +27,10 @@ export function AthleteWeightMetricsScreen({ metric }: AthleteWeightMetricsScree
     <AppLayout
       className={styles.root()}
       header={
-        <Header
+        <SecondaryPageHeader
+          backAriaLabel={t("back")}
+          onBack={() => router.back()}
+          title={t("title")}
           endContent={
             <Button
               aria-label={t("analytics")}
@@ -39,18 +42,6 @@ export function AthleteWeightMetricsScreen({ metric }: AthleteWeightMetricsScree
               <ChartBar1 className="text-foreground" size={22} />
             </Button>
           }
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={() => router.back()}
-              size="lg"
-              variant="ghost"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
-            </Button>
-          }
-          title={t("title")}
         />
       }
     >

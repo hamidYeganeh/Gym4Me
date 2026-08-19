@@ -4,7 +4,7 @@ import { Button } from "@heroui/react/button";
 import { Calendar1 } from "@repo/icons/Calendar1";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -87,7 +87,9 @@ export function DiscoveryCoachesSlotsScreen({
     <AppLayout
       className={styles.root()}
       header={
-        <Header
+        <SecondaryPageHeader
+          backAriaLabel={t("back")}
+          onBack={() => router.back()}
           endContent={
             <Button
               aria-label={t("slotsOpenCalendar")}
@@ -98,17 +100,6 @@ export function DiscoveryCoachesSlotsScreen({
             >
               <Calendar1 className="text-foreground" size={22} />
               <span aria-hidden className={styles.calendarBadge()} />
-            </Button>
-          }
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={() => router.back()}
-              size="lg"
-              variant="ghost"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
             </Button>
           }
         />
