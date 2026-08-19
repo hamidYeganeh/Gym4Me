@@ -3,15 +3,19 @@ import { tv } from "tailwind-variants";
 
 export const authLayoutVariants = tv({
   slots: {
+    /**
+     * Form tones use min-height so the page can grow/scroll when the soft
+     * keyboard shrinks the visual viewport. Hero locks to one viewport.
+     */
     shell:
-      "relative flex h-dvh max-h-dvh flex-col overflow-hidden bg-background text-foreground",
+      "relative flex min-h-dvh flex-col bg-background text-foreground",
     media: "pointer-events-none fixed inset-0",
     mediaImage:
       "absolute inset-0 size-full object-cover object-[center_45%] grayscale",
     mediaOverlay: "pointer-events-none absolute inset-0",
     mediaVignette: "pointer-events-none absolute inset-0",
     panel: [
-      "relative z-10 mx-auto flex h-full min-h-0 w-full max-w-md flex-col overflow-hidden",
+      "relative z-10 mx-auto flex min-h-dvh w-full max-w-md flex-col",
       "px-6 pb-[max(1.75rem,env(safe-area-inset-bottom))] pt-[max(2.5rem,env(safe-area-inset-top))]",
       "sm:max-w-lg sm:px-8",
     ].join(" "),
@@ -32,9 +36,9 @@ export const authLayoutVariants = tv({
       "mx-auto mt-2 mb-6 flex w-full max-w-[11.5rem] shrink-0 items-center justify-center sm:max-w-[13rem]",
     figureImage: "h-auto w-full object-contain",
     spacer: "min-h-0 flex-1",
-    /** Natural height; shrinks + scrolls only when the viewport is too short. */
-    body: "flex min-h-0 w-full shrink flex-col gap-6 overflow-y-auto overscroll-contain pb-2",
-    formSlot: "flex w-full flex-col gap-5",
+    /** Natural height — document scrolls when the keyboard covers the form. */
+    body: "flex w-full shrink-0 flex-col gap-6 pb-2",
+    formSlot: "flex w-full flex-col gap-5 scroll-mt-6",
     belowForm: "flex w-full flex-col gap-4",
     footer: "shrink-0 pt-2 text-center text-sm sm:text-base",
   },
@@ -65,7 +69,7 @@ export const authLayoutVariants = tv({
       },
       hero: {
         /** Welcome hero — black stage; photo only in upper band. */
-        shell: "bg-black text-white",
+        shell: "h-dvh max-h-dvh overflow-hidden bg-black text-white",
         brand: "mb-1",
         header: "mb-6 max-w-none self-stretch items-center gap-4 text-center",
         brandName: "text-white",
@@ -92,10 +96,7 @@ export const authLayoutVariants = tv({
     framed: {
       true: {},
       false: {
-        /**
-         * Keep a 2px gutter so HeroUI `ring-2` field focus rings are not
-         * clipped by this scrollport (`overflow-y-auto` also clips the x-axis).
-         */
+        /** Keep a 2px gutter so HeroUI field focus rings are not clipped at the edges. */
         body: "bg-transparent p-0.5 shadow-none backdrop-blur-none",
       },
     },

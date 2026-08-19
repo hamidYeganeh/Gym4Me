@@ -12,7 +12,7 @@ import {
   type BasicsChoicesApi,
 } from "./choices.client";
 import type { PublicChoiceGroup } from "./choices.dto";
-import { basicsChoicesKeys } from "./choices.keys";
+import { basicsChoicesKeys, BASICS_CHOICES_STALE_TIME_MS } from "./choices.keys";
 import {
   createBasicsLocationsApi,
   type BasicsLocationsApi,
@@ -62,6 +62,31 @@ export function useBasicsChoiceGroups(
   return useQuery({
     queryKey: basicsChoicesKeys.list(),
     queryFn: () => api.list(),
+    staleTime: BASICS_CHOICES_STALE_TIME_MS,
+    gcTime: BASICS_CHOICES_STALE_TIME_MS,
+    ...options,
+  });
+}
+
+export function useBasicsChoiceGroup(
+  key: string,
+  options?: Omit<
+    UseQueryOptions<PublicChoiceGroup, Error>,
+    "queryKey" | "queryFn"
+  >,
+) {
+  const api = useBasicsChoicesApi();
+  return useQuery({
+    queryKey: basicsChoicesKeys.detail(key),
+    queryFn: async () => {
+      const groups = await api.listAll();
+      const group = groups.find((item) => item.value === key);
+      if (!group) throw new Error(`Choice group not found: ${key}`);
+      return group;
+    },
+    enabled: Boolean(key),
+    staleTime: BASICS_CHOICES_STALE_TIME_MS,
+    gcTime: BASICS_CHOICES_STALE_TIME_MS,
     ...options,
   });
 }
@@ -76,6 +101,8 @@ export function useBasicsUnitChoiceGroups(
   return useQuery({
     queryKey: basicsChoicesKeys.units(),
     queryFn: () => api.listUnitGroups(),
+    staleTime: BASICS_CHOICES_STALE_TIME_MS,
+    gcTime: BASICS_CHOICES_STALE_TIME_MS,
     ...options,
   });
 }

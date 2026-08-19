@@ -8,7 +8,7 @@ import type {
 } from "./referral.dto";
 import { accountReferralEndpoints as ep } from "./referral.endpoint";
 
-/** Account referral (`/account/referral`). */
+/** Account referral (`/account/referral`, `/account/me/referral`). */
 export function createAccountReferralApi(client: ApiClient) {
   return {
     validate(code: string) {

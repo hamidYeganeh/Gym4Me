@@ -10,6 +10,7 @@ import { adminAppConfig } from "@/shared/lib/api";
 import {
   emptyReleasePolicyDraft,
   policyToDraft,
+  releaseNotesForUpsert,
 } from "../../lib/release-policy-draft";
 import { ReleasePoliciesFormSection } from "../../sections/ReleasePoliciesFormSection";
 import { ReleasePoliciesTableSection } from "../../sections/ReleasePoliciesTableSection";
@@ -78,6 +79,7 @@ export function ReleasePoliciesScreen({
         minimumSupportedAppVersion: draft.minimumSupportedAppVersion.trim(),
         recommendedApiVersion: draft.recommendedApiVersion.trim(),
         updateUrl: draft.updateUrl?.trim() || undefined,
+        releaseNotes: releaseNotesForUpsert(draft),
         enabled: draft.enabled,
         reason,
       });

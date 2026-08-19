@@ -26,7 +26,7 @@ export const DEFAULT_CHOICE_GROUPS: ChoiceSeed[] = [
     ],
   },
   {
-    key: 'onboarding_goal',
+    key: 'athlete_goal',
     name: 'هدف از اپ',
     description: 'هدف کاربر از استفاده از اپلیکیشن را انتخاب کنید.',
     isSystem: true,

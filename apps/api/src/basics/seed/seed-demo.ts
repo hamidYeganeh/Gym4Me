@@ -616,7 +616,6 @@ async function seed() {
     },
     contact: {
       phones: [{ number: '02188770011', label: 'پذیرش' }],
-      website: 'https://energy-vanak.example.ir',
     },
     equipments: [
       { equipmentId: treadmill._id },
@@ -646,6 +645,7 @@ async function seed() {
     operatingHours: genderSplitHours,
     socials: [
       { platform: 'instagram', url: 'https://instagram.com/energy.vanak' },
+      { platform: 'website', url: 'https://energy-vanak.example.ir' },
     ],
     rules: [
       {

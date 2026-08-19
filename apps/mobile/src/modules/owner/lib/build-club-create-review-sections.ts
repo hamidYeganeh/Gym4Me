@@ -142,13 +142,6 @@ export function buildClubCreateReviewSections({
     {
       key: "contact",
       title: t("stepContact"),
-      fields: [
-        {
-          key: "website",
-          label: t("website"),
-          value: (values.website ?? "").trim(),
-        },
-      ],
       list: [
         ...phones.map((phone, index) => ({
           key: phone.id || `phone-${index}`,
@@ -164,9 +157,7 @@ export function buildClubCreateReviewSections({
         })),
       ],
       emptyLabel:
-        phones.length || socials.length || (values.website ?? "").trim()
-          ? undefined
-          : t("reviewEmptyPhones"),
+        phones.length || socials.length ? undefined : t("reviewEmptyPhones"),
     },
     {
       key: "location",

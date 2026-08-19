@@ -267,7 +267,7 @@ export function OnboardingIdentitySection({
             onChange={(next) => onChange({ city: next })}
           >
             <Label>{labels.city}</Label>
-            <Input className={styles.input()} />
+            <Input className={styles.input()} variant="secondary" />
           </TextField>
           <TextField
             className={styles.field()}
@@ -277,7 +277,7 @@ export function OnboardingIdentitySection({
             onChange={(next) => onChange({ postalCode: next })}
           >
             <Label>{labels.postalCode}</Label>
-            <Input className={styles.input()} />
+            <Input className={styles.input()} variant="secondary" />
           </TextField>
         </div>
       </section>
@@ -295,7 +295,7 @@ export function OnboardingIdentitySection({
         </div>
 
         <div className={styles.chips()}>
-          <Typography className="text-sm font-semibold text-foreground">
+          <Typography className={styles.fieldLabel()}>
             {labels.allergies}
           </Typography>
           {value.allergies.map((item) => (
@@ -345,7 +345,7 @@ export function OnboardingIdentitySection({
         </TextField>
 
         <div className={styles.sliderBlock()}>
-          <Typography className="mb-2 text-sm font-semibold text-foreground">
+          <Typography className={styles.fieldLabel()}>
             {labels.height}
           </Typography>
           <HeightSlider
@@ -358,7 +358,7 @@ export function OnboardingIdentitySection({
         </div>
 
         <div className={styles.sliderBlock()}>
-          <Typography className="mb-2 text-sm font-semibold text-foreground">
+          <Typography className={styles.fieldLabel()}>
             {labels.weight}
           </Typography>
           <WeightSlider

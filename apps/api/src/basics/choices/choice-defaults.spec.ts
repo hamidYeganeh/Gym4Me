@@ -18,7 +18,7 @@ describe('DEFAULT_CHOICE_GROUPS', () => {
     expect(systemKeys).toEqual(
       expect.arrayContaining([
         'gender',
-        'onboarding_goal',
+        'athlete_goal',
         'athlete_level',
         'athlete_diet',
         'nutrition_category',

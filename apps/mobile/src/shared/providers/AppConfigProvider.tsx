@@ -3,9 +3,8 @@
 import { App } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
 import { Preferences } from "@capacitor/preferences";
-import { Button } from "@heroui/react/button";
-import { Typography } from "@heroui/react/typography";
 import { createAppConfigApi, type AppBootstrap } from "@repo/api/app-config";
+import { useTranslations } from "next-intl";
 import {
   createContext,
   type ReactNode,
@@ -15,6 +14,8 @@ import {
   useMemo,
   useState,
 } from "react";
+import { OptionalUpdateBanner } from "@/modules/app/components/OptionalUpdateBanner";
+import { ForceUpdateScreen } from "@/modules/app/screens/ForceUpdateScreen";
 import { apiClient } from "@/shared/lib/api-client";
 
 export type Gym4MeFeatureKey =
@@ -27,10 +28,12 @@ type CachedBootstrap = { expiresAt: number; value: AppBootstrap };
 
 type AppConfigContextValue = {
   bootstrap: AppBootstrap | null;
+  appVersion: string;
   isReady: boolean;
   isEnabled: (key: Gym4MeFeatureKey, fallback?: boolean) => boolean;
   payload: (key: Gym4MeFeatureKey) => Record<string, unknown>;
   refresh: () => Promise<void>;
+  dismissOptionalUpdate: () => void;
 };
 
 const CACHE_KEY = "gym4me.app-config.v1";
@@ -75,20 +78,26 @@ function parseCache(value: string | null): CachedBootstrap | null {
 }
 
 export function AppConfigProvider({ children }: { children: ReactNode }) {
+  const tOptional = useTranslations("OptionalUpdate");
   const [bootstrap, setBootstrap] = useState<AppBootstrap | null>(null);
+  const [appVersion, setAppVersion] = useState(
+    () => process.env.NEXT_PUBLIC_APP_VERSION || "0.1.0",
+  );
   const [isReady, setReady] = useState(false);
+  const [optionalDismissed, setOptionalDismissed] = useState(false);
 
   const refresh = useCallback(async () => {
     try {
-      const [appVersion, deviceId] = await Promise.all([
+      const [version, deviceId] = await Promise.all([
         installedVersion(),
         installationId(),
       ]);
+      setAppVersion(version);
       const platform = Capacitor.getPlatform();
       const value = await appConfigApi.fetchBootstrap({
         platform:
           platform === "ios" || platform === "android" ? platform : "web",
-        appVersion,
+        appVersion: version,
         installationId: deviceId,
         channel:
           (process.env.NEXT_PUBLIC_RELEASE_CHANNEL as
@@ -140,45 +149,62 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
     };
   }, [refresh]);
 
+  const dismissOptionalUpdate = useCallback(() => {
+    setOptionalDismissed(true);
+  }, []);
+
   const context = useMemo<AppConfigContextValue>(
     () => ({
       bootstrap,
+      appVersion,
       isReady,
       isEnabled: (key, fallback = DEFAULTS[key]) =>
         bootstrap?.features[key]?.enabled ?? fallback,
       payload: (key) => bootstrap?.features[key]?.payload ?? {},
       refresh,
+      dismissOptionalUpdate,
     }),
-    [bootstrap, isReady, refresh],
+    [appVersion, bootstrap, dismissOptionalUpdate, isReady, refresh],
   );
 
   const compatibility = bootstrap?.compatibility;
   if (compatibility?.updateRequired) {
+    const notes = compatibility.releaseNotes;
     return (
       <AppConfigContext.Provider value={context}>
-        <main className="flex min-h-dvh flex-col items-center justify-center gap-4 p-8 text-center">
-          <Typography type="h2" weight="bold">
-            بروزرسانی Gym4Me لازم است
-          </Typography>
-          <Typography className="text-muted" type="body">
-            برای ادامه، نسخهٔ {compatibility.minimumAppVersion} یا جدیدتر را نصب
-            کنید.
-          </Typography>
-          {compatibility.updateUrl ? (
-            <Button
-              onPress={() => window.location.assign(compatibility.updateUrl!)}
-              variant="primary"
-            >
-              دریافت نسخهٔ جدید
-            </Button>
-          ) : null}
-        </main>
+        <ForceUpdateScreen
+          currentVersion={appVersion}
+          features={notes?.features}
+          minimumVersion={compatibility.minimumAppVersion}
+          title={notes?.title}
+          updateUrl={compatibility.updateUrl}
+        />
       </AppConfigContext.Provider>
     );
   }
 
+  const showOptionalBanner =
+    Boolean(compatibility?.updateAvailable) && !optionalDismissed;
+  const notes = compatibility?.releaseNotes;
+
   return (
     <AppConfigContext.Provider value={context}>
+      {showOptionalBanner ? (
+        <OptionalUpdateBanner
+          body={tOptional("body", {
+            version: compatibility?.latestAppVersion ?? "",
+          })}
+          features={notes?.features ?? []}
+          title={notes?.title?.trim() || tOptional("title")}
+          updateUrl={compatibility?.updateUrl ?? null}
+          onDismiss={dismissOptionalUpdate}
+          onUpdate={() => {
+            const url = compatibility?.updateUrl;
+            if (!url) return;
+            window.open(url, "_blank", "noopener,noreferrer");
+          }}
+        />
+      ) : null}
       {children}
     </AppConfigContext.Provider>
   );

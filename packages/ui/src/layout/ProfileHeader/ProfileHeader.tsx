@@ -48,7 +48,7 @@ function smoothstep(t: number) {
 
 function initialsFromName(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "?";
+  if (parts.length === 0) return "";
   if (parts.length === 1) return parts[0]!.slice(0, 2);
   return `${parts[0]!.slice(0, 1)}${parts[1]!.slice(0, 1)}`;
 }
@@ -87,6 +87,7 @@ export function ProfileHeader({
 }: ProfileHeaderProps) {
   const reduceMotion = useReducedMotion();
   const slots = profileHeaderVariants();
+  const displayName = name?.trim() ?? "";
   const avatar = resolveSrc(avatarSrc);
   const hasCover =
     typeof coverSrc === "string" && coverSrc.trim().length > 0;
@@ -112,7 +113,7 @@ export function ProfileHeader({
     const observer = new ResizeObserver(sync);
     observer.observe(el);
     return () => observer.disconnect();
-  }, [name, description]);
+  }, [displayName, description]);
 
   const contentStageHeight =
     PAD_Y + AVATAR_EXPANDED + 72 + identityHeight + PAD_Y;
@@ -276,11 +277,13 @@ export function ProfileHeader({
           >
             <Avatar className="size-full" color="accent">
               <Avatar.Image
-                alt={avatarAlt || name}
+                alt={avatarAlt || displayName}
                 className={slots.avatarImage()}
                 src={avatar}
               />
-              <Avatar.Fallback>{initialsFromName(name)}</Avatar.Fallback>
+              <Avatar.Fallback>
+                {initialsFromName(displayName)}
+              </Avatar.Fallback>
             </Avatar>
           </motion.div>
 
@@ -316,14 +319,16 @@ export function ProfileHeader({
               maxWidth: identityMaxWidth,
             }}
           >
-            <motion.div
-              className={slots.nameWrap()}
-              style={{ scale: nameScale }}
-            >
-              <Typography className={slots.name()} type="h1" weight="bold">
-                {name}
-              </Typography>
-            </motion.div>
+            {displayName ? (
+              <motion.div
+                className={slots.nameWrap()}
+                style={{ scale: nameScale }}
+              >
+                <Typography className={slots.name()} type="h1" weight="bold">
+                  {displayName}
+                </Typography>
+              </motion.div>
+            ) : null}
 
             {description ? (
               <motion.div

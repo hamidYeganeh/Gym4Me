@@ -17,20 +17,20 @@ import { InviteDto } from './dto/invite.dto';
 import { ReferralService } from './referral.service';
 
 @ApiTags('referral')
-@Controller('account/referral')
+@Controller('account')
 export class ReferralController {
   constructor(private readonly referral: ReferralService) {}
 
   @Public()
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
-  @Get('validate/:code')
+  @Get('referral/validate/:code')
   @ApiOperation({ summary: 'Validate a referral code' })
   validate(@Param('code') code: string) {
     return this.referral.validate(code);
   }
 
   @ApiBearerAuth('access-token')
-  @Get('me')
+  @Get('me/referral')
   @ApiOperation({ summary: 'Get current user referral info' })
   myReferral(@CurrentUser('sub') userId: string) {
     return this.referral.myReferral(userId);
@@ -38,7 +38,7 @@ export class ReferralController {
 
   @ApiBearerAuth('access-token')
   @Throttle({ default: { limit: 5, ttl: 3_600_000 } })
-  @Post('invite')
+  @Post('referral/invite')
   @HttpCode(200)
   @ApiOperation({ summary: 'Invite contacts via SMS' })
   invite(
@@ -50,7 +50,7 @@ export class ReferralController {
   }
 
   @ApiBearerAuth('access-token')
-  @Get('invites')
+  @Get('referral/invites')
   @ApiOperation({ summary: 'List invites sent by the current user' })
   myInvites(@CurrentUser('sub') userId: string) {
     return this.referral.myInvites(userId);

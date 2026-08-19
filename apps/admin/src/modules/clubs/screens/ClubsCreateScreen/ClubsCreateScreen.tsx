@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { upsertClubWebsiteSocial } from "@repo/api";
 import { toast } from "@repo/ui/kit/Toast";
 import { useTranslations } from "next-intl";
 import { AdminFormPage, AdminShell } from "@/shared/components";
@@ -32,8 +33,8 @@ export function ClubsCreateScreen({ className }: ClubsCreateScreenProps) {
             label: values.phoneLabel.trim() || undefined,
           },
         ],
-        website: values.website.trim() || undefined,
       },
+      socials: upsertClubWebsiteSocial([], values.website),
       location: {
         address: values.address.trim(),
         direction: values.direction,

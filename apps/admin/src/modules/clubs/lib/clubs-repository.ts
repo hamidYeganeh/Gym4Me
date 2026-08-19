@@ -141,10 +141,6 @@ export async function updateClub(
             number: p.number,
             label: p.label ?? null,
           })),
-          website:
-            input.contact.website !== undefined
-              ? (input.contact.website ?? null)
-              : current.contact.website,
         }
       : current.contact,
     location:
@@ -167,6 +163,7 @@ export async function updateClub(
       input.sportIds !== undefined
         ? input.sportIds.map((id) => ({ id }))
         : current.sports,
+    socials: input.socials !== undefined ? input.socials : current.socials,
     updatedAt: new Date().toISOString(),
   };
   mockStore[index] = next;

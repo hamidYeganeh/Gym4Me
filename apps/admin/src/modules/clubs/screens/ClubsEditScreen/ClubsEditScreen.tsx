@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Spinner } from "@heroui/react/spinner";
 import { Typography } from "@heroui/react/typography";
-import type { Club } from "@repo/api";
+import { upsertClubWebsiteSocial, type Club } from "@repo/api";
 import { toast } from "@repo/ui/kit/Toast";
 import { useTranslations } from "next-intl";
 import { AdminFormPage, AdminShell } from "@/shared/components";
@@ -71,8 +71,8 @@ export function ClubsEditScreen({ className }: ClubsEditScreenProps) {
             label: values.phoneLabel.trim() || undefined,
           },
         ],
-        website: values.website.trim() || undefined,
       },
+      socials: upsertClubWebsiteSocial(club.socials, values.website),
       location: {
         address: values.address.trim(),
         direction: values.direction,

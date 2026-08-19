@@ -82,6 +82,31 @@ export type ClubCoachRef = {
   avatar?: { mediaId: string | null };
 };
 
+export const CLUB_SOCIAL_PLATFORM_WEBSITE = "website";
+
+export function clubWebsiteFromSocials(
+  socials: { platform: string; url: string }[] | undefined,
+): string | null {
+  const url = socials
+    ?.find((social) => social.platform === CLUB_SOCIAL_PLATFORM_WEBSITE)
+    ?.url.trim();
+  return url || null;
+}
+
+export function upsertClubWebsiteSocial(
+  socials: { platform: string; url: string }[] | undefined,
+  website: string | null | undefined,
+): { platform: string; url: string }[] {
+  const next = (socials ?? []).filter(
+    (social) => social.platform !== CLUB_SOCIAL_PLATFORM_WEBSITE,
+  );
+  const url = website?.trim();
+  if (url) {
+    next.push({ platform: CLUB_SOCIAL_PLATFORM_WEBSITE, url });
+  }
+  return next;
+}
+
 export type Club = {
   id: string;
   ownerId: string;
@@ -93,7 +118,6 @@ export type Club = {
   };
   contact: {
     phones: ClubPhone[];
-    website: string | null;
   };
   gallery: ClubGalleryItem[];
   cancellation: {
@@ -163,7 +187,6 @@ export type CreateClubInput = {
   };
   contact?: {
     phones?: { number: string; label?: string }[];
-    website?: string;
   };
   gallery?: ClubGalleryItem[];
   cancellation?: {

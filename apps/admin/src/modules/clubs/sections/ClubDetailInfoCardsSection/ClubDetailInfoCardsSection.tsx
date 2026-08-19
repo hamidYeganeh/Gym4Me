@@ -1,5 +1,6 @@
 import { Chip } from "@heroui/react/chip";
 import { Typography } from "@heroui/react/typography";
+import { clubWebsiteFromSocials } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { categoryLabel } from "../../lib/clubs-data";
 import { ClubCoachesSection } from "../ClubCoachesSection";
@@ -18,6 +19,7 @@ export function ClubDetailInfoCardsSection({
 }: ClubDetailInfoCardsSectionProps) {
   const t = useTranslations("Admin.Clubs");
   const styles = clubDetailInfoCardsSectionVariants();
+  const website = clubWebsiteFromSocials(club.socials);
 
   return (
     <div className={`flex flex-col gap-6 ${className ?? ""}`}>
@@ -74,7 +76,7 @@ export function ClubDetailInfoCardsSection({
           <div>
             <dt className={styles.label()}>{t("createModal.website")}</dt>
             <dd className={styles.value()} dir="ltr">
-              {club.contact.website || "—"}
+              {website || "—"}
             </dd>
           </div>
         </dl>

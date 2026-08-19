@@ -48,6 +48,10 @@ export class ClubContact {
   @Prop({ type: [ClubPhoneSchema], default: [] })
   phones!: ClubPhone[];
 
+  /**
+   * @deprecated Use `socials` with `platform: 'website'`.
+   * Kept so existing documents can be migrated on read/write.
+   */
   @Prop({ trim: true })
   website?: string;
 }

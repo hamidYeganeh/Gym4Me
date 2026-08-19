@@ -4,6 +4,7 @@ export type {
   AppBootstrap,
   AppBootstrapFeature,
   AppPlatform,
+  AppReleaseNotes,
   FeatureFlag,
   FeatureFlagRule,
   FeatureFlagRuleInput,

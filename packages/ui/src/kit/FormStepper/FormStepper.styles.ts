@@ -15,7 +15,7 @@ export const formStepperVariants = tv({
     circle:
       "flex size-8 shrink-0 items-center justify-center rounded-full border text-sm font-semibold transition-colors",
     label: [
-      "w-full px-0.5 text-center text-[11px] leading-snug text-muted transition-colors",
+      "w-full px-0.5 text-center text-[11px] leading-snug text-foreground/70 transition-colors",
       "line-clamp-2 break-words",
     ].join(" "),
   },
@@ -23,11 +23,11 @@ export const formStepperVariants = tv({
     state: {
       done: {
         circle: "border-accent bg-accent text-accent-foreground",
-        label: "text-foreground",
+        label: "font-medium text-foreground",
         connector: "bg-accent",
       },
       active: {
-        circle: "border-accent bg-transparent text-accent",
+        circle: "border-accent bg-accent/15 text-accent shadow-[0_0_0_3px_color-mix(in_oklch,var(--accent)_22%,transparent)]",
         label: "font-semibold text-accent",
       },
       pending: {

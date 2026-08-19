@@ -62,6 +62,11 @@ export {
   type ClubOwnerClubsApi,
 } from "./clubs.client";
 export { accountClubsEndpoints } from "./clubs.endpoint";
+export {
+  CLUB_SOCIAL_PLATFORM_WEBSITE,
+  clubWebsiteFromSocials,
+  upsertClubWebsiteSocial,
+} from "./clubs.dto";
 export type {
   AdminCreateClubInput,
   Club,

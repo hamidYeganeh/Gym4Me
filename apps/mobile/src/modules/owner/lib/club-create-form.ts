@@ -61,7 +61,6 @@ export type ClubCreateFormState = {
   coverMediaId: string | null;
   coverFileName: string;
   phones: ClubCreatePhoneDraft[];
-  website: string;
   socials: ClubCreateSocialDraft[];
   address: string;
   point: { lat: number; lng: number } | null;
@@ -269,7 +268,6 @@ export function createEmptyClubCreateForm(): ClubCreateFormState {
     coverMediaId: null,
     coverFileName: "",
     phones: [createPhoneDraft()],
-    website: "",
     socials: [],
     address: "",
     point: null,
@@ -319,9 +317,6 @@ export function buildCreateClubPayload(
     }))
     .filter((phone) => phone.number.length > 0);
 
-  const website = form.website.trim();
-  const hasContact = phones.length > 0 || Boolean(website);
-
   const socials = form.socials
     .map((social) => ({
       platform: social.platform.trim(),
@@ -357,10 +352,9 @@ export function buildCreateClubPayload(
       description: form.description.trim() || undefined,
       coverMediaId: form.coverMediaId || undefined,
     },
-    contact: hasContact
+    contact: phones.length
       ? {
-          phones: phones.length ? phones : undefined,
-          website: website || undefined,
+          phones,
         }
       : undefined,
     location,

@@ -5,6 +5,11 @@ import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import type { DiscoveryClubsQuery } from "@repo/api/discovery";
 import { discoveryClubs, mediaFileUrl } from "@/shared/lib/api";
 import {
+  checkDevicePermission,
+  isDevicePermissionGranted,
+} from "@/shared/lib/device-permissions";
+import { useDevicePermissions } from "@/shared/providers/DevicePermissionsProvider";
+import {
   DEFAULT_SELECTED_COACH_ID,
   MAP_COACHES,
   pickNearestMapCoachId,
@@ -24,9 +29,9 @@ const DEFAULT_RADIUS_METERS = 20_000;
 /** Tehran fallback when geolocation is unavailable. */
 const TEHRAN = { lat: 35.715, lng: 51.404 };
 
-function readGeo(): Promise<{ lat: number; lng: number } | null> {
+async function readGeoPosition(): Promise<{ lat: number; lng: number } | null> {
   if (typeof navigator === "undefined" || !navigator.geolocation) {
-    return Promise.resolve(null);
+    return null;
   }
   return new Promise((resolve) => {
     navigator.geolocation.getCurrentPosition(
@@ -76,6 +81,7 @@ function toPins(
 
 /** Map pins from approved clubs — prefers nearby geo query. */
 export function useDiscoveryMapPins(): State {
+  const { ensurePermission } = useDevicePermissions();
   const [state, setState] = useState<State>({
     coaches: MAP_COACHES,
     initialSelectedId: DEFAULT_SELECTED_COACH_ID,
@@ -89,11 +95,24 @@ export function useDiscoveryMapPins(): State {
 
     void (async () => {
       try {
-        const geo = (await readGeo()) ?? TEHRAN;
+        const existing = await checkDevicePermission("location");
+        let geo: { lat: number; lng: number } | null = null;
+
+        if (isDevicePermissionGranted(existing)) {
+          geo = await readGeoPosition();
+        } else {
+          // Re-prompt when map needs location (e.g. user skipped/denied earlier).
+          const result = await ensurePermission("location");
+          if (result === "granted") {
+            geo = await readGeoPosition();
+          }
+        }
+
+        const origin = geo ?? TEHRAN;
         const query: DiscoveryClubsQuery = {
           page_size: 40,
-          lat: geo.lat,
-          lng: geo.lng,
+          lat: origin.lat,
+          lng: origin.lng,
           radiusMeters: DEFAULT_RADIUS_METERS,
         };
         const page = await discoveryClubs.list(query);
@@ -108,7 +127,7 @@ export function useDiscoveryMapPins(): State {
         }
 
         if (pins.length === 0) {
-          const mock = withMapDistances(MAP_COACHES, geo);
+          const mock = withMapDistances(MAP_COACHES, origin);
           const nearestId =
             pickNearestMapCoachId(mock) ?? DEFAULT_SELECTED_COACH_ID;
           setState({
@@ -121,7 +140,7 @@ export function useDiscoveryMapPins(): State {
           return;
         }
 
-        const ranked = withMapDistances(pins, geo);
+        const ranked = withMapDistances(pins, origin);
         const nearestId = pickNearestMapCoachId(ranked) ?? ranked[0]!.id;
         setState({
           coaches: ranked,
@@ -148,7 +167,7 @@ export function useDiscoveryMapPins(): State {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [ensurePermission]);
 
   return state;
 }

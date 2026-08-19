@@ -948,7 +948,7 @@ export class ClubsService {
           ? new Types.ObjectId(dto.identity.coverMediaId)
           : undefined,
       },
-      contact: { phones: [], website: undefined },
+      contact: { phones: [] },
       gallery: [],
       cancellation: { rules: [], peakRules: [] },
       equipments: [],
@@ -1022,9 +1022,6 @@ export class ClubsService {
           number: p.number.trim(),
           label: p.label,
         }));
-      }
-      if (dto.contact.website !== undefined) {
-        club.contact.website = dto.contact.website;
       }
       club.markModified('contact');
     }
@@ -1162,6 +1159,8 @@ export class ClubsService {
       club.socials = dto.socials;
       club.markModified('socials');
     }
+
+    migrateLegacyWebsite(club, dto.socials !== undefined);
 
     if (dto.rules !== undefined) {
       club.rules = dto.rules;
@@ -1402,7 +1401,6 @@ export class ClubsService {
           number: p.number,
           label: p.label ?? null,
         })),
-        website: c.contact?.website ?? null,
       },
       gallery: (c.gallery ?? []).map((g) => ({
         mediaId: g.mediaId.toString(),
@@ -1462,7 +1460,7 @@ export class ClubsService {
         })),
       },
       operatingHours: normalizeOperatingHours(c.operatingHours ?? []),
-      socials: c.socials ?? [],
+      socials: socialsWithLegacyWebsite(c.socials, c.contact?.website),
       achievements: (c.achievements ?? []).map((a) => ({
         achievementId: a.achievementId.toString(),
         grantedAt: a.grantedAt,
@@ -1489,6 +1487,36 @@ export class ClubsService {
       createdAt: c.createdAt,
       updatedAt: c.updatedAt,
     };
+  }
+}
+
+const SOCIAL_PLATFORM_WEBSITE = 'website';
+
+function socialsWithLegacyWebsite(
+  socials: Array<{ platform: string; url: string }> | undefined,
+  legacyWebsite?: string,
+) {
+  const rows = [...(socials ?? [])];
+  const url = legacyWebsite?.trim();
+  if (!url) return rows;
+  if (rows.some((row) => row.platform === SOCIAL_PLATFORM_WEBSITE)) {
+    return rows;
+  }
+  return [...rows, { platform: SOCIAL_PLATFORM_WEBSITE, url }];
+}
+
+function migrateLegacyWebsite(
+  club: ClubDocument,
+  socialsReplaced: boolean,
+) {
+  const url = club.contact?.website?.trim();
+  if (url && !socialsReplaced) {
+    club.socials = socialsWithLegacyWebsite(club.socials, url);
+    club.markModified('socials');
+  }
+  if (club.contact?.website !== undefined) {
+    club.contact.website = undefined;
+    club.markModified('contact');
   }
 }
 

@@ -11,7 +11,7 @@ export type OnboardingBodyTypeOption = {
 
 export type OnboardingBodyTypeSectionProps = {
   options: OnboardingBodyTypeOption[];
-  value: OnboardingBodyTypeId;
+  value: OnboardingBodyTypeId | null;
   gender: OnboardingGenderId | null;
   onChange: (value: OnboardingBodyTypeId) => void;
   className?: string;

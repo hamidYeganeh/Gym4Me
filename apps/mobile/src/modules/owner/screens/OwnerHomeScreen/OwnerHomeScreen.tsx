@@ -30,21 +30,18 @@ export function OwnerHomeScreen({
   const router = useRouter();
   const reduceMotion = useReducedMotion();
   const { user } = useAuth();
-  const displayName =
-    [user?.name.first, user?.name.last].filter(Boolean).join(" ") ||
-    user?.phone ||
-    t("profileName");
+  const firstName = user?.name.first?.trim() ?? "";
 
   return (
     <AppLayout
       className={styles.root}
       header={
         <ProfileHeader
-          avatarAlt={displayName}
+          avatarAlt={firstName}
           avatarSrc={mediaFileUrl(user?.avatar.mediaId) ?? undefined}
           bio={t("subtitle")}
           hasNotification
-          name={displayName}
+          name={firstName}
           notificationLabel={t("notifications")}
           onNotificationPress={() => router.push("/owner/notifications")}
         />

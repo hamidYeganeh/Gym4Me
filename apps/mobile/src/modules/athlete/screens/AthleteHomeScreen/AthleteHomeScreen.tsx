@@ -21,6 +21,7 @@ import { motion, useReducedMotion, type Variants } from "motion/react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
+import { AthleteReferralInviteSection } from "@/modules/athlete/sections/AthleteReferralInviteSection";
 import { mediaFileUrl } from "@/shared/lib/api";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { athleteHomeScreenStyles as styles } from "./AthleteHomeScreen.styles";
@@ -52,10 +53,7 @@ export function AthleteHomeScreen() {
   const router = useRouter();
   const reduceMotion = useReducedMotion();
   const { user } = useAuth();
-  const displayName =
-    [user?.name.first, user?.name.last].filter(Boolean).join(" ") ||
-    user?.phone ||
-    t("profileName");
+  const firstName = user?.name.first?.trim() ?? "";
 
   const setupItems: TodoCardItem[] = [
     {
@@ -89,11 +87,11 @@ export function AthleteHomeScreen() {
       className={styles.root}
       header={
         <ProfileHeader
-          avatarAlt={displayName}
+          avatarAlt={firstName}
           avatarSrc={mediaFileUrl(user?.avatar.mediaId) ?? undefined}
           bio={t("subtitle")}
           hasNotification
-          name={displayName}
+          name={firstName}
           notificationLabel={t("notifications")}
           onNotificationPress={() => router.push("/athlete/notifications")}
         />
@@ -217,6 +215,10 @@ export function AthleteHomeScreen() {
               />
             </div>
           </section>
+        </StaggerSection>
+
+        <StaggerSection>
+          <AthleteReferralInviteSection />
         </StaggerSection>
 
         <StaggerSection>

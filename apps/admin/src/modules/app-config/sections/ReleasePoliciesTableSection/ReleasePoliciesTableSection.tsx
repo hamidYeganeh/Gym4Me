@@ -43,6 +43,17 @@ export function ReleasePoliciesTableSection({
           header: t("releases.columns.latest"),
           cell: ({ getValue }) => <span dir="ltr">{getValue()}</span>,
         }),
+        columnHelper.accessor("releaseNotes", {
+          header: t("releases.columns.whatsNew"),
+          cell: ({ getValue }) => {
+            const notes = getValue();
+            if (!notes) return t("releases.notesEmpty");
+            return t("releases.notesSummary", {
+              title: notes.title,
+              count: notes.features.length,
+            });
+          },
+        }),
         columnHelper.accessor("recommendedApiVersion", {
           header: t("releases.columns.api"),
           cell: ({ getValue }) => <span dir="ltr">{getValue()}</span>,

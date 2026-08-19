@@ -153,6 +153,20 @@ export class ChoicesService {
     const updated: string[] = [];
     const skipped: string[] = [];
 
+    // Legacy key rename (onboarding_goal → athlete_goal).
+    const legacyGoal = await this.choiceModel.findOne({ key: 'onboarding_goal' });
+    if (legacyGoal) {
+      const modernGoal = await this.choiceModel.findOne({ key: 'athlete_goal' });
+      if (!modernGoal) {
+        legacyGoal.key = 'athlete_goal';
+        await legacyGoal.save();
+        updated.push('athlete_goal');
+      } else {
+        await legacyGoal.deleteOne();
+        updated.push('athlete_goal');
+      }
+    }
+
     for (const seed of DEFAULT_CHOICE_GROUPS) {
       const existing = await this.choiceModel.findOne({ key: seed.key });
       if (!existing) {

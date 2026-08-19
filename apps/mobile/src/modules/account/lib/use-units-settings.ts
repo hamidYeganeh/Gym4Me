@@ -4,7 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { PublicChoiceGroup } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
-import { accountProfile, basicsChoices } from "@/shared/lib/api";
+import { accountProfile } from "@/shared/lib/api";
+import { listUnitChoiceGroups } from "@/shared/lib/choices-cache";
 import {
   resolveUnitValue,
   sortUnitChoiceGroups,
@@ -29,7 +30,7 @@ export function useUnitsSettings() {
     setError(null);
     try {
       const [nextGroups, settings] = await Promise.all([
-        basicsChoices.listUnitGroups(),
+        listUnitChoiceGroups(),
         accountProfile.getSettings(),
       ]);
       setGroups(sortUnitChoiceGroups(nextGroups));

@@ -12,7 +12,7 @@ export {
 } from "./choices.client";
 export { basicsChoicesEndpoints } from "./choices.endpoint";
 export type { PublicChoiceGroup } from "./choices.dto";
-export { basicsChoicesKeys } from "./choices.keys";
+export { basicsChoicesKeys, BASICS_CHOICES_STALE_TIME_MS } from "./choices.keys";
 
 export {
   createBasicsSportsApi,

@@ -107,7 +107,7 @@ function baseClub(
   const now = new Date().toISOString();
   return {
     parentClubId: null,
-    contact: { phones: [], website: null },
+    contact: { phones: [] },
     gallery: [],
     cancellation: { rules: [], peakRules: [] },
     equipments: [],
@@ -157,7 +157,6 @@ export const MOCK_CLUBS: Club[] = [
         { number: "02188776655", label: "رزرو" },
         { number: "09121234567", label: "مدیریت" },
       ],
-      website: "https://asemani.example.com",
     },
     categories: [{ id: MOCK_CLUB_CATEGORIES[0].id, name: MOCK_CLUB_CATEGORIES[0].name }],
     sports: [{ id: MOCK_CLUB_SPORTS[0].id, name: MOCK_CLUB_SPORTS[0].name }],
@@ -192,7 +191,10 @@ export const MOCK_CLUBS: Club[] = [
       documentMediaIds: [],
     },
     operationalStatus: "active",
-    socials: [{ platform: "instagram", url: "https://instagram.com/asemani" }],
+    socials: [
+      { platform: "instagram", url: "https://instagram.com/asemani" },
+      { platform: "website", url: "https://asemani.example.com" },
+    ],
     rules: [
       {
         policy: "forbidden",
@@ -219,7 +221,6 @@ export const MOCK_CLUBS: Club[] = [
     },
     contact: {
       phones: [{ number: "02144556677", label: "پذیرش" }],
-      website: null,
     },
     categories: [{ id: MOCK_CLUB_CATEGORIES[1].id, name: MOCK_CLUB_CATEGORIES[1].name }],
     sports: [{ id: MOCK_CLUB_SPORTS[1].id, name: MOCK_CLUB_SPORTS[1].name }],
@@ -263,7 +264,6 @@ export const MOCK_CLUBS: Club[] = [
     },
     contact: {
       phones: [{ number: "09351234567", label: null }],
-      website: null,
     },
     categories: [{ id: MOCK_CLUB_CATEGORIES[2].id, name: MOCK_CLUB_CATEGORIES[2].name }],
     sports: [{ id: MOCK_CLUB_SPORTS[2].id, name: MOCK_CLUB_SPORTS[2].name }],
@@ -331,7 +331,6 @@ export function buildClubFromCreateInput(input: AdminCreateClubInput): Club {
         number: p.number,
         label: p.label ?? null,
       })),
-      website: input.contact?.website ?? null,
     },
     categories: (input.categoryIds ?? []).map((id) => ({
       id,

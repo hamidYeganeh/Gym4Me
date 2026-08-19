@@ -1,5 +1,5 @@
 export type ProfileHeaderProps = {
-  name: string;
+  name?: string;
   /** Longer profile blurb under the name (expanded state). */
   bio?: string;
   /**

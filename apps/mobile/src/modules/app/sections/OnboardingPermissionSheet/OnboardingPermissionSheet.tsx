@@ -50,6 +50,7 @@ export function OnboardingPermissionSheet({
       isDismissable={false}
       isKeyboardDismissDisabled
       isOpen={isOpen}
+      variant="blur"
       onOpenChange={onOpenChange}
     >
       <Drawer.Content placement="bottom">

@@ -86,6 +86,9 @@ export {
   type SwitchRoleInput,
 } from "./auth";
 export {
+  CLUB_SOCIAL_PLATFORM_WEBSITE,
+  clubWebsiteFromSocials,
+  upsertClubWebsiteSocial,
   createAccountClubsApi,
   createClubOwnerClubsApi,
   createAccountClubSlotsApi,
@@ -619,6 +622,7 @@ export {
   type AppBootstrapFeature,
   type AppConfigApi,
   type AppPlatform,
+  type AppReleaseNotes,
   type FeatureFlag,
   type FeatureFlagRule,
   type FeatureFlagRuleInput,

@@ -12,6 +12,14 @@ export function createBasicsChoicesApi(client: ApiClient) {
       });
     },
 
+    /** All active choice groups in one request (unwraps pagination). */
+    async listAll() {
+      const page = await client.request<Paginated<PublicChoiceGroup>>(ep.list, {
+        public: true,
+      });
+      return page.result;
+    },
+
     get(key: string) {
       return client.request<PublicChoiceGroup>(ep.byKey(key), { public: true });
     },

@@ -40,6 +40,7 @@ export * from "./MuscleCard";
 export * from "./NotificationCard";
 export * from "./QuickActionCard";
 export * from "./ReadingTimeCard";
+export * from "./ReferralInviteCard";
 export * from "./ReservationCard";
 export * from "./ReviewCard";
 export * from "./ReviewSummaryCard";

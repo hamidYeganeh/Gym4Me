@@ -68,13 +68,13 @@ import type {
 } from "@/modules/app/sections/OnboardingIdentitySection";
 import type { OnboardingSportOption } from "@/modules/app/sections/OnboardingSportsSection";
 import {
-  basicsChoices,
   basicsLocations,
   basicsSports,
   isDiscoveryApiId,
   mediaApi,
   mediaFileUrl,
 } from "@/shared/lib/api";
+import { loadChoiceGroups } from "@/shared/lib/choices-cache";
 import { roleHomePath } from "@/shared/lib/role-routes";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import type {
@@ -83,12 +83,8 @@ import type {
   UpdateAthleteProfileInput,
   UpdateMeInput,
 } from "@repo/api";
-import {
-  ONBOARDING_PERMISSION_ORDER,
-  requestDevicePermission,
-  skipDevicePermission,
-  type DevicePermissionKind,
-} from "@/shared/lib/device-permissions";
+import { ONBOARDING_PERMISSION_ORDER } from "@/shared/lib/device-permissions";
+import { useDevicePermissions } from "@/shared/providers/DevicePermissionsProvider";
 
 const ATHLETE_DIETS: readonly AthleteDiet[] = [
   "balanced",
@@ -106,11 +102,11 @@ export function useOnboarding() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isAuthenticated, activeRole } = useAuth();
+  const { ensurePermission } = useDevicePermissions();
   const reduceMotion = useReducedMotion();
   const [textDirection] = useState<"rtl" | "ltr">(readDocumentDirection);
   const [slide, setSlide] = useState(0);
-  const [permissionIndex, setPermissionIndex] = useState<number | null>(null);
-  const [isRequestingPermission, setIsRequestingPermission] = useState(false);
+  const permissionFlowInFlightRef = useRef(false);
   const [savePhase, setSavePhase] = useState<"idle" | "running">("idle");
   const [saveSteps, setSaveSteps] = useState<OnboardingSaveStepView[]>([]);
   const saveMutationIdsRef = useRef<
@@ -142,10 +138,11 @@ export function useOnboarding() {
   });
   const [heightCm, setHeightCm] = useState(ONBOARDING_DEFAULT_HEIGHT_CM);
   const [heightUnit, setHeightUnit] = useState<OnboardingHeightUnit>("cm");
+  const [heightProvided, setHeightProvided] = useState(false);
   const [weightKg, setWeightKg] = useState(ONBOARDING_DEFAULT_WEIGHT_KG);
   const [weightUnit, setWeightUnit] = useState<OnboardingWeightUnit>("kg");
-  const [bodyType, setBodyType] =
-    useState<OnboardingBodyTypeId>("ectomorph");
+  const [weightProvided, setWeightProvided] = useState(false);
+  const [bodyType, setBodyType] = useState<OnboardingBodyTypeId | null>(null);
   const [athleteLevel, setAthleteLevel] = useState<string | null>(null);
   const [athleteLevelOptions, setAthleteLevelOptions] = useState<
     OnboardingAthleteLevelOption[]
@@ -254,177 +251,162 @@ export function useOnboarding() {
 
   useEffect(() => {
     let cancelled = false;
-    void (async () => {
-      try {
-        const group = await basicsChoices.get("gender");
-        if (cancelled) return;
-        const next = group.options
-          .filter((option) => option.isActive !== false)
-          .slice()
-          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-          .map((option) => ({
-            id: option.value as OnboardingGenderId,
-            label: option.name,
-          }))
-          .filter((option) => ONBOARDING_GENDERS.includes(option.id));
-        if (next.length > 0) setApiGenderOptions(next);
-      } catch {
-        // Keep i18n fallback gender options.
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
     setGoalsStatus("loading");
-    void (async () => {
-      try {
-        const group = await basicsChoices.get("onboarding_goal");
-        if (cancelled) return;
-        const next = group.options
-          .filter((option) => option.isActive !== false)
-          .slice()
-          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-          .map((option) => ({
-            id: option.value,
-            label: option.name,
-          }));
-        setGoalOptions(next);
-        setGoals((current) =>
-          current.filter((id) => next.some((option) => option.id === id)),
-        );
-        setGoalsStatus("ready");
-      } catch {
-        if (cancelled) return;
-        setGoalOptions([]);
-        setGoalsStatus("error");
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const group = await basicsChoices.get("body_type");
-        if (cancelled) return;
-        const next = group.options
-          .filter((option) => option.isActive !== false)
-          .slice()
-          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-          .map((option) => ({
-            id: option.value as OnboardingBodyTypeId,
-            label: option.name,
-          }))
-          .filter((option) => ONBOARDING_BODY_TYPES.includes(option.id));
-        if (next.length > 0) setApiBodyTypeOptions(next);
-      } catch {
-        // Keep i18n fallback body-type options.
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const group = await basicsChoices.get("weight_unit");
-        if (cancelled) return;
-        const next = group.options
-          .filter((option) => option.isActive !== false)
-          .slice()
-          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-          .flatMap((option) => {
-            const id = normalizeWeightUnit(option.value);
-            if (!id) return [];
-            return [{ id, label: option.name }];
-          });
-        if (next.length > 0) {
-          setApiWeightUnitOptions(next);
-          setWeightUnit((current) =>
-            next.some((option) => option.id === current)
-              ? current
-              : (next[0]?.id ?? current),
-          );
-        }
-      } catch {
-        // Keep i18n fallback weight units.
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const group = await basicsChoices.get("height_unit");
-        if (cancelled) return;
-        const next = group.options
-          .filter((option) => option.isActive !== false)
-          .slice()
-          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-          .flatMap((option) => {
-            const id = normalizeHeightUnit(option.value);
-            if (!id) return [];
-            return [{ id, label: option.name }];
-          });
-        if (next.length > 0) {
-          setApiHeightUnitOptions(next);
-          setHeightUnit((current) =>
-            next.some((option) => option.id === current)
-              ? current
-              : (next[0]?.id ?? current),
-          );
-        }
-      } catch {
-        // Keep i18n fallback height units.
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
     setAthleteLevelStatus("loading");
+    setDietStatus("loading");
     void (async () => {
       try {
-        const group = await basicsChoices.get("athlete_level");
+        const groups = await loadChoiceGroups();
         if (cancelled) return;
-        const next = group.options
-          .filter((option) => option.isActive !== false)
-          .slice()
-          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-          .map((option) => ({
-            value: option.value,
-            name: option.name,
-            description: option.description?.trim() ?? "",
-          }));
-        setAthleteLevelOptions(next);
-        setAthleteLevel((current) => {
-          if (current && next.some((option) => option.value === current)) {
-            return current;
+        const byKey = new Map(groups.map((group) => [group.value, group]));
+
+        const gender = byKey.get("gender");
+        if (gender) {
+          const nextGender = gender.options
+            .filter((option) => option.isActive !== false)
+            .slice()
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+            .map((option) => ({
+              id: option.value as OnboardingGenderId,
+              label: option.name,
+            }))
+            .filter((option) => ONBOARDING_GENDERS.includes(option.id));
+          if (nextGender.length > 0) setApiGenderOptions(nextGender);
+        }
+
+        const goals = byKey.get("athlete_goal");
+        if (goals) {
+          const nextGoals = goals.options
+            .filter((option) => option.isActive !== false)
+            .slice()
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+            .map((option) => ({
+              id: option.value,
+              label: option.name,
+            }));
+          setGoalOptions(nextGoals);
+          setGoals((current) =>
+            current.filter((id) => nextGoals.some((option) => option.id === id)),
+          );
+          setGoalsStatus("ready");
+        } else {
+          setGoalOptions([]);
+          setGoalsStatus("error");
+        }
+
+        const bodyType = byKey.get("body_type");
+        if (bodyType) {
+          const nextBody = bodyType.options
+            .filter((option) => option.isActive !== false)
+            .slice()
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+            .map((option) => ({
+              id: option.value as OnboardingBodyTypeId,
+              label: option.name,
+            }))
+            .filter((option) => ONBOARDING_BODY_TYPES.includes(option.id));
+          if (nextBody.length > 0) setApiBodyTypeOptions(nextBody);
+        }
+
+        const weightUnit = byKey.get("weight_unit");
+        if (weightUnit) {
+          const nextWeight = weightUnit.options
+            .filter((option) => option.isActive !== false)
+            .slice()
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+            .flatMap((option) => {
+              const id = normalizeWeightUnit(option.value);
+              if (!id) return [];
+              return [{ id, label: option.name }];
+            });
+          if (nextWeight.length > 0) {
+            setApiWeightUnitOptions(nextWeight);
+            setWeightUnit((current) =>
+              nextWeight.some((option) => option.id === current)
+                ? current
+                : (nextWeight[0]?.id ?? current),
+            );
           }
-          return next[Math.min(3, next.length - 1)]?.value ?? next[0]?.value ?? null;
-        });
-        setAthleteLevelStatus("ready");
+        }
+
+        const heightUnit = byKey.get("height_unit");
+        if (heightUnit) {
+          const nextHeight = heightUnit.options
+            .filter((option) => option.isActive !== false)
+            .slice()
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+            .flatMap((option) => {
+              const id = normalizeHeightUnit(option.value);
+              if (!id) return [];
+              return [{ id, label: option.name }];
+            });
+          if (nextHeight.length > 0) {
+            setApiHeightUnitOptions(nextHeight);
+            setHeightUnit((current) =>
+              nextHeight.some((option) => option.id === current)
+                ? current
+                : (nextHeight[0]?.id ?? current),
+            );
+          }
+        }
+
+        const level = byKey.get("athlete_level");
+        if (level) {
+          const nextLevel = level.options
+            .filter((option) => option.isActive !== false)
+            .slice()
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+            .map((option) => ({
+              value: option.value,
+              name: option.name,
+              description: option.description?.trim() ?? "",
+            }));
+          setAthleteLevelOptions(nextLevel);
+          setAthleteLevel((current) => {
+            if (current && nextLevel.some((option) => option.value === current)) {
+              return current;
+            }
+            return (
+              nextLevel[Math.min(3, nextLevel.length - 1)]?.value ??
+              nextLevel[0]?.value ??
+              null
+            );
+          });
+          setAthleteLevelStatus("ready");
+        } else {
+          setAthleteLevelOptions([]);
+          setAthleteLevelStatus("error");
+        }
+
+        const diet = byKey.get("athlete_diet");
+        if (diet) {
+          const nextDiet = diet.options
+            .filter((option) => option.isActive !== false)
+            .slice()
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+            .map((option) => ({
+              id: option.value,
+              title: option.name,
+              description: option.description?.trim() ?? "",
+              icon: option.value,
+            }));
+          setDietOptions(nextDiet);
+          setDiet((current) => {
+            if (current && nextDiet.some((option) => option.id === current)) {
+              return current;
+            }
+            return nextDiet[0]?.id ?? null;
+          });
+          setDietStatus("ready");
+        } else {
+          setDietOptions([]);
+          setDietStatus("error");
+        }
       } catch {
         if (cancelled) return;
-        setAthleteLevelOptions([]);
+        setGoalsStatus("error");
         setAthleteLevelStatus("error");
+        setDietStatus("error");
       }
     })();
     return () => {
@@ -455,42 +437,6 @@ export function useOnboarding() {
         if (cancelled) return;
         setSportOptions([]);
         setSportsStatus("error");
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    setDietStatus("loading");
-    void (async () => {
-      try {
-        const group = await basicsChoices.get("athlete_diet");
-        if (cancelled) return;
-        const next = group.options
-          .filter((option) => option.isActive !== false)
-          .slice()
-          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-          .map((option) => ({
-            id: option.value,
-            title: option.name,
-            description: option.description?.trim() ?? "",
-            icon: option.value,
-          }));
-        setDietOptions(next);
-        setDiet((current) => {
-          if (current && next.some((option) => option.id === current)) {
-            return current;
-          }
-          return next[0]?.id ?? null;
-        });
-        setDietStatus("ready");
-      } catch {
-        if (cancelled) return;
-        setDietOptions([]);
-        setDietStatus("error");
       }
     })();
     return () => {
@@ -633,8 +579,14 @@ export function useOnboarding() {
     if (patch.allergies !== undefined) setAllergies(patch.allergies);
     if (patch.conditions !== undefined) setConditions(patch.conditions);
     if (patch.medications !== undefined) setMedications(patch.medications);
-    if (patch.heightCm !== undefined) setHeightCm(patch.heightCm);
-    if (patch.weightKg !== undefined) setWeightKg(patch.weightKg);
+    if (patch.heightCm !== undefined) {
+      setHeightCm(patch.heightCm);
+      setHeightProvided(true);
+    }
+    if (patch.weightKg !== undefined) {
+      setWeightKg(patch.weightKg);
+      setWeightProvided(true);
+    }
     if (patch.note !== undefined) setHealthNote(patch.note);
     if (patch.mapPoint !== undefined) setMapPoint(patch.mapPoint);
     if (patch.birthdateDisplay !== undefined) {
@@ -761,10 +713,10 @@ export function useOnboarding() {
       step === "height" ||
       step === "weight" ||
       step === "bodyType" ||
-      (step === "athleteLevel" && athleteLevel != null) ||
+      step === "athleteLevel" ||
       step === "sleep" ||
       step === "mood" ||
-      (step === "sports" && sportIds.length > 0) ||
+      step === "sports" ||
       (step === "diet" && diet != null) ||
       step === "calories" ||
       (step === "goals" && goals.length > 0) ||
@@ -772,6 +724,16 @@ export function useOnboarding() {
       step === "personalIntro" ||
       (step === "identity" && firstName.trim().length > 1) ||
       step === "avatar");
+
+  const commitHeightCm = (value: number) => {
+    setHeightCm(value);
+    setHeightProvided(true);
+  };
+
+  const commitWeightKg = (value: number) => {
+    setWeightKg(value);
+    setWeightProvided(true);
+  };
 
   const buildMeInput = (): UpdateMeInput => {
     const first = firstName.trim();
@@ -803,10 +765,17 @@ export function useOnboarding() {
   };
 
   const buildAthleteCoreInput = (): UpdateAthleteProfileInput => ({
-    body: { heightCm, weightKg },
+    ...(heightProvided || weightProvided
+      ? {
+          body: {
+            ...(heightProvided ? { heightCm } : {}),
+            ...(weightProvided ? { weightKg } : {}),
+          },
+        }
+      : {}),
     ...(athleteLevel ? { levelKey: athleteLevel } : {}),
     lifestyle: {
-      bodyType,
+      ...(bodyType ? { bodyType } : {}),
       sleepLevel: sleep,
       mood,
       ...(diet && isAthleteDiet(diet) ? { diet } : {}),
@@ -824,6 +793,8 @@ export function useOnboarding() {
   const snapshotSaveContext = (): OnboardingSaveContext => ({
     weightKg,
     heightCm,
+    weightProvided,
+    heightProvided,
     sleep,
     mood,
     calories,
@@ -886,7 +857,7 @@ export function useOnboarding() {
       }
       await waitRemaining(Date.now(), reduceMotion ? 0 : 280);
       persistInFlightRef.current = false;
-      setPermissionIndex(0);
+      void runPermissionFlow();
     } catch {
       const active = saveStepsRef.current.find(
         (step) => step.status === "active",
@@ -905,52 +876,34 @@ export function useOnboarding() {
     router.replace(next && next.startsWith("/") ? next : fallback);
   };
 
-  const activePermissionKind: DevicePermissionKind | null =
-    permissionIndex == null
-      ? null
-      : (ONBOARDING_PERMISSION_ORDER[permissionIndex] ?? null);
-
-  const advancePermissionQueue = () => {
-    if (permissionIndex == null) return;
-    if (permissionIndex >= ONBOARDING_PERMISSION_ORDER.length - 1) {
-      setPermissionIndex(null);
+  const runPermissionFlow = async () => {
+    if (permissionFlowInFlightRef.current) return;
+    permissionFlowInFlightRef.current = true;
+    try {
+      for (const kind of ONBOARDING_PERMISSION_ORDER) {
+        // Already-granted permissions are skipped inside ensurePermission.
+        await ensurePermission(kind);
+      }
+    } finally {
+      permissionFlowInFlightRef.current = false;
       completeOnboarding();
-      return;
     }
-    setPermissionIndex(permissionIndex + 1);
   };
 
   const requestFinish = () => {
-    if (persistInFlightRef.current) return;
+    if (persistInFlightRef.current || permissionFlowInFlightRef.current) return;
     if (
       saveStepsRef.current.length > 0 &&
       saveStepsRef.current.every((step) => step.status === "done")
     ) {
-      setPermissionIndex(0);
+      void runPermissionFlow();
       return;
     }
     if (!isAuthenticated) {
-      setPermissionIndex(0);
+      void runPermissionFlow();
       return;
     }
     void persistOnboarding();
-  };
-
-  const handlePermissionContinue = () => {
-    if (isRequestingPermission || activePermissionKind == null) return;
-    setIsRequestingPermission(true);
-    void requestDevicePermission(activePermissionKind)
-      .catch(() => undefined)
-      .finally(() => {
-        setIsRequestingPermission(false);
-        advancePermissionQueue();
-      });
-  };
-
-  const handlePermissionSkip = () => {
-    if (isRequestingPermission || activePermissionKind == null) return;
-    skipDevicePermission(activePermissionKind);
-    advancePermissionQueue();
   };
 
   const goPrev = () => {
@@ -963,6 +916,8 @@ export function useOnboarding() {
 
   const goNext = () => {
     if (!canContinue) return;
+    if (step === "height") setHeightProvided(true);
+    if (step === "weight") setWeightProvided(true);
     if (slide >= ONBOARDING_SLIDE_COUNT - 1) {
       requestFinish();
       return;
@@ -1047,8 +1002,6 @@ export function useOnboarding() {
     heightUnitOptions,
     sleepOptions,
     moodOptions,
-    activePermissionKind,
-    isRequestingPermission,
     isSavingView: savePhase !== "idle",
     saveSteps: saveSteps.map((step) => ({
       ...step,
@@ -1059,9 +1012,9 @@ export function useOnboarding() {
     setLastName,
     setGender,
     setBirthdate,
-    setHeightCm,
+    setHeightCm: commitHeightCm,
     setHeightUnit,
-    setWeightKg,
+    setWeightKg: commitWeightKg,
     setWeightUnit,
     setBodyType,
     setAthleteLevel,
@@ -1080,8 +1033,6 @@ export function useOnboarding() {
     handleCaloriesUnknown,
     handleCaloriesChange,
     requestFinish,
-    handlePermissionContinue,
-    handlePermissionSkip,
   };
 }
 

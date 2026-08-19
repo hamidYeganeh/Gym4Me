@@ -10,21 +10,31 @@ export function ForceUpdateScreen({
   currentVersion,
   minimumVersion,
   updateUrl,
+  title,
+  features,
   message,
   className,
 }: ForceUpdateScreenProps) {
   const t = useTranslations("ForceUpdate");
   const styles = forceUpdateScreenVariants();
+  const featureList = features?.filter(Boolean) ?? [];
 
   return (
     <div className={styles.root({ className })}>
       <div className={styles.content()}>
         <Typography className={styles.title()} type="h1" weight="bold">
-          {t("title")}
+          {title?.trim() || t("title")}
         </Typography>
         <Typography className={styles.body()} type="body">
           {message ?? t("body")}
         </Typography>
+        {featureList.length > 0 ? (
+          <ul className={styles.features()}>
+            {featureList.map((feature) => (
+              <li key={feature}>{feature}</li>
+            ))}
+          </ul>
+        ) : null}
         <div className={styles.versions()}>
           <span>
             {t("currentVersion")}: {currentVersion}
@@ -36,7 +46,11 @@ export function ForceUpdateScreen({
         <div className={styles.actions()}>
           <Button
             fullWidth
-            onPress={() => window.open(updateUrl, "_blank", "noopener,noreferrer")}
+            isDisabled={!updateUrl}
+            onPress={() => {
+              if (!updateUrl) return;
+              window.open(updateUrl, "_blank", "noopener,noreferrer");
+            }}
             size="lg"
             variant="primary"
           >

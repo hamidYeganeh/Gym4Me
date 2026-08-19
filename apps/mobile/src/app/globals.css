@@ -41,11 +41,9 @@ body {
   cursor: var(--pointer-cursor);
 }
 
-/* Hide fixed bottom chrome while typing so it does not sit on the keyboard. */
+/* Hide chrome / large auth figures while typing so the focused field stays visible. */
 html[data-keyboard-open] [data-keyboard-hide] {
-  opacity: 0;
-  pointer-events: none;
-  visibility: hidden;
+  display: none;
 }
 
 h1,

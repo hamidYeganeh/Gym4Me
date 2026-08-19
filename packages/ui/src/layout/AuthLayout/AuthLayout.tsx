@@ -75,7 +75,9 @@ export function AuthLayout({
         ) : null}
 
         {figureFirst && figure ? (
-          <div className={styles.figure()}>{figure}</div>
+          <div className={styles.figure()} data-keyboard-hide="">
+            {figure}
+          </div>
         ) : null}
 
         {labels.title || labels.subtitle ? (
@@ -86,26 +88,32 @@ export function AuthLayout({
               </Typography>
             ) : null}
             {labels.subtitle ? (
-              <Typography
-                className={styles.subtitle()}
-                {...(tone === "dark" || tone === "hero"
-                  ? {}
-                  : { color: "muted" as const })}
-              >
-                {labels.subtitle}
-              </Typography>
+              <div data-keyboard-hide="">
+                <Typography
+                  className={styles.subtitle()}
+                  {...(tone === "dark" || tone === "hero"
+                    ? {}
+                    : { color: "muted" as const })}
+                >
+                  {labels.subtitle}
+                </Typography>
+              </div>
             ) : null}
           </header>
         ) : null}
 
         {!figureFirst && figure ? (
-          <div className={styles.figure()}>{figure}</div>
+          <div className={styles.figure()} data-keyboard-hide="">
+            {figure}
+          </div>
         ) : null}
 
         <div className={styles.body()}>
           <div className={styles.formSlot()}>{children}</div>
           {belowForm ? (
-            <div className={styles.belowForm()}>{belowForm}</div>
+            <div className={styles.belowForm()} data-keyboard-hide="">
+              {belowForm}
+            </div>
           ) : null}
         </div>
 

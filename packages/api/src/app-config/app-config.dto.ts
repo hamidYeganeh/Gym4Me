@@ -28,6 +28,11 @@ export type FeatureFlag = {
   updatedAt: string | null;
 };
 
+export type AppReleaseNotes = {
+  title: string;
+  features: string[];
+};
+
 export type MobileReleasePolicy = {
   id: string;
   platform: AppPlatform;
@@ -36,6 +41,7 @@ export type MobileReleasePolicy = {
   minimumSupportedAppVersion: string;
   recommendedApiVersion: string;
   updateUrl: string | null;
+  releaseNotes: AppReleaseNotes | null;
   enabled: boolean;
   createdAt: string | null;
   updatedAt: string | null;
@@ -59,6 +65,7 @@ export type AppBootstrap = {
     minimumAppVersion: string;
     latestAppVersion: string;
     updateUrl: string | null;
+    releaseNotes: AppReleaseNotes | null;
   };
   features: Record<string, AppBootstrapFeature>;
 };
@@ -101,6 +108,7 @@ export type UpsertReleasePolicyInput = {
   minimumSupportedAppVersion: string;
   recommendedApiVersion: string;
   updateUrl?: string;
+  releaseNotes?: AppReleaseNotes;
   enabled: boolean;
   reason: string;
 };

@@ -44,7 +44,7 @@ export function OnboardingBodyTypeSection({
         ))}
       </div>
 
-      {selected ? (
+      {selected && value != null ? (
         <Typography className={styles.statement()}>{selected.statement}</Typography>
       ) : null}
     </div>

@@ -118,29 +118,6 @@ export function OwnerClubsCreateContactSection({
           </Button>
         </div>
 
-        <Controller
-          control={control}
-          name="website"
-          render={({ field }) => (
-            <TextField
-              className={styles.field()}
-              fullWidth
-              name={field.name}
-              value={field.value}
-              onBlur={field.onBlur}
-              onChange={field.onChange}
-            >
-              <Label>{t("website")}</Label>
-              <Input
-                dir="ltr"
-                placeholder={t("websitePlaceholder")}
-                ref={field.ref}
-                type="url"
-              />
-            </TextField>
-          )}
-        />
-
         <div className={styles.group()}>
           <Typography className={styles.groupTitle()} type="body" weight="semibold">
             {t("socials")}

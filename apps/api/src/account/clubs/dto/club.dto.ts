@@ -80,11 +80,6 @@ export class ClubContactDto {
   @ValidateNested({ each: true })
   @Type(() => ClubPhoneDto)
   phones?: ClubPhoneDto[];
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(200)
-  website?: string;
 }
 
 export class ClubGalleryItemDto {

@@ -858,6 +858,7 @@
       "submitted": "درخواست ثبت شد.",
       "error": "ثبت احراز هویت ممکن نشد.",
       "errorDetails": "کد ملی ده‌رقمی و تاریخ تولد معتبر وارد کنید.",
+      "errorCamera": "برای اسکن مدرک، دسترسی دوربین لازم است.",
       "errorRejected": "احراز هویت تأیید نشد. دوباره تلاش کنید.",
       "intro": {
         "title": "مدرک شناسایی را اسکن کنید",
@@ -946,7 +947,7 @@
       "stepIdentity": "هویت",
       "stepIdentityHint": "نام و توضیح باشگاه را وارد کنید.",
       "stepContact": "تماس",
-      "stepContactHint": "شماره‌ها، وب‌سایت و شبکه‌های اجتماعی را وارد کنید.",
+      "stepContactHint": "شماره‌ها و شبکه‌های اجتماعی را وارد کنید.",
       "stepLocation": "موقعیت",
       "stepLocationHint": "آدرس را بنویسید و روی نقشه مختصات باشگاه را مشخص کنید.",
       "stepCategories": "دسته‌بندی",
@@ -976,7 +977,6 @@
       "descriptionPlaceholder": "چند جمله درباره امکانات و فضای باشگاه",
       "phonePlaceholder": "۰۲۱۱۲۳۴۵۶۷۸",
       "phoneLabelPlaceholder": "مثلاً پذیرش",
-      "websitePlaceholder": "https://example.com",
       "socialUrlPlaceholder": "https://…",
       "addressPlaceholder": "شهر، خیابان، پلاک",
       "mapHint": "روی نقشه بزنید یا پین را بکشید تا مختصات ثبت شود.",
@@ -1016,7 +1016,6 @@
       "phones": "شماره‌های تماس",
       "addPhone": "افزودن شماره",
       "removePhone": "حذف شماره",
-      "website": "وب‌سایت",
       "socials": "شبکه‌های اجتماعی",
       "addSocial": "افزودن شبکه اجتماعی",
       "removeSocial": "حذف شبکه اجتماعی",
@@ -1987,10 +1986,13 @@
           "channel": "کانال",
           "minimum": "حداقل نسخه",
           "latest": "آخرین نسخه",
+          "whatsNew": "Whats New",
           "api": "نسخه API",
           "enabled": "فعال",
           "actions": "عملیات"
         },
+        "notesEmpty": "—",
+        "notesSummary": "{title} ({count})",
         "fields": {
           "platform": "پلتفرم",
           "channel": "کانال",
@@ -1998,6 +2000,11 @@
           "minimum": "حداقل نسخهٔ پشتیبانی‌شده",
           "api": "نسخه توصیه‌شده API",
           "updateUrl": "آدرس به‌روزرسانی",
+          "whatsNew": "Whats New (اختیاری)",
+          "notesTitle": "عنوان تغییرات",
+          "featureItem": "فیچر {index}",
+          "addFeature": "افزودن فیچر",
+          "removeFeature": "حذف فیچر",
           "enabled": "فعال",
           "reason": "دلیل تغییر"
         }
@@ -4485,6 +4492,21 @@
     "minimumVersion": "حداقل نسخه",
     "update": "به‌روزرسانی"
   },
+  "OptionalUpdate": {
+    "title": "نسخهٔ جدید آماده است",
+    "body": "نسخهٔ {version} در دسترس است. می‌توانید الان به‌روزرسانی کنید.",
+    "update": "به‌روزرسانی",
+    "later": "بعداً",
+    "dismiss": "بستن"
+  },
+  "ExitApp": {
+    "title": "می‌خوای از برنامه خارج بشی؟",
+    "body": "یه جلسهٔ دیگه هنوز مونده — بمون و ادامه بده.",
+    "stay": "می‌مونم",
+    "leave": "خروج از برنامه",
+    "imageAlt": "تردمیل"
+  },
+
   "Notifications": {
     "pageTitle": "اعلان‌ها",
     "title": "اعلان‌ها",
@@ -5402,6 +5424,11 @@
     "qrCheckInTitle": "ورود QR",
     "workoutsTitle": "تمرین‌ها",
     "referralTitle": "معرفی",
+    "referralCardTitle": "دوستت رو دعوت کن، تیکت هدیه دریافت کن",
+    "referralDescription": "کدت رو بفرست؛ وقتی دوستت ثبت‌نام کنه، هر دو تیکت هدیه دریافت می‌کنید.",
+    "referralCodeLabel": "کد دعوت",
+    "referralSuccessLabel": "دعوت موفق",
+    "referralAction": "دعوت کن، تیکت بگیر",
     "socialTitle": "اجتماعی",
     "nutritionTitle": "تغذیه",
     "todoTitle": "راه‌اندازی حساب خود را تمام کنید.",

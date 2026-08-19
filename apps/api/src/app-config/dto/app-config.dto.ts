@@ -1,5 +1,7 @@
 import { Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
+  ArrayMinSize,
   IsArray,
   IsBoolean,
   IsIn,
@@ -143,6 +145,21 @@ export class FeatureFlagKeyParamDto {
   key!: string;
 }
 
+export class ReleaseNotesDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(120)
+  title!: string;
+
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(8)
+  @IsString({ each: true })
+  @MinLength(1, { each: true })
+  @MaxLength(120, { each: true })
+  features!: string[];
+}
+
 export class UpsertReleasePolicyDto {
   @IsIn(APP_PLATFORMS)
   platform!: 'ios' | 'android' | 'web';
@@ -170,6 +187,11 @@ export class UpsertReleasePolicyDto {
   @IsUrl({ require_protocol: true })
   @MaxLength(500)
   updateUrl?: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ReleaseNotesDto)
+  releaseNotes?: ReleaseNotesDto;
 
   @IsBoolean()
   enabled!: boolean;

@@ -5,38 +5,49 @@ import { Typography } from "@heroui/react/typography";
 import { Cake } from "@repo/icons/Cake";
 import {
   CalendarDate,
+  createCalendar,
   type DateValue,
 } from "@internationalized/date";
 import { I18nProvider } from "react-aria-components";
 import {
+  clampJalaliDay,
+  jalaliDaysInMonth,
   ONBOARDING_YEAR_MAX,
   ONBOARDING_YEAR_MIN,
 } from "@/modules/app/lib/onboarding-data";
-import { toGregorian, toJalali } from "@/shared/lib/jalali";
+import { toJalali } from "@/shared/lib/jalali";
 import { onboardingBirthdateSectionVariants } from "./OnboardingBirthdateSection.styles";
 import type {
   OnboardingBirthdateSectionProps,
   OnboardingBirthdateValue,
 } from "./OnboardingBirthdateSection.types";
 
-/** Store Jalali in form state; HeroUI Calendar value stays Gregorian. */
-function toGregorianValue(value: OnboardingBirthdateValue): CalendarDate {
-  const { gy, gm, gd } = toGregorian(value.year, value.month, value.day);
-  return new CalendarDate(gy, gm, gd);
+const PERSIAN_CALENDAR = createCalendar("persian");
+const PERSIAN_LOCALE = "fa-IR-u-ca-persian";
+const MIN_BIRTHDATE = new CalendarDate(PERSIAN_CALENDAR, ONBOARDING_YEAR_MIN, 1, 1);
+const MAX_BIRTHDATE = new CalendarDate(
+  PERSIAN_CALENDAR,
+  ONBOARDING_YEAR_MAX,
+  12,
+  jalaliDaysInMonth(ONBOARDING_YEAR_MAX, 12),
+);
+
+/** Keep CalendarDate in the Persian calendar so year-picker min/max stay Jalali. */
+function toPersianValue(value: OnboardingBirthdateValue): CalendarDate {
+  return new CalendarDate(
+    PERSIAN_CALENDAR,
+    value.year,
+    value.month,
+    clampJalaliDay(value.year, value.month, value.day),
+  );
 }
 
-function fromGregorianValue(value: DateValue): OnboardingBirthdateValue {
+function fromCalendarValue(value: DateValue): OnboardingBirthdateValue {
+  if (value.calendar.identifier === "persian") {
+    return { year: value.year, month: value.month, day: value.day };
+  }
   const { jy, jm, jd } = toJalali(value.year, value.month, value.day);
   return { year: jy, month: jm, day: jd };
-}
-
-function jalaliBoundsToGregorian(
-  year: number,
-  month: number,
-  day: number,
-): CalendarDate {
-  const { gy, gm, gd } = toGregorian(year, month, day);
-  return new CalendarDate(gy, gm, gd);
 }
 
 export function OnboardingBirthdateSection({
@@ -47,23 +58,21 @@ export function OnboardingBirthdateSection({
   className,
 }: OnboardingBirthdateSectionProps) {
   const styles = onboardingBirthdateSectionVariants();
-  const calendarValue = toGregorianValue(value);
-  const minValue = jalaliBoundsToGregorian(ONBOARDING_YEAR_MIN, 1, 1);
-  const maxValue = jalaliBoundsToGregorian(ONBOARDING_YEAR_MAX, 12, 29);
+  const calendarValue = toPersianValue(value);
 
   return (
     <div className={styles.root({ className })} data-onboarding-nested-scroll>
-      <I18nProvider locale="fa-IR-u-ca-persian">
+      <I18nProvider locale={PERSIAN_LOCALE}>
         <Calendar
           aria-label={calendarAria}
           className={styles.calendar()}
           firstDayOfWeek="sat"
-          maxValue={maxValue}
-          minValue={minValue}
+          maxValue={MAX_BIRTHDATE}
+          minValue={MIN_BIRTHDATE}
           value={calendarValue}
           onChange={(next) => {
             if (!next) return;
-            onChange(fromGregorianValue(next));
+            onChange(fromCalendarValue(next));
           }}
         >
           <Calendar.Header className={styles.header()}>

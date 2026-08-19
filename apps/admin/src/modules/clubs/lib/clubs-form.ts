@@ -1,4 +1,4 @@
-import type { Club } from "@repo/api";
+import { clubWebsiteFromSocials, type Club } from "@repo/api";
 import type { ClubsCreateFormValues } from "../components/ClubsCreateForm";
 
 export function clubToFormValues(club: Club): ClubsCreateFormValues {
@@ -9,7 +9,7 @@ export function clubToFormValues(club: Club): ClubsCreateFormValues {
     description: club.identity.description ?? "",
     phone: phone?.number ?? "",
     phoneLabel: phone?.label ?? "",
-    website: club.contact.website ?? "",
+    website: clubWebsiteFromSocials(club.socials) ?? "",
     address: club.location?.address ?? "",
     direction: club.location?.direction ?? "center",
     categoryIds: club.categories

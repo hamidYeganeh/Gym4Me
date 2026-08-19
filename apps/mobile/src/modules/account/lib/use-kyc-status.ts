@@ -17,6 +17,7 @@ import {
 } from "@/shared/lib/jalali";
 import { accountKyc } from "@/shared/lib/api";
 import { useAuth } from "@/shared/providers/AuthProvider";
+import { useDevicePermissions } from "@/shared/providers/DevicePermissionsProvider";
 import type { KycFlowStep } from "@/modules/account/screens/KycStatusScreen/KycStatusScreen.types";
 
 const PROCESSING_TICK_MS = 900;
@@ -25,6 +26,7 @@ export function useKycStatus(roleSegment = "athlete") {
   const t = useTranslations("Mobile.Kyc");
   const router = useRouter();
   const { user, refreshUser } = useAuth();
+  const { ensurePermission } = useDevicePermissions();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -150,7 +152,14 @@ export function useKycStatus(roleSegment = "athlete") {
       setError(t("errorDetails"));
       return;
     }
-    setStep("scan");
+    void (async () => {
+      const result = await ensurePermission("camera");
+      if (result !== "granted") {
+        setError(t("errorCamera"));
+        return;
+      }
+      setStep("scan");
+    })();
   };
 
   const submitCapturedFile = async (file: File) => {

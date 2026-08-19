@@ -38,18 +38,26 @@ export function markPushPermissionPrompted(): void {
  * No-op in browsers; marks the in-app prompt as shown either way.
  */
 export async function requestPushReceivePermission(): Promise<PushReceivePermission> {
-  markPushPermissionPrompted();
-
   try {
     const { Capacitor } = await import("@capacitor/core");
-    if (!Capacitor.isNativePlatform()) return "unsupported";
+    if (!Capacitor.isNativePlatform()) {
+      markPushPermissionPrompted();
+      return "unsupported";
+    }
 
     const { PushNotifications } = await import(
       "@capacitor/push-notifications"
     );
 
     let permission = await PushNotifications.checkPermissions();
-    if (permission.receive === "prompt") {
+    if (permission.receive === "granted") {
+      await PushNotifications.register();
+      return "granted";
+    }
+
+    markPushPermissionPrompted();
+
+    if (permission.receive === "prompt" || permission.receive === "prompt-with-rationale") {
       permission = await PushNotifications.requestPermissions();
     }
     if (permission.receive === "granted") {
@@ -57,6 +65,7 @@ export async function requestPushReceivePermission(): Promise<PushReceivePermiss
     }
     return permission.receive;
   } catch {
+    markPushPermissionPrompted();
     return "unsupported";
   }
 }

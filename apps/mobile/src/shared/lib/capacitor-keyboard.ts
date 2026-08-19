@@ -50,14 +50,21 @@ function scrollFocusedEditableIntoView() {
     return;
   }
 
-  // Wait one frame so native WebView resize / body height settle first.
-  requestAnimationFrame(() => {
+  const run = () => {
+    if (document.activeElement !== active) {
+      return;
+    }
     active.scrollIntoView({
       behavior: "smooth",
       block: "center",
       inline: "nearest",
     });
-  });
+  };
+
+  // Wait for WebView resize + keyboard animation frames to settle.
+  requestAnimationFrame(run);
+  window.setTimeout(run, 120);
+  window.setTimeout(run, 320);
 }
 
 /**
@@ -137,9 +144,6 @@ export async function setupCapacitorKeyboard(): Promise<() => void> {
 
   const onFocusIn = (event: FocusEvent) => {
     if (!isEditableTarget(event.target)) {
-      return;
-    }
-    if (!document.documentElement.hasAttribute(KEYBOARD_OPEN_ATTR)) {
       return;
     }
     scrollFocusedEditableIntoView();

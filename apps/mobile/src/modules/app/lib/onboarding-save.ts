@@ -33,6 +33,8 @@ export type OnboardingSaveStepView = {
 export type OnboardingSaveContext = {
   weightKg: number;
   heightCm: number;
+  weightProvided: boolean;
+  heightProvided: boolean;
   sleep: OnboardingSleepLevel;
   mood: OnboardingMoodId;
   calories: number;
@@ -66,7 +68,11 @@ export function selectOnboardingSaveSteps(
   ctx: OnboardingSaveContext,
 ): OnboardingSaveStepId[] {
   return SAVE_STEP_ORDER.filter((id) => {
+    if (id === "weight") return ctx.weightProvided;
+    if (id === "height") return ctx.heightProvided;
     if (id === "calories") return ctx.caloriesKnown && ctx.calories > 0;
+    if (id === "sports") return ctx.sportIds.length > 0;
+    if (id === "goals") return ctx.goals.length > 0;
     return true;
   });
 }

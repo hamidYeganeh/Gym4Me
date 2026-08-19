@@ -5,7 +5,6 @@ import { useOnboarding } from "@/modules/app/lib/use-onboarding";
 import { OnboardingCarouselSection } from "@/modules/app/sections/OnboardingCarouselSection";
 import { OnboardingFooterSection } from "@/modules/app/sections/OnboardingFooterSection";
 import { OnboardingHeader } from "@/modules/app/sections/OnboardingHeader";
-import { OnboardingPermissionSheet } from "@/modules/app/sections/OnboardingPermissionSheet";
 import { OnboardingSavingSection } from "@/modules/app/sections/OnboardingSavingSection";
 import { onboardingScreenVariants } from "./OnboardingScreen.styles";
 import type { OnboardingScreenProps } from "./OnboardingScreen.types";
@@ -55,44 +54,6 @@ export function OnboardingScreen({ className }: OnboardingScreenProps) {
           </div>
         </>
       )}
-
-      {onboarding.activePermissionKind ? (
-        <OnboardingPermissionSheet
-          isOpen
-          isRequesting={onboarding.isRequestingPermission}
-          kind={onboarding.activePermissionKind}
-          labels={{
-            title: onboarding.t(
-              `permissions.${onboarding.activePermissionKind}.title`,
-            ),
-            subtitle: onboarding.t(
-              `permissions.${onboarding.activePermissionKind}.subtitle`,
-            ),
-            sampleTitle: onboarding.t(
-              `permissions.${onboarding.activePermissionKind}.sampleTitle`,
-            ),
-            sampleBody: onboarding.t(
-              `permissions.${onboarding.activePermissionKind}.sampleBody`,
-            ),
-            sampleAction: onboarding.t(
-              `permissions.${onboarding.activePermissionKind}.sampleAction`,
-            ),
-            sampleTime: onboarding.t(
-              `permissions.${onboarding.activePermissionKind}.sampleTime`,
-            ),
-            info: onboarding.t("permissions.info"),
-            continue: onboarding.t("permissions.continue"),
-            skip: onboarding.t("permissions.skip"),
-          }}
-          onContinue={onboarding.handlePermissionContinue}
-          onOpenChange={(open) => {
-            if (!open && !onboarding.isRequestingPermission) {
-              onboarding.handlePermissionSkip();
-            }
-          }}
-          onSkip={onboarding.handlePermissionSkip}
-        />
-      ) : null}
     </main>
   );
 }

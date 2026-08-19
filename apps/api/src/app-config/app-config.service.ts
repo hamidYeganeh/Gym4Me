@@ -20,6 +20,7 @@ import {
   UpsertFeatureFlagDto,
   UpsertReleasePolicyDto,
 } from './dto/app-config.dto';
+import { normalizeReleaseNotes } from './release-notes.util';
 import { compareAppVersions, rolloutBucket } from './version.util';
 
 const DEFAULT_FLAGS = [
@@ -61,6 +62,7 @@ type LeanReleasePolicy = {
   minimumSupportedAppVersion: string;
   recommendedApiVersion: string;
   updateUrl?: string;
+  releaseNotes?: { title: string; features: string[] };
   enabled: boolean;
   createdAt?: Date;
   updatedAt?: Date;
@@ -93,7 +95,7 @@ export class AppConfigService {
         .lean<LeanFeatureFlag[]>(),
       this.releasePolicyModel
         .findOne({ platform: query.platform, channel, enabled: true })
-        .lean(),
+        .lean<LeanReleasePolicy | null>(),
     ]);
 
     const features = Object.fromEntries(
@@ -117,6 +119,7 @@ export class AppConfigService {
       compareAppVersions(query.appVersion, minimumVersion) < 0;
     const updateAvailable =
       compareAppVersions(query.appVersion, latestVersion) < 0;
+    const releaseNotes = normalizeReleaseNotes(policy?.releaseNotes);
 
     return {
       schemaVersion: 1,
@@ -133,6 +136,7 @@ export class AppConfigService {
         minimumAppVersion: minimumVersion,
         latestAppVersion: latestVersion,
         updateUrl: policy?.updateUrl ?? null,
+        releaseNotes,
       },
       features,
     };
@@ -201,7 +205,8 @@ export class AppConfigService {
     const before = await this.releasePolicyModel
       .findOne({ platform: dto.platform, channel })
       .lean<LeanReleasePolicy | null>();
-    const { reason, ...fields } = dto;
+    const { reason, releaseNotes: releaseNotesInput, ...fields } = dto;
+    const releaseNotes = normalizeReleaseNotes(releaseNotesInput);
     const item = await this.releasePolicyModel.findOneAndUpdate(
       { platform: dto.platform, channel },
       {
@@ -209,7 +214,9 @@ export class AppConfigService {
           ...fields,
           channel,
           updateUrl: fields.updateUrl?.trim() || undefined,
+          ...(releaseNotes ? { releaseNotes } : {}),
         },
+        ...(releaseNotes ? {} : { $unset: { releaseNotes: 1 } }),
       },
       { upsert: true, new: true, runValidators: true },
     );
@@ -323,6 +330,7 @@ export class AppConfigService {
       minimumSupportedAppVersion: item.minimumSupportedAppVersion,
       recommendedApiVersion: item.recommendedApiVersion,
       updateUrl: item.updateUrl ?? null,
+      releaseNotes: normalizeReleaseNotes(item.releaseNotes),
       enabled: item.enabled,
       createdAt: toIso(item.createdAt),
       updatedAt: toIso(item.updatedAt),

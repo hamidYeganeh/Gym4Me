@@ -45,7 +45,7 @@ export function OnboardingCaloriesSection({
         <NumberFlow
           className={styles.value()}
           format={{ maximumFractionDigits: 0 }}
-          locales="fa-IR"
+          locales="en-US"
           style={{ color: "var(--foreground)" }}
           value={value}
         />
@@ -70,7 +70,7 @@ export function OnboardingCaloriesSection({
             <NumberFlow
               className={styles.summaryValue()}
               format={{ maximumFractionDigits: 0 }}
-              locales="fa-IR"
+              locales="en-US"
               style={{ color: "var(--foreground)" }}
               value={value}
             />
@@ -92,7 +92,7 @@ export function OnboardingCaloriesSection({
             >
               <NumberFlow
                 format={{ maximumFractionDigits: 0 }}
-                locales="fa-IR"
+                locales="en-US"
                 value={preset}
               />
               <Fire1

@@ -121,7 +121,7 @@ if [ -n "$ADM_TOKEN" ]; then
 fi
 
 # Referral me
-REF=$(jget_auth /account/referral/me "$ATH_TOKEN")
+REF=$(jget_auth /account/me/referral "$ATH_TOKEN")
 check "referral me" "true" "$(echo "$REF" | jq -r 'has("code") or has("inviteCode") or has("referralCode") or type == "object"')"
 
 echo "── Summary ──"

@@ -5,6 +5,29 @@ import type { AppPlatform, ReleaseChannel } from './feature-flag.schema';
 
 export type MobileReleasePolicyDocument = HydratedDocument<MobileReleasePolicy>;
 
+@Schema({ _id: false })
+export class ReleaseNotes {
+  @Prop({ required: true, trim: true, maxlength: 120 })
+  title!: string;
+
+  @Prop({
+    type: [String],
+    required: true,
+    default: [],
+    validate: {
+      validator: (value: string[]) =>
+        Array.isArray(value) &&
+        value.length >= 1 &&
+        value.length <= 8 &&
+        value.every((item) => typeof item === 'string' && item.trim().length > 0),
+      message: 'releaseNotes.features must contain 1–8 non-empty strings',
+    },
+  })
+  features!: string[];
+}
+
+export const ReleaseNotesSchema = SchemaFactory.createForClass(ReleaseNotes);
+
 @Schema({ timestamps: true, collection: 'mobile_release_policies' })
 export class MobileReleasePolicy {
   @Prop({ type: String, enum: APP_PLATFORMS, required: true })
@@ -24,6 +47,9 @@ export class MobileReleasePolicy {
 
   @Prop({ trim: true, maxlength: 500 })
   updateUrl?: string;
+
+  @Prop({ type: ReleaseNotesSchema })
+  releaseNotes?: ReleaseNotes;
 
   @Prop({ required: true, default: true, index: true })
   enabled!: boolean;
