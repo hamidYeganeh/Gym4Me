@@ -5,7 +5,8 @@ import { Fire1 } from "@repo/icons/Fire1";
 import { AchievementTag } from "@repo/ui/cards/AchievementTag";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import {
   ACHIEVEMENT_TAG_COLORS,
   ACHIEVEMENT_TAG_VARIANTS,

@@ -4,7 +4,8 @@ import { Typography } from "@heroui/react/typography";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useAthleteBookingDetail } from "@/modules/athlete/lib/use-athlete-booking-detail";
 import { AthleteBookingDetailActionsSection } from "@/modules/athlete/sections/AthleteBookingDetailActionsSection";
 import { AthleteBookingDetailSummarySection } from "@/modules/athlete/sections/AthleteBookingDetailSummarySection";

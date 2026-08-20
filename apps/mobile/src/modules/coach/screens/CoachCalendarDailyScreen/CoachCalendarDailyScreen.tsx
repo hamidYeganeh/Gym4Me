@@ -7,7 +7,8 @@ import { Plus } from "@repo/icons/Plus";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useState } from "react";
 import type { CoachCalendarDailyWorkout } from "../../lib/calendar-daily-data";
 import { CoachCalendarDailyDatePickerSection } from "../../sections/CoachCalendarDailyDatePickerSection";

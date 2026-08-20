@@ -3,7 +3,6 @@
 import { ArticleCard } from "@repo/ui/cards/ArticleCard";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
 import { DiscoverySectionRail } from "../DiscoverySectionRail";
 import { discoveryHomeArticlesSectionVariants } from "./DiscoveryHomeArticlesSection.styles";
 import type { DiscoveryHomeArticlesSectionProps } from "./DiscoveryHomeArticlesSection.types";
@@ -12,7 +11,6 @@ export function DiscoveryHomeArticlesSection({
   articles,
 }: DiscoveryHomeArticlesSectionProps) {
   const t = useTranslations("DiscoveryHome");
-  const router = useRouter();
   const slots = discoveryHomeArticlesSectionVariants();
 
   if (articles.length === 0) return null;
@@ -21,9 +19,7 @@ export function DiscoveryHomeArticlesSection({
     <DiscoverySectionRail
       ariaLabel={t("articlesTitle")}
       hint={t("articlesHint")}
-      seeAllLabel={t("seeAll")}
       title={t("articlesTitle")}
-      onSeeAll={() => router.push("/articles")}
     >
       {articles.map((article) => (
         <ArticleCard
@@ -47,11 +43,6 @@ export function DiscoveryHomeArticlesSection({
           title={article.title}
           type="cover"
           viewsLabel={article.viewsLabel}
-          onPress={() =>
-            router.push(
-              `/articles/detail?slug=${encodeURIComponent(article.slug)}`,
-            )
-          }
         />
       ))}
     </DiscoverySectionRail>

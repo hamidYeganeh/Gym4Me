@@ -4,7 +4,8 @@ import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { ProfileHeader } from "@repo/ui/layout/ProfileHeader";
 import { useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { mediaFileUrl } from "@/shared/lib/api";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { OWNER_HOME_TASKS_NEW_COUNT } from "../../lib/owner-home-data";

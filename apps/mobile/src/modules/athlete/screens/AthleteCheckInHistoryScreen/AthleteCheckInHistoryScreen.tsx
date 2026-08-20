@@ -7,7 +7,8 @@ import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import type { CheckInMethod } from "@/modules/athlete/lib/checkin-history-data";
 import { athleteCheckInHistoryScreenVariants } from "./AthleteCheckInHistoryScreen.styles";
 import type { AthleteCheckInHistoryScreenProps } from "./AthleteCheckInHistoryScreen.types";

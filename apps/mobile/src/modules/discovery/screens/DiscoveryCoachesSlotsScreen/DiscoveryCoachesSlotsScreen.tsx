@@ -6,7 +6,8 @@ import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useEffect, useMemo, useState } from "react";
 import { useRequireAuthAction } from "@/shared/hooks/useRequireAuthAction";
 import type { CoachSlotView } from "@/shared/hooks/useCoachSlotsWeek";

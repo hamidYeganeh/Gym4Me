@@ -5,7 +5,8 @@ import { MagnifyingGlass } from "@repo/icons/MagnifyingGlass";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useMemo, useState } from "react";
 import { DiscoveryMapCanvasSection } from "../../sections/DiscoveryMapCanvasSection";
 import { DiscoveryMapCoachSection } from "../../sections/DiscoveryMapCoachSection";

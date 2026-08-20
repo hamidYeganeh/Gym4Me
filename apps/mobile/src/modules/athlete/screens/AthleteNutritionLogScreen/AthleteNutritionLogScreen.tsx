@@ -8,7 +8,8 @@ import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { toPersianDigits } from "@/modules/athlete/lib/weight/format";
 import { athleteNutritionLogScreenVariants } from "./AthleteNutritionLogScreen.styles";
 import type { AthleteNutritionLogScreenProps } from "./AthleteNutritionLogScreen.types";

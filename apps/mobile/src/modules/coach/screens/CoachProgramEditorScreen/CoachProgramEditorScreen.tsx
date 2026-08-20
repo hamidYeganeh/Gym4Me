@@ -10,7 +10,8 @@ import type { CoachProgramState } from "../../lib/coach-programs-data";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { coachProgramEditorScreenStyles as styles } from "./CoachProgramEditorScreen.styles";
 import type { CoachProgramEditorScreenProps } from "./CoachProgramEditorScreen.types";
 

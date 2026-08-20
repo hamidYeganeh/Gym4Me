@@ -31,6 +31,7 @@ import { Treadmill } from "@repo/icons/Treadmill";
 import { UsersThree } from "@repo/icons/UsersThree";
 import { Weight } from "@repo/icons/Weight";
 import { WifiHigh } from "@repo/icons/WifiHigh";
+import { useRouter } from "@/shared/lib/app-router";
 
 import { AchievementTag } from "@repo/ui/cards/AchievementTag";
 import { BusyHoursCard } from "@repo/ui/cards/BusyHoursCard";
@@ -48,11 +49,11 @@ import { ReviewCard } from "@repo/ui/cards/ReviewCard";
 import { SocialMediaCard } from "@repo/ui/cards/SocialMediaCard";
 import { SportCard } from "@repo/ui/cards/SportCard";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
-import { CarouselNavigation } from "@repo/ui/kit/CarouselNavigation";
+import { emblaFreeOptions } from "@repo/ui/lib/embla";
 import useEmblaCarousel from "embla-carousel-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { weekdayKey } from "../../lib/club-calendar-data";
 import type {
@@ -185,21 +186,19 @@ function SectionCarousel({
   action?: ReactNode;
   children: ReactNode;
 }) {
-  const [emblaRef, emblaApi] = useEmblaCarousel({
-    align: "start",
-    containScroll: "trimSnaps",
-    direction: "rtl",
-    dragFree: true,
-  });
+  const [emblaRef] = useEmblaCarousel(
+    emblaFreeOptions({
+      direction: "rtl",
+    }),
+  );
 
   return (
     <>
       <div className={styles.sectionHeader}>
         <SectionTitle icon={icon}>{title}</SectionTitle>
-        <div className={styles.sectionHeaderAside}>
-          {action}
-          <CarouselNavigation emblaApi={emblaApi} size="sm" />
-        </div>
+        {action ? (
+          <div className={styles.sectionHeaderAside}>{action}</div>
+        ) : null}
       </div>
       <div
         aria-label={ariaLabel}

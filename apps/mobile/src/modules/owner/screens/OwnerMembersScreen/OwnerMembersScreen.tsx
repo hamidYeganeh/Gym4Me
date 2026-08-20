@@ -5,7 +5,8 @@ import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useOwnerMembersScreen } from "@/modules/owner/lib/use-owner-members-screen";
 import { OwnerMembersImportSection } from "@/modules/owner/sections/OwnerMembersImportSection";
 import { OwnerMembersIntroSection } from "@/modules/owner/sections/OwnerMembersIntroSection";

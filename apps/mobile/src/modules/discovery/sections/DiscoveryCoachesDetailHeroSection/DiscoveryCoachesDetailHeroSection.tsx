@@ -1,15 +1,14 @@
 "use client";
 
-import { Button } from "@heroui/react/button";
 import { Chip } from "@heroui/react/chip";
 import { Surface } from "@heroui/react/surface";
 import { Typography } from "@heroui/react/typography";
-import { DotThreeHorizontal } from "@repo/icons/DotThreeHorizontal";
 import { MapPin1 } from "@repo/icons/MapPin1";
 import { SealCheck } from "@repo/icons/SealCheck";
 import { StarFull } from "@repo/icons/StarFull";
 import { spring } from "@repo/theme";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
+import { CarouselNavigation } from "@repo/ui/kit/CarouselNavigation";
 import {
   motion,
   useReducedMotion,
@@ -35,7 +34,6 @@ import {
 import { discoveryCoachesDetailHeroSectionStyles as styles } from "./DiscoveryCoachesDetailHeroSection.styles";
 import type { DiscoveryCoachesDetailHeroSectionProps } from "./DiscoveryCoachesDetailHeroSection.types";
 
-const HERO_THUMB_PREVIEW_COUNT = 3;
 /** Approx collapsed control bar — used to decide when the hero has passed. */
 const STICKY_BAR_APPROX = 64;
 
@@ -197,56 +195,17 @@ export function DiscoveryCoachesDetailHeroSection({
           </Chip>
 
           <div
-            aria-label={coach.name}
-            className={styles.thumbs}
+            className={styles.navigation}
             onPointerDown={(event) => event.stopPropagation()}
           >
-            {safeGallery.slice(0, HERO_THUMB_PREVIEW_COUNT).map((image, index) => {
-              const isActive = index === activeIndex;
-              return (
-                <Button
-                  aria-current={isActive ? "true" : undefined}
-                  aria-label={
-                    image.title ?? t("selectImage", { index: index + 1 })
-                  }
-                  className={[
-                    styles.thumbButton,
-                    isActive ? styles.thumbActive : styles.thumbIdle,
-                  ].join(" ")}
-                  isIconOnly
-                  key={`${image.url}-${index}`}
-                  onPress={() => goToImage(index)}
-                  size="lg"
-                  variant="ghost"
-                >
-                  <Image
-                    alt={image.title ?? ""}
-                    className={styles.thumbImage}
-                    draggable={false}
-                    fill
-                    sizes="48px"
-                    src={image.url || PLACEHOLDER_IMAGE}
-                  />
-                </Button>
-              );
-            })}
-
-            {imageCount > HERO_THUMB_PREVIEW_COUNT ? (
-              <Button
-                aria-label={t("seeAllGallery")}
-                className={[styles.thumbButton, styles.thumbMore].join(" ")}
-                isIconOnly
-                onPress={() => setIsLightboxOpen(true)}
-                size="lg"
-                variant="tertiary"
-              >
-                <DotThreeHorizontal
-                  aria-hidden
-                  className={styles.thumbMoreIcon}
-                  size={18}
-                />
-              </Button>
-            ) : null}
+            <CarouselNavigation
+              aria-label={coach.name}
+              currentIndex={activeIndex}
+              loop
+              onIndexChange={goToImage}
+              size="sm"
+              totalSlides={imageCount}
+            />
           </div>
         </section>
       </DiscoveryClubsDetailHeroSectionPullToView>

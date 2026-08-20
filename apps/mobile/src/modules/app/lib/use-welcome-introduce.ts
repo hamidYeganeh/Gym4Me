@@ -3,7 +3,8 @@
 import useEmblaCarousel from "embla-carousel-react";
 import { useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useCallback, useEffect, useState } from "react";
 import {
   WELCOME_INTRODUCE_SLIDE_COUNT,
@@ -12,6 +13,7 @@ import { markWelcomeSeen } from "@/modules/app/lib/welcome-storage";
 import { readDocumentDirection } from "@/modules/app/lib/onboarding-helpers";
 import { roleHomePath } from "@/shared/lib/role-routes";
 import { useAuth } from "@/shared/providers/AuthProvider";
+import { EMBLA_DURATION, emblaOptions } from "@repo/ui/lib/embla";
 
 export function useWelcomeIntroduce() {
   const t = useTranslations("Mobile.WelcomeIntroduce");
@@ -21,17 +23,19 @@ export function useWelcomeIntroduce() {
   const [textDirection] = useState<"rtl" | "ltr">(readDocumentDirection);
   const [slide, setSlide] = useState(0);
 
-  const [emblaRef, emblaApi] = useEmblaCarousel({
-    align: "center",
-    containScroll: "trimSnaps",
-    direction: textDirection,
-    duration: reduceMotion ? 0 : 22,
-    watchDrag: (_api, event) => {
-      const target = event.target;
-      if (!(target instanceof Element)) return true;
-      return !target.closest("[data-welcome-nested-carousel]");
-    },
-  });
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    emblaOptions({
+      align: "center",
+      containScroll: "trimSnaps",
+      direction: textDirection,
+      duration: reduceMotion ? EMBLA_DURATION.instant : EMBLA_DURATION.smooth,
+      watchDrag: (_api, event) => {
+        const target = event.target;
+        if (!(target instanceof Element)) return true;
+        return !target.closest("[data-welcome-nested-carousel]");
+      },
+    }),
+  );
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;

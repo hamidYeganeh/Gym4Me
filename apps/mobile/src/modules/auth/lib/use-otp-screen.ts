@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { ApiError } from "@repo/api";
 import type { ConfirmOtpInput, RequestOtpInput } from "@repo/api";
 import { toast } from "@repo/ui/kit/Toast";
@@ -15,6 +15,7 @@ import {
 } from "@/modules/auth/lib/otp-pending";
 import { postAuthPath, withAuthNext } from "@/shared/lib/auth-redirect";
 import { useAuth } from "@/shared/providers/AuthProvider";
+import { useRouter } from "@/shared/lib/app-router";
 
 const subscribeOtpPending = () => () => {};
 

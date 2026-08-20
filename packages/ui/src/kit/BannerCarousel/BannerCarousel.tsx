@@ -2,8 +2,12 @@
 
 import { Button } from "@heroui/react/button";
 import useEmblaCarousel from "embla-carousel-react";
+import { useReducedMotion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
 import { MediaImage } from "../../common/MediaImage";
+import { EMBLA_DURATION, emblaOptions } from "../../lib/embla";
+import { useEmblaLazyLoad } from "../../lib/use-embla-lazy-load";
+import { useEmblaSlideTween } from "../../lib/use-embla-slide-tween";
 import { bannerCarouselVariants } from "./BannerCarousel.styles";
 import type { BannerCarouselProps } from "./BannerCarousel.types";
 
@@ -17,13 +21,27 @@ export function BannerCarousel({
   "aria-label": ariaLabel = "Banners",
   slideLabel,
 }: BannerCarouselProps) {
-  const [emblaRef, emblaApi] = useEmblaCarousel({
-    align: "start",
-    direction,
-    loop: slides.length > 1,
-  });
+  const reduceMotion = useReducedMotion();
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    emblaOptions({
+      align: "start",
+      direction,
+      loop: slides.length > 1,
+      duration: reduceMotion ? EMBLA_DURATION.instant : EMBLA_DURATION.juicy,
+    }),
+  );
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [interacting, setInteracting] = useState(false);
+  const loadedSlides = useEmblaLazyLoad(emblaApi, {
+    loadAll: reduceMotion === true || slides.length <= 2,
+    preloadAdjacent: 1,
+  });
+
+  useEmblaSlideTween(emblaApi, {
+    disabled: reduceMotion === true,
+    minScale: 0.94,
+    minOpacity: 0.78,
+  });
 
   const syncSelected = useCallback((api: NonNullable<typeof emblaApi>) => {
     setSelectedIndex(api.selectedScrollSnap());
@@ -70,7 +88,8 @@ export function BannerCarousel({
       <div className={slots.viewport()} dir={direction} ref={emblaRef}>
         <div className={slots.track()}>
           {slides.map((slide, index) => {
-            const image = (
+            const canLoad = loadedSlides.has(index);
+            const media = canLoad ? (
               <MediaImage
                 alt={slide.alt ?? ""}
                 className={slots.image()}
@@ -78,22 +97,26 @@ export function BannerCarousel({
                 priority={index === 0}
                 sizes="100vw"
               />
+            ) : (
+              <div aria-hidden className={slots.imagePlaceholder()} />
             );
 
             return (
               <div className={slots.slide()} key={slide.id}>
-                {slide.onPress ? (
-                  <Button
-                    aria-label={slide.alt ?? undefined}
-                    className={slots.pressable()}
-                    onPress={slide.onPress}
-                    variant="ghost"
-                  >
-                    {image}
-                  </Button>
-                ) : (
-                  image
-                )}
+                <div className={slots.tween()} data-embla-tween="">
+                  {slide.onPress && canLoad ? (
+                    <Button
+                      aria-label={slide.alt ?? undefined}
+                      className={slots.pressable()}
+                      onPress={slide.onPress}
+                      variant="ghost"
+                    >
+                      {media}
+                    </Button>
+                  ) : (
+                    media
+                  )}
+                </div>
               </div>
             );
           })}

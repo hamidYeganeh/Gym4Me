@@ -9,7 +9,8 @@ import { ArrowRotateClockwise1 } from "@repo/icons/ArrowRotateClockwise1";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import type { QrCheckInEntry } from "../../lib/athlete-qr-checkin-data";
 import { athleteQrCheckInScreenVariants } from "./AthleteQrCheckInScreen.styles";
 import type { AthleteQrCheckInScreenProps } from "./AthleteQrCheckInScreen.types";

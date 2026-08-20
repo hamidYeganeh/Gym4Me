@@ -29,10 +29,11 @@ import { ReviewSummaryCard } from "@repo/ui/cards/ReviewSummaryCard";
 import { SocialMediaCard } from "@repo/ui/cards/SocialMediaCard";
 import { SportCard } from "@repo/ui/cards/SportCard";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
-import { CarouselNavigation } from "@repo/ui/kit/CarouselNavigation";
+import { emblaFreeOptions } from "@repo/ui/lib/embla";
 import useEmblaCarousel from "embla-carousel-react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import {
   useLayoutEffect,
   useMemo,
@@ -145,20 +146,19 @@ function SectionCarousel({
   action?: ReactNode;
   children: ReactNode;
 }) {
-  const [emblaRef, emblaApi] = useEmblaCarousel({
-    align: "start",
-    dragFree: true,
-    direction: "rtl",
-  });
+  const [emblaRef] = useEmblaCarousel(
+    emblaFreeOptions({
+      direction: "rtl",
+    }),
+  );
 
   return (
     <>
       <div className={styles.sectionHeader}>
         <SectionTitle icon={icon}>{title}</SectionTitle>
-        <div className={styles.sectionHeaderAside}>
-          {action}
-          <CarouselNavigation emblaApi={emblaApi} size="sm" />
-        </div>
+        {action ? (
+          <div className={styles.sectionHeaderAside}>{action}</div>
+        ) : null}
       </div>
       <div
         aria-label={ariaLabel}

@@ -10,7 +10,7 @@ import { Telephone1 } from "@repo/icons/Telephone1";
 import { toast } from "@repo/ui/kit/Toast";
 import { AuthLayout, type AuthLayoutLabels } from "@repo/ui/layout/AuthLayout";
 import { useTranslations } from "next-intl";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { hasLoggedInBefore } from "@/modules/auth/lib/biometric-unlock";
 import {
   authenticateBiometric,
@@ -21,6 +21,7 @@ import { roleHomePath } from "@/shared/lib/role-routes";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { authSelectScreenVariants } from "./AuthSelectScreen.styles";
 import type { AuthSelectScreenProps } from "./AuthSelectScreen.types";
+import { useRouter } from "@/shared/lib/app-router";
 
 const HERO_SRC = "/auth-hero.jpg";
 

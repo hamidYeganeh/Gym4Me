@@ -2,7 +2,8 @@
 
 import { ClubClassCard } from "@repo/ui/cards/ClubClassCard";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { DiscoverySectionRail } from "../DiscoverySectionRail";
 import { discoveryHomeClassesSectionVariants } from "./DiscoveryHomeClassesSection.styles";
 import type { DiscoveryHomeClassesSectionProps } from "./DiscoveryHomeClassesSection.types";
@@ -22,10 +23,10 @@ export function DiscoveryHomeClassesSection({
       hint={t("classesHint")}
       seeAllLabel={t("seeAll")}
       title={t("classesTitle")}
-      onSeeAll={() => router.push("/discovery/classes")}
+      onSeeAll={() => router.push("/discovery/clubs")}
     >
       {classes.map((item) => {
-        const href = `/discovery/classes/${item.id}?clubId=${encodeURIComponent(item.clubId)}`;
+        const href = `/discovery/clubs/${item.clubId}/classes/${item.id}`;
         return (
           <ClubClassCard
             actionLabel={t("viewClass")}

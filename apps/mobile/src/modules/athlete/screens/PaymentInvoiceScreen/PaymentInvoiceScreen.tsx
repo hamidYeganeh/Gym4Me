@@ -9,7 +9,8 @@ import { StickyBottomActions } from "@repo/ui/kit/StickyBottomActions";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useState, type ReactNode } from "react";
 import { PaymentInvoiceDetailsSection } from "../../sections/PaymentInvoiceDetailsSection";
 import { PaymentInvoiceMethodsSection } from "../../sections/PaymentInvoiceMethodsSection";

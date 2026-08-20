@@ -8,13 +8,14 @@ import { EmptyState } from "@repo/ui/kit/EmptyState";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { getInvoice } from "../../lib/payment-data";
 import { paymentResultScreenStyles as styles } from "./PaymentResultScreen.styles";
 import type {
   PaymentResultScreenProps,
   PaymentResultStatus,
 } from "./PaymentResultScreen.types";
+import { useRouter } from "@/shared/lib/app-router";
 
 const RESULT_ICON_SIZE = 48;
 const DEMO_REFERENCE = "۱۴۰۵۰۸۱۶-۴۸۲۹";

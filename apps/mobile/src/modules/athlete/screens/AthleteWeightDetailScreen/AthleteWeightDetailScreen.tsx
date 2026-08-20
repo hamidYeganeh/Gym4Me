@@ -6,7 +6,8 @@ import { Pencil1 } from "@repo/icons/Pencil1";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { AthleteWeightDetailHeroSection } from "../../sections/AthleteWeightDetailHeroSection";
 import { AthleteWeightDetailKeyMetricsSection } from "../../sections/AthleteWeightDetailKeyMetricsSection";
 import type { AthleteWeightDetailScreenProps } from "./AthleteWeightDetailScreen.types";

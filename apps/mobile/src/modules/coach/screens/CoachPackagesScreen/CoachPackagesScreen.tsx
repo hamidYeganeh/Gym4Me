@@ -12,7 +12,8 @@ import type { CoachPackageStatus } from "../../lib/coach-packages-data";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { coachPackagesScreenStyles as styles } from "./CoachPackagesScreen.styles";
 import type { CoachPackagesScreenProps } from "./CoachPackagesScreen.types";
 

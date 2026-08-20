@@ -6,23 +6,10 @@ export const discoveryCoachesDetailHeroSectionStyles = {
     "pointer-events-none absolute inset-0",
     "bg-linear-to-t from-background/25 via-transparent to-background/20",
   ].join(" "),
-  thumbs: [
+  navigation: [
     "pointer-events-auto absolute end-4 bottom-14 z-10",
-    "flex shrink-0 flex-col gap-2.5",
+    "shrink-0",
   ].join(" "),
-  thumbButton: [
-    "relative !size-12 aspect-square overflow-hidden",
-    "rounded-radius border-2 bg-transparent p-0 shadow-none",
-    "transition-[border-color,opacity,transform] duration-fast ease-app",
-  ].join(" "),
-  thumbActive: "border-surface opacity-100",
-  thumbIdle: "border-surface/70 opacity-90",
-  thumbImage: "object-cover object-top",
-  thumbMore: [
-    "flex items-center justify-center border-surface/80",
-    "bg-foreground/55 text-background backdrop-blur-md",
-  ].join(" "),
-  thumbMoreIcon: "shrink-0 text-background",
   counter: [
     "pointer-events-none absolute start-4 bottom-14 z-10",
     "h-7 rounded-full border-0 bg-foreground/70 px-3 text-background",

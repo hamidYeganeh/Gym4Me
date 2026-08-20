@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useRequireAuthAction } from "@/shared/hooks/useRequireAuthAction";
 import { DiscoveryCoachesDetailActionsSection } from "../../sections/DiscoveryCoachesDetailActionsSection";
@@ -9,6 +9,7 @@ import { DiscoveryCoachesDetailBodySection } from "../../sections/DiscoveryCoach
 import { DiscoveryCoachesDetailHeroSection } from "../../sections/DiscoveryCoachesDetailHeroSection";
 import { discoveryCoachesDetailScreenStyles as styles } from "./DiscoveryCoachesDetailScreen.styles";
 import type { DiscoveryCoachesDetailScreenProps } from "./DiscoveryCoachesDetailScreen.types";
+import { useRouter } from "@/shared/lib/app-router";
 
 export function DiscoveryCoachesDetailScreen({
   coach,

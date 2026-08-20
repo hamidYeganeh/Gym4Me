@@ -2,7 +2,8 @@
 
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useState } from "react";
 import { mediaFileUrl } from "@/shared/lib/api";
 import { roleAppPath, roleSegment } from "@/shared/lib/role-routes";

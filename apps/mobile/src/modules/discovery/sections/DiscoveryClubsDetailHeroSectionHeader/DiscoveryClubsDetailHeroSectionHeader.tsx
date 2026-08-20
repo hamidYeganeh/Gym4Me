@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@heroui/react/button";
+import { Typography } from "@heroui/react/typography";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { Heart } from "@repo/icons/Heart";
 import { Share1 } from "@repo/icons/Share1";
@@ -14,7 +15,8 @@ import {
   useTransform,
 } from "motion/react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useState } from "react";
 import { discoveryClubsDetailHeroSectionHeaderStyles as styles } from "./DiscoveryClubsDetailHeroSectionHeader.styles";
 import type { DiscoveryClubsDetailHeroSectionHeaderProps } from "./DiscoveryClubsDetailHeroSectionHeader.types";
@@ -22,6 +24,7 @@ import type { DiscoveryClubsDetailHeroSectionHeaderProps } from "./DiscoveryClub
 const SCROLL_FADE_RANGE = 96;
 
 export function DiscoveryClubsDetailHeroSectionHeader({
+  title,
   isFavorite: initialFavorite = false,
   onBack,
   onFavoriteChange,
@@ -36,6 +39,13 @@ export function DiscoveryClubsDetailHeroSectionHeader({
   const rawVeil = useTransform(scrollY, [0, SCROLL_FADE_RANGE], [0, 1]);
   const smoothVeil = useSpring(rawVeil, spring.default);
   const veilOpacity = reduceMotion ? rawVeil : smoothVeil;
+  const titleOpacity = useTransform(veilOpacity, [0.25, 0.75], [0, 1]);
+  const titleY = useTransform(veilOpacity, [0, 1], [38, 0]);
+  const titleScale = useTransform(veilOpacity, [0, 1], [1.45, 1]);
+  const shareOpacity = useTransform(veilOpacity, [0, 0.55], [1, 0]);
+  const shareVisibility = useTransform(veilOpacity, (opacity) =>
+    opacity >= 0.55 ? "hidden" : "visible",
+  );
 
   const handleBack = () => {
     if (onBack) {
@@ -103,17 +113,35 @@ export function DiscoveryClubsDetailHeroSectionHeader({
           <ChevronLeft size={20} />
         </Button>
 
+        <motion.div
+          aria-hidden
+          className={styles.title}
+          style={{
+            opacity: titleOpacity,
+            scale: titleScale,
+            y: titleY,
+          }}
+        >
+          <Typography className="truncate" type="h3" weight="bold">
+            {title}
+          </Typography>
+        </motion.div>
+
         <div className={styles.actions}>
-          <Button
-            aria-label={t("share")}
-            className={styles.control}
-            isIconOnly
-            onPress={handleShare}
-            size="lg"
-            variant="secondary"
+          <motion.div
+            style={{ opacity: shareOpacity, visibility: shareVisibility }}
           >
-            <Share1 size={20} />
-          </Button>
+            <Button
+              aria-label={t("share")}
+              className={styles.control}
+              isIconOnly
+              onPress={handleShare}
+              size="lg"
+              variant="secondary"
+            >
+              <Share1 size={20} />
+            </Button>
+          </motion.div>
           <Button
             aria-label={t("favorite")}
             aria-pressed={isFavorite}

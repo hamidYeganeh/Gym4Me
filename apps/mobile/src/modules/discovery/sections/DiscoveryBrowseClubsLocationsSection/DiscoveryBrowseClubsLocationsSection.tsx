@@ -4,7 +4,8 @@ import { CityCard } from "@repo/ui/cards/CityCard";
 import { DistrictCard } from "@repo/ui/cards/DistrictCard";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { DiscoverySectionRail } from "../DiscoverySectionRail";
 import { discoveryBrowseClubsLocationsSectionVariants } from "./DiscoveryBrowseClubsLocationsSection.styles";
 import type {

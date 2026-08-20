@@ -3,7 +3,8 @@
 import { Button } from "@heroui/react/button";
 import { ClubAmenityCard } from "@repo/ui/cards/ClubAmenityCard";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { discoveryAmenityIcon } from "../../lib/discovery-home-icons";
 import { DiscoverySectionRail } from "../DiscoverySectionRail";
 import { discoveryHomeAmenitiesSectionVariants } from "./DiscoveryHomeAmenitiesSection.styles";

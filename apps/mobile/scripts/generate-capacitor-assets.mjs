@@ -21,6 +21,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 const ASSETS = path.join(ROOT, "assets");
 const LOGO_SVG = path.join(ASSETS, "logo-mark.svg");
+const ROBOTO_BOLD = path.resolve(
+  ROOT,
+  "../../packages/fonts/files/Roboto-Bold.ttf",
+);
 
 const BRAND = {
   accent: "#1fff6f",
@@ -83,6 +87,85 @@ async function composeLogo({
     .toFile(outPath);
 }
 
+/**
+ * Full-bleed splash matching `/splash`: centered logo (5xl = 180 CSS px) +
+ * Roboto Bold "Gym4Me" below (text-5xl / mt-5), no subtitle.
+ * Scale assumes CENTER_CROP on a ~844pt-tall phone.
+ */
+async function composeSplashScreen({
+  canvas,
+  background,
+  logoFill,
+  textFill,
+  outPath,
+}) {
+  const REF_VIEWPORT_PT = 844;
+  const WEB_LOGO_PX = 180; // LOGO_SIZES["5xl"]
+  const WEB_BRAND_PX = 48; // text-5xl
+  const WEB_GAP_PX = 20; // mt-5
+  const scale = canvas / REF_VIEWPORT_PT;
+
+  const logoSize = Math.round(WEB_LOGO_PX * scale);
+  const fontSize = Math.round(WEB_BRAND_PX * scale);
+  const gap = Math.round(WEB_GAP_PX * scale);
+
+  const logoSvgRaw = await readFile(LOGO_SVG);
+  const logoSvg = tintLogoSvg(logoSvgRaw, logoFill);
+  const logo = await sharp(logoSvg)
+    .resize(logoSize, logoSize, {
+      fit: "contain",
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    })
+    .png()
+    .toBuffer();
+
+  const logoLeft = Math.round((canvas - logoSize) / 2);
+  const logoTop = Math.round((canvas - logoSize) / 2);
+
+  const fontBase64 = (await readFile(ROBOTO_BOLD)).toString("base64");
+  // Baseline sits in the lower part of the em box; pad so descenders aren't clipped.
+  const textHeight = Math.round(fontSize * 1.35);
+  const textTop = logoTop + logoSize + gap;
+  const textSvg = `
+<svg xmlns="http://www.w3.org/2000/svg" width="${canvas}" height="${textHeight}">
+  <defs>
+    <style>
+      @font-face {
+        font-family: "Roboto";
+        font-weight: 700;
+        src: url("data:font/ttf;base64,${fontBase64}") format("truetype");
+      }
+    </style>
+  </defs>
+  <text
+    x="50%"
+    y="${Math.round(fontSize * 0.92)}"
+    text-anchor="middle"
+    font-family="Roboto"
+    font-weight="700"
+    font-size="${fontSize}"
+    fill="${textFill}"
+  >Gym4Me</text>
+</svg>`;
+
+  const textPng = await sharp(Buffer.from(textSvg)).png().toBuffer();
+
+  await sharp({
+    create: {
+      width: canvas,
+      height: canvas,
+      channels: 4,
+      background,
+    },
+  })
+    .composite([
+      { input: logo, left: logoLeft, top: logoTop },
+      { input: textPng, left: 0, top: textTop },
+    ])
+    .png()
+    .toFile(outPath);
+}
+
 function hexToRgba(hex) {
   const h = hex.replace("#", "");
   return {
@@ -116,29 +199,37 @@ async function main() {
 
   await solidPng(1024, BRAND.accent, path.join(ASSETS, "icon-background.png"));
 
-  // Splash: bg-accent, logo = text-background (light / dark)
-  await composeLogo({
+  // Splash: matches `/splash` — bg-accent, 5xl logo + Roboto brand, no subtitle
+  await composeSplashScreen({
     canvas: 2732,
-    logoSize: 512,
     background: hexToRgba(BRAND.accent),
     logoFill: BRAND.light,
+    textFill: BRAND.light,
     outPath: path.join(ASSETS, "splash.png"),
   });
 
-  await composeLogo({
+  await composeSplashScreen({
     canvas: 2732,
-    logoSize: 512,
     background: hexToRgba(BRAND.accent),
     logoFill: BRAND.dark,
+    textFill: BRAND.dark,
     outPath: path.join(ASSETS, "splash-dark.png"),
   });
 
-  // Android 12+ splash icons (transparent canvas; OS paints accent behind them)
+  // Also publish web-facing splash preview used by PWA / docs
+  await copyFile(
+    path.join(ASSETS, "splash.png"),
+    path.join(ROOT, "public", "splash.png"),
+  );
+
+  // Android 12+ splash icons (logo only in the system icon mask; size synced to 5xl ratio)
+  // 180/844 of a 1152 canvas ≈ 246; use ~50% of canvas for readable A12 icon.
   const splashIconLight = path.join(ASSETS, "splash-icon.png");
   const splashIconDark = path.join(ASSETS, "splash-icon-dark.png");
+  const a12LogoSize = Math.round(1152 * (180 / 390)); // ~5xl on ~phone width
   await composeLogo({
     canvas: 1152,
-    logoSize: 576,
+    logoSize: a12LogoSize,
     background: { r: 0, g: 0, b: 0, alpha: 0 },
     logoFill: BRAND.light,
     transparent: true,
@@ -146,7 +237,7 @@ async function main() {
   });
   await composeLogo({
     canvas: 1152,
-    logoSize: 576,
+    logoSize: a12LogoSize,
     background: { r: 0, g: 0, b: 0, alpha: 0 },
     logoFill: BRAND.dark,
     transparent: true,

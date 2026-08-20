@@ -7,7 +7,8 @@ import type { HealthSyncState } from "@repo/api";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { athleteHealthSyncScreenVariants } from "./AthleteHealthSyncScreen.styles";
 import type { AthleteHealthSyncScreenProps } from "./AthleteHealthSyncScreen.types";
 

@@ -15,7 +15,8 @@ import {
   useTransform,
   type MotionValue,
 } from "motion/react";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { MediaImage } from "../../common/MediaImage";
 import { PLACEHOLDER_IMAGE } from "../../common/placeholder";
 import { ProgressiveBlur } from "../../kit/ProgressiveBlur";
@@ -96,9 +97,15 @@ export function ProfileHeader({
 
   const identityRef = useRef<HTMLDivElement>(null);
   const [identityHeight, setIdentityHeight] = useState(IDENTITY_FALLBACK);
+  /** Escape page-shell transforms/`will-change` so `fixed` sticks to the viewport. */
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
 
   const progress = useScrollProgress(reduceMotion);
   const morph = useMorph(progress);
+
+  useEffect(() => {
+    setPortalTarget(document.body);
+  }, []);
 
   useLayoutEffect(() => {
     const el = identityRef.current;
@@ -208,13 +215,7 @@ export function ProfileHeader({
     </Button>
   );
 
-  return (
-    <>
-      <motion.div
-        aria-hidden
-        className={slots.spacer()}
-        style={{ height: spacerHeight }}
-      />
+  const header = (
       <header className={slots.root({ className })}>
         {cover ? (
           <motion.div
@@ -345,6 +346,16 @@ export function ProfileHeader({
           </motion.div>
         </motion.div>
       </header>
+  );
+
+  return (
+    <>
+      <motion.div
+        aria-hidden
+        className={slots.spacer()}
+        style={{ height: spacerHeight }}
+      />
+      {portalTarget ? createPortal(header, portalTarget) : header}
     </>
   );
 }

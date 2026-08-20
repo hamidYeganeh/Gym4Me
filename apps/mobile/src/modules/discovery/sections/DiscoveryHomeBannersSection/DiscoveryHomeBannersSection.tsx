@@ -2,7 +2,8 @@
 
 import { BannerCarousel } from "@repo/ui/kit/BannerCarousel";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import type { DiscoveryHomeBannersSectionProps } from "./DiscoveryHomeBannersSection.types";
 
 function openBannerLink(

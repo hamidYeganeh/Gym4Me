@@ -7,7 +7,8 @@ import { FilterChip, FilterChipBar } from "@repo/ui/kit/FilterChip";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { discoverySportsScreenStyles as styles } from "./DiscoverySportsScreen.styles";
 import type { DiscoverySportsScreenProps } from "./DiscoverySportsScreen.types";
 import { sportThemeForColor } from "../../lib/sports-browse-data";

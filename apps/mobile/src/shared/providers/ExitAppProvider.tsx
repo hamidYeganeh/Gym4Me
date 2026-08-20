@@ -2,12 +2,14 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ExitAppSheet } from "@/modules/app/components/ExitAppSheet";
+import { useRouter } from "@/shared/lib/app-router";
 
 /**
  * Intercepts the Android hardware back button at the root of WebView history
  * and shows a confirmation sheet before exiting the app.
  */
 export function ExitAppProvider() {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const isOpenRef = useRef(false);
 
@@ -33,7 +35,7 @@ export function ExitAppProvider() {
         }
 
         if (canGoBack) {
-          window.history.back();
+          router.back();
           return;
         }
 
@@ -56,7 +58,7 @@ export function ExitAppProvider() {
       cancelled = true;
       removeListener?.();
     };
-  }, []);
+  }, [router]);
 
   const handleStay = useCallback(() => {
     setIsOpen(false);

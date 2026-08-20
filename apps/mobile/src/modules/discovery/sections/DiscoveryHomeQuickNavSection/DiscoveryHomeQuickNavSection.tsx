@@ -1,11 +1,11 @@
 "use client";
 
 import { Building2 } from "@repo/icons/Building2";
-import { MapTrifold } from "@repo/icons/MapTrifold";
 import { UsersTwo } from "@repo/icons/UsersTwo";
 import { QuickActionCard } from "@repo/ui/cards/QuickActionCard";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { discoveryHomeQuickNavSectionVariants } from "./DiscoveryHomeQuickNavSection.styles";
 
 const ICON_SIZE = 22;
@@ -17,15 +17,6 @@ export function DiscoveryHomeQuickNavSection() {
 
   return (
     <nav aria-label={t("quickNavLabel")} className={slots.root()}>
-      <QuickActionCard
-        className={slots.map()}
-        icon={<MapTrifold size={ICON_SIZE} />}
-        label={t("quickMap")}
-        labelClassName={slots.mapLabel()}
-        layout="row"
-        tileClassName={slots.mapTile()}
-        onPress={() => router.push("/discovery/map")}
-      />
       <QuickActionCard
         icon={<Building2 size={ICON_SIZE} />}
         label={t("quickClubs")}

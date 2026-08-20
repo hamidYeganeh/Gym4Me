@@ -2,10 +2,11 @@
 
 import { Button } from "@heroui/react/button";
 import { ChevronDown } from "@repo/icons/ChevronDown";
+import { MapPin1 } from "@repo/icons/MapPin1";
 import { Funnel1 } from "@repo/icons/Funnel1";
-import { MagnifyingGlass } from "@repo/icons/MagnifyingGlass";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useState } from "react";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import {
@@ -69,18 +70,9 @@ export function DiscoveryHomeHeaderSection({
             size="sm"
             variant="secondary"
           >
+            <MapPin1 size={16} />
             <span className={slots.locationLabel()}>{locationLabel}</span>
             <ChevronDown size={16} />
-          </Button>
-          <Button
-            aria-label={t("searchAria")}
-            className={slots.searchButton()}
-            isIconOnly
-            onPress={() => router.push("/discovery/search")}
-            size="lg"
-            variant="ghost"
-          >
-            <MagnifyingGlass size={22} />
           </Button>
         </div>
       </header>
@@ -92,9 +84,7 @@ export function DiscoveryHomeHeaderSection({
         emptyLabel={t("locationSheetEmpty")}
         isOpen={isLocationOpen}
         onAddNew={() =>
-          router.push(
-            isAuthenticated ? "/athlete/profile/edit" : "/auth/login",
-          )
+          router.push(isAuthenticated ? "/athlete/profile/edit" : "/auth/login")
         }
         onOpenChange={setIsLocationOpen}
         onSelect={setSelectedAddressId}

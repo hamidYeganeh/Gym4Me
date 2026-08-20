@@ -4,7 +4,8 @@ import { Button } from "@heroui/react/button";
 import { ArrowRight } from "@repo/icons/ArrowRight";
 import { AuthLayout, type AuthLayoutLabels } from "@repo/ui/layout/AuthLayout";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useEffect } from "react";
 import {
   hasSeenWelcome,

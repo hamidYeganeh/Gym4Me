@@ -7,7 +7,8 @@ import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import type { OwnerDebtStatus } from "../../lib/owner-debts-data";
 import { ownerDebtsScreenVariants } from "./OwnerDebtsScreen.styles";
 import type { OwnerDebtsScreenProps } from "./OwnerDebtsScreen.types";

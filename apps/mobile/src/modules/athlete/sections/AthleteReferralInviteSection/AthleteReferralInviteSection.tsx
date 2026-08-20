@@ -2,7 +2,8 @@
 
 import { ReferralInviteCard } from "@repo/ui/cards/ReferralInviteCard";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useEffect, useState } from "react";
 import { DEMO_REFERRAL } from "@/modules/athlete/lib/referral-data";
 import { toPersianDigits } from "@/modules/athlete/lib/weight/format";

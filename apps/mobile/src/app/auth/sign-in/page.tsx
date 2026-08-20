@@ -1,7 +1,8 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
+import { useRouter } from "@/shared/lib/app-router";
 
 /** Legacy path — prefer `/auth/login`. Client redirect keeps static export happy. */
 function SignInRedirect() {

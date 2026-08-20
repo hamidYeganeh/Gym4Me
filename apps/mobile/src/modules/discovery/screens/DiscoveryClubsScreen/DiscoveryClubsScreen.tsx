@@ -5,7 +5,8 @@ import { FilterChip, FilterChipBar } from "@repo/ui/kit/FilterChip";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { DiscoveryBrowseClubsAllSection } from "../../sections/DiscoveryBrowseClubsAllSection";
 import { DiscoveryBrowseClubsEmptySection } from "../../sections/DiscoveryBrowseClubsEmptySection";
 import { DiscoveryBrowseClubsLoadingSection } from "../../sections/DiscoveryBrowseClubsLoadingSection";

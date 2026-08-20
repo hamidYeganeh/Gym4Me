@@ -2,11 +2,9 @@
 
 import { Skeleton } from "@heroui/react/skeleton";
 import { AchievementTagSkeleton } from "@repo/ui/cards/AchievementTag";
-import { ArticleCardSkeleton } from "@repo/ui/cards/ArticleCard";
 import { CityCardSkeleton } from "@repo/ui/cards/CityCard";
 import { ClubAmenityCardSkeleton } from "@repo/ui/cards/ClubAmenityCard";
 import { ClubCardSkeleton } from "@repo/ui/cards/ClubCard";
-import { ClubClassCardSkeleton } from "@repo/ui/cards/ClubClassCard";
 import { ClubGalleryCardSkeleton } from "@repo/ui/cards/ClubGalleryCard";
 import { CoachFeatureCardSkeleton } from "@repo/ui/cards/CoachFeatureCard";
 import { EquipmentBrowseCardSkeleton } from "@repo/ui/cards/EquipmentBrowseCard";
@@ -14,14 +12,13 @@ import { SportCardSkeleton } from "@repo/ui/cards/SportCard";
 import { BannerCarouselSkeleton } from "@repo/ui/kit/BannerCarousel";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { useDiscoveryHome } from "../../lib/use-discovery-home";
 import { usePlacementBanners } from "../../lib/use-placement-banners";
 import { DiscoveryHomeCloseCtaSection } from "../../sections/DiscoveryHomeCloseCtaSection";
-import { discoveryHomeArticlesSectionVariants } from "../../sections/DiscoveryHomeArticlesSection/DiscoveryHomeArticlesSection.styles";
 import { discoveryHomeCitiesSectionVariants } from "../../sections/DiscoveryHomeCitiesSection/DiscoveryHomeCitiesSection.styles";
-import { discoveryHomeClassesSectionVariants } from "../../sections/DiscoveryHomeClassesSection/DiscoveryHomeClassesSection.styles";
 import { discoveryHomeClubsRailSectionVariants } from "../../sections/DiscoveryHomeClubsRailSection/DiscoveryHomeClubsRailSection.styles";
 import { discoveryHomeCoachesSectionVariants } from "../../sections/DiscoveryHomeCoachesSection/DiscoveryHomeCoachesSection.styles";
 import { discoveryHomeEquipmentSectionVariants } from "../../sections/DiscoveryHomeEquipmentSection/DiscoveryHomeEquipmentSection.styles";
@@ -29,8 +26,6 @@ import { discoveryHomeFeaturesSectionVariants } from "../../sections/DiscoveryHo
 import { discoveryHomeGalleryRailSectionVariants } from "../../sections/DiscoveryHomeGalleryRailSection/DiscoveryHomeGalleryRailSection.styles";
 import { DiscoveryHomeHeaderSection } from "../../sections/DiscoveryHomeHeaderSection";
 import { discoveryHomeHeroSectionVariants } from "../../sections/DiscoveryHomeHeroSection/DiscoveryHomeHeroSection.styles";
-import { DiscoveryHomeMapCtaSection } from "../../sections/DiscoveryHomeMapCtaSection";
-import { DiscoveryHomeQuickNavSection } from "../../sections/DiscoveryHomeQuickNavSection";
 import { discoveryHomeSportsSectionVariants } from "../../sections/DiscoveryHomeSportsSection/DiscoveryHomeSportsSection.styles";
 import { DiscoverySectionRail } from "../../sections/DiscoverySectionRail";
 import { DiscoveryHomeScreen } from "./DiscoveryHomeScreen";
@@ -77,9 +72,7 @@ function DiscoveryHomePageSkeleton({ compact }: { compact: boolean }) {
   const citySlots = discoveryHomeCitiesSectionVariants();
   const clubSlots = discoveryHomeClubsRailSectionVariants();
   const coachSlots = discoveryHomeCoachesSectionVariants();
-  const classSlots = discoveryHomeClassesSectionVariants();
   const equipmentSlots = discoveryHomeEquipmentSectionVariants();
-  const articleSlots = discoveryHomeArticlesSectionVariants();
   const gallerySlots = discoveryHomeGalleryRailSectionVariants();
 
   return (
@@ -96,7 +89,6 @@ function DiscoveryHomePageSkeleton({ compact }: { compact: boolean }) {
         role="status"
       >
         <DiscoveryHomeHeroSkeleton />
-        <DiscoveryHomeQuickNavSection />
         <BannerCarouselSkeleton />
 
         {compact ? null : (
@@ -199,14 +191,6 @@ function DiscoveryHomePageSkeleton({ compact }: { compact: boolean }) {
           ))}
         </DiscoverySectionRail>
 
-        <DiscoveryHomeMapCtaSection
-          ctaLabel={t("mapCta")}
-          eyebrow={t("mapEyebrow")}
-          subtitle={t("mapSubtitle")}
-          title={t("mapTitle")}
-          onPress={() => router.push("/discovery/map")}
-        />
-
         {compact ? null : (
           <DiscoverySectionRail
             ariaLabel={t("open24Title")}
@@ -224,22 +208,6 @@ function DiscoveryHomePageSkeleton({ compact }: { compact: boolean }) {
             ))}
           </DiscoverySectionRail>
         )}
-
-        <DiscoverySectionRail
-          ariaLabel={t("classesTitle")}
-          hint={t("classesHint")}
-          seeAllLabel={t("seeAll")}
-          title={t("classesTitle")}
-          onSeeAll={() => router.push("/discovery/classes")}
-        >
-          {times(3).map((index) => (
-            <ClubClassCardSkeleton
-              className={classSlots.card()}
-              key={index}
-              size="md"
-            />
-          ))}
-        </DiscoverySectionRail>
 
         <DiscoverySectionRail
           ariaLabel={t("equipmentTitle")}
@@ -271,23 +239,6 @@ function DiscoveryHomePageSkeleton({ compact }: { compact: boolean }) {
             </DiscoverySectionRail>
 
             <DiscoverySectionRail
-              ariaLabel={t("articlesTitle")}
-              hint={t("articlesHint")}
-              seeAllLabel={t("seeAll")}
-              title={t("articlesTitle")}
-              onSeeAll={() => router.push("/articles")}
-            >
-              {times(2).map((index) => (
-                <ArticleCardSkeleton
-                  className={articleSlots.card()}
-                  key={index}
-                  orientation="vertical"
-                  type="cover"
-                />
-              ))}
-            </DiscoverySectionRail>
-
-            <DiscoverySectionRail
               ariaLabel={t("galleryTitle")}
               hint={t("galleryHint")}
               seeAllLabel={t("seeAll")}
@@ -308,7 +259,7 @@ function DiscoveryHomePageSkeleton({ compact }: { compact: boolean }) {
           actionLabel={t("closeCta")}
           subtitle={t("closeSubtitle")}
           title={t("closeTitle")}
-          onAction={() => router.push("/discovery/classes")}
+          onAction={() => router.push("/discovery/clubs")}
         />
       </div>
     </AppLayout>
@@ -334,10 +285,8 @@ export function DiscoveryHomeScreenLoader({
   return (
     <DiscoveryHomeScreen
       amenities={compact ? [] : home.amenities}
-      articles={compact ? [] : home.articles}
       banners={banners.slides}
       cities={compact ? [] : home.cities}
-      classes={home.classes}
       coachCityName={home.coachCityName}
       coaches={home.coaches}
       equipment={home.equipment}

@@ -1,7 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useMemo } from "react";
 import { DiscoveryCoachRailCard } from "../../components/DiscoveryCoachRailCard";
 import {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
 
 /** Product entry: splash. Component gallery lives at `/dev`. */
 export default function RootPage() {

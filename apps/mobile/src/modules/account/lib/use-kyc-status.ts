@@ -7,7 +7,8 @@ import {
   useState,
   type FormEvent,
 } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useTranslations } from "next-intl";
 import type { KycStatusResponse } from "@repo/api";
 import { ApiError } from "@repo/api";

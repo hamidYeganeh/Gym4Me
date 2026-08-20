@@ -3,6 +3,7 @@
 import { Button } from "@heroui/react/button";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { ChevronRight } from "@repo/icons/ChevronRight";
+import { motion } from "motion/react";
 import {
   useCallback,
   useEffect,
@@ -36,6 +37,7 @@ export const CarouselNavigation: FC<CarouselNavigationProps> = ({
   totalSlides: totalSlidesProp,
   currentIndex: currentIndexProp = 0,
   onIndexChange,
+  autoDelay = 5000,
   emblaApi,
   loop = false,
   size = "sm",
@@ -156,6 +158,34 @@ export const CarouselNavigation: FC<CarouselNavigationProps> = ({
       >
         <ChevronLeft rtlMirror={false} size={iconSize} />
       </Button>
+
+      <div className={slots.indicators()}>
+        {Array.from({ length: totalSlides }, (_, index) => {
+          const isActive = index === currentIndex;
+
+          return (
+            <button
+              aria-current={isActive ? "true" : undefined}
+              aria-label={`Go to slide ${index + 1} of ${totalSlides}`}
+              className={slots.indicator()}
+              data-active={isActive}
+              key={index}
+              onClick={() => goTo(index)}
+              type="button"
+            >
+              {isActive ? (
+                <motion.span
+                  animate={{ width: "100%" }}
+                  className={slots.progress()}
+                  initial={{ width: "0%" }}
+                  key={currentIndex}
+                  transition={{ duration: autoDelay / 1000, ease: "linear" }}
+                />
+              ) : null}
+            </button>
+          );
+        })}
+      </div>
 
       <Button
         aria-label={rightLabel}

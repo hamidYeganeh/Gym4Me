@@ -1,12 +1,12 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useRequireAuthAction } from "@/shared/hooks/useRequireAuthAction";
 import { DiscoveryClubsClassDetailActionsSection } from "../../sections/DiscoveryClubsClassDetailActionsSection";
 import { DiscoveryClubsClassDetailBodySection } from "../../sections/DiscoveryClubsClassDetailBodySection";
 import { DiscoveryClubsClassDetailHeroSection } from "../../sections/DiscoveryClubsClassDetailHeroSection";
 import { discoveryClubsClassDetailScreenStyles as styles } from "./DiscoveryClubsClassDetailScreen.styles";
 import type { DiscoveryClubsClassDetailScreenProps } from "./DiscoveryClubsClassDetailScreen.types";
+import { useRouter } from "@/shared/lib/app-router";
 
 export function DiscoveryClubsClassDetailScreen({
   classDetail,

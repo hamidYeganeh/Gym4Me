@@ -11,7 +11,8 @@ import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import type { OwnerClubState } from "../../lib/owner-clubs-data";
 import { ownerClubsScreenStyles as styles } from "./OwnerClubsScreen.styles";
 import type { OwnerClubsScreenProps } from "./OwnerClubsScreen.types";

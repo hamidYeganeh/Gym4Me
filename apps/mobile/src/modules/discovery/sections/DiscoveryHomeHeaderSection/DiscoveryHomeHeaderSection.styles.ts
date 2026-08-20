@@ -14,10 +14,6 @@ export const discoveryHomeHeaderSectionVariants = tv({
       "absolute start-screen top-1/2 z-10 -translate-y-1/2",
       "rounded-[0.875rem] text-foreground",
     ].join(" "),
-    searchButton: [
-      "absolute end-screen top-1/2 z-10 -translate-y-1/2",
-      "rounded-[0.875rem] text-foreground",
-    ].join(" "),
     locationChip: [
       "h-9 gap-1.5 rounded-full bg-default px-3.5",
       "text-default-foreground shadow-none",

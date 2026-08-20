@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./iran-sans-x": "./src/iran-sans-x.ts",
+    "./roboto": "./src/roboto.ts",
     "./files/*": "./files/*"
   },
   "scripts": {

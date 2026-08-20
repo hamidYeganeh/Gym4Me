@@ -7,7 +7,15 @@ import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { ChevronRight } from "@repo/icons/ChevronRight";
 import { Heart } from "@repo/icons/Heart";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
+import {
+  EMBLA_DURATION,
+  emblaFreeOptions,
+  emblaOptions,
+} from "@repo/ui/lib/embla";
+import { useEmblaLazyLoad } from "@repo/ui/lib/use-embla-lazy-load";
+import { useEmblaSlideTween } from "@repo/ui/lib/use-embla-slide-tween";
 import useEmblaCarousel from "embla-carousel-react";
+import { useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
@@ -35,6 +43,7 @@ export function DiscoveryClubsDetailHeroSectionLightbox({
   onFavoritePress,
 }: DiscoveryClubsDetailHeroSectionLightboxProps) {
   const t = useTranslations("ClubDetail");
+  const reduceMotion = useReducedMotion();
   const [favorite, setFavorite] = useState(isFavorite);
 
   useEffect(() => {
@@ -62,19 +71,38 @@ export function DiscoveryClubsDetailHeroSectionLightbox({
     labels?.selectImage ??
     ((index: number) => t("selectImage", { index }));
 
-  const [emblaRef, emblaApi] = useEmblaCarousel({
-    align: "center",
-    containScroll: "trimSnaps",
-    direction: "rtl",
-    loop: imageCount > 1,
-    startIndex: safeIndex,
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    emblaOptions({
+      align: "center",
+      containScroll: "trimSnaps",
+      direction: "rtl",
+      loop: imageCount > 1,
+      startIndex: safeIndex,
+      duration: reduceMotion ? EMBLA_DURATION.instant : EMBLA_DURATION.juicy,
+    }),
+  );
+
+  const [thumbsRef, thumbsApi] = useEmblaCarousel(
+    emblaFreeOptions({
+      containScroll: "keepSnaps",
+      direction: "rtl",
+      duration: reduceMotion ? EMBLA_DURATION.instant : EMBLA_DURATION.smooth,
+    }),
+  );
+
+  const loadedSlides = useEmblaLazyLoad(emblaApi, {
+    loadAll: reduceMotion === true || imageCount <= 2,
+    preloadAdjacent: 1,
+  });
+  const loadedThumbs = useEmblaLazyLoad(thumbsApi, {
+    loadAll: reduceMotion === true || imageCount <= 4,
+    preloadAdjacent: 2,
   });
 
-  const [thumbsRef, thumbsApi] = useEmblaCarousel({
-    align: "start",
-    containScroll: "keepSnaps",
-    direction: "rtl",
-    dragFree: true,
+  useEmblaSlideTween(emblaApi, {
+    disabled: reduceMotion === true,
+    minScale: 0.96,
+    minOpacity: 0.85,
   });
 
   const syncFromEmbla = useCallback(() => {
@@ -175,25 +203,38 @@ export function DiscoveryClubsDetailHeroSectionLightbox({
                 ref={emblaRef}
               >
                 <div className={styles.track()}>
-                  {gallery.map((image, index) => (
-                    <div
-                      className={styles.slide()}
-                      key={`${image.url}-${index}`}
-                    >
-                      <div className={styles.slideInner()}>
-                        <Image
-                          alt={image.title ?? headerTitle}
-                          className={styles.image()}
-                          draggable={false}
-                          height={1600}
-                          priority={index === safeIndex}
-                          sizes="100vw"
-                          src={image.url || PLACEHOLDER_IMAGE}
-                          width={1200}
-                        />
+                  {gallery.map((image, index) => {
+                    const canLoad = loadedSlides.has(index);
+                    return (
+                      <div
+                        className={styles.slide()}
+                        key={`${image.url}-${index}`}
+                      >
+                        <div
+                          className={styles.slideInner()}
+                          data-embla-tween=""
+                        >
+                          {canLoad ? (
+                            <Image
+                              alt={image.title ?? headerTitle}
+                              className={styles.image()}
+                              draggable={false}
+                              height={1600}
+                              priority={index === safeIndex}
+                              sizes="100vw"
+                              src={image.url || PLACEHOLDER_IMAGE}
+                              width={1200}
+                            />
+                          ) : (
+                            <div
+                              aria-hidden
+                              className={styles.imagePlaceholder()}
+                            />
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
@@ -268,6 +309,7 @@ export function DiscoveryClubsDetailHeroSectionLightbox({
               <div className={styles.thumbsTrack()}>
                 {gallery.map((image, index) => {
                   const isActive = index === safeIndex;
+                  const canLoadThumb = loadedThumbs.has(index);
                   return (
                     <Button
                       aria-current={isActive ? "true" : undefined}
@@ -286,15 +328,22 @@ export function DiscoveryClubsDetailHeroSectionLightbox({
                       size="lg"
                       variant="ghost"
                     >
-                      <Image
-                        alt={image.title ?? ""}
-                        className={styles.thumbImage()}
-                        draggable={false}
-                        height={64}
-                        sizes="64px"
-                        src={image.url || PLACEHOLDER_IMAGE}
-                        width={64}
-                      />
+                      {canLoadThumb ? (
+                        <Image
+                          alt={image.title ?? ""}
+                          className={styles.thumbImage()}
+                          draggable={false}
+                          height={64}
+                          sizes="64px"
+                          src={image.url || PLACEHOLDER_IMAGE}
+                          width={64}
+                        />
+                      ) : (
+                        <div
+                          aria-hidden
+                          className={styles.thumbPlaceholder()}
+                        />
+                      )}
                     </Button>
                   );
                 })}

@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { Chat } from "@repo/icons/Chat";
 import { FaceHappy } from "@repo/icons/FaceHappy";
 import { QuestionMark } from "@repo/icons/QuestionMark";
@@ -10,6 +9,7 @@ import { useTranslations } from "next-intl";
 import { ProfileMenuRow } from "@/modules/account/components/ProfileMenuRow";
 import { helpCenterScreenVariants } from "./HelpCenterScreen.styles";
 import type { HelpCenterScreenProps } from "./HelpCenterScreen.types";
+import { useRouter } from "@/shared/lib/app-router";
 
 const ICON = 24;
 

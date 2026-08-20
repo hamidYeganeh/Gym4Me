@@ -4,7 +4,8 @@ import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import { AchievementTag } from "@repo/ui/cards/AchievementTag";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { discoveryFeatureIcon } from "../../lib/discovery-home-icons";
 import { DiscoverySectionRail } from "../DiscoverySectionRail";
 import { discoveryHomeFeaturesSectionVariants } from "./DiscoveryHomeFeaturesSection.styles";

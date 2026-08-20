@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { iranSansX } from "@repo/fonts/iran-sans-x";
+import { roboto } from "@repo/fonts/roboto";
 import { ThemeProvider } from "@repo/theme";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -72,7 +73,7 @@ export default async function RootLayout({
     <html
       lang={locale}
       dir="rtl"
-      className={`${iranSansX.variable} h-full`}
+      className={`${iranSansX.variable} ${roboto.variable} h-full`}
       data-scroll-behavior="smooth"
       suppressHydrationWarning
     >

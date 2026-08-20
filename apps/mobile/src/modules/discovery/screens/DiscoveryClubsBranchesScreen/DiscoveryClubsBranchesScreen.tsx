@@ -8,7 +8,8 @@ import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { discoveryClubsBranchesScreenStyles as styles } from "./DiscoveryClubsBranchesScreen.styles";
 import type { DiscoveryClubsBranchesScreenProps } from "./DiscoveryClubsBranchesScreen.types";
 

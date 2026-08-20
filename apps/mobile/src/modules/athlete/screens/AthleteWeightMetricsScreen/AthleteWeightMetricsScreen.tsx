@@ -8,7 +8,8 @@ import { WeightScale } from "@repo/icons/WeightScale";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { AthleteWeightMetricsChartSection } from "../../sections/AthleteWeightMetricsChartSection";
 import { AthleteWeightMetricsGoalSection } from "../../sections/AthleteWeightMetricsGoalSection";
 import { AthleteWeightMetricsHistorySection } from "../../sections/AthleteWeightMetricsHistorySection";

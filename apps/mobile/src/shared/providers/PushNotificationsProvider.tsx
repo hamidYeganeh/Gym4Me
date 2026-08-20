@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import type { DevicePlatform } from "@repo/api";
 import {
@@ -9,6 +8,7 @@ import {
 } from "@/shared/lib/push";
 import { roleAppPath } from "@/shared/lib/role-routes";
 import { useAuth } from "./AuthProvider";
+import { useRouter } from "@/shared/lib/app-router";
 
 /**
  * Native push registration lifecycle:

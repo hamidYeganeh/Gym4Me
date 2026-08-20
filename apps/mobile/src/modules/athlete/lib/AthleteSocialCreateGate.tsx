@@ -1,10 +1,10 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { accountSocial } from "@/shared/lib/api";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { AthleteSocialCreateScreen } from "../screens/AthleteSocialCreateScreen";
+import { useRouter } from "@/shared/lib/app-router";
 
 export function AthleteSocialCreateGate() {
   const { isAuthenticated } = useAuth();

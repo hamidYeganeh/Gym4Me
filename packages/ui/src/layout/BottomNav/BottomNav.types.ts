@@ -53,6 +53,11 @@ export type BottomNavProps = {
   centerAction?: BottomNavCenterAction;
   "aria-label"?: string;
   className?: string;
+  /**
+   * Portal to `document.body` so `position: fixed` stays viewport-pinned
+   * when ancestors use transforms/overflow (page transitions). Off for inline demos.
+   */
+  portal?: boolean;
   /** Controlled open state for the center actions menu. */
   isActionsOpen?: boolean;
   onActionsOpenChange?: (isOpen: boolean) => void;

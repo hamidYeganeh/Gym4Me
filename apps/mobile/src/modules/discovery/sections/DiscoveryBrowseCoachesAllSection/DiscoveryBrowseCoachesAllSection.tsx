@@ -2,7 +2,8 @@
 
 import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { DiscoveryCoachRailCard } from "../../components/DiscoveryCoachRailCard";
 import { discoveryBrowseCoachesAllSectionVariants } from "./DiscoveryBrowseCoachesAllSection.styles";
 import type { DiscoveryBrowseCoachesAllSectionProps } from "./DiscoveryBrowseCoachesAllSection.types";

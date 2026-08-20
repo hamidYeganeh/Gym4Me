@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, type ReactNode } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { authHref, postAuthPath } from "@/shared/lib/auth-redirect";
 import { useAuth } from "@/shared/providers/AuthProvider";
+import { useRouter } from "@/shared/lib/app-router";
 
 type RequireAuthProps = {
   children: ReactNode;

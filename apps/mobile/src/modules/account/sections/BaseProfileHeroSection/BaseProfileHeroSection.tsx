@@ -18,7 +18,8 @@ import {
 } from "motion/react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { baseProfileHeroSectionVariants } from "./BaseProfileHeroSection.styles";
 import type { BaseProfileHeroSectionProps } from "./BaseProfileHeroSection.types";
 
@@ -87,9 +88,15 @@ export function BaseProfileHeroSection({
 
   const stageRef = useRef<HTMLDivElement>(null);
   const [stageWidth, setStageWidth] = useState<number>(STAGE_WIDTH_FALLBACK);
+  /** Escape page-shell transforms/`will-change` so `fixed` sticks to the viewport. */
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
 
   const progress = useScrollProgress(reduceMotion);
   const morph = useMorph(progress);
+
+  useEffect(() => {
+    setPortalTarget(document.body);
+  }, []);
 
   useLayoutEffect(() => {
     const el = stageRef.current;
@@ -193,14 +200,7 @@ export function BaseProfileHeroSection({
     </Button>
   );
 
-  return (
-    <>
-      <motion.div
-        aria-hidden
-        className={styles.spacer()}
-        style={{ height: spacerHeight }}
-      />
-
+  const header = (
       <header className={styles.root({ className })}>
         <motion.div
           className={styles.cover()}
@@ -287,6 +287,17 @@ export function BaseProfileHeroSection({
           </motion.div>
         </motion.div>
       </header>
+  );
+
+  return (
+    <>
+      <motion.div
+        aria-hidden
+        className={styles.spacer()}
+        style={{ height: spacerHeight }}
+      />
+
+      {portalTarget ? createPortal(header, portalTarget) : header}
     </>
   );
 }

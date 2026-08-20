@@ -10,7 +10,8 @@ import type { ConsentHistoryEvent } from "@repo/api";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useState } from "react";
 import { athleteDataRightsScreenVariants } from "./AthleteDataRightsScreen.styles";
 import type { AthleteDataRightsScreenProps } from "./AthleteDataRightsScreen.types";

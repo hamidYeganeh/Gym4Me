@@ -1,13 +1,12 @@
 "use client";
 
-import { Button } from "@heroui/react/button";
 import { Chip } from "@heroui/react/chip";
 import { Surface } from "@heroui/react/surface";
 import { Typography } from "@heroui/react/typography";
-import { DotThreeHorizontal } from "@repo/icons/DotThreeHorizontal";
 import { MapPin1 } from "@repo/icons/MapPin1";
 import { StarFull } from "@repo/icons/StarFull";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
+import { CarouselNavigation } from "@repo/ui/kit/CarouselNavigation";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useCallback, useState } from "react";
@@ -19,8 +18,6 @@ import type {
   DiscoveryClubsDetailHeroSectionGalleryItem,
   DiscoveryClubsDetailHeroSectionProps,
 } from "./DiscoveryClubsDetailHeroSection.types";
-
-const HERO_THUMB_PREVIEW_COUNT = 3;
 
 function formatRating(rating: number) {
   return Number.isInteger(rating) ? String(rating) : rating.toFixed(1);
@@ -72,7 +69,10 @@ export function DiscoveryClubsDetailHeroSection({
 
   return (
     <>
-      <DiscoveryClubsDetailHeroSectionHeader isFavorite={isFavorite} />
+      <DiscoveryClubsDetailHeroSectionHeader
+        isFavorite={isFavorite}
+        title={title}
+      />
 
       <DiscoveryClubsDetailHeroSectionPullToView
         onPullOpen={() => setIsLightboxOpen(true)}
@@ -112,56 +112,17 @@ export function DiscoveryClubsDetailHeroSection({
           </Chip>
 
           <div
-            aria-label={title}
-            className={styles.thumbs}
+            className={styles.navigation}
             onPointerDown={(event) => event.stopPropagation()}
           >
-            {gallery.slice(0, HERO_THUMB_PREVIEW_COUNT).map((image, index) => {
-              const isActive = index === activeIndex;
-              return (
-                <Button
-                  aria-current={isActive ? "true" : undefined}
-                  aria-label={
-                    image.title ?? t("selectImage", { index: index + 1 })
-                  }
-                  className={[
-                    styles.thumbButton,
-                    isActive ? styles.thumbActive : styles.thumbIdle,
-                  ].join(" ")}
-                  isIconOnly
-                  key={`${image.url}-${index}`}
-                  onPress={() => goToImage(index)}
-                  size="lg"
-                  variant="ghost"
-                >
-                  <Image
-                    alt={image.title ?? ""}
-                    className={styles.thumbImage}
-                    draggable={false}
-                    fill
-                    sizes="48px"
-                    src={image.url || PLACEHOLDER_IMAGE}
-                  />
-                </Button>
-              );
-            })}
-
-            {imageCount > HERO_THUMB_PREVIEW_COUNT ? (
-              <Button
-                aria-label={t("seeAllGallery")}
-                className={[styles.thumbButton, styles.thumbMore].join(" ")}
-                isIconOnly
-                onPress={() => setIsLightboxOpen(true)}
-                size="lg"
-                variant="tertiary"
-              >
-                <DotThreeHorizontal
-                  aria-hidden
-                  className={styles.thumbMoreIcon}
-                  size={18}
-                />
-              </Button>
-            ) : null}
+            <CarouselNavigation
+              aria-label={title}
+              currentIndex={activeIndex}
+              loop
+              onIndexChange={goToImage}
+              size="sm"
+              totalSlides={imageCount}
+            />
           </div>
         </section>
       </DiscoveryClubsDetailHeroSectionPullToView>

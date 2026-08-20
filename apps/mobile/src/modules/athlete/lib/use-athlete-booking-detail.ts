@@ -2,7 +2,8 @@
 
 import { ApiError, type BookingCancellationPreview } from "@repo/api";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useState } from "react";
 import { accountBookings } from "@/shared/lib/api";
 import { canManageBooking } from "@/modules/athlete/lib/bookings-data";

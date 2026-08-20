@@ -4,7 +4,8 @@ import { Button } from "@heroui/react/button";
 import { Door } from "@repo/icons/Door";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useSettingsNav } from "@/modules/account/lib/use-settings-nav";
 import { SettingsNavGroupSection } from "@/modules/account/sections/SettingsNavGroupSection";
 import { SettingsPreferencesSection } from "@/modules/account/sections/SettingsPreferencesSection";

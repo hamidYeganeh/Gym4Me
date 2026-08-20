@@ -10,7 +10,8 @@ import { FilterChip, FilterChipBar } from "@repo/ui/kit/FilterChip";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { discoveryClassesScreenStyles as styles } from "./DiscoveryClassesScreen.styles";
 import type { DiscoveryClassesScreenProps } from "./DiscoveryClassesScreen.types";
 
@@ -78,7 +79,7 @@ export function DiscoveryClassesScreen({
         ) : (
           <div className={styles.list}>
             {classes.map((item) => {
-              const href = `/discovery/classes/${item.id}?clubId=${encodeURIComponent(item.clubId)}`;
+              const href = `/discovery/clubs/${item.clubId}/classes/${item.id}`;
               return (
                 <ClubClassCard
                   actionLabel={t("viewClass")}

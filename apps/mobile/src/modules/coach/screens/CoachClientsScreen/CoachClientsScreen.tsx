@@ -13,7 +13,8 @@ import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import type { CoachClientEngagement } from "../../lib/coach-clients-data";
 import { coachClientsScreenStyles as styles } from "./CoachClientsScreen.styles";
 import type { CoachClientsScreenProps } from "./CoachClientsScreen.types";

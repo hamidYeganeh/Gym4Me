@@ -5,7 +5,8 @@ import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { OwnerFinanceOverviewSection } from "../../sections/OwnerFinanceOverviewSection";
 import { OwnerFinanceSettlementsSection } from "../../sections/OwnerFinanceSettlementsSection";
 import { OwnerFinanceSplitSection } from "../../sections/OwnerFinanceSplitSection";

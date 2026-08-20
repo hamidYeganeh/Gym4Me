@@ -526,7 +526,6 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
   const discoveryScreens: DemoNavLink[] = [
     { href: "/discovery", label: labels.screenHome },
     { href: "/discovery/clubs", label: labels.screenDiscoveryClubs },
-    { href: "/discovery/map", label: labels.screenDiscoveryMap },
     { href: "/discovery/coaches", label: labels.screenDiscoveryCoaches },
     { href: "/discovery/coaches/zuckmann", label: labels.screenCoachDetail },
     { href: "/discovery/clubs/heavenly", label: labels.screenClubDetail },
@@ -586,7 +585,7 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
       </div>
 
       <GlyphText text={["تمرین کن", "بازیابی کن"]} repeat fixedWidth />
-      <h1 className="font-satisfy flex items-center justify-center text-5xl font-normal tracking-normal text-foreground sm:text-6xl">
+      <h1 className="font-roboto flex items-center justify-center text-5xl font-bold tracking-normal text-foreground sm:text-6xl">
         Gym4Me
       </h1>
 

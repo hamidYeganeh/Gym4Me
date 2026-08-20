@@ -2,7 +2,7 @@
 
 import type { FormStepperStep } from "@repo/ui/kit/FormStepper";
 import { useTranslations } from "next-intl";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRequireAuthAction } from "@/shared/hooks/useRequireAuthAction";
 import type {
@@ -10,6 +10,7 @@ import type {
   ReservePlan,
   ReserveSlot,
 } from "./reserve-data";
+import { useRouter } from "@/shared/lib/app-router";
 
 const DEMO_INVOICE_ID = "inv-demo";
 

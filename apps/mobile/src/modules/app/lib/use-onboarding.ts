@@ -3,8 +3,9 @@
 import useEmblaCarousel from "embla-carousel-react";
 import { useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { EMBLA_DURATION, emblaOptions } from "@repo/ui/lib/embla";
 import {
   ONBOARDING_BLOOD_GROUPS,
   ONBOARDING_BODY_TYPES,
@@ -85,6 +86,7 @@ import type {
 } from "@repo/api";
 import { ONBOARDING_PERMISSION_ORDER } from "@/shared/lib/device-permissions";
 import { useDevicePermissions } from "@/shared/providers/DevicePermissionsProvider";
+import { useRouter } from "@/shared/lib/app-router";
 
 const ATHLETE_DIETS: readonly AthleteDiet[] = [
   "balanced",
@@ -201,14 +203,16 @@ export function useOnboarding() {
   });
   const [premadeIndex, setPremadeIndex] = useState(0);
 
-  const [emblaRef, emblaApi] = useEmblaCarousel({
-    align: "center",
-    containScroll: "trimSnaps",
-    direction: textDirection,
-    duration: reduceMotion ? 0 : 22,
-    // Advance only via continue / back controls — no pan swipe.
-    watchDrag: false,
-  });
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    emblaOptions({
+      align: "center",
+      containScroll: "trimSnaps",
+      direction: textDirection,
+      duration: reduceMotion ? EMBLA_DURATION.instant : EMBLA_DURATION.smooth,
+      // Advance only via continue / back controls — no pan swipe.
+      watchDrag: false,
+    }),
+  );
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;

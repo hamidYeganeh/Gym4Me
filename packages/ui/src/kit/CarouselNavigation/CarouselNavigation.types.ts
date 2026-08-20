@@ -15,6 +15,8 @@ export interface CarouselNavigationProps {
   currentIndex?: number;
   /** Called when the user changes the selected index. */
   onIndexChange?: (index: number) => void;
+  /** Duration of the active indicator fill animation, in milliseconds. */
+  autoDelay?: number;
   /**
    * Optional Embla API. When provided, navigation scrolls Embla and
    * selected index syncs from Embla's `select` event.

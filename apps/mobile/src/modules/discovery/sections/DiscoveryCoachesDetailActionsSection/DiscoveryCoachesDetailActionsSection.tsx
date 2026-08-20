@@ -2,7 +2,7 @@
 
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
-import { ArrowForward2 } from "@repo/icons/ArrowForward2";
+import { Calendar2 } from "@repo/icons/Calendar2";
 import { StickyBottomActions } from "@repo/ui/kit/StickyBottomActions";
 import NumberFlow from "@number-flow/react";
 import { useTranslations } from "next-intl";
@@ -20,9 +20,6 @@ export function DiscoveryCoachesDetailActionsSection({
   return (
     <StickyBottomActions contentClassName={styles.row}>
       <div className={styles.priceGroup}>
-        <Typography className={styles.priceLabel} type="body-xs">
-          {t("totalLabel")}
-        </Typography>
         <div className={styles.priceRow}>
           {pricePrefix ? (
             <span className={styles.pricePrefix}>{pricePrefix}</span>
@@ -36,7 +33,7 @@ export function DiscoveryCoachesDetailActionsSection({
               value={price}
             />
           ) : (
-            <Typography className={styles.price} type="body" weight="semibold">
+            <Typography className={styles.price} type="body" weight="bold">
               {t("packageTrial")}
             </Typography>
           )}
@@ -44,6 +41,9 @@ export function DiscoveryCoachesDetailActionsSection({
             <span className={styles.priceSuffix}>{priceSuffix}</span>
           ) : null}
         </div>
+        <Typography className={styles.priceLabel} type="body-xs">
+          {t("totalLabel")}
+        </Typography>
       </div>
 
       <Button
@@ -60,7 +60,7 @@ export function DiscoveryCoachesDetailActionsSection({
         >
           {t("confirmBooking")}
         </Typography>
-        <ArrowForward2 aria-hidden className={styles.confirmIcon} size={18} />
+        <Calendar2 aria-hidden className={styles.confirmIcon} size={18} />
       </Button>
     </StickyBottomActions>
   );

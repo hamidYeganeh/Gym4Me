@@ -11,7 +11,8 @@ import { StickyBottomActions } from "@repo/ui/kit/StickyBottomActions";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { Header } from "@repo/ui/layout/Header";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useEffect, useMemo, useState } from "react";
 import { useCoachSlotsWeek } from "@/shared/hooks/useCoachSlotsWeek";
 import { accountBookings } from "@/shared/lib/api";

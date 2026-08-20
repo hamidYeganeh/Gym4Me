@@ -19,7 +19,8 @@ import { AppSectionHeader } from "@repo/ui/layout/AppSectionHeader";
 import { ProfileHeader } from "@repo/ui/layout/ProfileHeader";
 import { motion, useReducedMotion, type Variants } from "motion/react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import type { ReactNode } from "react";
 import { AthleteReferralInviteSection } from "@/modules/athlete/sections/AthleteReferralInviteSection";
 import { mediaFileUrl } from "@/shared/lib/api";

@@ -3,6 +3,7 @@
 import { Button } from "@heroui/react/button";
 import { ScrollShadow, type ScrollShadowVisibility } from "@heroui/react/scroll-shadow";
 import { ClubCard } from "@repo/ui/cards/ClubCard";
+import { emblaOptions } from "@repo/ui/lib/embla";
 import useEmblaCarousel from "embla-carousel-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
@@ -37,11 +38,13 @@ export function LandingHeroSection({ className }: LandingHeroSectionProps) {
   const [shadowVisibility, setShadowVisibility] =
     useState<ScrollShadowVisibility>("auto");
 
-  const [emblaRef, emblaApi] = useEmblaCarousel({
-    align: "start",
-    containScroll: "trimSnaps",
-    direction: "rtl",
-  });
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    emblaOptions({
+      align: "start",
+      containScroll: "trimSnaps",
+      direction: "rtl",
+    }),
+  );
 
   useEffect(() => {
     const section = sectionRef.current;

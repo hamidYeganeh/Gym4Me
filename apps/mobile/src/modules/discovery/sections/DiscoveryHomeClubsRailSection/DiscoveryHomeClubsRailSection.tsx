@@ -1,7 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { DiscoveryClubRailCard } from "../../components/DiscoveryClubRailCard";
 import { DiscoverySectionRail } from "../DiscoverySectionRail";
 import { discoveryHomeClubsRailSectionVariants } from "./DiscoveryHomeClubsRailSection.styles";

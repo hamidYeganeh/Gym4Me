@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useTranslations } from "next-intl";
 import { duration, ease } from "@repo/theme";
 import type { Club, KycStatus, RefItem, SportNode } from "@repo/api";

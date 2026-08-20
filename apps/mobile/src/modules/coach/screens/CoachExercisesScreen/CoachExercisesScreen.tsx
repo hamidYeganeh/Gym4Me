@@ -12,7 +12,8 @@ import type { CoachExerciseVerificationStatus } from "../../lib/coach-exercises-
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { coachExercisesScreenStyles as styles } from "./CoachExercisesScreen.styles";
 import type { CoachExercisesScreenProps } from "./CoachExercisesScreen.types";
 

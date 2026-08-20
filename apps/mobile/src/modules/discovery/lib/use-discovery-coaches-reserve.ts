@@ -3,7 +3,7 @@
 import { ApiError } from "@repo/api";
 import type { FormStepperStep } from "@repo/ui/kit/FormStepper";
 import { useTranslations } from "next-intl";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRequireAuthAction } from "@/shared/hooks/useRequireAuthAction";
 import {
@@ -26,6 +26,7 @@ import {
   useDiscoveryCoachSlotsWeek,
 } from "./use-discovery-coach-slots";
 import type { ReserveStep } from "../screens/DiscoveryCoachesReserveScreen/DiscoveryCoachesReserveScreen.types";
+import { useRouter } from "@/shared/lib/app-router";
 
 export const COACH_RESERVE_NOTE_MAX = 300;
 

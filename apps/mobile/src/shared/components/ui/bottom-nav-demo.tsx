@@ -238,6 +238,7 @@ export function BottomNavDemo({ labels }: { labels: BottomNavDemoLabels }) {
             actions: roleActions,
           }}
           className="relative inset-x-auto bottom-auto w-full"
+          portal={false}
           items={[
             {
               key: "home",

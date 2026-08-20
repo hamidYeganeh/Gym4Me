@@ -6,7 +6,7 @@ import { ArrowUpRight } from "@repo/icons/ArrowUpRight";
 import { Image1 } from "@repo/icons/Image1";
 import { ClubGalleryCard } from "@repo/ui/cards/ClubGalleryCard";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
-import { CarouselNavigation } from "@repo/ui/kit/CarouselNavigation";
+import { emblaFreeOptions } from "@repo/ui/lib/embla";
 import useEmblaCarousel from "embla-carousel-react";
 import { useState, type ReactNode } from "react";
 import {
@@ -48,12 +48,11 @@ export function DiscoveryGallerySection({
 }: DiscoveryGallerySectionProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [emblaRef, emblaApi] = useEmblaCarousel({
-    align: "start",
-    containScroll: "trimSnaps",
-    direction: "rtl",
-    dragFree: true,
-  });
+  const [emblaRef] = useEmblaCarousel(
+    emblaFreeOptions({
+      direction: "rtl",
+    }),
+  );
 
   if (gallery.length === 0) return null;
 
@@ -69,7 +68,6 @@ export function DiscoveryGallerySection({
         <SectionTitle icon={<Image1 size={SECTION_TITLE_ICON_SIZE} />}>
           {labels.title}
         </SectionTitle>
-        <CarouselNavigation emblaApi={emblaApi} size="sm" />
       </div>
 
       <div

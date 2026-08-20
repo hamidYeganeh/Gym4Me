@@ -3,7 +3,8 @@
 import { Typography } from "@heroui/react/typography";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useState } from "react";
 import { useRequireAuthAction } from "@/shared/hooks/useRequireAuthAction";
 import { accountFinance, accountMemberships, isDiscoveryApiId } from "@/shared/lib/api";

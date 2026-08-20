@@ -14,7 +14,8 @@ import { TodoCard, type TodoCardItem } from "@repo/ui/cards/TodoCard";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { ProfileHeader } from "@repo/ui/layout/ProfileHeader";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { mediaFileUrl } from "@/shared/lib/api";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { coachHomeScreenStyles as styles } from "./CoachHomeScreen.styles";

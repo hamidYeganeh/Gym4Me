@@ -6,7 +6,7 @@ export const discoveryCoachesDetailHeroSectionHeaderStyles = {
   ].join(" "),
   veil: [
     "pointer-events-none absolute inset-0 z-0",
-    "bg-linear-to-b from-background via-background/80 to-transparent",
+    "rounded-b-[2.5rem] bg-surface",
   ].join(" "),
   blur: "pointer-events-none absolute inset-0 z-0",
   stage: "relative z-10 w-full",
@@ -17,6 +17,10 @@ export const discoveryCoachesDetailHeroSectionHeaderStyles = {
   ].join(" "),
   barStart: "pointer-events-auto relative z-40 shrink-0",
   barEnd: "pointer-events-auto relative z-40 flex shrink-0 items-center gap-2",
+  compactTitle: [
+    "pointer-events-none absolute inset-x-20 top-1/2 -translate-y-1/2",
+    "origin-center truncate text-center text-lg text-foreground",
+  ].join(" "),
   control: [
     "rounded-full border-0 bg-surface text-foreground shadow-md",
     "backdrop-blur-xl",

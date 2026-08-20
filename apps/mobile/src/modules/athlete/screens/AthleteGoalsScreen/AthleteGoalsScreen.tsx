@@ -5,7 +5,8 @@ import { Typography } from "@heroui/react/typography";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useAthleteGoals } from "@/modules/athlete/lib/use-athlete-goals";
 import { AthleteGoalsCreateSection } from "@/modules/athlete/sections/AthleteGoalsCreateSection";
 import { AthleteGoalsIntroSection } from "@/modules/athlete/sections/AthleteGoalsIntroSection";

@@ -10,7 +10,7 @@ import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { articleDetailHref } from "@/modules/articles/lib/format-article";
 import { ArticleDetailBodySection } from "../../sections/ArticleDetailBodySection";
 import { ArticleDetailEngagementSection } from "../../sections/ArticleDetailEngagementSection";
@@ -19,6 +19,7 @@ import { ArticleDetailRelatedSection } from "../../sections/ArticleDetailRelated
 import { articlesApi } from "@/shared/lib/api";
 import { articleDetailScreenVariants } from "./ArticleDetailScreen.styles";
 import type { ArticleDetailScreenProps } from "./ArticleDetailScreen.types";
+import { useRouter } from "@/shared/lib/app-router";
 
 export function ArticleDetailScreen({ className }: ArticleDetailScreenProps) {
   const t = useTranslations("Articles");

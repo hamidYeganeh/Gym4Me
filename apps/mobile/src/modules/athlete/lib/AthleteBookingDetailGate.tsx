@@ -3,7 +3,7 @@
 import { Spinner } from "@heroui/react/spinner";
 import type { Booking } from "@repo/api";
 import { useTranslations } from "next-intl";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { accountBookings, isDiscoveryApiId } from "@/shared/lib/api";
 import { useAuth } from "@/shared/providers/AuthProvider";
@@ -13,6 +13,7 @@ import {
   type AthleteBookingCopy,
 } from "./api-bookings";
 import { getBooking, type AthleteBooking } from "./bookings-data";
+import { useRouter } from "@/shared/lib/app-router";
 
 type Props = {
   bookingId: string;

@@ -8,7 +8,8 @@ import type { CoachNutritionMealSlot, CoachNutritionPlan } from "../../lib/coach
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { coachNutritionPlanScreenStyles as styles } from "./CoachNutritionPlanScreen.styles";
 import type { CoachNutritionPlanScreenProps } from "./CoachNutritionPlanScreen.types";
 

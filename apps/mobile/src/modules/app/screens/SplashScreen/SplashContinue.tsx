@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { hasCompletedOnboarding } from "@/modules/app/lib/onboarding-storage";
 import { hasSeenWelcome } from "@/modules/app/lib/welcome-storage";
 import { hydrateFlags } from "@/shared/lib/flag-storage";

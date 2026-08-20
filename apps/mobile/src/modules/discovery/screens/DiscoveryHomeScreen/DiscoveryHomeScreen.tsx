@@ -2,12 +2,11 @@
 
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { DiscoveryHomeAmenitiesSection } from "../../sections/DiscoveryHomeAmenitiesSection";
-import { DiscoveryHomeArticlesSection } from "../../sections/DiscoveryHomeArticlesSection";
 import { DiscoveryHomeBannersSection } from "../../sections/DiscoveryHomeBannersSection";
 import { DiscoveryHomeCitiesSection } from "../../sections/DiscoveryHomeCitiesSection";
-import { DiscoveryHomeClassesSection } from "../../sections/DiscoveryHomeClassesSection";
 import { DiscoveryHomeCloseCtaSection } from "../../sections/DiscoveryHomeCloseCtaSection";
 import { DiscoveryHomeClubsRailSection } from "../../sections/DiscoveryHomeClubsRailSection";
 import { DiscoveryHomeCoachesSection } from "../../sections/DiscoveryHomeCoachesSection";
@@ -16,8 +15,6 @@ import { DiscoveryHomeFeaturesSection } from "../../sections/DiscoveryHomeFeatur
 import { DiscoveryHomeGalleryRailSection } from "../../sections/DiscoveryHomeGalleryRailSection";
 import { DiscoveryHomeHeaderSection } from "../../sections/DiscoveryHomeHeaderSection";
 import { DiscoveryHomeHeroSection } from "../../sections/DiscoveryHomeHeroSection";
-import { DiscoveryHomeMapCtaSection } from "../../sections/DiscoveryHomeMapCtaSection";
-import { DiscoveryHomeQuickNavSection } from "../../sections/DiscoveryHomeQuickNavSection";
 import { DiscoveryHomeSportsSection } from "../../sections/DiscoveryHomeSportsSection";
 import { discoveryHomeScreenStyles as styles } from "./DiscoveryHomeScreen.styles";
 import type { DiscoveryHomeScreenProps } from "./DiscoveryHomeScreen.types";
@@ -33,11 +30,9 @@ export function DiscoveryHomeScreen({
   open24Clubs,
   coaches,
   coachCityName,
-  classes,
   amenities,
   equipment,
   sports,
-  articles,
   galleryItems,
 }: DiscoveryHomeScreenProps) {
   const t = useTranslations("DiscoveryHome");
@@ -62,10 +57,8 @@ export function DiscoveryHomeScreen({
           imageAlt={banners[0]?.alt ?? ""}
           subtitle={t("subtitle")}
           title={t("title")}
-          onCta={() => router.push("/discovery/classes")}
+          onCta={() => router.push("/discovery/clubs")}
         />
-
-        <DiscoveryHomeQuickNavSection />
 
         <DiscoveryHomeBannersSection banners={banners} />
 
@@ -95,14 +88,6 @@ export function DiscoveryHomeScreen({
           coaches={coaches}
         />
 
-        <DiscoveryHomeMapCtaSection
-          ctaLabel={t("mapCta")}
-          eyebrow={t("mapEyebrow")}
-          subtitle={t("mapSubtitle")}
-          title={t("mapTitle")}
-          onPress={() => router.push("/discovery/map")}
-        />
-
         <DiscoveryHomeClubsRailSection
           ariaLabel={t("open24Title")}
           clubs={open24Clubs}
@@ -113,17 +98,15 @@ export function DiscoveryHomeScreen({
           title={t("open24Title")}
         />
 
-        <DiscoveryHomeClassesSection classes={classes} />
         <DiscoveryHomeEquipmentSection equipment={equipment} />
         <DiscoveryHomeAmenitiesSection amenities={amenities} />
-        <DiscoveryHomeArticlesSection articles={articles} />
         <DiscoveryHomeGalleryRailSection galleryItems={galleryItems} />
 
         <DiscoveryHomeCloseCtaSection
           actionLabel={t("closeCta")}
           subtitle={t("closeSubtitle")}
           title={t("closeTitle")}
-          onAction={() => router.push("/discovery/classes")}
+          onAction={() => router.push("/discovery/clubs")}
         />
       </div>
     </AppLayout>

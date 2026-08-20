@@ -1,9 +1,10 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useCallback } from "react";
 import { authHref } from "@/shared/lib/auth-redirect";
 import { useAuth } from "@/shared/providers/AuthProvider";
+import { useRouter } from "@/shared/lib/app-router";
 
 /**
  * Run an action only when authenticated; otherwise send the guest to `/auth`

@@ -11,7 +11,8 @@ import { PaperPlaneHorizontal } from "@repo/icons/PaperPlaneHorizontal";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { coachThreadScreenVariants } from "./CoachThreadScreen.styles";
 import type { CoachThreadScreenProps } from "./CoachThreadScreen.types";
 

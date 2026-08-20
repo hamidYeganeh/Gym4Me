@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@heroui/react/button";
 import { ApiError } from "@repo/api";
 import { Chat } from "@repo/icons/Chat";
@@ -21,6 +21,7 @@ import { roleHomePath } from "@/shared/lib/role-routes";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { signInScreenVariants } from "./SignInScreen.styles";
 import type { SignInScreenProps } from "./SignInScreen.types";
+import { useRouter } from "@/shared/lib/app-router";
 
 const FIGURE_SRC = "/auth/password-secure.png";
 

@@ -11,7 +11,8 @@ import { FilterChip, FilterChipBar } from "@repo/ui/kit/FilterChip";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import type { CoachAnalyticsPeriod } from "../../lib/coach-analytics-data";
 import { coachAnalyticsScreenStyles as styles } from "./CoachAnalyticsScreen.styles";
 import type { CoachAnalyticsScreenProps } from "./CoachAnalyticsScreen.types";

@@ -2,7 +2,8 @@
 
 import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { DiscoveryClubRailCard } from "../../components/DiscoveryClubRailCard";
 import { discoveryBrowseClubsAllSectionVariants } from "./DiscoveryBrowseClubsAllSection.styles";
 import type { DiscoveryBrowseClubsAllSectionProps } from "./DiscoveryBrowseClubsAllSection.types";

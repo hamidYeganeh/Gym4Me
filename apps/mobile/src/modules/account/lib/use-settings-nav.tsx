@@ -21,7 +21,8 @@ import { ShieldExclamationMark } from "@repo/icons/ShieldExclamationMark";
 import { Trophy1 } from "@repo/icons/Trophy1";
 import { UsersTwo } from "@repo/icons/UsersTwo";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useMemo, type ReactNode } from "react";
 
 export const SETTINGS_ROW_ICON_SIZE = 20;

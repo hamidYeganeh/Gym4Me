@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@heroui/react/button";
 import { Link } from "@heroui/react/link";
 import { ApiError } from "@repo/api";
@@ -29,6 +29,7 @@ import type {
   ForgotPasswordScreenProps,
   ForgotPasswordStep,
 } from "./ForgotPasswordScreen.types";
+import { useRouter } from "@/shared/lib/app-router";
 
 const FIGURE_SRC = "/auth/password-secure.png";
 

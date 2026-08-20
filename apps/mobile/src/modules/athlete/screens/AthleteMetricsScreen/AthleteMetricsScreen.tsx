@@ -5,7 +5,8 @@ import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useHealthMetricsConnect, resolveHealthProvider, upsertConnectedHealthState } from "@/shared/lib/health";
 import { useFeatureFlag } from "@/shared/providers/AppConfigProvider";
 import { AthleteMetricsConnectSection } from "../../sections/AthleteMetricsConnectSection";

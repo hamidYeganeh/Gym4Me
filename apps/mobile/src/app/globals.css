@@ -8,6 +8,7 @@
 @theme inline {
   --font-sans:
     var(--font-iran-sans-x), Tahoma, ui-sans-serif, system-ui, sans-serif;
+  --font-roboto: var(--font-roboto-family), Arial, Helvetica, sans-serif;
   --font-satisfy: "Brush Script MT", "Segoe Script", cursive;
   /* AdaptiveSlider sizing tokens */
   --spacing-13: 3.25rem;

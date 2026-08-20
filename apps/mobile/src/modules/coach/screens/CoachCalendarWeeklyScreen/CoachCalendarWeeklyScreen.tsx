@@ -7,7 +7,8 @@ import { Plus } from "@repo/icons/Plus";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useState } from "react";
 import type { CoachCalendarWeek } from "../../lib/calendar-weekly-data";
 import { CoachCalendarWeeklyDaysSection } from "../../sections/CoachCalendarWeeklyDaysSection";

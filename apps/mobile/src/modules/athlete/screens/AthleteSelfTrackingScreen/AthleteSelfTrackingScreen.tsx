@@ -4,7 +4,8 @@ import { Button } from "@heroui/react/button";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { formatSummaryValue } from "@/modules/athlete/lib/self-tracking-helpers";
 import { useAthleteSelfTracking } from "@/modules/athlete/lib/use-athlete-self-tracking";
 import { AthleteSelfTrackingHistorySection } from "@/modules/athlete/sections/AthleteSelfTrackingHistorySection";

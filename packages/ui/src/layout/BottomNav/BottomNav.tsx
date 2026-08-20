@@ -5,11 +5,13 @@ import { Link } from "@heroui/react/link";
 import { Popover } from "@heroui/react/popover";
 import { Typography } from "@heroui/react/typography";
 import {
+  useEffect,
   useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 import { ProgressiveBlur } from "../../kit/ProgressiveBlur";
 import { bottomNavVariants } from "./BottomNav.styles";
 import type {
@@ -26,19 +28,30 @@ export function BottomNav({
   centerAction,
   "aria-label": ariaLabel = "Bottom navigation",
   className,
+  portal = true,
   isActionsOpen,
   onActionsOpenChange,
 }: BottomNavProps) {
   const mid = Math.ceil(items.length / 2);
   const leading = items.slice(0, mid);
   const trailing = items.slice(mid);
-  const actions = centerAction?.actions ?? [];
+  const actions = centerAction?.ed ?? [];
   const hasActionsMenu = actions.length > 0;
 
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const [holdMenuKey, setHoldMenuKey] = useState<string | null>(null);
+  /** Portal out of transform/overflow ancestors (e.g. page transitions) so `fixed` sticks to the viewport. */
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
   const longPressTriggeredRef = useRef(false);
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!portal) {
+      setPortalTarget(null);
+      return;
+    }
+    setPortalTarget(document.body);
+  }, [portal]);
   const actionsOpen = isActionsOpen ?? uncontrolledOpen;
   const holdMenuOpen = holdMenuKey !== null;
   const overlayOpen = (hasActionsMenu && actionsOpen) || holdMenuOpen;
@@ -323,7 +336,7 @@ export function BottomNav({
     );
   }
 
-  return (
+  const node = (
     <>
       {overlayOpen ? (
         <div
@@ -350,6 +363,9 @@ export function BottomNav({
       </nav>
     </>
   );
+
+  if (!portalTarget) return node;
+  return createPortal(node, portalTarget);
 }
 
 /** Alias matching the product name for this navigation shell. */

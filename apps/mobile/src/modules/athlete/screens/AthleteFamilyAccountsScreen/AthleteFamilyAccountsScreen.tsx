@@ -11,7 +11,8 @@ import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import type { FamilyConsentStatus } from "../../lib/athlete-family-data";
 import { athleteFamilyAccountsScreenVariants } from "./AthleteFamilyAccountsScreen.styles";
 import type { AthleteFamilyAccountsScreenProps } from "./AthleteFamilyAccountsScreen.types";

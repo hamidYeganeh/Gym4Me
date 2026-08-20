@@ -9,7 +9,8 @@ import { Image1 } from "@repo/icons/Image1";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import type { ProgressPhotoPrivacy } from "../../lib/progress-photos-data";
 import { athleteProgressPhotosScreenVariants } from "./AthleteProgressPhotosScreen.styles";
 import type { AthleteProgressPhotosScreenProps } from "./AthleteProgressPhotosScreen.types";

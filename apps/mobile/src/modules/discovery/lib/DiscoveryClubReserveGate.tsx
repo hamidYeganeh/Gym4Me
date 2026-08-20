@@ -5,7 +5,8 @@ import { Typography } from "@heroui/react/typography";
 import { ApiError, type ClubCalendarResponse } from "@repo/api";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   accountBookings,

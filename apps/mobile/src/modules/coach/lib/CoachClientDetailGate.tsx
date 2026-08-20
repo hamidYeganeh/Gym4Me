@@ -5,7 +5,8 @@ import { Typography } from "@heroui/react/typography";
 import type { CoachStudent } from "@repo/api";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useCallback, useEffect, useState } from "react";
 import { accountCoaching, isDiscoveryApiId } from "@/shared/lib/api";
 import { useAuth } from "@/shared/providers/AuthProvider";

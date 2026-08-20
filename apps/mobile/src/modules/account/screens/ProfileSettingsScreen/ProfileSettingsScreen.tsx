@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
@@ -13,6 +12,7 @@ import { ProfileSettingsAvatarSection } from "../../sections/ProfileSettingsAvat
 import { ProfileSettingsFormSection } from "../../sections/ProfileSettingsFormSection";
 import { profileSettingsScreenVariants } from "./ProfileSettingsScreen.styles";
 import type { ProfileSettingsScreenProps } from "./ProfileSettingsScreen.types";
+import { useRouter } from "@/shared/lib/app-router";
 
 export function ProfileSettingsScreen({
   className,

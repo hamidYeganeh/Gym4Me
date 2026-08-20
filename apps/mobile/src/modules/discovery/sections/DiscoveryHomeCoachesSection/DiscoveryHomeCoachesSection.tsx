@@ -3,7 +3,8 @@
 import { CoachFeatureCard } from "@repo/ui/cards/CoachFeatureCard";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { DiscoverySectionRail } from "../DiscoverySectionRail";
 import { discoveryHomeCoachesSectionVariants } from "./DiscoveryHomeCoachesSection.styles";
 import type { DiscoveryHomeCoachesSectionProps } from "./DiscoveryHomeCoachesSection.types";

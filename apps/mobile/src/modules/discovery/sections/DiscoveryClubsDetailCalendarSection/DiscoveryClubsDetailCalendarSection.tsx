@@ -26,7 +26,8 @@ import {
   type Variants,
 } from "motion/react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import { I18nProvider } from "react-aria-components";
 import type { ClubDetailOperatingHour } from "../../lib/club-detail-data";

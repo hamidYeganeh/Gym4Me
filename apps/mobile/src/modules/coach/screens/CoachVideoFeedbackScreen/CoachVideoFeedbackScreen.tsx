@@ -13,7 +13,8 @@ import type { CoachVideoFeedbackStatus } from "../../lib/coach-video-feedback-da
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { coachVideoFeedbackScreenStyles as styles } from "./CoachVideoFeedbackScreen.styles";
 import type { CoachVideoFeedbackScreenProps } from "./CoachVideoFeedbackScreen.types";
 

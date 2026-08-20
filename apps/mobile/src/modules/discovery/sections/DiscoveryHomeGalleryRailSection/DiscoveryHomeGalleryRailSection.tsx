@@ -3,7 +3,8 @@
 import { ClubGalleryCard } from "@repo/ui/cards/ClubGalleryCard";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { DiscoverySectionRail } from "../DiscoverySectionRail";
 import { discoveryHomeGalleryRailSectionVariants } from "./DiscoveryHomeGalleryRailSection.styles";
 import type { DiscoveryHomeGalleryRailSectionProps } from "./DiscoveryHomeGalleryRailSection.types";

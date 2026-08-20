@@ -13,10 +13,11 @@ import { UsersThree } from "@repo/icons/UsersThree";
 import { Logo } from "@repo/ui/common/Logo";
 import { BottomNav } from "@repo/ui/layout/BottomNav";
 import { useTranslations } from "next-intl";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 import { roleHomePath } from "@/shared/lib/role-routes";
 import { useAuth } from "@/shared/providers/AuthProvider";
+import { useRouter } from "@/shared/lib/app-router";
 
 type AppRole = "athlete" | "coach" | "owner";
 
@@ -28,15 +29,6 @@ type RoleAppNavigationProps = {
 };
 
 const ICON_SIZE = 22;
-
-const IMMERSIVE_SEGMENTS = [
-  "/create",
-  "/edit",
-  "/payment",
-  "/reserve",
-  "/reschedule",
-  "/qr-check-in",
-];
 
 function isActivePath(pathname: string, href: string) {
   // Role homes (`/athlete`) are exact-only; discovery highlights the whole tree.
@@ -61,9 +53,6 @@ export function RoleAppNavigation({
   const expectedRole = role === "owner" ? "club_owner" : role;
   const isGuest = allowGuest && isReady && !isAuthenticated;
   const roleMatches = isReady && activeRole === expectedRole;
-  const hidesNavigation = IMMERSIVE_SEGMENTS.some((segment) =>
-    pathname.includes(segment),
-  );
 
   useEffect(() => {
     if (isGuest) return;
@@ -113,12 +102,6 @@ export function RoleAppNavigation({
           icon: <ChartBar2 size={ICON_SIZE} />,
           href: "/athlete/metrics",
         },
-        {
-          key: "community",
-          label: t("community"),
-          icon: <UsersThree size={ICON_SIZE} />,
-          href: "/community",
-        },
       ],
     },
     coach: {
@@ -166,12 +149,6 @@ export function RoleAppNavigation({
           label: t("messages"),
           icon: <UsersThree size={ICON_SIZE} />,
           href: "/coach/messages",
-        },
-        {
-          key: "community",
-          label: t("community"),
-          icon: <UsersThree size={ICON_SIZE} />,
-          href: "/community",
         },
       ],
     },
@@ -226,15 +203,19 @@ export function RoleAppNavigation({
   } as const;
 
   const config = configs[role];
+  const normalizedPathname = pathname.replace(/\/$/, "") || "/";
+  const showsNavigation = config.items.some(
+    (item) => item.href === normalizedPathname,
+  );
 
   if (!isReady || (!roleMatches && !isGuest)) {
     return <div aria-busy="true" className="min-h-dvh bg-background" />;
   }
 
   return (
-    <div className={hidesNavigation ? "min-h-dvh" : "min-h-dvh pb-28"}>
+    <div className={showsNavigation ? "min-h-dvh pb-28" : "min-h-dvh"}>
       {children}
-      {hidesNavigation ? null : (
+      {showsNavigation ? (
         <BottomNav
           aria-label={t("navLabel")}
           centerAction={{
@@ -255,7 +236,7 @@ export function RoleAppNavigation({
             isActive: isActivePath(pathname, item.href),
           }))}
         />
-      )}
+      ) : null}
     </div>
   );
 }

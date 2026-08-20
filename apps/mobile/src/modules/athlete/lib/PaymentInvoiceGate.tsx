@@ -5,7 +5,7 @@ import { Typography } from "@heroui/react/typography";
 import type { Invoice as ApiInvoice } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { accountFinance, isDiscoveryApiId } from "@/shared/lib/api";
 import { useAuth } from "@/shared/providers/AuthProvider";
@@ -16,6 +16,7 @@ import {
   WALLET_BALANCE_LABEL,
   type Invoice,
 } from "./payment-data";
+import { useRouter } from "@/shared/lib/app-router";
 
 function formatAmount(value: number): string {
   return `${new Intl.NumberFormat("fa-IR").format(value)} تومان`;

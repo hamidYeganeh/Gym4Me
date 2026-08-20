@@ -22,7 +22,8 @@ import { UserPlus } from "@repo/icons/UserPlus";
 import { VolumeHigh } from "@repo/icons/VolumeHigh";
 import { toast } from "@repo/ui/kit/Toast";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useMemo, type ReactNode } from "react";
 
 export const PROFILE_ROW_ICON_SIZE = 22;

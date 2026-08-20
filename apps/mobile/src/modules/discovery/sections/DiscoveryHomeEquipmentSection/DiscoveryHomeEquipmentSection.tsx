@@ -6,7 +6,8 @@ import { Sparkle1 } from "@repo/icons/Sparkle1";
 import { EquipmentBrowseCard } from "@repo/ui/cards/EquipmentBrowseCard";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { discoveryHomeEquipmentSectionVariants } from "./DiscoveryHomeEquipmentSection.styles";
 import type { DiscoveryHomeEquipmentSectionProps } from "./DiscoveryHomeEquipmentSection.types";
 

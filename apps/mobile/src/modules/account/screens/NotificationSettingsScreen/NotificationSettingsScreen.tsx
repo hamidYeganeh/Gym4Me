@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { Button } from "@heroui/react/button";
 import { Switch } from "@heroui/react/switch";
 import { Typography } from "@heroui/react/typography";
@@ -16,6 +15,7 @@ import { useTranslations } from "next-intl";
 import { ProfileMenuRow } from "@/modules/account/components/ProfileMenuRow";
 import { notificationSettingsScreenVariants } from "./NotificationSettingsScreen.styles";
 import type { NotificationSettingsScreenProps } from "./NotificationSettingsScreen.types";
+import { useRouter } from "@/shared/lib/app-router";
 
 const ICON = 22;
 

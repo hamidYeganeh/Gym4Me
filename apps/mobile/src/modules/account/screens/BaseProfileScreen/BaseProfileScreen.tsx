@@ -5,7 +5,8 @@ import type { GamificationSummary, MyAchievement } from "@repo/api";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { useThemeTransition } from "@repo/theme";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatMemberSince } from "@/modules/account/lib/profile-demographics";
 import { useProfileMenu } from "@/modules/account/lib/use-profile-menu";

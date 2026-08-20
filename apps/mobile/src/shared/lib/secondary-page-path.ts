@@ -9,7 +9,6 @@ const TAB_ROOTS = new Set([
   "/coach/profile",
   "/owner/profile",
   "/discovery",
-  "/community",
 ]);
 
 const IMMERSIVE_SEGMENTS = [
@@ -32,7 +31,7 @@ export function isSecondaryPagePath(pathname: string): boolean {
   }
 
   // Discovery detail hero routes use morph headers.
-  if (/^\/discovery\/(clubs|coaches|classes)\/[^/]+(\/classes\/[^/]+)?$/.test(pathname)) {
+  if (/^\/discovery\/(clubs|coaches)\/[^/]+(\/classes\/[^/]+)?$/.test(pathname)) {
     return false;
   }
 
@@ -40,7 +39,6 @@ export function isSecondaryPagePath(pathname: string): boolean {
     pathname.startsWith("/athlete/") ||
     pathname.startsWith("/coach/") ||
     pathname.startsWith("/owner/") ||
-    pathname.startsWith("/discovery/") ||
-    pathname.startsWith("/articles")
+    pathname.startsWith("/discovery/")
   );
 }

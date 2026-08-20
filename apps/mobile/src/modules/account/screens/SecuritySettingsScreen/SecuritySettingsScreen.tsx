@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { Button } from "@heroui/react/button";
 import { Switch } from "@heroui/react/switch";
 import { ArrowSignIn1 } from "@repo/icons/ArrowSignIn1";

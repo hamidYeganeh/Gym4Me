@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import { Apple } from "@repo/icons/Apple";
@@ -21,6 +20,7 @@ import { UnitsChoiceSheet } from "../../sections/UnitsChoiceSheet";
 import { UnitsSettingsGeneralSection } from "../../sections/UnitsSettingsGeneralSection";
 import { unitsSettingsScreenVariants } from "./UnitsSettingsScreen.styles";
 import type { UnitsSettingsScreenProps } from "./UnitsSettingsScreen.types";
+import { useRouter } from "@/shared/lib/app-router";
 
 const ICON = 22;
 

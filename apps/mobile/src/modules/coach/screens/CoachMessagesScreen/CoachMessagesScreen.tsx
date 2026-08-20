@@ -7,7 +7,8 @@ import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import type { CoachMessageThread } from "../../lib/coach-messages-data";
 import { coachMessagesScreenVariants } from "./CoachMessagesScreen.styles";
 import type { CoachMessagesScreenProps } from "./CoachMessagesScreen.types";

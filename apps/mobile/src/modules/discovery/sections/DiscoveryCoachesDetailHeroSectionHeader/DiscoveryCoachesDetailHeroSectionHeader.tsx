@@ -20,7 +20,8 @@ import {
   type MotionValue,
 } from "motion/react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useLayoutEffect, useRef, useState } from "react";
 import { discoveryCoachesDetailHeroSectionHeaderStyles as styles } from "./DiscoveryCoachesDetailHeroSectionHeader.styles";
 import type { DiscoveryCoachesDetailHeroSectionHeaderProps } from "./DiscoveryCoachesDetailHeroSectionHeader.types";
@@ -153,18 +154,8 @@ export function DiscoveryCoachesDetailHeroSectionHeader({
     return (1 + (AVATAR_SCALE_COLLAPSED - 1) * p) * squash;
   });
 
-  /**
-   * Before the hero passes, keep a compact control bar only.
-   * After, run the ProfileHeader expanded → collapsed stage morph.
-   */
-  const stageHeight = useTransform([scrollY, morph], ([y, p]) => {
-    const scroll = typeof y === "number" ? y : 0;
-    const morphP = typeof p === "number" ? p : 0;
-    if (scroll < morphStartY) return COLLAPSED_STAGE;
-    return (
-      expandedStageHeight + (COLLAPSED_STAGE - expandedStageHeight) * morphP
-    );
-  });
+  /** Keep the detail toolbar aligned with the shared 72px page header. */
+  const stageHeight = useTransform(scrollY, () => COLLAPSED_STAGE);
 
   /** Hero name rests at the bottom of the stage, then eases into the toolbar. */
   const identityTop = expandedStageHeight - PAD_Y - identityHeight;
@@ -223,7 +214,7 @@ export function DiscoveryCoachesDetailHeroSectionHeader({
     const morphP = typeof p === "number" ? p : 0;
     if (scroll < morphStartY) return 0;
     if (morphP < 0.08) return morphP / 0.08;
-    return 1;
+    return Math.max(0, (0.45 - morphP) / 0.37);
   });
   const identityVisibility = useTransform([scrollY, morph], ([y, p]) => {
     const scroll = typeof y === "number" ? y : 0;
@@ -239,6 +230,9 @@ export function DiscoveryCoachesDetailHeroSectionHeader({
   const shareMaxWidthPx = useMotionTemplate`${shareMaxWidth}px`;
   const shareMargin = useTransform(morph, [0, 0.6], [8, 0]);
   const shareMarginPx = useMotionTemplate`${shareMargin}px`;
+  const compactTitleOpacity = useTransform(morph, [0.12, 0.55], [0, 1]);
+  const compactTitleY = useTransform(morph, [0, 1], [38, 0]);
+  const compactTitleScale = useTransform(morph, [0, 1], [1.45, 1]);
 
   const handleBack = () => {
     if (onBack) {
@@ -333,6 +327,20 @@ export function DiscoveryCoachesDetailHeroSectionHeader({
               <ChevronLeft size={20} />
             </Button>
           </div>
+
+          <motion.div
+            aria-hidden
+            className={styles.compactTitle}
+            style={{
+              opacity: compactTitleOpacity,
+              scale: compactTitleScale,
+              y: compactTitleY,
+            }}
+          >
+            <Typography className="truncate" type="h3" weight="bold">
+              {name}
+            </Typography>
+          </motion.div>
 
           <div className={styles.barEnd}>
             <motion.div

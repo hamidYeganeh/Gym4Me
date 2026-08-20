@@ -9,7 +9,8 @@ import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { useState } from "react";
 import type { OwnerStaffState } from "../../lib/owner-staff-data";
 import { ownerStaffScreenStyles as styles } from "./OwnerStaffScreen.styles";

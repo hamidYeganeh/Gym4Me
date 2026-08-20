@@ -21,10 +21,13 @@ export const discoveryClubsDetailHeroSectionLightboxVariants = tv({
     viewport: "h-full w-full overflow-hidden",
     track: "flex h-full touch-pan-y",
     slide: "min-w-0 shrink-0 grow-0 basis-full",
-    slideInner: "relative h-full w-full",
+    slideInner: "relative h-full w-full will-change-[transform,opacity]",
     image: [
       "pointer-events-none block h-full w-full object-cover select-none",
       "rounded-3xl bg-surface-secondary",
+    ].join(" "),
+    imagePlaceholder: [
+      "h-full w-full rounded-3xl bg-surface-secondary",
     ].join(" "),
     favorite: "text-foreground data-[pressed=true]:scale-[0.96]",
     caption: [
@@ -65,6 +68,7 @@ export const discoveryClubsDetailHeroSectionLightboxVariants = tv({
     thumbImage: [
       "pointer-events-none block size-full object-cover select-none",
     ].join(" "),
+    thumbPlaceholder: "size-full bg-surface-secondary",
   },
 });
 

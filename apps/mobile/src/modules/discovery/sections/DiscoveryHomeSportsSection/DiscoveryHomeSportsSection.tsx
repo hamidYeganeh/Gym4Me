@@ -2,7 +2,8 @@
 
 import { SportCard } from "@repo/ui/cards/SportCard";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { DiscoverySectionRail } from "../DiscoverySectionRail";
 import {
   HOME_SPORT_THEMES,

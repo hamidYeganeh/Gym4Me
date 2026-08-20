@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { Button } from "@heroui/react/button";
 import { Input } from "@heroui/react/input";
 import { InputGroup } from "@heroui/react/input-group";

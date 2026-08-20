@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/shared/lib/app-router";
+
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import type { Role, RoleOverviewResponse } from "@repo/api";
