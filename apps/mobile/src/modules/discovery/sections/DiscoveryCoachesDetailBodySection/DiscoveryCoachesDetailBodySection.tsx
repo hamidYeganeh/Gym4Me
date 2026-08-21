@@ -29,18 +29,20 @@ import { ReviewSummaryCard } from "@repo/ui/cards/ReviewSummaryCard";
 import { SocialMediaCard } from "@repo/ui/cards/SocialMediaCard";
 import { SportCard } from "@repo/ui/cards/SportCard";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
-import { emblaFreeOptions } from "@repo/ui/lib/embla";
-import useEmblaCarousel from "embla-carousel-react";
+import { swiperFreeOptions } from "@repo/ui/lib/swiper";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/shared/lib/app-router";
 
 import {
+  Children,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
   type ReactNode,
 } from "react";
+import { FreeMode } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
 import type {
   CoachDetailClub,
   CoachDetailConsultationType,
@@ -58,6 +60,8 @@ import { DiscoveryGallerySection } from "../DiscoveryGallerySection";
 import { discoveryCoachesDetailBodySectionStyles as styles } from "./DiscoveryCoachesDetailBodySection.styles";
 import type { DiscoveryCoachesDetailBodySectionProps } from "./DiscoveryCoachesDetailBodySection.types";
 
+import "swiper/css";
+import "swiper/css/free-mode";
 const SECTION_TITLE_ICON_SIZE = 18;
 const REVIEW_HIGHLIGHT_ICON_SIZE = 24;
 const REVIEW_PREVIEW_COUNT = 5;
@@ -146,12 +150,6 @@ function SectionCarousel({
   action?: ReactNode;
   children: ReactNode;
 }) {
-  const [emblaRef] = useEmblaCarousel(
-    emblaFreeOptions({
-      direction: "rtl",
-    }),
-  );
-
   return (
     <>
       <div className={styles.sectionHeader}>
@@ -160,14 +158,19 @@ function SectionCarousel({
           <div className={styles.sectionHeaderAside}>{action}</div>
         ) : null}
       </div>
-      <div
+      <Swiper
+        {...swiperFreeOptions()} dir="rtl"
         aria-label={ariaLabel}
         aria-roledescription="carousel"
         className={styles.carousel}
-        ref={emblaRef}
+        modules={[FreeMode]}
       >
-        <div className={styles.carouselTrack}>{children}</div>
-      </div>
+        {Children.toArray(children).map((child, index) => (
+          <SwiperSlide className={styles.swiperSlide} key={index}>
+            {child}
+          </SwiperSlide>
+        ))}
+      </Swiper>
     </>
   );
 }

@@ -25,4 +25,8 @@ export type ReferralInviteCardProps = Omit<
   icon?: ReactNode;
   /** Extra classes for the CTA control. */
   actionClassName?: string;
+  /** Accessible label for copying the referral code. */
+  copyCodeLabel?: string;
+  /** Accessible label after the referral code is copied. */
+  copiedCodeLabel?: string;
 };

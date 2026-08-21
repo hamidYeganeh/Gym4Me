@@ -30,9 +30,10 @@ export const discoveryClubsClassDetailBodySectionStyles = {
   carousel: [
     "min-w-0 -mx-5 w-[calc(100%+2.5rem)] max-w-none overflow-hidden",
     "[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pe-[calc(env(safe-area-inset-right)+1rem)]",
+    "[&_.swiper-wrapper]:px-5 [&_.swiper-wrapper]:pb-1",
   ].join(" "),
-  carouselTrack: "flex touch-pan-y gap-3 px-5 pb-1",
-  slide: "min-w-0 shrink-0",
+  swiperSlide: "!w-auto !h-auto",
+  slide: "min-w-0",
   amenitySlide: "min-w-0 shrink-0",
   amenityCard: "min-w-[17.5rem] border border-border/60 bg-default shadow-none",
   coachSlide: "w-[min(16.5rem,calc(100vw-4.5rem))] min-w-0 shrink-0",

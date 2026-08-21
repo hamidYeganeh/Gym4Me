@@ -14,6 +14,7 @@ export const bannerSlidesFieldVariants = tv({
     image: "h-full w-full object-cover",
     fields: "flex flex-col gap-2",
     field: "flex flex-col gap-1.5",
+    fieldRow: "flex items-center justify-between gap-3",
     chips: "flex flex-wrap gap-1.5",
     uploadError: "text-sm text-danger",
   },

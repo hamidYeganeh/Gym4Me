@@ -5,18 +5,28 @@ import { Card } from "@heroui/react/card";
 import { Chip } from "@heroui/react/chip";
 import { Link } from "@heroui/react/link";
 import { Surface } from "@heroui/react/surface";
+import { AcademicCap } from "@repo/icons/AcademicCap";
 import { BarbellHorizontal } from "@repo/icons/BarbellHorizontal";
+import { Carrot } from "@repo/icons/Carrot";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
+import { Coffee } from "@repo/icons/Coffee";
 import { Diamond1 } from "@repo/icons/Diamond1";
 import { DotThreeHorizontal } from "@repo/icons/DotThreeHorizontal";
 import { Calendar1 } from "@repo/icons/Calendar1";
+import { GameController } from "@repo/icons/GameController";
 import { Gear1 } from "@repo/icons/Gear1";
+import { Hamburger } from "@repo/icons/Hamburger";
 import { Heart } from "@repo/icons/Heart";
 import { House1 } from "@repo/icons/House1";
+import { Invoice } from "@repo/icons/Invoice";
 import { Kettlebell } from "@repo/icons/Kettlebell";
 import { LightningBolt1 } from "@repo/icons/LightningBolt1";
+import { Mouse1 } from "@repo/icons/Mouse1";
 import { Pencil1 } from "@repo/icons/Pencil1";
+import { PillCircle } from "@repo/icons/PillCircle";
+import { Play } from "@repo/icons/Play";
 import { User } from "@repo/icons/User";
+import { WaterBottle1 } from "@repo/icons/WaterBottle1";
 import { WifiFull } from "@repo/icons/WifiFull";
 import { statsColors } from "@repo/theme";
 import {
@@ -43,6 +53,10 @@ import { CoachMapCard } from "@repo/ui/cards/CoachMapCard";
 import { CoachNearbyCard } from "@repo/ui/cards/CoachNearbyCard";
 import { CoachPopularItem } from "@repo/ui/cards/CoachPopularItem";
 import { DistrictCard } from "@repo/ui/cards/DistrictCard";
+import {
+  DisclosureCard,
+  type DisclosureCardCollection,
+} from "@repo/ui/cards/DisclosureCard";
 import { IbanCard } from "@repo/ui/cards/IbanCard";
 import { MetricGoalCard } from "@repo/ui/cards/MetricGoalCard";
 import { MetricHistoryItem } from "@repo/ui/cards/MetricHistoryItem";
@@ -59,6 +73,10 @@ import { SportCard } from "@repo/ui/cards/SportCard";
 import { SportCategoryCard } from "@repo/ui/cards/SportCategoryCard";
 import { StatsCard } from "@repo/ui/cards/StatsCard";
 import { TicketCard } from "@repo/ui/cards/TicketCard";
+import {
+  TransactionList,
+  type TransactionListItem,
+} from "@repo/ui/cards/TransactionList";
 import { WorkoutCard } from "@repo/ui/cards/WorkoutCard";
 import { LogoMark, PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { AreaLineChart } from "@repo/ui/kit/AreaLineChart";
@@ -113,6 +131,74 @@ const AREA_CHART_DATA = [
   { label: "ج", value: 67.4 },
 ];
 
+const TRANSACTION_LIST_DEMO: TransactionListItem[] = [
+  {
+    id: "1",
+    name: "نتفلیکس",
+    category: "اشتراک",
+    amount: "۶٫۹۹−$",
+    icon: <Invoice size={24} />,
+    date: "۲۶ شهریور",
+    time: "۰۰:۰۱",
+    transactionId: "۶۷۵۹۳",
+    paymentMethod: "کارت اعتباری",
+    cardNumber: "۹۳۴۲",
+    cardType: "VISA",
+  },
+  {
+    id: "2",
+    name: "ایرانسل",
+    category: "شارژ موبایل",
+    amount: "۴٫۰۵−$",
+    icon: <WifiFull size={24} />,
+    date: "۲۴ شهریور",
+    time: "۱۷:۱۸",
+    transactionId: "۶۷۴۸۲",
+    paymentMethod: "کارت اعتباری",
+    cardNumber: "۲۳۱۶",
+    cardType: "MASTERCARD",
+  },
+  {
+    id: "3",
+    name: "رایو",
+    category: "اشتراک",
+    amount: "۳۲٫۰۰−$",
+    icon: <Invoice size={24} />,
+    date: "۱۶ شهریور",
+    time: "۱۴:۱۱",
+    transactionId: "۵۴۶۳۵",
+    paymentMethod: "کارت اعتباری",
+    cardNumber: "۹۳۴۲",
+    cardType: "VISA",
+  },
+  {
+    id: "4",
+    name: "فیگما",
+    category: "اشتراک",
+    amount: "۱۵٫۰۰−$",
+    icon: <Invoice size={24} />,
+    date: "۱۵ شهریور",
+    time: "۰۱:۱۱",
+    transactionId: "۵۲۳۶۳",
+    paymentMethod: "کارت اعتباری",
+    cardNumber: "۹۳۴۲",
+    cardType: "VISA",
+  },
+  {
+    id: "5",
+    name: "فست‌فود برگر",
+    category: "رستوران",
+    amount: "۱۲٫۰۵−$",
+    icon: <Hamburger size={24} />,
+    date: "۱۵ شهریور",
+    time: "۰۱:۱۱",
+    transactionId: "۵۲۳۶۴",
+    paymentMethod: "کارت اعتباری",
+    cardNumber: "۹۳۴۲",
+    cardType: "VISA",
+  },
+];
+
 /** Series shaped to match the reference mocks. */
 const HYDRATION_SERIES = [40, 62, 30, 76, 48, 82, 96];
 const HYDRATION_COMPARISON = [48, 60, 38, 58, 42, 55, 50];
@@ -144,6 +230,22 @@ type ThemeDemoLabels = {
   callToActionSoft: string;
   callToActionMeta: string;
   callToActionBadge: string;
+  disclosureCardLabel: string;
+  disclosureCardItemsCount: string;
+  disclosureCardUtilities: string;
+  disclosureCardElectricity: string;
+  disclosureCardWater: string;
+  disclosureCardInternet: string;
+  disclosureCardSubscriptions: string;
+  disclosureCardStreaming: string;
+  disclosureCardCourses: string;
+  disclosureCardSoftware: string;
+  disclosureCardGames: string;
+  disclosureCardDailyNeeds: string;
+  disclosureCardGroceries: string;
+  disclosureCardSnacks: string;
+  disclosureCardEssentials: string;
+  disclosureCardHealth: string;
   socialMediaCardLabel: string;
   socialMediaCardTitle: string;
   socialMediaCardFacebook: string;
@@ -156,6 +258,11 @@ type ThemeDemoLabels = {
   ticketCardLabel: string;
   ticketCardTitle: string;
   ticketCardSubtitle: string;
+  transactionListLabel: string;
+  transactionListTitle: string;
+  transactionListAll: string;
+  transactionListClose: string;
+  transactionListPaidVia: string;
   clubSubscriptionCardLabel: string;
   clubSubscriptionPlanName: string;
   clubSubscriptionPrice: string;
@@ -455,6 +562,113 @@ type DemoNavLink = {
   label: string;
 };
 
+function buildDisclosureCollections(
+  labels: Pick<
+    ThemeDemoLabels,
+    | "disclosureCardUtilities"
+    | "disclosureCardElectricity"
+    | "disclosureCardWater"
+    | "disclosureCardInternet"
+    | "disclosureCardSubscriptions"
+    | "disclosureCardStreaming"
+    | "disclosureCardCourses"
+    | "disclosureCardSoftware"
+    | "disclosureCardGames"
+    | "disclosureCardDailyNeeds"
+    | "disclosureCardGroceries"
+    | "disclosureCardSnacks"
+    | "disclosureCardEssentials"
+    | "disclosureCardHealth"
+  >,
+): DisclosureCardCollection[] {
+  return [
+    {
+      id: "utilities",
+      name: labels.disclosureCardUtilities,
+      items: [
+        {
+          id: "u-1",
+          name: labels.disclosureCardElectricity,
+          price: 150,
+          icon: LightningBolt1,
+        },
+        {
+          id: "u-2",
+          name: labels.disclosureCardWater,
+          price: 50,
+          icon: WaterBottle1,
+        },
+        {
+          id: "u-3",
+          name: labels.disclosureCardInternet,
+          price: 100,
+          icon: WifiFull,
+        },
+      ],
+    },
+    {
+      id: "subscriptions",
+      name: labels.disclosureCardSubscriptions,
+      items: [
+        {
+          id: "s-1",
+          name: labels.disclosureCardStreaming,
+          price: 80,
+          icon: Play,
+        },
+        {
+          id: "s-2",
+          name: labels.disclosureCardCourses,
+          price: 100,
+          icon: AcademicCap,
+        },
+        {
+          id: "s-3",
+          name: labels.disclosureCardSoftware,
+          price: 120,
+          icon: Mouse1,
+        },
+        {
+          id: "s-4",
+          name: labels.disclosureCardGames,
+          price: 50,
+          icon: GameController,
+        },
+      ],
+    },
+    {
+      id: "daily-needs",
+      name: labels.disclosureCardDailyNeeds,
+      items: [
+        {
+          id: "dn-1",
+          name: labels.disclosureCardGroceries,
+          price: 500.56,
+          icon: Carrot,
+        },
+        {
+          id: "dn-2",
+          name: labels.disclosureCardSnacks,
+          price: 45.2,
+          icon: Coffee,
+        },
+        {
+          id: "dn-3",
+          name: labels.disclosureCardEssentials,
+          price: 120.34,
+          icon: House1,
+        },
+        {
+          id: "dn-4",
+          name: labels.disclosureCardHealth,
+          price: 75.8,
+          icon: PillCircle,
+        },
+      ],
+    },
+  ];
+}
+
 function DemoScreenLink({ href, label }: DemoNavLink) {
   return (
     <Link className="cursor-pointer text-stats-blue no-underline" href={href}>
@@ -511,6 +725,8 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
     { href: "#demo-article-card", label: labels.articleCardLabel },
     { href: "#demo-coach-cards", label: labels.coachFeatureCardLabel },
     { href: "#demo-call-to-action", label: labels.callToActionLabel },
+    { href: "#demo-disclosure-card", label: labels.disclosureCardLabel },
+    { href: "#demo-transaction-list", label: labels.transactionListLabel },
     { href: "#demo-muscle-card", label: labels.muscleCardLabel },
     { href: "#demo-body-type-card", label: labels.bodyTypeCardLabel },
     { href: "#demo-kit", label: labels.adaptiveSliderLabel },
@@ -1496,6 +1712,18 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
         </div>
       </section>
 
+      <section className="flex flex-col gap-3" id="demo-disclosure-card">
+        <h2 className="text-lg font-medium text-foreground">
+          {labels.disclosureCardLabel}
+        </h2>
+        <DisclosureCard
+          collections={buildDisclosureCollections(labels)}
+          formatItemsCount={(count) =>
+            labels.disclosureCardItemsCount.replace("{count}", String(count))
+          }
+        />
+      </section>
+
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-medium text-foreground">
           {labels.socialMediaCardLabel}
@@ -1530,6 +1758,19 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
           />
           <TicketCard />
         </div>
+      </section>
+
+      <section className="flex flex-col gap-3" id="demo-transaction-list">
+        <h2 className="text-lg font-medium text-foreground">
+          {labels.transactionListLabel}
+        </h2>
+        <TransactionList
+          allTransactionsLabel={labels.transactionListAll}
+          closeLabel={labels.transactionListClose}
+          paidViaLabel={labels.transactionListPaidVia}
+          title={labels.transactionListTitle}
+          transactions={TRANSACTION_LIST_DEMO}
+        />
       </section>
 
       <section className="flex flex-col gap-3">

@@ -25,7 +25,7 @@ export function AthleteGoalsScreen(props: AthleteGoalsScreenProps) {
       className={styles.root()}
       header={
         <SecondaryPageHeader
-          backAriaLabel={بازگشت}
+          backAriaLabel="بازگشت"
           onBack={() => router.back()}
         />
       }

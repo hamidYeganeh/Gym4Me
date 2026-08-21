@@ -3,8 +3,11 @@
 import { useEffect } from "react";
 import { useRouter } from "@/shared/lib/app-router";
 
-import { hasCompletedOnboarding } from "@/modules/app/lib/onboarding-storage";
+import {
+  hydrateOnboardingProfileFlag,
+} from "@/modules/app/lib/onboarding-storage";
 import { hasSeenWelcome } from "@/modules/app/lib/welcome-storage";
+import { needsProfileOnboarding } from "@/shared/lib/auth-redirect";
 import { hydrateFlags } from "@/shared/lib/flag-storage";
 import { roleHomePath } from "@/shared/lib/role-routes";
 import { useAuth } from "@/shared/providers/AuthProvider";
@@ -30,11 +33,20 @@ export function SplashContinue({ guestHref = "/discovery" }: SplashContinueProps
       void (async () => {
         // Restore native-persisted flags before routing on them.
         await hydrateFlags();
+        const userId = session?.user?.id;
+        if (userId) {
+          await hydrateOnboardingProfileFlag(userId);
+        }
         if (cancelled) return;
 
         if (isAuthenticated) {
-          // Freshly registered users resume profile onboarding if they quit mid-flow.
-          if (session?.isNewUser && !hasCompletedOnboarding()) {
+          if (
+            needsProfileOnboarding({
+              activeRole: session?.activeRole ?? activeRole,
+              isNewUser: session?.isNewUser,
+              user: session?.user,
+            })
+          ) {
             router.replace("/onboarding");
             return;
           }

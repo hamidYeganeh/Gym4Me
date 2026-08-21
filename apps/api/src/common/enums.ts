@@ -508,6 +508,38 @@ export enum BannerLinkKind {
   EXTERNAL = 'external',
 }
 
+/** Nine-point overlay placement for banner title / action (RTL-safe). */
+export enum BannerOverlayPlacement {
+  TOP_START = 'top-start',
+  TOP_CENTER = 'top-center',
+  TOP_END = 'top-end',
+  CENTER_START = 'center-start',
+  CENTER = 'center',
+  CENTER_END = 'center-end',
+  BOTTOM_START = 'bottom-start',
+  BOTTOM_CENTER = 'bottom-center',
+  BOTTOM_END = 'bottom-end',
+}
+
+/** Banner image frame aspect ratio. */
+export enum BannerAspectRatio {
+  RATIO_16_9 = '16/9',
+  RATIO_2_1 = '2/1',
+  RATIO_4_3 = '4/3',
+  RATIO_1_1 = '1/1',
+}
+
+/** Banner corner radius mapped to theme tokens. */
+export enum BannerRadius {
+  NONE = 'none',
+  SM = 'sm',
+  FIELD = 'field',
+  COMPACT = 'compact',
+  AUTH = 'auth',
+  SURFACE = 'surface',
+  FULL = 'full',
+}
+
 /** Editorial format / type of an article. */
 export enum ArticleKind {
   GUIDE = 'guide',

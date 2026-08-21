@@ -5,8 +5,6 @@ import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { ChevronRight } from "@repo/icons/ChevronRight";
 import { motion } from "motion/react";
 import {
-  useCallback,
-  useEffect,
   useLayoutEffect,
   useRef,
   useState,
@@ -15,14 +13,7 @@ import {
 import { carouselNavigationVariants } from "./CarouselNavigation.styles";
 import type { CarouselNavigationProps } from "./CarouselNavigation.types";
 
-function readIsRtl(node: HTMLElement | null, emblaApi?: CarouselNavigationProps["emblaApi"]) {
-  if (emblaApi) {
-    const direction = emblaApi.internalEngine().options.direction;
-    if (direction === "rtl" || direction === "ltr") {
-      return direction === "rtl";
-    }
-  }
-
+function readIsRtl(node: HTMLElement | null) {
   if (node) {
     const fromParent = getComputedStyle(node.parentElement ?? node).direction;
     if (fromParent === "rtl" || fromParent === "ltr") {
@@ -34,11 +25,10 @@ function readIsRtl(node: HTMLElement | null, emblaApi?: CarouselNavigationProps[
 }
 
 export const CarouselNavigation: FC<CarouselNavigationProps> = ({
-  totalSlides: totalSlidesProp,
-  currentIndex: currentIndexProp = 0,
+  totalSlides = 0,
+  currentIndex = 0,
   onIndexChange,
   autoDelay = 5000,
-  emblaApi,
   loop = false,
   size = "sm",
   className,
@@ -48,81 +38,31 @@ export const CarouselNavigation: FC<CarouselNavigationProps> = ({
 }) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const [isRtl, setIsRtl] = useState(false);
-  const [emblaIndex, setEmblaIndex] = useState(0);
-  const [emblaSlideCount, setEmblaSlideCount] = useState(0);
-  const [canScrollPrev, setCanScrollPrev] = useState(false);
-  const [canScrollNext, setCanScrollNext] = useState(false);
-
-  const syncEmbla = useCallback((api: NonNullable<typeof emblaApi>) => {
-    setEmblaIndex(api.selectedScrollSnap());
-    setEmblaSlideCount(api.scrollSnapList().length);
-    setCanScrollPrev(api.canScrollPrev());
-    setCanScrollNext(api.canScrollNext());
-    setIsRtl(readIsRtl(rootRef.current, api));
-  }, []);
 
   useLayoutEffect(() => {
-    setIsRtl(readIsRtl(rootRef.current, emblaApi));
-  }, [emblaApi]);
-
-  useEffect(() => {
-    if (!emblaApi) return;
-
-    syncEmbla(emblaApi);
-    emblaApi.on("reInit", syncEmbla);
-    emblaApi.on("select", syncEmbla);
-
-    return () => {
-      emblaApi.off("reInit", syncEmbla);
-      emblaApi.off("select", syncEmbla);
-    };
-  }, [emblaApi, syncEmbla]);
-
-  const totalSlides = emblaApi
-    ? emblaSlideCount || totalSlidesProp || 0
-    : (totalSlidesProp ?? 0);
-  const currentIndex = emblaApi ? emblaIndex : currentIndexProp;
+    setIsRtl(readIsRtl(rootRef.current));
+  }, []);
 
   const slots = carouselNavigationVariants({ size });
 
   const goTo = (index: number) => {
     if (totalSlides <= 0) return;
     const next = ((index % totalSlides) + totalSlides) % totalSlides;
-
-    if (emblaApi) {
-      emblaApi.scrollTo(next);
-      return;
-    }
-
     onIndexChange?.(next);
   };
 
   const goPrev = () => {
-    if (emblaApi) {
-      emblaApi.scrollPrev();
-      return;
-    }
-
     if (!loop && currentIndex === 0) return;
     goTo(currentIndex - 1);
   };
 
   const goNext = () => {
-    if (emblaApi) {
-      emblaApi.scrollNext();
-      return;
-    }
-
     if (!loop && currentIndex >= totalSlides - 1) return;
     goTo(currentIndex + 1);
   };
 
-  const prevDisabled = emblaApi
-    ? !canScrollPrev
-    : !loop && currentIndex === 0;
-  const nextDisabled = emblaApi
-    ? !canScrollNext
-    : !loop && currentIndex >= totalSlides - 1;
+  const prevDisabled = !loop && currentIndex === 0;
+  const nextDisabled = !loop && currentIndex >= totalSlides - 1;
 
   /**
    * Keep a stable LTR chrome (left chevron | right chevron).

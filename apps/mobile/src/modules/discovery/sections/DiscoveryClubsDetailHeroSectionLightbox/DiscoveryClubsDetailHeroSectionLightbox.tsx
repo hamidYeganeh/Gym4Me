@@ -7,23 +7,25 @@ import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { ChevronRight } from "@repo/icons/ChevronRight";
 import { Heart } from "@repo/icons/Heart";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
-import {
-  EMBLA_DURATION,
-  emblaFreeOptions,
-  emblaOptions,
-} from "@repo/ui/lib/embla";
-import { useEmblaLazyLoad } from "@repo/ui/lib/use-embla-lazy-load";
-import { useEmblaSlideTween } from "@repo/ui/lib/use-embla-slide-tween";
-import useEmblaCarousel from "embla-carousel-react";
+import { SWIPER_SPEED, swiperFreeOptions, swiperOptions } from "@repo/ui/lib/swiper";
+import { useSwiperLazyLoad } from "@repo/ui/lib/use-swiper-lazy-load";
+import { useSwiperSlideTween } from "@repo/ui/lib/use-swiper-slide-tween";
 import { useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { Swiper as SwiperInstance } from "swiper";
+import { FreeMode, Thumbs } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
 import { discoveryClubsDetailHeroSectionLightboxStyles as styles } from "./DiscoveryClubsDetailHeroSectionLightbox.styles";
 import type {
   DiscoveryClubsDetailHeroSectionLightboxItem,
   DiscoveryClubsDetailHeroSectionLightboxProps,
 } from "./DiscoveryClubsDetailHeroSectionLightbox.types";
+
+import "swiper/css";
+import "swiper/css/free-mode";
+import "swiper/css/thumbs";
 
 function normalizeItem(
   item: string | DiscoveryClubsDetailHeroSectionLightboxItem,
@@ -45,6 +47,8 @@ export function DiscoveryClubsDetailHeroSectionLightbox({
   const t = useTranslations("ClubDetail");
   const reduceMotion = useReducedMotion();
   const [favorite, setFavorite] = useState(isFavorite);
+  const mainSwiperRef = useRef<SwiperInstance | null>(null);
+  const [thumbsSwiper, setThumbsSwiper] = useState<SwiperInstance | null>(null);
 
   useEffect(() => {
     setFavorite(isFavorite);
@@ -71,76 +75,32 @@ export function DiscoveryClubsDetailHeroSectionLightbox({
     labels?.selectImage ??
     ((index: number) => t("selectImage", { index }));
 
-  const [emblaRef, emblaApi] = useEmblaCarousel(
-    emblaOptions({
-      align: "center",
-      containScroll: "trimSnaps",
-      direction: "rtl",
-      loop: imageCount > 1,
-      startIndex: safeIndex,
-      duration: reduceMotion ? EMBLA_DURATION.instant : EMBLA_DURATION.juicy,
-    }),
-  );
-
-  const [thumbsRef, thumbsApi] = useEmblaCarousel(
-    emblaFreeOptions({
-      containScroll: "keepSnaps",
-      direction: "rtl",
-      duration: reduceMotion ? EMBLA_DURATION.instant : EMBLA_DURATION.smooth,
-    }),
-  );
-
-  const loadedSlides = useEmblaLazyLoad(emblaApi, {
+  const loadedSlides = useSwiperLazyLoad(safeIndex, imageCount, {
     loadAll: reduceMotion === true || imageCount <= 2,
     preloadAdjacent: 1,
   });
-  const loadedThumbs = useEmblaLazyLoad(thumbsApi, {
+  const loadedThumbs = useSwiperLazyLoad(safeIndex, imageCount, {
     loadAll: reduceMotion === true || imageCount <= 4,
     preloadAdjacent: 2,
   });
 
-  useEmblaSlideTween(emblaApi, {
+  const applyTween = useSwiperSlideTween({
     disabled: reduceMotion === true,
     minScale: 0.96,
     minOpacity: 0.85,
   });
 
-  const syncFromEmbla = useCallback(() => {
-    if (!emblaApi) return;
-    onSelectImage(emblaApi.selectedScrollSnap());
-  }, [emblaApi, onSelectImage]);
-
   useEffect(() => {
-    if (!emblaApi) return;
-    emblaApi.on("select", syncFromEmbla);
-    emblaApi.on("reInit", syncFromEmbla);
-    return () => {
-      emblaApi.off("select", syncFromEmbla);
-      emblaApi.off("reInit", syncFromEmbla);
-    };
-  }, [emblaApi, syncFromEmbla]);
-
-  useEffect(() => {
-    if (!isOpen || !emblaApi) return;
-    emblaApi.reInit();
-  }, [isOpen, emblaApi, gallery.length]);
-
-  useEffect(() => {
-    if (!isOpen || !emblaApi) return;
-    if (emblaApi.selectedScrollSnap() !== safeIndex) {
-      emblaApi.scrollTo(safeIndex);
+    if (!isOpen || !mainSwiperRef.current) return;
+    if (mainSwiperRef.current.realIndex !== safeIndex) {
+      mainSwiperRef.current.slideToLoop(safeIndex);
     }
-  }, [isOpen, emblaApi, safeIndex]);
-
-  useEffect(() => {
-    if (!thumbsApi) return;
-    thumbsApi.scrollTo(safeIndex);
-  }, [thumbsApi, safeIndex]);
+  }, [isOpen, safeIndex]);
 
   const goBy = (delta: number) => {
-    if (!canNavigate || !emblaApi) return;
-    if (delta < 0) emblaApi.scrollPrev();
-    else emblaApi.scrollNext();
+    if (!canNavigate || !mainSwiperRef.current) return;
+    if (delta < 0) mainSwiperRef.current.slidePrev();
+    else mainSwiperRef.current.slideNext();
   };
 
   const handleFavorite = () => {
@@ -150,6 +110,19 @@ export function DiscoveryClubsDetailHeroSectionLightbox({
       return next;
     });
   };
+
+  const mainOptions = swiperOptions({
+    loop: imageCount > 1,
+    initialSlide: safeIndex,
+    speed: reduceMotion ? SWIPER_SPEED.instant : SWIPER_SPEED.juicy,
+    watchSlidesProgress: !reduceMotion,
+  });
+
+  const thumbsOptions = swiperFreeOptions({
+    spaceBetween: 10,
+    speed: reduceMotion ? SWIPER_SPEED.instant : SWIPER_SPEED.smooth,
+    watchSlidesProgress: true,
+  });
 
   return (
     <Modal.Backdrop isOpen={isOpen} onOpenChange={onOpenChange} variant="blur">
@@ -196,47 +169,59 @@ export function DiscoveryClubsDetailHeroSectionLightbox({
             </div>
 
             <div className={styles.stageWrap()}>
-              <div
+              <Swiper
+                {...mainOptions}
+                dir="rtl"
                 aria-label={headerTitle}
                 aria-roledescription="carousel"
                 className={styles.viewport()}
-                ref={emblaRef}
+                modules={[Thumbs]}
+                onSetTranslate={applyTween}
+                onSlideChange={(swiper) => onSelectImage(swiper.realIndex)}
+                onSwiper={(swiper) => {
+                  mainSwiperRef.current = swiper;
+                  applyTween(swiper);
+                }}
+                thumbs={{
+                  swiper:
+                    thumbsSwiper && !thumbsSwiper.destroyed
+                      ? thumbsSwiper
+                      : null,
+                }}
               >
-                <div className={styles.track()}>
-                  {gallery.map((image, index) => {
-                    const canLoad = loadedSlides.has(index);
-                    return (
+                {gallery.map((image, index) => {
+                  const canLoad = loadedSlides.has(index);
+                  return (
+                    <SwiperSlide
+                      className={styles.slide()}
+                      key={`${image.url}-${index}`}
+                    >
                       <div
-                        className={styles.slide()}
-                        key={`${image.url}-${index}`}
+                        className={styles.slideInner()}
+                        data-swiper-tween=""
                       >
-                        <div
-                          className={styles.slideInner()}
-                          data-embla-tween=""
-                        >
-                          {canLoad ? (
-                            <Image
-                              alt={image.title ?? headerTitle}
-                              className={styles.image()}
-                              draggable={false}
-                              height={1600}
-                              priority={index === safeIndex}
-                              sizes="100vw"
-                              src={image.url || PLACEHOLDER_IMAGE}
-                              width={1200}
-                            />
-                          ) : (
-                            <div
-                              aria-hidden
-                              className={styles.imagePlaceholder()}
-                            />
-                          )}
-                        </div>
+                        {canLoad ? (
+                          <Image
+                            alt={image.title ?? headerTitle}
+                            className={styles.image()}
+                            draggable={false}
+                            height={1600}
+                            priority={index === safeIndex}
+                            sizes="100vw"
+                            src={image.url || PLACEHOLDER_IMAGE}
+                            width={1200}
+                          />
+                        ) : (
+                          <div
+                            aria-hidden
+                            className={styles.imagePlaceholder()}
+                          />
+                        )}
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
+                    </SwiperSlide>
+                  );
+                })}
+              </Swiper>
 
               {hasCaption ? (
                 <div className={styles.caption()}>
@@ -305,12 +290,21 @@ export function DiscoveryClubsDetailHeroSectionLightbox({
               ) : null}
             </div>
 
-            <div className={styles.thumbsViewport()} ref={thumbsRef}>
-              <div className={styles.thumbsTrack()}>
-                {gallery.map((image, index) => {
-                  const isActive = index === safeIndex;
-                  const canLoadThumb = loadedThumbs.has(index);
-                  return (
+            <Swiper
+              {...thumbsOptions}
+              dir="rtl"
+              className={styles.thumbsViewport()}
+              modules={[FreeMode, Thumbs]}
+              onSwiper={setThumbsSwiper}
+            >
+              {gallery.map((image, index) => {
+                const isActive = index === safeIndex;
+                const canLoadThumb = loadedThumbs.has(index);
+                return (
+                  <SwiperSlide
+                    className={styles.thumbSlide()}
+                    key={`${image.url}-thumb-${index}`}
+                  >
                     <Button
                       aria-current={isActive ? "true" : undefined}
                       aria-label={
@@ -323,8 +317,7 @@ export function DiscoveryClubsDetailHeroSectionLightbox({
                           : styles.thumbIdle(),
                       ].join(" ")}
                       isIconOnly
-                      key={`${image.url}-thumb-${index}`}
-                      onPress={() => emblaApi?.scrollTo(index)}
+                      onPress={() => mainSwiperRef.current?.slideToLoop(index)}
                       size="lg"
                       variant="ghost"
                     >
@@ -345,10 +338,10 @@ export function DiscoveryClubsDetailHeroSectionLightbox({
                         />
                       )}
                     </Button>
-                  );
-                })}
-              </div>
-            </div>
+                  </SwiperSlide>
+                );
+              })}
+            </Swiper>
           </div>
         </Modal.Dialog>
       </Modal.Container>

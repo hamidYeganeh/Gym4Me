@@ -2,7 +2,7 @@ import { tv } from "tailwind-variants";
 
 export const onboardingSlideShellVariants = tv({
   slots: {
-    root: "flex h-full min-h-0 w-full min-w-0 shrink-0 grow-0 basis-full flex-col bg-transparent",
+    root: "flex h-full min-h-0 w-full flex-col bg-transparent",
     stack: "flex min-h-0 flex-1 flex-col",
     copy: "flex shrink-0 flex-col items-center gap-2 px-1 pt-2 text-center",
     title:

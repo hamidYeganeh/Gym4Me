@@ -19,16 +19,15 @@ export const discoveryClubsDetailHeroSectionLightboxVariants = tv({
       "overflow-hidden px-screen",
     ].join(" "),
     viewport: "h-full w-full overflow-hidden",
-    track: "flex h-full touch-pan-y",
-    slide: "min-w-0 shrink-0 grow-0 basis-full",
+    slide: "!h-full",
     slideInner: "relative h-full w-full will-change-[transform,opacity]",
     image: [
       "pointer-events-none block h-full w-full object-cover select-none",
       "rounded-3xl bg-surface-secondary",
     ].join(" "),
-    imagePlaceholder: [
-      "h-full w-full rounded-3xl bg-surface-secondary",
-    ].join(" "),
+    imagePlaceholder: ["h-full w-full rounded-3xl bg-surface-secondary"].join(
+      " ",
+    ),
     favorite: "text-foreground data-[pressed=true]:scale-[0.96]",
     caption: [
       "pointer-events-none absolute inset-x-screen bottom-14 z-10",
@@ -57,10 +56,11 @@ export const discoveryClubsDetailHeroSectionLightboxVariants = tv({
     thumbsViewport: [
       "h-24 w-full shrink-0 overflow-hidden px-screen",
       "mb-[max(0.5rem,env(safe-area-inset-bottom))]",
+      "[&_.swiper-wrapper]:items-center",
     ].join(" "),
-    thumbsTrack: "flex h-full touch-pan-x items-center gap-2.5",
+    thumbSlide: "!w-auto !h-auto",
     thumbButton: [
-      "relative !size-16 min-h-16 min-w-16 shrink-0",
+      "relative !size-16 min-h-16 min-w-16",
       "overflow-hidden rounded-[16px] border-2 bg-transparent p-0",
     ].join(" "),
     thumbActive: "border-accent",

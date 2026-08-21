@@ -85,7 +85,7 @@ export function AthleteDataGrantsScreen({
       className={styles.root()}
       header={
         <SecondaryPageHeader
-          backAriaLabel={بازگشت}
+          backAriaLabel="بازگشت"
           onBack={() => router.back()}
         />
       }

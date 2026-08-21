@@ -1,82 +1,184 @@
 "use client";
 
 import { Button } from "@heroui/react/button";
-import useEmblaCarousel from "embla-carousel-react";
+import { Typography } from "@heroui/react/typography";
 import { useReducedMotion } from "motion/react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { Swiper as SwiperInstance } from "swiper";
+import { Autoplay } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
 import { MediaImage } from "../../common/MediaImage";
-import { EMBLA_DURATION, emblaOptions } from "../../lib/embla";
-import { useEmblaLazyLoad } from "../../lib/use-embla-lazy-load";
-import { useEmblaSlideTween } from "../../lib/use-embla-slide-tween";
+import { SWIPER_SPEED, swiperOptions } from "../../lib/swiper";
+import { useSwiperLazyLoad } from "../../lib/use-swiper-lazy-load";
+import { useSwiperSlideTween } from "../../lib/use-swiper-slide-tween";
 import { bannerCarouselVariants } from "./BannerCarousel.styles";
-import type { BannerCarouselProps } from "./BannerCarousel.types";
+import type {
+  BannerCarouselAspectRatio,
+  BannerCarouselProps,
+  BannerCarouselRadius,
+  BannerCarouselSlide,
+  BannerOverlayPlacement,
+} from "./BannerCarousel.types";
+
+import "swiper/css";
 
 const DEFAULT_AUTOPLAY_MS = 6000;
+const DEFAULT_TITLE_PLACEMENT: BannerOverlayPlacement = "bottom-start";
+const DEFAULT_ACTION_PLACEMENT: BannerOverlayPlacement = "bottom-end";
+
+function SlideFrame({
+  slide,
+  canLoad,
+  priority,
+  aspectRatio,
+  radius,
+  fullBleed,
+}: {
+  slide: BannerCarouselSlide;
+  canLoad: boolean;
+  priority: boolean;
+  aspectRatio: BannerCarouselAspectRatio;
+  radius: BannerCarouselRadius;
+  fullBleed: boolean;
+}) {
+  const ratio = slide.ratio ?? aspectRatio;
+  const cornerRadius = slide.radius ?? radius;
+  const titlePlacement = slide.title?.placement ?? DEFAULT_TITLE_PLACEMENT;
+  const actionPlacement = slide.action?.placement ?? DEFAULT_ACTION_PLACEMENT;
+  const slots = bannerCarouselVariants({
+    aspectRatio: ratio,
+    radius: cornerRadius,
+    fullBleed,
+    titlePlacement,
+    actionPlacement,
+  });
+
+  const media = canLoad ? (
+    <MediaImage
+      alt={slide.alt ?? ""}
+      className={slots.image()}
+      image={slide.imageUrl}
+      priority={priority}
+      sizes="100vw"
+    />
+  ) : (
+    <div aria-hidden className={slots.imagePlaceholder()} />
+  );
+
+  const overlay = (
+    <>
+      {slide.gradient ? <div aria-hidden className={slots.gradient()} /> : null}
+      {slide.title?.text ? (
+        <div className={slots.titleWrap({ titlePlacement })}>
+          <Typography className={slots.title()} type="body" weight="bold">
+            {slide.title.text}
+          </Typography>
+        </div>
+      ) : null}
+      {slide.action?.label ? (
+        <div className={slots.actionWrap({ actionPlacement })}>
+          <Button
+            className={slots.action()}
+            onPress={slide.action.onPress}
+            size="md"
+            variant="primary"
+          >
+            {slide.action.label}
+          </Button>
+        </div>
+      ) : null}
+    </>
+  );
+
+  // Nested interactive controls are invalid — prefer the dedicated CTA when present.
+  if (slide.action?.label) {
+    return (
+      <div className={slots.frame()}>
+        {media}
+        {overlay}
+      </div>
+    );
+  }
+
+  if (slide.onPress && canLoad) {
+    return (
+      <Button
+        aria-label={slide.alt ?? slide.title?.text ?? undefined}
+        className={slots.pressable()}
+        onPress={slide.onPress}
+        variant="ghost"
+      >
+        <div className={slots.frame()}>
+          {media}
+          {overlay}
+        </div>
+      </Button>
+    );
+  }
+
+  return (
+    <div className={slots.frame()}>
+      {media}
+      {overlay}
+    </div>
+  );
+}
 
 export function BannerCarousel({
   slides,
   autoplayMs = DEFAULT_AUTOPLAY_MS,
   direction = "rtl",
+  aspectRatio = "16/9",
+  radius = "surface",
+  fullBleed = false,
   className,
   "aria-label": ariaLabel = "Banners",
   slideLabel,
 }: BannerCarouselProps) {
   const reduceMotion = useReducedMotion();
-  const [emblaRef, emblaApi] = useEmblaCarousel(
-    emblaOptions({
-      align: "start",
-      direction,
-      loop: slides.length > 1,
-      duration: reduceMotion ? EMBLA_DURATION.instant : EMBLA_DURATION.juicy,
-    }),
-  );
+  const swiperRef = useRef<SwiperInstance | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [interacting, setInteracting] = useState(false);
-  const loadedSlides = useEmblaLazyLoad(emblaApi, {
+  const loadedSlides = useSwiperLazyLoad(selectedIndex, slides.length, {
     loadAll: reduceMotion === true || slides.length <= 2,
     preloadAdjacent: 1,
   });
 
-  useEmblaSlideTween(emblaApi, {
-    disabled: reduceMotion === true,
+  const applyTween = useSwiperSlideTween({
+    disabled: reduceMotion === true || fullBleed,
     minScale: 0.94,
     minOpacity: 0.78,
   });
 
-  const syncSelected = useCallback((api: NonNullable<typeof emblaApi>) => {
-    setSelectedIndex(api.selectedScrollSnap());
-  }, []);
-
   useEffect(() => {
-    if (!emblaApi) return;
+    const swiper = swiperRef.current;
+    if (!swiper?.autoplay) return;
 
-    syncSelected(emblaApi);
-    const onPointerDown = () => setInteracting(true);
-    const onSettle = () => setInteracting(false);
-    emblaApi.on("select", syncSelected);
-    emblaApi.on("reInit", syncSelected);
-    emblaApi.on("pointerDown", onPointerDown);
-    emblaApi.on("settle", onSettle);
-
-    return () => {
-      emblaApi.off("select", syncSelected);
-      emblaApi.off("reInit", syncSelected);
-      emblaApi.off("pointerDown", onPointerDown);
-      emblaApi.off("settle", onSettle);
-    };
-  }, [emblaApi, syncSelected]);
-
-  useEffect(() => {
-    if (!emblaApi || autoplayMs <= 0 || slides.length <= 1 || interacting) {
+    if (interacting || autoplayMs <= 0 || slides.length <= 1) {
+      swiper.autoplay.stop();
       return;
     }
-    const timer = setInterval(() => emblaApi.scrollNext(), autoplayMs);
-    return () => clearInterval(timer);
-  }, [emblaApi, autoplayMs, slides.length, interacting]);
+
+    swiper.autoplay.start();
+  }, [autoplayMs, interacting, slides.length]);
 
   if (slides.length === 0) return null;
 
-  const slots = bannerCarouselVariants();
+  const slots = bannerCarouselVariants({ aspectRatio, radius, fullBleed });
+  const loop = slides.length > 1;
+  const options = swiperOptions({
+    loop,
+    speed: reduceMotion ? SWIPER_SPEED.instant : SWIPER_SPEED.juicy,
+    watchSlidesProgress: !reduceMotion && !fullBleed,
+    autoplay:
+      autoplayMs > 0 && loop
+        ? {
+            delay: autoplayMs,
+            disableOnInteraction: false,
+            pauseOnMouseEnter: true,
+          }
+        : false,
+  });
 
   return (
     <div
@@ -85,43 +187,35 @@ export function BannerCarousel({
       className={slots.root({ className })}
       role="group"
     >
-      <div className={slots.viewport()} dir={direction} ref={emblaRef}>
-        <div className={slots.track()}>
-          {slides.map((slide, index) => {
-            const canLoad = loadedSlides.has(index);
-            const media = canLoad ? (
-              <MediaImage
-                alt={slide.alt ?? ""}
-                className={slots.image()}
-                image={slide.imageUrl}
+      <Swiper
+        {...options}
+        className={slots.viewport()}
+        dir={direction}
+        modules={[Autoplay]}
+        onSetTranslate={applyTween}
+        onSlideChange={(swiper) => setSelectedIndex(swiper.realIndex)}
+        onSwiper={(swiper) => {
+          swiperRef.current = swiper;
+          applyTween(swiper);
+        }}
+        onTouchEnd={() => setInteracting(false)}
+        onTouchStart={() => setInteracting(true)}
+      >
+        {slides.map((slide, index) => (
+          <SwiperSlide className={slots.slide()} key={slide.id}>
+            <div className={slots.tween()} data-swiper-tween="">
+              <SlideFrame
+                aspectRatio={aspectRatio}
+                canLoad={loadedSlides.has(index)}
+                fullBleed={fullBleed}
                 priority={index === 0}
-                sizes="100vw"
+                radius={radius}
+                slide={slide}
               />
-            ) : (
-              <div aria-hidden className={slots.imagePlaceholder()} />
-            );
-
-            return (
-              <div className={slots.slide()} key={slide.id}>
-                <div className={slots.tween()} data-embla-tween="">
-                  {slide.onPress && canLoad ? (
-                    <Button
-                      aria-label={slide.alt ?? undefined}
-                      className={slots.pressable()}
-                      onPress={slide.onPress}
-                      variant="ghost"
-                    >
-                      {media}
-                    </Button>
-                  ) : (
-                    media
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+            </div>
+          </SwiperSlide>
+        ))}
+      </Swiper>
 
       {slides.length > 1 ? (
         <div className={slots.dots()} role="tablist">
@@ -133,10 +227,13 @@ export function BannerCarousel({
               }
               aria-selected={index === selectedIndex}
               className={bannerCarouselVariants({
+                aspectRatio,
+                radius,
+                fullBleed,
                 dotActive: index === selectedIndex,
               }).dot()}
               key={slide.id}
-              onClick={() => emblaApi?.scrollTo(index)}
+              onClick={() => swiperRef.current?.slideToLoop(index)}
               role="tab"
               type="button"
             />

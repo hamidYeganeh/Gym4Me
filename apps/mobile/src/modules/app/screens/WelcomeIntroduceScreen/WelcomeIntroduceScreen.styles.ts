@@ -1,6 +1,6 @@
 import { tv } from "tailwind-variants";
 
-/** Introduce shell — Embla image carousel + action sheet overlay. */
+/** Introduce shell — Swiper image carousel + action sheet overlay. */
 export const welcomeIntroduceScreenVariants = tv({
   slots: {
     root: "relative flex min-h-dvh flex-col overflow-hidden bg-background text-foreground",

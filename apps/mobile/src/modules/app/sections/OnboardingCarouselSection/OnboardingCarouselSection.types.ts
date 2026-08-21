@@ -3,6 +3,10 @@ import type { UseOnboardingReturn } from "@/modules/app/lib/use-onboarding";
 export type OnboardingCarouselSectionProps = Pick<
   UseOnboardingReturn,
   | "t"
+  | "onSwiper"
+  | "onSlideChange"
+  | "carouselSpeed"
+  | "textDirection"
   | "slide"
   | "age"
   | "firstName"
@@ -66,7 +70,5 @@ export type OnboardingCarouselSectionProps = Pick<
   | "handleCaloriesChange"
   | "requestFinish"
 > & {
-  emblaRef: UseOnboardingReturn["emblaRef"];
   carouselClassName?: string;
-  trackClassName?: string;
 };

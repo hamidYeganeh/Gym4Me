@@ -1,10 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import { Ticket } from "@repo/icons/Ticket";
 import { referralInviteCardVariants } from "./ReferralInviteCard.styles";
 import type { ReferralInviteCardProps } from "./ReferralInviteCard.types";
+
+const COPIED_DURATION_MS = 1200;
 
 export function ReferralInviteCard({
   title,
@@ -17,10 +20,35 @@ export function ReferralInviteCard({
   onAction,
   icon,
   actionClassName,
+  copyCodeLabel = "Copy",
+  copiedCodeLabel = "Copied",
   className,
   ...props
 }: ReferralInviteCardProps) {
   const slots = referralInviteCardVariants();
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!copied) return;
+
+    const timer = setTimeout(() => {
+      setCopied(false);
+    }, COPIED_DURATION_MS);
+
+    return () => clearTimeout(timer);
+  }, [copied]);
+
+  const handleCopy = async () => {
+    if (copied) return;
+
+    try {
+      await navigator.clipboard.writeText(referralCode);
+    } catch {
+      // Clipboard may be unavailable (permissions / insecure context).
+    }
+
+    setCopied(true);
+  };
 
   return (
     <article className={slots.root({ className })} {...props}>
@@ -67,7 +95,15 @@ export function ReferralInviteCard({
             {successCount}
           </Typography>
         </div>
-        <div className={slots.stat()}>
+        <Button
+          aria-label={copied ? copiedCodeLabel : copyCodeLabel}
+          className={slots.codeStat()}
+          data-copied={copied || undefined}
+          fullWidth
+          type="button"
+          variant="secondary"
+          onPress={() => void handleCopy()}
+        >
           <Typography className={slots.statLabel()} type="body-sm">
             {codeLabel}
           </Typography>
@@ -78,7 +114,7 @@ export function ReferralInviteCard({
           >
             {referralCode}
           </Typography>
-        </div>
+        </Button>
       </div>
 
       <Button

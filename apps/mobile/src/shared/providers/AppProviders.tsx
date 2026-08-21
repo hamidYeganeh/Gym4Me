@@ -3,7 +3,6 @@
 import type { ReactNode } from "react";
 import { MediaImageProvider } from "@repo/ui/common/MediaImage";
 import { Toaster } from "@repo/ui/kit/Toast";
-import { PageTransition } from "@/shared/components/PageTransition";
 import { AuthProvider } from "./AuthProvider";
 import { AppConfigProvider } from "./AppConfigProvider";
 import { DevicePermissionsProvider } from "./DevicePermissionsProvider";
@@ -19,10 +18,8 @@ export function AppProviders({ children }: { children: ReactNode }) {
           <Toaster placement="top">
             <DevicePermissionsProvider>
               <PushNotificationsProvider />
-              <PageTransition>
-                <ExitAppProvider />
-                {children}
-              </PageTransition>
+              <ExitAppProvider />
+              {children}
             </DevicePermissionsProvider>
           </Toaster>
         </AuthProvider>

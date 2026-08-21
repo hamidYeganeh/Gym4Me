@@ -70,6 +70,8 @@ export function AthleteReferralInviteSection({
       <ReferralInviteCard
         actionLabel={t("referralAction")}
         codeLabel={t("referralCodeLabel")}
+        copiedCodeLabel={t("referralCopiedCode")}
+        copyCodeLabel={t("referralCopyCode")}
         description={t("referralDescription")}
         onAction={() => router.push("/athlete/referral")}
         referralCode={summary.referralCode}

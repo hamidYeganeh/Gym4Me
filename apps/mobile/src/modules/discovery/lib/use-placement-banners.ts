@@ -1,8 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { BannerLinkKind, BannerPlacement } from "@repo/api";
+import type {
+  BannerAspectRatio,
+  BannerLinkKind,
+  BannerOverlayPlacement,
+  BannerPlacement,
+  BannerRadius,
+} from "@repo/api";
 import { bannersApi, mediaFileUrl } from "@/shared/lib/api";
+import { MOCK_DISCOVERY_HOME_BANNERS } from "./discovery-banners-data";
 
 export type PlacementBannerSlide = {
   id: string;
@@ -10,20 +17,46 @@ export type PlacementBannerSlide = {
   alt: string | null;
   linkKind: BannerLinkKind;
   linkUrl: string | null;
+  ratio: BannerAspectRatio;
+  radius: BannerRadius;
+  gradient: boolean;
+  title: {
+    text: string;
+    placement: BannerOverlayPlacement;
+  } | null;
+  action: {
+    label: string;
+    placement: BannerOverlayPlacement;
+  } | null;
 };
 
 export type PlacementBannersState = {
   slides: PlacementBannerSlide[];
   isLoading: boolean;
+  source: "api" | "mock";
 };
 
-/** Active admin banners for one app placement, flattened to carousel slides. */
+function mockSlidesForPlacement(
+  placement: BannerPlacement,
+): PlacementBannerSlide[] {
+  if (placement === "discovery_home") {
+    return MOCK_DISCOVERY_HOME_BANNERS.map((slide) => ({
+      ...slide,
+      title: slide.title ?? null,
+      action: slide.action ?? null,
+    }));
+  }
+  return [];
+}
+
+/** Active admin banners for one placement, flattened to carousel slides. */
 export function usePlacementBanners(
   placement: BannerPlacement,
 ): PlacementBannersState {
   const [state, setState] = useState<PlacementBannersState>({
     slides: [],
     isLoading: true,
+    source: "mock",
   });
 
   useEffect(() => {
@@ -45,14 +78,32 @@ export function usePlacementBanners(
               alt: slide.alt,
               linkKind: slide.linkKind,
               linkUrl: slide.linkUrl,
+              ratio: slide.ratio,
+              radius: slide.radius,
+              gradient: slide.gradient,
+              title: slide.title,
+              action: slide.action,
             });
           });
         }
 
-        setState({ slides, isLoading: false });
+        if (slides.length > 0) {
+          setState({ slides, isLoading: false, source: "api" });
+          return;
+        }
+
+        setState({
+          slides: mockSlidesForPlacement(placement),
+          isLoading: false,
+          source: "mock",
+        });
       } catch {
         if (cancelled) return;
-        setState({ slides: [], isLoading: false });
+        setState({
+          slides: mockSlidesForPlacement(placement),
+          isLoading: false,
+          source: "mock",
+        });
       }
     })();
 

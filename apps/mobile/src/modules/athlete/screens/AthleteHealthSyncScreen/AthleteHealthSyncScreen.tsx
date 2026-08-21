@@ -57,7 +57,7 @@ export function AthleteHealthSyncScreen({
       className={styles.root()}
       header={
         <SecondaryPageHeader
-          backAriaLabel={بازگشت}
+          backAriaLabel="بازگشت"
           onBack={() => router.back()}
         />
       }

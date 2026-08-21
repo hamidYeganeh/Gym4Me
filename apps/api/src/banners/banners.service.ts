@@ -10,8 +10,11 @@ import type { QueryFilter } from 'mongoose';
 import { AuditService } from '../audit/audit.service';
 import {
   AuditAction,
+  BannerAspectRatio,
   BannerLinkKind,
+  BannerOverlayPlacement,
   BannerPlacement,
+  BannerRadius,
   PublishStatus,
 } from '../common/enums';
 import {
@@ -33,16 +36,23 @@ import {
 } from './dto/admin-banner.dto';
 import { ListBannersQueryDto } from './dto/banner.dto';
 
+type LeanBannerSlide = {
+  mediaId: Types.ObjectId;
+  linkKind: string;
+  linkUrl?: string;
+  alt?: string;
+  ratio?: string;
+  radius?: string;
+  gradient?: boolean;
+  title?: { text: string; placement?: string };
+  action?: { label: string; placement?: string };
+};
+
 type LeanBanner = {
   _id: Types.ObjectId;
   title: string;
   placement: string;
-  slides: {
-    mediaId: Types.ObjectId;
-    linkKind: string;
-    linkUrl?: string;
-    alt?: string;
-  }[];
+  slides: LeanBannerSlide[];
   publishStatus: string;
   schedule?: { startsAt?: Date; endsAt?: Date };
   order: number;
@@ -96,6 +106,8 @@ export class BannersService {
         'title',
         'slides.alt',
         'slides.linkUrl',
+        'slides.title.text',
+        'slides.action.label',
       ]),
     };
     if (query.placement) filter.placement = { $in: query.placement };
@@ -253,12 +265,32 @@ export class BannersService {
 
   private toSlide(slide: BannerSlideDto) {
     const linkKind = slide.linkKind ?? BannerLinkKind.NONE;
+    const titleText = slide.title?.text?.trim();
+    const actionLabel = slide.action?.label?.trim();
+
     return {
       mediaId: new Types.ObjectId(slide.mediaId),
       linkKind,
       linkUrl:
         linkKind === BannerLinkKind.NONE ? undefined : slide.linkUrl?.trim(),
       alt: slide.alt?.trim() || undefined,
+      ratio: slide.ratio ?? BannerAspectRatio.RATIO_16_9,
+      radius: slide.radius ?? BannerRadius.SURFACE,
+      gradient: slide.gradient ?? false,
+      title: titleText
+        ? {
+            text: titleText,
+            placement:
+              slide.title?.placement ?? BannerOverlayPlacement.BOTTOM_START,
+          }
+        : undefined,
+      action: actionLabel
+        ? {
+            label: actionLabel,
+            placement:
+              slide.action?.placement ?? BannerOverlayPlacement.BOTTOM_END,
+          }
+        : undefined,
     };
   }
 
@@ -275,16 +307,37 @@ export class BannersService {
     return { startsAt, endsAt };
   }
 
+  private toPublicSlide(slide: LeanBannerSlide) {
+    return {
+      mediaId: slide.mediaId.toString(),
+      linkKind: slide.linkKind as BannerLinkKind,
+      linkUrl: slide.linkUrl ?? null,
+      alt: slide.alt ?? null,
+      ratio: (slide.ratio ?? BannerAspectRatio.RATIO_16_9) as BannerAspectRatio,
+      radius: (slide.radius ?? BannerRadius.SURFACE) as BannerRadius,
+      gradient: slide.gradient ?? false,
+      title: slide.title?.text
+        ? {
+            text: slide.title.text,
+            placement: (slide.title.placement ??
+              BannerOverlayPlacement.BOTTOM_START) as BannerOverlayPlacement,
+          }
+        : null,
+      action: slide.action?.label
+        ? {
+            label: slide.action.label,
+            placement: (slide.action.placement ??
+              BannerOverlayPlacement.BOTTOM_END) as BannerOverlayPlacement,
+          }
+        : null,
+    };
+  }
+
   private toPublic(doc: LeanBanner) {
     return {
       id: doc._id.toString(),
       placement: doc.placement as BannerPlacement,
-      slides: doc.slides.map((slide) => ({
-        mediaId: slide.mediaId.toString(),
-        linkKind: slide.linkKind as BannerLinkKind,
-        linkUrl: slide.linkUrl ?? null,
-        alt: slide.alt ?? null,
-      })),
+      slides: doc.slides.map((slide) => this.toPublicSlide(slide)),
     };
   }
 

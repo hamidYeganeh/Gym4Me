@@ -1,7 +1,7 @@
 import { spring, stagger } from "@repo/theme";
 import type { Variants } from "motion/react";
 
-/** Replay stagger each time a slide becomes the Embla selection. */
+/** Replay stagger each time a slide becomes the Swiper selection. */
 export const welcomeIntroduceSlideStackVariants: Variants = {
   inactive: {},
   active: {

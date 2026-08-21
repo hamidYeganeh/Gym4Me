@@ -28,19 +28,21 @@ import { ClubEquipmentCard } from "@repo/ui/cards/ClubEquipmentCard";
 import { CoachFeatureCard } from "@repo/ui/cards/CoachFeatureCard";
 import { SportCard } from "@repo/ui/cards/SportCard";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
-import { emblaFreeOptions } from "@repo/ui/lib/embla";
-import useEmblaCarousel from "embla-carousel-react";
+import { swiperFreeOptions } from "@repo/ui/lib/swiper";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import NextLink from "next/link";
 import { useRouter } from "@/shared/lib/app-router";
 
 import {
+  Children,
   useLayoutEffect,
   useRef,
   useState,
   type ReactNode,
 } from "react";
+import { FreeMode } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
 import type { ClassDetailInstruction } from "../../lib/class-detail-data";
 import {
   getClubDetail,
@@ -54,6 +56,9 @@ import { DiscoveryClubsDetailCalendarSection } from "../DiscoveryClubsDetailCale
 import { DiscoveryGallerySection } from "../DiscoveryGallerySection";
 import { discoveryClubsClassDetailBodySectionStyles as styles } from "./DiscoveryClubsClassDetailBodySection.styles";
 import type { DiscoveryClubsClassDetailBodySectionProps } from "./DiscoveryClubsClassDetailBodySection.types";
+
+import "swiper/css";
+import "swiper/css/free-mode";
 
 const SECTION_TITLE_ICON_SIZE = 18;
 const EQUIPMENT_PREVIEW_COUNT = 4;
@@ -135,12 +140,6 @@ function SectionCarousel({
   action?: ReactNode;
   children: ReactNode;
 }) {
-  const [emblaRef] = useEmblaCarousel(
-    emblaFreeOptions({
-      direction: "rtl",
-    }),
-  );
-
   return (
     <>
       <div className={styles.sectionHeader}>
@@ -149,14 +148,20 @@ function SectionCarousel({
           <div className={styles.sectionHeaderAside}>{action}</div>
         ) : null}
       </div>
-      <div
+      <Swiper
+        {...swiperFreeOptions()}
         aria-label={ariaLabel}
         aria-roledescription="carousel"
         className={styles.carousel}
-        ref={emblaRef}
+        dir="rtl"
+        modules={[FreeMode]}
       >
-        <div className={styles.carouselTrack}>{children}</div>
-      </div>
+        {Children.toArray(children).map((child, index) => (
+          <SwiperSlide className={styles.swiperSlide} key={index}>
+            {child}
+          </SwiperSlide>
+        ))}
+      </Swiper>
     </>
   );
 }
@@ -720,7 +725,9 @@ export function DiscoveryClubsClassDetailBodySection({
                         className={styles.relatedMetaIcon}
                         size={14}
                       />
-                      <Typography type="body-xs">{item.durationLabel}</Typography>
+                      <Typography type="body-xs">
+                        {item.durationLabel}
+                      </Typography>
                     </span>
                     {item.caloriesLabel ? (
                       <span className={styles.relatedMetaItem}>

@@ -35,7 +35,7 @@ export function BottomNav({
   const mid = Math.ceil(items.length / 2);
   const leading = items.slice(0, mid);
   const trailing = items.slice(mid);
-  const actions = centerAction?.ed ?? [];
+  const actions = centerAction?.actions ?? [];
   const hasActionsMenu = actions.length > 0;
 
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);

@@ -1,4 +1,9 @@
-import { FLAG_KEYS, readFlag, writeFlag } from "@/shared/lib/flag-storage";
+import {
+  hydrateOnboardingProfileFlag,
+  onboardingProfileDoneKey,
+  readFlag,
+  writeFlag,
+} from "@/shared/lib/flag-storage";
 
 export type OnboardingDraft = {
   fullName: string;
@@ -6,12 +11,16 @@ export type OnboardingDraft = {
   birthdateIso: string | null;
 };
 
-/** Whether the profile onboarding wizard has been finished or skipped. */
-export function hasCompletedOnboarding(): boolean {
-  return readFlag(FLAG_KEYS.onboardingProfileDone) === "1";
+export { hydrateOnboardingProfileFlag };
+
+/** Whether this account finished or skipped the profile onboarding wizard. */
+export function hasCompletedOnboarding(userId: string): boolean {
+  if (!userId) return false;
+  return readFlag(onboardingProfileDoneKey(userId)) === "1";
 }
 
-/** Persist that the user finished (or skipped) profile onboarding. */
-export function markOnboardingDone(): void {
-  writeFlag(FLAG_KEYS.onboardingProfileDone, "1");
+/** Persist that this account finished (or skipped) profile onboarding. */
+export function markOnboardingDone(userId: string): void {
+  if (!userId) return;
+  writeFlag(onboardingProfileDoneKey(userId), "1");
 }

@@ -3,6 +3,7 @@ import {
   ArrayMaxSize,
   ArrayMinSize,
   IsArray,
+  IsBoolean,
   IsDateString,
   IsEnum,
   IsInt,
@@ -16,11 +17,36 @@ import {
 } from 'class-validator';
 import { PaginationQueryDto } from '../../admin/dto/admin.dto';
 import {
+  BannerAspectRatio,
   BannerLinkKind,
+  BannerOverlayPlacement,
   BannerPlacement,
+  BannerRadius,
   PublishStatus,
 } from '../../common/enums';
 import { toStringArray } from '../../common/utils/list-query.util';
+
+export class BannerSlideTitleDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(120)
+  text!: string;
+
+  @IsOptional()
+  @IsEnum(BannerOverlayPlacement)
+  placement?: BannerOverlayPlacement;
+}
+
+export class BannerSlideActionDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(80)
+  label!: string;
+
+  @IsOptional()
+  @IsEnum(BannerOverlayPlacement)
+  placement?: BannerOverlayPlacement;
+}
 
 export class BannerSlideDto {
   @IsMongoId()
@@ -39,6 +65,28 @@ export class BannerSlideDto {
   @IsString()
   @MaxLength(200)
   alt?: string;
+
+  @IsOptional()
+  @IsEnum(BannerAspectRatio)
+  ratio?: BannerAspectRatio;
+
+  @IsOptional()
+  @IsEnum(BannerRadius)
+  radius?: BannerRadius;
+
+  @IsOptional()
+  @IsBoolean()
+  gradient?: boolean;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => BannerSlideTitleDto)
+  title?: BannerSlideTitleDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => BannerSlideActionDto)
+  action?: BannerSlideActionDto;
 }
 
 export class BannerScheduleDto {

@@ -2,7 +2,11 @@
 
 import { useEffect, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import { authHref, postAuthPath } from "@/shared/lib/auth-redirect";
+import {
+  authHref,
+  needsProfileOnboarding,
+  postAuthPath,
+} from "@/shared/lib/auth-redirect";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { useRouter } from "@/shared/lib/app-router";
 
@@ -23,6 +27,17 @@ function AuthGateShell() {
   );
 }
 
+function sessionForRedirect(
+  session: ReturnType<typeof useAuth>["session"],
+  activeRole: ReturnType<typeof useAuth>["activeRole"],
+) {
+  return {
+    activeRole: session?.activeRole ?? activeRole,
+    isNewUser: session?.isNewUser,
+    user: session?.user,
+  };
+}
+
 export function RequireAuth({ children, guestOnly = false }: RequireAuthProps) {
   const { isAuthenticated, activeRole, isReady, session } = useAuth();
   const router = useRouter();
@@ -31,6 +46,8 @@ export function RequireAuth({ children, guestOnly = false }: RequireAuthProps) {
   useEffect(() => {
     if (!isReady) return;
 
+    const authSession = sessionForRedirect(session, activeRole);
+
     if (guestOnly) {
       if (isAuthenticated) {
         // Match OTP/login success routing so guestOnly does not race past /onboarding.
@@ -38,21 +55,23 @@ export function RequireAuth({ children, guestOnly = false }: RequireAuthProps) {
           typeof window !== "undefined"
             ? new URLSearchParams(window.location.search).get("next")
             : null;
-        router.replace(
-          postAuthPath(
-            {
-              activeRole: session?.activeRole ?? activeRole,
-              isNewUser: session?.isNewUser,
-            },
-            next,
-          ),
-        );
+        router.replace(postAuthPath(authSession, next));
       }
       return;
     }
 
     if (!isAuthenticated) {
       router.replace(authHref(pathname || "/"));
+      return;
+    }
+
+    // Keep incomplete profiles inside the wizard (deep links / role home).
+    if (
+      pathname &&
+      !pathname.startsWith("/onboarding") &&
+      needsProfileOnboarding(authSession)
+    ) {
+      router.replace(postAuthPath(authSession, pathname));
     }
   }, [
     activeRole,
@@ -61,8 +80,7 @@ export function RequireAuth({ children, guestOnly = false }: RequireAuthProps) {
     isReady,
     pathname,
     router,
-    session?.activeRole,
-    session?.isNewUser,
+    session,
   ]);
 
   if (!isReady) {
@@ -75,5 +93,14 @@ export function RequireAuth({ children, guestOnly = false }: RequireAuthProps) {
   }
 
   if (!isAuthenticated) return <AuthGateShell />;
+
+  if (
+    pathname &&
+    !pathname.startsWith("/onboarding") &&
+    needsProfileOnboarding(sessionForRedirect(session, activeRole))
+  ) {
+    return <AuthGateShell />;
+  }
+
   return children;
 }

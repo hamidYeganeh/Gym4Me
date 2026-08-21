@@ -25,17 +25,23 @@ import { OnboardingIdentitySection } from "@/modules/app/sections/OnboardingIden
 import { OnboardingMoodSection } from "@/modules/app/sections/OnboardingMoodSection";
 import { OnboardingNameSection } from "@/modules/app/sections/OnboardingNameSection";
 import { OnboardingPhaseIntroSection } from "@/modules/app/sections/OnboardingPhaseIntroSection";
-import { OnboardingReviewSection } from "@/modules/app/sections/OnboardingReviewSection";
 import { OnboardingSleepSection } from "@/modules/app/sections/OnboardingSleepSection";
 import { OnboardingSlideShell } from "@/modules/app/sections/OnboardingSlideShell";
 import { OnboardingSportsSection } from "@/modules/app/sections/OnboardingSportsSection";
 import { OnboardingWeightSection } from "@/modules/app/sections/OnboardingWeightSection";
+import { swiperOptions } from "@repo/ui/lib/swiper";
+import { Swiper, SwiperSlide } from "swiper/react";
 import { onboardingCarouselSectionVariants } from "./OnboardingCarouselSection.styles";
 import type { OnboardingCarouselSectionProps } from "./OnboardingCarouselSection.types";
 
+import "swiper/css";
+
 export function OnboardingCarouselSection({
   t,
-  emblaRef,
+  onSwiper,
+  onSlideChange,
+  carouselSpeed,
+  textDirection,
   slide,
   age,
   firstName,
@@ -98,39 +104,37 @@ export function OnboardingCarouselSection({
   handleCaloriesChange,
   requestFinish,
   carouselClassName,
-  trackClassName,
 }: OnboardingCarouselSectionProps) {
   const styles = onboardingCarouselSectionVariants();
+  const options = swiperOptions({
+    speed: carouselSpeed,
+    allowTouchMove: false,
+    nested: true,
+  });
 
   return (
-    <div
+    <Swiper
+      {...options}
       aria-roledescription="carousel"
       className={styles.carousel({ className: carouselClassName })}
-      ref={emblaRef}
+      dir={textDirection}
+      onSlideChange={onSlideChange}
+      onSwiper={onSwiper}
     >
-      <div className={styles.track({ className: trackClassName })}>
-        {ONBOARDING_STEPS.map((stepId, index) => {
+      {ONBOARDING_STEPS.map((stepId, index) => {
           const isActive = slide === index;
           const mountStage = Math.abs(slide - index) <= 1;
           const subtitleKey = slideSubtitleKey(stepId);
 
           return (
+            <SwiperSlide className={styles.slide()} key={stepId}>
             <OnboardingSlideShell
               bleed={slideIsBleed(stepId)}
               isActive={isActive}
-              key={stepId}
               showChrome={!slideOwnsChrome(stepId)}
               subtitle={subtitleKey ? t(subtitleKey) : undefined}
               title={t(slideTitleKey(stepId))}
             >
-              {mountStage && stepId === "review" ? (
-                <OnboardingReviewSection
-                  artAlt={t("review.artAlt")}
-                  subtitle={t("review.subtitle")}
-                  title={t("review.title")}
-                />
-              ) : null}
-
               {mountStage && stepId === "name" ? (
                 <OnboardingNameSection
                   firstName={firstName}
@@ -201,9 +205,7 @@ export function OnboardingCarouselSection({
                   isError={athleteLevelStatus === "error"}
                   isLoading={athleteLevelStatus === "loading"}
                   label={t("athleteLevel.title")}
-                  levelLabel={(level) =>
-                    t("athleteLevel.level", { level })
-                  }
+                  levelLabel={(level) => t("athleteLevel.level", { level })}
                   options={athleteLevelOptions}
                   value={athleteLevel}
                   onChange={setAthleteLevel}
@@ -327,9 +329,9 @@ export function OnboardingCarouselSection({
                 />
               ) : null}
             </OnboardingSlideShell>
+            </SwiperSlide>
           );
         })}
-      </div>
-    </div>
+    </Swiper>
   );
 }

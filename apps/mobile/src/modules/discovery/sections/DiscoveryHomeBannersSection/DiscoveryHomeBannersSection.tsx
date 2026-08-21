@@ -25,23 +25,40 @@ export function DiscoveryHomeBannersSection({
   const t = useTranslations("DiscoveryHome");
   const router = useRouter();
 
-  if (banners.length <= 1) return null;
+  if (banners.length === 0) return null;
 
   return (
     <BannerCarousel
       aria-label={t("bannersLabel")}
+      aspectRatio="16/9"
+      radius="surface"
       slideLabel={(current, total) =>
         t("bannerSlideLabel", { current, total })
       }
-      slides={banners.slice(1).map((slide) => ({
-        id: slide.id,
-        imageUrl: slide.imageUrl,
-        alt: slide.alt,
-        onPress:
+      slides={banners.map((slide) => {
+        const openLink =
           slide.linkKind !== "none" && slide.linkUrl
             ? () => openBannerLink(router, slide.linkKind, slide.linkUrl)
+            : undefined;
+
+        return {
+          id: slide.id,
+          imageUrl: slide.imageUrl,
+          alt: slide.alt,
+          ratio: slide.ratio,
+          radius: slide.radius,
+          gradient: slide.gradient,
+          title: slide.title ?? undefined,
+          action: slide.action
+            ? {
+                label: slide.action.label,
+                placement: slide.action.placement,
+                onPress: openLink,
+              }
             : undefined,
-      }))}
+          onPress: slide.action ? undefined : openLink,
+        };
+      })}
     />
   );
 }

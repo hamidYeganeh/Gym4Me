@@ -1,7 +1,6 @@
 /**
- * App router with page-transition support.
- * Prefer this over `next/navigation` `useRouter` so push/replace/back
- * run through [`next-transition-router`](https://github.com/ismamz/next-transition-router).
+ * App router re-exports. Prefer this over importing `next/navigation` directly
+ * so navigation stays consistent across the mobile app.
  */
-export { useTransitionRouter as useRouter } from "next-transition-router";
-export { Link as TransitionLink } from "next-transition-router";
+export { useRouter } from "next/navigation";
+export { default as Link } from "next/link";

@@ -6,9 +6,10 @@ import { ArrowUpRight } from "@repo/icons/ArrowUpRight";
 import { Image1 } from "@repo/icons/Image1";
 import { ClubGalleryCard } from "@repo/ui/cards/ClubGalleryCard";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
-import { emblaFreeOptions } from "@repo/ui/lib/embla";
-import useEmblaCarousel from "embla-carousel-react";
+import { swiperFreeOptions } from "@repo/ui/lib/swiper";
 import { useState, type ReactNode } from "react";
+import { FreeMode } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
 import {
   formatGalleryViews,
   isGalleryItemNew,
@@ -16,6 +17,9 @@ import {
 import { DiscoveryClubsDetailHeroSectionLightbox } from "../DiscoveryClubsDetailHeroSectionLightbox";
 import { discoveryGallerySectionStyles as styles } from "./DiscoveryGallerySection.styles";
 import type { DiscoveryGallerySectionProps } from "./DiscoveryGallerySection.types";
+
+import "swiper/css";
+import "swiper/css/free-mode";
 
 const GALLERY_PREVIEW_COUNT = 8;
 const SECTION_TITLE_ICON_SIZE = 20;
@@ -48,11 +52,6 @@ export function DiscoveryGallerySection({
 }: DiscoveryGallerySectionProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [emblaRef] = useEmblaCarousel(
-    emblaFreeOptions({
-      direction: "rtl",
-    }),
-  );
 
   if (gallery.length === 0) return null;
 
@@ -70,18 +69,16 @@ export function DiscoveryGallerySection({
         </SectionTitle>
       </div>
 
-      <div
+      <Swiper
+        {...swiperFreeOptions()} dir="rtl"
         aria-label={labels.title}
         aria-roledescription="carousel"
         className={styles.carousel}
-        ref={emblaRef}
+        modules={[FreeMode]}
       >
-        <div className={styles.carouselTrack}>
-          {preview.map((item, index) => (
-            <div
-              className={styles.slide}
-              key={item.id ?? `${item.url}-${index}`}
-            >
+        {preview.map((item, index) => (
+          <SwiperSlide className={styles.swiperSlide} key={item.id ?? `${item.url}-${index}`}>
+            <div className={styles.slide}>
               <ClubGalleryCard
                 actionLabel={labels.action}
                 author={item.author}
@@ -100,8 +97,10 @@ export function DiscoveryGallerySection({
                 }
               />
             </div>
-          ))}
+          </SwiperSlide>
+        ))}
 
+        <SwiperSlide className={styles.swiperSlide}>
           <Button
             className={styles.seeAll}
             onPress={() => openLightbox(0)}
@@ -110,8 +109,8 @@ export function DiscoveryGallerySection({
             <ArrowUpRight size={20} />
             <span className={styles.seeAllLabel}>{labels.seeAll}</span>
           </Button>
-        </div>
-      </div>
+        </SwiperSlide>
+      </Swiper>
 
       <DiscoveryClubsDetailHeroSectionLightbox
         activeIndex={activeIndex}

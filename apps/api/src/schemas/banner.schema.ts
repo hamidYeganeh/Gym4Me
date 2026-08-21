@@ -1,14 +1,49 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import {
+  BannerAspectRatio,
   BannerLinkKind,
+  BannerOverlayPlacement,
   BannerPlacement,
+  BannerRadius,
   PublishStatus,
 } from '../common/enums';
 import { Media } from './media.schema';
 import { User } from './user.schema';
 
 export type BannerDocument = HydratedDocument<Banner>;
+
+@Schema({ _id: false })
+export class BannerSlideTitle {
+  @Prop({ required: true, trim: true, maxlength: 120 })
+  text!: string;
+
+  @Prop({
+    type: String,
+    enum: BannerOverlayPlacement,
+    default: BannerOverlayPlacement.BOTTOM_START,
+  })
+  placement!: BannerOverlayPlacement;
+}
+
+export const BannerSlideTitleSchema =
+  SchemaFactory.createForClass(BannerSlideTitle);
+
+@Schema({ _id: false })
+export class BannerSlideAction {
+  @Prop({ required: true, trim: true, maxlength: 80 })
+  label!: string;
+
+  @Prop({
+    type: String,
+    enum: BannerOverlayPlacement,
+    default: BannerOverlayPlacement.BOTTOM_END,
+  })
+  placement!: BannerOverlayPlacement;
+}
+
+export const BannerSlideActionSchema =
+  SchemaFactory.createForClass(BannerSlideAction);
 
 @Schema({ _id: false })
 export class BannerSlide {
@@ -28,6 +63,30 @@ export class BannerSlide {
 
   @Prop({ trim: true, maxlength: 200 })
   alt?: string;
+
+  @Prop({
+    type: String,
+    enum: BannerAspectRatio,
+    default: BannerAspectRatio.RATIO_16_9,
+  })
+  ratio!: BannerAspectRatio;
+
+  @Prop({
+    type: String,
+    enum: BannerRadius,
+    default: BannerRadius.SURFACE,
+  })
+  radius!: BannerRadius;
+
+  /** Soft theme-aware scrim over the image for title/action readability. */
+  @Prop({ default: false })
+  gradient!: boolean;
+
+  @Prop({ type: BannerSlideTitleSchema })
+  title?: BannerSlideTitle;
+
+  @Prop({ type: BannerSlideActionSchema })
+  action?: BannerSlideAction;
 }
 
 export const BannerSlideSchema = SchemaFactory.createForClass(BannerSlide);

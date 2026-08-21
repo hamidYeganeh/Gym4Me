@@ -16,8 +16,7 @@ import { useTranslations } from "next-intl";
 import { AuthLoginPasswordForm } from "@/modules/auth/components/AuthLoginPasswordForm";
 import type { AuthLoginPasswordPayload } from "@/modules/auth/components/AuthLoginPasswordForm";
 import { OtpScreenAltAuthSection } from "@/modules/auth/sections/OtpScreenAltAuthSection";
-import { withAuthNext } from "@/shared/lib/auth-redirect";
-import { roleHomePath } from "@/shared/lib/role-routes";
+import { postAuthPath, withAuthNext } from "@/shared/lib/auth-redirect";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { signInScreenVariants } from "./SignInScreen.styles";
 import type { SignInScreenProps } from "./SignInScreen.types";
@@ -48,11 +47,7 @@ export function SignInScreen({ className }: SignInScreenProps) {
     try {
       const session = await login(payload.phone, payload.password);
       void payload.remember;
-      router.replace(
-        next && next.startsWith("/")
-          ? next
-          : roleHomePath(session.activeRole),
-      );
+      router.replace(postAuthPath(session, next));
     } catch (err) {
       toast.error(t("toastErrorTitle"), {
         description:

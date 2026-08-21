@@ -1,11 +1,11 @@
 "use client";
 
-import useEmblaCarousel from "embla-carousel-react";
 import { useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { EMBLA_DURATION, emblaOptions } from "@repo/ui/lib/embla";
+import type { Swiper as SwiperInstance } from "swiper";
+import { SWIPER_SPEED } from "@repo/ui/lib/swiper";
 import {
   ONBOARDING_BLOOD_GROUPS,
   ONBOARDING_BODY_TYPES,
@@ -103,7 +103,7 @@ export function useOnboarding() {
   const t = useTranslations("Mobile.Onboarding");
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isAuthenticated, activeRole } = useAuth();
+  const { isAuthenticated, activeRole, user } = useAuth();
   const { ensurePermission } = useDevicePermissions();
   const reduceMotion = useReducedMotion();
   const [textDirection] = useState<"rtl" | "ltr">(readDocumentDirection);
@@ -203,32 +203,19 @@ export function useOnboarding() {
   });
   const [premadeIndex, setPremadeIndex] = useState(0);
 
-  const [emblaRef, emblaApi] = useEmblaCarousel(
-    emblaOptions({
-      align: "center",
-      containScroll: "trimSnaps",
-      direction: textDirection,
-      duration: reduceMotion ? EMBLA_DURATION.instant : EMBLA_DURATION.smooth,
-      // Advance only via continue / back controls — no pan swipe.
-      watchDrag: false,
-    }),
-  );
+  const swiperRef = useRef<SwiperInstance | null>(null);
+  const carouselSpeed = reduceMotion
+    ? SWIPER_SPEED.instant
+    : SWIPER_SPEED.smooth;
 
-  const onSelect = useCallback(() => {
-    if (!emblaApi) return;
-    setSlide(emblaApi.selectedScrollSnap());
-  }, [emblaApi]);
+  const onSwiper = useCallback((swiper: SwiperInstance) => {
+    swiperRef.current = swiper;
+    setSlide(swiper.activeIndex);
+  }, []);
 
-  useEffect(() => {
-    if (!emblaApi) return;
-    emblaApi.on("select", onSelect);
-    emblaApi.on("reInit", onSelect);
-    queueMicrotask(onSelect);
-    return () => {
-      emblaApi.off("select", onSelect);
-      emblaApi.off("reInit", onSelect);
-    };
-  }, [emblaApi, onSelect]);
+  const onSlideChange = useCallback((swiper: SwiperInstance) => {
+    setSlide(swiper.activeIndex);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -710,8 +697,7 @@ export function useOnboarding() {
 
   const canContinue =
     !isAvatarUploading &&
-    (step === "review" ||
-      (step === "name" && firstName.trim().length > 1) ||
+    ((step === "name" && firstName.trim().length > 1) ||
       (step === "gender" && gender != null) ||
       step === "birthdate" ||
       step === "height" ||
@@ -872,7 +858,9 @@ export function useOnboarding() {
   };
 
   const completeOnboarding = () => {
-    markOnboardingDone();
+    if (user?.id) {
+      markOnboardingDone(user.id);
+    }
     const next = searchParams.get("next");
     const fallback = isAuthenticated
       ? roleHomePath(activeRole)
@@ -915,7 +903,7 @@ export function useOnboarding() {
       router.back();
       return;
     }
-    emblaApi?.scrollPrev();
+    swiperRef.current?.slidePrev();
   };
 
   const goNext = () => {
@@ -926,7 +914,7 @@ export function useOnboarding() {
       requestFinish();
       return;
     }
-    emblaApi?.scrollNext();
+    swiperRef.current?.slideNext();
   };
 
   const toggleGoal = (id: string) => {
@@ -958,7 +946,10 @@ export function useOnboarding() {
 
   return {
     t,
-    emblaRef,
+    onSwiper,
+    onSlideChange,
+    carouselSpeed,
+    textDirection,
     slide,
     step,
     progress,

@@ -7,11 +7,12 @@ export const discoveryGallerySectionStyles = {
   carousel: [
     "min-w-0 -mx-5 w-[calc(100%+2.5rem)] max-w-none overflow-hidden",
     "[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pe-[calc(env(safe-area-inset-right)+1rem)]",
+    "[&_.swiper-wrapper]:px-5 [&_.swiper-wrapper]:pb-1",
   ].join(" "),
-  carouselTrack: "flex touch-pan-y gap-3 px-5 pb-1",
-  slide: "min-w-0 shrink-0",
+  swiperSlide: "!w-auto !h-auto",
+  slide: "min-w-0",
   seeAll: [
-    "flex h-[min(17.5rem,calc(100vw*0.55))] w-[9.75rem] shrink-0 snap-start",
+    "flex h-[min(17.5rem,calc(100vw*0.55))] w-[9.75rem]",
     "flex-col items-center justify-center gap-2",
     "rounded-[1.35rem] border border-border/70 bg-default text-foreground",
     "transition-transform duration-fast ease-app",

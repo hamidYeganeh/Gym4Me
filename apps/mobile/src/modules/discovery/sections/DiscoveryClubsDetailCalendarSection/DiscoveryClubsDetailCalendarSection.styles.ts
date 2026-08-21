@@ -23,12 +23,7 @@ export const discoveryClubsDetailCalendarSectionVariants = tv({
     ].join(" "),
     pickerDrawerBody: "overflow-hidden px-1",
     pickerDrawerScroll: "max-h-[min(75dvh,40rem)]",
-    pickerMonths: "flex w-full flex-col gap-6 pb-2 pt-1",
-    pickerMonth: "w-full",
-    pickerMonthHeader: "mb-2 justify-center px-1",
-    pickerHeading:
-      "flex-none text-center text-base font-semibold text-foreground",
-    pickerCalendar: "w-full max-w-none",
+    pickerCalendar: "w-full max-w-none pb-2 pt-1",
     days: [
       "flex gap-2 overflow-x-auto pb-1",
       "[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",

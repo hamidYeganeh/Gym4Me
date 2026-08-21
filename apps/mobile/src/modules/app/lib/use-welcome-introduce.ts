@@ -1,11 +1,11 @@
 "use client";
 
-import useEmblaCarousel from "embla-carousel-react";
 import { useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/shared/lib/app-router";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { Swiper as SwiperInstance } from "swiper";
 import {
   WELCOME_INTRODUCE_SLIDE_COUNT,
 } from "@/modules/app/lib/welcome-introduce-data";
@@ -13,7 +13,7 @@ import { markWelcomeSeen } from "@/modules/app/lib/welcome-storage";
 import { readDocumentDirection } from "@/modules/app/lib/onboarding-helpers";
 import { roleHomePath } from "@/shared/lib/role-routes";
 import { useAuth } from "@/shared/providers/AuthProvider";
-import { EMBLA_DURATION, emblaOptions } from "@repo/ui/lib/embla";
+import { SWIPER_SPEED } from "@repo/ui/lib/swiper";
 
 export function useWelcomeIntroduce() {
   const t = useTranslations("Mobile.WelcomeIntroduce");
@@ -22,36 +22,19 @@ export function useWelcomeIntroduce() {
   const { isAuthenticated, activeRole, isReady } = useAuth();
   const [textDirection] = useState<"rtl" | "ltr">(readDocumentDirection);
   const [slide, setSlide] = useState(0);
+  const swiperRef = useRef<SwiperInstance | null>(null);
+  const carouselSpeed = reduceMotion
+    ? SWIPER_SPEED.instant
+    : SWIPER_SPEED.smooth;
 
-  const [emblaRef, emblaApi] = useEmblaCarousel(
-    emblaOptions({
-      align: "center",
-      containScroll: "trimSnaps",
-      direction: textDirection,
-      duration: reduceMotion ? EMBLA_DURATION.instant : EMBLA_DURATION.smooth,
-      watchDrag: (_api, event) => {
-        const target = event.target;
-        if (!(target instanceof Element)) return true;
-        return !target.closest("[data-welcome-nested-carousel]");
-      },
-    }),
-  );
+  const onSwiper = useCallback((swiper: SwiperInstance) => {
+    swiperRef.current = swiper;
+    setSlide(swiper.activeIndex);
+  }, []);
 
-  const onSelect = useCallback(() => {
-    if (!emblaApi) return;
-    setSlide(emblaApi.selectedScrollSnap());
-  }, [emblaApi]);
-
-  useEffect(() => {
-    if (!emblaApi) return;
-    emblaApi.on("select", onSelect);
-    emblaApi.on("reInit", onSelect);
-    queueMicrotask(onSelect);
-    return () => {
-      emblaApi.off("select", onSelect);
-      emblaApi.off("reInit", onSelect);
-    };
-  }, [emblaApi, onSelect]);
+  const onSlideChange = useCallback((swiper: SwiperInstance) => {
+    setSlide(swiper.activeIndex);
+  }, []);
 
   useEffect(() => {
     if (!isReady) return;
@@ -70,7 +53,7 @@ export function useWelcomeIntroduce() {
       router.push("/welcome");
       return;
     }
-    emblaApi?.scrollPrev();
+    swiperRef.current?.slidePrev();
   };
 
   const goNext = () => {
@@ -78,7 +61,7 @@ export function useWelcomeIntroduce() {
       finish();
       return;
     }
-    emblaApi?.scrollNext();
+    swiperRef.current?.slideNext();
   };
 
   const isRtl = textDirection === "rtl";
@@ -97,7 +80,10 @@ export function useWelcomeIntroduce() {
 
   return {
     t,
-    emblaRef,
+    onSwiper,
+    onSlideChange,
+    carouselSpeed,
+    textDirection,
     slide,
     isRtl,
     onLeftPress,

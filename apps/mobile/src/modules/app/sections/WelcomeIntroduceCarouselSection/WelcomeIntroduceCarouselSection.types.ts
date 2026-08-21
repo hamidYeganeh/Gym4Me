@@ -1,7 +1,8 @@
-import type { useTranslations } from "next-intl";
+import type { UseWelcomeIntroduceReturn } from "@/modules/app/lib/use-welcome-introduce";
 
-export type WelcomeIntroduceCarouselSectionProps = {
-  emblaRef: (node: HTMLElement | null) => void;
-  t: ReturnType<typeof useTranslations<"Mobile.WelcomeIntroduce">>;
+export type WelcomeIntroduceCarouselSectionProps = Pick<
+  UseWelcomeIntroduceReturn,
+  "t" | "onSwiper" | "onSlideChange" | "carouselSpeed" | "textDirection"
+> & {
   className?: string;
 };

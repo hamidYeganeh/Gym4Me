@@ -281,6 +281,31 @@ export type BannerPlacement =
 /** Mirrors `BannerLinkKind` in apps/api. */
 export type BannerLinkKind = "none" | "internal" | "external";
 
+/** Mirrors `BannerOverlayPlacement` in apps/api. */
+export type BannerOverlayPlacement =
+  | "top-start"
+  | "top-center"
+  | "top-end"
+  | "center-start"
+  | "center"
+  | "center-end"
+  | "bottom-start"
+  | "bottom-center"
+  | "bottom-end";
+
+/** Mirrors `BannerAspectRatio` in apps/api. */
+export type BannerAspectRatio = "16/9" | "2/1" | "4/3" | "1/1";
+
+/** Mirrors `BannerRadius` in apps/api. */
+export type BannerRadius =
+  | "none"
+  | "sm"
+  | "field"
+  | "compact"
+  | "auth"
+  | "surface"
+  | "full";
+
 /** Mirrors `ArticleKind` in apps/api. */
 export type ArticleKind = "guide" | "news" | "tip" | "story" | "workout";
 

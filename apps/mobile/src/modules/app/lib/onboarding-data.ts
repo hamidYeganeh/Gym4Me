@@ -1,5 +1,4 @@
 export type OnboardingStepId =
-  | "review"
   | "name"
   | "gender"
   | "birthdate"
@@ -38,7 +37,6 @@ export type OnboardingMoodId =
   | "overjoyed";
 
 export const ONBOARDING_STEPS: OnboardingStepId[] = [
-  "review",
   "name",
   "goals",
   "gender",

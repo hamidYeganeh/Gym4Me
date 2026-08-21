@@ -3,10 +3,11 @@
 import { Button } from "@heroui/react/button";
 import { ScrollShadow, type ScrollShadowVisibility } from "@heroui/react/scroll-shadow";
 import { ClubCard } from "@repo/ui/cards/ClubCard";
-import { emblaOptions } from "@repo/ui/lib/embla";
-import useEmblaCarousel from "embla-carousel-react";
+import { swiperOptions } from "@repo/ui/lib/swiper";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
+import type { Swiper as SwiperInstance } from "swiper";
+import { Swiper, SwiperSlide } from "swiper/react";
 import { LANDING_ASSETS, LANDING_CLUBS } from "../../lib/landing-assets";
 import { BrandMark } from "../../lib/landing-controls";
 import { ClipReveal, InViewRise } from "../../lib/landing-reveal";
@@ -16,15 +17,17 @@ import { MarketingThemeToggle } from "../../lib/marketing-theme-toggle";
 import { landingHeroSectionStyles } from "./LandingHeroSection.styles";
 import type { LandingHeroSectionProps } from "./LandingHeroSection.types";
 
+import "swiper/css";
+
 const HERO_CLUBS = LANDING_CLUBS.slice(0, 5);
 
-function shadowFromEmbla(
-  canPrev: boolean,
-  canNext: boolean,
+function shadowFromEdges(
+  isBeginning: boolean,
+  isEnd: boolean,
 ): ScrollShadowVisibility {
-  if (canPrev && canNext) return "both";
-  if (canPrev) return "left";
-  if (canNext) return "right";
+  if (!isBeginning && !isEnd) return "both";
+  if (!isBeginning) return "left";
+  if (!isEnd) return "right";
   return "none";
 }
 
@@ -38,13 +41,9 @@ export function LandingHeroSection({ className }: LandingHeroSectionProps) {
   const [shadowVisibility, setShadowVisibility] =
     useState<ScrollShadowVisibility>("auto");
 
-  const [emblaRef, emblaApi] = useEmblaCarousel(
-    emblaOptions({
-      align: "start",
-      containScroll: "trimSnaps",
-      direction: "rtl",
-    }),
-  );
+  const syncShadow = (swiper: SwiperInstance) => {
+    setShadowVisibility(shadowFromEdges(swiper.isBeginning, swiper.isEnd));
+  };
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -74,27 +73,6 @@ export function LandingHeroSection({ className }: LandingHeroSectionProps) {
       st?.kill();
     };
   }, []);
-
-  useEffect(() => {
-    if (!emblaApi) return;
-
-    const syncShadow = () => {
-      setShadowVisibility(
-        shadowFromEmbla(emblaApi.canScrollPrev(), emblaApi.canScrollNext()),
-      );
-    };
-
-    syncShadow();
-    emblaApi.on("select", syncShadow);
-    emblaApi.on("reInit", syncShadow);
-    emblaApi.on("scroll", syncShadow);
-
-    return () => {
-      emblaApi.off("select", syncShadow);
-      emblaApi.off("reInit", syncShadow);
-      emblaApi.off("scroll", syncShadow);
-    };
-  }, [emblaApi]);
 
   return (
     <section ref={sectionRef} className={slots.root({ className })}>
@@ -208,37 +186,42 @@ export function LandingHeroSection({ className }: LandingHeroSectionProps) {
             size={56}
             visibility={shadowVisibility}
           >
-            <div
+            <Swiper
+              {...swiperOptions({
+                slidesPerView: 2.5,
+                spaceBetween: 12,
+                slidesPerGroup: 1,
+              })}
               aria-label={t("carouselAria")}
+              dir="rtl"
               aria-roledescription="carousel"
               className={slots.carousel()}
-              dir="rtl"
-              ref={emblaRef}
+              onProgress={syncShadow}
+              onSlideChange={syncShadow}
+              onSwiper={syncShadow}
               role="group"
             >
-              <div className={slots.carouselTrack()}>
-                {HERO_CLUBS.map((club) => (
-                  <div className={slots.slide()} key={club.title}>
-                    <ClubCard
-                      actionLabel={shared("viewAction")}
-                      className={slots.clubCard()}
-                      features={[...club.features]}
-                      image={club.image}
-                      imageAlt={club.title}
-                      onAction={() => scrollTo("#clubs")}
-                      orientation="vertical"
-                      price={club.price}
-                      pricePrefix={shared("pricePrefix")}
-                      priceSuffix={shared("priceSuffix")}
-                      rating={club.rating}
-                      ratingCount={club.ratingCount}
-                      subtitle={club.subtitle}
-                      title={club.title}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
+              {HERO_CLUBS.map((club) => (
+                <SwiperSlide className={slots.slide()} key={club.title}>
+                  <ClubCard
+                    actionLabel={shared("viewAction")}
+                    className={slots.clubCard()}
+                    features={[...club.features]}
+                    image={club.image}
+                    imageAlt={club.title}
+                    onAction={() => scrollTo("#clubs")}
+                    orientation="vertical"
+                    price={club.price}
+                    pricePrefix={shared("pricePrefix")}
+                    priceSuffix={shared("priceSuffix")}
+                    rating={club.rating}
+                    ratingCount={club.ratingCount}
+                    subtitle={club.subtitle}
+                    title={club.title}
+                  />
+                </SwiperSlide>
+              ))}
+            </Swiper>
           </ScrollShadow>
         </InViewRise>
       </div>

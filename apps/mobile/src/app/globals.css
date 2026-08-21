@@ -2,6 +2,8 @@
 @import "@heroui/styles";
 @import "@repo/theme/heroui.css";
 @import "@repo/theme/tokens.css";
+@import "react-multi-date-picker/styles/layouts/mobile.css";
+@import "@repo/theme/rmdp.css";
 
 @source "../../../../packages/ui/src";
 

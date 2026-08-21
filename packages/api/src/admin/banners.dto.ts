@@ -1,11 +1,18 @@
 import type {
+  BannerAspectRatio,
   BannerLinkKind,
+  BannerOverlayPlacement,
   BannerPlacement,
+  BannerRadius,
   ListQuery,
   ListQueryFilter,
   PublishStatus,
 } from "../types";
-import type { BannerSlide } from "../banners/banners.dto";
+import type {
+  BannerSlide,
+  BannerSlideAction,
+  BannerSlideTitle,
+} from "../banners/banners.dto";
 
 export type AdminBanner = {
   id: string;
@@ -27,6 +34,11 @@ export type BannerSlideInput = {
   linkKind?: BannerLinkKind;
   linkUrl?: string;
   alt?: string;
+  ratio?: BannerAspectRatio;
+  radius?: BannerRadius;
+  gradient?: boolean;
+  title?: BannerSlideTitle;
+  action?: BannerSlideAction;
 };
 
 export type BannerScheduleInput = {

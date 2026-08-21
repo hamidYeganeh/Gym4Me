@@ -2,12 +2,24 @@ import { useState } from "react";
 import { Button } from "@heroui/react/button";
 import { Input } from "@heroui/react/input";
 import { Label } from "@heroui/react/label";
+import { Switch } from "@heroui/react/switch";
 import { TextField } from "@heroui/react/textfield";
 import { Typography } from "@heroui/react/typography";
-import type { BannerLinkKind, BannerSlideInput } from "@repo/api";
+import type {
+  BannerAspectRatio,
+  BannerLinkKind,
+  BannerOverlayPlacement,
+  BannerRadius,
+  BannerSlideInput,
+} from "@repo/api";
 import { Uploader } from "@repo/ui/kit/Uploader";
 import { mediaApi } from "@/shared/lib/api";
-import { BANNER_LINK_KINDS } from "../../lib/banner-constants";
+import {
+  BANNER_ASPECT_RATIOS,
+  BANNER_LINK_KINDS,
+  BANNER_OVERLAY_PLACEMENTS,
+  BANNER_RADII,
+} from "../../lib/banner-constants";
 import { bannerSlidesFieldVariants } from "./BannerSlidesField.styles";
 import type { BannerSlidesFieldProps } from "./BannerSlidesField.types";
 
@@ -16,6 +28,13 @@ const IMAGE_ACCEPT = {
   "image/png": [".png"],
   "image/webp": [".webp"],
 } as const;
+
+const DEFAULT_SLIDE: Omit<BannerSlideInput, "mediaId"> = {
+  linkKind: "none",
+  gradient: false,
+  ratio: "16/9",
+  radius: "surface",
+};
 
 export function BannerSlidesField({
   value,
@@ -49,7 +68,7 @@ export function BannerSlidesField({
         ...assets.map(
           (asset): BannerSlideInput => ({
             mediaId: asset.id,
-            linkKind: "none",
+            ...DEFAULT_SLIDE,
           }),
         ),
       ]);
@@ -63,7 +82,9 @@ export function BannerSlidesField({
   return (
     <div className={styles.root()}>
       <Typography className={styles.label()}>{labels.label}</Typography>
-      {labels.hint ? <Typography className={styles.hint()}>{labels.hint}</Typography> : null}
+      {labels.hint ? (
+        <Typography className={styles.hint()}>{labels.hint}</Typography>
+      ) : null}
 
       {value.length === 0 ? (
         <Typography className={styles.empty()}>{labels.empty}</Typography>
@@ -151,6 +172,179 @@ export function BannerSlidesField({
                   <Label>{labels.altLabel}</Label>
                   <Input />
                 </TextField>
+
+                <div className={styles.fieldRow()}>
+                  <Label>{labels.gradientLabel}</Label>
+                  <Switch
+                    isDisabled={disabled}
+                    isSelected={slide.gradient ?? false}
+                    onChange={(selected) =>
+                      patchSlide(index, { gradient: selected })
+                    }
+                  >
+                    <Switch.Control>
+                      <Switch.Thumb />
+                    </Switch.Control>
+                  </Switch>
+                </div>
+
+                <div className={styles.field()}>
+                  <Label>{labels.ratioLabel}</Label>
+                  <div className={styles.chips()}>
+                    {BANNER_ASPECT_RATIOS.map((ratio) => (
+                      <Button
+                        isDisabled={disabled}
+                        key={ratio}
+                        size="sm"
+                        variant={
+                          (slide.ratio ?? "16/9") === ratio
+                            ? "primary"
+                            : "secondary"
+                        }
+                        onPress={() =>
+                          patchSlide(index, {
+                            ratio: ratio as BannerAspectRatio,
+                          })
+                        }
+                      >
+                        {labels.ratios[ratio]}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className={styles.field()}>
+                  <Label>{labels.radiusLabel}</Label>
+                  <div className={styles.chips()}>
+                    {BANNER_RADII.map((radius) => (
+                      <Button
+                        isDisabled={disabled}
+                        key={radius}
+                        size="sm"
+                        variant={
+                          (slide.radius ?? "surface") === radius
+                            ? "primary"
+                            : "secondary"
+                        }
+                        onPress={() =>
+                          patchSlide(index, {
+                            radius: radius as BannerRadius,
+                          })
+                        }
+                      >
+                        {labels.radii[radius]}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                <TextField
+                  className={styles.field()}
+                  fullWidth
+                  isDisabled={disabled}
+                  name={`slide-${index}-title`}
+                  value={slide.title?.text ?? ""}
+                  onChange={(next) =>
+                    patchSlide(index, {
+                      title: next.trim()
+                        ? {
+                            text: next,
+                            placement:
+                              slide.title?.placement ?? "bottom-start",
+                          }
+                        : undefined,
+                    })
+                  }
+                >
+                  <Label>{labels.titleTextLabel}</Label>
+                  <Input />
+                </TextField>
+
+                {slide.title?.text ? (
+                  <div className={styles.field()}>
+                    <Label>{labels.titlePlacementLabel}</Label>
+                    <div className={styles.chips()}>
+                      {BANNER_OVERLAY_PLACEMENTS.map((placement) => (
+                        <Button
+                          isDisabled={disabled}
+                          key={`title-${placement}`}
+                          size="sm"
+                          variant={
+                            (slide.title?.placement ?? "bottom-start") ===
+                            placement
+                              ? "primary"
+                              : "secondary"
+                          }
+                          onPress={() =>
+                            patchSlide(index, {
+                              title: {
+                                text: slide.title?.text ?? "",
+                                placement:
+                                  placement as BannerOverlayPlacement,
+                              },
+                            })
+                          }
+                        >
+                          {labels.overlayPlacements[placement]}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                <TextField
+                  className={styles.field()}
+                  fullWidth
+                  isDisabled={disabled}
+                  name={`slide-${index}-action`}
+                  value={slide.action?.label ?? ""}
+                  onChange={(next) =>
+                    patchSlide(index, {
+                      action: next.trim()
+                        ? {
+                            label: next,
+                            placement:
+                              slide.action?.placement ?? "bottom-end",
+                          }
+                        : undefined,
+                    })
+                  }
+                >
+                  <Label>{labels.actionLabelLabel}</Label>
+                  <Input />
+                </TextField>
+
+                {slide.action?.label ? (
+                  <div className={styles.field()}>
+                    <Label>{labels.actionPlacementLabel}</Label>
+                    <div className={styles.chips()}>
+                      {BANNER_OVERLAY_PLACEMENTS.map((placement) => (
+                        <Button
+                          isDisabled={disabled}
+                          key={`action-${placement}`}
+                          size="sm"
+                          variant={
+                            (slide.action?.placement ?? "bottom-end") ===
+                            placement
+                              ? "primary"
+                              : "secondary"
+                          }
+                          onPress={() =>
+                            patchSlide(index, {
+                              action: {
+                                label: slide.action?.label ?? "",
+                                placement:
+                                  placement as BannerOverlayPlacement,
+                              },
+                            })
+                          }
+                        >
+                          {labels.overlayPlacements[placement]}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
               </div>
             </div>
           ))}

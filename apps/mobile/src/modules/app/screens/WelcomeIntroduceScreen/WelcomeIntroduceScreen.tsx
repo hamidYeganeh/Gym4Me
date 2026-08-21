@@ -18,8 +18,11 @@ export function WelcomeIntroduceScreen({
   return (
     <main className={styles.root({ className })}>
       <WelcomeIntroduceCarouselSection
-        emblaRef={welcome.emblaRef}
+        carouselSpeed={welcome.carouselSpeed}
+        onSlideChange={welcome.onSlideChange}
+        onSwiper={welcome.onSwiper}
         t={welcome.t}
+        textDirection={welcome.textDirection}
       />
 
       <div className={styles.header()}>

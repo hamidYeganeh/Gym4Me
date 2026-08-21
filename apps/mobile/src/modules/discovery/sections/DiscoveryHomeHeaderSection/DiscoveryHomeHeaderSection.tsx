@@ -2,13 +2,13 @@
 
 import { Button } from "@heroui/react/button";
 import { ChevronDown } from "@repo/icons/ChevronDown";
-import { MapPin1 } from "@repo/icons/MapPin1";
 import { Funnel1 } from "@repo/icons/Funnel1";
+import { MapPin1 } from "@repo/icons/MapPin1";
 import { useTranslations } from "next-intl";
-import { useRouter } from "@/shared/lib/app-router";
-
 import { useState } from "react";
+import { useRouter } from "@/shared/lib/app-router";
 import { useAuth } from "@/shared/providers/AuthProvider";
+
 import {
   buildDiscoveryAddresses,
   profileAddressItem,
@@ -77,14 +77,16 @@ export function DiscoveryHomeHeaderSection({
         </div>
       </header>
       <DiscoveryLocationSheet
-        addresses={addresses}
         addLabel={t("locationSheetAdd")}
+        addresses={addresses}
         closeLabel={t("locationSheetClose")}
         description={t("locationSheetDescription")}
         emptyLabel={t("locationSheetEmpty")}
         isOpen={isLocationOpen}
         onAddNew={() =>
-          router.push(isAuthenticated ? "/athlete/profile/edit" : "/auth/login")
+          router.push(
+            isAuthenticated ? "/athlete/profile/edit" : "/auth/login",
+          )
         }
         onOpenChange={setIsLocationOpen}
         onSelect={setSelectedAddressId}

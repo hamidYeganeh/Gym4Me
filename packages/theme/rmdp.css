@@ -1,0 +1,164 @@
+/*
+ * react-multi-date-picker — Gym4Me theme bridge
+ * Import after `@repo/theme/heroui.css` / `tokens.css`.
+ * Pair with: `react-multi-date-picker/styles/layouts/mobile.css`
+ * Apply className: `rmdp-mobile gym4me`
+ */
+
+:root {
+  --rmdp-primary: var(--accent);
+  --rmdp-secondary: color-mix(in oklab, var(--accent) 72%, var(--foreground));
+  --rmdp-shadow: color-mix(in oklab, var(--accent) 45%, transparent);
+  --rmdp-today: color-mix(in oklab, var(--accent) 22%, transparent);
+  --rmdp-hover: color-mix(in oklab, var(--accent) 18%, var(--default));
+  --rmdp-deselect: color-mix(in oklab, var(--accent) 55%, var(--foreground));
+  --rmdp-surface: var(--surface);
+  --rmdp-foreground: var(--foreground);
+  --rmdp-muted: var(--muted);
+  --rmdp-border: color-mix(in oklab, var(--border) 80%, transparent);
+}
+
+.gym4me.rmdp-wrapper,
+.gym4me .rmdp-wrapper {
+  width: 100%;
+  max-width: none;
+  border: 1px solid var(--rmdp-border);
+  border-radius: 1.5rem;
+  background-color: color-mix(in oklab, var(--rmdp-surface) 80%, transparent);
+  box-shadow: none;
+  color: var(--rmdp-foreground);
+  backdrop-filter: blur(12px);
+}
+
+.gym4me .rmdp-calendar,
+.gym4me .rmdp-day-picker,
+.gym4me .rmdp-header {
+  width: 100%;
+}
+
+.gym4me .rmdp-header {
+  color: var(--rmdp-foreground);
+  font-weight: 600;
+}
+
+.gym4me .rmdp-week-day {
+  color: var(--rmdp-muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.gym4me .rmdp-day {
+  color: var(--rmdp-foreground);
+}
+
+.gym4me .rmdp-day span {
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.gym4me .rmdp-day.rmdp-deactive,
+.gym4me .rmdp-day.rmdp-day-hidden {
+  color: var(--rmdp-muted);
+  opacity: 0.45;
+}
+
+.gym4me .rmdp-day.rmdp-today span {
+  background-color: var(--rmdp-today);
+  color: var(--accent);
+  box-shadow: none;
+}
+
+.gym4me .rmdp-day.rmdp-selected span:not(.highlight) {
+  background-color: var(--rmdp-primary);
+  color: var(--accent-foreground);
+  box-shadow: 0 0 0 4px var(--rmdp-shadow);
+}
+
+.gym4me .rmdp-day.rmdp-selected.rmdp-today span {
+  background-color: var(--rmdp-primary);
+  color: var(--accent-foreground);
+}
+
+.gym4me .rmdp-day:not(.rmdp-day-hidden, .rmdp-disabled) span:hover {
+  background-color: var(--rmdp-hover) !important;
+  color: var(--rmdp-foreground) !important;
+}
+
+.gym4me .rmdp-day.rmdp-selected:not(.rmdp-day-hidden) span:hover {
+  background-color: var(--rmdp-primary) !important;
+  color: var(--accent-foreground) !important;
+}
+
+.gym4me .rmdp-day.rmdp-disabled {
+  opacity: 0.35;
+}
+
+.gym4me .rmdp-arrow {
+  border: solid var(--rmdp-muted);
+  border-width: 0 2px 2px 0;
+}
+
+.gym4me .rmdp-arrow-container:hover {
+  background-color: var(--default);
+  box-shadow: none;
+}
+
+.gym4me .rmdp-arrow-container:hover .rmdp-arrow {
+  border-color: var(--rmdp-foreground);
+}
+
+.gym4me .rmdp-panel-body li {
+  background-color: var(--rmdp-primary);
+  color: var(--accent-foreground);
+  box-shadow: none;
+}
+
+.gym4me .rmdp-panel-body::-webkit-scrollbar-thumb {
+  background: var(--rmdp-primary);
+}
+
+.gym4me .rmdp-range {
+  background-color: var(--rmdp-primary);
+  box-shadow: none;
+}
+
+.gym4me .rmdp-action-button {
+  color: var(--rmdp-primary);
+}
+
+.gym4me .rmdp-button:not(.rmdp-action-button) {
+  background-color: var(--rmdp-primary);
+  color: var(--accent-foreground);
+}
+
+.gym4me .rmdp-button:not(.rmdp-action-button):hover {
+  background-color: var(--rmdp-deselect);
+}
+
+.gym4me .b-deselect {
+  color: var(--rmdp-deselect);
+  background-color: var(--rmdp-surface);
+}
+
+.gym4me .rmdp-month-picker .rmdp-day span,
+.gym4me .rmdp-year-picker .rmdp-day span {
+  border-radius: 0.75rem;
+}
+
+/* Stacked multi-month pickers (drawer) */
+.gym4me-months.rmdp-wrapper,
+.gym4me.gym4me-months.rmdp-wrapper {
+  box-shadow: none;
+}
+
+.gym4me-months .rmdp-day-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.gym4me-months .rmdp-calendar {
+  width: 100%;
+}

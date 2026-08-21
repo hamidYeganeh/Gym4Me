@@ -28,6 +28,9 @@ export type {
   ArticleAudience,
   ArticleKind,
   BannerLinkKind,
+  BannerAspectRatio,
+  BannerOverlayPlacement,
+  BannerRadius,
   BookingActor,
   BookingResourceType,
   BookingStatus,
@@ -391,6 +394,8 @@ export {
   createBannersApi,
   type Banner,
   type BannerSlide,
+  type BannerSlideAction,
+  type BannerSlideTitle,
   type BannersApi,
   type ListBannersQuery,
 } from "./banners";

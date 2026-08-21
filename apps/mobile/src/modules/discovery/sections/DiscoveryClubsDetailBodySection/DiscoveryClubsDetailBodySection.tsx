@@ -49,13 +49,23 @@ import { ReviewCard } from "@repo/ui/cards/ReviewCard";
 import { SocialMediaCard } from "@repo/ui/cards/SocialMediaCard";
 import { SportCard } from "@repo/ui/cards/SportCard";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
-import { emblaFreeOptions } from "@repo/ui/lib/embla";
-import useEmblaCarousel from "embla-carousel-react";
+import { swiperFreeOptions } from "@repo/ui/lib/swiper";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import {
+  Children,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import { FreeMode } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
 import { weekdayKey } from "../../lib/club-calendar-data";
+
+import "swiper/css";
+import "swiper/css/free-mode";
 import type {
   ClubDetailAmenity,
   ClubDetailAmenityIconKey,
@@ -186,12 +196,6 @@ function SectionCarousel({
   action?: ReactNode;
   children: ReactNode;
 }) {
-  const [emblaRef] = useEmblaCarousel(
-    emblaFreeOptions({
-      direction: "rtl",
-    }),
-  );
-
   return (
     <>
       <div className={styles.sectionHeader}>
@@ -200,14 +204,19 @@ function SectionCarousel({
           <div className={styles.sectionHeaderAside}>{action}</div>
         ) : null}
       </div>
-      <div
+      <Swiper
+        {...swiperFreeOptions()} dir="rtl"
         aria-label={ariaLabel}
         aria-roledescription="carousel"
         className={styles.carousel}
-        ref={emblaRef}
+        modules={[FreeMode]}
       >
-        <div className={styles.carouselTrack}>{children}</div>
-      </div>
+        {Children.toArray(children).map((child, index) => (
+          <SwiperSlide className={styles.swiperSlide} key={index}>
+            {child}
+          </SwiperSlide>
+        ))}
+      </Swiper>
     </>
   );
 }
