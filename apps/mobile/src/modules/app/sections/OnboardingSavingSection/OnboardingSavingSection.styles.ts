@@ -6,25 +6,27 @@ export const onboardingSavingSectionVariants = tv({
       "relative flex h-dvh min-h-dvh w-full flex-col overflow-hidden",
       "bg-background text-foreground",
     ],
+    media: "pointer-events-none absolute inset-0 z-0",
+    image: "object-cover object-center size-full",
+    mediaScrim: [
+      "absolute inset-0",
+      "bg-[linear-gradient(to_bottom,color-mix(in_oklch,var(--background)_72%,transparent)_0%,color-mix(in_oklch,var(--background)_55%,transparent)_42%,color-mix(in_oklch,var(--background)_88%,transparent)_100%)]",
+    ],
     glow: [
-      "pointer-events-none absolute inset-x-0 bottom-0 z-0",
+      "pointer-events-none absolute inset-x-0 bottom-0 z-[1]",
       "h-[min(52vh,28rem)]",
-      "bg-[radial-gradient(ellipse_at_bottom,color-mix(in_oklch,var(--accent)_38%,transparent)_0%,transparent_72%)]",
+      "bg-[radial-gradient(ellipse_at_bottom,color-mix(in_oklch,var(--accent)_28%,transparent)_0%,transparent_72%)]",
     ],
     stage: [
       "relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center",
       "px-6",
     ],
-    card: [
-      "flex w-full max-w-sm flex-col items-center gap-6",
-      "rounded-[1.75rem] border border-accent/20 bg-default/60 px-5 py-7",
-      "shadow-[0_18px_48px_color-mix(in_oklch,var(--accent)_12%,transparent)]",
-      "backdrop-blur-md",
-    ],
-    progressWrap: "flex flex-col items-center gap-3",
-    progress: "size-16 text-accent",
+    panel: "flex w-full max-w-sm flex-col items-stretch gap-3",
     list: "m-0 flex w-full list-none flex-col items-stretch gap-3 p-0",
-    row: "flex w-full items-center gap-3 rounded-2xl bg-background/55 px-3.5 py-3",
+    row: [
+      "flex w-full items-center gap-3 rounded-2xl px-3.5 py-3.5",
+      "bg-background/70 backdrop-blur-md",
+    ],
     statusSlot:
       "flex size-8 shrink-0 items-center justify-center rounded-full",
     checkIcon: "size-4",
@@ -46,11 +48,11 @@ export const onboardingSavingSectionVariants = tv({
   variants: {
     status: {
       pending: {
-        statusSlot: "bg-default text-muted",
+        statusSlot: "bg-default/80 text-muted",
         label: "text-muted",
       },
       active: {
-        statusSlot: "bg-accent/15 text-accent ring-1 ring-accent/40",
+        statusSlot: "bg-accent/15 text-accent",
         label: "font-semibold text-foreground",
       },
       done: {
@@ -59,7 +61,7 @@ export const onboardingSavingSectionVariants = tv({
         label: "text-foreground/80",
       },
       error: {
-        statusSlot: "bg-danger/15 text-danger ring-1 ring-danger/35",
+        statusSlot: "bg-danger/15 text-danger",
         label: "font-semibold text-danger",
       },
     },

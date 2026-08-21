@@ -38,14 +38,12 @@ export function slideSubtitleKey(_step: OnboardingStepId): string | null {
 }
 
 export function slideOwnsChrome(step: OnboardingStepId): boolean {
-  return (
-    step === "personalIntro" || step === "identity" || step === "avatar"
-  );
+  return step === "identity" || step === "avatar";
 }
 
 /** Full-bleed photo slides that need a footer scrim for the CTA. */
-export function slideIsHeroBleed(step: OnboardingStepId): boolean {
-  return step === "personalIntro";
+export function slideIsHeroBleed(_step: OnboardingStepId): boolean {
+  return false;
 }
 
 /** Slides that fill the stage edge-to-edge (hero photos). */

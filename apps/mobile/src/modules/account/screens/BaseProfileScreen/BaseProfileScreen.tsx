@@ -43,8 +43,8 @@ export function BaseProfileScreen({
   const [soundPending, setSoundPending] = useState(false);
 
   const displayName = useMemo(() => {
-    const parts = [user?.name.first, user?.name.last].filter(Boolean);
-    if (parts.length > 0) return parts.join(" ");
+    const first = user?.name.first?.trim();
+    if (first) return first;
     return user?.code ?? t("title");
   }, [t, user]);
 

@@ -11,8 +11,6 @@ export type OnboardingAvatarValue = {
 export type OnboardingAvatarLabels = {
   title: string;
   upload: string;
-  premade: string;
-  skip: string;
   uploading: string;
 };
 
@@ -20,7 +18,5 @@ export type OnboardingAvatarSectionProps = {
   value: OnboardingAvatarValue;
   labels: OnboardingAvatarLabels;
   onUpload: (file: File) => void;
-  onPremade: () => void;
-  onSkip: () => void;
   className?: string;
 };

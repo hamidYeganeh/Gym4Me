@@ -1,14 +1,10 @@
 import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
-import {
-  UnitsMetricCard,
-  UnitsMetricCardSkeleton,
-} from "@/modules/account/components/UnitsMetricCard";
+import { UnitsMetricCard } from "@/modules/account/components/UnitsMetricCard";
 import {
   optionLabel,
   resolveUnitValue,
   unitIconKey,
-  UNIT_CARD_SKELETON_COUNT,
 } from "@/modules/account/lib/units-settings";
 import { unitsSettingsGeneralSectionVariants } from "./UnitsSettingsGeneralSection.styles";
 import type { UnitsSettingsGeneralSectionProps } from "./UnitsSettingsGeneralSection.types";
@@ -32,9 +28,7 @@ export function UnitsSettingsGeneralSection({
       </Typography>
       <div className={styles.grid()}>
         {isLoading
-          ? Array.from({ length: UNIT_CARD_SKELETON_COUNT }, (_, index) => (
-              <UnitsMetricCardSkeleton key={index} />
-            ))
+          ? null
           : groups.map((group) => {
               const iconKey = unitIconKey(group.value);
               const selected = resolveUnitValue(units[group.value], group.options);

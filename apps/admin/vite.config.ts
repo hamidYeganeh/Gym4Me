@@ -91,8 +91,18 @@ export default defineConfig({
       "@": path.resolve(rootDir, "src"),
       "@modules": path.resolve(rootDir, "src/modules"),
       "@shared": path.resolve(rootDir, "src/shared"),
+      // Default entry imports `next/navigation` (useServerInsertedHTML) and
+      // crashes the Vite SPA with `process is not defined`. Use the React
+      // client build documented for Vite / non-Next apps.
+      "@teispace/next-themes": path.resolve(
+        rootDir,
+        "../../node_modules/@teispace/next-themes/dist/client.js",
+      ),
     },
     dedupe: ["react", "react-dom"],
+  },
+  optimizeDeps: {
+    include: ["@teispace/next-themes"],
   },
   build: {
     cssCodeSplit: true,

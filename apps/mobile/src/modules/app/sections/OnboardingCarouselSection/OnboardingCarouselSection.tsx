@@ -24,7 +24,6 @@ import { OnboardingHeightSection } from "@/modules/app/sections/OnboardingHeight
 import { OnboardingIdentitySection } from "@/modules/app/sections/OnboardingIdentitySection";
 import { OnboardingMoodSection } from "@/modules/app/sections/OnboardingMoodSection";
 import { OnboardingNameSection } from "@/modules/app/sections/OnboardingNameSection";
-import { OnboardingPhaseIntroSection } from "@/modules/app/sections/OnboardingPhaseIntroSection";
 import { OnboardingSleepSection } from "@/modules/app/sections/OnboardingSleepSection";
 import { OnboardingSlideShell } from "@/modules/app/sections/OnboardingSlideShell";
 import { OnboardingSportsSection } from "@/modules/app/sections/OnboardingSportsSection";
@@ -66,7 +65,6 @@ export function OnboardingCarouselSection({
   identityValue,
   identityLabels,
   provinces,
-  phaseSteps,
   goalOptions,
   genderOptions,
   bodyTypeOptions,
@@ -98,18 +96,17 @@ export function OnboardingCarouselSection({
   setBloodRh,
   patchIdentity,
   uploadAvatar,
-  choosePremadeAvatar,
   toggleGoal,
   toggleSport,
   handleCaloriesChange,
-  requestFinish,
   carouselClassName,
 }: OnboardingCarouselSectionProps) {
   const styles = onboardingCarouselSectionVariants();
   const options = swiperOptions({
     speed: carouselSpeed,
     allowTouchMove: false,
-    nested: true,
+    observer: true,
+    observeParents: true,
   });
 
   return (
@@ -118,6 +115,7 @@ export function OnboardingCarouselSection({
       aria-roledescription="carousel"
       className={styles.carousel({ className: carouselClassName })}
       dir={textDirection}
+      key={textDirection}
       onSlideChange={onSlideChange}
       onSwiper={onSwiper}
     >
@@ -293,17 +291,6 @@ export function OnboardingCarouselSection({
                 />
               ) : null}
 
-              {mountStage && stepId === "personalIntro" ? (
-                <OnboardingPhaseIntroSection
-                  activePhaseIndex={1}
-                  imageAlt={t("personalIntro.imageAlt")}
-                  phaseAria={t("phases.aria")}
-                  steps={phaseSteps}
-                  subtitle={t("personalIntro.subtitle")}
-                  title={t("personalIntro.title")}
-                />
-              ) : null}
-
               {mountStage && stepId === "identity" ? (
                 <OnboardingIdentitySection
                   labels={identityLabels}
@@ -318,13 +305,9 @@ export function OnboardingCarouselSection({
                   labels={{
                     title: t("avatar.title"),
                     upload: t("avatar.upload"),
-                    premade: t("avatar.premade"),
-                    skip: t("avatar.skip"),
                     uploading: t("avatar.uploading"),
                   }}
                   value={avatar}
-                  onPremade={choosePremadeAvatar}
-                  onSkip={requestFinish}
                   onUpload={uploadAvatar}
                 />
               ) : null}

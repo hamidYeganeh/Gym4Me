@@ -28,8 +28,8 @@ export function OnboardingScreen({ className }: OnboardingScreenProps) {
         <>
           <OnboardingCarouselSection {...onboarding} />
 
-          <div className={styles.overlay()}>
-            <div className={styles.header()}>
+          <div className={styles.header()}>
+            <div className={styles.headerActions()}>
               <OnboardingHeader
                 backLabel={onboarding.t("back")}
                 progress={onboarding.progress}
@@ -40,16 +40,14 @@ export function OnboardingScreen({ className }: OnboardingScreenProps) {
                 onSkip={onboarding.requestFinish}
               />
             </div>
+          </div>
 
-            <div className={styles.overlayFill()} />
-
-            <div className={styles.footer()}>
-              {showFooterScrim ? (
-                <div aria-hidden className={styles.footerScrim()} />
-              ) : null}
-              <div className={styles.footerActions()}>
-                <OnboardingFooterSection {...onboarding} />
-              </div>
+          <div className={styles.footer()}>
+            {showFooterScrim ? (
+              <div aria-hidden className={styles.footerScrim()} />
+            ) : null}
+            <div className={styles.footerActions()}>
+              <OnboardingFooterSection {...onboarding} />
             </div>
           </div>
         </>

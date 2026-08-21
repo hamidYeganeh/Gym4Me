@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@heroui/react/button";
-import { Skeleton } from "@heroui/react/skeleton";
 import { Typography } from "@heroui/react/typography";
 import { Bookmark } from "@repo/icons/Bookmark";
 import { Chat } from "@repo/icons/Chat";
@@ -10,34 +9,6 @@ import { Image1 } from "@repo/icons/Image1";
 import { useTranslations } from "next-intl";
 import { communityFeedSectionVariants } from "./CommunityFeedSection.styles";
 import type { CommunityFeedSectionProps } from "./CommunityFeedSection.types";
-
-function CommunityFeedSkeleton({ className }: { className?: string }) {
-  const slots = communityFeedSectionVariants();
-
-  return (
-    <div
-      aria-busy="true"
-      aria-live="polite"
-      className={slots.list({ className })}
-      role="status"
-    >
-      {Array.from({ length: 3 }, (_, index) => (
-        <article className={slots.card()} key={index}>
-          <Skeleton aria-hidden className="h-5 w-32 rounded-md" />
-          <Skeleton aria-hidden className="h-3.5 w-20 rounded-md" />
-          <Skeleton aria-hidden className="h-4 w-full rounded-md" />
-          <Skeleton aria-hidden className="h-4 w-4/5 rounded-md" />
-          <Skeleton aria-hidden className="h-36 w-full rounded-[18px]" />
-          <div className={slots.actions()}>
-            <Skeleton aria-hidden className="size-10 rounded-full" />
-            <Skeleton aria-hidden className="size-10 rounded-full" />
-            <Skeleton aria-hidden className="size-10 rounded-full" />
-          </div>
-        </article>
-      ))}
-    </div>
-  );
-}
 
 export function CommunityFeedSection({
   posts,
@@ -54,7 +25,7 @@ export function CommunityFeedSection({
   const slots = communityFeedSectionVariants();
 
   if (isLoading) {
-    return <CommunityFeedSkeleton className={className} />;
+    return null;
   }
 
   if (posts.length === 0) {

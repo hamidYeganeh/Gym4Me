@@ -7,6 +7,13 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   // Fail clearly instead of hanging on slow static generation (G4M-001).
   staticPageGenerationTimeout: 120,
+  // Phone / LAN testing hits the machine by IP; without this, Next blocks
+  // `/_next` chunks (HeroUI, etc.) and onboarding slides render blank.
+  allowedDevOrigins: [
+    "10.191.88.178",
+    "127.0.0.1",
+    "localhost",
+  ],
   experimental: {
     optimizePackageImports: [
       "@heroui/react",

@@ -31,6 +31,7 @@ export function WelcomeIntroduceCarouselSection({
       aria-roledescription="carousel"
       className={styles.carousel({ className })}
       dir={textDirection}
+      key={textDirection}
       onSlideChange={onSlideChange}
       onSwiper={onSwiper}
     >

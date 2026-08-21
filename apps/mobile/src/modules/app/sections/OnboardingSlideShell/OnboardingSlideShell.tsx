@@ -20,6 +20,7 @@ export function OnboardingSlideShell({
 }: OnboardingSlideShellProps) {
   const styles = onboardingSlideShellVariants({ bleed });
   const reduceMotion = useReducedMotion();
+  const animateState = reduceMotion || isActive ? "active" : "inactive";
 
   return (
     <section
@@ -28,9 +29,9 @@ export function OnboardingSlideShell({
       {...(!bleed ? { "data-onboarding-nested-scroll": true } : {})}
     >
       <motion.div
-        animate={reduceMotion || isActive ? "active" : "inactive"}
+        animate={animateState}
         className={styles.stack()}
-        initial="inactive"
+        initial={false}
         variants={welcomeIntroduceSlideStackVariants}
       >
         {showChrome ? (
@@ -58,7 +59,12 @@ export function OnboardingSlideShell({
           </motion.div>
         ) : null}
 
-        <div className={styles.stage()}>{children}</div>
+        <motion.div
+          className={styles.stage()}
+          variants={welcomeIntroduceFadeUpVariants}
+        >
+          {children}
+        </motion.div>
       </motion.div>
     </section>
   );

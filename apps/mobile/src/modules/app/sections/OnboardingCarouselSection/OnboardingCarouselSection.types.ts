@@ -32,7 +32,6 @@ export type OnboardingCarouselSectionProps = Pick<
   | "identityValue"
   | "identityLabels"
   | "provinces"
-  | "phaseSteps"
   | "goalOptions"
   | "goalsStatus"
   | "genderOptions"
@@ -64,11 +63,9 @@ export type OnboardingCarouselSectionProps = Pick<
   | "setBloodRh"
   | "patchIdentity"
   | "uploadAvatar"
-  | "choosePremadeAvatar"
   | "toggleGoal"
   | "toggleSport"
   | "handleCaloriesChange"
-  | "requestFinish"
 > & {
   carouselClassName?: string;
 };

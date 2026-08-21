@@ -16,8 +16,6 @@ export function OnboardingAvatarSection({
   value,
   labels,
   onUpload,
-  onPremade,
-  onSkip,
   className,
 }: OnboardingAvatarSectionProps) {
   const styles = onboardingAvatarSectionVariants();
@@ -89,23 +87,6 @@ export function OnboardingAvatarSection({
         >
           {labels.upload}
           <ArrowUpload aria-hidden className={styles.uploadIcon()} size={20} />
-        </Button>
-        <Button
-          className={styles.premadeBtn()}
-          fullWidth
-          size="lg"
-          variant="outline"
-          onPress={onPremade}
-        >
-          {labels.premade}
-        </Button>
-        <Button
-          className={styles.skip()}
-          size="sm"
-          variant="ghost"
-          onPress={onSkip}
-        >
-          {labels.skip}
         </Button>
       </div>
     </div>

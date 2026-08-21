@@ -1,10 +1,7 @@
 "use client";
 
 import { Typography } from "@heroui/react/typography";
-import {
-  ClubClassCard,
-  ClubClassCardSkeleton,
-} from "@repo/ui/cards/ClubClassCard";
+import { ClubClassCard } from "@repo/ui/cards/ClubClassCard";
 import { EMPTY_STATE_ILLUSTRATIONS, EmptyState } from "@repo/ui/kit/EmptyState";
 import { FilterChip, FilterChipBar } from "@repo/ui/kit/FilterChip";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
@@ -62,13 +59,7 @@ export function DiscoveryClassesScreen({
             : t("resultsCount", { count: classes.length })}
         </Typography>
 
-        {isLoading && classes.length === 0 ? (
-          <div className={styles.list}>
-            <ClubClassCardSkeleton className={styles.card} size="md" />
-            <ClubClassCardSkeleton className={styles.card} size="md" />
-            <ClubClassCardSkeleton className={styles.card} size="md" />
-          </div>
-        ) : classes.length === 0 ? (
+        {isLoading && classes.length === 0 ? null : classes.length === 0 ? (
           <EmptyState
             className={styles.empty}
             description={t("emptyBody")}

@@ -1,19 +1,21 @@
 "use client";
 
 import { Button } from "@heroui/react/button";
-import { ProgressCircle } from "@heroui/react/progress-circle";
 import { Spinner } from "@heroui/react/spinner";
 import { Typography } from "@heroui/react/typography";
 import { Check } from "@repo/icons/Check";
 import { spring } from "@repo/theme";
 import { LogoMark } from "@repo/ui/common/LogoMark";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import Image from "next/image";
 import {
   activeSaveIndex,
   visibleSaveWindow,
 } from "@/modules/app/lib/onboarding-save";
 import { onboardingSavingSectionVariants } from "./OnboardingSavingSection.styles";
 import type { OnboardingSavingSectionProps } from "./OnboardingSavingSection.types";
+
+const SAVING_BG_SRC = "/onboarding-review.png";
 
 export function OnboardingSavingSection({
   ariaLabel,
@@ -26,9 +28,6 @@ export function OnboardingSavingSection({
   const reduceMotion = useReducedMotion();
   const activeIndex = activeSaveIndex(steps);
   const visible = visibleSaveWindow(steps, activeIndex);
-  const doneCount = steps.filter((step) => step.status === "done").length;
-  const progressValue =
-    steps.length === 0 ? 0 : Math.round((doneCount / steps.length) * 100);
   const hasError = steps.some((step) => step.status === "error");
   const isBusy = steps.some(
     (step) => step.status === "active" || step.status === "pending",
@@ -42,25 +41,22 @@ export function OnboardingSavingSection({
       aria-live="polite"
       className={base.root({ className })}
     >
+      <div aria-hidden className={base.media()}>
+        <Image
+          alt=""
+          className={base.image()}
+          fill
+          priority
+          sizes="100vw"
+          src={SAVING_BG_SRC}
+        />
+        <div className={base.mediaScrim()} />
+      </div>
+
       <div aria-hidden className={base.glow()} />
 
       <div className={base.stage()}>
-        <div className={base.card()}>
-          <div className={base.progressWrap()}>
-            <ProgressCircle
-              aria-label={ariaLabel}
-              className={base.progress()}
-              color="accent"
-              size="lg"
-              value={progressValue}
-            >
-              <ProgressCircle.Track>
-                <ProgressCircle.TrackCircle />
-                <ProgressCircle.FillCircle />
-              </ProgressCircle.Track>
-            </ProgressCircle>
-          </div>
-
+        <div className={base.panel()}>
           <ul className={base.list()}>
             <AnimatePresence initial={false} mode="popLayout">
               {visible.map((step) => {

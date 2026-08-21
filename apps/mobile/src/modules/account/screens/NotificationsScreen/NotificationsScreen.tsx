@@ -9,7 +9,6 @@ import { Ticket } from "@repo/icons/Ticket";
 import { Wallet } from "@repo/icons/Wallet";
 import {
   NotificationCard,
-  NotificationCardSkeleton,
 } from "@repo/ui/cards/NotificationCard";
 import {
   EMPTY_STATE_ILLUSTRATIONS,
@@ -143,13 +142,7 @@ export function NotificationsScreen({
           ))}
         </FilterChipBar>
 
-        {groups === null ? (
-          <div className={styles.groups} aria-busy="true" aria-live="polite">
-            <NotificationCardSkeleton />
-            <NotificationCardSkeleton />
-            <NotificationCardSkeleton showProgress />
-          </div>
-        ) : visibleGroups.length > 0 ? (
+        {groups === null ? null : visibleGroups.length > 0 ? (
           <div className={styles.groups}>
             {visibleGroups.map((group) => (
               <section className={styles.group} key={group.id}>

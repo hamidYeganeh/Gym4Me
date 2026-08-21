@@ -1,7 +1,7 @@
 "use client";
 
 import { Typography } from "@heroui/react/typography";
-import { SportCard, SportCardSkeleton } from "@repo/ui/cards/SportCard";
+import { SportCard } from "@repo/ui/cards/SportCard";
 import { EMPTY_STATE_ILLUSTRATIONS, EmptyState } from "@repo/ui/kit/EmptyState";
 import { FilterChip, FilterChipBar } from "@repo/ui/kit/FilterChip";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
@@ -60,14 +60,7 @@ export function DiscoverySportsScreen({
             : t("resultsCount", { count: sports.length })}
         </Typography>
 
-        {isLoading && sports.length === 0 ? (
-          <div className={styles.grid}>
-            <SportCardSkeleton className={styles.cardFeatured} size="sm" />
-            <SportCardSkeleton className={styles.card} size="sm" />
-            <SportCardSkeleton className={styles.card} size="sm" />
-            <SportCardSkeleton className={styles.card} size="sm" />
-          </div>
-        ) : sports.length === 0 ? (
+        {isLoading && sports.length === 0 ? null : sports.length === 0 ? (
           <EmptyState
             className={styles.empty}
             description={t("emptyBody")}

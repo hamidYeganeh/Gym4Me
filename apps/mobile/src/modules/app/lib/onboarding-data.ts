@@ -13,7 +13,6 @@ export type OnboardingStepId =
   | "calories"
   | "goals"
   | "bloodType"
-  | "personalIntro"
   | "identity"
   | "avatar";
 
@@ -51,7 +50,6 @@ export const ONBOARDING_STEPS: OnboardingStepId[] = [
   "sports",
   "diet",
   "calories",
-  "personalIntro",
   "identity",
   "avatar",
 ];
@@ -63,7 +61,6 @@ export const ONBOARDING_PHASES: OnboardingPhaseId[] = [
 ];
 
 export const ONBOARDING_PERSONAL_STEPS: OnboardingStepId[] = [
-  "personalIntro",
   "identity",
   "avatar",
 ];

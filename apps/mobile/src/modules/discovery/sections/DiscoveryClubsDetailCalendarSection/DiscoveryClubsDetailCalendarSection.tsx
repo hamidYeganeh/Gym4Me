@@ -4,7 +4,6 @@ import { Button } from "@heroui/react/button";
 import { Drawer } from "@heroui/react/drawer";
 import { Link } from "@heroui/react/link";
 import { ScrollShadow } from "@heroui/react/scroll-shadow";
-import { Skeleton } from "@heroui/react/skeleton";
 import { Typography } from "@heroui/react/typography";
 import { Calendar1 } from "@repo/icons/Calendar1";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
@@ -66,9 +65,6 @@ const INTENSITY_LABEL_KEYS = {
 /** Months shown in the date-picker sheet (stacked vertically). */
 const PICKER_MONTH_COUNT = 6;
 
-const SKELETON_GROUP_COUNT = 3;
-const SKELETON_CARDS_PER_GROUP = [2, 1, 2] as const;
-
 const fadeVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
@@ -93,47 +89,6 @@ const slotVariants: Variants = {
     },
   }),
 };
-
-function TimelineSkeleton({ label }: { label: string }) {
-  return (
-    <div
-      aria-busy="true"
-      aria-label={label}
-      className={styles.skeletonRoot()}
-      role="status"
-    >
-      <span aria-hidden className={styles.timelineLine()} />
-      {Array.from({ length: SKELETON_GROUP_COUNT }, (_, groupIndex) => (
-        <div className={styles.skeletonGroup()} key={groupIndex}>
-          <div className={styles.skeletonRail()}>
-            <Skeleton className={styles.skeletonBadge()} />
-          </div>
-          <div className={styles.skeletonCards()}>
-            {Array.from(
-              { length: SKELETON_CARDS_PER_GROUP[groupIndex] ?? 1 },
-              (_, cardIndex) => (
-                <div className={styles.skeletonCard()} key={cardIndex}>
-                  <Skeleton className={styles.skeletonThumb()} />
-                  <div className={styles.skeletonLines()}>
-                    <Skeleton
-                      className={[styles.skeletonLine(), "w-[70%]"].join(" ")}
-                    />
-                    <Skeleton
-                      className={[styles.skeletonLine(), "w-[48%]"].join(" ")}
-                    />
-                    <Skeleton
-                      className={[styles.skeletonLine(), "w-[32%]"].join(" ")}
-                    />
-                  </div>
-                </div>
-              ),
-            )}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 export function DiscoveryClubsDetailCalendarSection({
   club,
@@ -394,17 +349,7 @@ export function DiscoveryClubsDetailCalendarSection({
       </div>
 
       <AnimatePresence mode="wait">
-        {showTimelineSkeleton ? (
-          <motion.div
-            animate="visible"
-            exit="exit"
-            initial={reduceMotion ? false : "hidden"}
-            key={`skeleton-${selectedDate}-${range.from}`}
-            variants={fadeVariants}
-          >
-            <TimelineSkeleton label={t("calendarLoading")} />
-          </motion.div>
-        ) : hourGroups.length === 0 ? (
+        {showTimelineSkeleton ? null : hourGroups.length === 0 ? (
           <motion.div
             animate="visible"
             className={styles.empty()}

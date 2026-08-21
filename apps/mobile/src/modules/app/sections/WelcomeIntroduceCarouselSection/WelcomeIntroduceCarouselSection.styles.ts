@@ -2,7 +2,11 @@ import { tv } from "tailwind-variants";
 
 export const welcomeIntroduceCarouselSectionVariants = tv({
   slots: {
-    carousel: "absolute inset-0 overflow-hidden !h-full",
-    slide: "!h-full",
+    carousel: [
+      "absolute inset-0 z-0 h-full w-full overflow-hidden",
+      "[&_.swiper-wrapper]:h-full",
+      "[&_.swiper-slide]:h-full",
+    ].join(" "),
+    slide: "h-full w-full",
   },
 });

@@ -18,6 +18,7 @@ import {
   readBiometricUnlock,
 } from "@/modules/auth/lib/biometric-unlock";
 import { accountAuth, apiClient } from "@/shared/lib/api-client";
+import { accountProfile } from "@/shared/lib/api";
 
 function captureSessionAttribution() {
   void import("@/shared/lib/attribution").then((mod) =>
@@ -71,6 +72,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     rememberSession(session);
     void captureSessionAttribution();
   }, [isReady, session]);
+
+  useEffect(() => {
+    if (!isReady || !session?.accessToken) return;
+    let cancelled = false;
+    void accountProfile
+      .getMe()
+      .then((user) => {
+        if (cancelled) return;
+        setSession((current) => {
+          if (!current) return current;
+          const next = { ...current, user };
+          apiClient.setSession(next);
+          rememberSession(next);
+          return next;
+        });
+      })
+      .catch(() => {
+        // Keep cached session user if /me is temporarily unavailable.
+      });
+    return () => {
+      cancelled = true;
+    };
+    // Refresh once per authenticated bootstrap — not on every session write.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: accessToken identity
+  }, [isReady, session?.accessToken]);
 
   const login = useCallback(async (phone: string, password: string) => {
     const next = await accountAuth.login({ phone, password });

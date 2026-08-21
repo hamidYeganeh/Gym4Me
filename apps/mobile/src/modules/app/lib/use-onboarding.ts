@@ -19,7 +19,6 @@ import {
   ONBOARDING_FALLBACK_PROVINCES,
   ONBOARDING_GENDERS,
   ONBOARDING_MOODS,
-  ONBOARDING_PHASES,
   ONBOARDING_SLEEP_LEVELS,
   ONBOARDING_SLIDE_COUNT,
   ONBOARDING_STEPS,
@@ -36,7 +35,6 @@ import {
   ageFromJalali,
   birthdateToIso,
   formatJalaliDisplay,
-  PREMADE_AVATARS,
   readDocumentDirection,
 } from "@/modules/app/lib/onboarding-helpers";
 import {
@@ -69,6 +67,7 @@ import type {
 } from "@/modules/app/sections/OnboardingIdentitySection";
 import type { OnboardingSportOption } from "@/modules/app/sections/OnboardingSportsSection";
 import {
+  accountProfile,
   basicsLocations,
   basicsSports,
   isDiscoveryApiId,
@@ -103,7 +102,7 @@ export function useOnboarding() {
   const t = useTranslations("Mobile.Onboarding");
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isAuthenticated, activeRole, user } = useAuth();
+  const { isAuthenticated, activeRole, user, refreshUser } = useAuth();
   const { ensurePermission } = useDevicePermissions();
   const reduceMotion = useReducedMotion();
   const [textDirection] = useState<"rtl" | "ltr">(readDocumentDirection);
@@ -201,7 +200,6 @@ export function useOnboarding() {
     fileName: "",
     progress: 0,
   });
-  const [premadeIndex, setPremadeIndex] = useState(0);
 
   const swiperRef = useRef<SwiperInstance | null>(null);
   const carouselSpeed = reduceMotion
@@ -211,6 +209,13 @@ export function useOnboarding() {
   const onSwiper = useCallback((swiper: SwiperInstance) => {
     swiperRef.current = swiper;
     setSlide(swiper.activeIndex);
+    // Absolute full-viewport hosts can measure 0×0 on the first tick; refresh
+    // size so the first assessment slide (name) is actually painted.
+    requestAnimationFrame(() => {
+      if (swiper.destroyed) return;
+      swiper.update();
+      swiper.slideTo(swiper.activeIndex, 0, false);
+    });
   }, []);
 
   const onSlideChange = useCallback((swiper: SwiperInstance) => {
@@ -440,7 +445,8 @@ export function useOnboarding() {
   const progress = (slide + 1) / ONBOARDING_SLIDE_COUNT;
   const age = ageFromJalali(birthdate);
   const isCaloriesStep = step === "calories";
-  const isAvatarUploading = step === "avatar" && avatar.mode === "uploading";
+  const isAvatarStep = step === "avatar";
+  const isAvatarUploading = isAvatarStep && avatar.mode === "uploading";
   const showHeaderProgress = phase === "assessment";
 
   const fullName = useMemo(
@@ -450,15 +456,6 @@ export function useOnboarding() {
         .filter(Boolean)
         .join(" "),
     [firstName, lastName],
-  );
-
-  const phaseSteps = useMemo(
-    () =>
-      ONBOARDING_PHASES.map((id) => ({
-        key: id,
-        label: t(`phases.${id}`),
-      })),
-    [t],
   );
 
   const identityValue = useMemo<OnboardingIdentityValue>(
@@ -628,18 +625,6 @@ export function useOnboarding() {
       });
   };
 
-  const choosePremadeAvatar = () => {
-    const next = (premadeIndex + 1) % PREMADE_AVATARS.length;
-    setPremadeIndex(next);
-    setAvatar({
-      mode: "ready",
-      mediaId: null,
-      previewUrl: PREMADE_AVATARS[next]!,
-      fileName: `avatar-${next + 1}.svg`,
-      progress: 100,
-    });
-  };
-
   const bodyTypeOptions = useMemo(() => {
     const source =
       apiBodyTypeOptions && apiBodyTypeOptions.length > 0
@@ -711,7 +696,6 @@ export function useOnboarding() {
       step === "calories" ||
       (step === "goals" && goals.length > 0) ||
       step === "bloodType" ||
-      step === "personalIntro" ||
       (step === "identity" && firstName.trim().length > 1) ||
       step === "avatar");
 
@@ -845,6 +829,12 @@ export function useOnboarding() {
         await waitRemaining(startedAt, minVisible);
         patchSaveStep(id, "done");
       }
+      try {
+        const me = await accountProfile.getMe();
+        refreshUser(me);
+      } catch {
+        // Session still has prior user; profile was already written.
+      }
       await waitRemaining(Date.now(), reduceMotion ? 0 : 280);
       persistInFlightRef.current = false;
       void runPermissionFlow();
@@ -956,6 +946,7 @@ export function useOnboarding() {
     age,
     showHeaderProgress,
     isCaloriesStep,
+    isAvatarStep,
     isAvatarUploading,
     canContinue,
     calories,
@@ -990,7 +981,6 @@ export function useOnboarding() {
     identityValue,
     identityLabels,
     provinces,
-    phaseSteps,
     genderOptions,
     bodyTypeOptions,
     weightUnitOptions,
@@ -1020,7 +1010,6 @@ export function useOnboarding() {
     setBloodRh,
     patchIdentity,
     uploadAvatar,
-    choosePremadeAvatar,
     toggleGoal,
     toggleSport,
     goPrev,

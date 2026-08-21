@@ -13,10 +13,6 @@ export const onboardingAvatarSectionVariants = tv({
     uploadBtn:
       "min-h-14 w-full rounded-[1.35rem] text-base font-bold text-accent-foreground",
     uploadIcon: "ms-2 size-5",
-    premadeBtn:
-      "min-h-14 w-full rounded-[1.35rem] border-2 border-accent bg-accent/5 text-base font-bold text-accent",
-    skip:
-      "text-sm font-semibold text-danger outline-none data-[hovered=true]:opacity-80",
     uploading: "flex flex-col items-center gap-5 py-10",
     progress: "size-28 text-accent",
     track: "stroke-default",
