@@ -250,7 +250,6 @@ export function DiscoveryClubsDetailCalendarSection({
                   aria-label={t("calendarPickerLabel")}
                   buttons={false}
                   className={styles.pickerCalendar()}
-                  calendarClassName="gym4me-months"
                   numberOfMonths={PICKER_MONTH_COUNT}
                   value={selectedDate}
                   onChange={(next) => {

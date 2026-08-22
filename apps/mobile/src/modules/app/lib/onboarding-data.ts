@@ -89,6 +89,7 @@ export const ONBOARDING_DEFAULT_ALLERGIES = [
 /** Canonical body metrics stored as metric units. */
 export const ONBOARDING_DEFAULT_HEIGHT_CM = 162;
 export const ONBOARDING_DEFAULT_WEIGHT_KG = 64;
+export const ONBOARDING_DEFAULT_BODY_TYPE: OnboardingBodyTypeId = "ectomorph";
 export const ONBOARDING_DEFAULT_SLEEP: OnboardingSleepLevel = 5;
 export const ONBOARDING_DEFAULT_MOOD: OnboardingMoodId = "neutral";
 export const ONBOARDING_DEFAULT_CALORIES = 0;

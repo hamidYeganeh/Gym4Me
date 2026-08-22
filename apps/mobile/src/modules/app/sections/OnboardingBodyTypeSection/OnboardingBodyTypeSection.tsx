@@ -1,10 +1,10 @@
 "use client";
 
-import { Typography } from "@heroui/react/typography";
 import {
   BodyTypeCard,
   type BodyTypeGender,
 } from "@repo/ui/cards/BodyTypeCard";
+import { MorphingText } from "@repo/ui/kit/MorphingText";
 import { onboardingBodyTypeSectionVariants } from "./OnboardingBodyTypeSection.styles";
 import type { OnboardingBodyTypeSectionProps } from "./OnboardingBodyTypeSection.types";
 
@@ -45,7 +45,10 @@ export function OnboardingBodyTypeSection({
       </div>
 
       {selected && value != null ? (
-        <Typography className={styles.statement()}>{selected.statement}</Typography>
+        <MorphingText
+          className={styles.statement()}
+          value={selected.statement}
+        />
       ) : null}
     </div>
   );

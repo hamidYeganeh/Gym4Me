@@ -1,15 +1,11 @@
 "use client";
 
 import { Calendar1 } from "@repo/icons/Calendar1";
-import { Chat } from "@repo/icons/Chat";
 import { Ticket } from "@repo/icons/Ticket";
 import { Wallet } from "@repo/icons/Wallet";
 import { Scan1 } from "@repo/icons/Scan1";
 import { BarbellHorizontal } from "@repo/icons/BarbellHorizontal";
-import { Fire1 } from "@repo/icons/Fire1";
-import { FootSteps } from "@repo/icons/FootSteps";
 import { CallToActionCard } from "@repo/ui/cards/CallToActionCard";
-import { MetricCard } from "@repo/ui/cards/MetricCard";
 import { QuickActionCard } from "@repo/ui/cards/QuickActionCard";
 import { SpotlightCard } from "@repo/ui/cards/SpotlightCard";
 import { stagger, transition } from "@repo/theme";
@@ -21,15 +17,16 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/shared/lib/app-router";
 
 import type { ReactNode } from "react";
+import { AthleteHomeMetricsSection } from "@/modules/athlete/sections/AthleteHomeMetricsSection";
 import { AthleteHomeSetupTodoSection } from "@/modules/athlete/sections/AthleteHomeSetupTodoSection";
 import { AthleteReferralInviteSection } from "@/modules/athlete/sections/AthleteReferralInviteSection";
 import { AthleteRoleUpgradeSection } from "@/modules/athlete/sections/AthleteRoleUpgradeSection";
 import { mediaFileUrl } from "@/shared/lib/api";
+import { useRoleNavActions } from "@/shared/components/RoleAppNavigation";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { athleteHomeScreenStyles as styles } from "./AthleteHomeScreen.styles";
 
 const ICON_SIZE = 22;
-const WEEKDAY_LABELS = ["ش", "ی", "د", "س", "چ", "پ", "ج"] as const;
 
 const contentVariants: Variants = {
   hidden: {},
@@ -55,6 +52,7 @@ export function AthleteHomeScreen() {
   const router = useRouter();
   const reduceMotion = useReducedMotion();
   const { user } = useAuth();
+  const { openActions } = useRoleNavActions();
   const firstName = user?.name.first?.trim() ?? "";
 
   return (
@@ -102,56 +100,19 @@ export function AthleteHomeScreen() {
         </StaggerSection>
 
         <StaggerSection>
-          <section
-            aria-labelledby="athlete-overview-title"
-            className={styles.section}
-          >
-            <AppSectionHeader
-              actionAriaLabel={t("metricsAction")}
-              actionLabel={t("seeAll")}
-              description={t("overviewDescription")}
-              id="athlete-overview-title"
-              onAction={() => router.push("/athlete/metrics")}
-              title={t("overviewTitle")}
-            />
+          <AthleteHomeMetricsSection />
+        </StaggerSection>
 
-            <div className={styles.metricsGrid}>
-              <MetricCard
-                chart={{ type: "bars", series: [0.42, 0.58, 0.48, 0.76, 0.64, 0.88, 0.72] }}
-                color="var(--accent)"
-                dayLabels={WEEKDAY_LABELS}
-                icon={<FootSteps size={18} />}
-                onPress={() => router.push("/athlete/metrics")}
-                periodLabel={t("today")}
-                status={t("stepsStatus")}
-                title={t("stepsTitle")}
-                unit={t("stepsUnit")}
-                value={t("stepsValue")}
-              />
-              <MetricCard
-                chart={{ type: "line", series: [18, 24, 21, 32, 28, 38, 34] }}
-                color="var(--foreground)"
-                dayLabels={WEEKDAY_LABELS}
-                icon={<Fire1 size={18} />}
-                onPress={() => router.push("/athlete/metrics")}
-                periodLabel={t("today")}
-                status={t("activeMinutesStatus")}
-                title={t("activeMinutesTitle")}
-                unit={t("activeMinutesUnit")}
-                value={t("activeMinutesValue")}
-              />
-            </div>
-
-            <CallToActionCard
-              actionLabel={t("bookingsAction")}
-              actionType="icon"
-              icon={<Calendar1 size={ICON_SIZE} />}
-              onAction={() => router.push("/athlete/bookings")}
-              subtitle={t("bookingsDescription")}
-              title={t("bookingsTitle")}
-              variant="outlined"
-            />
-          </section>
+        <StaggerSection>
+          <CallToActionCard
+            actionLabel={t("bookingsAction")}
+            actionType="icon"
+            icon={<Calendar1 size={ICON_SIZE} />}
+            onAction={() => router.push("/athlete/bookings")}
+            subtitle={t("bookingsDescription")}
+            title={t("bookingsTitle")}
+            variant="outlined"
+          />
         </StaggerSection>
 
         <StaggerSection>
@@ -192,9 +153,15 @@ export function AthleteHomeScreen() {
                 onPress={() => router.push("/athlete/check-ins")}
               />
               <QuickActionCard
-                icon={<Chat size={ICON_SIZE} />}
-                label={t("messagesTitle")}
-                onPress={() => router.push("/athlete/messages")}
+                icon={
+                  <span className={styles.moreGlyph} aria-hidden>
+                    <span className={styles.moreDot} />
+                    <span className={styles.moreDot} />
+                    <span className={styles.moreDot} />
+                  </span>
+                }
+                label={t("more")}
+                onPress={openActions}
               />
             </div>
           </section>

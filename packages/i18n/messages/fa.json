@@ -213,7 +213,14 @@
         "level": "سطح {level}",
         "dragHint": "اسلایدر را بکشید تا تنظیم شود",
         "empty": "سطحی برای نمایش نیست.",
-        "error": "بارگذاری سطوح ناموفق بود. دوباره تلاش کنید."
+        "error": "بارگذاری سطوح ناموفق بود. دوباره تلاش کنید.",
+        "subtitles": {
+          "beginner": "تقریباً ورزش نمی‌کنم یا تازه شروع کرده‌ام.",
+          "novice": "هفته‌ای ۱ تا ۲ جلسه ورزش سبک دارم.",
+          "intermediate": "هفته‌ای ۲ تا ۳ جلسه تمرین منظم دارم.",
+          "athletic": "هفته‌ای ۳ تا ۴ جلسه تمرین می‌کنم.",
+          "pro": "بیش از ۴ جلسه در هفته تمرین جدی دارم."
+        }
       },
       "sleep": {
         "title": "کیفیت خواب خود را چگونه ارزیابی می‌کنید؟",
@@ -5803,8 +5810,17 @@
     "todoItemProfile": "تکمیل پروفایل",
     "todoItemLocation": "انتخاب موقعیت مکانی",
     "todoItemAthleteProfile": "تکمیل پروفایل ورزشی",
+    "todoItemAvatar": "افزودن تصویر پروفایل",
     "todoItemVerify": "تأیید حساب",
     "todoItemFirstExercise": "ثبت اولین تمرین",
+    "more": "بیشتر",
+    "metricsEmptyTitle": "هنوز شاخصی ثبت نشده",
+    "metricsEmptyDescription": "قدم و زمان فعال امروز وقتی اولین شاخص را ثبت کنید اینجا دیده می‌شود.",
+    "metricsEmptyAction": "ثبت شاخص",
+    "metricsGoalStatus": "{percent}٪ هدف روزانه",
+    "metricsMoreThanYesterday": "{minutes} دقیقه بیشتر از دیروز",
+    "metricsLessThanYesterday": "{minutes} دقیقه کمتر از دیروز",
+    "metricsSameAsYesterday": "مشابه دیروز",
     "roleUpgradeTitle": "مربی یا باشگاه‌دار هستید؟",
     "roleUpgradeDescription": "اگر به این نقش‌ها نیاز ندارید، کارت‌ها را ببندید تا دیگر در خانه نمایش داده نشوند.",
     "roleUpgradeDismiss": "عدم نیاز به ارتقای نقش",

@@ -16,11 +16,17 @@ import type { AthleteHomeSetupTodoSectionProps } from "./AthleteHomeSetupTodoSec
 
 const TODO_LABEL_KEYS: Record<
   AthleteSetupTodoId,
-  "todoItemProfile" | "todoItemLocation" | "todoItemAthleteProfile"
+  | "todoItemProfile"
+  | "todoItemLocation"
+  | "todoItemAthleteProfile"
+  | "todoItemAvatar"
+  | "todoItemVerify"
 > = {
   athleteProfile: "todoItemAthleteProfile",
+  avatar: "todoItemAvatar",
   location: "todoItemLocation",
   profile: "todoItemProfile",
+  verify: "todoItemVerify",
 };
 
 export function AthleteHomeSetupTodoSection({

@@ -16,7 +16,7 @@ export const metricCardVariants = tv({
     titleGroup: "flex min-w-0 flex-row items-center gap-2",
     icon: [
       "flex shrink-0 items-center justify-center",
-      "bg-[var(--metric-accent,var(--stats-orange))] text-stats-foreground",
+      "bg-[var(--metric-accent,var(--stats-orange))] text-background",
       "[&_svg]:block [&_svg]:text-current",
     ].join(" "),
     title: [

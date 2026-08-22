@@ -1,11 +1,11 @@
 "use client";
 
 import { spring } from "@repo/theme";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  animate,
   motion,
   useMotionValue,
-  useSpring,
   useTransform,
   type PanInfo,
 } from "motion/react";
@@ -20,6 +20,14 @@ const PIXELS_PER_UNIT = 80;
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
+}
+
+function valueToX(value: number, pixelsPerUnit: number) {
+  return -value * pixelsPerUnit;
+}
+
+function xToValue(x: number, min: number, max: number, pixelsPerUnit: number) {
+  return clamp(Math.round(-x / pixelsPerUnit), min, max);
 }
 
 function DialItem({
@@ -109,24 +117,34 @@ export function WeightSlider({
   const { foreground, muted } = useThemeCssColors();
   const seed = clamp(value ?? defaultValue ?? initialValue ?? 25, min, max);
 
-  const x = useMotionValue(-seed * PIXELS_PER_UNIT);
-  const springX = useSpring(x, spring.bounce);
-
+  const x = useMotionValue(valueToX(seed, PIXELS_PER_UNIT));
   const [displayValue, setDisplayValue] = useState(seed);
   const displayRef = useRef(seed);
-  const dragStartX = useRef(x.get());
   const isDraggingRef = useRef(false);
 
-  useEffect(() => {
-    return springX.on("change", (latest) => {
-      const roundedVal = Math.round(Math.abs(latest / PIXELS_PER_UNIT));
-      const next = clamp(roundedVal, min, max);
+  const commitValue = useCallback(
+    (next: number) => {
       if (next === displayRef.current) return;
       displayRef.current = next;
       setDisplayValue(next);
       onChange?.(next);
+    },
+    [onChange],
+  );
+
+  const snap = () => {
+    const closest = valueToX(
+      xToValue(x.get(), min, max, PIXELS_PER_UNIT),
+      PIXELS_PER_UNIT,
+    );
+    animate(x, closest, spring.picker);
+  };
+
+  useEffect(() => {
+    return x.on("change", (latest) => {
+      commitValue(xToValue(latest, min, max, PIXELS_PER_UNIT));
     });
-  }, [springX, min, max, onChange]);
+  }, [x, min, max, commitValue]);
 
   useEffect(() => {
     if (value === undefined || isDraggingRef.current) return;
@@ -134,41 +152,12 @@ export function WeightSlider({
     if (next === displayRef.current) return;
     displayRef.current = next;
     setDisplayValue(next);
-    x.set(-next * PIXELS_PER_UNIT);
+    animate(x, valueToX(next, PIXELS_PER_UNIT), spring.picker);
   }, [value, min, max, x]);
-
-  const handlePanStart = () => {
-    isDraggingRef.current = true;
-    dragStartX.current = x.get();
-  };
-
-  const handlePan = (_: PointerEvent, info: PanInfo) => {
-    const maxOffset = PIXELS_PER_UNIT;
-    const boundedOffset = Math.max(
-      -maxOffset,
-      Math.min(maxOffset, info.offset.x * 0.6),
-    );
-    const newX = dragStartX.current + boundedOffset;
-    const minX = -max * PIXELS_PER_UNIT;
-    const maxX = -min * PIXELS_PER_UNIT;
-    x.set(Math.max(minX, Math.min(maxX, newX)));
-  };
-
-  const handlePanEnd = (_: PointerEvent, info: PanInfo) => {
-    const baseValue = Math.round(dragStartX.current / -PIXELS_PER_UNIT);
-    let direction = 0;
-
-    if (info.offset.x < -20 || info.velocity.x < -100) direction = 1;
-    else if (info.offset.x > 20 || info.velocity.x > 100) direction = -1;
-
-    const targetValue = clamp(baseValue + direction, min, max);
-    x.set(-targetValue * PIXELS_PER_UNIT);
-    isDraggingRef.current = false;
-  };
 
   const visibleRange = useMemo(() => {
     const items: number[] = [];
-    const buffer = 5;
+    const buffer = 8;
     for (
       let i = Math.max(min, displayValue - buffer);
       i <= Math.min(max, displayValue + buffer);
@@ -194,11 +183,15 @@ export function WeightSlider({
       onKeyDown={(event) => {
         if (event.key === "ArrowLeft" || event.key === "ArrowDown") {
           event.preventDefault();
-          x.set(-clamp(displayValue - 1, min, max) * PIXELS_PER_UNIT);
+          const next = clamp(displayValue - 1, min, max);
+          commitValue(next);
+          animate(x, valueToX(next, PIXELS_PER_UNIT), spring.picker);
         }
         if (event.key === "ArrowRight" || event.key === "ArrowUp") {
           event.preventDefault();
-          x.set(-clamp(displayValue + 1, min, max) * PIXELS_PER_UNIT);
+          const next = clamp(displayValue + 1, min, max);
+          commitValue(next);
+          animate(x, valueToX(next, PIXELS_PER_UNIT), spring.picker);
         }
       }}
     >
@@ -206,18 +199,28 @@ export function WeightSlider({
 
       <div className={slots.dialArea()}>
         <motion.div
-          onPanStart={handlePanStart}
-          onPan={handlePan}
-          onPanEnd={handlePanEnd}
+          drag="x"
+          dragConstraints={{
+            left: valueToX(max, PIXELS_PER_UNIT),
+            right: valueToX(min, PIXELS_PER_UNIT),
+          }}
+          dragElastic={0.1}
+          onDragStart={() => {
+            isDraggingRef.current = true;
+          }}
+          onDragEnd={(_event: PointerEvent, _info: PanInfo) => {
+            isDraggingRef.current = false;
+            snap();
+          }}
           className={slots.panLayer()}
-          style={{ x: springX, left: "50%" }}
+          style={{ x, left: "50%" }}
         >
           {visibleRange.map((i) => (
             <DialItem
               key={`${i}-${foreground}-${muted}`}
               value={i}
               pixelsPerUnit={PIXELS_PER_UNIT}
-              scrollX={springX}
+              scrollX={x}
               nearColor={foreground}
               farColor={muted}
             />

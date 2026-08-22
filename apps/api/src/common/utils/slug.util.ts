@@ -68,10 +68,7 @@ export function buildUserCode(firstName?: string, lastName?: string): string {
   return base ? `${base}-${suffix}` : `user-${suffix}`;
 }
 
-/** Shareable referral code, e.g. "MAHDI-4F2A" or "GYM-4F2A". */
-export function buildReferralCode(firstName?: string): string {
-  const prefix = firstName
-    ? slugify(firstName).replace(/-/g, '').slice(0, 6).toUpperCase()
-    : '';
-  return `${prefix || 'GYM'}-${randomShortCode(4)}`;
+/** Shareable referral code, e.g. "G4M-4F2A". */
+export function buildReferralCode(_firstName?: string): string {
+  return `G4M-${randomShortCode(4)}`;
 }

@@ -125,6 +125,7 @@ export function AthleteRoleUpgradeSection({
               <CallToActionCard
                 actionLabel={t(card.actionKey)}
                 actionType="icon"
+                className={styles.cardBody()}
                 icon={
                   role === "coach" ? (
                     <Whistle size={ICON_SIZE} />

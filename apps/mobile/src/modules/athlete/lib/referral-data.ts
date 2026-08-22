@@ -24,8 +24,8 @@ export type AthleteReferralView = {
 };
 
 export const DEMO_REFERRAL: AthleteReferralView = {
-  referralCode: "GYM4ME",
-  inviteUrl: "https://gym4me.app/auth?ref=GYM4ME",
+  referralCode: "G4M-DEMO",
+  inviteUrl: "https://gym4me.app/auth?ref=G4M-DEMO",
   stats: {
     invitesSent: 4,
     invitesJoined: 2,

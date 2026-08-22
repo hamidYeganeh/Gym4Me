@@ -6,9 +6,10 @@ export const profileLocationFormSectionVariants = tv({
     root: "flex flex-col gap-5",
     field: "flex w-full flex-col gap-2",
     label: "text-sm font-bold text-foreground",
-    input: "min-w-0 flex-1 bg-transparent text-sm shadow-none",
+    input:
+      "h-[var(--field-height)] min-h-[var(--field-height)] min-w-0 flex-1 bg-transparent text-sm shadow-none",
     inputGroup: [
-      "h-14 min-h-14 w-full rounded-2xl border border-border",
+      "h-[var(--field-height)] min-h-[var(--field-height)] w-full rounded-2xl border border-border",
       "bg-transparent px-4 shadow-none",
     ].join(" "),
     icon: "shrink-0 text-muted",

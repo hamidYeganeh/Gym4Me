@@ -205,7 +205,9 @@ export function ProfileSettingsEditSheet({
                   value={lastName}
                 >
                   <Label className={styles.label()}>{tProfile("lastName")}</Label>
-                  <Input className={styles.input()} />
+                  <InputGroup className={styles.inputGroup()} variant="secondary">
+                    <InputGroup.Input className={styles.input()} />
+                  </InputGroup>
                 </TextField>
               </>
             ) : null}

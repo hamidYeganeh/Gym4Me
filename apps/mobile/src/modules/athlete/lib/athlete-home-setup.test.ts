@@ -111,6 +111,8 @@ describe("buildAthleteSetupTodos", () => {
       ["profile", "pending", "/athlete/profile/edit"],
       ["location", "pending", "/athlete/profile/edit"],
       ["athleteProfile", "pending", "/athlete/profile/athlete"],
+      ["avatar", "pending", "/athlete/profile/edit"],
+      ["verify", "pending", "/athlete/profile"],
     ]);
   });
 
@@ -118,6 +120,8 @@ describe("buildAthleteSetupTodos", () => {
     const todos = buildAthleteSetupTodos({
       athleteProfile: athleteProfile({
         body: { heightCm: 178, weightKg: 74 },
+        levelKey: "intermediate",
+        sportIds: ["football"],
       }),
       user: user({
         address: {
@@ -128,10 +132,12 @@ describe("buildAthleteSetupTodos", () => {
           provinceId: "tehran",
           street: null,
         },
+        avatar: { mediaId: "avatar-1" },
         demographics: {
           birthDate: "1994-04-12",
           gender: "male",
         },
+        kyc: { status: "approved", verifiedAt: "2026-01-02T00:00:00.000Z" },
         name: { first: "امیر", last: "حسینی" },
       }),
     });

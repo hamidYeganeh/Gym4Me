@@ -142,7 +142,7 @@ export class User {
   @Prop({ unique: true, sparse: true, lowercase: true, trim: true })
   code?: string;
 
-  /** This user's shareable referral code, e.g. "MAHDI-4F2A" */
+  /** This user's shareable referral code, e.g. "G4M-4F2A" */
   @Prop({ unique: true, sparse: true, uppercase: true, trim: true })
   referralCode?: string;
 

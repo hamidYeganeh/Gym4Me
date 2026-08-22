@@ -5,7 +5,7 @@ export const referralInviteCardVariants = tv({
   slots: {
     root: [
       "relative flex w-full flex-col gap-5 overflow-hidden",
-      "rounded-[1.75rem] border border-accent/25 bg-surface p-5 text-start",
+      "rounded-[1.75rem] bg-surface p-5 text-start",
     ].join(" "),
     watermark: "pointer-events-none absolute -end-3 -top-4 z-0 flex opacity-[0.1]",
     watermarkStack: "relative size-[5.5rem]",

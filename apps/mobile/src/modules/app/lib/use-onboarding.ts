@@ -9,6 +9,7 @@ import { SWIPER_SPEED } from "@repo/ui/lib/swiper";
 import {
   ONBOARDING_BODY_TYPES,
   ONBOARDING_DEFAULT_BIRTH,
+  ONBOARDING_DEFAULT_BODY_TYPE,
   ONBOARDING_DEFAULT_CALORIES,
   ONBOARDING_DEFAULT_HEIGHT_CM,
   ONBOARDING_DEFAULT_MOOD,
@@ -132,7 +133,9 @@ export function useOnboarding() {
   const [weightKg, setWeightKg] = useState(ONBOARDING_DEFAULT_WEIGHT_KG);
   const [weightUnit, setWeightUnit] = useState<OnboardingWeightUnit>("kg");
   const [weightProvided, setWeightProvided] = useState(false);
-  const [bodyType, setBodyType] = useState<OnboardingBodyTypeId | null>(null);
+  const [bodyType, setBodyType] = useState<OnboardingBodyTypeId>(
+    ONBOARDING_DEFAULT_BODY_TYPE,
+  );
   const [athleteLevel, setAthleteLevel] = useState<string | null>(null);
   const [athleteLevelOptions, setAthleteLevelOptions] = useState<
     OnboardingAthleteLevelOption[]
@@ -299,11 +302,31 @@ export function useOnboarding() {
             .filter((option) => option.isActive !== false)
             .slice()
             .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-            .map((option) => ({
-              value: option.value,
-              name: option.name,
-              description: option.description?.trim() ?? "",
-            }));
+            .map((option) => {
+              const apiDescription = option.description?.trim() ?? "";
+              const subtitleKey = option.value as
+                | "beginner"
+                | "novice"
+                | "intermediate"
+                | "athletic"
+                | "pro";
+              const hasFallback = [
+                "beginner",
+                "novice",
+                "intermediate",
+                "athletic",
+                "pro",
+              ].includes(option.value);
+              return {
+                value: option.value,
+                name: option.name,
+                description:
+                  apiDescription ||
+                  (hasFallback
+                    ? t(`athleteLevel.subtitles.${subtitleKey}`)
+                    : ""),
+              };
+            });
           setAthleteLevelOptions(nextLevel);
           setAthleteLevel((current) => {
             if (current && nextLevel.some((option) => option.value === current)) {

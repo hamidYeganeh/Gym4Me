@@ -2,7 +2,7 @@ import { tv } from "tailwind-variants";
 
 export const onboardingGoalsSectionVariants = tv({
   slots: {
-    root: "flex h-full min-h-0 w-full max-w-md flex-col",
+    root: "flex h-full min-h-0 w-full flex-col",
     scroller: "h-full min-h-0 w-full",
     list: "flex w-full flex-col gap-3 pb-2",
     status: "flex min-h-40 w-full items-center justify-center",

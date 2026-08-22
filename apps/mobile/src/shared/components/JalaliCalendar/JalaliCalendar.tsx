@@ -1,73 +1,46 @@
 "use client";
 
-import { Calendar, DateObject } from "react-multi-date-picker";
-import gregorian from "react-date-object/calendars/gregorian";
-import persian from "react-date-object/calendars/persian";
-import gregorian_en from "react-date-object/locales/gregorian_en";
-import persian_fa from "react-date-object/locales/persian_fa";
+import { Calendar } from "@heroui/react/calendar";
+import type { CalendarDate } from "@internationalized/date";
+import { I18nProvider } from "react-aria-components";
+import {
+  calendarDateToJalaliValue,
+  JALALI_CALENDAR_LOCALE,
+  jalaliValueToIso,
+  toJalaliCalendarDate,
+} from "./jalali-calendar-utils";
 import { jalaliCalendarVariants } from "./JalaliCalendar.styles";
-import type {
-  JalaliCalendarProps,
-  JalaliCalendarValue,
-} from "./JalaliCalendar.types";
+import type { JalaliCalendarProps } from "./JalaliCalendar.types";
 
-function isJalaliValue(
-  value: JalaliCalendarValue | string | Date,
-): value is JalaliCalendarValue {
-  return (
-    typeof value === "object" &&
-    !(value instanceof Date) &&
-    "year" in value &&
-    "month" in value &&
-    "day" in value
-  );
-}
+export { jalaliValueToIso } from "./jalali-calendar-utils";
 
-function toDateObject(
-  value: JalaliCalendarValue | string | Date | null | undefined,
-): DateObject | undefined {
-  if (value == null) return undefined;
-
-  if (isJalaliValue(value)) {
-    return new DateObject({
-      year: value.year,
-      month: value.month,
-      day: value.day,
-      calendar: persian,
-      locale: persian_fa,
-    });
+function JalaliCalendarGrid({
+  monthOffset = 0,
+  showWeekHeader = true,
+}: {
+  monthOffset?: number;
+  showWeekHeader?: boolean;
+}) {
+  if (showWeekHeader) {
+    return (
+      <Calendar.Grid offset={{ months: monthOffset }}>
+        <Calendar.GridHeader>
+          {(day) => <Calendar.HeaderCell>{day}</Calendar.HeaderCell>}
+        </Calendar.GridHeader>
+        <Calendar.GridBody>
+          {(date) => <Calendar.Cell date={date} />}
+        </Calendar.GridBody>
+      </Calendar.Grid>
+    );
   }
 
-  return new DateObject({
-    date: value,
-    calendar: gregorian,
-    locale: gregorian_en,
-  }).convert(persian, persian_fa);
-}
-
-function toJalaliValue(date: DateObject): JalaliCalendarValue {
-  const persianDate =
-    date.calendar.name === "persian"
-      ? date
-      : date.convert(persian, persian_fa);
-  return {
-    year: persianDate.year,
-    month: persianDate.month.number,
-    day: persianDate.day,
-  };
-}
-
-/** Gregorian ISO `YYYY-MM-DD` from a Jalali calendar selection. */
-export function jalaliValueToIso(value: JalaliCalendarValue): string {
-  return new DateObject({
-    year: value.year,
-    month: value.month,
-    day: value.day,
-    calendar: persian,
-    locale: persian_fa,
-  })
-    .convert(gregorian, gregorian_en)
-    .format("YYYY-MM-DD");
+  return (
+    <Calendar.Grid offset={{ months: monthOffset }}>
+      <Calendar.GridBody>
+        {(date) => <Calendar.Cell date={date} />}
+      </Calendar.GridBody>
+    </Calendar.Grid>
+  );
 }
 
 export function JalaliCalendar({
@@ -77,12 +50,16 @@ export function JalaliCalendar({
   minDate,
   maxDate,
   numberOfMonths = 1,
-  buttons,
+  buttons = true,
   className,
   calendarClassName,
 }: JalaliCalendarProps) {
   const styles = jalaliCalendarVariants();
-  const calendarValue = toDateObject(value);
+  const calendarValue = toJalaliCalendarDate(value);
+  const minCalendarDate = toJalaliCalendarDate(minDate);
+  const maxCalendarDate = toJalaliCalendarDate(maxDate);
+  const showNav = buttons !== false;
+  const monthCount = Math.max(1, numberOfMonths);
 
   return (
     <div
@@ -90,28 +67,81 @@ export function JalaliCalendar({
       className={styles.root({ className })}
       role="group"
     >
-      <Calendar
-        buttons={buttons}
-        calendar={persian}
-        className={[styles.calendar(), calendarClassName]
-          .filter(Boolean)
-          .join(" ")}
-        locale={persian_fa}
-        maxDate={toDateObject(maxDate)}
-        minDate={toDateObject(minDate)}
-        numberOfMonths={numberOfMonths}
-        shadow={false}
-        showOtherDays
-        value={calendarValue}
-        weekStartDayIndex={0}
-        onChange={(next) => {
-          if (!next || Array.isArray(next)) return;
-          onChange?.(toJalaliValue(next), next);
-        }}
-      />
+      <I18nProvider locale={JALALI_CALENDAR_LOCALE}>
+        <Calendar
+          aria-label={ariaLabel}
+          className={styles.calendar({ className: calendarClassName })}
+          firstDayOfWeek="sat"
+          maxValue={maxCalendarDate}
+          minValue={minCalendarDate}
+          value={calendarValue}
+          onChange={(next) => {
+            if (!next) return;
+            const jalali = calendarDateToJalaliValue(next as CalendarDate);
+            onChange?.(jalali, next as CalendarDate);
+          }}
+        >
+          {monthCount === 1 ? (
+            <>
+              <Calendar.Header>
+                {showNav ? (
+                  <Calendar.NavButton slot="previous" />
+                ) : (
+                  <span aria-hidden className={styles.navSpacer()} />
+                )}
+                <Calendar.YearPickerTrigger>
+                  <Calendar.YearPickerTriggerHeading />
+                  <Calendar.YearPickerTriggerIndicator />
+                </Calendar.YearPickerTrigger>
+                {showNav ? (
+                  <Calendar.NavButton slot="next" />
+                ) : (
+                  <span aria-hidden className={styles.navSpacer()} />
+                )}
+              </Calendar.Header>
+              <JalaliCalendarGrid />
+              <Calendar.YearPickerGrid>
+                <Calendar.YearPickerGridBody>
+                  {({ year }) => <Calendar.YearPickerCell year={year} />}
+                </Calendar.YearPickerGridBody>
+              </Calendar.YearPickerGrid>
+            </>
+          ) : (
+            <div className={styles.monthsStack()}>
+              {Array.from({ length: monthCount }, (_, index) => (
+                <div className={styles.monthBlock()} key={index}>
+                  <Calendar.Header className={styles.monthHeader()}>
+                    {showNav && index === 0 ? (
+                      <Calendar.NavButton slot="previous" />
+                    ) : (
+                      <span aria-hidden className={styles.navSpacer()} />
+                    )}
+                    <Calendar.Heading
+                      className={styles.monthHeading()}
+                      offset={{ months: index }}
+                    />
+                    {showNav && index === monthCount - 1 ? (
+                      <Calendar.NavButton slot="next" />
+                    ) : (
+                      <span aria-hidden className={styles.navSpacer()} />
+                    )}
+                  </Calendar.Header>
+                  <JalaliCalendarGrid
+                    monthOffset={index}
+                    showWeekHeader={index === 0}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </Calendar>
+      </I18nProvider>
     </div>
   );
 }
 
-export { toDateObject as jalaliCalendarToDateObject };
-export type { DateObject };
+export {
+  calendarDateToJalaliValue,
+  jalaliValueToCalendarDate,
+  toJalaliCalendarDate,
+} from "./jalali-calendar-utils";

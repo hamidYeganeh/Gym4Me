@@ -9,11 +9,12 @@ export const athleteRoleUpgradeSectionVariants = tv({
     description: "max-w-[21rem] text-pretty text-sm leading-relaxed text-muted",
     close:
       "size-10 shrink-0 rounded-full text-muted data-[hovered=true]:bg-default data-[pressed=true]:scale-[0.96]",
-    list: "flex flex-col gap-3",
+    list: "flex flex-col gap-3 overflow-visible pt-1",
     card: "relative",
+    cardBody: "pe-16",
     cardClose: [
-      "absolute end-3 top-3 z-10 size-9 rounded-full",
-      "bg-background/85 text-foreground",
+      "absolute end-3 top-3 z-20 size-8 rounded-full",
+      "border border-border/70 bg-background/90 text-foreground shadow-sm",
       "data-[hovered=true]:bg-background",
       "data-[pressed=true]:scale-[0.96]",
     ].join(" "),

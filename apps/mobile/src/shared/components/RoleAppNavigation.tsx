@@ -14,7 +14,14 @@ import { Logo } from "@repo/ui/common/Logo";
 import { BottomNav } from "@repo/ui/layout/BottomNav";
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
-import { useEffect, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { roleHomePath } from "@/shared/lib/role-routes";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { useRouter } from "@/shared/lib/app-router";
@@ -29,6 +36,18 @@ type RoleAppNavigationProps = {
 };
 
 const ICON_SIZE = 22;
+
+type RoleNavActionsValue = {
+  openActions: () => void;
+};
+
+const RoleNavActionsContext = createContext<RoleNavActionsValue>({
+  openActions: () => undefined,
+});
+
+export function useRoleNavActions() {
+  return useContext(RoleNavActionsContext);
+}
 
 function isActivePath(pathname: string, href: string) {
   // Role homes (`/athlete`) are exact-only; discovery highlights the whole tree.
@@ -50,6 +69,13 @@ export function RoleAppNavigation({
   const router = useRouter();
   const t = useTranslations("BottomNav");
   const { activeRole, isAuthenticated, isReady } = useAuth();
+  const [actionsOpen, setActionsOpen] = useState(false);
+  const navActions = useMemo<RoleNavActionsValue>(
+    () => ({
+      openActions: () => setActionsOpen(true),
+    }),
+    [],
+  );
   const expectedRole = role === "owner" ? "club_owner" : role;
   const isGuest = allowGuest && isReady && !isAuthenticated;
   const roleMatches = isReady && activeRole === expectedRole;
@@ -213,30 +239,34 @@ export function RoleAppNavigation({
   }
 
   return (
-    <div className={showsNavigation ? "min-h-dvh pb-28" : "min-h-dvh"}>
-      {children}
-      {showsNavigation ? (
-        <BottomNav
-          aria-label={t("navLabel")}
-          centerAction={{
-            label: t("create"),
-            icon: (
-              <Logo
-                color="var(--accent-foreground)"
-                gradient={false}
-                shadow={false}
-                size={48}
-              />
-            ),
-            actionsLabel: t("actionsLabel"),
-            actions: [...config.actions],
-          }}
-          items={config.items.map((item) => ({
-            ...item,
-            isActive: isActivePath(pathname, item.href),
-          }))}
-        />
-      ) : null}
-    </div>
+    <RoleNavActionsContext.Provider value={navActions}>
+      <div className={showsNavigation ? "min-h-dvh pb-28" : "min-h-dvh"}>
+        {children}
+        {showsNavigation ? (
+          <BottomNav
+            aria-label={t("navLabel")}
+            centerAction={{
+              actions: [...config.actions],
+              actionsLabel: t("actionsLabel"),
+              icon: (
+                <Logo
+                  color="var(--accent-foreground)"
+                  gradient={false}
+                  shadow={false}
+                  size={48}
+                />
+              ),
+              label: t("create"),
+            }}
+            isActionsOpen={actionsOpen}
+            items={config.items.map((item) => ({
+              ...item,
+              isActive: isActivePath(pathname, item.href),
+            }))}
+            onActionsOpenChange={setActionsOpen}
+          />
+        ) : null}
+      </div>
+    </RoleNavActionsContext.Provider>
   );
 }

@@ -49,6 +49,9 @@
   --radius: 0.5rem;
   --field-radius: 0.75rem;
 
+  /* Single-line field height — Input + InputGroup (not TextArea) */
+  --field-height: 3.5rem;
+
   /* Font Family — load IRANSansX via @repo/fonts in the app layout */
   --font-sans: var(--font-iran-sans-x);
 }
@@ -88,4 +91,29 @@
   --surface-tertiary-foreground: oklch(99.11% 0 148.29);
   --warning: oklch(82.03% 0.1388 63.67);
   --warning-foreground: oklch(21.03% 0.0059 63.67);
+}
+
+/*
+ * Keep HeroUI Input and single-line InputGroup the same height.
+ * Attribute selectors sit outside @layer so they beat library defaults.
+ * Per-instance Tailwind height utilities (e.g. h-12) still override height.
+ * TextArea / InputGroup.TextArea are excluded so multiline fields can grow.
+ */
+[data-slot="input"] {
+  height: var(--field-height);
+  min-height: var(--field-height);
+  box-sizing: border-box;
+}
+
+[data-slot="input-group"]:not(:has([data-slot="input-group-textarea"])) {
+  height: var(--field-height);
+  min-height: var(--field-height);
+  box-sizing: border-box;
+}
+
+[data-slot="input-group"]:not(:has([data-slot="input-group-textarea"]))
+  [data-slot="input-group-input"] {
+  min-height: 0;
+  height: 100%;
+  padding-block: 0;
 }

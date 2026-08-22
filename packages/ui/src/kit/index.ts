@@ -21,6 +21,7 @@ export * from "./HeightSlider";
 export * from "./InputOTP";
 export * from "./LocationPickerMap";
 export * from "./MinimalCarousel";
+export * from "./MorphingText";
 export * from "./MultiSelectFilter";
 export * from "./PasswordField";
 export * from "./PhoneField";

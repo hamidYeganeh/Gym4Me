@@ -37,7 +37,10 @@ export function OnboardingMoodSection({
       <div aria-label="mood" className={styles.row()} role="group">
         {options.map((option) => {
           const active = option.id === value;
-          const faceStyles = onboardingMoodSectionVariants({ active });
+          const faceStyles = onboardingMoodSectionVariants({
+            active,
+            mood: option.id,
+          });
           const Icon = MOOD_ICONS[option.id];
 
           return (

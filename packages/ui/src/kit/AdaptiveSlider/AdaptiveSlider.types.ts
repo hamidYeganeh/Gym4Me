@@ -21,9 +21,4 @@ export interface AdaptiveSliderProps {
 
 export type AdaptiveSliderTone = "low" | "mid" | "high";
 
-export interface AnimatedTextProps {
-  value: string;
-  className?: string;
-}
-
 export type AdaptiveSliderChangeEvent = ChangeEvent<HTMLInputElement>;

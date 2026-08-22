@@ -2,13 +2,10 @@
 
 import { spring } from "@repo/theme";
 import { useMemo, useState, type ChangeEvent } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { motion } from "motion/react";
+import { MorphingText } from "../MorphingText";
 import { adaptiveSliderVariants } from "./AdaptiveSlider.styles";
-import type {
-  AdaptiveSliderProps,
-  AdaptiveSliderTone,
-  AnimatedTextProps,
-} from "./AdaptiveSlider.types";
+import type { AdaptiveSliderProps, AdaptiveSliderTone } from "./AdaptiveSlider.types";
 
 function getTone(value: number, min: number, max: number): AdaptiveSliderTone {
   const range = max - min;
@@ -67,7 +64,7 @@ export function AdaptiveSlider({
 
       {showValue && (
         <div className={slots.valueRow()}>
-          <AnimatedText value={String(current)} className={slots.value()} />
+          <MorphingText value={String(current)} className={slots.value()} />
           {unit != null && (
             <motion.span layout className={slots.unit()}>
               {unit}
@@ -115,32 +112,3 @@ export function AdaptiveSlider({
   );
 }
 
-function AnimatedText({ value, className }: AnimatedTextProps) {
-  const slots = adaptiveSliderVariants();
-
-  return (
-    <div className={slots.animatedText({ className })}>
-      <AnimatePresence mode="popLayout" initial={false}>
-        {value.split("").map((char, index) => {
-          const displayChar = char === " " ? "\u00A0" : char;
-
-          return (
-            <motion.span
-              key={char + index}
-              initial={{ opacity: 1, y: 0, scale: 1 }}
-              animate={{
-                opacity: 1,
-                y: 0,
-                scale: 1,
-                transition: spring.gentle,
-              }}
-              exit={{ opacity: 0, y: 0, scale: 1, transition: { duration: 0 } }}
-            >
-              {displayChar}
-            </motion.span>
-          );
-        })}
-      </AnimatePresence>
-    </div>
-  );
-}

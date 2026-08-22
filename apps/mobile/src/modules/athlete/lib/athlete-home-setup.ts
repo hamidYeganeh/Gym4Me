@@ -4,7 +4,12 @@ export const ATHLETE_UPGRADE_ROLES = ["coach", "club_owner"] as const;
 
 export type AthleteUpgradeRole = (typeof ATHLETE_UPGRADE_ROLES)[number];
 
-export type AthleteSetupTodoId = "profile" | "location" | "athleteProfile";
+export type AthleteSetupTodoId =
+  | "profile"
+  | "location"
+  | "athleteProfile"
+  | "avatar"
+  | "verify";
 
 export type AthleteSetupTodo = {
   href: string;
@@ -40,7 +45,21 @@ export function isAthleteSportProfileComplete(
   profile: AthleteProfile | null,
 ): boolean {
   if (!profile) return false;
-  return profile.body.heightCm != null && profile.body.weightKg != null;
+  return (
+    profile.body.heightCm != null &&
+    profile.body.weightKg != null &&
+    (hasText(profile.levelKey) ||
+      profile.sportIds.length > 0 ||
+      profile.goalKeys.length > 0)
+  );
+}
+
+export function isAthleteAvatarComplete(user: PublicUser): boolean {
+  return hasText(user.avatar.mediaId);
+}
+
+export function isAthleteVerifyComplete(user: PublicUser): boolean {
+  return user.kyc.status === "approved" || Boolean(user.kyc.verifiedAt);
 }
 
 export function buildAthleteSetupTodos(input: {
@@ -66,6 +85,16 @@ export function buildAthleteSetupTodos(input: {
       status: isAthleteSportProfileComplete(athleteProfile)
         ? "completed"
         : "pending",
+    },
+    {
+      href: "/athlete/profile/edit",
+      id: "avatar",
+      status: isAthleteAvatarComplete(user) ? "completed" : "pending",
+    },
+    {
+      href: "/athlete/profile",
+      id: "verify",
+      status: isAthleteVerifyComplete(user) ? "completed" : "pending",
     },
   ];
 }
