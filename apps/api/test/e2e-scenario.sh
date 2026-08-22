@@ -14,8 +14,8 @@
 #           DEBUG_MODE=true, THROTTLE_DISABLED=true recommended, jq.
 # Env:
 #   API_URL       default http://localhost:8088/api/v1
-#   API_LOG_FILE  file containing server logs (to read "[DEBUG OTP] ... code=XXXXXX").
-#                 If unset, OTP registration is skipped and seeded athlete3 is used.
+#   API_LOG_FILE  optional server log used as a fallback when an older debug API
+#                 does not return `debugCode` in the OTP response.
 set -u
 BASE="${API_URL:-http://localhost:8088/api/v1}"
 PASS="Gym4Me!123"
@@ -60,25 +60,23 @@ echo "════ S1: ثبت‌نام ورزشکار جدید با OTP ══�
 NEW_PHONE="0912888$(date +%s | tail -c 5)"
 ATH_TOKEN=""
 ATH_LABEL="new-athlete"
-if [ -n "$LOG_FILE" ] && [ -f "$LOG_FILE" ]; then
-  OTP_RES=$(jpost /account/auth/otp "{\"phone\":\"$NEW_PHONE\"}")
-  check "S1.1 otp requested" "true" "$(echo "$OTP_RES" | jq -r '(.expiresInSeconds // 0) > 0')"
-  INTL_PHONE="+98${NEW_PHONE#0}"
-  OTP_CODE=""
-  # log files may flush with a few seconds delay — poll before giving up
-  # (mock logs "[OTP] to=... code=", kavenegar debug logs "[DEBUG OTP] to=... code=")
+OTP_RES=$(jpost /account/auth/otp "{\"phone\":\"$NEW_PHONE\"}")
+check "S1.1 otp requested" "true" "$(echo "$OTP_RES" | jq -r '(.expiresInSeconds // 0) > 0')"
+INTL_PHONE="+98${NEW_PHONE#0}"
+OTP_CODE=$(echo "$OTP_RES" | jq -r '.debugCode // empty')
+if [ -z "$OTP_CODE" ] && [ -n "$LOG_FILE" ] && [ -f "$LOG_FILE" ]; then
+  # Older debug builds only wrote the code to the log. Filter by phone first so
+  # parallel OTP requests cannot leak a different user's code into this flow.
   for _try in 1 2 3 4; do
     sleep 4
-    OTP_CODE=$(grep -oE "\[(DEBUG )?OTP\] to=\\${INTL_PHONE} code=[0-9]{6}" "$LOG_FILE" | tail -1 | grep -oE '[0-9]{6}$' || true)
+    OTP_CODE=$(grep -F "$INTL_PHONE" "$LOG_FILE" | grep -oE 'code=[0-9]{5}' | tail -1 | cut -d= -f2 || true)
     [ -n "$OTP_CODE" ] && break
   done
-  check "S1.2 otp code readable from log" "true" "$([ -n "${OTP_CODE:-}" ] && echo true || echo false)"
-  CONFIRM=$(jpost /account/auth/otp/confirm "{\"phone\":\"$NEW_PHONE\",\"code\":\"${OTP_CODE:-000000}\",\"firstName\":\"سام\",\"lastName\":\"آزمایشی\"}")
-  ATH_TOKEN=$(echo "$CONFIRM" | token_of)
-  check "S1.3 otp confirm issues token" "true" "$([ -n "$ATH_TOKEN" ] && echo true || echo false)"
-else
-  note "API_LOG_FILE not set — using seeded athlete3 instead of OTP signup"
 fi
+check "S1.2 debug otp code available" "true" "$([[ "${OTP_CODE:-}" =~ ^[0-9]{5}$ ]] && echo true || echo false)"
+CONFIRM=$(jpost /account/auth/otp/confirm "{\"phone\":\"$NEW_PHONE\",\"code\":\"${OTP_CODE:-00000}\",\"firstName\":\"سام\",\"lastName\":\"آزمایشی\"}")
+ATH_TOKEN=$(echo "$CONFIRM" | token_of)
+check "S1.3 otp confirm issues token" "true" "$([ -n "$ATH_TOKEN" ] && echo true || echo false)"
 if [ -z "$ATH_TOKEN" ]; then
   ATH_TOKEN=$(login_token /account/auth/login "{\"phone\":\"09124000003\",\"password\":\"$PASS\"}")
   ATH_LABEL="athlete3"
@@ -276,8 +274,13 @@ PUB_SLOTS=$(jget "/discovery/coaches/$COACH_USER_ID/slots?from=$FROM&to=$TO7")
 CSLOT_ID=$(echo "$PUB_SLOTS" | jq -r '[.slots[]? | select(.status == "open")][0].id // empty')
 if [ -z "$CSLOT_ID" ]; then
   UMIN=$(( $(date +%s) % 50 + 5 ))
-  TM_START=$(date -v+1d -v14H -v"${UMIN}M" -v0S -u +%Y-%m-%dT%H:%M:%S.000Z 2>/dev/null || date -d "tomorrow 14:$UMIN" -u +%Y-%m-%dT%H:%M:%S.000Z)
-  TM_END=$(date -v+1d -v14H -v"${UMIN}M" -v0S -v+45M -u +%Y-%m-%dT%H:%M:%S.000Z 2>/dev/null || date -d "tomorrow 14:$UMIN +45 minutes" -u +%Y-%m-%dT%H:%M:%S.000Z)
+  if TM_START=$(date -v+1d -v14H -v"${UMIN}M" -v0S -u +%Y-%m-%dT%H:%M:%S.000Z 2>/dev/null); then
+    TM_END=$(date -v+1d -v14H -v"${UMIN}M" -v0S -v+45M -u +%Y-%m-%dT%H:%M:%S.000Z)
+  else
+    TM_START_EPOCH=$(date -d "tomorrow 14:$UMIN" +%s)
+    TM_START=$(date -u -d "@$TM_START_EPOCH" +%Y-%m-%dT%H:%M:%S.000Z)
+    TM_END=$(date -u -d "@$((TM_START_EPOCH + 45 * 60))" +%Y-%m-%dT%H:%M:%S.000Z)
+  fi
   CSLOTS=$(jpost_auth /coach/slots "$COACH_TOKEN" "{\"slots\":[{\"startsAt\":\"$TM_START\",\"endsAt\":\"$TM_END\"}]}")
   CSLOT_ID=$(echo "$CSLOTS" | jq -r 'if type == "array" then (.[0].id // .[0]._id) else ((.slots // .result // .items // [.])[0].id // (.slots // .result // .items // [.])[0]._id) end // empty')
 fi
