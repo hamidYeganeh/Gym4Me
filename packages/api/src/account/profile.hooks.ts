@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useApiClient } from "../react";
-import type { PublicUser } from "../types";
+import type { FavouriteLocation, PublicUser } from "../types";
 import {
   createAccountProfileApi,
   type AccountProfileApi,
@@ -15,10 +15,13 @@ import {
 import type {
   AthleteProfile,
   CoachProfile,
+  CreateFavouriteLocationInput,
+  FavouriteLocationsList,
   ProfileSettings,
   SubmitCoachVerificationInput,
   UpdateAthleteProfileInput,
   UpdateCoachProfileInput,
+  UpdateFavouriteLocationInput,
   UpdateMeInput,
   UpdateProfileSettingsInput,
 } from "./profile.dto";
@@ -170,6 +173,85 @@ export function useSubmitCoachVerification(
       void queryClient.invalidateQueries({
         queryKey: accountProfileKeys.coach(),
       });
+      onSuccess?.(data, vars, onMutateResult, context);
+    },
+  });
+}
+
+function invalidateFavouriteLocations(
+  queryClient: ReturnType<typeof useQueryClient>,
+) {
+  void queryClient.invalidateQueries({
+    queryKey: accountProfileKeys.locations(),
+  });
+  void queryClient.invalidateQueries({ queryKey: accountProfileKeys.me() });
+}
+
+export function useAccountFavouriteLocations(
+  options?: Omit<
+    UseQueryOptions<FavouriteLocationsList, Error>,
+    "queryKey" | "queryFn"
+  >,
+) {
+  const api = useAccountProfileApi();
+  return useQuery({
+    queryKey: accountProfileKeys.locations(),
+    queryFn: () => api.listFavouriteLocations(),
+    ...options,
+  });
+}
+
+export function useCreateAccountFavouriteLocation(
+  options?: UseMutationOptions<
+    FavouriteLocation,
+    Error,
+    CreateFavouriteLocationInput
+  >,
+) {
+  const api = useAccountProfileApi();
+  const queryClient = useQueryClient();
+  const { onSuccess, ...rest } = options ?? {};
+  return useMutation({
+    ...rest,
+    mutationFn: (input) => api.createFavouriteLocation(input),
+    onSuccess: (data, vars, onMutateResult, context) => {
+      invalidateFavouriteLocations(queryClient);
+      onSuccess?.(data, vars, onMutateResult, context);
+    },
+  });
+}
+
+export function useUpdateAccountFavouriteLocation(
+  options?: UseMutationOptions<
+    FavouriteLocation,
+    Error,
+    { id: string; input: UpdateFavouriteLocationInput }
+  >,
+) {
+  const api = useAccountProfileApi();
+  const queryClient = useQueryClient();
+  const { onSuccess, ...rest } = options ?? {};
+  return useMutation({
+    ...rest,
+    mutationFn: ({ id, input }) => api.updateFavouriteLocation(id, input),
+    onSuccess: (data, vars, onMutateResult, context) => {
+      invalidateFavouriteLocations(queryClient);
+      onSuccess?.(data, vars, onMutateResult, context);
+    },
+  });
+}
+
+export function useDeleteAccountFavouriteLocation(
+  options?: UseMutationOptions<FavouriteLocationsList, Error, string>,
+) {
+  const api = useAccountProfileApi();
+  const queryClient = useQueryClient();
+  const { onSuccess, ...rest } = options ?? {};
+  return useMutation({
+    ...rest,
+    mutationFn: (id) => api.deleteFavouriteLocation(id),
+    onSuccess: (data, vars, onMutateResult, context) => {
+      invalidateFavouriteLocations(queryClient);
       onSuccess?.(data, vars, onMutateResult, context);
     },
   });

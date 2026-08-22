@@ -10,7 +10,7 @@ import { Typography } from "@heroui/react/typography";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
-import { AdminFormActions } from "@/shared/components";
+import { AdminFormActions, AdminIconField } from "@/shared/components";
 import { resolveFormSubmitIntent } from "@/shared/lib/form-submit-intent";
 import { BasicsMediaField } from "../BasicsMediaField";
 import {
@@ -126,17 +126,17 @@ export function RefsForm({
         control={form.control}
         name="icon"
         render={({ field, fieldState }) => (
-          <TextField
+          <AdminIconField
+            errorMessage={fieldState.error?.message}
+            inputRef={field.ref}
             isInvalid={fieldState.invalid}
+            label={t("fields.icon")}
             name={field.name}
+            placeholder={t("fields.iconHint")}
             value={field.value}
             onBlur={field.onBlur}
             onChange={field.onChange}
-          >
-            <Label>{t("fields.icon")}</Label>
-            <Input placeholder={t("fields.iconHint")} ref={field.ref} />
-            <FieldError>{fieldState.error?.message}</FieldError>
-          </TextField>
+          />
         )}
       />
       <Controller

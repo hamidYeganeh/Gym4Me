@@ -1,6 +1,7 @@
 import type { ApiClient } from "../client";
 import type { Paginated } from "../types";
 import type { PointTransactionItem } from "../account/gamification.dto";
+import type { SeedDefaultsResult } from "./basics.dto";
 import type {
   AdjustPointsInput,
   AdjustPointsResult,
@@ -36,6 +37,11 @@ export function createAdminGamificationApi(client: ApiClient) {
       return client.request<AdminAchievement>(ep.achievements, {
         method: "POST",
         body: input,
+      });
+    },
+    seedAchievementDefaults() {
+      return client.request<SeedDefaultsResult>(ep.seedAchievementDefaults, {
+        method: "POST",
       });
     },
     updateAchievement(id: string, input: UpdateAchievementInput) {

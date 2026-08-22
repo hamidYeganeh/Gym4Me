@@ -5,6 +5,10 @@ import type { FoodItem } from "@repo/api";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
 import { AdminDataTable } from "@/shared/components";
+import {
+  adminListPaginationProps,
+  adminListPaginationSummary,
+} from "@/shared/lib/admin-list-pagination";
 import { foodItemsTableSectionVariants } from "./FoodItemsTableSection.styles";
 import type {
   FoodItemsTableSectionProps,
@@ -16,17 +20,19 @@ const columnHelper = createColumnHelper<FoodItem>();
 export function FoodItemsTableSection({
   items,
   total,
+  page,
+  pageSize,
+  totalPages,
   loading,
-  fetchingMore,
-  hasMore,
   error,
   categoryLabels = {},
-  onLoadMore,
+  onPageChange,
   onEdit,
   onArchive,
   className,
 }: FoodItemsTableSectionProps) {
   const t = useTranslations("Admin.Catalog");
+  const tCommon = useTranslations("Admin.Common");
   const styles = foodItemsTableSectionVariants();
 
   const columns = useMemo(
@@ -111,6 +117,8 @@ export function FoodItemsTableSection({
     onArchive,
   };
 
+  const summary = adminListPaginationSummary(page, pageSize, total);
+
   return (
     <AdminDataTable
       ariaLabel={t("food.title")}
@@ -120,17 +128,17 @@ export function FoodItemsTableSection({
       emptyLabel={t("food.empty")}
       error={error}
       getRowId={(row) => row.id}
-      hasMore={hasMore}
-      isFetchingMore={fetchingMore}
       isLoading={loading}
       loadingLabel={t("loading")}
-      loadingMoreLabel={t("loadingMore")}
       meta={meta}
-      onLoadMore={onLoadMore}
-      summaryLabel={t("food.summary", {
-        loaded: items.length,
-        total,
+      pagination={adminListPaginationProps({
+        page,
+        totalPages,
+        previousLabel: tCommon("pagination.previous"),
+        nextLabel: tCommon("pagination.next"),
+        onPageChange,
       })}
+      summaryLabel={tCommon("pagination.summary", summary)}
     />
   );
 }

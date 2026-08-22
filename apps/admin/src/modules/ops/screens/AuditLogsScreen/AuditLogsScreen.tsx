@@ -3,7 +3,10 @@ import type { AuditLogItem, StartImpersonationResult } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { AdminShell } from "@/shared/components";
-import { useAdminInfiniteQuery } from "@/shared/hooks";
+import {
+  useAdminListQueryParams,
+  useAdminPaginatedQuery,
+} from "@/shared/hooks";
 import { adminAudit } from "@/shared/lib/api";
 import { AuditLogsHeaderSection } from "../../sections/AuditLogsHeaderSection";
 import { AuditLogsImpersonationDrawerSection } from "../../sections/AuditLogsImpersonationDrawerSection";
@@ -27,6 +30,12 @@ export function AuditLogsScreen({ className }: AuditLogsScreenProps) {
   );
   const [copied, setCopied] = useState(false);
 
+
+  const { page, pageSize, setPage } = useAdminListQueryParams<Record<never, never>>({
+    filterKeys: [],
+    defaults: { page: 1, page_size: PAGE_SIZE },
+  });
+
   const fetchPage = useCallback(async (page: number, pageSize: number) => {
     return adminAudit.list({ page, page_size: pageSize });
   }, []);
@@ -34,15 +43,16 @@ export function AuditLogsScreen({ className }: AuditLogsScreenProps) {
   const {
     items,
     total,
+    totalPages,
     loading,
-    fetchingMore,
-    hasMore,
     error,
-    loadMore,
+    setPage: changePage,
     reload,
-  } = useAdminInfiniteQuery<AuditLogItem>({
+  } = useAdminPaginatedQuery<AuditLogItem>({
     queryKey: "audit-logs",
-    pageSize: PAGE_SIZE,
+    page,
+    pageSize,
+    onPageChange: setPage,
     errorFallback: t("audit.errorLoad"),
     fetchPage,
   });
@@ -92,13 +102,13 @@ export function AuditLogsScreen({ className }: AuditLogsScreenProps) {
     }
   };
 
-  const openImpersonation = useCallback(() => {
+  const openImpersonation = () => {
     setTargetUserId("");
     setReason("");
     setSession(null);
     setActionError(null);
     setImpersonateOpen(true);
-  }, []);
+  };
 
   return (
     <AdminShell
@@ -114,12 +124,13 @@ export function AuditLogsScreen({ className }: AuditLogsScreenProps) {
 
         <AuditLogsTableSection
           error={error}
-          fetchingMore={fetchingMore}
-          hasMore={hasMore}
           items={items}
           loading={loading}
           total={total}
-          onLoadMore={loadMore}
+          page={page}
+          pageSize={pageSize}
+          totalPages={totalPages}
+          onPageChange={changePage}
         />
       </div>
 

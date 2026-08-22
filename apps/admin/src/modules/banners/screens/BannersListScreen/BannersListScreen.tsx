@@ -4,7 +4,10 @@ import type { AdminBanner, BannerPlacement, PublishStatus } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { AdminShell } from "@/shared/components";
-import { useAdminInfiniteQuery } from "@/shared/hooks";
+import {
+  useAdminListQueryParams,
+  useAdminPaginatedQuery,
+} from "@/shared/hooks";
 import { adminBanners } from "@/shared/lib/api";
 import { routes } from "@/shared/lib/routes";
 import { BannersListDeleteDialogSection } from "../../sections/BannersListDeleteDialogSection";
@@ -14,59 +17,79 @@ import { bannersListScreenVariants } from "./BannersListScreen.styles";
 import type { BannersListScreenProps } from "./BannersListScreen.types";
 
 const PAGE_SIZE = 30;
+const FILTER_KEYS = ["publishStatus", "placement"] as const;
+
+type BannersListFilters = {
+  publishStatus: PublishStatus | "all";
+  placement: BannerPlacement | "all";
+};
+
+const FILTER_DEFAULTS: BannersListFilters & {
+  search: string;
+  page: number;
+  page_size: number;
+} = {
+  publishStatus: "all",
+  placement: "all",
+  search: "",
+  page: 1,
+  page_size: PAGE_SIZE,
+};
 
 export function BannersListScreen({ className }: BannersListScreenProps) {
   const t = useTranslations("Admin.Banners");
   const navigate = useNavigate();
   const styles = bannersListScreenVariants();
 
-  const [statusFilter, setStatusFilter] = useState<PublishStatus | "all">(
-    "all",
-  );
-  const [placementFilter, setPlacementFilter] = useState<
-    BannerPlacement | "all"
-  >("all");
-  const [search, setSearch] = useState("");
+  const {
+    search,
+    searchInput,
+    setSearchInput,
+    filters,
+    setFilter,
+    page,
+    pageSize,
+    setPage,
+  } = useAdminListQueryParams<BannersListFilters>({
+    filterKeys: FILTER_KEYS,
+    defaults: FILTER_DEFAULTS,
+  });
   const [deleting, setDeleting] = useState<AdminBanner | null>(null);
   const [deletePending, setDeletePending] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const queryKey = useMemo(
-    () =>
-      JSON.stringify({
-        statusFilter,
-        placementFilter,
-        search,
-        pageSize: PAGE_SIZE,
-      }),
-    [statusFilter, placementFilter, search],
+    () => JSON.stringify({ filters, search, pageSize }),
+    [filters, pageSize, search],
   );
 
   const fetchPage = useCallback(
-    async (page: number, pageSize: number) => {
+    async (nextPage: number, nextPageSize: number) => {
       return adminBanners.list({
-        page,
-        page_size: pageSize,
-        publishStatus: statusFilter === "all" ? undefined : statusFilter,
-        placement: placementFilter === "all" ? undefined : placementFilter,
+        page: nextPage,
+        page_size: nextPageSize,
+        publishStatus:
+          filters.publishStatus === "all" ? undefined : filters.publishStatus,
+        placement: filters.placement === "all" ? undefined : filters.placement,
         search: search.trim() || undefined,
       });
     },
-    [statusFilter, placementFilter, search],
+    [filters, search],
   );
 
   const {
     items,
     total,
+    totalPages,
     loading,
-    fetchingMore,
-    hasMore,
     error,
-    loadMore,
+    setPage: changePage,
     reload,
-  } = useAdminInfiniteQuery<AdminBanner>({
+  } = useAdminPaginatedQuery<AdminBanner>({
     queryKey,
-    pageSize: PAGE_SIZE,
+    page,
+    pageSize,
+    onPageChange: setPage,
     errorFallback: t("errorLoad"),
     fetchPage,
   });
@@ -90,34 +113,35 @@ export function BannersListScreen({ className }: BannersListScreenProps) {
     <AdminShell
       activeNavId="banners"
       bannersSection={{
-        searchValue: search,
-        onSearchChange: setSearch,
+        searchValue: searchInput,
+        onSearchChange: setSearchInput,
       }}
       className={className}
     >
       <div className={styles.content()}>
         <BannersListHeaderSection
-          placementFilter={placementFilter}
-          statusFilter={statusFilter}
+          placementFilter={filters.placement}
+          statusFilter={filters.publishStatus}
           onCreate={() => navigate(routes.bannersNew)}
-          onPlacementChange={setPlacementFilter}
+          onPlacementChange={(value) => setFilter("placement", value)}
           onRefresh={() => void reload()}
-          onStatusChange={setStatusFilter}
+          onStatusChange={(value) => setFilter("publishStatus", value)}
         />
 
         <BannersListTableSection
           error={error}
-          fetchingMore={fetchingMore}
-          hasMore={hasMore}
           items={items}
           loading={loading}
+          page={page}
+          pageSize={pageSize}
           total={total}
+          totalPages={totalPages}
           onDelete={(row) => {
             setDeleting(row);
             setDeleteError(null);
           }}
           onEdit={(row) => navigate(routes.bannerEdit(row.id))}
-          onLoadMore={loadMore}
+          onPageChange={changePage}
         />
       </div>
 

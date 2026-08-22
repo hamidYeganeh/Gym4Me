@@ -215,7 +215,6 @@ export function BaseProfileHeroSection({
               sizes="100vw"
               src={COVER_SRC}
             />
-            <div className={styles.coverOverlay()} />
           </div>
         </motion.div>
 

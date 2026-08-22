@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, Types, type ClientSession } from 'mongoose';
 import { EntityStatus } from '../common/enums';
 import {
   createSearchFilter,
@@ -56,29 +56,36 @@ export class CouponsService {
    * Redeem for an order. Idempotent per `contextKey`: retries return the
    * already-recorded discount instead of double-counting.
    */
-  async redeem(code: string, ctx: CouponContext & { contextKey: string }) {
+  async redeem(
+    code: string,
+    ctx: CouponContext & { contextKey: string },
+    session?: ClientSession,
+  ) {
     const existing = await this.redemptionModel
       .findOne({ contextKey: ctx.contextKey })
+      .session(session ?? null)
       .lean();
     if (existing) {
       return { discount: existing.discount, idempotent: true as const };
     }
 
-    const coupon = await this.findUsable(code, ctx);
+    const coupon = await this.findUsable(code, ctx, session);
     const discount = this.computeDiscount(coupon, ctx.amount);
 
     try {
-      await this.redemptionModel.create({
+      const redemption = new this.redemptionModel({
         couponId: coupon._id,
         userId: ctx.userId ? new Types.ObjectId(ctx.userId) : undefined,
         contextKey: ctx.contextKey,
         amount: ctx.amount,
         discount,
       });
+      await redemption.save({ session });
     } catch (err) {
       if ((err as { code?: number }).code === 11000) {
         const raced = await this.redemptionModel
           .findOne({ contextKey: ctx.contextKey })
+          .session(session ?? null)
           .lean();
         if (raced)
           return { discount: raced.discount, idempotent: true as const };
@@ -89,6 +96,7 @@ export class CouponsService {
     await this.couponModel.updateOne(
       { _id: coupon._id },
       { $inc: { redemptionCount: 1 } },
+      { session },
     );
     return { discount, idempotent: false as const };
   }
@@ -96,10 +104,11 @@ export class CouponsService {
   private async findUsable(
     code: string,
     ctx: CouponContext,
+    session?: ClientSession,
   ): Promise<CouponDocument> {
-    const coupon = await this.couponModel.findOne({
-      code: code.trim().toUpperCase(),
-    });
+    const coupon = await this.couponModel
+      .findOne({ code: code.trim().toUpperCase() })
+      .session(session ?? null);
     if (!coupon || coupon.status !== EntityStatus.ACTIVE) {
       throw new NotFoundException('Coupon not found');
     }
@@ -127,10 +136,12 @@ export class CouponsService {
       throw new BadRequestException('Coupon redemption limit reached');
     }
     if (c.maxPerUser && ctx.userId) {
-      const used = await this.redemptionModel.countDocuments({
-        couponId: coupon._id,
-        userId: new Types.ObjectId(ctx.userId),
-      });
+      const used = await this.redemptionModel
+        .countDocuments({
+          couponId: coupon._id,
+          userId: new Types.ObjectId(ctx.userId),
+        })
+        .session(session ?? null);
       if (used >= c.maxPerUser) {
         throw new BadRequestException('You have already used this coupon');
       }

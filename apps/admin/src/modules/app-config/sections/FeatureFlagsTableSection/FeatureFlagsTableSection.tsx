@@ -5,6 +5,10 @@ import type { FeatureFlag } from "@repo/api";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
 import { AdminDataTable } from "@/shared/components";
+import {
+  adminListPaginationProps,
+  adminListPaginationSummary,
+} from "@/shared/lib/admin-list-pagination";
 import { featureFlagsTableSectionVariants } from "./FeatureFlagsTableSection.styles";
 import type { FeatureFlagsTableSectionProps } from "./FeatureFlagsTableSection.types";
 
@@ -21,11 +25,17 @@ export function FeatureFlagsTableSection({
   items,
   loading,
   error,
+  page,
+  pageSize,
+  total,
+  totalPages,
+  onPageChange,
   onEdit,
   onPause,
   onActivate,
 }: FeatureFlagsTableSectionProps) {
   const t = useTranslations("Admin.Ops");
+  const tCommon = useTranslations("Admin.Common");
   const styles = featureFlagsTableSectionVariants();
 
   const columns = useMemo(
@@ -123,6 +133,8 @@ export function FeatureFlagsTableSection({
     onActivate,
   };
 
+  const summary = adminListPaginationSummary(page, pageSize, total);
+
   return (
     <AdminDataTable
       ariaLabel={t("flags.title")}
@@ -131,14 +143,17 @@ export function FeatureFlagsTableSection({
       emptyLabel={t("flags.empty")}
       error={error}
       getRowId={(row) => row.id}
-      hasMore={false}
-      isFetchingMore={false}
       isLoading={loading}
       loadingLabel={t("loading")}
-      loadingMoreLabel={t("loadingMore")}
       meta={meta}
-      onLoadMore={() => {}}
-      summaryLabel={t("flags.summary", { loaded: items.length })}
+      pagination={adminListPaginationProps({
+        page,
+        totalPages,
+        previousLabel: tCommon("pagination.previous"),
+        nextLabel: tCommon("pagination.next"),
+        onPageChange,
+      })}
+      summaryLabel={tCommon("pagination.summary", summary)}
     />
   );
 }

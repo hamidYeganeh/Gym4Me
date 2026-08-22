@@ -22,28 +22,42 @@ export function OnboardingNameSection({
   const styles = onboardingNameSectionVariants();
 
   return (
-    <div className={styles.root({ className })}>
+    <form
+      autoComplete="off"
+      className={styles.root({ className })}
+      onSubmit={(event) => event.preventDefault()}
+    >
       <div className={styles.fields()}>
         <TextField
           aria-label={firstNameLabel}
+          autoComplete="given-name"
           className={styles.field()}
           fullWidth
-          name="firstName"
+          name="given-name"
           value={firstName}
           onChange={onFirstNameChange}
         >
-          <Input className={styles.input()} placeholder={firstNamePlaceholder} />
+          <Input
+            autoComplete="given-name"
+            className={styles.input()}
+            placeholder={firstNamePlaceholder}
+          />
         </TextField>
 
         <TextField
           aria-label={lastNameLabel}
+          autoComplete="family-name"
           className={styles.field()}
           fullWidth
-          name="lastName"
+          name="family-name"
           value={lastName}
           onChange={onLastNameChange}
         >
-          <Input className={styles.input()} placeholder={lastNamePlaceholder} />
+          <Input
+            autoComplete="family-name"
+            className={styles.input()}
+            placeholder={lastNamePlaceholder}
+          />
         </TextField>
       </div>
 
@@ -51,6 +65,6 @@ export function OnboardingNameSection({
         <IdentityCard1 aria-hidden className={styles.hintIcon()} size={28} />
         <Typography className={styles.hint()}>{hint}</Typography>
       </div>
-    </div>
+    </form>
   );
 }

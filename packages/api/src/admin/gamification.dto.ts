@@ -30,6 +30,7 @@ export type PointRuleRepeat = "unlimited" | "once_per_target" | "once";
 
 export interface AdminAchievement {
   id: string;
+  key: string | null;
   title: string;
   description: string | null;
   icon: string | null;

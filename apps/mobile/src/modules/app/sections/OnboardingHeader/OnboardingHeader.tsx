@@ -9,11 +9,11 @@ import type { OnboardingHeaderProps } from "./OnboardingHeader.types";
 export function OnboardingHeader({
   progress,
   progressLabel,
+  stepLabel,
   skipLabel,
   backLabel,
   onBack,
   onSkip,
-  showProgress = true,
   className,
 }: OnboardingHeaderProps) {
   const styles = onboardingHeaderVariants();
@@ -32,30 +32,29 @@ export function OnboardingHeader({
         <ChevronLeft aria-hidden className={styles.backIcon()} size={24} />
       </Button>
 
-      {showProgress ? (
-        <>
-          <ProgressBar
-            aria-label={progressLabel}
-            className={styles.progress()}
-            value={value}
-          >
-            <ProgressBar.Track className={styles.track()}>
-              <ProgressBar.Fill className={styles.fill()} />
-            </ProgressBar.Track>
-          </ProgressBar>
+      <div className={styles.progressGroup()}>
+        <span aria-hidden className={styles.stepLabel()}>
+          {stepLabel}
+        </span>
+        <ProgressBar
+          aria-label={progressLabel}
+          className={styles.progress()}
+          value={value}
+        >
+          <ProgressBar.Track className={styles.track()}>
+            <ProgressBar.Fill className={styles.fill()} />
+          </ProgressBar.Track>
+        </ProgressBar>
+      </div>
 
-          <Button
-            className={styles.skip()}
-            size="sm"
-            variant="ghost"
-            onPress={onSkip}
-          >
-            {skipLabel}
-          </Button>
-        </>
-      ) : (
-        <div className={styles.progress()} />
-      )}
+      <Button
+        className={styles.skip()}
+        size="sm"
+        variant="ghost"
+        onPress={onSkip}
+      >
+        {skipLabel}
+      </Button>
     </header>
   );
 }

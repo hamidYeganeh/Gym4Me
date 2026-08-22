@@ -27,8 +27,23 @@ export const onboardingSlideShellVariants = tv({
         stage: "items-center justify-center overflow-visible py-4",
       },
     },
+    innerScroll: {
+      true: {},
+      false: {},
+    },
   },
+  compoundVariants: [
+    {
+      bleed: false,
+      innerScroll: true,
+      class: {
+        root: "overflow-hidden",
+        stage: "flex-col items-stretch justify-start overflow-hidden py-2",
+      },
+    },
+  ],
   defaultVariants: {
     bleed: false,
+    innerScroll: false,
   },
 });

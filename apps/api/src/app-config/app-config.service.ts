@@ -19,9 +19,15 @@ import {
   MobileBootstrapQueryDto,
   UpsertFeatureFlagDto,
   UpsertReleasePolicyDto,
+  ListAppConfigQueryDto,
 } from './dto/app-config.dto';
 import { normalizeReleaseNotes } from './release-notes.util';
 import { compareAppVersions, rolloutBucket } from './version.util';
+import {
+  paginatedResult,
+  resolvePageSize,
+} from '../common/utils/pagination.util';
+import { createSearchFilter } from '../common/utils/list-query.util';
 
 const DEFAULT_FLAGS = [
   ['athlete.self_tracking', 'ثبت دستی آب، خواب، پیاده‌روی و وزن'],
@@ -142,13 +148,27 @@ export class AppConfigService {
     };
   }
 
-  async listFeatureFlags() {
+  async listFeatureFlags(query: ListAppConfigQueryDto = {}) {
     await this.ensureDefaultFlags();
-    const items = await this.featureFlagModel
-      .find()
-      .sort({ key: 1 })
-      .lean<LeanFeatureFlag[]>();
-    return items.map((item) => this.serializeFeatureFlag(item));
+    const { page, pageSize } = resolvePageSize(query);
+    const filter = {
+      ...createSearchFilter(query.search, ['key', 'description']),
+    };
+    const [items, count] = await Promise.all([
+      this.featureFlagModel
+        .find(filter)
+        .sort({ key: 1 })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .lean<LeanFeatureFlag[]>(),
+      this.featureFlagModel.countDocuments(filter),
+    ]);
+    return paginatedResult(
+      items.map((item) => this.serializeFeatureFlag(item)),
+      count,
+      page,
+      pageSize,
+    );
   }
 
   async upsertFeatureFlag(
@@ -192,12 +212,30 @@ export class AppConfigService {
     return this.serializeFeatureFlag(after);
   }
 
-  async listReleasePolicies() {
-    const items = await this.releasePolicyModel
-      .find()
-      .sort({ platform: 1, channel: 1 })
-      .lean<LeanReleasePolicy[]>();
-    return items.map((item) => this.serializeReleasePolicy(item));
+  async listReleasePolicies(query: ListAppConfigQueryDto = {}) {
+    const { page, pageSize } = resolvePageSize(query);
+    const filter = {
+      ...createSearchFilter(query.search, [
+        'platform',
+        'channel',
+        'latestAppVersion',
+      ]),
+    };
+    const [items, count] = await Promise.all([
+      this.releasePolicyModel
+        .find(filter)
+        .sort({ platform: 1, channel: 1 })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .lean<LeanReleasePolicy[]>(),
+      this.releasePolicyModel.countDocuments(filter),
+    ]);
+    return paginatedResult(
+      items.map((item) => this.serializeReleasePolicy(item)),
+      count,
+      page,
+      pageSize,
+    );
   }
 
   async upsertReleasePolicy(dto: UpsertReleasePolicyDto, adminId: string) {

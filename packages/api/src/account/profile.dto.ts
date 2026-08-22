@@ -3,6 +3,8 @@ import type {
   AthleteExperience,
   AthleteMood,
   BloodGroup,
+  FavouriteLocation,
+  FavouriteLocationKind,
   Privacy,
   RhFactor,
   VerificationStatus,
@@ -15,6 +17,22 @@ export type UpdateAddressInput = {
   apartment?: string;
   postalCode?: string;
   point?: { lat: number; lng: number } | null;
+};
+
+export type CreateFavouriteLocationInput = {
+  kind: FavouriteLocationKind;
+  label?: string;
+  address?: UpdateAddressInput;
+};
+
+export type UpdateFavouriteLocationInput = {
+  kind?: FavouriteLocationKind;
+  label?: string | null;
+  address?: UpdateAddressInput;
+};
+
+export type FavouriteLocationsList = {
+  items: FavouriteLocation[];
 };
 
 export type UpdateMeInput = {

@@ -180,7 +180,7 @@ export function LandingTestimonialsSection({
                           : slots.quoteMarkDark(),
                     })}
                   >
-                    "
+                    &quot;
                   </span>
                 </div>
                 <Typography

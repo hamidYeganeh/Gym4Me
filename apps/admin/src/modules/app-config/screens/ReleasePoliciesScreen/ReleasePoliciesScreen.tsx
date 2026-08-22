@@ -5,7 +5,10 @@ import type { MobileReleasePolicy, UpsertReleasePolicyInput } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { AdminShell } from "@/shared/components";
-import { useAdminInfiniteQuery } from "@/shared/hooks";
+import {
+  useAdminListQueryParams,
+  useAdminPaginatedQuery,
+} from "@/shared/hooks";
 import { adminAppConfig } from "@/shared/lib/api";
 import {
   emptyReleasePolicyDraft,
@@ -17,50 +20,68 @@ import { ReleasePoliciesTableSection } from "../../sections/ReleasePoliciesTable
 import { releasePoliciesScreenVariants } from "./ReleasePoliciesScreen.styles";
 import type { ReleasePoliciesScreenProps } from "./ReleasePoliciesScreen.types";
 
+const PAGE_SIZE = 30;
+const FILTER_KEYS = [] as const;
+
+type ReleasePoliciesFilters = {
+  __unused?: string;
+};
+
+const FILTER_DEFAULTS = {
+  search: "",
+  page: 1,
+  page_size: PAGE_SIZE,
+};
+
 export function ReleasePoliciesScreen({
   className,
 }: ReleasePoliciesScreenProps) {
   const t = useTranslations("Admin.Ops");
   const styles = releasePoliciesScreenVariants();
 
-  const [search, setSearch] = useState("");
+  const { search, searchInput, setSearchInput, page, pageSize, setPage } =
+    useAdminListQueryParams<ReleasePoliciesFilters>({
+      filterKeys: FILTER_KEYS,
+      defaults: FILTER_DEFAULTS,
+    });
+
   const [draft, setDraft] = useState<UpsertReleasePolicyInput | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  const queryKey = useMemo(() => JSON.stringify({ search }), [search]);
+  const queryKey = useMemo(
+    () => JSON.stringify({ search, pageSize }),
+    [pageSize, search],
+  );
 
-  const fetchPage = useCallback(async () => {
-    const items = await adminAppConfig.listReleasePolicies();
-    const q = search.trim().toLowerCase();
-    const filtered = q
-      ? items.filter(
-          (item) =>
-            item.platform.includes(q) ||
-            item.channel.includes(q) ||
-            item.latestAppVersion.includes(q),
-        )
-      : items;
-    return {
-      result: filtered,
-      pagination: {
-        page: 1,
-        page_size: filtered.length || 1,
-        next: null,
-        prev: null,
-        total: filtered.length,
-      },
-    };
-  }, [search]);
+  const fetchPage = useCallback(
+    async (nextPage: number, nextPageSize: number) => {
+      return adminAppConfig.listReleasePolicies({
+        page: nextPage,
+        page_size: nextPageSize,
+        search: search.trim() || undefined,
+      });
+    },
+    [search],
+  );
 
-  const { items, loading, error, reload } =
-    useAdminInfiniteQuery<MobileReleasePolicy>({
-      queryKey,
-      pageSize: 500,
-      errorFallback: t("releases.errorLoad"),
-      fetchPage,
-    });
+  const {
+    items,
+    total,
+    totalPages,
+    loading,
+    error,
+    setPage: changePage,
+    reload,
+  } = useAdminPaginatedQuery<MobileReleasePolicy>({
+    queryKey,
+    page,
+    pageSize,
+    onPageChange: setPage,
+    errorFallback: t("releases.errorLoad"),
+    fetchPage,
+  });
 
   const save = async () => {
     if (!draft) return;
@@ -101,8 +122,8 @@ export function ReleasePoliciesScreen({
       className={className}
       opsSection={{
         activeTabId: "releases",
-        searchValue: search,
-        onSearchChange: setSearch,
+        searchValue: searchInput,
+        onSearchChange: setSearchInput,
       }}
     >
       <div className={styles.content()}>
@@ -134,11 +155,16 @@ export function ReleasePoliciesScreen({
           error={error}
           items={items}
           loading={loading}
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          totalPages={totalPages}
           onEdit={(row) => {
             setDraft(policyToDraft(row));
             setEditingId(row.id);
             setActionError(null);
           }}
+          onPageChange={changePage}
         />
       </div>
 

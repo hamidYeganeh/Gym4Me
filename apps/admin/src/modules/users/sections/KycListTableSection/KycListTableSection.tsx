@@ -4,6 +4,10 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
 import { AdminDataTable } from "@/shared/components";
 import {
+  adminListPaginationProps,
+  adminListPaginationSummary,
+} from "@/shared/lib/admin-list-pagination";
+import {
   createKycTableColumns,
   kycRequestId,
   type KycTableMeta,
@@ -14,15 +18,17 @@ import type { KycListTableSectionProps } from "./KycListTableSection.types";
 export function KycListTableSection({
   items,
   total,
+  page,
+  pageSize,
+  totalPages,
   loading,
-  fetchingMore,
-  hasMore,
   error,
-  onLoadMore,
+  onPageChange,
   onReview,
   className,
 }: KycListTableSectionProps) {
   const t = useTranslations("Admin.Users");
+  const tCommon = useTranslations("Admin.Common");
   const styles = kycListTableSectionVariants();
 
   const columns = useMemo(
@@ -48,6 +54,8 @@ export function KycListTableSection({
     onReview,
   };
 
+  const summary = adminListPaginationSummary(page, pageSize, total);
+
   return (
     <AdminDataTable
       ariaLabel={t("kycTitle")}
@@ -57,14 +65,17 @@ export function KycListTableSection({
       emptyLabel={t("kycEmpty")}
       error={error}
       getRowId={(row) => kycRequestId(row)}
-      hasMore={hasMore}
-      isFetchingMore={fetchingMore}
       isLoading={loading}
       loadingLabel={t("loading")}
-      loadingMoreLabel={t("loadingMore")}
       meta={meta}
-      summaryLabel={t("infinite.summary", { loaded: items.length, total })}
-      onLoadMore={onLoadMore}
+      pagination={adminListPaginationProps({
+        page,
+        totalPages,
+        previousLabel: tCommon("pagination.previous"),
+        nextLabel: tCommon("pagination.next"),
+        onPageChange,
+      })}
+      summaryLabel={tCommon("pagination.summary", summary)}
     />
   );
 }

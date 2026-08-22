@@ -6,16 +6,45 @@ import { Input } from "@heroui/react/input";
 import { Label } from "@heroui/react/label";
 import { TextField } from "@heroui/react/textfield";
 import { Typography } from "@heroui/react/typography";
-import type { RoleRequestAdminItem, VerificationStatus } from "@repo/api";
+import type { Role, RoleRequestAdminItem, VerificationStatus } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
-import { AdminConfirmDialog, AdminShell } from "@/shared/components";
-import { useAdminInfiniteQuery } from "@/shared/hooks";
+import {
+  AdminConfirmDialog,
+  AdminFilterSelect,
+  AdminShell,
+} from "@/shared/components";
+import {
+  useAdminListQueryParams,
+  useAdminPaginatedQuery,
+} from "@/shared/hooks";
 import { adminVerification } from "@/shared/lib/api";
 import { roleRequestsScreenVariants } from "./RoleRequestsScreen.styles";
 import type { RoleRequestsScreenProps } from "./RoleRequestsScreen.types";
 
 const PAGE_SIZE = 20;
+const FILTER_KEYS = ["status", "role"] as const;
+const STATUSES: VerificationStatus[] = ["pending", "approved", "rejected"];
+const ROLES: Role[] = ["coach", "club_owner"];
+
+type RoleRequestsFilters = {
+  status: VerificationStatus | "all";
+  role: Role | "all";
+};
+
+const FILTER_DEFAULTS: RoleRequestsFilters & {
+  search: string;
+  page: number;
+  page_size: number;
+} = {
+  // pagination filled below if missing
+  status: "pending",
+  role: "all",
+  search: "",
+  page: 1,
+  page_size: PAGE_SIZE,
+
+};
 
 type ReviewState = {
   item: RoleRequestAdminItem;
@@ -31,18 +60,30 @@ function userLabel(item: RoleRequestAdminItem) {
 
 export function RoleRequestsScreen({ className }: RoleRequestsScreenProps) {
   const t = useTranslations("Admin.Users");
+  const tCommon = useTranslations("Admin.Common");
   const styles = roleRequestsScreenVariants();
-  const [statusFilter, setStatusFilter] = useState<
-    VerificationStatus | "all"
-  >("pending");
+  const { search, searchInput, setSearchInput, filters, setFilter,
+    page,
+    pageSize,
+    setPage,
+  } =
+    useAdminListQueryParams<RoleRequestsFilters>({
+      filterKeys: FILTER_KEYS,
+      defaults: FILTER_DEFAULTS,
+    });
   const [review, setReview] = useState<ReviewState | null>(null);
   const [reviewNote, setReviewNote] = useState("");
   const [pending, setPending] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
 
   const queryKey = useMemo(
-    () => JSON.stringify({ statusFilter }),
-    [statusFilter],
+    () =>
+      JSON.stringify({
+        status: filters.status,
+        role: filters.role,
+        search,
+      }),
+    [filters.role, filters.status, search],
   );
 
   const fetchPage = useCallback(
@@ -50,24 +91,27 @@ export function RoleRequestsScreen({ className }: RoleRequestsScreenProps) {
       return adminVerification.listRoleRequests({
         page,
         limit: pageSize,
-        status: statusFilter === "all" ? "all" : statusFilter,
+        search: search || undefined,
+        status: filters.status === "all" ? "all" : filters.status,
+        role: filters.role === "all" ? undefined : filters.role,
       });
     },
-    [statusFilter],
+    [filters.role, filters.status, search],
   );
 
   const {
     items,
     total,
+    totalPages,
     loading,
-    fetchingMore,
-    hasMore,
     error,
-    loadMore,
+    setPage: changePage,
     reload,
-  } = useAdminInfiniteQuery<RoleRequestAdminItem>({
+  } = useAdminPaginatedQuery<RoleRequestAdminItem>({
     queryKey,
-    pageSize: PAGE_SIZE,
+    page,
+    pageSize,
+    onPageChange: setPage,
     errorFallback: t("errorLoad"),
     fetchPage,
   });
@@ -98,7 +142,11 @@ export function RoleRequestsScreen({ className }: RoleRequestsScreenProps) {
     <AdminShell
       activeNavId="users"
       className={className}
-      usersSection={{ activeTabId: "roles" }}
+      usersSection={{
+        activeTabId: "roles",
+        searchValue: searchInput,
+        onSearchChange: setSearchInput,
+      }}
     >
       <div className={styles.content()}>
         <header className={styles.header()}>
@@ -111,19 +159,28 @@ export function RoleRequestsScreen({ className }: RoleRequestsScreenProps) {
             </Typography>
           </div>
           <div className={styles.filters()}>
-            <select
-              aria-label={t("filterStatus")}
-              className={styles.select()}
-              value={statusFilter}
-              onChange={(event) =>
-                setStatusFilter(event.target.value as VerificationStatus | "all")
+            <AdminFilterSelect
+              allLabel={t("filterAll")}
+              label={t("filterStatus")}
+              options={STATUSES.map((item) => ({
+                value: item,
+                label: t(`verification.${item}`),
+              }))}
+              value={filters.status}
+              onChange={(value) =>
+                setFilter("status", value as VerificationStatus | "all")
               }
-            >
-              <option value="all">{t("filterAll")}</option>
-              <option value="pending">{t("verification.pending")}</option>
-              <option value="approved">{t("verification.approved")}</option>
-              <option value="rejected">{t("verification.rejected")}</option>
-            </select>
+            />
+            <AdminFilterSelect
+              allLabel={t("filterAll")}
+              label={t("filterRole")}
+              options={ROLES.map((item) => ({
+                value: item,
+                label: t(`roles.${item}`),
+              }))}
+              value={filters.role}
+              onChange={(value) => setFilter("role", value as Role | "all")}
+            />
             <Button size="lg" variant="secondary" onPress={() => void reload()}>
               {t("refresh")}
             </Button>
@@ -162,7 +219,7 @@ export function RoleRequestsScreen({ className }: RoleRequestsScreenProps) {
                     </Typography>
                   ) : null}
                   {item.review.reason ? (
-                    <Typography color="danger" type="body-sm">
+                    <Typography className="text-danger" type="body-sm">
                       {item.review.reason}
                     </Typography>
                   ) : null}
@@ -198,19 +255,36 @@ export function RoleRequestsScreen({ className }: RoleRequestsScreenProps) {
           </ul>
         )}
 
-        {hasMore ? (
-          <Button
-            isPending={fetchingMore}
-            size="lg"
-            variant="secondary"
-            onPress={() => void loadMore()}
-          >
-            {t("loadingMore")}
-          </Button>
+        {totalPages > 1 ? (
+          <div className="flex items-center justify-center gap-2">
+            <Button
+              isDisabled={page <= 1}
+              size="sm"
+              variant="secondary"
+              onPress={() => changePage(page - 1)}
+            >
+              {tCommon("pagination.previous")}
+            </Button>
+            <Typography color="muted" type="body-sm">
+              {page.toLocaleString("fa-IR")} / {totalPages.toLocaleString("fa-IR")}
+            </Typography>
+            <Button
+              isDisabled={page >= totalPages}
+              size="sm"
+              variant="secondary"
+              onPress={() => changePage(page + 1)}
+            >
+              {tCommon("pagination.next")}
+            </Button>
+          </div>
         ) : null}
 
         <Typography color="muted" type="body-sm">
-          {t("infinite.summary", { loaded: items.length, total })}
+          {tCommon("pagination.summary", {
+            from: total === 0 ? 0 : (page - 1) * pageSize + 1,
+            to: Math.min(page * pageSize, total),
+            total,
+          })}
         </Typography>
       </div>
 

@@ -10,27 +10,6 @@ export type DiscoveryAddressItem = {
   city: string;
 };
 
-export const DISCOVERY_MOCK_ADDRESSES: DiscoveryAddressItem[] = [
-  {
-    id: "home",
-    label: "خانه",
-    line: "تهران، سعادت‌آباد، بلوار دریا، پلاک ۱۲",
-    city: "تهران",
-  },
-  {
-    id: "work",
-    label: "محل کار",
-    line: "تهران، ونک، خیابان ملاصدرا، برج آسمان",
-    city: "تهران",
-  },
-  {
-    id: "gym-area",
-    label: "نزدیک باشگاه",
-    line: "تهران، جردن، خیابان ولیعصر، کوچه گلستان",
-    city: "تهران",
-  },
-];
-
 export function formatAddressLine(parts: {
   street?: string | null;
   apartment?: string | null;

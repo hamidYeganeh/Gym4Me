@@ -17,13 +17,19 @@ export type NotificationTemplate = {
   updatedAt: string | null;
 };
 
+/** @deprecated Prefer `Paginated<NotificationTemplate>`. */
 export type NotificationTemplatesResponse = {
   items: NotificationTemplate[];
 };
 
 export type ListNotificationTemplatesQuery = {
+  page?: number;
+  page_size?: number;
+  limit?: number;
   status?: "active" | "inactive" | "archived";
   search?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
 };
 
 export type CreateNotificationTemplateInput = {

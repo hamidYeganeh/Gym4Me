@@ -9,9 +9,7 @@ import {
   type CoachSlotView,
 } from "@/shared/hooks/useCoachSlotsWeek";
 import { weekRangeContaining } from "./club-calendar-data";
-import type {
-  CoachDetailConsultationType,
-} from "./coach-detail-data";
+import type { CoachDetailConsultationType } from "./coach-detail-data";
 import { getCoachSlotsWeek } from "./coach-slots-data";
 
 export type DiscoveryCoachSlotsWeek = {
@@ -27,28 +25,30 @@ const MOCK_PRICING: CoachConsultationPricing = {
   remote: 300_000,
 };
 
-function mockDayToView(coachId: string): (day: {
+function mockDayToView(day: {
   id: string;
   date: string;
-  slots: { id: string; timeLabel: string; status: "available" | "unavailable" }[];
-}) => CoachSlotDayView {
-  return (day) => ({
+  slots: {
+    id: string;
+    timeLabel: string;
+    status: "available" | "unavailable";
+  }[];
+}): CoachSlotDayView {
+  return {
     id: day.id,
     date: day.date,
-    slots: day.slots.map(
-      (slot): CoachSlotView => ({
-        id: slot.id,
-        date: day.date,
-        startsAt: `${day.date}T00:00:00`,
-        endsAt: `${day.date}T00:00:00`,
-        timeLabel: slot.timeLabel,
-        status: slot.status,
-        clubName: null,
-        clubAddress: null,
-        clubId: null,
-      }),
-    ),
-  });
+    slots: day.slots.map((slot): CoachSlotView => ({
+      id: slot.id,
+      date: day.date,
+      startsAt: `${day.date}T00:00:00`,
+      endsAt: `${day.date}T00:00:00`,
+      timeLabel: slot.timeLabel,
+      status: slot.status,
+      clubName: null,
+      clubAddress: null,
+      clubId: null,
+    })),
+  };
 }
 
 /** Coach availability week — live API for real coach ids, fixtures for demos. */
@@ -62,7 +62,7 @@ export function useDiscoveryCoachSlotsWeek(
 
   const mockDays = useMemo(
     () =>
-      isApi ? [] : getCoachSlotsWeek(coachId, anchorIso).map(mockDayToView(coachId)),
+      isApi ? [] : getCoachSlotsWeek(coachId, anchorIso).map(mockDayToView),
     [anchorIso, coachId, isApi],
   );
 

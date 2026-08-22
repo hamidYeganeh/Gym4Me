@@ -15,6 +15,7 @@ export {
 export type {
   ApiErrorBody,
   ApiErrorMessage,
+  ApiMessage,
   AuthSession,
   ChoiceGroup,
   ChoiceOption,
@@ -50,6 +51,9 @@ export type {
   PaginationMeta,
   Privacy,
   PublicUser,
+  PublicAddress,
+  FavouriteLocation,
+  FavouriteLocationKind,
   PublishStatus,
   RefItem,
   RefStatus,
@@ -69,6 +73,7 @@ export type {
   UserStatus,
   VerificationStatus,
 } from "./types";
+export { paginationCount } from "./types";
 // React bindings intentionally NOT re-exported here — client-only code
 // (createContext) must stay out of server bundles. Use "@repo/api/react".
 export {
@@ -170,7 +175,10 @@ export {
   type SubmitClubReviewInput,
   type SubmitCoachVerificationInput,
   type SubmitIdentityInput,
+  type CreateFavouriteLocationInput,
+  type FavouriteLocationsList,
   type UpdateAddressInput,
+  type UpdateFavouriteLocationInput,
   type UpdateAthleteHealthInput,
   type UpdateAthleteLifestyleInput,
   type UpdateAthleteProfileInput,
@@ -306,6 +314,7 @@ export {
   type PaymentStatus,
   type PaymentWithLedger,
   type Payout,
+  type PayoutRecipientType,
   type PayoutsPage,
   type PayoutStatus,
   type ResolvePayoutDisputeInput,
@@ -417,6 +426,7 @@ export {
   type AdminPointRule,
   type CreateAchievementInput,
   type CreatePointRuleInput,
+  type EntityStatus,
   type GamificationOverview,
   type GrantAchievementSubjectInput,
   type ListAdminAchievementsQuery,

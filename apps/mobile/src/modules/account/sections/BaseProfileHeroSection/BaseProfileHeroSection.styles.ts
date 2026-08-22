@@ -15,8 +15,6 @@ export const baseProfileHeroSectionVariants = tv({
     coverMedia: "absolute inset-0",
     coverImage:
       "object-cover object-center grayscale contrast-125 brightness-75",
-    coverOverlay:
-      "absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-black/25",
     /** Collapsed shell — solid surface behind the compact toolbar. */
     shell: [
       "pointer-events-none absolute inset-0 z-[1]",

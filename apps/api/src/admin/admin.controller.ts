@@ -221,7 +221,8 @@ export class AdminController {
 
   @Patch('role-requests/:id')
   @ApiOperation({
-    summary: 'Approve or reject a role request (grants role + notifies on approve)',
+    summary:
+      'Approve or reject a role request (grants role + notifies on approve)',
   })
   reviewRoleRequest(
     @Param('id') id: string,

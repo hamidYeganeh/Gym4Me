@@ -201,3 +201,31 @@ export class UpsertReleasePolicyDto {
   @MaxLength(500)
   reason!: string;
 }
+
+/** Admin list query for feature flags / release policies. */
+export class ListAppConfigQueryDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(200)
+  page_size?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(200)
+  limit?: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  search?: string;
+}

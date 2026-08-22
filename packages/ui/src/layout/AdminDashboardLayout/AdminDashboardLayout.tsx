@@ -41,8 +41,6 @@ import type {
 
 const APP_NAME = "Gym4Me";
 
-const DEFAULT_AVATAR = "/assets/images/default-avatar.png";
-
 const NAV_ICONS: Record<AdminDashboardNavId, ReactNode> = {
   home: <House1 size={22} />,
   users: <UsersThree size={22} />,
@@ -83,6 +81,7 @@ const NAV_ORDER: AdminDashboardNavId[] = [
   "gamification",
   "support",
   "analytics",
+  "profile",
   "logout",
 ];
 
@@ -94,8 +93,8 @@ export function AdminDashboardLayout({
   onLogoPress,
   onFilterPress,
   onAvatarPress,
-  avatarSrc = DEFAULT_AVATAR,
-  notificationCount = 2,
+  avatarSrc,
+  notificationCount = 0,
   breadcrumbs = [],
   header,
   className,
@@ -192,7 +191,9 @@ export function AdminDashboardLayout({
                 onPress={onAvatarPress}
               >
                 <Avatar className={styles.avatar()} size="lg">
-                  <Avatar.Image alt={labels.avatarAlt} src={avatarSrc} />
+                  {avatarSrc ? (
+                    <Avatar.Image alt={labels.avatarAlt} src={avatarSrc} />
+                  ) : null}
                   <Avatar.Fallback>
                     {labels.avatarAlt.slice(0, 2).toUpperCase()}
                   </Avatar.Fallback>

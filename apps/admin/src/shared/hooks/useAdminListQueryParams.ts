@@ -13,9 +13,11 @@ type UseAdminListQueryParamsOptions<
   TSortBy extends string = string,
 > = {
   filterKeys: ReadonlyArray<keyof TFilters & string>;
-  defaults?: Partial<{ search: string } & TFilters>;
+  defaults?: Partial<{ search: string; page: number; page_size: number } & TFilters>;
   defaultSort?: { column: TSortBy; direction: AdminListSort["direction"] };
   debounceMs?: number;
+  /** When true, sync `page` and `page_size` to the URL. Default true. */
+  syncPagination?: boolean;
 };
 
 function readParam(
@@ -26,6 +28,17 @@ function readParam(
   return searchParams.get(key) ?? fallback;
 }
 
+function readPositiveInt(
+  searchParams: URLSearchParams,
+  key: string,
+  fallback: number,
+): number {
+  const raw = searchParams.get(key);
+  if (!raw) return fallback;
+  const parsed = Number.parseInt(raw, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
 export function useAdminListQueryParams<
   TFilters extends Record<string, AdminListFilterValue>,
   TSortBy extends string = string,
@@ -34,11 +47,22 @@ export function useAdminListQueryParams<
   defaults,
   defaultSort,
   debounceMs = 350,
+  syncPagination = true,
 }: UseAdminListQueryParamsOptions<TFilters, TSortBy>) {
   const [searchParams, setSearchParams] = useSearchParams();
 
+  const defaultPage = defaults?.page ?? 1;
+  const defaultPageSize = defaults?.page_size ?? 20;
+
   const search = readParam(searchParams, "search", defaults?.search ?? "");
   const [searchInput, setSearchInput] = useState(search);
+
+  const page = syncPagination
+    ? readPositiveInt(searchParams, "page", defaultPage)
+    : defaultPage;
+  const pageSize = syncPagination
+    ? readPositiveInt(searchParams, "page_size", defaultPageSize)
+    : defaultPageSize;
 
   useEffect(() => {
     let cancelled = false;
@@ -56,15 +80,18 @@ export function useAdminListQueryParams<
       setSearchParams(
         (current) => {
           const params = new URLSearchParams(current);
+          const prev = params.get("search") ?? "";
+          if (next === prev) return current;
           if (next) params.set("search", next);
           else params.delete("search");
+          if (syncPagination) params.delete("page");
           return params;
         },
         { replace: true },
       );
     }, debounceMs);
     return () => window.clearTimeout(timer);
-  }, [searchInput, debounceMs, setSearchParams]);
+  }, [searchInput, debounceMs, setSearchParams, syncPagination]);
 
   const filters = useMemo(() => {
     const next = {} as TFilters;
@@ -85,8 +112,6 @@ export function useAdminListQueryParams<
       }
     }
     return next;
-    // defaults are treated as initial config; callers should pass stable values
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterKeys, searchParams]);
 
   const setFilter = <K extends keyof TFilters & string>(
@@ -105,6 +130,36 @@ export function useAdminListQueryParams<
           : String(configuredDefault ?? "all");
         if (!serialized || serialized === fallback) params.delete(key);
         else params.set(key, serialized);
+        if (syncPagination) params.delete("page");
+        return params;
+      },
+      { replace: true },
+    );
+  };
+
+  const setPage = (nextPage: number) => {
+    if (!syncPagination) return;
+    setSearchParams(
+      (current) => {
+        const params = new URLSearchParams(current);
+        const safe = Math.max(1, Math.floor(nextPage) || 1);
+        if (safe === defaultPage) params.delete("page");
+        else params.set("page", String(safe));
+        return params;
+      },
+      { replace: true },
+    );
+  };
+
+  const setPageSize = (nextSize: number) => {
+    if (!syncPagination) return;
+    setSearchParams(
+      (current) => {
+        const params = new URLSearchParams(current);
+        const safe = Math.max(1, Math.floor(nextSize) || defaultPageSize);
+        if (safe === defaultPageSize) params.delete("page_size");
+        else params.set("page_size", String(safe));
+        params.delete("page");
         return params;
       },
       { replace: true },
@@ -146,6 +201,7 @@ export function useAdminListQueryParams<
             nextSort.direction === "descending" ? "desc" : "asc",
           );
         }
+        if (syncPagination) params.delete("page");
         return params;
       },
       { replace: true },
@@ -159,6 +215,8 @@ export function useAdminListQueryParams<
         params.delete("search");
         params.delete("sortBy");
         params.delete("sortOrder");
+        params.delete("page");
+        params.delete("page_size");
         for (const key of filterKeys) params.delete(key);
         return params;
       },
@@ -173,6 +231,10 @@ export function useAdminListQueryParams<
     setSearchInput,
     filters,
     setFilter,
+    page,
+    pageSize,
+    setPage,
+    setPageSize,
     sortBy,
     sortOrder,
     sort,

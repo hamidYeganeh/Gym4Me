@@ -4,6 +4,10 @@ import type { PointTransactionItem } from "@repo/api";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
 import { AdminDataTable } from "@/shared/components";
+import {
+  adminListPaginationProps,
+  adminListPaginationSummary,
+} from "@/shared/lib/admin-list-pagination";
 import type { PointsLedgerTableSectionProps } from "./PointsLedgerTableSection.types";
 
 const columnHelper = createColumnHelper<PointTransactionItem>();
@@ -11,14 +15,16 @@ const columnHelper = createColumnHelper<PointTransactionItem>();
 export function PointsLedgerTableSection({
   items,
   total,
+  page,
+  pageSize,
+  totalPages,
   loading,
-  fetchingMore,
-  hasMore,
   error,
-  onLoadMore,
+  onPageChange,
   className,
 }: PointsLedgerTableSectionProps) {
   const t = useTranslations("Admin.Gamification");
+  const tCommon = useTranslations("Admin.Common");
 
   const columns = useMemo(
     () =>
@@ -93,6 +99,8 @@ export function PointsLedgerTableSection({
     [t],
   );
 
+  const summary = adminListPaginationSummary(page, pageSize, total);
+
   return (
     <AdminDataTable
       ariaLabel={t("ledger.title")}
@@ -102,16 +110,16 @@ export function PointsLedgerTableSection({
       emptyLabel={t("ledger.empty")}
       error={error}
       getRowId={(row) => row.id}
-      hasMore={hasMore}
-      isFetchingMore={fetchingMore}
       isLoading={loading}
       loadingLabel={t("loading")}
-      loadingMoreLabel={t("loadingMore")}
-      summaryLabel={t("infinite.summary", {
-        loaded: items.length,
-        total,
+      pagination={adminListPaginationProps({
+        page,
+        totalPages,
+        previousLabel: tCommon("pagination.previous"),
+        nextLabel: tCommon("pagination.next"),
+        onPageChange,
       })}
-      onLoadMore={onLoadMore}
+      summaryLabel={tCommon("pagination.summary", summary)}
     />
   );
 }

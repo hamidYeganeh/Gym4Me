@@ -55,7 +55,6 @@ export function ClubsListTableSection({
       chipsClassName: styles.chips(),
       actionsClassName: styles.actionsCell(),
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [onView],
   );
 

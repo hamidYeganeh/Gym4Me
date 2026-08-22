@@ -3,10 +3,11 @@ import type { PointTransactionItem } from "@repo/api";
 export type PointsLedgerTableSectionProps = {
   items: PointTransactionItem[];
   total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
   loading: boolean;
-  fetchingMore: boolean;
-  hasMore: boolean;
   error: string | null;
-  onLoadMore: () => void;
+  onPageChange: (page: number) => void;
   className?: string;
 };

@@ -5,29 +5,30 @@ export type TokenStorage = {
   set(session: AuthSession | null): void;
 };
 
-const MEMORY = new Map<string, AuthSession | null>();
-
 /** In-memory fallback when `localStorage` is unavailable (SSR / tests). */
-export function createMemoryStorage(key: string): TokenStorage {
+export function createMemoryStorage(): TokenStorage {
+  let current: AuthSession | null = null;
   return {
     get() {
-      return MEMORY.get(key) ?? null;
+      return current;
     },
     set(session) {
-      MEMORY.set(key, session);
+      current = session;
     },
   };
 }
 
 export function createLocalStorage(key: string): TokenStorage {
-  if (typeof localStorage === "undefined") {
-    return createMemoryStorage(key);
+  if (typeof window === "undefined") {
+    return createMemoryStorage();
   }
+
+  const browserStorage = window.localStorage;
 
   return {
     get() {
       try {
-        const raw = localStorage.getItem(key);
+        const raw = browserStorage.getItem(key);
         if (!raw) return null;
         return JSON.parse(raw) as AuthSession;
       } catch {
@@ -37,10 +38,10 @@ export function createLocalStorage(key: string): TokenStorage {
     set(session) {
       try {
         if (!session) {
-          localStorage.removeItem(key);
+          browserStorage.removeItem(key);
           return;
         }
-        localStorage.setItem(key, JSON.stringify(session));
+        browserStorage.setItem(key, JSON.stringify(session));
       } catch {
         // Quota / private mode — ignore; caller still holds session in memory.
       }

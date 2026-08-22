@@ -1,8 +1,16 @@
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
+import type { ClubLifecycleStatus } from "@repo/api";
 import { useTranslations } from "next-intl";
+import { AdminFilterSelect } from "@/shared/components";
 import { clubReviewsHeaderSectionVariants } from "./ClubReviewsHeaderSection.styles";
 import type { ClubReviewsHeaderSectionProps } from "./ClubReviewsHeaderSection.types";
+
+const STATUSES: ClubLifecycleStatus[] = [
+  "pending_review",
+  "approved",
+  "rejected",
+];
 
 export function ClubReviewsHeaderSection({
   statusFilter,
@@ -20,19 +28,19 @@ export function ClubReviewsHeaderSection({
       </Typography>
       <Typography className={styles.subtitle()}>{t("clubsSubtitle")}</Typography>
       <div className={styles.actions()}>
-        {(["pending_review", "approved", "rejected", "all"] as const).map(
-          (value) => (
-            <Button
-              key={value}
-              size="sm"
-              variant={statusFilter === value ? "primary" : "secondary"}
-              onPress={() => onStatusChange(value)}
-            >
-              {value === "all" ? t("filterAll") : t(`clubLifecycle.${value}`)}
-            </Button>
-          ),
-        )}
-        <Button size="sm" variant="ghost" onPress={onRefresh}>
+        <AdminFilterSelect
+          allLabel={t("filterAll")}
+          label={t("filterStatus")}
+          options={STATUSES.map((item) => ({
+            value: item,
+            label: t(`clubLifecycle.${item}`),
+          }))}
+          value={statusFilter}
+          onChange={(value) =>
+            onStatusChange(value as ClubLifecycleStatus | "all")
+          }
+        />
+        <Button size="lg" variant="secondary" onPress={onRefresh}>
           {t("refresh")}
         </Button>
       </div>

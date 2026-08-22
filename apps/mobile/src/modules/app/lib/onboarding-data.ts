@@ -50,7 +50,6 @@ export const ONBOARDING_STEPS: OnboardingStepId[] = [
   "sports",
   "diet",
   "calories",
-  "identity",
   "avatar",
 ];
 
@@ -60,10 +59,7 @@ export const ONBOARDING_PHASES: OnboardingPhaseId[] = [
   "plan",
 ];
 
-export const ONBOARDING_PERSONAL_STEPS: OnboardingStepId[] = [
-  "identity",
-  "avatar",
-];
+export const ONBOARDING_PERSONAL_STEPS: OnboardingStepId[] = ["avatar"];
 
 export function onboardingPhaseForStep(
   step: OnboardingStepId,
@@ -104,6 +100,9 @@ export const ONBOARDING_WEIGHT_LBS_RANGE = { min: 66, max: 440 } as const;
 export const ONBOARDING_CALORIES_RANGE = { min: 0, max: 6000 } as const;
 export const ONBOARDING_CALORIES_STEP = 50;
 export const ONBOARDING_CALORIE_PRESETS = [1500, 2000, 2500] as const;
+
+/** Max sports shown on the onboarding picker (API returns the full catalog). */
+export const ONBOARDING_SPORTS_PAGE_SIZE = 10;
 
 export const ONBOARDING_SLIDE_COUNT = ONBOARDING_STEPS.length;
 

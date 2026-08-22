@@ -12,7 +12,14 @@ import {
   AdminDataTable,
   AdminShell,
 } from "@/shared/components";
-import { useAdminInfiniteQuery } from "@/shared/hooks";
+import {
+  useAdminListQueryParams,
+  useAdminPaginatedQuery,
+} from "@/shared/hooks";
+import {
+  adminListPaginationProps,
+  adminListPaginationSummary,
+} from "@/shared/lib/admin-list-pagination";
 import { adminMemberships } from "@/shared/lib/api";
 import { routes } from "@/shared/lib/routes";
 import { platformPlansScreenVariants } from "./PlatformPlansScreen.styles";
@@ -30,12 +37,19 @@ type PlanTableMeta = {
 
 export function PlatformPlansScreen({ className }: PlatformPlansScreenProps) {
   const t = useTranslations("Admin.Catalog");
+  const tCommon = useTranslations("Admin.Common");
   const navigate = useNavigate();
   const styles = platformPlansScreenVariants();
 
   const [archiving, setArchiving] = useState<PlatformPlan | null>(null);
   const [archivePending, setArchivePending] = useState(false);
   const [archiveError, setArchiveError] = useState<string | null>(null);
+
+
+  const { page, pageSize, setPage } = useAdminListQueryParams<Record<never, never>>({
+    filterKeys: [],
+    defaults: { page: 1, page_size: PAGE_SIZE },
+  });
 
   const fetchPage = useCallback(async (page: number, pageSize: number) => {
     return adminMemberships.listPlatformPlans({
@@ -47,15 +61,16 @@ export function PlatformPlansScreen({ className }: PlatformPlansScreenProps) {
   const {
     items,
     total,
+    totalPages,
     loading,
-    fetchingMore,
-    hasMore,
     error,
-    loadMore,
+    setPage: changePage,
     reload,
-  } = useAdminInfiniteQuery<PlatformPlan>({
+  } = useAdminPaginatedQuery<PlatformPlan>({
     queryKey: "platform-plans",
-    pageSize: PAGE_SIZE,
+    page,
+    pageSize,
+    onPageChange: setPage,
     errorFallback: t("plans.errorLoad"),
     fetchPage,
   });
@@ -152,6 +167,8 @@ export function PlatformPlansScreen({ className }: PlatformPlansScreenProps) {
     }
   };
 
+  const summary = adminListPaginationSummary(page, pageSize, total);
+
   return (
     <AdminShell
       activeNavId="catalogs"
@@ -187,17 +204,17 @@ export function PlatformPlansScreen({ className }: PlatformPlansScreenProps) {
           emptyLabel={t("plans.empty")}
           error={error}
           getRowId={(row) => row.id}
-          hasMore={hasMore}
-          isFetchingMore={fetchingMore}
           isLoading={loading}
           loadingLabel={t("loading")}
-          loadingMoreLabel={t("loadingMore")}
           meta={meta}
-          onLoadMore={loadMore}
-          summaryLabel={t("plans.summary", {
-            loaded: items.length,
-            total,
+          pagination={adminListPaginationProps({
+            page,
+            totalPages,
+            previousLabel: tCommon("pagination.previous"),
+            nextLabel: tCommon("pagination.next"),
+            onPageChange: changePage,
           })}
+          summaryLabel={tCommon("pagination.summary", summary)}
         />
       </div>
 

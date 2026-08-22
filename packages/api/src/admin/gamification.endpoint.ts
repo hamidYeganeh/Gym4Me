@@ -2,6 +2,7 @@
 export const adminGamificationEndpoints = {
   achievements: "/admin/gamification/achievements",
   achievement: (id: string) => `/admin/gamification/achievements/${id}`,
+  seedAchievementDefaults: "/admin/gamification/achievements/seed-defaults",
   achievementGrants: (id: string) =>
     `/admin/gamification/achievements/${id}/grants`,
   grants: "/admin/gamification/grants",

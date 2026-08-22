@@ -7,6 +7,7 @@
     "dev": "vite --port 8082 --strictPort",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "test": "jest --config ./jest.config.cjs --runInBand",
     "preview": "vite preview --port 8082 --strictPort",
     "check-types": "tsc -b --noEmit"
   },

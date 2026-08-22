@@ -14,6 +14,10 @@ import { slugify } from '../../common/utils/slug.util';
 import { MediaService } from '../../media/media.service';
 import { Location, LocationDocument } from '../../schemas/location.schema';
 import { CreateLocationDto, UpdateLocationDto } from './dto/location.dto';
+import {
+  DEFAULT_LOCATION_TREE,
+  type LocationDefaultNode,
+} from './location-defaults';
 
 const CHILD_KIND: Record<LocationKind, LocationKind | null> = {
   [LocationKind.COUNTRY]: LocationKind.PROVINCE,
@@ -217,7 +221,23 @@ export class LocationService {
       kind: dto.kind,
       slug,
     });
-    if (existing) return existing;
+    if (existing) {
+      let changed = false;
+      if (
+        dto.kind === LocationKind.COUNTRY &&
+        dto.flagSvg &&
+        !existing.flagSvg
+      ) {
+        existing.flagSvg = dto.flagSvg;
+        changed = true;
+      }
+      if (dto.icon && !existing.icon) {
+        existing.icon = dto.icon;
+        changed = true;
+      }
+      if (changed) await existing.save();
+      return existing;
+    }
 
     const { parentId, ancestors } = await this.resolveParent(
       dto.kind,
@@ -238,6 +258,91 @@ export class LocationService {
       order: dto.order ?? 0,
       isActive: true,
     });
+  }
+
+  /** Idempotent Iran sample tree for admin Import defaults / CLI. */
+  async seedDefaults(adminId?: string, request?: Request) {
+    const created: string[] = [];
+    const updated: string[] = [];
+    const skipped: string[] = [];
+
+    const walk = async (
+      nodes: LocationDefaultNode[],
+      parentId?: string,
+    ): Promise<void> => {
+      for (const node of nodes) {
+        const label = `${node.kind}:${node.slug}`;
+        const existing = await this.locationModel.findOne({
+          kind: node.kind,
+          slug: node.slug,
+        });
+
+        if (!existing) {
+          const { parentId: resolvedParent, ancestors } =
+            await this.resolveParent(node.kind, parentId);
+          const doc = await this.locationModel.create({
+            kind: node.kind,
+            name: node.name,
+            slug: node.slug,
+            icon: node.icon,
+            flagSvg:
+              node.kind === LocationKind.COUNTRY ? node.flagSvg : undefined,
+            parentId: resolvedParent,
+            ancestors,
+            center: node.center
+              ? {
+                  type: 'Point',
+                  coordinates: [node.center.lng, node.center.lat],
+                }
+              : undefined,
+            order: node.order ?? 0,
+            isActive: true,
+          });
+          created.push(label);
+          if (node.children?.length) {
+            await walk(node.children, doc._id.toString());
+          }
+          continue;
+        }
+
+        let changed = false;
+        if (
+          node.kind === LocationKind.COUNTRY &&
+          node.flagSvg &&
+          !existing.flagSvg
+        ) {
+          existing.flagSvg = node.flagSvg;
+          changed = true;
+        }
+        if (node.icon && !existing.icon) {
+          existing.icon = node.icon;
+          changed = true;
+        }
+        if (changed) {
+          await existing.save();
+          updated.push(label);
+        } else {
+          skipped.push(label);
+        }
+
+        if (node.children?.length) {
+          await walk(node.children, existing._id.toString());
+        }
+      }
+    };
+
+    await walk(DEFAULT_LOCATION_TREE);
+
+    if (adminId && request) {
+      this.audit.log({
+        action: AuditAction.LOCATION_DEFAULTS_SEEDED,
+        actorId: adminId,
+        metadata: { created, updated, skipped },
+        request,
+      });
+    }
+
+    return { created, updated, skipped };
   }
 
   private async resolveParent(kind: LocationKind, parentId?: string) {

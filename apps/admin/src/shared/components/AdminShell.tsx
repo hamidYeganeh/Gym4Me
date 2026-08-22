@@ -17,6 +17,7 @@ import {
   REF_TYPES,
   SPORT_KINDS,
 } from "@/shared/lib/basics-constants";
+import { mediaApi } from "@/shared/lib/api";
 import { routes } from "@/shared/lib/routes";
 import { useAuth } from "@/shared/providers/AuthProvider";
 
@@ -119,8 +120,12 @@ export function AdminShell({
   opsSection,
 }: AdminShellProps) {
   const t = useTranslations("Admin");
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
+
+  const avatarSrc = user?.avatar.mediaId
+    ? mediaApi.fileUrl(user.avatar.mediaId)
+    : undefined;
 
   const labels: AdminDashboardLabels = useMemo(
     () => ({
@@ -315,6 +320,7 @@ export function AdminShell({
       gamification: routes.gamification,
       support: routes.support,
       analytics: routes.analytics,
+      profile: routes.profile,
     }),
     [],
   );
@@ -676,10 +682,13 @@ export function AdminShell({
   return (
     <AdminDashboardLayout
       activeNavId={activeNavId}
+      avatarSrc={avatarSrc}
       breadcrumbs={breadcrumbs}
       className={className}
       header={header}
       labels={labels}
+      notificationCount={0}
+      onAvatarPress={() => navigate(routes.profile)}
       onLogoPress={() => navigate(routes.dashboard)}
       onNavPress={handleNav}
     >

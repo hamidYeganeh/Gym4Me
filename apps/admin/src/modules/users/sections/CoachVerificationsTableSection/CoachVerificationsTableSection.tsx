@@ -5,6 +5,10 @@ import type { CoachVerificationItem } from "@repo/api";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
 import { AdminDataTable } from "@/shared/components";
+import {
+  adminListPaginationProps,
+  adminListPaginationSummary,
+} from "@/shared/lib/admin-list-pagination";
 import { formatAdminDate } from "@/shared/lib/user-format";
 import { coachVerificationsTableSectionVariants } from "./CoachVerificationsTableSection.styles";
 import {
@@ -17,15 +21,17 @@ const columnHelper = createColumnHelper<CoachVerificationItem>();
 export function CoachVerificationsTableSection({
   items,
   total,
+  page,
+  pageSize,
+  totalPages,
   loading,
-  fetchingMore,
-  hasMore,
   error,
-  onLoadMore,
+  onPageChange,
   onReview,
   className,
 }: CoachVerificationsTableSectionProps) {
   const t = useTranslations("Admin.Users");
+  const tCommon = useTranslations("Admin.Common");
   const styles = coachVerificationsTableSectionVariants();
 
   const columns = useMemo(
@@ -87,6 +93,8 @@ export function CoachVerificationsTableSection({
     [onReview, styles, t],
   );
 
+  const summary = adminListPaginationSummary(page, pageSize, total);
+
   return (
     <AdminDataTable
       ariaLabel={t("coachTitle")}
@@ -96,13 +104,16 @@ export function CoachVerificationsTableSection({
       emptyLabel={t("coachEmpty")}
       error={error}
       getRowId={(row) => row.userId}
-      hasMore={hasMore}
-      isFetchingMore={fetchingMore}
       isLoading={loading}
       loadingLabel={t("loading")}
-      loadingMoreLabel={t("loadingMore")}
-      summaryLabel={t("infinite.summary", { loaded: items.length, total })}
-      onLoadMore={onLoadMore}
+      pagination={adminListPaginationProps({
+        page,
+        totalPages,
+        previousLabel: tCommon("pagination.previous"),
+        nextLabel: tCommon("pagination.next"),
+        onPageChange,
+      })}
+      summaryLabel={tCommon("pagination.summary", summary)}
     />
   );
 }

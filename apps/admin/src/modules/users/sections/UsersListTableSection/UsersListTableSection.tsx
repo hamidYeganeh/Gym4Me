@@ -56,8 +56,6 @@ export function UsersListTableSection({
       chipsClassName: styles.chips(),
       actionsClassName: styles.actionsCell(),
     }),
-    // styles slots are stable class strings from tv()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [onView],
   );
 

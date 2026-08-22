@@ -3,7 +3,10 @@ import type { CoachVerificationItem, VerificationStatus } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { AdminShell } from "@/shared/components";
-import { useAdminInfiniteQuery } from "@/shared/hooks";
+import {
+  useAdminListQueryParams,
+  useAdminPaginatedQuery,
+} from "@/shared/hooks";
 import { adminVerification } from "@/shared/lib/api";
 import { CoachVerificationsHeaderSection } from "../../sections/CoachVerificationsHeaderSection";
 import { CoachVerificationsReviewDialogSection } from "../../sections/CoachVerificationsReviewDialogSection";
@@ -12,7 +15,16 @@ import { CoachVerificationsTableSection } from "../../sections/CoachVerification
 import { coachVerificationsScreenVariants } from "./CoachVerificationsScreen.styles";
 import type { CoachVerificationsScreenProps } from "./CoachVerificationsScreen.types";
 
-const PAGE_SIZE = 20;
+const FILTER_KEYS = ["status"] as const;
+
+type CoachVerificationsFilters = {
+  status: VerificationStatus | "all";
+};
+
+const FILTER_DEFAULTS: CoachVerificationsFilters & { search: string } = {
+  status: "pending",
+  search: "",
+};
 
 type ReviewState = {
   item: CoachVerificationItem;
@@ -24,9 +36,14 @@ export function CoachVerificationsScreen({
 }: CoachVerificationsScreenProps) {
   const t = useTranslations("Admin.Users");
   const styles = coachVerificationsScreenVariants();
-  const [statusFilter, setStatusFilter] = useState<
-    VerificationStatus | "all"
-  >("pending");
+  const { filters, setFilter,
+    page,
+    pageSize,
+    setPage,
+  } = useAdminListQueryParams<CoachVerificationsFilters>({
+    filterKeys: FILTER_KEYS,
+    defaults: FILTER_DEFAULTS,
+  });
   const [selected, setSelected] = useState<CoachVerificationItem | null>(null);
   const [review, setReview] = useState<ReviewState | null>(null);
   const [reviewNote, setReviewNote] = useState("");
@@ -34,8 +51,8 @@ export function CoachVerificationsScreen({
   const [reviewError, setReviewError] = useState<string | null>(null);
 
   const queryKey = useMemo(
-    () => JSON.stringify({ statusFilter }),
-    [statusFilter],
+    () => JSON.stringify({ status: filters.status }),
+    [filters.status],
   );
 
   const fetchPage = useCallback(
@@ -43,24 +60,25 @@ export function CoachVerificationsScreen({
       return adminVerification.listCoachVerifications({
         page,
         limit: pageSize,
-        status: statusFilter === "all" ? "all" : statusFilter,
+        status: filters.status === "all" ? "all" : filters.status,
       });
     },
-    [statusFilter],
+    [filters.status],
   );
 
   const {
     items,
     total,
+    totalPages,
     loading,
-    fetchingMore,
-    hasMore,
     error,
-    loadMore,
+    setPage: changePage,
     reload,
-  } = useAdminInfiniteQuery<CoachVerificationItem>({
+  } = useAdminPaginatedQuery<CoachVerificationItem>({
     queryKey,
-    pageSize: PAGE_SIZE,
+    page,
+    pageSize,
+    onPageChange: setPage,
     errorFallback: t("errorLoad"),
     fetchPage,
   });
@@ -92,19 +110,20 @@ export function CoachVerificationsScreen({
     >
       <div className={styles.content()}>
         <CoachVerificationsHeaderSection
-          statusFilter={statusFilter}
+          statusFilter={filters.status}
           onRefresh={() => void reload()}
-          onStatusChange={setStatusFilter}
+          onStatusChange={(value) => setFilter("status", value)}
         />
 
         <CoachVerificationsTableSection
           error={error}
-          fetchingMore={fetchingMore}
-          hasMore={hasMore}
           items={items}
           loading={loading}
           total={total}
-          onLoadMore={loadMore}
+          page={page}
+          pageSize={pageSize}
+          totalPages={totalPages}
+          onPageChange={changePage}
           onReview={setSelected}
         />
       </div>
@@ -133,7 +152,7 @@ export function CoachVerificationsScreen({
         review={review}
         reviewError={reviewError}
         reviewNote={reviewNote}
-        onConfirm={handleConfirm}
+        onConfirm={() => void handleConfirm()}
         onOpenChange={(open) => {
           if (!open) setReview(null);
         }}

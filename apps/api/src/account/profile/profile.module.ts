@@ -10,6 +10,8 @@ import {
 } from '../../schemas/coach-profile.schema';
 import { BasicsModule } from '../../basics/basics.module';
 import { UsersModule } from '../../users/users.module';
+import { FavouriteLocationsController } from './favourite-locations.controller';
+import { FavouriteLocationsService } from './favourite-locations.service';
 import { ProfileController } from './profile.controller';
 import { ProfileService } from './profile.service';
 
@@ -22,8 +24,8 @@ import { ProfileService } from './profile.service';
     UsersModule,
     BasicsModule,
   ],
-  controllers: [ProfileController],
-  providers: [ProfileService],
-  exports: [ProfileService, MongooseModule],
+  controllers: [ProfileController, FavouriteLocationsController],
+  providers: [ProfileService, FavouriteLocationsService],
+  exports: [ProfileService, FavouriteLocationsService, MongooseModule],
 })
 export class ProfileModule {}

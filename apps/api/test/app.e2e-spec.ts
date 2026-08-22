@@ -16,11 +16,27 @@ describe('AppController (e2e)', () => {
     await app.init();
   });
 
-  it('/ (GET)', () => {
+  it('/ (GET) identifies the API', () => {
     return request(app.getHttpServer())
       .get('/')
       .expect(200)
-      .expect('Hello World!');
+      .expect('Gym4Me API');
+  });
+
+  it('/ready (GET) reports database/provider readiness', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/ready')
+      .expect(200);
+
+    expect(response.body).toMatchObject({
+      ready: true,
+      database: true,
+      providers: {
+        sms: 'mock',
+        payment: 'mock',
+        push: 'mock',
+      },
+    });
   });
 
   afterEach(async () => {

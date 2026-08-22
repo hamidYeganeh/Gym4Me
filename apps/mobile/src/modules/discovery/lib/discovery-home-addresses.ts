@@ -1,9 +1,34 @@
-import type { PublicUser } from "@repo/api";
+import type { FavouriteLocation, FavouriteLocationKind, PublicUser } from "@repo/api";
 import {
-  DISCOVERY_MOCK_ADDRESSES,
   formatAddressLine,
   type DiscoveryAddressItem,
 } from "./discovery-addresses-data";
+
+export type DiscoveryLocationLabels = Record<
+  FavouriteLocationKind | "profile",
+  string
+>;
+
+export function favouriteLocationTitle(
+  item: FavouriteLocation,
+  labels: DiscoveryLocationLabels,
+): string {
+  return item.label?.trim() || labels[item.kind];
+}
+
+export function favouriteLocationToAddressItem(
+  item: FavouriteLocation,
+  labels: DiscoveryLocationLabels,
+): DiscoveryAddressItem | null {
+  const line = formatAddressLine(item.address);
+  if (!line) return null;
+  return {
+    id: item.id,
+    label: favouriteLocationTitle(item, labels),
+    line,
+    city: item.address.city?.trim() || favouriteLocationTitle(item, labels),
+  };
+}
 
 export function profileAddressItem(
   user: PublicUser | null,
@@ -21,11 +46,14 @@ export function profileAddressItem(
 }
 
 export function buildDiscoveryAddresses(
-  profile: DiscoveryAddressItem | null,
+  user: PublicUser | null,
+  labels: DiscoveryLocationLabels,
 ): DiscoveryAddressItem[] {
-  if (!profile) return DISCOVERY_MOCK_ADDRESSES;
-  return [
-    profile,
-    ...DISCOVERY_MOCK_ADDRESSES.filter((item) => item.id !== "home"),
-  ];
+  const favourites = (user?.favouriteLocations ?? [])
+    .map((item) => favouriteLocationToAddressItem(item, labels))
+    .filter((item): item is DiscoveryAddressItem => item !== null);
+  if (favourites.length > 0) return favourites;
+
+  const profile = profileAddressItem(user, labels.profile);
+  return profile ? [profile] : [];
 }

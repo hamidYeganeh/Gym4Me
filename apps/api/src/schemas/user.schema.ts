@@ -1,6 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-import { KycStatus, Role, UserStatus } from '../common/enums';
+import {
+  FavouriteLocationKind,
+  KycStatus,
+  Role,
+  UserStatus,
+} from '../common/enums';
 import { IR_PHONE } from '../common/utils/phone.util';
 import { GeoPoint, GeoPointSchema } from './location.schema';
 
@@ -74,6 +79,31 @@ export class UserSettings {
 
 export const UserSettingsSchema = SchemaFactory.createForClass(UserSettings);
 
+/** User-owned saved place (map pin + address). */
+@Schema({ _id: true })
+export class UserFavouriteLocation {
+  _id!: Types.ObjectId;
+
+  @Prop({
+    type: String,
+    enum: FavouriteLocationKind,
+    required: true,
+    index: true,
+  })
+  kind!: FavouriteLocationKind;
+
+  /** Custom title; required when kind is `other`. */
+  @Prop({ trim: true, maxlength: 60 })
+  label?: string;
+
+  @Prop({ type: UserAddressSchema, default: () => ({}) })
+  address!: UserAddress;
+}
+
+export const UserFavouriteLocationSchema = SchemaFactory.createForClass(
+  UserFavouriteLocation,
+);
+
 @Schema({ timestamps: true, collection: 'users' })
 export class User {
   /** E.164 Iran mobile — kept top-level for unique index. */
@@ -95,6 +125,9 @@ export class User {
 
   @Prop({ type: UserAddressSchema, default: () => ({}) })
   address!: UserAddress;
+
+  @Prop({ type: [UserFavouriteLocationSchema], default: [] })
+  favouriteLocations!: UserFavouriteLocation[];
 
   @Prop({ type: UserSettingsSchema, default: () => ({ units: {} }) })
   settings!: UserSettings;

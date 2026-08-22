@@ -6,8 +6,12 @@ import type {
 export type PointsLedgerFiltersSectionProps = {
   subjectFilter: GamificationSubjectType | "all";
   reasonFilter: PointTransactionReason | "all";
+  subjectId: string;
+  ruleId: string;
   onSubjectChange: (value: GamificationSubjectType | "all") => void;
   onReasonChange: (value: PointTransactionReason | "all") => void;
+  onSubjectIdChange: (value: string) => void;
+  onRuleIdChange: (value: string) => void;
   className?: string;
 };
 

@@ -3,11 +3,12 @@ import type { AdminAchievement } from "@repo/api";
 export type AchievementsListTableSectionProps = {
   items: AdminAchievement[];
   total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
   loading: boolean;
-  fetchingMore: boolean;
-  hasMore: boolean;
   error: string | null;
-  onLoadMore: () => void;
+  onPageChange: (page: number) => void;
   onEdit: (row: AdminAchievement) => void;
   onGrant: (row: AdminAchievement) => void;
   onArchive: (row: AdminAchievement) => void;

@@ -1,15 +1,7 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
-import dynamic from "next/dynamic";
+import { useState, type FormEvent } from "react";
 import { Button } from "@heroui/react/button";
-import { Drawer } from "@heroui/react/drawer";
-import { Input } from "@heroui/react/input";
-import { InputGroup } from "@heroui/react/input-group";
-import { Label } from "@heroui/react/label";
-import { ListBox } from "@heroui/react/list-box";
-import { Select } from "@heroui/react/select";
-import { TextField } from "@heroui/react/textfield";
 import { Typography } from "@heroui/react/typography";
 import { Building1 } from "@repo/icons/Building1";
 import { Calendar1 } from "@repo/icons/Calendar1";
@@ -18,18 +10,23 @@ import { Flag1 } from "@repo/icons/Flag1";
 import { GenderFemale } from "@repo/icons/GenderFemale";
 import { GenderMale } from "@repo/icons/GenderMale";
 import { GenderTransgender } from "@repo/icons/GenderTransgender";
-import { InfoCircle } from "@repo/icons/InfoCircle";
+import { Gift } from "@repo/icons/Gift";
+import { IdentityCard1 } from "@repo/icons/IdentityCard1";
 import { MapPin1 } from "@repo/icons/MapPin1";
+import { MedicalCard1 } from "@repo/icons/MedicalCard1";
+import { Note1 } from "@repo/icons/Note1";
+import { Ruler1 } from "@repo/icons/Ruler1";
+import { SealCheck } from "@repo/icons/SealCheck";
 import { User } from "@repo/icons/User";
-import type { LocationPickerLatLng } from "@repo/ui/kit/LocationPickerMap";
+import { UserCheck } from "@repo/icons/UserCheck";
 import { useTranslations } from "next-intl";
+import { ProfileSettingsFieldRow } from "@/modules/account/components/ProfileSettingsFieldRow";
 import {
-  PROFILE_GENDERS,
   composeAddressLine,
-  isProfileGenderId,
-  type ProfileMapPoint,
-  type ProfileSettingsFormValues,
+  joinFullName,
 } from "@/modules/account/lib/profile-settings";
+import { ProfileSettingsEditSheet } from "../ProfileSettingsEditSheet";
+import type { ProfileSettingsSheetKind } from "../ProfileSettingsEditSheet";
 import { profileSettingsFormSectionVariants } from "./ProfileSettingsFormSection.styles";
 import type { ProfileSettingsFormSectionProps } from "./ProfileSettingsFormSection.types";
 
@@ -40,72 +37,39 @@ const GENDER_ICONS = {
   other: GenderTransgender,
 } as const;
 
-const LocationPickerMap = dynamic(
-  () =>
-    import("@repo/ui/kit/LocationPickerMap").then(
-      (mod) => mod.LocationPickerMap,
-    ),
-  { ssr: false },
-);
-
-type AddressDraft = Pick<
-  ProfileSettingsFormValues,
-  "street" | "apartment" | "city" | "postalCode" | "mapPoint"
->;
-
 export function ProfileSettingsFormSection({
   values,
   provinces,
   phoneDisplay,
+  nationalIdDisplay,
+  referralCodeDisplay,
   error,
   notice,
   isPending,
   onChange,
+  onPatchAthlete,
+  onPatchCoach,
   onSubmit,
   className,
 }: ProfileSettingsFormSectionProps) {
   const t = useTranslations("Mobile.ProfileSettings");
   const tProfile = useTranslations("Mobile.Profile");
+  const tAthlete = useTranslations("Mobile.AthleteProfile");
+  const tCoach = useTranslations("Mobile.CoachProfile");
   const styles = profileSettingsFormSectionVariants();
-  const [addressOpen, setAddressOpen] = useState(false);
-  const [draft, setDraft] = useState<AddressDraft>({
-    street: values.street,
-    apartment: values.apartment,
-    city: values.city,
-    postalCode: values.postalCode,
-    mapPoint: values.mapPoint,
-  });
-
-  useEffect(() => {
-    if (!addressOpen) return;
-    setDraft({
-      street: values.street,
-      apartment: values.apartment,
-      city: values.city,
-      postalCode: values.postalCode,
-      mapPoint: values.mapPoint,
-    });
-  }, [
-    addressOpen,
-    values.apartment,
-    values.city,
-    values.mapPoint,
-    values.postalCode,
-    values.street,
-  ]);
+  const [sheet, setSheet] = useState<ProfileSettingsSheetKind>(null);
 
   const provinceName =
-    provinces.find((item) => item.id === values.provinceId)?.name ?? "";
+    provinces.find((item) => item.id === values.address.provinceId)?.name ?? "";
   const addressLine = composeAddressLine({
-    street: values.street,
-    apartment: values.apartment,
-    city: values.city,
+    street: values.address.street,
+    apartment: values.address.apartment,
+    city: values.address.city,
     provinceName,
-    postalCode: values.postalCode,
+    postalCode: values.address.postalCode,
   });
-  const GenderIcon = values.gender
-    ? GENDER_ICONS[values.gender]
-    : GenderFemale;
+  const fullName = joinFullName(values.name.first, values.name.last);
+  const GenderIcon = values.gender ? GENDER_ICONS[values.gender] : GenderFemale;
   const genderLabel =
     values.gender === "male"
       ? tProfile("genderMale")
@@ -113,12 +77,16 @@ export function ProfileSettingsFormSection({
         ? tProfile("genderFemale")
         : values.gender === "other"
           ? tProfile("genderOther")
-          : t("genderPlaceholder");
-
-  const confirmAddress = () => {
-    onChange(draft);
-    setAddressOpen(false);
-  };
+          : "";
+  const bodyLabel = [values.athlete?.heightCm, values.athlete?.weightKg]
+    .filter(Boolean)
+    .map((part, index) =>
+      index === 0 ? `${part} ${t("cm")}` : `${part} ${t("kg")}`,
+    )
+    .join(" · ");
+  const experienceLabel = [values.coach?.headline, values.coach?.years]
+    .filter(Boolean)
+    .join(" · ");
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -128,161 +96,167 @@ export function ProfileSettingsFormSection({
   return (
     <>
       <form className={styles.root({ className })} onSubmit={handleSubmit}>
-        <TextField
-          className={styles.field()}
-          fullWidth
-          name="fullName"
-          onChange={(next) => onChange({ fullName: next })}
-          value={values.fullName}
-        >
-          <Label className={styles.label()}>{t("fullName")}</Label>
-          <InputGroup className={styles.inputGroup()} variant="secondary">
-            <InputGroup.Prefix>
-              <User className={styles.icon()} size={FIELD_ICON} />
-            </InputGroup.Prefix>
-            <InputGroup.Input
-              className={styles.input()}
-              placeholder={t("fullNamePlaceholder")}
-            />
-          </InputGroup>
-        </TextField>
+        <section className={styles.section()}>
+          <div className={styles.sectionHead()}>
+            <User aria-hidden className={styles.sectionIcon()} size={20} />
+            <Typography className={styles.sectionTitle()}>
+              {t("sectionPersonal")}
+            </Typography>
+          </div>
+          <ProfileSettingsFieldRow
+            icon={<User size={FIELD_ICON} />}
+            label={t("name")}
+            onPress={() => setSheet("name")}
+            placeholder={t("namePlaceholder")}
+            value={fullName}
+          />
+          <ProfileSettingsFieldRow
+            icon={<GenderIcon size={FIELD_ICON} />}
+            label={t("gender")}
+            onPress={() => setSheet("gender")}
+            placeholder={t("genderPlaceholder")}
+            value={genderLabel}
+          />
+          <ProfileSettingsFieldRow
+            icon={<Calendar1 size={FIELD_ICON} />}
+            label={t("birthDate")}
+            onPress={() => setSheet("birthDate")}
+            placeholder={t("birthDatePlaceholder")}
+            value={values.birthDateJalali}
+          />
+          <ProfileSettingsFieldRow
+            icon={<UserCheck size={FIELD_ICON} />}
+            label={tProfile("code")}
+            onPress={() => setSheet("code")}
+            placeholder={t("codePlaceholder")}
+            value={values.code}
+            valueDir="ltr"
+          />
+        </section>
 
-        <Select
-          className={styles.field()}
-          fullWidth
-          name="province"
-          onChange={(key) => {
-            if (typeof key === "string") onChange({ provinceId: key });
-          }}
-          placeholder={t("provincePlaceholder")}
-          value={values.provinceId}
-          variant="secondary"
-        >
-          <Label className={styles.label()}>{t("province")}</Label>
-          <Select.Trigger className={styles.selectTrigger()}>
-            <MapPin1 className={styles.icon()} size={FIELD_ICON} />
-            <Select.Value className={styles.selectValue()} />
-            <Select.Indicator />
-          </Select.Trigger>
-          <Select.Popover>
-            <ListBox>
-              {provinces.map((item) => (
-                <ListBox.Item id={item.id} key={item.id} textValue={item.name}>
-                  {item.name}
-                  <ListBox.ItemIndicator />
-                </ListBox.Item>
-              ))}
-            </ListBox>
-          </Select.Popover>
-        </Select>
-
-        <Select
-          className={styles.field()}
-          fullWidth
-          name="gender"
-          onChange={(key) => {
-            if (typeof key === "string" && isProfileGenderId(key)) {
-              onChange({ gender: key });
-            }
-          }}
-          placeholder={t("genderPlaceholder")}
-          value={values.gender || null}
-          variant="secondary"
-        >
-          <Label className={styles.label()}>{t("gender")}</Label>
-          <Select.Trigger className={styles.selectTrigger()}>
-            <GenderIcon className={styles.icon()} size={FIELD_ICON} />
-            <Select.Value className={styles.selectValue()}>
-              {genderLabel}
-            </Select.Value>
-            <Select.Indicator />
-          </Select.Trigger>
-          <Select.Popover>
-            <ListBox>
-              {PROFILE_GENDERS.map((item) => {
-                const label =
-                  item === "male"
-                    ? tProfile("genderMale")
-                    : item === "female"
-                      ? tProfile("genderFemale")
-                      : tProfile("genderOther");
-                return (
-                  <ListBox.Item id={item} key={item} textValue={label}>
-                    {label}
-                    <ListBox.ItemIndicator />
-                  </ListBox.Item>
-                );
-              })}
-            </ListBox>
-          </Select.Popover>
-        </Select>
-
-        <TextField
-          className={styles.field()}
-          fullWidth
-          name="birthDate"
-          onChange={(next) => onChange({ birthDateJalali: next })}
-          value={values.birthDateJalali}
-        >
-          <Label className={styles.label()}>{t("birthDate")}</Label>
-          <InputGroup className={styles.inputGroup()} variant="secondary">
-            <InputGroup.Input
-              className={styles.input()}
-              inputMode="numeric"
-              placeholder={t("birthDatePlaceholder")}
-            />
-            <InputGroup.Suffix>
-              <Calendar1 className={styles.icon()} size={FIELD_ICON} />
-            </InputGroup.Suffix>
-          </InputGroup>
-        </TextField>
-
-        <TextField
-          className={styles.field()}
-          fullWidth
-          isReadOnly
-          name="phone"
-          value={phoneDisplay}
-        >
-          <Label className={styles.label()}>{t("phone")}</Label>
-          <InputGroup className={styles.inputGroup()} variant="secondary">
-            <InputGroup.Prefix>
+        <section className={styles.section()}>
+          <div className={styles.sectionHead()}>
+            <IdentityCard1 aria-hidden className={styles.sectionIcon()} size={20} />
+            <Typography className={styles.sectionTitle()}>
+              {t("sectionContact")}
+            </Typography>
+          </div>
+          <ProfileSettingsFieldRow
+            icon={
               <span className={styles.phonePrefix()}>
                 <Flag1 size={FIELD_ICON} />
                 IR
               </span>
-            </InputGroup.Prefix>
-            <InputGroup.Input className={styles.input()} dir="ltr" />
-            <InputGroup.Suffix>
-              <span
-                aria-label={t("phoneLocked")}
-                className={styles.help()}
-                title={t("phoneLocked")}
-              >
-                <InfoCircle size={14} />
-              </span>
-            </InputGroup.Suffix>
-          </InputGroup>
-        </TextField>
+            }
+            label={t("phone")}
+            locked
+            lockedAriaLabel={t("phoneLocked")}
+            placeholder={t("phonePlaceholder")}
+            value={phoneDisplay}
+            valueDir="ltr"
+          />
+          <ProfileSettingsFieldRow
+            icon={<IdentityCard1 size={FIELD_ICON} />}
+            label={t("nationalId")}
+            locked
+            lockedAriaLabel={t("nationalIdLocked")}
+            placeholder={t("nationalIdEmpty")}
+            value={nationalIdDisplay}
+            valueDir="ltr"
+          />
+          <ProfileSettingsFieldRow
+            icon={<Gift size={FIELD_ICON} />}
+            label={t("referralCode")}
+            locked
+            lockedAriaLabel={t("referralLocked")}
+            placeholder={t("referralEmpty")}
+            value={referralCodeDisplay}
+            valueDir="ltr"
+          />
+        </section>
 
-        <div className={styles.field()}>
-          <Typography className={styles.label()}>{t("homeAddress")}</Typography>
-          <Button
-            className={styles.addressTrigger()}
-            onPress={() => setAddressOpen(true)}
-            type="button"
-            variant="ghost"
-          >
-            <MapPin1 className={styles.icon()} size={FIELD_ICON} />
-            <span
-              className={
-                addressLine ? styles.addressValue() : styles.addressPlaceholder()
-              }
-            >
-              {addressLine || t("homeAddressPlaceholder")}
-            </span>
-          </Button>
-        </div>
+        <section className={styles.section()}>
+          <div className={styles.sectionHead()}>
+            <Building1 aria-hidden className={styles.sectionIcon()} size={20} />
+            <Typography className={styles.sectionTitle()}>
+              {t("sectionAddress")}
+            </Typography>
+          </div>
+          <ProfileSettingsFieldRow
+            icon={<MapPin1 size={FIELD_ICON} />}
+            label={t("province")}
+            onPress={() => setSheet("province")}
+            placeholder={t("provincePlaceholder")}
+            value={provinceName}
+          />
+          <ProfileSettingsFieldRow
+            icon={<MapPin1 size={FIELD_ICON} />}
+            label={t("homeAddress")}
+            multiline
+            onPress={() => setSheet("address")}
+            placeholder={t("homeAddressPlaceholder")}
+            value={addressLine}
+          />
+        </section>
+
+        {values.athlete ? (
+          <section className={styles.section()}>
+            <div className={styles.sectionHead()}>
+              <MedicalCard1 aria-hidden className={styles.sectionIcon()} size={20} />
+              <Typography className={styles.sectionTitle()}>
+                {t("sectionAthlete")}
+              </Typography>
+            </div>
+            <ProfileSettingsFieldRow
+              icon={<Note1 size={FIELD_ICON} />}
+              label={tAthlete("bio")}
+              multiline
+              onPress={() => setSheet("athleteBio")}
+              placeholder={t("bioPlaceholder")}
+              value={values.athlete.bio}
+            />
+            <ProfileSettingsFieldRow
+              icon={<SealCheck size={FIELD_ICON} />}
+              label={tAthlete("levelKey")}
+              onPress={() => setSheet("athleteLevel")}
+              placeholder={t("levelPlaceholder")}
+              value={values.athlete.levelKey}
+            />
+            <ProfileSettingsFieldRow
+              icon={<Ruler1 size={FIELD_ICON} />}
+              label={t("body")}
+              onPress={() => setSheet("athleteBody")}
+              placeholder={t("bodyPlaceholder")}
+              value={bodyLabel}
+            />
+          </section>
+        ) : null}
+
+        {values.coach ? (
+          <section className={styles.section()}>
+            <div className={styles.sectionHead()}>
+              <SealCheck aria-hidden className={styles.sectionIcon()} size={20} />
+              <Typography className={styles.sectionTitle()}>
+                {t("sectionCoach")}
+              </Typography>
+            </div>
+            <ProfileSettingsFieldRow
+              icon={<Note1 size={FIELD_ICON} />}
+              label={tCoach("bio")}
+              multiline
+              onPress={() => setSheet("coachBio")}
+              placeholder={t("bioPlaceholder")}
+              value={values.coach.bio}
+            />
+            <ProfileSettingsFieldRow
+              icon={<SealCheck size={FIELD_ICON} />}
+              label={t("experience")}
+              onPress={() => setSheet("coachExperience")}
+              placeholder={t("experiencePlaceholder")}
+              value={experienceLabel}
+            />
+          </section>
+        ) : null}
 
         {error ? (
           <Typography className={styles.error()} role="alert" type="body-sm">
@@ -310,109 +284,15 @@ export function ProfileSettingsFormSection({
         </div>
       </form>
 
-      <Drawer.Backdrop
-        isOpen={addressOpen}
-        onOpenChange={(open) => {
-          if (!open) setAddressOpen(false);
-        }}
-      >
-        <Drawer.Content placement="bottom">
-          <Drawer.Dialog>
-            <Drawer.Handle />
-            <Drawer.CloseTrigger />
-            <Drawer.Header>
-              <Drawer.Heading>{t("editAddressTitle")}</Drawer.Heading>
-            </Drawer.Header>
-            <Drawer.Body className={styles.drawerBody()}>
-              <TextField
-                className={styles.field()}
-                fullWidth
-                name="streetDraft"
-                onChange={(next) => setDraft((current) => ({ ...current, street: next }))}
-                value={draft.street}
-              >
-                <Label className={styles.label()}>{t("street")}</Label>
-                <InputGroup className={styles.inputGroup()} variant="secondary">
-                  <InputGroup.Prefix>
-                    <MapPin1 className={styles.icon()} size={FIELD_ICON} />
-                  </InputGroup.Prefix>
-                  <InputGroup.Input className={styles.input()} />
-                </InputGroup>
-              </TextField>
-              <div className={styles.mapShell()}>
-                <LocationPickerMap
-                  className={styles.mapCanvas()}
-                  onChange={(point: LocationPickerLatLng) =>
-                    setDraft((current) => ({
-                      ...current,
-                      mapPoint: point as ProfileMapPoint,
-                    }))
-                  }
-                  value={draft.mapPoint}
-                  zoomInLabel={t("zoomIn")}
-                  zoomLabel={t("zoom")}
-                  zoomOutLabel={t("zoomOut")}
-                />
-              </div>
-              <TextField
-                className={styles.field()}
-                fullWidth
-                name="cityDraft"
-                onChange={(next) => setDraft((current) => ({ ...current, city: next }))}
-                value={draft.city}
-              >
-                <Label className={styles.label()}>{t("city")}</Label>
-                <Input className={styles.input()} />
-              </TextField>
-              <div className={styles.drawerRow()}>
-                <TextField
-                  className={styles.field()}
-                  fullWidth
-                  name="apartmentDraft"
-                  onChange={(next) =>
-                    setDraft((current) => ({ ...current, apartment: next }))
-                  }
-                  value={draft.apartment}
-                >
-                  <Label className={styles.label()}>{t("apartment")}</Label>
-                  <InputGroup className={styles.inputGroup()} variant="secondary">
-                    <InputGroup.Prefix>
-                      <Building1 className={styles.icon()} size={FIELD_ICON} />
-                    </InputGroup.Prefix>
-                    <InputGroup.Input className={styles.input()} />
-                  </InputGroup>
-                </TextField>
-                <TextField
-                  className={styles.field()}
-                  fullWidth
-                  name="postalDraft"
-                  onChange={(next) =>
-                    setDraft((current) => ({ ...current, postalCode: next }))
-                  }
-                  value={draft.postalCode}
-                >
-                  <Label className={styles.label()}>{t("postalCode")}</Label>
-                  <Input
-                    className={styles.input()}
-                    inputMode="numeric"
-                    maxLength={10}
-                  />
-                </TextField>
-              </div>
-              <Button
-                className={styles.selectBtn()}
-                fullWidth
-                onPress={confirmAddress}
-                size="lg"
-                variant="primary"
-              >
-                {t("confirmAddress")}
-                <Check className={styles.selectIcon()} size={20} />
-              </Button>
-            </Drawer.Body>
-          </Drawer.Dialog>
-        </Drawer.Content>
-      </Drawer.Backdrop>
+      <ProfileSettingsEditSheet
+        kind={sheet}
+        onChange={onChange}
+        onClose={() => setSheet(null)}
+        onPatchAthlete={onPatchAthlete}
+        onPatchCoach={onPatchCoach}
+        provinces={provinces}
+        values={values}
+      />
     </>
   );
 }

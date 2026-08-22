@@ -1,4 +1,5 @@
 import type { ApiClient } from "../client";
+import type { ListQuery, Paginated } from "../types";
 import type {
   AppBootstrap,
   FeatureFlag,
@@ -8,6 +9,10 @@ import type {
   UpsertReleasePolicyInput,
 } from "./app-config.dto";
 import { appConfigEndpoints as ep } from "./app-config.endpoint";
+
+export type ListAppConfigQuery = ListQuery & {
+  search?: string;
+};
 
 export function createAppConfigApi(client: ApiClient) {
   return {
@@ -19,8 +24,10 @@ export function createAppConfigApi(client: ApiClient) {
       });
     },
 
-    listFeatureFlags() {
-      return client.request<FeatureFlag[]>(ep.featureFlags);
+    listFeatureFlags(query: ListAppConfigQuery = {}) {
+      return client.request<Paginated<FeatureFlag>>(ep.featureFlags, {
+        query,
+      });
     },
 
     upsertFeatureFlag(key: string, input: UpsertFeatureFlagInput) {
@@ -30,8 +37,10 @@ export function createAppConfigApi(client: ApiClient) {
       });
     },
 
-    listReleasePolicies() {
-      return client.request<MobileReleasePolicy[]>(ep.releasePolicies);
+    listReleasePolicies(query: ListAppConfigQuery = {}) {
+      return client.request<Paginated<MobileReleasePolicy>>(ep.releasePolicies, {
+        query,
+      });
     },
 
     upsertReleasePolicy(input: UpsertReleasePolicyInput) {

@@ -73,3 +73,7 @@ CheckInSchema.index(
 );
 CheckInSchema.index({ clubId: 1, occurredAt: -1 });
 CheckInSchema.index({ userId: 1, occurredAt: -1 });
+CheckInSchema.index(
+  { bookingId: 1 },
+  { unique: true, sparse: true, name: 'unique_booking_checkin' },
+);

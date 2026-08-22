@@ -12,9 +12,9 @@ describe('DEFAULT_CHOICE_GROUPS', () => {
   });
 
   it('marks app-contract groups as system', () => {
-    const systemKeys = DEFAULT_CHOICE_GROUPS.filter((group) => group.isSystem).map(
-      (group) => group.key,
-    );
+    const systemKeys = DEFAULT_CHOICE_GROUPS.filter(
+      (group) => group.isSystem,
+    ).map((group) => group.key);
     expect(systemKeys).toEqual(
       expect.arrayContaining([
         'gender',

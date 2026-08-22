@@ -3,12 +3,13 @@ import type { FoodItem } from "@repo/api";
 export type FoodItemsTableSectionProps = {
   items: FoodItem[];
   total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
   loading: boolean;
-  fetchingMore: boolean;
-  hasMore: boolean;
   error: string | null;
   categoryLabels?: Record<string, string>;
-  onLoadMore: () => void;
+  onPageChange: (page: number) => void;
   onEdit: (row: FoodItem) => void;
   onArchive: (row: FoodItem) => void;
   className?: string;

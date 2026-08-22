@@ -1,9 +1,16 @@
 import { useCallback, useMemo, useState } from "react";
-import type { AdminKycRequest, KycRequestStatus } from "@repo/api";
+import type {
+  AdminKycRequest,
+  KycRequestKind,
+  KycRequestStatus,
+} from "@repo/api";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { AdminShell } from "@/shared/components";
-import { useAdminInfiniteQuery } from "@/shared/hooks";
+import {
+  useAdminListQueryParams,
+  useAdminPaginatedQuery,
+} from "@/shared/hooks";
 import { adminKyc } from "@/shared/lib/api";
 import { kycRequestId } from "../../lib/kyc-table-columns";
 import { KycListHeaderSection } from "../../sections/KycListHeaderSection";
@@ -14,13 +21,36 @@ import { kycListScreenVariants } from "./KycListScreen.styles";
 import type { KycListScreenProps } from "./KycListScreen.types";
 
 const PAGE_SIZE = 20;
+const FILTER_KEYS = ["status", "kind"] as const;
+
+type KycListFilters = {
+  status: KycRequestStatus | "all";
+  kind: KycRequestKind | "all";
+};
+
+const FILTER_DEFAULTS: KycListFilters & {
+  search: string;
+  page: number;
+  page_size: number;
+} = {
+  status: "pending",
+  kind: "all",
+  search: "",
+  page: 1,
+  page_size: PAGE_SIZE,
+};
 
 export function KycListScreen({ className }: KycListScreenProps) {
   const t = useTranslations("Admin.Users");
   const styles = kycListScreenVariants();
-  const [statusFilter, setStatusFilter] = useState<KycRequestStatus | "all">(
-    "pending",
-  );
+  const { filters, setFilter,
+    page,
+    pageSize,
+    setPage,
+  } = useAdminListQueryParams<KycListFilters>({
+    filterKeys: FILTER_KEYS,
+    defaults: FILTER_DEFAULTS,
+  });
   const [selected, setSelected] = useState<AdminKycRequest | null>(null);
   const [reviewAction, setReviewAction] = useState<"approve" | "reject" | null>(
     null,
@@ -32,8 +62,8 @@ export function KycListScreen({ className }: KycListScreenProps) {
   const [docError, setDocError] = useState<string | null>(null);
 
   const queryKey = useMemo(
-    () => JSON.stringify({ statusFilter, pageSize: PAGE_SIZE }),
-    [statusFilter],
+    () => JSON.stringify({ filters, pageSize }),
+    [filters, pageSize],
   );
 
   const fetchPage = useCallback(
@@ -41,24 +71,26 @@ export function KycListScreen({ className }: KycListScreenProps) {
       return adminKyc.list({
         page,
         limit: pageSize,
-        status: statusFilter === "all" ? undefined : statusFilter,
+        status: filters.status === "all" ? undefined : filters.status,
+        kind: filters.kind === "all" ? undefined : filters.kind,
       });
     },
-    [statusFilter],
+    [filters],
   );
 
   const {
     items,
     total,
+    totalPages,
     loading,
-    fetchingMore,
-    hasMore,
     error,
-    loadMore,
+    setPage: changePage,
     reload,
-  } = useAdminInfiniteQuery<AdminKycRequest>({
+  } = useAdminPaginatedQuery<AdminKycRequest>({
     queryKey,
-    pageSize: PAGE_SIZE,
+    page,
+    pageSize,
+    onPageChange: setPage,
     errorFallback: t("errorLoad"),
     fetchPage,
   });
@@ -113,19 +145,22 @@ export function KycListScreen({ className }: KycListScreenProps) {
     >
       <div className={styles.content()}>
         <KycListHeaderSection
-          statusFilter={statusFilter}
+          kindFilter={filters.kind}
+          statusFilter={filters.status}
+          onKindChange={(value) => setFilter("kind", value)}
           onRefresh={() => void reload()}
-          onStatusChange={setStatusFilter}
+          onStatusChange={(value) => setFilter("status", value)}
         />
 
         <KycListTableSection
           error={error}
-          fetchingMore={fetchingMore}
-          hasMore={hasMore}
           items={items}
           loading={loading}
           total={total}
-          onLoadMore={loadMore}
+          page={page}
+          pageSize={pageSize}
+          totalPages={totalPages}
+          onPageChange={changePage}
           onReview={(row) => {
             setSelected(row);
             setDocError(null);

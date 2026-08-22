@@ -6,12 +6,10 @@ export type OnboardingFooterSectionProps = Pick<
   | "isCaloriesStep"
   | "isAvatarStep"
   | "isAvatarUploading"
+  | "hasAvatar"
   | "canContinue"
-  | "calories"
-  | "caloriesKnown"
   | "goNext"
   | "handleCaloriesUnknown"
-  | "requestFinish"
 > & {
   className?: string;
 };

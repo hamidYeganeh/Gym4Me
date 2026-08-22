@@ -23,6 +23,8 @@ export function WelcomeIntroduceCarouselSection({
     nested: true,
     noSwiping: true,
     noSwipingSelector: "[data-welcome-nested-carousel]",
+    observer: true,
+    observeParents: true,
   });
 
   return (

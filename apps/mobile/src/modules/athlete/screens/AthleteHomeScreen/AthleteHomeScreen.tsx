@@ -12,7 +12,6 @@ import { CallToActionCard } from "@repo/ui/cards/CallToActionCard";
 import { MetricCard } from "@repo/ui/cards/MetricCard";
 import { QuickActionCard } from "@repo/ui/cards/QuickActionCard";
 import { SpotlightCard } from "@repo/ui/cards/SpotlightCard";
-import { TodoCard, type TodoCardItem } from "@repo/ui/cards/TodoCard";
 import { stagger, transition } from "@repo/theme";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { AppSectionHeader } from "@repo/ui/layout/AppSectionHeader";
@@ -22,7 +21,9 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/shared/lib/app-router";
 
 import type { ReactNode } from "react";
+import { AthleteHomeSetupTodoSection } from "@/modules/athlete/sections/AthleteHomeSetupTodoSection";
 import { AthleteReferralInviteSection } from "@/modules/athlete/sections/AthleteReferralInviteSection";
+import { AthleteRoleUpgradeSection } from "@/modules/athlete/sections/AthleteRoleUpgradeSection";
 import { mediaFileUrl } from "@/shared/lib/api";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { athleteHomeScreenStyles as styles } from "./AthleteHomeScreen.styles";
@@ -55,33 +56,6 @@ export function AthleteHomeScreen() {
   const reduceMotion = useReducedMotion();
   const { user } = useAuth();
   const firstName = user?.name.first?.trim() ?? "";
-
-  const setupItems: TodoCardItem[] = [
-    {
-      id: "assessment",
-      label: t("todoItemAssessment"),
-      status: "completed",
-    },
-    {
-      id: "profile",
-      label: t("todoItemProfile"),
-      status: "completed",
-    },
-    {
-      id: "verify",
-      label: t("todoItemVerify"),
-      status: "completed",
-    },
-    {
-      id: "first-exercise",
-      label: t("todoItemFirstExercise"),
-      status: "pending",
-      onPress: () => router.push("/athlete/workouts"),
-    },
-  ];
-  const completedCount = setupItems.filter(
-    (item) => item.status === "completed",
-  ).length;
 
   return (
     <AppLayout
@@ -117,6 +91,14 @@ export function AthleteHomeScreen() {
             unit={t("heroUnit")}
             value={t("heroValue")}
           />
+        </StaggerSection>
+
+        <StaggerSection>
+          <AthleteRoleUpgradeSection />
+        </StaggerSection>
+
+        <StaggerSection>
+          <AthleteHomeSetupTodoSection />
         </StaggerSection>
 
         <StaggerSection>
@@ -220,18 +202,6 @@ export function AthleteHomeScreen() {
 
         <StaggerSection>
           <AthleteReferralInviteSection />
-        </StaggerSection>
-
-        <StaggerSection>
-          <TodoCard
-            items={setupItems}
-            progressLabel={t("todoProgressLabel")}
-            stepLabel={t("todoStepLabel", {
-              current: completedCount,
-              total: setupItems.length,
-            })}
-            title={t("todoTitle")}
-          />
         </StaggerSection>
       </motion.div>
     </AppLayout>

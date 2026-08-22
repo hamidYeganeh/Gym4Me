@@ -5,4 +5,6 @@ export const accountProfileEndpoints = {
   athlete: "/account/profile/athlete",
   coach: "/account/profile/coach",
   coachVerification: "/account/profile/coach/verification",
+  locations: "/account/profile/locations",
+  location: (id: string) => `/account/profile/locations/${id}`,
 } as const;

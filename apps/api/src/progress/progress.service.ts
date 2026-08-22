@@ -125,18 +125,10 @@ import {
   UpsertMetricReminderDto,
   WorkoutPlanWeekDto,
 } from './dto/progress.dto';
-
-const METRIC_KEY_GRANT_SCOPES: Record<string, AthleteDataGrantScope[]> = {
-  weight_kg: [AthleteDataGrantScope.METRICS_WEIGHT],
-  sleep_duration_min: [AthleteDataGrantScope.METRICS_SLEEP],
-  sleep_quality: [AthleteDataGrantScope.METRICS_SLEEP],
-  sleep: [AthleteDataGrantScope.METRICS_SLEEP],
-  steps: [AthleteDataGrantScope.METRICS_STEPS],
-  water_ml: [AthleteDataGrantScope.METRICS_WATER],
-  hydration: [AthleteDataGrantScope.METRICS_WATER],
-  walking_distance_km: [AthleteDataGrantScope.METRICS_WALKING],
-  walking_duration_min: [AthleteDataGrantScope.METRICS_WALKING],
-};
+import {
+  grantAllowsScope,
+  metricKeysAllowedByGrant,
+} from './data-grant.policy';
 
 const HEALTH_METRIC_SOURCES = new Set<MetricSource>([
   MetricSource.APPLE_HEALTH,
@@ -2470,7 +2462,7 @@ export class ProgressService {
     scope: AthleteDataGrantScope,
   ) {
     const grant = await this.loadActiveGrant(athleteUserId, coachUserId);
-    if (!grant || !grant.scopes.includes(scope)) {
+    if (!grant || !grantAllowsScope(grant.scopes, scope)) {
       throw new ForbiddenException(
         `Active data grant with scope ${scope} is required`,
       );
@@ -2485,18 +2477,17 @@ export class ProgressService {
     if (!grant) {
       throw new ForbiddenException('Active data grant is required');
     }
-    if (grant.scopes.includes(AthleteDataGrantScope.METRICS_ALL)) {
+    if (grantAllowsScope(grant.scopes, AthleteDataGrantScope.METRICS_ALL)) {
       const types = await this.metricTypeModel
         .find({ status: MetricTypeStatus.ACTIVE })
         .select({ key: 1 })
         .lean();
-      return types.map((t) => t.key);
+      return metricKeysAllowedByGrant(
+        grant.scopes,
+        types.map((type) => type.key),
+      );
     }
-    const allowed: string[] = [];
-    for (const [key, scopes] of Object.entries(METRIC_KEY_GRANT_SCOPES)) {
-      if (scopes.some((s) => grant.scopes.includes(s))) allowed.push(key);
-    }
-    return allowed;
+    return metricKeysAllowedByGrant(grant.scopes);
   }
 
   private async assertCoachMetricScopeIfNeeded(

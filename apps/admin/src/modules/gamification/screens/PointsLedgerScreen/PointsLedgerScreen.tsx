@@ -8,7 +8,10 @@ import type {
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { AdminShell } from "@/shared/components";
-import { useAdminInfiniteQuery } from "@/shared/hooks";
+import {
+  useAdminListQueryParams,
+  useAdminPaginatedQuery,
+} from "@/shared/hooks";
 import { adminGamification } from "@/shared/lib/api";
 import { PointsLedgerAdjustDrawerSection } from "../../sections/PointsLedgerAdjustDrawerSection";
 import { PointsLedgerFiltersSection } from "../../sections/PointsLedgerFiltersSection";
@@ -19,17 +22,42 @@ import { pointsLedgerScreenVariants } from "./PointsLedgerScreen.styles";
 import type { PointsLedgerScreenProps } from "./PointsLedgerScreen.types";
 
 const PAGE_SIZE = 40;
+const FILTER_KEYS = ["subjectType", "reason", "subjectId", "ruleId"] as const;
+
+type PointsLedgerFilters = {
+  subjectType: GamificationSubjectType | "all";
+  reason: PointTransactionReason | "all";
+  subjectId: string;
+  ruleId: string;
+};
+
+const FILTER_DEFAULTS: PointsLedgerFilters & {
+  search: string;
+  page: number;
+  page_size: number;
+} = {
+  subjectType: "all",
+  reason: "all",
+  subjectId: "",
+  ruleId: "",
+  search: "",
+  page: 1,
+  page_size: PAGE_SIZE,
+};
 
 export function PointsLedgerScreen({ className }: PointsLedgerScreenProps) {
   const t = useTranslations("Admin.Gamification");
   const styles = pointsLedgerScreenVariants();
 
-  const [subjectFilter, setSubjectFilter] = useState<
-    GamificationSubjectType | "all"
-  >("all");
-  const [reasonFilter, setReasonFilter] = useState<
-    PointTransactionReason | "all"
-  >("all");
+  const { filters, setFilter,
+    page,
+    pageSize,
+    setPage,
+  } =
+    useAdminListQueryParams<PointsLedgerFilters>({
+      filterKeys: FILTER_KEYS,
+      defaults: FILTER_DEFAULTS,
+    });
 
   const [overview, setOverview] = useState<GamificationOverview | null>(null);
   const [overviewError, setOverviewError] = useState<string | null>(null);
@@ -59,8 +87,8 @@ export function PointsLedgerScreen({ className }: PointsLedgerScreenProps) {
   }, [loadOverview]);
 
   const queryKey = useMemo(
-    () => JSON.stringify({ subjectFilter, reasonFilter, pageSize: PAGE_SIZE }),
-    [subjectFilter, reasonFilter],
+    () => JSON.stringify({ filters, pageSize }),
+    [filters, pageSize],
   );
 
   const fetchPage = useCallback(
@@ -68,25 +96,29 @@ export function PointsLedgerScreen({ className }: PointsLedgerScreenProps) {
       return adminGamification.listTransactions({
         page,
         page_size: pageSize,
-        subjectType: subjectFilter === "all" ? undefined : subjectFilter,
-        reason: reasonFilter === "all" ? undefined : reasonFilter,
+        subjectType:
+          filters.subjectType === "all" ? undefined : filters.subjectType,
+        reason: filters.reason === "all" ? undefined : filters.reason,
+        subjectId: filters.subjectId.trim() || undefined,
+        ruleId: filters.ruleId.trim() || undefined,
       });
     },
-    [subjectFilter, reasonFilter],
+    [filters],
   );
 
   const {
     items,
     total,
+    totalPages,
     loading,
-    fetchingMore,
-    hasMore,
     error,
-    loadMore,
+    setPage: changePage,
     reload,
-  } = useAdminInfiniteQuery<PointTransactionItem>({
+  } = useAdminPaginatedQuery<PointTransactionItem>({
     queryKey,
-    pageSize: PAGE_SIZE,
+    page,
+    pageSize,
+    onPageChange: setPage,
     errorFallback: t("errorLoad"),
     fetchPage,
   });
@@ -149,20 +181,25 @@ export function PointsLedgerScreen({ className }: PointsLedgerScreenProps) {
         />
 
         <PointsLedgerFiltersSection
-          reasonFilter={reasonFilter}
-          subjectFilter={subjectFilter}
-          onReasonChange={setReasonFilter}
-          onSubjectChange={setSubjectFilter}
+          reasonFilter={filters.reason}
+          ruleId={filters.ruleId}
+          subjectFilter={filters.subjectType}
+          subjectId={filters.subjectId}
+          onReasonChange={(value) => setFilter("reason", value)}
+          onRuleIdChange={(value) => setFilter("ruleId", value)}
+          onSubjectChange={(value) => setFilter("subjectType", value)}
+          onSubjectIdChange={(value) => setFilter("subjectId", value)}
         />
 
         <PointsLedgerTableSection
           error={error}
-          fetchingMore={fetchingMore}
-          hasMore={hasMore}
           items={items}
           loading={loading}
           total={total}
-          onLoadMore={loadMore}
+          page={page}
+          pageSize={pageSize}
+          totalPages={totalPages}
+          onPageChange={changePage}
         />
       </div>
 

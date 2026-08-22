@@ -5,7 +5,10 @@ import type { FeatureFlag } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { AdminShell } from "@/shared/components";
-import { useAdminInfiniteQuery } from "@/shared/hooks";
+import {
+  useAdminListQueryParams,
+  useAdminPaginatedQuery,
+} from "@/shared/hooks";
 import { adminAppConfig } from "@/shared/lib/api";
 import { FeatureFlagsEditSection } from "../../sections/FeatureFlagsEditSection";
 import type { FeatureFlagEditPatch } from "../../sections/FeatureFlagsEditSection";
@@ -13,42 +16,62 @@ import { FeatureFlagsTableSection } from "../../sections/FeatureFlagsTableSectio
 import { featureFlagsScreenVariants } from "./FeatureFlagsScreen.styles";
 import type { FeatureFlagsScreenProps } from "./FeatureFlagsScreen.types";
 
+const PAGE_SIZE = 30;
+const FILTER_KEYS = [] as const;
+
+type FeatureFlagsFilters = {
+  __unused?: string;
+};
+
+const FILTER_DEFAULTS = {
+  search: "",
+  page: 1,
+  page_size: PAGE_SIZE,
+};
+
 export function FeatureFlagsScreen({ className }: FeatureFlagsScreenProps) {
   const t = useTranslations("Admin.Ops");
   const styles = featureFlagsScreenVariants();
 
-  const [search, setSearch] = useState("");
+  const { search, searchInput, setSearchInput, page, pageSize, setPage } =
+    useAdminListQueryParams<FeatureFlagsFilters>({
+      filterKeys: FILTER_KEYS,
+      defaults: FILTER_DEFAULTS,
+    });
+
   const [editing, setEditing] = useState<FeatureFlag | null>(null);
   const [pending, setPending] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  const queryKey = useMemo(() => JSON.stringify({ search }), [search]);
+  const queryKey = useMemo(
+    () => JSON.stringify({ search, pageSize }),
+    [pageSize, search],
+  );
 
-  const fetchPage = useCallback(async () => {
-    const items = await adminAppConfig.listFeatureFlags();
-    const q = search.trim().toLowerCase();
-    const filtered = q
-      ? items.filter(
-          (item) =>
-            item.key.toLowerCase().includes(q) ||
-            (item.description ?? "").toLowerCase().includes(q),
-        )
-      : items;
-    return {
-      result: filtered,
-      pagination: {
-        page: 1,
-        page_size: filtered.length || 1,
-        next: null,
-        prev: null,
-        total: filtered.length,
-      },
-    };
-  }, [search]);
+  const fetchPage = useCallback(
+    async (nextPage: number, nextPageSize: number) => {
+      return adminAppConfig.listFeatureFlags({
+        page: nextPage,
+        page_size: nextPageSize,
+        search: search.trim() || undefined,
+      });
+    },
+    [search],
+  );
 
-  const { items, loading, error, reload } = useAdminInfiniteQuery<FeatureFlag>({
+  const {
+    items,
+    total,
+    totalPages,
+    loading,
+    error,
+    setPage: changePage,
+    reload,
+  } = useAdminPaginatedQuery<FeatureFlag>({
     queryKey,
-    pageSize: 500,
+    page,
+    pageSize,
+    onPageChange: setPage,
     errorFallback: t("flags.errorLoad"),
     fetchPage,
   });
@@ -99,8 +122,8 @@ export function FeatureFlagsScreen({ className }: FeatureFlagsScreenProps) {
       className={className}
       opsSection={{
         activeTabId: "flags",
-        searchValue: search,
-        onSearchChange: setSearch,
+        searchValue: searchInput,
+        onSearchChange: setSearchInput,
       }}
     >
       <div className={styles.content()}>
@@ -128,6 +151,10 @@ export function FeatureFlagsScreen({ className }: FeatureFlagsScreenProps) {
           error={error}
           items={items}
           loading={loading}
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          totalPages={totalPages}
           onActivate={(row) => {
             const why = window.prompt(t("flags.fields.reason"));
             if (!why) return;
@@ -141,6 +168,7 @@ export function FeatureFlagsScreen({ className }: FeatureFlagsScreenProps) {
             setEditing(row);
             setActionError(null);
           }}
+          onPageChange={changePage}
           onPause={(row) => {
             const why = window.prompt(t("flags.fields.reason"));
             if (!why) return;

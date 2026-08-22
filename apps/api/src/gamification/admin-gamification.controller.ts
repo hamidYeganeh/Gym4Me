@@ -44,6 +44,19 @@ export class AdminGamificationController {
     return this.gamification.adminListAchievements(query);
   }
 
+  @Post('achievements/seed-defaults')
+  @HttpCode(200)
+  @ApiOperation({
+    summary:
+      'Create missing default achievements without overwriting existing ones',
+  })
+  seedAchievementDefaults(
+    @CurrentUser('sub') adminId: string,
+    @Req() request: Request,
+  ) {
+    return this.gamification.adminSeedAchievementDefaults(adminId, request);
+  }
+
   @Get('achievements/:id')
   @ApiOperation({ summary: 'Get an achievement' })
   getAchievement(@Param('id') id: string) {

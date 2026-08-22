@@ -4,20 +4,20 @@ Monorepo for the Gym4Me platform — Iranian clubs, coaches, athletes, and ops.
 
 ## Apps
 
-| App | Path | Port | Role |
-|-----|------|------|------|
-| API | `apps/api` | 8088 | NestJS + MongoDB source of truth |
-| Mobile | `apps/mobile` | 8081 | Multi-role Next + Capacitor app |
-| Admin | `apps/admin` | 8082 | Vite ops panel |
-| Website | `apps/website` | 8080 | Public / SEO marketing |
+| App     | Path           | Port | Role                             |
+| ------- | -------------- | ---- | -------------------------------- |
+| API     | `apps/api`     | 8088 | NestJS + MongoDB source of truth |
+| Mobile  | `apps/mobile`  | 8081 | Multi-role Next + Capacitor app  |
+| Admin   | `apps/admin`   | 8082 | Vite ops panel                   |
+| Website | `apps/website` | 8080 | Public / SEO marketing           |
 
 ## Packages
 
-| Package | Purpose |
-|---------|---------|
-| `@repo/api` | Typed HTTP client, DTOs, React Query hooks |
-| `@repo/ui` | Shared product UI (HeroUI + icons) |
-| `@repo/theme` / `@repo/icons` / `@repo/fonts` / `@repo/i18n` | Design system + copy |
+| Package                                                      | Purpose                                    |
+| ------------------------------------------------------------ | ------------------------------------------ |
+| `@repo/api`                                                  | Typed HTTP client, DTOs, React Query hooks |
+| `@repo/ui`                                                   | Shared product UI (HeroUI + icons)         |
+| `@repo/theme` / `@repo/icons` / `@repo/fonts` / `@repo/i18n` | Design system + copy                       |
 
 ## Product docs
 
@@ -50,6 +50,10 @@ npm run dev:website
 # All four apps at once (heavy — avoid on low-RAM machines):
 npm run dev:all
 ```
+
+MongoDB must run as a replica set because booking, payment/Ledger, membership,
+and check-in mutations use transactions. The provided Docker setup initializes
+the local single-node `rs0` replica set automatically.
 
 Frontend API base URLs come from each app’s `.env.development` / `.env.production`
 (must include `/api/v1`). Defaults: LAN `http://192.168.3.106:8088/api/v1` in

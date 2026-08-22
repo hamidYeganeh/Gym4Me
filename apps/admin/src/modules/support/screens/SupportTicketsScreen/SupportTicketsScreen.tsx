@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import type {
   SupportTicket,
+  SupportTicketCategory,
   SupportTicketDetail,
   SupportTicketPriority,
   SupportTicketStatus,
@@ -8,7 +9,10 @@ import type {
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { AdminShell } from "@/shared/components";
-import { useAdminInfiniteQuery } from "@/shared/hooks";
+import {
+  useAdminListQueryParams,
+  useAdminPaginatedQuery,
+} from "@/shared/hooks";
 import { adminSupport } from "@/shared/lib/api";
 import { SupportTicketsDetailDrawerSection } from "../../sections/SupportTicketsDetailDrawerSection";
 import { SupportTicketsFiltersSection } from "../../sections/SupportTicketsFiltersSection";
@@ -19,15 +23,44 @@ import { supportTicketsScreenVariants } from "./SupportTicketsScreen.styles";
 import type { SupportTicketsScreenProps } from "./SupportTicketsScreen.types";
 
 const PAGE_SIZE = 20;
+const FILTER_KEYS = ["status", "category", "priority"] as const;
+
+type SupportTicketsFilters = {
+  status: SupportTicketStatus | "all";
+  category: SupportTicketCategory | "all";
+  priority: SupportTicketPriority | "all";
+};
+
+const FILTER_DEFAULTS: SupportTicketsFilters & {
+  search: string;
+  page: number;
+  page_size: number;
+} = {
+  status: "all",
+  category: "all",
+  priority: "all",
+  search: "",
+  page: 1,
+  page_size: PAGE_SIZE,
+};
 
 export function SupportTicketsScreen({ className }: SupportTicketsScreenProps) {
   const t = useTranslations("Admin.Support");
   const styles = supportTicketsScreenVariants();
 
-  const [statusFilter, setStatusFilter] = useState<SupportTicketStatus | "all">(
-    "all",
-  );
-  const [search, setSearch] = useState("");
+  const {
+    search,
+    searchInput,
+    setSearchInput,
+    filters,
+    setFilter,
+    page,
+    pageSize,
+    setPage,
+  } = useAdminListQueryParams<SupportTicketsFilters>({
+    filterKeys: FILTER_KEYS,
+    defaults: FILTER_DEFAULTS,
+  });
   const [detail, setDetail] = useState<SupportTicketDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
@@ -38,8 +71,8 @@ export function SupportTicketsScreen({ className }: SupportTicketsScreenProps) {
   const [resolveNote, setResolveNote] = useState("");
 
   const queryKey = useMemo(
-    () => JSON.stringify({ statusFilter, search, pageSize: PAGE_SIZE }),
-    [statusFilter, search],
+    () => JSON.stringify({ filters, search, pageSize }),
+    [filters, pageSize, search],
   );
 
   const fetchPage = useCallback(
@@ -47,49 +80,47 @@ export function SupportTicketsScreen({ className }: SupportTicketsScreenProps) {
       return adminSupport.listTickets({
         page,
         page_size: pageSize,
-        status: statusFilter === "all" ? undefined : statusFilter,
+        status: filters.status === "all" ? undefined : filters.status,
+        category: filters.category === "all" ? undefined : filters.category,
+        priority: filters.priority === "all" ? undefined : filters.priority,
         search: search.trim() || undefined,
       });
     },
-    [statusFilter, search],
+    [filters, search],
   );
 
   const {
     items,
     total,
+    totalPages,
     loading,
-    fetchingMore,
-    hasMore,
     error,
-    loadMore,
+    setPage: changePage,
     reload,
-  } = useAdminInfiniteQuery<SupportTicket>({
+  } = useAdminPaginatedQuery<SupportTicket>({
     queryKey,
-    pageSize: PAGE_SIZE,
+    page,
+    pageSize,
+    onPageChange: setPage,
     errorFallback: t("errorLoad"),
     fetchPage,
   });
 
-  const openDetail = useCallback(
-    async (row: SupportTicket) => {
-      setDetailLoading(true);
-      setDetailError(null);
-      setActionError(null);
-      setReplyBody("");
-      try {
-        const full = await adminSupport.getTicket(row.id);
-        setDetail(full);
-      } catch (err) {
-        setDetailError(
-          err instanceof ApiError ? err.message : t("errorLoad"),
-        );
-        setDetail({ ...row, messages: [] });
-      } finally {
-        setDetailLoading(false);
-      }
-    },
-    [t],
-  );
+  const openDetail = async (row: SupportTicket) => {
+    setDetailLoading(true);
+    setDetailError(null);
+    setActionError(null);
+    setReplyBody("");
+    try {
+      const full = await adminSupport.getTicket(row.id);
+      setDetail(full);
+    } catch (err) {
+      setDetailError(err instanceof ApiError ? err.message : t("errorLoad"));
+      setDetail({ ...row, messages: [] });
+    } finally {
+      setDetailLoading(false);
+    }
+  };
 
   const runAction = async (fn: () => Promise<SupportTicketDetail>) => {
     setActionPending(true);
@@ -154,27 +185,32 @@ export function SupportTicketsScreen({ className }: SupportTicketsScreenProps) {
       className={className}
       supportSection={{
         activeTabId: "tickets",
-        searchValue: search,
-        onSearchChange: setSearch,
+        searchValue: searchInput,
+        onSearchChange: setSearchInput,
       }}
     >
       <div className={styles.content()}>
         <SupportTicketsHeaderSection />
 
         <SupportTicketsFiltersSection
-          statusFilter={statusFilter}
+          categoryFilter={filters.category}
+          priorityFilter={filters.priority}
+          statusFilter={filters.status}
+          onCategoryChange={(value) => setFilter("category", value)}
+          onPriorityChange={(value) => setFilter("priority", value)}
           onRefresh={() => void reload()}
-          onStatusChange={setStatusFilter}
+          onStatusChange={(value) => setFilter("status", value)}
         />
 
         <SupportTicketsTableSection
           error={error}
-          fetchingMore={fetchingMore}
-          hasMore={hasMore}
           items={items}
           loading={loading}
           total={total}
-          onLoadMore={loadMore}
+          page={page}
+          pageSize={pageSize}
+          totalPages={totalPages}
+          onPageChange={changePage}
           onView={(row) => void openDetail(row)}
         />
       </div>

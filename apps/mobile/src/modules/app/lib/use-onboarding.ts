@@ -7,22 +7,19 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Swiper as SwiperInstance } from "swiper";
 import { SWIPER_SPEED } from "@repo/ui/lib/swiper";
 import {
-  ONBOARDING_BLOOD_GROUPS,
   ONBOARDING_BODY_TYPES,
-  ONBOARDING_DEFAULT_ALLERGIES,
   ONBOARDING_DEFAULT_BIRTH,
   ONBOARDING_DEFAULT_CALORIES,
   ONBOARDING_DEFAULT_HEIGHT_CM,
   ONBOARDING_DEFAULT_MOOD,
   ONBOARDING_DEFAULT_SLEEP,
   ONBOARDING_DEFAULT_WEIGHT_KG,
-  ONBOARDING_FALLBACK_PROVINCES,
   ONBOARDING_GENDERS,
   ONBOARDING_MOODS,
   ONBOARDING_SLEEP_LEVELS,
   ONBOARDING_SLIDE_COUNT,
+  ONBOARDING_SPORTS_PAGE_SIZE,
   ONBOARDING_STEPS,
-  onboardingPhaseForStep,
   type OnboardingBloodGroup,
   type OnboardingBodyTypeId,
   type OnboardingGenderId,
@@ -34,7 +31,6 @@ import {
 import {
   ageFromJalali,
   birthdateToIso,
-  formatJalaliDisplay,
   readDocumentDirection,
 } from "@/modules/app/lib/onboarding-helpers";
 import {
@@ -61,16 +57,10 @@ import type { OnboardingAvatarValue } from "@/modules/app/sections/OnboardingAva
 import type { OnboardingBirthdateValue } from "@/modules/app/sections/OnboardingBirthdateSection";
 import type { OnboardingDietOption } from "@/modules/app/sections/OnboardingDietSection";
 import type { OnboardingGoalOption } from "@/modules/app/sections/OnboardingGoalsSection";
-import type {
-  OnboardingIdentityValue,
-  OnboardingProvinceOption,
-} from "@/modules/app/sections/OnboardingIdentitySection";
 import type { OnboardingSportOption } from "@/modules/app/sections/OnboardingSportsSection";
 import {
   accountProfile,
-  basicsLocations,
   basicsSports,
-  isDiscoveryApiId,
   mediaApi,
   mediaFileUrl,
 } from "@/shared/lib/api";
@@ -79,7 +69,6 @@ import { roleHomePath } from "@/shared/lib/role-routes";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import type {
   AthleteDiet,
-  UpdateAddressInput,
   UpdateAthleteProfileInput,
   UpdateMeInput,
 } from "@repo/api";
@@ -174,25 +163,6 @@ export function useOnboarding() {
   );
   const [bloodGroup, setBloodGroup] = useState<OnboardingBloodGroup>("A");
   const [bloodRh, setBloodRh] = useState<OnboardingRhFactor>("negative");
-  const [nationalId, setNationalId] = useState("");
-  const [phone, setPhone] = useState("");
-  const [provinceId, setProvinceId] = useState<string | null>(null);
-  const [provinceName, setProvinceName] = useState("");
-  const [street, setStreet] = useState("");
-  const [apartment, setApartment] = useState("");
-  const [city, setCity] = useState("");
-  const [postalCode, setPostalCode] = useState("");
-  const [allergies, setAllergies] = useState<string[]>([
-    ...ONBOARDING_DEFAULT_ALLERGIES,
-  ]);
-  const [conditions, setConditions] = useState("");
-  const [medications, setMedications] = useState("");
-  const [healthNote, setHealthNote] = useState("");
-  const [mapPoint, setMapPoint] =
-    useState<OnboardingIdentityValue["mapPoint"]>(null);
-  const [provinces, setProvinces] = useState<OnboardingProvinceOption[]>(
-    ONBOARDING_FALLBACK_PROVINCES.map((item) => ({ ...item })),
-  );
   const [avatar, setAvatar] = useState<OnboardingAvatarValue>({
     mode: "setup",
     mediaId: null,
@@ -220,29 +190,6 @@ export function useOnboarding() {
 
   const onSlideChange = useCallback((swiper: SwiperInstance) => {
     setSlide(swiper.activeIndex);
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const countries = await basicsLocations.listCountries();
-        const iran =
-          countries.result.find((item) => item.slug === "iran") ??
-          countries.result[0];
-        if (!iran || cancelled) return;
-        const page = await basicsLocations.listProvinces(iran.id);
-        if (cancelled || page.result.length === 0) return;
-        setProvinces(
-          page.result.map((item) => ({ id: item.id, name: item.name })),
-        );
-      } catch {
-        // Keep offline fallback provinces.
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
   }, []);
 
   useEffect(() => {
@@ -421,6 +368,7 @@ export function useOnboarding() {
           .filter((item) => item.isActive !== false)
           .slice()
           .sort((a, b) => a.order - b.order || a.name.localeCompare(b.name))
+          .slice(0, ONBOARDING_SPORTS_PAGE_SIZE)
           .map((item) => ({
             id: item.id,
             label: item.name,
@@ -441,65 +389,11 @@ export function useOnboarding() {
   }, []);
 
   const step = ONBOARDING_STEPS[slide] as OnboardingStepId;
-  const phase = onboardingPhaseForStep(step);
   const progress = (slide + 1) / ONBOARDING_SLIDE_COUNT;
   const age = ageFromJalali(birthdate);
   const isCaloriesStep = step === "calories";
   const isAvatarStep = step === "avatar";
   const isAvatarUploading = isAvatarStep && avatar.mode === "uploading";
-  const showHeaderProgress = phase === "assessment";
-
-  const fullName = useMemo(
-    () =>
-      [firstName, lastName]
-        .map((part) => part.trim())
-        .filter(Boolean)
-        .join(" "),
-    [firstName, lastName],
-  );
-
-  const identityValue = useMemo<OnboardingIdentityValue>(
-    () => ({
-      fullName,
-      gender,
-      nationalId,
-      birthdateDisplay: formatJalaliDisplay(birthdate),
-      phone,
-      provinceId,
-      provinceName,
-      street,
-      apartment,
-      city,
-      postalCode,
-      allergies,
-      conditions,
-      medications,
-      heightCm,
-      weightKg,
-      note: healthNote,
-      mapPoint,
-    }),
-    [
-      allergies,
-      apartment,
-      birthdate,
-      city,
-      conditions,
-      fullName,
-      gender,
-      healthNote,
-      heightCm,
-      mapPoint,
-      medications,
-      nationalId,
-      phone,
-      postalCode,
-      provinceId,
-      provinceName,
-      street,
-      weightKg,
-    ],
-  );
 
   const genderOptions = useMemo(() => {
     if (apiGenderOptions && apiGenderOptions.length > 0) {
@@ -510,90 +404,6 @@ export function useOnboarding() {
       label: t(`gender.options.${id}`),
     }));
   }, [apiGenderOptions, t]);
-
-  const identityLabels = useMemo(
-    () => ({
-      title: t("identity.title"),
-      general: t("identity.general"),
-      address: t("identity.address"),
-      health: t("identity.health"),
-      fullName: t("identity.fullName"),
-      gender: t("identity.gender"),
-      nationalId: t("identity.nationalId"),
-      birthdate: t("identity.birthdate"),
-      phone: t("identity.phone"),
-      province: t("identity.province"),
-      street: t("identity.street"),
-      apartment: t("identity.apartment"),
-      city: t("identity.city"),
-      postalCode: t("identity.postalCode"),
-      allergies: t("identity.allergies"),
-      edit: t("identity.edit"),
-      conditions: t("identity.conditions"),
-      medications: t("identity.medications"),
-      height: t("identity.height"),
-      weight: t("identity.weight"),
-      note: t("identity.note"),
-      selectProvinceTitle: t("identity.selectProvinceTitle"),
-      selectProvinceAction: t("identity.selectProvinceAction"),
-      editAddressTitle: t("identity.editAddressTitle"),
-      addressSearch: t("identity.addressSearch"),
-      zoomIn: t("identity.zoomIn"),
-      zoomOut: t("identity.zoomOut"),
-      zoom: t("identity.zoom"),
-      securityNote: t("identity.securityNote"),
-      genderOptions: Object.fromEntries(
-        genderOptions.map((option) => [option.id, option.label]),
-      ) as Record<OnboardingGenderId, string>,
-    }),
-    [genderOptions, t],
-  );
-
-  const patchIdentity = (patch: Partial<OnboardingIdentityValue>) => {
-    if (patch.fullName !== undefined) {
-      const parts = patch.fullName.trim().split(/\s+/).filter(Boolean);
-      setFirstName(parts[0] ?? "");
-      setLastName(parts.slice(1).join(" "));
-    }
-    if (patch.gender !== undefined) setGender(patch.gender);
-    if (patch.nationalId !== undefined) setNationalId(patch.nationalId);
-    if (patch.phone !== undefined) setPhone(patch.phone);
-    if (patch.provinceId !== undefined) setProvinceId(patch.provinceId);
-    if (patch.provinceName !== undefined) setProvinceName(patch.provinceName);
-    if (patch.street !== undefined) setStreet(patch.street);
-    if (patch.apartment !== undefined) setApartment(patch.apartment);
-    if (patch.city !== undefined) setCity(patch.city);
-    if (patch.postalCode !== undefined) setPostalCode(patch.postalCode);
-    if (patch.allergies !== undefined) setAllergies(patch.allergies);
-    if (patch.conditions !== undefined) setConditions(patch.conditions);
-    if (patch.medications !== undefined) setMedications(patch.medications);
-    if (patch.heightCm !== undefined) {
-      setHeightCm(patch.heightCm);
-      setHeightProvided(true);
-    }
-    if (patch.weightKg !== undefined) {
-      setWeightKg(patch.weightKg);
-      setWeightProvided(true);
-    }
-    if (patch.note !== undefined) setHealthNote(patch.note);
-    if (patch.mapPoint !== undefined) setMapPoint(patch.mapPoint);
-    if (patch.birthdateDisplay !== undefined) {
-      const parts = patch.birthdateDisplay
-        .split("/")
-        .map((part) => Number.parseInt(part.trim(), 10));
-      const [day, month, year] = parts;
-      if (
-        day &&
-        month &&
-        year &&
-        Number.isFinite(day) &&
-        Number.isFinite(month) &&
-        Number.isFinite(year)
-      ) {
-        setBirthdate({ day, month, year });
-      }
-    }
-  };
 
   const uploadAvatar = (file: File) => {
     setAvatar({
@@ -693,10 +503,9 @@ export function useOnboarding() {
       step === "mood" ||
       step === "sports" ||
       (step === "diet" && diet != null) ||
-      step === "calories" ||
+      (step === "calories" && caloriesKnown && calories > 0) ||
       (step === "goals" && goals.length > 0) ||
       step === "bloodType" ||
-      (step === "identity" && firstName.trim().length > 1) ||
       step === "avatar");
 
   const commitHeightCm = (value: number) => {
@@ -713,18 +522,6 @@ export function useOnboarding() {
     const first = firstName.trim();
     const last = lastName.trim();
 
-    const address: UpdateAddressInput = {};
-    if (provinceId && isDiscoveryApiId(provinceId)) {
-      address.provinceId = provinceId;
-    }
-    if (city.trim()) address.city = city.trim();
-    if (street.trim()) address.street = street.trim();
-    if (apartment.trim()) address.apartment = apartment.trim();
-    if (/^\d{10}$/.test(postalCode.trim())) {
-      address.postalCode = postalCode.trim();
-    }
-    if (mapPoint) address.point = { lat: mapPoint.lat, lng: mapPoint.lng };
-
     const input: UpdateMeInput = {};
     if (first) input.name = { first, last };
     if (gender) {
@@ -734,7 +531,6 @@ export function useOnboarding() {
       };
     }
     if (avatar.mediaId) input.avatar = { mediaId: avatar.mediaId };
-    if (Object.keys(address).length > 0) input.address = address;
     return input;
   };
 
@@ -757,10 +553,6 @@ export function useOnboarding() {
     },
     health: {
       bloodType: { group: bloodGroup, rh: bloodRh },
-      allergies,
-      conditions: conditions.trim(),
-      medications: medications.trim(),
-      note: healthNote.trim(),
     },
   });
 
@@ -888,6 +680,11 @@ export function useOnboarding() {
     void persistOnboarding();
   };
 
+  const skipOnboarding = () => {
+    if (persistInFlightRef.current || permissionFlowInFlightRef.current) return;
+    completeOnboarding();
+  };
+
   const goPrev = () => {
     if (slide === 0) {
       router.back();
@@ -944,16 +741,16 @@ export function useOnboarding() {
     step,
     progress,
     age,
-    showHeaderProgress,
+    totalSteps: ONBOARDING_SLIDE_COUNT,
     isCaloriesStep,
     isAvatarStep,
     isAvatarUploading,
+    hasAvatar: avatar.mode === "ready",
     canContinue,
     calories,
     caloriesKnown,
     firstName,
     lastName,
-    fullName,
     gender,
     birthdate,
     heightCm,
@@ -978,9 +775,6 @@ export function useOnboarding() {
     bloodGroup,
     bloodRh,
     avatar,
-    identityValue,
-    identityLabels,
-    provinces,
     genderOptions,
     bodyTypeOptions,
     weightUnitOptions,
@@ -1008,7 +802,6 @@ export function useOnboarding() {
     setDiet,
     setBloodGroup,
     setBloodRh,
-    patchIdentity,
     uploadAvatar,
     toggleGoal,
     toggleSport,
@@ -1017,6 +810,7 @@ export function useOnboarding() {
     handleCaloriesUnknown,
     handleCaloriesChange,
     requestFinish,
+    skipOnboarding,
   };
 }
 

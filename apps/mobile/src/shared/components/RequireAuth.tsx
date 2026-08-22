@@ -2,11 +2,7 @@
 
 import { useEffect, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import {
-  authHref,
-  needsProfileOnboarding,
-  postAuthPath,
-} from "@/shared/lib/auth-redirect";
+import { decideAuthGate } from "@/shared/lib/auth-gate";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { useRouter } from "@/shared/lib/app-router";
 
@@ -42,65 +38,23 @@ export function RequireAuth({ children, guestOnly = false }: RequireAuthProps) {
   const { isAuthenticated, activeRole, isReady, session } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-
-  useEffect(() => {
-    if (!isReady) return;
-
-    const authSession = sessionForRedirect(session, activeRole);
-
-    if (guestOnly) {
-      if (isAuthenticated) {
-        // Match OTP/login success routing so guestOnly does not race past /onboarding.
-        const next =
-          typeof window !== "undefined"
-            ? new URLSearchParams(window.location.search).get("next")
-            : null;
-        router.replace(postAuthPath(authSession, next));
-      }
-      return;
-    }
-
-    if (!isAuthenticated) {
-      router.replace(authHref(pathname || "/"));
-      return;
-    }
-
-    // Keep incomplete profiles inside the wizard (deep links / role home).
-    if (
-      pathname &&
-      !pathname.startsWith("/onboarding") &&
-      needsProfileOnboarding(authSession)
-    ) {
-      router.replace(postAuthPath(authSession, pathname));
-    }
-  }, [
-    activeRole,
+  const authSession = sessionForRedirect(session, activeRole);
+  const next =
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("next")
+      : null;
+  const decision = decideAuthGate({
     guestOnly,
     isAuthenticated,
     isReady,
+    next,
     pathname,
-    router,
-    session,
-  ]);
+    session: authSession,
+  });
 
-  if (!isReady) {
-    return <AuthGateShell />;
-  }
+  useEffect(() => {
+    if (decision.redirect) router.replace(decision.redirect);
+  }, [decision.redirect, router]);
 
-  if (guestOnly) {
-    if (isAuthenticated) return <AuthGateShell />;
-    return children;
-  }
-
-  if (!isAuthenticated) return <AuthGateShell />;
-
-  if (
-    pathname &&
-    !pathname.startsWith("/onboarding") &&
-    needsProfileOnboarding(sessionForRedirect(session, activeRole))
-  ) {
-    return <AuthGateShell />;
-  }
-
-  return children;
+  return decision.render === "children" ? children : <AuthGateShell />;
 }

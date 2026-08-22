@@ -13,6 +13,14 @@ import {
 import { marketingDownloadSectionStyles } from "./MarketingDownloadSection.styles";
 import type { MarketingDownloadSectionProps } from "./MarketingDownloadSection.types";
 import { AppStoreMark, PlayStoreMark } from "./MarketingDownloadStoreMarks";
+import { resolveStoreUrl } from "./store-link";
+
+const appStoreUrl = resolveStoreUrl(process.env.NEXT_PUBLIC_APP_STORE_URL);
+const playStoreUrl = resolveStoreUrl(process.env.NEXT_PUBLIC_PLAY_STORE_URL);
+
+function openStore(url?: string) {
+  if (url) window.location.assign(url);
+}
 
 export function MarketingDownloadSection({
   className,
@@ -64,39 +72,61 @@ export function MarketingDownloadSection({
         <Typography type="h2" weight="bold" className={slots.ctaHeading()}>
           {t("ctaHeading")}
         </Typography>
-        <Typography type="body" className={slots.ctaDescription()} weight="semibold">
+        <Typography
+          type="body"
+          className={slots.ctaDescription()}
+          weight="semibold"
+        >
           {t("ctaDescription")}
         </Typography>
         <div className={slots.storeRow()}>
           <Button
+            isDisabled={!appStoreUrl}
             size="lg"
             aria-label={`${t("appStoreLabel")} ${t("appStoreTitle")}`}
             className={slots.storeButton()}
-            onPress={() => window.location.assign("#")}
+            onPress={() => openStore(appStoreUrl)}
           >
             <AppStoreMark className={slots.storeIcon()} />
             <span className="text-start">
-              <Typography type="body-xs" weight="bold" className={slots.storeKicker()}>
+              <Typography
+                type="body-xs"
+                weight="bold"
+                className={slots.storeKicker()}
+              >
                 {t("appStoreLabel")}
               </Typography>
-              <Typography type="body" weight="bold" className={slots.storeTitle()}>
+              <Typography
+                type="body"
+                weight="bold"
+                className={slots.storeTitle()}
+              >
                 {t("appStoreTitle")}
               </Typography>
             </span>
           </Button>
           <Button
+            isDisabled={!playStoreUrl}
             size="lg"
             variant="outline"
             aria-label={`${t("playStoreLabel")} ${t("playStoreTitle")}`}
             className={slots.storeButton()}
-            onPress={() => window.location.assign("#")}
+            onPress={() => openStore(playStoreUrl)}
           >
             <PlayStoreMark className={slots.storeIconPlay()} />
             <span className="text-start">
-              <Typography type="body-xs" weight="bold" className={slots.storeKicker()}>
+              <Typography
+                type="body-xs"
+                weight="bold"
+                className={slots.storeKicker()}
+              >
                 {t("playStoreLabel")}
               </Typography>
-              <Typography type="body" weight="bold" className={slots.storeTitle()}>
+              <Typography
+                type="body"
+                weight="bold"
+                className={slots.storeTitle()}
+              >
                 {t("playStoreTitle")}
               </Typography>
             </span>

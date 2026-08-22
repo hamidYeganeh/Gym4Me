@@ -11,6 +11,7 @@ import { Folder } from "@repo/icons/Folder";
 import { HealthCross1 } from "@repo/icons/HealthCross1";
 import { Key1 } from "@repo/icons/Key1";
 import { Lock1 } from "@repo/icons/Lock1";
+import { MapPin1 } from "@repo/icons/MapPin1";
 import { Megaphone } from "@repo/icons/Megaphone";
 import { Mobile } from "@repo/icons/Mobile";
 import { QuestionMark } from "@repo/icons/QuestionMark";
@@ -103,6 +104,12 @@ export function useProfileMenu({
         icon: <Ruler1 size={icon} />,
         label: t("unitsMetrics"),
         onPress: () => router.push(`/${roleSegment}/profile/settings/units`),
+      },
+      {
+        key: "locations",
+        icon: <MapPin1 size={icon} />,
+        label: t("favouriteLocations"),
+        onPress: () => router.push(path("locations")),
       },
       {
         key: "preferences",

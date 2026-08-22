@@ -34,10 +34,13 @@ export function OnboardingScreen({ className }: OnboardingScreenProps) {
                 backLabel={onboarding.t("back")}
                 progress={onboarding.progress}
                 progressLabel={onboarding.t("progressLabel")}
-                showProgress={onboarding.showHeaderProgress}
                 skipLabel={onboarding.t("skip")}
+                stepLabel={onboarding.t("stepLabel", {
+                  current: onboarding.slide + 1,
+                  total: onboarding.totalSteps,
+                })}
                 onBack={onboarding.goPrev}
-                onSkip={onboarding.requestFinish}
+                onSkip={onboarding.skipOnboarding}
               />
             </div>
           </div>

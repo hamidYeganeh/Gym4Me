@@ -10,7 +10,14 @@ import {
   AdminDataTable,
   AdminShell,
 } from "@/shared/components";
-import { useAdminInfiniteQuery } from "@/shared/hooks";
+import {
+  useAdminListQueryParams,
+  useAdminPaginatedQuery,
+} from "@/shared/hooks";
+import {
+  adminListPaginationProps,
+  adminListPaginationSummary,
+} from "@/shared/lib/admin-list-pagination";
 import { adminBookings } from "@/shared/lib/api";
 import { formatAdminDate } from "@/shared/lib/user-format";
 import { refundsListScreenVariants } from "./RefundsListScreen.styles";
@@ -27,11 +34,18 @@ type RefundTableMeta = {
 
 export function RefundsListScreen({ className }: RefundsListScreenProps) {
   const t = useTranslations("Admin.Finance");
+  const tCommon = useTranslations("Admin.Common");
   const styles = refundsListScreenVariants();
 
   const [refunding, setRefunding] = useState<Booking | null>(null);
   const [pending, setPending] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+
+
+  const { page, pageSize, setPage } = useAdminListQueryParams<Record<never, never>>({
+    filterKeys: [],
+    defaults: { page: 1, page_size: PAGE_SIZE },
+  });
 
   const fetchPage = useCallback(async (page: number, pageSize: number) => {
     return adminBookings.list({
@@ -44,15 +58,16 @@ export function RefundsListScreen({ className }: RefundsListScreenProps) {
   const {
     items,
     total,
+    totalPages,
     loading,
-    fetchingMore,
-    hasMore,
     error,
-    loadMore,
+    setPage: changePage,
     reload,
-  } = useAdminInfiniteQuery<Booking>({
+  } = useAdminPaginatedQuery<Booking>({
     queryKey: JSON.stringify({ status: "refund_requested" }),
-    pageSize: PAGE_SIZE,
+    page,
+    pageSize,
+    onPageChange: setPage,
     errorFallback: t("refunds.errorLoad"),
     fetchPage,
   });
@@ -138,6 +153,8 @@ export function RefundsListScreen({ className }: RefundsListScreenProps) {
     }
   };
 
+  const summary = adminListPaginationSummary(page, pageSize, total);
+
   return (
     <AdminShell
       activeNavId="finance"
@@ -166,17 +183,17 @@ export function RefundsListScreen({ className }: RefundsListScreenProps) {
           emptyLabel={t("refunds.empty")}
           error={error}
           getRowId={(row) => row.id}
-          hasMore={hasMore}
-          isFetchingMore={fetchingMore}
           isLoading={loading}
           loadingLabel={t("loading")}
-          loadingMoreLabel={t("loadingMore")}
           meta={meta}
-          onLoadMore={loadMore}
-          summaryLabel={t("refunds.summary", {
-            loaded: items.length,
-            total,
+          pagination={adminListPaginationProps({
+            page,
+            totalPages,
+            previousLabel: tCommon("pagination.previous"),
+            nextLabel: tCommon("pagination.next"),
+            onPageChange: changePage,
           })}
+          summaryLabel={tCommon("pagination.summary", summary)}
         />
       </div>
 

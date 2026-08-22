@@ -30,6 +30,11 @@ export function useWelcomeIntroduce() {
   const onSwiper = useCallback((swiper: SwiperInstance) => {
     swiperRef.current = swiper;
     setSlide(swiper.activeIndex);
+    requestAnimationFrame(() => {
+      if (swiper.destroyed) return;
+      swiper.update();
+      swiper.slideTo(swiper.activeIndex, 0, false);
+    });
   }, []);
 
   const onSlideChange = useCallback((swiper: SwiperInstance) => {

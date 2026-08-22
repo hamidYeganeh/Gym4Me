@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, Types, type ClientSession } from 'mongoose';
 import type { Request } from 'express';
 import { AuditService } from '../../audit/audit.service';
 import {
@@ -677,14 +677,20 @@ export class ClubSlotsService {
    * reservation flow. Throws if the date does not match the recurrence,
    * the occurrence is cancelled, or the slot is inactive.
    */
-  async resolveBookableOccurrence(slotId: string, date: string) {
+  async resolveBookableOccurrence(
+    slotId: string,
+    date: string,
+    session?: ClientSession,
+  ) {
     if (!Types.ObjectId.isValid(slotId) || !DATE_RE.test(date)) {
       throw new NotFoundException('Slot occurrence not found');
     }
-    const slot = await this.slotModel.findOne({
+    const query = this.slotModel.findOne({
       _id: new Types.ObjectId(slotId),
       status: EntityStatus.ACTIVE,
     });
+    if (session) query.session(session);
+    const slot = await query;
     if (!slot) throw new NotFoundException('Slot not found');
 
     const [occurrence] = this.expandSlot(slot, [date]);
@@ -722,12 +728,13 @@ export class ClubSlotsService {
     date: string,
     seats: number,
     capacity: number,
+    session?: ClientSession,
   ): Promise<boolean> {
     try {
       const updated = await this.occupancyModel.findOneAndUpdate(
         { slotId, date, reserved: { $lte: capacity - seats } },
         { $inc: { reserved: seats } },
-        { upsert: true, new: true },
+        { upsert: true, new: true, session },
       );
       return Boolean(updated);
     } catch (error: unknown) {
@@ -741,10 +748,12 @@ export class ClubSlotsService {
     slotId: Types.ObjectId,
     date: string,
     seats: number,
+    session?: ClientSession,
   ): Promise<void> {
     await this.occupancyModel.updateOne(
       { slotId, date, reserved: { $gte: seats } },
       { $inc: { reserved: -seats } },
+      { session },
     );
   }
 

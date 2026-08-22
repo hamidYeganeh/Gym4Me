@@ -5,6 +5,7 @@ export const routes = {
   otp: "/otp",
   forgotPassword: "/forgot-password",
   dashboard: "/dashboard",
+  profile: "/dashboard/profile",
   analytics: "/analytics",
   users: "/dashboard/users",
   usersKyc: "/dashboard/users/kyc",

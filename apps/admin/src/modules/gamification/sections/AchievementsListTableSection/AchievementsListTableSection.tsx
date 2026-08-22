@@ -5,6 +5,10 @@ import type { AdminAchievement } from "@repo/api";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
 import { AdminDataTable } from "@/shared/components";
+import {
+  adminListPaginationProps,
+  adminListPaginationSummary,
+} from "@/shared/lib/admin-list-pagination";
 import { achievementsListTableSectionVariants } from "./AchievementsListTableSection.styles";
 import type {
   AchievementTableMeta,
@@ -16,17 +20,19 @@ const columnHelper = createColumnHelper<AdminAchievement>();
 export function AchievementsListTableSection({
   items,
   total,
+  page,
+  pageSize,
+  totalPages,
   loading,
-  fetchingMore,
-  hasMore,
   error,
-  onLoadMore,
+  onPageChange,
   onEdit,
   onGrant,
   onArchive,
   className,
 }: AchievementsListTableSectionProps) {
   const t = useTranslations("Admin.Gamification");
+  const tCommon = useTranslations("Admin.Common");
   const styles = achievementsListTableSectionVariants();
 
   const columns = useMemo(
@@ -161,6 +167,8 @@ export function AchievementsListTableSection({
     onArchive,
   };
 
+  const summary = adminListPaginationSummary(page, pageSize, total);
+
   return (
     <AdminDataTable
       ariaLabel={t("achievements.title")}
@@ -170,17 +178,17 @@ export function AchievementsListTableSection({
       emptyLabel={t("achievements.empty")}
       error={error}
       getRowId={(row) => row.id}
-      hasMore={hasMore}
-      isFetchingMore={fetchingMore}
       isLoading={loading}
       loadingLabel={t("loading")}
-      loadingMoreLabel={t("loadingMore")}
       meta={meta}
-      summaryLabel={t("infinite.summary", {
-        loaded: items.length,
-        total,
+      pagination={adminListPaginationProps({
+        page,
+        totalPages,
+        previousLabel: tCommon("pagination.previous"),
+        nextLabel: tCommon("pagination.next"),
+        onPageChange,
       })}
-      onLoadMore={onLoadMore}
+      summaryLabel={tCommon("pagination.summary", summary)}
     />
   );
 }

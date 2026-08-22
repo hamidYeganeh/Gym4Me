@@ -3,11 +3,12 @@ import type { Exercise } from "@repo/api";
 export type ExercisesCatalogTableSectionProps = {
   items: Exercise[];
   total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
   loading: boolean;
-  fetchingMore: boolean;
-  hasMore: boolean;
   error: string | null;
-  onLoadMore: () => void;
+  onPageChange: (page: number) => void;
   onEdit: (row: Exercise) => void;
   onApprove: (row: Exercise) => void;
   onReject: (row: Exercise) => void;

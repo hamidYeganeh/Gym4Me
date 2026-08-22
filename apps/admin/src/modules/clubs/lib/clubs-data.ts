@@ -472,6 +472,7 @@ export function filterMockClubs(
       page_size: limit,
       next: page < totalPages ? page + 1 : null,
       prev: page > 1 ? page - 1 : null,
+      count: total,
       total,
     },
     result: filtered.slice(start, start + limit),

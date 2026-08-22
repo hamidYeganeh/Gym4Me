@@ -1,5 +1,14 @@
 import { tv } from "tailwind-variants";
 
 export const bookingsListFiltersSectionVariants = tv({
-  slots: { root: "flex flex-wrap gap-1.5" },
+  slots: {
+    root: "flex flex-col gap-3",
+    row: "flex flex-wrap items-end gap-3",
+    field: "flex w-full min-w-[12rem] flex-col gap-2 sm:w-48",
+    label: "text-sm font-semibold text-foreground",
+    input: [
+      "h-12 w-full rounded-[var(--field-radius)] border border-border",
+      "bg-field px-4 text-sm font-medium text-foreground",
+    ].join(" "),
+  },
 });

@@ -1,6 +1,6 @@
 # Gym4Me — برنامهٔ اجرایی تکمیل محصول برای Cursor
 
-آخرین بازبینی: ۲۰۲۶-۰۸-۱۶ (هم‌ترازی با competitive review و شواهد checklist)
+آخرین بازبینی: ۲۰۲۶-۰۸-۲۲ (تکمیل test pyramid محلی و coverage حساس)
 
 این سند backlog اجرایی مرجع برای رساندن Gym4Me از وضعیت فعلی به محصول قابل‌عرضه، قابل‌پشتیبانی و توسعه‌پذیر است. وضعیت واقعی قابلیت‌ها همچنان در [`checklist.md`](./checklist.md) ثبت می‌شود و تصمیمات قفل‌شدهٔ [`decisions.md`](./decisions.md) بر این سند اولویت دارند.
 
@@ -91,31 +91,31 @@ G4M-002 → G4M-010 ┬→ G4M-011 ─┐                                ├→ 
 
 ## خلاصهٔ backlog
 
-| ID      | اولویت | وضعیت   | عنوان                                                 | وابستگی                      |
-| ------- | ------ | ------- | ----------------------------------------------------- | ---------------------------- |
-| G4M-001 | P0     | DONE    | برگرداندن quality gate و build پایدار                 | —                            |
-| G4M-002 | P0     | READY   | CI کامل، test pyramid و محیط integration              | G4M-001                      |
-| G4M-003 | P0     | BLOCKED | شکستن God Serviceها و تعریف transaction boundary      | G4M-002                      |
-| G4M-010 | P0     | BLOCKED | اصلاح permission و failure semantics در Health Sync   | G4M-002                      |
-| G4M-011 | P0     | BLOCKED | incremental Health Sync، cursor و offline queue واقعی | G4M-010                      |
-| G4M-012 | P1     | BLOCKED | حقوق داده و حذف حساب با retention روشن                | G4M-010                      |
-| G4M-013 | P1     | BLOCKED | observability و امنیت دادهٔ سلامت                     | G4M-011, G4M-012             |
-| G4M-020 | P0     | BLOCKED | حذف mock از مسیرهای production و demo isolation       | G4M-002                      |
-| G4M-021 | P0     | BLOCKED | discovery واقعی کامل و supply integrity               | G4M-020                      |
-| G4M-030 | P0     | BLOCKED | رزرو اتمیک، ظرفیت و idempotency سراسری                | G4M-003                      |
-| G4M-031 | P0     | BLOCKED | پرداخت، coupon، wallet، refund و reconciliation واقعی | G4M-030                      |
-| G4M-040 | P0     | BLOCKED | workerهای چند-instance و outbox قابل اتکا             | G4M-003                      |
-| G4M-050 | P0     | BLOCKED | عضویت، subscription enforcement و عملیات پذیرش        | G4M-021, G4M-031, G4M-040    |
-| G4M-051 | P0     | BLOCKED | check-in آفلاین امن و reconciliation                  | G4M-050                      |
-| G4M-060 | P1     | BLOCKED | مربیگری و اجرای تمرین end-to-end                      | G4M-013, G4M-051             |
-| G4M-061 | P1     | BLOCKED | رسانه، اجتماعی و تغذیه بدون placeholder               | G4M-060                      |
-| G4M-070 | P1     | BLOCKED | تکمیل ادمین، وب‌سایت و certification نهایی            | G4M-013, G4M-061 و همهٔ P0ها |
-| G4M-MKT-01 | P0* | BLOCKED | Role Action Center واقعی (*پس از هسته) | G4M-020, 021, 030, 050 |
-| G4M-MKT-02 | P0* | BLOCKED | Recovery loop رزرو و ظرفیت (*پس از هسته؛ بدون ICS) | G4M-030, 031, 040 |
-| G4M-MKT-03 | P1 | BLOCKED | Trial، family و corporate membership | G4M-012, 031, 050 |
-| G4M-MKT-04 | P1 | BLOCKED | Occupancy guidance و front-desk fast mode | G4M-050, 051 |
-| G4M-MKT-05 | P1 | BLOCKED | Coach Follow-up Queue | G4M-060, 061 |
-| G4M-MKT-06 | P2 | BLOCKED | Public club surface و hardware adapter pilot | G4M-051, 070، تصویب pilot |
+| ID         | اولویت | وضعیت   | عنوان                                                 | وابستگی                      |
+| ---------- | ------ | ------- | ----------------------------------------------------- | ---------------------------- |
+| G4M-001    | P0     | DONE    | برگرداندن quality gate و build پایدار                 | —                            |
+| G4M-002    | P0     | VERIFY  | CI کامل، test pyramid و محیط integration              | G4M-001                      |
+| G4M-003    | P0     | BLOCKED | شکستن God Serviceها و تعریف transaction boundary      | G4M-002                      |
+| G4M-010    | P0     | BLOCKED | اصلاح permission و failure semantics در Health Sync   | G4M-002                      |
+| G4M-011    | P0     | BLOCKED | incremental Health Sync، cursor و offline queue واقعی | G4M-010                      |
+| G4M-012    | P1     | BLOCKED | حقوق داده و حذف حساب با retention روشن                | G4M-010                      |
+| G4M-013    | P1     | BLOCKED | observability و امنیت دادهٔ سلامت                     | G4M-011, G4M-012             |
+| G4M-020    | P0     | BLOCKED | حذف mock از مسیرهای production و demo isolation       | G4M-002                      |
+| G4M-021    | P0     | BLOCKED | discovery واقعی کامل و supply integrity               | G4M-020                      |
+| G4M-030    | P0     | BLOCKED | رزرو اتمیک، ظرفیت و idempotency سراسری                | G4M-003                      |
+| G4M-031    | P0     | BLOCKED | پرداخت، coupon، wallet، refund و reconciliation واقعی | G4M-030                      |
+| G4M-040    | P0     | BLOCKED | workerهای چند-instance و outbox قابل اتکا             | G4M-003                      |
+| G4M-050    | P0     | BLOCKED | عضویت، subscription enforcement و عملیات پذیرش        | G4M-021, G4M-031, G4M-040    |
+| G4M-051    | P0     | BLOCKED | check-in آفلاین امن و reconciliation                  | G4M-050                      |
+| G4M-060    | P1     | BLOCKED | مربیگری و اجرای تمرین end-to-end                      | G4M-013, G4M-051             |
+| G4M-061    | P1     | BLOCKED | رسانه، اجتماعی و تغذیه بدون placeholder               | G4M-060                      |
+| G4M-070    | P1     | BLOCKED | تکمیل ادمین، وب‌سایت و certification نهایی            | G4M-013, G4M-061 و همهٔ P0ها |
+| G4M-MKT-01 | P0*    | BLOCKED | Role Action Center واقعی (*پس از هسته)                | G4M-020, 021, 030, 050       |
+| G4M-MKT-02 | P0*    | BLOCKED | Recovery loop رزرو و ظرفیت (*پس از هسته؛ بدون ICS)    | G4M-030, 031, 040            |
+| G4M-MKT-03 | P1     | BLOCKED | Trial، family و corporate membership                  | G4M-012, 031, 050            |
+| G4M-MKT-04 | P1     | BLOCKED | Occupancy guidance و front-desk fast mode             | G4M-050, 051                 |
+| G4M-MKT-05 | P1     | BLOCKED | Coach Follow-up Queue                                 | G4M-060, 061                 |
+| G4M-MKT-06 | P2     | BLOCKED | Public club surface و hardware adapter pilot          | G4M-051, 070، تصویب pilot    |
 
 جزئیات پذیرش، مرز هسته، KPI و خارج‌ازمحدودهٔ تقویم برای `G4M-MKT-*` در [`competitive-product-review-2026-08.md`](./competitive-product-review-2026-08.md) است؛ این جدول فقط وضعیت اجرایی را نگه می‌دارد.
 
@@ -139,6 +139,7 @@ G4M-002 → G4M-010 ┬→ G4M-011 ─┐                                ├→ 
 
 ### G4M-002 — CI کامل، test pyramid و محیط integration
 
+- **وضعیت:** VERIFY (۲۰۲۶-۰۸-۲۲)؛ همهٔ gateهای قابل اجرای محلی سبز هستند و فقط اجرای workflow روی runner رسمی GitHub پس از push باقی مانده است.
 - **Persona/value:** تیم؛ جلوگیری از regression در درآمد، privacy و عملیات.
 - **استوری/فاز:** همه؛ پیش‌نیاز Definition of Done.
 - **دامنه:** `.github/workflows/ci.yml`، Jest، تست‌های API، mobile/admin/website.
@@ -150,6 +151,8 @@ G4M-002 → G4M-010 ┬→ G4M-011 ─┐                                ├→ 
   - coverage برای کد جدید/تغییریافته حداقل ۸۰٪ branch و statement؛ دامنه مالی/privacy حداقل ۹۰٪ branch.
 - **معیار پذیرش:** PR بدون اجرای تست رزرو/پرداخت/health قابل merge نباشد؛ failure قابل بازتولید و artifact تشخیصی داشته باشد.
 - **edge:** watchman در CI خاموش؛ timezone روی `Asia/Tehran` و UTC هر دو تست شود.
+- **شواهد فعلی:** Jest API واحد `56/56`، e2e readiness `2/2`، و سناریوهای bootstrap/progress، booking/waitlist/wallet، membership/check-in، integrity چندنقشی و سناریوی کامل coach accept → payment → check-in → complete روی Mongo replica-set و Redis موقت پاس شده‌اند. تست‌های mobile route/auth gate (`5`)، admin critical login form (`2`)، website store adapter (`6`) و storage adapter (`4`) نیز سبزند. policy مالی `96.87%` branch و `100%` statement و policy privacy/grant `100%` branch/statement دارد و threshold حداقل `90%` در Jest enforce می‌شود. اجرای کامل unitها در `Asia/Tehran` و `UTC` سبز است. CI به jobهای quality، frontend، unit دو-timezone، integration+OpenAPI و build چهار اپ تفکیک شده است.
+- **باقی‌مانده برای DONE:** اجرای workflow جدید روی runner رسمی GitHub پس از push/PR؛ این workspace بدون تغییر بیرونی نمی‌تواند آن evidence را تولید کند.
 
 ### G4M-003 — شکستن God Serviceها و تعریف transaction boundary
 

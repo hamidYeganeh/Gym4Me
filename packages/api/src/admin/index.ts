@@ -31,6 +31,8 @@ export type {
   AdminUpdateSportInput,
   ListAdminLocationsQuery,
   ListAdminSportsQuery,
+  SeedChoiceDefaultsResult,
+  SeedDefaultsResult,
 } from "./basics.dto";
 export { adminBasicsKeys } from "./basics.keys";
 
@@ -240,6 +242,7 @@ export type {
   AdminPointRule,
   CreateAchievementInput,
   CreatePointRuleInput,
+  EntityStatus,
   GamificationOverview,
   GrantAchievementSubjectInput,
   ListAdminAchievementsQuery,

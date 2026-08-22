@@ -15,10 +15,11 @@ export function OnboardingSlideShell({
   subtitle,
   showChrome = true,
   bleed = false,
+  innerScroll = false,
   isActive,
   children,
 }: OnboardingSlideShellProps) {
-  const styles = onboardingSlideShellVariants({ bleed });
+  const styles = onboardingSlideShellVariants({ bleed, innerScroll });
   const reduceMotion = useReducedMotion();
   const animateState = reduceMotion || isActive ? "active" : "inactive";
 

@@ -8,10 +8,10 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useRouter } from "@/shared/lib/app-router";
 import { useAuth } from "@/shared/providers/AuthProvider";
+import { roleAppPath } from "@/shared/lib/role-routes";
 
 import {
   buildDiscoveryAddresses,
-  profileAddressItem,
 } from "../../lib/discovery-home-addresses";
 import { DiscoveryLocationSheet } from "../DiscoveryLocationSheet";
 import { discoveryHomeHeaderSectionVariants } from "./DiscoveryHomeHeaderSection.styles";
@@ -24,15 +24,20 @@ export function DiscoveryHomeHeaderSection({
 }: DiscoveryHomeHeaderSectionProps) {
   const t = useTranslations("DiscoveryHome");
   const router = useRouter();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, activeRole } = useAuth();
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(
     null,
   );
   const slots = discoveryHomeHeaderSectionVariants();
 
-  const profile = profileAddressItem(user, t("locationProfileLabel"));
-  const addresses = buildDiscoveryAddresses(profile);
+  const addresses = buildDiscoveryAddresses(user, {
+    profile: t("locationProfileLabel"),
+    home: t("locationKindHome"),
+    work: t("locationKindWork"),
+    gym: t("locationKindGym"),
+    other: t("locationKindOther"),
+  });
   const selectedAddress =
     addresses.find((item) => item.id === selectedAddressId) ??
     addresses[0] ??
@@ -85,7 +90,9 @@ export function DiscoveryHomeHeaderSection({
         isOpen={isLocationOpen}
         onAddNew={() =>
           router.push(
-            isAuthenticated ? "/athlete/profile/edit" : "/auth/login",
+            isAuthenticated
+              ? `${roleAppPath(activeRole, "profile/locations")}?create=1`
+              : "/auth/login",
           )
         }
         onOpenChange={setIsLocationOpen}

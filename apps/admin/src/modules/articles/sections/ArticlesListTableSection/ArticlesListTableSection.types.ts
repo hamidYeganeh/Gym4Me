@@ -3,11 +3,12 @@ import type { AdminArticle } from "@repo/api";
 export type ArticlesListTableSectionProps = {
   items: AdminArticle[];
   total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
   loading: boolean;
-  fetchingMore: boolean;
-  hasMore: boolean;
   error: string | null;
-  onLoadMore: () => void;
+  onPageChange: (page: number) => void;
   onEdit: (row: AdminArticle) => void;
   onDelete: (row: AdminArticle) => void;
   className?: string;

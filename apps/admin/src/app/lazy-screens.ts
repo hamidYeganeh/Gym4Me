@@ -32,6 +32,10 @@ export const DashboardHomeScreen = lazyNamed(
   () => import("@/modules/dashboard/screens/DashboardHomeScreen"),
   "DashboardHomeScreen",
 );
+export const AdminProfileScreen = lazyNamed(
+  () => import("@/modules/account/screens/AdminProfileScreen"),
+  "AdminProfileScreen",
+);
 export const AnalyticsOverviewScreen = lazyNamed(
   () => import("@/modules/analytics/screens/AnalyticsOverviewScreen"),
   "AnalyticsOverviewScreen",

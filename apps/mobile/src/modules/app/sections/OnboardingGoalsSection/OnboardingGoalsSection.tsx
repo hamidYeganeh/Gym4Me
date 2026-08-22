@@ -2,6 +2,7 @@
 
 import type { ComponentType } from "react";
 import { Button } from "@heroui/react/button";
+import { ScrollShadow } from "@heroui/react/scroll-shadow";
 import { Spinner } from "@heroui/react/spinner";
 import { Typography } from "@heroui/react/typography";
 import { Check } from "@repo/icons/Check";
@@ -79,32 +80,39 @@ export function OnboardingGoalsSection({
 
   return (
     <div className={base.root({ className })}>
-      <div aria-label={label} className={base.list()} role="group">
-        {options.map((option) => {
-          const isSelected = selected.includes(option.id);
-          const styles = onboardingGoalsSectionVariants({ selected: isSelected });
-          const Icon = resolveGoalIcon(option.id);
+      <ScrollShadow
+        hideScrollBar
+        className={base.scroller()}
+        orientation="vertical"
+        size={56}
+      >
+        <div aria-label={label} className={base.list()} role="group">
+          {options.map((option) => {
+            const isSelected = selected.includes(option.id);
+            const styles = onboardingGoalsSectionVariants({ selected: isSelected });
+            const Icon = resolveGoalIcon(option.id);
 
-          return (
-            <Button
-              key={option.id}
-              aria-pressed={isSelected}
-              className={styles.option()}
-              fullWidth
-              variant="ghost"
-              onPress={() => onToggle(option.id)}
-            >
-              <Icon aria-hidden className={styles.optionIcon()} size={24} />
-              <span className={styles.optionLabel()}>{option.label}</span>
-              <span aria-hidden className={styles.check()}>
-                {isSelected ? (
-                  <Check className={styles.checkIcon()} size={14} />
-                ) : null}
-              </span>
-            </Button>
-          );
-        })}
-      </div>
+            return (
+              <Button
+                key={option.id}
+                aria-pressed={isSelected}
+                className={styles.option()}
+                fullWidth
+                variant="ghost"
+                onPress={() => onToggle(option.id)}
+              >
+                <Icon aria-hidden className={styles.optionIcon()} size={24} />
+                <span className={styles.optionLabel()}>{option.label}</span>
+                <span aria-hidden className={styles.check()}>
+                  {isSelected ? (
+                    <Check className={styles.checkIcon()} size={14} />
+                  ) : null}
+                </span>
+              </Button>
+            );
+          })}
+        </div>
+      </ScrollShadow>
     </div>
   );
 }

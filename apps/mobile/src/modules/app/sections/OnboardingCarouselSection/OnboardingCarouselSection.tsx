@@ -6,6 +6,7 @@ import {
   ONBOARDING_STEPS,
 } from "@/modules/app/lib/onboarding-data";
 import {
+  slideHasInnerScroll,
   slideIsBleed,
   slideOwnsChrome,
   slideSubtitleKey,
@@ -21,7 +22,6 @@ import { OnboardingDietSection } from "@/modules/app/sections/OnboardingDietSect
 import { OnboardingGenderSection } from "@/modules/app/sections/OnboardingGenderSection";
 import { OnboardingGoalsSection } from "@/modules/app/sections/OnboardingGoalsSection";
 import { OnboardingHeightSection } from "@/modules/app/sections/OnboardingHeightSection";
-import { OnboardingIdentitySection } from "@/modules/app/sections/OnboardingIdentitySection";
 import { OnboardingMoodSection } from "@/modules/app/sections/OnboardingMoodSection";
 import { OnboardingNameSection } from "@/modules/app/sections/OnboardingNameSection";
 import { OnboardingSleepSection } from "@/modules/app/sections/OnboardingSleepSection";
@@ -62,9 +62,6 @@ export function OnboardingCarouselSection({
   bloodGroup,
   bloodRh,
   avatar,
-  identityValue,
-  identityLabels,
-  provinces,
   goalOptions,
   genderOptions,
   bodyTypeOptions,
@@ -94,7 +91,6 @@ export function OnboardingCarouselSection({
   setDiet,
   setBloodGroup,
   setBloodRh,
-  patchIdentity,
   uploadAvatar,
   toggleGoal,
   toggleSport,
@@ -128,6 +124,7 @@ export function OnboardingCarouselSection({
             <SwiperSlide className={styles.slide()} key={stepId}>
             <OnboardingSlideShell
               bleed={slideIsBleed(stepId)}
+              innerScroll={slideHasInnerScroll(stepId)}
               isActive={isActive}
               showChrome={!slideOwnsChrome(stepId)}
               subtitle={subtitleKey ? t(subtitleKey) : undefined}
@@ -288,15 +285,6 @@ export function OnboardingCarouselSection({
                   rhAria={t("bloodType.rhAria")}
                   onGroupChange={setBloodGroup}
                   onRhChange={setBloodRh}
-                />
-              ) : null}
-
-              {mountStage && stepId === "identity" ? (
-                <OnboardingIdentitySection
-                  labels={identityLabels}
-                  provinces={provinces}
-                  value={identityValue}
-                  onChange={patchIdentity}
                 />
               ) : null}
 

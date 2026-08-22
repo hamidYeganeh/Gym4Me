@@ -1,14 +1,23 @@
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
-import { FilterChip } from "@repo/ui/kit/FilterChip";
+import type { ArticleAudience, ArticleKind, PublishStatus } from "@repo/api";
 import { useTranslations } from "next-intl";
-import { PUBLISH_STATUSES } from "../../lib/article-constants";
+import { AdminFilterSelect } from "@/shared/components";
+import {
+  ARTICLE_AUDIENCES,
+  ARTICLE_KINDS,
+  PUBLISH_STATUSES,
+} from "../../lib/article-constants";
 import { articlesListHeaderSectionVariants } from "./ArticlesListHeaderSection.styles";
 import type { ArticlesListHeaderSectionProps } from "./ArticlesListHeaderSection.types";
 
 export function ArticlesListHeaderSection({
   statusFilter,
+  kindFilter,
+  audienceFilter,
   onStatusChange,
+  onKindChange,
+  onAudienceChange,
   onCreate,
   onRefresh,
   className,
@@ -22,16 +31,42 @@ export function ArticlesListHeaderSection({
         {t("title")}
       </Typography>
       <Typography className={styles.subtitle()}>{t("subtitle")}</Typography>
-      <div className={styles.actions()}>
-        {(["all", ...PUBLISH_STATUSES] as const).map((value) => (
-          <FilterChip
-            key={value}
-            onPress={() => onStatusChange(value)}
-            selected={statusFilter === value}
-          >
-            {value === "all" ? t("filterAll") : t(`publishStatus.${value}`)}
-          </FilterChip>
-        ))}
+      <div className={styles.filters()}>
+        <AdminFilterSelect
+          allLabel={t("filterAll")}
+          label={t("filters.publishStatus")}
+          options={PUBLISH_STATUSES.map((item) => ({
+            value: item,
+            label: t(`publishStatus.${item}`),
+          }))}
+          value={statusFilter}
+          onChange={(value) =>
+            onStatusChange(value as PublishStatus | "all")
+          }
+        />
+        <AdminFilterSelect
+          allLabel={t("filterAll")}
+          label={t("filters.kind")}
+          options={ARTICLE_KINDS.map((item) => ({
+            value: item,
+            label: t(`kinds.${item}`),
+          }))}
+          value={kindFilter}
+          onChange={(value) => onKindChange(value as ArticleKind | "all")}
+        />
+        <AdminFilterSelect
+          allLabel={t("filterAll")}
+          allValue="any"
+          label={t("filters.audience")}
+          options={ARTICLE_AUDIENCES.map((item) => ({
+            value: item,
+            label: t(`audiences.${item}`),
+          }))}
+          value={audienceFilter}
+          onChange={(value) =>
+            onAudienceChange(value as ArticleAudience | "any")
+          }
+        />
         <Button size="sm" variant="primary" onPress={onCreate}>
           {t("actions.create")}
         </Button>

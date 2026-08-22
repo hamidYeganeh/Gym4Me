@@ -3,10 +3,14 @@
 import Image from "next/image";
 import type { MediaImageAdapterProps } from "@repo/ui/common/MediaImage";
 
+function usesFillLayout(className?: string) {
+  if (!className) return false;
+  return /\babsolute\b/.test(className) || /\binset-0\b/.test(className);
+}
+
 /**
  * Drop-in `next/image` adapter for `@repo/ui` MediaImage.
- * Width/height satisfy Next’s API; layout is still driven by consumer `className`
- * (e.g. absolute inset-0 object-cover, or max-h / object-contain).
+ * Cover/absolute classNames use `fill` so the photo occupies the positioned parent.
  */
 export function NextMediaImageAdapter({
   src,
@@ -17,6 +21,23 @@ export function NextMediaImageAdapter({
   "aria-hidden": ariaHidden,
   onError,
 }: MediaImageAdapterProps) {
+  const fill = usesFillLayout(className);
+
+  if (fill) {
+    return (
+      <Image
+        fill
+        alt={alt}
+        aria-hidden={ariaHidden}
+        className={className}
+        priority={priority}
+        sizes={sizes ?? "100vw"}
+        src={src}
+        onError={onError}
+      />
+    );
+  }
+
   return (
     <Image
       alt={alt}

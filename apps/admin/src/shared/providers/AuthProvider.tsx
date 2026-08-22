@@ -8,7 +8,7 @@ import {
 } from "react";
 import type { AuthSession, OtpRequested, PublicUser } from "@repo/api";
 import { ApiError } from "@repo/api";
-import { adminAuth } from "../lib/api-client";
+import { adminAuth, apiClient } from "../lib/api-client";
 
 type AuthContextValue = {
   session: AuthSession | null;
@@ -18,6 +18,8 @@ type AuthContextValue = {
   requestOtp: (phone: string) => Promise<OtpRequested>;
   loginWithOtp: (phone: string, code: string) => Promise<AuthSession>;
   logout: () => Promise<void>;
+  /** Refresh session user after profile edits (persists to storage). */
+  refreshUser: (user?: PublicUser) => Promise<PublicUser | null>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -56,6 +58,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const refreshUser = useCallback(async (user?: PublicUser) => {
+    const current = apiClient.getSession();
+    if (!current) {
+      setSession(null);
+      return null;
+    }
+    const nextUser = user ?? current.user;
+    const next = { ...current, user: nextUser };
+    apiClient.setSession(next);
+    setSession(next);
+    return nextUser;
+  }, []);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       session,
@@ -65,8 +80,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       requestOtp,
       loginWithOtp,
       logout,
+      refreshUser,
     }),
-    [session, login, requestOtp, loginWithOtp, logout],
+    [session, login, requestOtp, loginWithOtp, logout, refreshUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

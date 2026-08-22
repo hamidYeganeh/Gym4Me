@@ -1505,10 +1505,7 @@ function socialsWithLegacyWebsite(
   return [...rows, { platform: SOCIAL_PLATFORM_WEBSITE, url }];
 }
 
-function migrateLegacyWebsite(
-  club: ClubDocument,
-  socialsReplaced: boolean,
-) {
+function migrateLegacyWebsite(club: ClubDocument, socialsReplaced: boolean) {
   const url = club.contact?.website?.trim();
   if (url && !socialsReplaced) {
     club.socials = socialsWithLegacyWebsite(club.socials, url);

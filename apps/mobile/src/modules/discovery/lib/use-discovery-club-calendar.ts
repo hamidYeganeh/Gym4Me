@@ -2,13 +2,8 @@
 
 import { useEffect, useState } from "react";
 import type { ClubCalendarResponse } from "@repo/api/discovery";
-import {
-  discoveryClubSlots,
-  isDiscoveryApiId,
-} from "@/shared/lib/api";
-import {
-  getMockClubCalendar,
-} from "./club-calendar-data";
+import { discoveryClubSlots, isDiscoveryApiId } from "@/shared/lib/api";
+import { getMockClubCalendar } from "./club-calendar-data";
 
 /**
  * Club calendar for discovery detail.
@@ -20,15 +15,16 @@ export function useDiscoveryClubCalendar(
   range: { from: string; to: string },
 ) {
   const useApi = isDiscoveryApiId(clubId);
+  const { from, to } = range;
   const [data, setData] = useState<ClubCalendarResponse>(() =>
-    getMockClubCalendar(clubId || "club", range.from, range.to),
+    getMockClubCalendar(clubId || "club", from, to),
   );
   const [isLoading, setIsLoading] = useState(useApi);
   const [isError, setIsError] = useState(false);
 
   useEffect(() => {
     if (!useApi) {
-      setData(getMockClubCalendar(clubId || "club", range.from, range.to));
+      setData(getMockClubCalendar(clubId || "club", from, to));
       setIsLoading(false);
       setIsError(false);
       return;
@@ -40,7 +36,10 @@ export function useDiscoveryClubCalendar(
 
     void (async () => {
       try {
-        const calendar = await discoveryClubSlots.getCalendar(clubId, range);
+        const calendar = await discoveryClubSlots.getCalendar(clubId, {
+          from,
+          to,
+        });
         if (cancelled) return;
         setData(calendar);
         setIsLoading(false);
@@ -55,7 +54,7 @@ export function useDiscoveryClubCalendar(
     return () => {
       cancelled = true;
     };
-  }, [clubId, range.from, range.to, useApi]);
+  }, [clubId, from, to, useApi]);
 
   return {
     data,

@@ -1,6 +1,5 @@
 import { useTranslations } from "next-intl";
 import { cn } from "../../lib/marketing-cn";
-import { DISPLAY_FONT } from "../../lib/marketing-home-data";
 import { ScaledClubCard, ScaledCoachCard } from "../../lib/marketing-scaled-cards";
 import { ArrowForeground } from "./MarketingHeroSectionDecorations";
 import { marketingHeroSectionStyles } from "./MarketingHeroSection.styles";

@@ -5,6 +5,10 @@ import type { MobileReleasePolicy } from "@repo/api";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
 import { AdminDataTable } from "@/shared/components";
+import {
+  adminListPaginationProps,
+  adminListPaginationSummary,
+} from "@/shared/lib/admin-list-pagination";
 import { releasePoliciesTableSectionVariants } from "./ReleasePoliciesTableSection.styles";
 import type { ReleasePoliciesTableSectionProps } from "./ReleasePoliciesTableSection.types";
 
@@ -19,9 +23,15 @@ export function ReleasePoliciesTableSection({
   items,
   loading,
   error,
+  page,
+  pageSize,
+  total,
+  totalPages,
+  onPageChange,
   onEdit,
 }: ReleasePoliciesTableSectionProps) {
   const t = useTranslations("Admin.Ops");
+  const tCommon = useTranslations("Admin.Common");
   const styles = releasePoliciesTableSectionVariants();
 
   const columns = useMemo(
@@ -99,6 +109,8 @@ export function ReleasePoliciesTableSection({
     onEdit,
   };
 
+  const summary = adminListPaginationSummary(page, pageSize, total);
+
   return (
     <AdminDataTable
       ariaLabel={t("releases.title")}
@@ -107,14 +119,17 @@ export function ReleasePoliciesTableSection({
       emptyLabel={t("releases.empty")}
       error={error}
       getRowId={(row) => row.id}
-      hasMore={false}
-      isFetchingMore={false}
       isLoading={loading}
       loadingLabel={t("loading")}
-      loadingMoreLabel={t("loadingMore")}
       meta={meta}
-      onLoadMore={() => {}}
-      summaryLabel={t("releases.summary", { loaded: items.length })}
+      pagination={adminListPaginationProps({
+        page,
+        totalPages,
+        previousLabel: tCommon("pagination.previous"),
+        nextLabel: tCommon("pagination.next"),
+        onPageChange,
+      })}
+      summaryLabel={tCommon("pagination.summary", summary)}
     />
   );
 }

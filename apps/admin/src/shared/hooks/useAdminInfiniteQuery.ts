@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ApiError, type Paginated } from "@repo/api";
+import { ApiError, paginationCount, type Paginated } from "@repo/api";
 
 type UseAdminInfiniteQueryOptions<TItem> = {
   queryKey: string;
@@ -9,6 +9,7 @@ type UseAdminInfiniteQueryOptions<TItem> = {
   fetchPage: (page: number, pageSize: number) => Promise<Paginated<TItem>>;
 };
 
+/** @deprecated Prefer `useAdminPaginatedQuery` for admin list screens. */
 export function useAdminInfiniteQuery<TItem>({
   queryKey,
   pageSize = 20,
@@ -39,7 +40,7 @@ export function useAdminInfiniteQuery<TItem>({
       try {
         const result = await fetchPage(nextPage, pageSize);
         if (requestId !== requestIdRef.current) return;
-        setTotal(result.pagination.total);
+        setTotal(paginationCount(result.pagination));
         setPage(nextPage);
         setItems((current) =>
           mode === "replace"

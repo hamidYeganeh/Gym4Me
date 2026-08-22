@@ -14,9 +14,9 @@ import type {
   CreateNotificationTemplateInput,
   ListNotificationTemplatesQuery,
   NotificationTemplate,
-  NotificationTemplatesResponse,
   UpdateNotificationTemplateInput,
 } from "./notification-templates.dto";
+import type { Paginated } from "../types";
 import { adminNotificationTemplatesKeys } from "./notification-templates.keys";
 
 function useAdminNotificationTemplatesApi(): AdminNotificationTemplatesApi {
@@ -30,7 +30,7 @@ function useAdminNotificationTemplatesApi(): AdminNotificationTemplatesApi {
 export function useAdminNotificationTemplates(
   query: ListNotificationTemplatesQuery = {},
   options?: Omit<
-    UseQueryOptions<NotificationTemplatesResponse, Error>,
+    UseQueryOptions<Paginated<NotificationTemplate>, Error>,
     "queryKey" | "queryFn"
   >,
 ) {

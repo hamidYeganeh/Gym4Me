@@ -126,4 +126,21 @@ const indexLines = [
 
 fs.writeFileSync(path.join(root, "src", "index.ts"), indexLines.join("\n"));
 
+const catalogLines = [
+  "export const ICON_NAMES = [",
+  ...exportsList.map((componentName) => `  "${componentName}",`),
+  "] as const;",
+  "",
+  "export type IconName = (typeof ICON_NAMES)[number];",
+  "",
+  "const ICON_NAME_SET = new Set<string>(ICON_NAMES);",
+  "",
+  "export function isIconName(value: string): value is IconName {",
+  "  return ICON_NAME_SET.has(value);",
+  "}",
+  "",
+];
+
+fs.writeFileSync(path.join(root, "src", "catalog.ts"), catalogLines.join("\n"));
+
 console.log(`Generated ${exportsList.length} icons`);

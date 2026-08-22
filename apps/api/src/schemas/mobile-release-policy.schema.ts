@@ -19,7 +19,9 @@ export class ReleaseNotes {
         Array.isArray(value) &&
         value.length >= 1 &&
         value.length <= 8 &&
-        value.every((item) => typeof item === 'string' && item.trim().length > 0),
+        value.every(
+          (item) => typeof item === 'string' && item.trim().length > 0,
+        ),
       message: 'releaseNotes.features must contain 1–8 non-empty strings',
     },
   })

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, type ClientSession } from 'mongoose';
 import { OutboxMessageStatus } from '../common/enums';
 import { NotificationsService } from '../notifications/notifications.service';
 import {
@@ -37,10 +37,11 @@ export class OutboxService {
     private readonly notifications: NotificationsService,
   ) {}
 
-  async enqueue(input: EnqueueOutboxInput) {
+  async enqueue(input: EnqueueOutboxInput, session?: ClientSession) {
     if (input.idempotencyKey) {
       const existing = await this.outboxModel
         .findOne({ idempotencyKey: input.idempotencyKey })
+        .session(session ?? null)
         .lean();
       if (existing) {
         return { message: existing, idempotent: true as const };
@@ -48,7 +49,7 @@ export class OutboxService {
     }
 
     try {
-      const message = await this.outboxModel.create({
+      const message = new this.outboxModel({
         eventName: input.eventName,
         payload: input.payload,
         status: OutboxMessageStatus.PENDING,
@@ -56,6 +57,7 @@ export class OutboxService {
         nextAttemptAt: new Date(),
         idempotencyKey: input.idempotencyKey,
       });
+      await message.save({ session });
       return { message: message.toObject(), idempotent: false as const };
     } catch (err) {
       if (
@@ -66,6 +68,7 @@ export class OutboxService {
       ) {
         const existing = await this.outboxModel
           .findOne({ idempotencyKey: input.idempotencyKey })
+          .session(session ?? null)
           .lean();
         if (existing) {
           return { message: existing, idempotent: true as const };

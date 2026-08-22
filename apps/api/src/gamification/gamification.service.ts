@@ -72,6 +72,7 @@ import {
   UpdateAchievementDto,
   UpdatePointRuleDto,
 } from './dto/gamification.dto';
+import { DEFAULT_ACHIEVEMENTS } from './achievement-defaults';
 
 export interface GamificationSubjectRef {
   type: GamificationSubjectType;
@@ -815,6 +816,58 @@ export class GamificationService {
     return this.toAchievementPublic(achievement.toObject());
   }
 
+  /**
+   * Idempotent: create missing default achievements by stable `key`,
+   * and fill missing icons on existing keyed rows.
+   */
+  async adminSeedAchievementDefaults(adminId?: string, request?: Request) {
+    const created: string[] = [];
+    const updated: string[] = [];
+    const skipped: string[] = [];
+
+    for (const seed of DEFAULT_ACHIEVEMENTS) {
+      const existing = await this.achievementModel.findOne({ key: seed.key });
+      if (!existing) {
+        await this.achievementModel.create({
+          key: seed.key,
+          title: seed.title,
+          description: seed.description,
+          icon: seed.icon,
+          audience: seed.audience,
+          bonusPoints: seed.bonusPoints,
+          grant: seed.grant,
+          status: seed.status ?? EntityStatus.ACTIVE,
+          order: seed.order,
+        });
+        created.push(seed.key);
+        continue;
+      }
+
+      let changed = false;
+      if (seed.icon && !existing.icon) {
+        existing.icon = seed.icon;
+        changed = true;
+      }
+      if (changed) {
+        await existing.save();
+        updated.push(seed.key);
+      } else {
+        skipped.push(seed.key);
+      }
+    }
+
+    if (adminId && request) {
+      this.audit.log({
+        action: AuditAction.GAMIFICATION_ACHIEVEMENT_DEFAULTS_SEEDED,
+        actorId: adminId,
+        metadata: { created, updated, skipped },
+        request,
+      });
+    }
+
+    return { created, updated, skipped };
+  }
+
   async adminUpdateAchievement(
     id: string,
     dto: UpdateAchievementDto,
@@ -1286,6 +1339,7 @@ export class GamificationService {
 
   private toAchievementPublic(a: {
     _id: Types.ObjectId;
+    key?: string;
     title: string;
     description?: string;
     icon?: string;
@@ -1303,6 +1357,7 @@ export class GamificationService {
   }) {
     return {
       id: a._id.toString(),
+      key: a.key ?? null,
       title: a.title,
       description: a.description ?? null,
       icon: a.icon ?? null,

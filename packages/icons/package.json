@@ -6,7 +6,9 @@
   "sideEffects": false,
   "exports": {
     ".": "./src/index.ts",
+    "./catalog": "./src/catalog.ts",
     "./create-icon": "./src/create-icon.tsx",
+    "./load-icon": "./src/load-icon.ts",
     "./*": "./src/icons/*.tsx"
   },
   "scripts": {

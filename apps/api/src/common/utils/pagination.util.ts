@@ -3,12 +3,20 @@ export type PaginationMeta = {
   page_size: number;
   next: number | null;
   prev: number | null;
+  /** Total matching rows across all pages. */
+  count: number;
+  /**
+   * @deprecated Prefer `count`. Kept for older clients during migration.
+   */
   total: number;
 };
 
+export type ApiMessage = string | string[] | Record<string, string[]>;
+
 export type PaginatedResult<T> = {
-  pagination: PaginationMeta;
+  message: ApiMessage;
   result: T[];
+  pagination: PaginationMeta;
 };
 
 export function resolvePageSize(query: {
@@ -26,20 +34,23 @@ export function resolvePageSize(query: {
 
 export function paginatedResult<T>(
   result: T[],
-  total: number,
+  count: number,
   page: number,
   pageSize: number,
+  message: ApiMessage = 'success',
 ): PaginatedResult<T> {
-  const totalPages = pageSize > 0 ? Math.ceil(total / pageSize) : 0;
+  const totalPages = pageSize > 0 ? Math.ceil(count / pageSize) : 0;
   return {
+    message,
+    result,
     pagination: {
       page,
       page_size: pageSize,
       next: page < totalPages ? page + 1 : null,
       prev: page > 1 ? page - 1 : null,
-      total,
+      count,
+      total: count,
     },
-    result,
   };
 }
 

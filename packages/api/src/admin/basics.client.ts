@@ -16,6 +16,7 @@ import type {
   AdminRefListResponse,
   AdminUpdateChoiceGroupInput,
   SeedChoiceDefaultsResult,
+  SeedDefaultsResult,
   AdminUpdateLocationInput,
   AdminUpdateRefItemInput,
   AdminUpdateSportInput,
@@ -91,6 +92,12 @@ export function createAdminBasicsApi(client: ApiClient) {
       });
     },
 
+    seedLocationDefaults() {
+      return client.request<SeedDefaultsResult>(ep.seedLocationDefaults, {
+        method: "POST",
+      });
+    },
+
     // ── Sports ───────────────────────────────────
 
     listSports(query: ListAdminSportsQuery = {}) {
@@ -123,6 +130,12 @@ export function createAdminBasicsApi(client: ApiClient) {
       });
     },
 
+    seedSportDefaults() {
+      return client.request<SeedDefaultsResult>(ep.seedSportDefaults, {
+        method: "POST",
+      });
+    },
+
     // ── Generic refs ─────────────────────────────
 
     listRefs(type: RefType) {
@@ -150,6 +163,12 @@ export function createAdminBasicsApi(client: ApiClient) {
     deleteRef(type: RefType, id: string) {
       return client.request<SuccessResponse>(ep.refById(type, id), {
         method: "DELETE",
+      });
+    },
+
+    seedRefDefaults(type: RefType) {
+      return client.request<SeedDefaultsResult>(ep.seedRefDefaults(type), {
+        method: "POST",
       });
     },
   };

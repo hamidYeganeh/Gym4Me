@@ -48,6 +48,9 @@ export type SeedChoiceDefaultsResult = {
   skipped: string[];
 };
 
+/** Shared result shape for basics / gamification Import defaults. */
+export type SeedDefaultsResult = SeedChoiceDefaultsResult;
+
 export type AdminCreateLocationInput = {
   kind: LocationKind;
   name: string;

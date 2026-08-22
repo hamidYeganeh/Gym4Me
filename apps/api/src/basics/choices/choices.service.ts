@@ -154,9 +154,13 @@ export class ChoicesService {
     const skipped: string[] = [];
 
     // Legacy key rename (onboarding_goal → athlete_goal).
-    const legacyGoal = await this.choiceModel.findOne({ key: 'onboarding_goal' });
+    const legacyGoal = await this.choiceModel.findOne({
+      key: 'onboarding_goal',
+    });
     if (legacyGoal) {
-      const modernGoal = await this.choiceModel.findOne({ key: 'athlete_goal' });
+      const modernGoal = await this.choiceModel.findOne({
+        key: 'athlete_goal',
+      });
       if (!modernGoal) {
         legacyGoal.key = 'athlete_goal';
         await legacyGoal.save();
@@ -188,7 +192,9 @@ export class ChoicesService {
         changed = true;
       }
 
-      const existingValues = new Set(existing.options.map((option) => option.value));
+      const existingValues = new Set(
+        existing.options.map((option) => option.value),
+      );
       const missing = seed.options.filter(
         (option) => !existingValues.has(option.value),
       );
@@ -247,9 +253,7 @@ export class ChoicesService {
     return options.map((o, i) => ({
       value: o.value,
       name: o.name,
-      ...(o.description?.trim()
-        ? { description: o.description.trim() }
-        : {}),
+      ...(o.description?.trim() ? { description: o.description.trim() } : {}),
       order: o.order ?? i,
       isActive: o.isActive ?? true,
     }));

@@ -3,11 +3,12 @@ import type { Booking } from "@repo/api";
 export type BookingsListTableSectionProps = {
   items: Booking[];
   total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
   loading: boolean;
-  fetchingMore: boolean;
-  hasMore: boolean;
   error: string | null;
-  onLoadMore: () => void;
+  onPageChange: (page: number) => void;
   onCancel: (row: Booking) => void;
   onRefund: (row: Booking) => void;
   className?: string;

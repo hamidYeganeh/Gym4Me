@@ -4,6 +4,7 @@ import { getRequestConfig } from "next-intl/server";
 const WEBSITE_MESSAGE_KEYS = [
   "Metadata",
   "MarketingLanding",
+  "PublicSite",
   "Articles",
   "AthleteHome",
 ] as const;

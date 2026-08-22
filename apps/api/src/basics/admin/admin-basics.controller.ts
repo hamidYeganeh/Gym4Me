@@ -94,7 +94,8 @@ export class AdminBasicsController {
   @Post('choices/seed-defaults')
   @HttpCode(200)
   @ApiOperation({
-    summary: 'Create missing default choice groups without overwriting existing ones',
+    summary:
+      'Create missing default choice groups without overwriting existing ones',
   })
   seedChoiceDefaults(
     @CurrentUser('sub') adminId: string,
@@ -139,6 +140,18 @@ export class AdminBasicsController {
       parentId,
       true,
     );
+  }
+
+  @Post('location/seed-defaults')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Create missing default Iran location tree without overwriting',
+  })
+  seedLocationDefaults(
+    @CurrentUser('sub') adminId: string,
+    @Req() request: Request,
+  ) {
+    return this.locations.seedDefaults(adminId, request);
   }
 
   @Get('location/:id')
@@ -191,6 +204,18 @@ export class AdminBasicsController {
     return this.sports.listByKind(parseAdminSportKind(kind), parentId, true);
   }
 
+  @Post('sport/seed-defaults')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Create missing default sports tree and upgrade legacy icons',
+  })
+  seedSportDefaults(
+    @CurrentUser('sub') adminId: string,
+    @Req() request: Request,
+  ) {
+    return this.sports.seedDefaults(adminId, request);
+  }
+
   @Get('sport/:id')
   @ApiOperation({ summary: 'Get a sport node (admin)' })
   getSport(@Param('id') id: string) {
@@ -235,6 +260,19 @@ export class AdminBasicsController {
   @ApiOperation({ summary: 'List ref items by type (admin)' })
   listRefs(@Param('type') type: string) {
     return this.refs.list(this.refs.parseType(type), true);
+  }
+
+  @Post('ref/:type/seed-defaults')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Create missing default ref items for a type (with icons)',
+  })
+  seedRefDefaults(
+    @Param('type') type: string,
+    @CurrentUser('sub') adminId: string,
+    @Req() request: Request,
+  ) {
+    return this.refs.seedDefaults(this.refs.parseType(type), adminId, request);
   }
 
   @Get('ref/:type/:id')

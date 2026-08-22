@@ -14,7 +14,7 @@ import {
   AthleteProfileDocument,
 } from '../schemas/athlete-profile.schema';
 import { Invite, InviteDocument } from '../schemas/invite.schema';
-import { User, UserDocument } from '../schemas/user.schema';
+import { User, UserDocument, type UserAddress } from '../schemas/user.schema';
 
 export interface CreateUserInput {
   phone: string;
@@ -40,6 +40,12 @@ export interface PublicUser {
     postalCode: string | null;
     point: { lat: number; lng: number } | null;
   };
+  favouriteLocations: Array<{
+    id: string;
+    kind: string;
+    label: string | null;
+    address: PublicUser['address'];
+  }>;
   nationalId: string | null;
   roles: Role[];
   code: string | null;
@@ -205,19 +211,13 @@ export class UsersService {
         gender: user.demographics?.gender ?? null,
         birthDate: user.demographics?.birthDate ?? null,
       },
-      address: {
-        provinceId: user.address?.provinceId?.toString() ?? null,
-        city: user.address?.city ?? null,
-        street: user.address?.street ?? null,
-        apartment: user.address?.apartment ?? null,
-        postalCode: user.address?.postalCode ?? null,
-        point: user.address?.point
-          ? {
-              lat: user.address.point.coordinates[1],
-              lng: user.address.point.coordinates[0],
-            }
-          : null,
-      },
+      address: this.toPublicAddress(user.address),
+      favouriteLocations: (user.favouriteLocations ?? []).map((item) => ({
+        id: item._id.toString(),
+        kind: item.kind,
+        label: item.label?.trim() ? item.label.trim() : null,
+        address: this.toPublicAddress(item.address),
+      })),
       nationalId:
         opts?.revealNationalId && nationalId
           ? nationalId
@@ -251,6 +251,22 @@ export class UsersService {
         gender: user.demographics?.gender ?? null,
       },
       code: user.code ?? null,
+    };
+  }
+
+  private toPublicAddress(address?: UserAddress | null): PublicUser['address'] {
+    return {
+      provinceId: address?.provinceId?.toString() ?? null,
+      city: address?.city ?? null,
+      street: address?.street ?? null,
+      apartment: address?.apartment ?? null,
+      postalCode: address?.postalCode ?? null,
+      point: address?.point
+        ? {
+            lat: address.point.coordinates[1],
+            lng: address.point.coordinates[0],
+          }
+        : null,
     };
   }
 }

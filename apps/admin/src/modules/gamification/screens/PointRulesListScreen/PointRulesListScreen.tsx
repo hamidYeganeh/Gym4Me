@@ -1,10 +1,13 @@
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import type { AdminPointRule, PointRuleEvent } from "@repo/api";
+import type { AdminPointRule, EntityStatus, PointRuleEvent } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { AdminShell } from "@/shared/components";
-import { useAdminInfiniteQuery } from "@/shared/hooks";
+import {
+  useAdminListQueryParams,
+  useAdminPaginatedQuery,
+} from "@/shared/hooks";
 import { adminGamification } from "@/shared/lib/api";
 import { routes } from "@/shared/lib/routes";
 import { PointRulesListArchiveDialogSection } from "../../sections/PointRulesListArchiveDialogSection";
@@ -14,46 +17,77 @@ import { pointRulesListScreenVariants } from "./PointRulesListScreen.styles";
 import type { PointRulesListScreenProps } from "./PointRulesListScreen.types";
 
 const PAGE_SIZE = 30;
+const FILTER_KEYS = ["event", "status"] as const;
+
+type PointRulesListFilters = {
+  event: PointRuleEvent | "all";
+  status: EntityStatus | "all";
+};
+
+const FILTER_DEFAULTS: PointRulesListFilters & {
+  search: string;
+  page: number;
+  page_size: number;
+} = {
+  event: "all",
+  status: "all",
+  search: "",
+  page: 1,
+  page_size: PAGE_SIZE,
+};
 
 export function PointRulesListScreen({ className }: PointRulesListScreenProps) {
   const t = useTranslations("Admin.Gamification");
   const navigate = useNavigate();
   const styles = pointRulesListScreenVariants();
 
-  const [eventFilter, setEventFilter] = useState<PointRuleEvent | "all">("all");
-  const [search, setSearch] = useState("");
+  const {
+    search,
+    searchInput,
+    setSearchInput,
+    filters,
+    setFilter,
+    page,
+    pageSize,
+    setPage,
+  } = useAdminListQueryParams<PointRulesListFilters>({
+    filterKeys: FILTER_KEYS,
+    defaults: FILTER_DEFAULTS,
+  });
   const [archiving, setArchiving] = useState<AdminPointRule | null>(null);
   const [archivePending, setArchivePending] = useState(false);
   const [archiveError, setArchiveError] = useState<string | null>(null);
 
   const queryKey = useMemo(
-    () => JSON.stringify({ eventFilter, pageSize: PAGE_SIZE }),
-    [eventFilter],
+    () => JSON.stringify({ filters, pageSize }),
+    [filters, pageSize],
   );
 
   const fetchPage = useCallback(
-    async (page: number, pageSize: number) => {
+    async (nextPage: number, nextPageSize: number) => {
       return adminGamification.listPointRules({
-        page,
-        page_size: pageSize,
-        event: eventFilter === "all" ? undefined : eventFilter,
+        page: nextPage,
+        page_size: nextPageSize,
+        event: filters.event === "all" ? undefined : filters.event,
+        status: filters.status === "all" ? undefined : filters.status,
       });
     },
-    [eventFilter],
+    [filters],
   );
 
   const {
     items,
     total,
+    totalPages,
     loading,
-    fetchingMore,
-    hasMore,
     error,
-    loadMore,
+    setPage: changePage,
     reload,
-  } = useAdminInfiniteQuery<AdminPointRule>({
+  } = useAdminPaginatedQuery<AdminPointRule>({
     queryKey,
-    pageSize: PAGE_SIZE,
+    page,
+    pageSize,
+    onPageChange: setPage,
     errorFallback: t("errorLoad"),
     fetchPage,
   });
@@ -85,31 +119,34 @@ export function PointRulesListScreen({ className }: PointRulesListScreenProps) {
       className={className}
       gamificationSection={{
         activeTabId: "rules",
-        searchValue: search,
-        onSearchChange: setSearch,
+        searchValue: searchInput,
+        onSearchChange: setSearchInput,
       }}
     >
       <div className={styles.content()}>
         <PointRulesListHeaderSection
-          eventFilter={eventFilter}
+          eventFilter={filters.event}
+          statusFilter={filters.status}
           onCreate={() => navigate(routes.pointRuleNew)}
-          onEventChange={setEventFilter}
+          onEventChange={(value) => setFilter("event", value)}
           onRefresh={() => void reload()}
+          onStatusChange={(value) => setFilter("status", value)}
         />
 
         <PointRulesListTableSection
           error={error}
-          fetchingMore={fetchingMore}
-          hasMore={hasMore}
           items={visibleItems}
           loading={loading}
+          page={page}
+          pageSize={pageSize}
           total={total}
+          totalPages={totalPages}
           onArchive={(row) => {
             setArchiving(row);
             setArchiveError(null);
           }}
           onEdit={(row) => navigate(routes.pointRuleEdit(row.id))}
-          onLoadMore={loadMore}
+          onPageChange={changePage}
         />
       </div>
 

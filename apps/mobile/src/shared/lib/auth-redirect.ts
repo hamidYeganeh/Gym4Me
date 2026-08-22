@@ -16,7 +16,7 @@ export function withAuthNext(
   return `${path}?next=${encodeURIComponent(returnPath)}`;
 }
 
-type PostAuthSession = {
+export type PostAuthSession = {
   activeRole: Role | null | undefined;
   isNewUser?: boolean;
   user?: Pick<PublicUser, "id" | "name"> | null;

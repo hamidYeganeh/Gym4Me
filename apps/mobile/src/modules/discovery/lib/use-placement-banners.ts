@@ -9,7 +9,6 @@ import type {
   BannerRadius,
 } from "@repo/api";
 import { bannersApi, mediaFileUrl } from "@/shared/lib/api";
-import { MOCK_DISCOVERY_HOME_BANNERS } from "./discovery-banners-data";
 
 export type PlacementBannerSlide = {
   id: string;
@@ -33,21 +32,7 @@ export type PlacementBannerSlide = {
 export type PlacementBannersState = {
   slides: PlacementBannerSlide[];
   isLoading: boolean;
-  source: "api" | "mock";
 };
-
-function mockSlidesForPlacement(
-  placement: BannerPlacement,
-): PlacementBannerSlide[] {
-  if (placement === "discovery_home") {
-    return MOCK_DISCOVERY_HOME_BANNERS.map((slide) => ({
-      ...slide,
-      title: slide.title ?? null,
-      action: slide.action ?? null,
-    }));
-  }
-  return [];
-}
 
 /** Active admin banners for one placement, flattened to carousel slides. */
 export function usePlacementBanners(
@@ -56,7 +41,6 @@ export function usePlacementBanners(
   const [state, setState] = useState<PlacementBannersState>({
     slides: [],
     isLoading: true,
-    source: "mock",
   });
 
   useEffect(() => {
@@ -87,23 +71,10 @@ export function usePlacementBanners(
           });
         }
 
-        if (slides.length > 0) {
-          setState({ slides, isLoading: false, source: "api" });
-          return;
-        }
-
-        setState({
-          slides: mockSlidesForPlacement(placement),
-          isLoading: false,
-          source: "mock",
-        });
+        setState({ slides, isLoading: false });
       } catch {
         if (cancelled) return;
-        setState({
-          slides: mockSlidesForPlacement(placement),
-          isLoading: false,
-          source: "mock",
-        });
+        setState({ slides: [], isLoading: false });
       }
     })();
 

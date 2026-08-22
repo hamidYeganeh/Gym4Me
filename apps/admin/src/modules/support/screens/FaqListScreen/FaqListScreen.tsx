@@ -1,10 +1,13 @@
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import type { AdminFaqItem, PublishStatus } from "@repo/api";
+import type { AdminFaqItem, FaqAudience, PublishStatus } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { AdminShell } from "@/shared/components";
-import { useAdminInfiniteQuery } from "@/shared/hooks";
+import {
+  useAdminListQueryParams,
+  useAdminPaginatedQuery,
+} from "@/shared/hooks";
 import { adminSupport } from "@/shared/lib/api";
 import { routes } from "@/shared/lib/routes";
 import { FaqListDeleteDialogSection } from "../../sections/FaqListDeleteDialogSection";
@@ -14,49 +17,79 @@ import { faqListScreenVariants } from "./FaqListScreen.styles";
 import type { FaqListScreenProps } from "./FaqListScreen.types";
 
 const PAGE_SIZE = 30;
+const FILTER_KEYS = ["publishStatus", "audience"] as const;
+
+type FaqListFilters = {
+  publishStatus: PublishStatus | "all";
+  audience: FaqAudience | "any";
+};
+
+const FILTER_DEFAULTS: FaqListFilters & {
+  search: string;
+  page: number;
+  page_size: number;
+} = {
+  publishStatus: "all",
+  audience: "any",
+  search: "",
+  page: 1,
+  page_size: PAGE_SIZE,
+};
 
 export function FaqListScreen({ className }: FaqListScreenProps) {
   const t = useTranslations("Admin.Support");
   const navigate = useNavigate();
   const styles = faqListScreenVariants();
 
-  const [statusFilter, setStatusFilter] = useState<PublishStatus | "all">(
-    "all",
-  );
-  const [search, setSearch] = useState("");
+  const {
+    search,
+    searchInput,
+    setSearchInput,
+    filters,
+    setFilter,
+    page,
+    pageSize,
+    setPage,
+  } = useAdminListQueryParams<FaqListFilters>({
+    filterKeys: FILTER_KEYS,
+    defaults: FILTER_DEFAULTS,
+  });
   const [deleting, setDeleting] = useState<AdminFaqItem | null>(null);
   const [deletePending, setDeletePending] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const queryKey = useMemo(
-    () => JSON.stringify({ statusFilter, search, pageSize: PAGE_SIZE }),
-    [statusFilter, search],
+    () => JSON.stringify({ filters, search, pageSize }),
+    [filters, pageSize, search],
   );
 
   const fetchPage = useCallback(
-    async (page: number, pageSize: number) => {
+    async (nextPage: number, nextPageSize: number) => {
       return adminSupport.listFaq({
-        page,
-        page_size: pageSize,
-        publishStatus: statusFilter === "all" ? undefined : statusFilter,
+        page: nextPage,
+        page_size: nextPageSize,
+        publishStatus:
+          filters.publishStatus === "all" ? undefined : filters.publishStatus,
+        audience: filters.audience === "any" ? undefined : filters.audience,
         search: search.trim() || undefined,
       });
     },
-    [statusFilter, search],
+    [filters, search],
   );
 
   const {
     items,
     total,
+    totalPages,
     loading,
-    fetchingMore,
-    hasMore,
     error,
-    loadMore,
+    setPage: changePage,
     reload,
-  } = useAdminInfiniteQuery<AdminFaqItem>({
+  } = useAdminPaginatedQuery<AdminFaqItem>({
     queryKey,
-    pageSize: PAGE_SIZE,
+    page,
+    pageSize,
+    onPageChange: setPage,
     errorFallback: t("errorLoad"),
     fetchPage,
   });
@@ -82,31 +115,34 @@ export function FaqListScreen({ className }: FaqListScreenProps) {
       className={className}
       supportSection={{
         activeTabId: "faq",
-        searchValue: search,
-        onSearchChange: setSearch,
+        searchValue: searchInput,
+        onSearchChange: setSearchInput,
       }}
     >
       <div className={styles.content()}>
         <FaqListHeaderSection
-          statusFilter={statusFilter}
+          audienceFilter={filters.audience}
+          statusFilter={filters.publishStatus}
+          onAudienceChange={(value) => setFilter("audience", value)}
           onCreate={() => navigate(routes.supportFaqNew)}
           onRefresh={() => void reload()}
-          onStatusChange={setStatusFilter}
+          onStatusChange={(value) => setFilter("publishStatus", value)}
         />
 
         <FaqListTableSection
           error={error}
-          fetchingMore={fetchingMore}
-          hasMore={hasMore}
           items={items}
           loading={loading}
+          page={page}
+          pageSize={pageSize}
           total={total}
+          totalPages={totalPages}
           onDelete={(row) => {
             setDeleting(row);
             setDeleteError(null);
           }}
           onEdit={(row) => navigate(routes.supportFaqEdit(row.id))}
-          onLoadMore={loadMore}
+          onPageChange={changePage}
         />
       </div>
 

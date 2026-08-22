@@ -33,12 +33,24 @@ export function slideTitleKey(step: OnboardingStepId): string {
   return `${step}.title`;
 }
 
-export function slideSubtitleKey(_step: OnboardingStepId): string | null {
-  return null;
+const STEPS_WITH_SUBTITLE = new Set<OnboardingStepId>([
+  "gender",
+  "bodyType",
+  "sports",
+  "goals",
+]);
+
+export function slideSubtitleKey(step: OnboardingStepId): string | null {
+  return STEPS_WITH_SUBTITLE.has(step) ? `${step}.subtitle` : null;
 }
 
 export function slideOwnsChrome(step: OnboardingStepId): boolean {
-  return step === "identity" || step === "avatar";
+  return step === "avatar";
+}
+
+/** Slides whose body is a fixed-height inner scroller (not the whole page). */
+export function slideHasInnerScroll(step: OnboardingStepId): boolean {
+  return step === "goals" || step === "sports";
 }
 
 /** Full-bleed photo slides that need a footer scrim for the CTA. */

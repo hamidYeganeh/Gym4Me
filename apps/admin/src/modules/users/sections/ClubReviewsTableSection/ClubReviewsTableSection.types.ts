@@ -3,11 +3,12 @@ import type { Club } from "@repo/api";
 export type ClubReviewsTableSectionProps = {
   items: Club[];
   total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
   loading: boolean;
-  fetchingMore: boolean;
-  hasMore: boolean;
   error: string | null;
-  onLoadMore: () => void;
+  onPageChange: (page: number) => void;
   onReview: (row: Club) => void;
   className?: string;
 };

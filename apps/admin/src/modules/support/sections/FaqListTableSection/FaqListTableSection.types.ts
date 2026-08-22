@@ -3,11 +3,12 @@ import type { AdminFaqItem } from "@repo/api";
 export type FaqListTableSectionProps = {
   items: AdminFaqItem[];
   total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
   loading: boolean;
-  fetchingMore: boolean;
-  hasMore: boolean;
   error: string | null;
-  onLoadMore: () => void;
+  onPageChange: (page: number) => void;
   onEdit: (row: AdminFaqItem) => void;
   onDelete: (row: AdminFaqItem) => void;
   className?: string;

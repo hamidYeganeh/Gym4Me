@@ -1,0 +1,25 @@
+import type { VariantProps } from "tailwind-variants";
+import { tv } from "tailwind-variants";
+
+export const profileLocationsListSectionVariants = tv({
+  slots: {
+    root: "flex flex-col gap-3",
+    list: "flex flex-col gap-3",
+    item: [
+      "flex h-auto min-h-0 w-full items-center gap-3 rounded-[24px]",
+      "border border-border bg-surface p-4 text-start shadow-none",
+    ].join(" "),
+    icon: "flex size-11 shrink-0 items-center justify-center rounded-2xl bg-accent/10 text-accent",
+    copy: "flex min-w-0 flex-1 flex-col gap-1",
+    label: "text-start text-foreground",
+    line: "text-start text-muted",
+    empty: "flex flex-col items-center gap-3 py-16 text-center",
+    emptyText: "text-muted",
+    status: "flex flex-col items-center gap-3 py-16",
+    retry: "min-h-12",
+  },
+});
+
+export type ProfileLocationsListSectionVariants = VariantProps<
+  typeof profileLocationsListSectionVariants
+>;

@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types, type QueryFilter } from 'mongoose';
+import { Model, Types, type ClientSession, type QueryFilter } from 'mongoose';
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import type { Request } from 'express';
 import { AuditService } from '../audit/audit.service';
@@ -23,6 +23,7 @@ import {
   paginatedResult,
   resolvePageSize,
 } from '../common/utils/pagination.util';
+import { MongoTransactionService } from '../common/mongo/mongo-transaction.service';
 import { Booking, BookingDocument } from '../schemas/booking.schema';
 import { CheckIn, CheckInDocument } from '../schemas/check-in.schema';
 import {
@@ -58,6 +59,7 @@ export class CheckinService {
     private readonly staff: StaffService,
     private readonly memberships: MembershipsService,
     private readonly audit: AuditService,
+    private readonly transactions: MongoTransactionService,
   ) {}
 
   async assertDeskAccess(clubId: string, actorId: string) {
@@ -128,43 +130,16 @@ export class CheckinService {
   ) {
     await this.assertMembersCheckin(clubId, actorId);
 
-    if (dto.clientIdempotencyKey) {
-      const existing = await this.findByIdempotencyKey(
-        dto.clientIdempotencyKey,
-      );
-      if (existing) return this.toPublic(existing);
-    }
-
-    await this.assertMembershipCheckInEligible({
+    const doc = await this.recordMembershipCheckIn({
       clubId,
       membershipId: dto.membershipId,
       userId: dto.userId,
-    });
-
-    const doc = await this.checkInModel.create({
-      clubId: new Types.ObjectId(clubId),
-      membershipId: new Types.ObjectId(dto.membershipId),
-      userId: new Types.ObjectId(dto.userId),
+      actorId,
       method: dto.method ?? CheckInMethod.MANUAL,
-      sync: {
-        mode: CheckInSyncMode.ONLINE,
-        clientIdempotencyKey: dto.clientIdempotencyKey,
-        reconciledAt: new Date(),
-      },
-      recordedBy: new Types.ObjectId(actorId),
+      syncMode: CheckInSyncMode.ONLINE,
+      clientIdempotencyKey: dto.clientIdempotencyKey,
       occurredAt: dto.occurredAt ? new Date(dto.occurredAt) : new Date(),
     });
-
-    try {
-      await this.consumeMembershipCreditAfterCheckIn({
-        clubId,
-        membershipId: dto.membershipId,
-        actorId,
-      });
-    } catch (err) {
-      await this.checkInModel.deleteOne({ _id: doc._id });
-      throw err;
-    }
 
     this.audit.log({
       action: AuditAction.CHECKIN_RECORDED,
@@ -477,34 +452,16 @@ export class CheckinService {
         actorId,
         StaffPermissionKey.MEMBERS_CHECKIN,
       );
-      await this.assertMembershipCheckInEligible({
+      const doc = await this.recordMembershipCheckIn({
         clubId,
         membershipId: item.membershipId,
         userId: item.userId,
-      });
-      const doc = await this.checkInModel.create({
-        clubId: new Types.ObjectId(clubId),
-        membershipId: new Types.ObjectId(item.membershipId),
-        userId: new Types.ObjectId(item.userId),
+        actorId,
         method: item.method,
-        sync: {
-          mode: CheckInSyncMode.OFFLINE,
-          clientIdempotencyKey: item.clientIdempotencyKey,
-          reconciledAt: new Date(),
-        },
-        recordedBy: new Types.ObjectId(actorId),
+        syncMode: CheckInSyncMode.OFFLINE,
+        clientIdempotencyKey: item.clientIdempotencyKey,
         occurredAt: new Date(item.occurredAt),
       });
-      try {
-        await this.consumeMembershipCreditAfterCheckIn({
-          clubId,
-          membershipId: item.membershipId,
-          actorId,
-        });
-      } catch (err) {
-        await this.checkInModel.deleteOne({ _id: doc._id });
-        throw err;
-      }
       this.audit.log({
         action: AuditAction.CHECKIN_RECORDED,
         actorId,
@@ -550,75 +507,165 @@ export class CheckinService {
       request,
     } = args;
 
-    if (
-      booking.status !== BookingStatus.CONFIRMED &&
-      booking.status !== BookingStatus.CHECKED_IN
-    ) {
-      throw new ConflictException(
-        `Cannot check in booking in status "${booking.status}"`,
-      );
-    }
-
-    if (clientIdempotencyKey) {
-      const raced = await this.findByIdempotencyKey(clientIdempotencyKey);
-      if (raced) return this.toPublic(raced);
-    }
-
-    let doc: CheckInDocument;
+    let result: { doc: CheckInDocument; created: boolean };
     try {
-      doc = await this.checkInModel.create({
-        clubId: new Types.ObjectId(clubId),
-        bookingId: booking._id,
-        userId: booking.athleteId,
-        method,
-        sync: {
-          mode: syncMode,
-          clientIdempotencyKey,
-          reconciledAt: new Date(),
-        },
-        recordedBy: new Types.ObjectId(actorId),
-        occurredAt,
+      result = await this.transactions.run(async (session) => {
+        if (clientIdempotencyKey) {
+          const existing = await this.findByIdempotencyKey(
+            clientIdempotencyKey,
+            session,
+          );
+          if (existing) return { doc: existing, created: false };
+        }
+
+        const current = await this.bookingModel
+          .findById(booking._id)
+          .session(session);
+        if (!current) throw new NotFoundException('Booking not found');
+        if (
+          current.status !== BookingStatus.CONFIRMED &&
+          current.status !== BookingStatus.CHECKED_IN
+        ) {
+          throw new ConflictException(
+            `Cannot check in booking in status "${current.status}"`,
+          );
+        }
+
+        const previous = await this.checkInModel
+          .findOne({ bookingId: current._id })
+          .session(session);
+        if (previous) return { doc: previous, created: false };
+
+        const doc = new this.checkInModel({
+          clubId: new Types.ObjectId(clubId),
+          bookingId: current._id,
+          userId: current.athleteId,
+          method,
+          sync: {
+            mode: syncMode,
+            clientIdempotencyKey,
+            reconciledAt: new Date(),
+          },
+          recordedBy: new Types.ObjectId(actorId),
+          occurredAt,
+        });
+        await doc.save({ session });
+
+        if (current.status === BookingStatus.CONFIRMED) {
+          current.status = BookingStatus.CHECKED_IN;
+          await current.save({ session });
+        }
+        return { doc, created: true };
       });
     } catch (err: unknown) {
-      if (this.isDuplicateKey(err) && clientIdempotencyKey) {
-        const existing = await this.findByIdempotencyKey(clientIdempotencyKey);
+      if (this.isDuplicateKey(err)) {
+        const existing = clientIdempotencyKey
+          ? await this.findByIdempotencyKey(clientIdempotencyKey)
+          : await this.checkInModel.findOne({ bookingId: booking._id });
         if (existing) return this.toPublic(existing);
       }
       throw err;
     }
 
-    if (booking.status === BookingStatus.CONFIRMED) {
-      booking.status = BookingStatus.CHECKED_IN;
-      await booking.save();
+    if (result.created) {
+      this.audit.log({
+        action: AuditAction.CHECKIN_RECORDED,
+        actorId,
+        targetUserId: booking.athleteId,
+        metadata: {
+          clubId,
+          checkInId: result.doc._id.toString(),
+          bookingId: booking._id.toString(),
+          method,
+          syncMode,
+        },
+        request,
+      });
     }
 
-    this.audit.log({
-      action: AuditAction.CHECKIN_RECORDED,
-      actorId,
-      targetUserId: booking.athleteId,
-      metadata: {
-        clubId,
-        checkInId: doc._id.toString(),
-        bookingId: booking._id.toString(),
-        method,
-        syncMode,
-      },
-      request,
-    });
-
-    return this.toPublic(doc);
+    return this.toPublic(result.doc);
   }
 
-  private async assertMembershipCheckInEligible(args: {
+  private async recordMembershipCheckIn(args: {
     clubId: string;
     membershipId: string;
     userId: string;
-  }) {
+    actorId: string;
+    method: CheckInMethod;
+    syncMode: CheckInSyncMode;
+    clientIdempotencyKey?: string;
+    occurredAt: Date;
+  }): Promise<CheckInDocument> {
+    const {
+      clubId,
+      membershipId,
+      userId,
+      actorId,
+      method,
+      syncMode,
+      clientIdempotencyKey,
+      occurredAt,
+    } = args;
+
+    try {
+      return await this.transactions.run(async (session) => {
+        if (clientIdempotencyKey) {
+          const existing = await this.findByIdempotencyKey(
+            clientIdempotencyKey,
+            session,
+          );
+          if (existing) return existing;
+        }
+
+        await this.assertMembershipCheckInEligible(
+          { clubId, membershipId, userId },
+          session,
+        );
+
+        const doc = new this.checkInModel({
+          clubId: new Types.ObjectId(clubId),
+          membershipId: new Types.ObjectId(membershipId),
+          userId: new Types.ObjectId(userId),
+          method,
+          sync: {
+            mode: syncMode,
+            clientIdempotencyKey,
+            reconciledAt: new Date(),
+          },
+          recordedBy: new Types.ObjectId(actorId),
+          occurredAt,
+        });
+        await doc.save({ session });
+        await this.consumeMembershipCreditAfterCheckIn(
+          { clubId, membershipId, actorId },
+          session,
+        );
+        return doc;
+      });
+    } catch (err) {
+      if (this.isDuplicateKey(err) && clientIdempotencyKey) {
+        const existing = await this.findByIdempotencyKey(clientIdempotencyKey);
+        if (existing) return existing;
+      }
+      throw err;
+    }
+  }
+
+  private async assertMembershipCheckInEligible(
+    args: {
+      clubId: string;
+      membershipId: string;
+      userId: string;
+    },
+    session?: ClientSession,
+  ) {
     const { clubId, membershipId, userId } = args;
     if (!Types.ObjectId.isValid(membershipId)) {
       throw new BadRequestException('Invalid membershipId');
     }
-    const membership = await this.membershipModel.findById(membershipId);
+    const membership = await this.membershipModel
+      .findById(membershipId)
+      .session(session ?? null);
     if (!membership || membership.clubId.toString() !== clubId) {
       throw new NotFoundException('Membership not found for this club');
     }
@@ -635,11 +682,14 @@ export class CheckinService {
     }
   }
 
-  private async consumeMembershipCreditAfterCheckIn(args: {
-    clubId: string;
-    membershipId: string;
-    actorId: string;
-  }) {
+  private async consumeMembershipCreditAfterCheckIn(
+    args: {
+      clubId: string;
+      membershipId: string;
+      actorId: string;
+    },
+    session?: ClientSession,
+  ) {
     const { clubId, membershipId, actorId } = args;
     try {
       await this.memberships.consumeCredit(
@@ -647,6 +697,7 @@ export class CheckinService {
         { amount: 1, reason: 'check_in' },
         { userId: actorId, kind: MembershipActorKind.STAFF },
         clubId,
+        session,
       );
     } catch (err) {
       // Duration memberships do not burn session/entry credit.
@@ -660,10 +711,10 @@ export class CheckinService {
     }
   }
 
-  private async findByIdempotencyKey(key: string) {
-    return this.checkInModel.findOne({
-      'sync.clientIdempotencyKey': key,
-    });
+  private async findByIdempotencyKey(key: string, session?: ClientSession) {
+    return this.checkInModel
+      .findOne({ 'sync.clientIdempotencyKey': key })
+      .session(session ?? null);
   }
 
   private isDuplicateKey(err: unknown): boolean {

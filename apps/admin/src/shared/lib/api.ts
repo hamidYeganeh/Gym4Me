@@ -20,12 +20,14 @@ import {
   createAdminUsersApi,
   createAdminVerificationApi,
 } from "@repo/api/admin";
+import { createAccountProfileApi } from "@repo/api/account";
 import { createAppConfigApi } from "@repo/api/app-config";
 import { createMediaApi } from "@repo/api/media";
 import { apiClient } from "./api-client";
 
 export { adminAuth, apiClient } from "./api-client";
 
+export const accountProfile = createAccountProfileApi(apiClient);
 export const adminUsers = createAdminUsersApi(apiClient);
 export const adminBasics = createAdminBasicsApi(apiClient);
 export const adminClubs = createAdminClubsApi(apiClient);

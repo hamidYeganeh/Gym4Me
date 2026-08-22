@@ -21,16 +21,18 @@ const columnHelper = createColumnHelper<Booking>();
 export function BookingsListTableSection({
   items,
   total,
+  page,
+  pageSize,
+  totalPages,
   loading,
-  fetchingMore,
-  hasMore,
   error,
-  onLoadMore,
+  onPageChange,
   onCancel,
   onRefund,
   className,
 }: BookingsListTableSectionProps) {
   const t = useTranslations("Admin.Bookings");
+  const tCommon = useTranslations("Admin.Common");
   const styles = bookingsListTableSectionVariants();
 
   const columns = useMemo(
@@ -41,7 +43,7 @@ export function BookingsListTableSection({
           header: t("columns.status"),
           cell: ({ getValue }) => (
             <Chip size="sm" variant="soft">
-              <Chip.Label>{getValue()}</Chip.Label>
+              <Chip.Label>{t(`status.${getValue()}`)}</Chip.Label>
             </Chip>
           ),
         }),
@@ -107,6 +109,9 @@ export function BookingsListTableSection({
     onRefund,
   };
 
+  const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const to = Math.min(page * pageSize, total);
+
   return (
     <AdminDataTable
       ariaLabel={t("title")}
@@ -116,14 +121,17 @@ export function BookingsListTableSection({
       emptyLabel={t("empty")}
       error={error}
       getRowId={(row) => row.id}
-      hasMore={hasMore}
-      isFetchingMore={fetchingMore}
       isLoading={loading}
       loadingLabel={t("loading")}
-      loadingMoreLabel={t("loadingMore")}
       meta={meta}
-      summaryLabel={t("infinite.summary", { loaded: items.length, total })}
-      onLoadMore={onLoadMore}
+      pagination={{
+        page,
+        totalPages,
+        previousLabel: tCommon("pagination.previous"),
+        nextLabel: tCommon("pagination.next"),
+        onPageChange,
+      }}
+      summaryLabel={tCommon("pagination.summary", { from, to, total })}
     />
   );
 }

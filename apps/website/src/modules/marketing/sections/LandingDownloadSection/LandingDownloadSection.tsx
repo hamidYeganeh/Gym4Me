@@ -13,6 +13,13 @@ import { landingDownloadSectionStyles } from "./LandingDownloadSection.styles";
 import type { LandingDownloadSectionProps } from "./LandingDownloadSection.types";
 import { AppStoreMark, PlayStoreMark } from "./LandingDownloadStoreMarks";
 
+const appStoreUrl = process.env.NEXT_PUBLIC_APP_STORE_URL?.trim();
+const playStoreUrl = process.env.NEXT_PUBLIC_PLAY_STORE_URL?.trim();
+
+function openStore(url?: string) {
+  if (url) window.location.assign(url);
+}
+
 export function LandingDownloadSection({
   className,
 }: LandingDownloadSectionProps) {
@@ -54,10 +61,11 @@ export function LandingDownloadSection({
             </Typography>
             <InViewRise delayIn={120} fromY={18} className={slots.actions()}>
               <Button
+                isDisabled={!appStoreUrl}
                 size="lg"
                 aria-label={`${t("appStoreLabel")} ${t("appStoreTitle")}`}
                 className={slots.store()}
-                onPress={() => window.location.assign("#")}
+                onPress={() => openStore(appStoreUrl)}
               >
                 <AppStoreMark className={slots.storeIcon()} />
                 <span>
@@ -78,11 +86,12 @@ export function LandingDownloadSection({
                 </span>
               </Button>
               <Button
+                isDisabled={!playStoreUrl}
                 size="lg"
                 variant="ghost"
                 aria-label={`${t("playStoreLabel")} ${t("playStoreTitle")}`}
                 className={slots.storeGhost()}
-                onPress={() => window.location.assign("#")}
+                onPress={() => openStore(playStoreUrl)}
               >
                 <PlayStoreMark className={slots.storeIconPlay()} />
                 <span>

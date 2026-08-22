@@ -86,6 +86,7 @@
     "typescript-eslint": "^8.20.0"
   },
   "jest": {
+    "watchman": false,
     "moduleFileExtensions": [
       "js",
       "json",
@@ -99,6 +100,20 @@
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
+    "coverageThreshold": {
+      "src/finance/payment-idempotency.policy.ts": {
+        "branches": 90,
+        "functions": 90,
+        "lines": 90,
+        "statements": 90
+      },
+      "src/progress/data-grant.policy.ts": {
+        "branches": 90,
+        "functions": 90,
+        "lines": 90,
+        "statements": 90
+      }
+    },
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
   }

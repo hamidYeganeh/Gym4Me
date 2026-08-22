@@ -11,7 +11,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import type { Request } from 'express';
 import { Model, Types } from 'mongoose';
-import type { QueryFilter } from 'mongoose';
+import type { ClientSession, QueryFilter } from 'mongoose';
 import { ReferralService } from '../account/referral/referral.service';
 import {
   AuditAction,
@@ -41,6 +41,7 @@ import {
   createSearchFilter,
   resolveListSort,
 } from '../common/utils/list-query.util';
+import { MongoTransactionService } from '../common/mongo/mongo-transaction.service';
 import { AuditService } from '../audit/audit.service';
 import { User, UserDocument } from '../schemas/user.schema';
 import {
@@ -96,6 +97,7 @@ import {
   TopUpWalletDto,
   UpsertCompensationRuleDto,
 } from './dto/finance.dto';
+import { assertPaymentIdempotencyMatch } from './payment-idempotency.policy';
 
 export type WalletOwnerRef = {
   type: WalletOwnerType;
@@ -141,6 +143,7 @@ export class FinanceService {
     private readonly audit: AuditService,
     @Inject(forwardRef(() => ReferralService))
     private readonly referral: ReferralService,
+    private readonly transactions: MongoTransactionService,
   ) {}
 
   // ── Club scope ──────────────────────────────────────────────────────────
@@ -159,30 +162,23 @@ export class FinanceService {
 
   // ── Wallet ──────────────────────────────────────────────────────────────
 
-  async getOrCreateWallet(owner: WalletOwnerRef) {
+  async getOrCreateWallet(owner: WalletOwnerRef, session?: ClientSession) {
     const ownerId = this.toObjectId(owner.id, 'owner.id');
-    const existing = await this.walletModel
-      .findOne({ 'owner.type': owner.type, 'owner.id': ownerId })
+    const wallet = await this.walletModel
+      .findOneAndUpdate(
+        { 'owner.type': owner.type, 'owner.id': ownerId },
+        {
+          $setOnInsert: {
+            owner: { type: owner.type, id: ownerId },
+            balance: 0,
+            currency: 'IRT',
+          },
+        },
+        { upsert: true, new: true, setDefaultsOnInsert: true, session },
+      )
       .lean();
-    if (existing) return existing;
-
-    try {
-      const created = await this.walletModel.create({
-        owner: { type: owner.type, id: ownerId },
-        balance: 0,
-        currency: 'IRT',
-      });
-      return created.toObject();
-    } catch (err) {
-      // Race on unique index — re-read.
-      if ((err as { code?: number }).code === 11000) {
-        const again = await this.walletModel
-          .findOne({ 'owner.type': owner.type, 'owner.id': ownerId })
-          .lean();
-        if (again) return again;
-      }
-      throw err;
-    }
+    if (!wallet) throw new Error('Wallet upsert did not return a document');
+    return wallet;
   }
 
   async getWalletBalance(owner: WalletOwnerRef) {
@@ -253,14 +249,58 @@ export class FinanceService {
       operatorUserId?: string;
       request?: Request;
       walletOwner?: WalletOwnerRef;
+      session?: ClientSession;
     },
+  ) {
+    try {
+      const result = opts?.session
+        ? await this.recordPaymentInSession(dto, opts, opts.session)
+        : await this.transactions.run((session) =>
+            this.recordPaymentInSession(dto, opts, session),
+          );
+
+      if (!opts?.session && !result.idempotent) {
+        await this.runPaymentPostCommitEffects(dto, opts, result);
+      }
+      return result;
+    } catch (err) {
+      if ((err as { code?: number }).code === 11000) {
+        const existing = await this.paymentModel
+          .findOne({ idempotencyKey: dto.idempotencyKey })
+          .lean();
+        if (existing) {
+          assertPaymentIdempotencyMatch(existing, dto);
+          const ledger = await this.ledgerModel
+            .findOne({ paymentId: existing._id })
+            .lean();
+          return { payment: existing, ledger, idempotent: true as const };
+        }
+      }
+      throw err;
+    }
+  }
+
+  private async recordPaymentInSession(
+    dto: RecordPaymentDto,
+    opts:
+      | {
+          actorId?: string;
+          operatorUserId?: string;
+          request?: Request;
+          walletOwner?: WalletOwnerRef;
+        }
+      | undefined,
+    session: ClientSession,
   ) {
     const existing = await this.paymentModel
       .findOne({ idempotencyKey: dto.idempotencyKey })
+      .session(session)
       .lean();
     if (existing) {
+      assertPaymentIdempotencyMatch(existing, dto);
       const ledger = await this.ledgerModel
         .findOne({ paymentId: existing._id })
+        .session(session)
         .lean();
       return { payment: existing, ledger, idempotent: true as const };
     }
@@ -275,6 +315,7 @@ export class FinanceService {
     const split = await this.normalizeSplitWithCompensation(
       dto.amount,
       related,
+      session,
     );
     this.assertSplitIdentity(split);
     const tenders = this.normalizeTenders(
@@ -299,14 +340,14 @@ export class FinanceService {
           'Wallet owner required for wallet payments',
         );
       }
-      const wallet = await this.getOrCreateWallet(walletOwner);
+      const wallet = await this.getOrCreateWallet(walletOwner, session);
       const paid = split.gross - split.discount;
       if (wallet.balance < paid) {
         throw new BadRequestException('Insufficient wallet balance');
       }
     }
 
-    const paymentDoc = await this.paymentModel.create({
+    const paymentDoc = new this.paymentModel({
       purpose: dto.purpose,
       channel: dto.channel,
       status,
@@ -335,6 +376,7 @@ export class FinanceService {
           ? now
           : undefined,
     });
+    await paymentDoc.save({ session });
 
     let ledger: LedgerEntryDocument | null = null;
 
@@ -356,75 +398,25 @@ export class FinanceService {
       );
       this.assertBalanced(lines);
 
-      try {
-        ledger = await this.ledgerModel.create({
-          kind,
-          paymentId: paymentDoc._id,
-          lines,
-          split,
-          related,
-          dedupeKey: `payment:${dto.idempotencyKey}`,
-          occurredAt: now,
-          note: dto.note,
-        });
-      } catch (err) {
-        if ((err as { code?: number }).code === 11000) {
-          // Concurrent duplicate — return the winning payment.
-          const again = await this.paymentModel
-            .findOne({ idempotencyKey: dto.idempotencyKey })
-            .lean();
-          const againLedger = again
-            ? await this.ledgerModel.findOne({ paymentId: again._id }).lean()
-            : null;
-          return {
-            payment: again ?? paymentDoc.toObject(),
-            ledger: againLedger,
-            idempotent: true as const,
-          };
-        }
-        throw err;
-      }
+      ledger = new this.ledgerModel({
+        kind,
+        paymentId: paymentDoc._id,
+        lines,
+        split,
+        related,
+        dedupeKey: `payment:${dto.idempotencyKey}`,
+        occurredAt: now,
+        note: dto.note,
+      });
+      await ledger.save({ session });
 
       await this.applyWalletSideEffects(
         dto.channel,
         dto.purpose,
         split,
         walletOwner,
+        session,
       );
-
-      this.audit.log({
-        action: AuditAction.FINANCE_PAYMENT_RECORDED,
-        actorId: opts?.actorId ?? opts?.operatorUserId,
-        targetUserId: dto.payer.userId,
-        metadata: {
-          paymentId: paymentDoc._id.toString(),
-          channel: dto.channel,
-          purpose: dto.purpose,
-          net: split.net,
-          clubId: related.clubId?.toString(),
-        },
-        request: opts?.request,
-      });
-      this.audit.log({
-        action: AuditAction.FINANCE_LEDGER_POSTED,
-        actorId: opts?.actorId ?? opts?.operatorUserId,
-        metadata: {
-          ledgerEntryId: ledger._id.toString(),
-          paymentId: paymentDoc._id.toString(),
-          kind,
-        },
-        request: opts?.request,
-      });
-
-      // Best-effort invoice projection for receipt UI.
-      try {
-        await this.issueInvoiceFromPaymentInternal(paymentDoc.toObject(), {
-          actorId: opts?.actorId ?? opts?.operatorUserId,
-          request: opts?.request,
-        });
-      } catch {
-        // Non-fatal — invoice can be issued later via from-payment endpoint.
-      }
     }
 
     return {
@@ -432,6 +424,75 @@ export class FinanceService {
       ledger: ledger?.toObject() ?? null,
       idempotent: false as const,
     };
+  }
+
+  async runPaymentPostCommitEffects(
+    dto: RecordPaymentDto,
+    opts:
+      | {
+          actorId?: string;
+          operatorUserId?: string;
+          request?: Request;
+          walletOwner?: WalletOwnerRef;
+        }
+      | undefined,
+    result: Awaited<ReturnType<FinanceService['recordPaymentInSession']>>,
+  ) {
+    if (result.idempotent || !result.ledger) return;
+    const payment = result.payment;
+    const ledger = result.ledger;
+
+    this.audit.log({
+      action: AuditAction.FINANCE_PAYMENT_RECORDED,
+      actorId: opts?.actorId ?? opts?.operatorUserId,
+      targetUserId: dto.payer.userId,
+      metadata: {
+        paymentId: payment._id.toString(),
+        channel: dto.channel,
+        purpose: dto.purpose,
+        net: payment.amount.net,
+        clubId: payment.related?.clubId?.toString(),
+      },
+      request: opts?.request,
+    });
+    this.audit.log({
+      action: AuditAction.FINANCE_LEDGER_POSTED,
+      actorId: opts?.actorId ?? opts?.operatorUserId,
+      metadata: {
+        ledgerEntryId: ledger._id.toString(),
+        paymentId: payment._id.toString(),
+        kind: ledger.kind,
+      },
+      request: opts?.request,
+    });
+
+    if (dto.purpose === PaymentPurpose.WALLET_TOPUP && opts?.walletOwner) {
+      this.audit.log({
+        action: AuditAction.FINANCE_WALLET_TOPUP,
+        targetUserId:
+          opts.walletOwner.type === WalletOwnerType.USER
+            ? opts.walletOwner.id
+            : undefined,
+        metadata: {
+          ownerType: opts.walletOwner.type,
+          ownerId: opts.walletOwner.id.toString(),
+          amount: payment.amount.gross - payment.amount.discount,
+        },
+      });
+    }
+
+    try {
+      await this.issueInvoiceFromPaymentInternal(payment, {
+        actorId: opts?.actorId ?? opts?.operatorUserId,
+        request: opts?.request,
+      });
+    } catch (err) {
+      this.logger.warn(
+        `Invoice projection failed for payment ${payment._id.toString()}: ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+      );
+    }
   }
 
   async recordManualPayment(
@@ -1503,14 +1564,31 @@ export class FinanceService {
 
   // ── Debts ───────────────────────────────────────────────────────────────
 
-  async createDebt(clubId: string, dto: CreateDebtDto) {
+  async createDebt(
+    clubId: string,
+    dto: CreateDebtDto,
+    session?: ClientSession,
+  ) {
+    if (session) {
+      return this.createDebtInSession(clubId, dto, session);
+    }
+    return this.transactions.run((transactionSession) =>
+      this.createDebtInSession(clubId, dto, transactionSession),
+    );
+  }
+
+  private async createDebtInSession(
+    clubId: string,
+    dto: CreateDebtDto,
+    session: ClientSession,
+  ) {
     if (!dto.holder.userId && !dto.holder.guest) {
       throw new BadRequestException(
         'holder.userId or holder.guest is required',
       );
     }
 
-    const debt = await this.debtModel.create({
+    const debt = new this.debtModel({
       clubId: this.toObjectId(clubId, 'clubId'),
       membershipId: dto.membershipId
         ? this.toObjectId(dto.membershipId, 'membershipId')
@@ -1528,6 +1606,7 @@ export class FinanceService {
       paymentIds: [],
       note: dto.note,
     });
+    await debt.save({ session });
 
     if (dto.installmentCount && dto.installmentCount > 1) {
       const count = dto.installmentCount;
@@ -1554,12 +1633,13 @@ export class FinanceService {
           dueAt,
         });
       }
-      await this.installmentModel.insertMany(docs);
+      await this.installmentModel.insertMany(docs, { session });
     }
 
     const installments = await this.installmentModel
       .find({ debtId: debt._id })
       .sort({ sequence: 1 })
+      .session(session ?? null)
       .lean();
 
     return { debt: debt.toObject(), installments };
@@ -1572,16 +1652,6 @@ export class FinanceService {
     dto: RecordDebtPaymentDto,
     request?: Request,
   ) {
-    const debt = await this.findClubDebt(clubId, debtId);
-    if (
-      debt.status === DebtStatus.SETTLED ||
-      debt.status === DebtStatus.WRITTEN_OFF
-    ) {
-      throw new BadRequestException(`Debt is ${debt.status}`);
-    }
-    if (dto.amount > debt.remaining) {
-      throw new BadRequestException('Amount exceeds remaining balance');
-    }
     if (
       !MANUAL_CHANNELS.has(dto.channel) &&
       dto.channel !== PaymentChannel.WALLET
@@ -1589,45 +1659,73 @@ export class FinanceService {
       throw new BadRequestException('Unsupported debt payment channel');
     }
 
-    const result = await this.recordPayment(
-      {
-        purpose: PaymentPurpose.MANUAL,
-        channel: dto.channel,
-        status: PaymentStatus.CAPTURED,
-        amount: {
-          gross: dto.amount,
-          discount: 0,
-          tax: 0,
-          providerShare: 0,
-          platformFee: 0,
-          gatewayFee: 0,
-          net: dto.amount,
-        },
-        reference: {
-          orderId: dto.orderId ?? `debt:${debtId}:${dto.idempotencyKey}`,
-        },
-        payer: {
-          userId: debt.holder.userId?.toString(),
-          guest: debt.holder.guest
-            ? {
-                name: debt.holder.guest.name,
-                phone: debt.holder.guest.phone,
-              }
-            : undefined,
-        },
-        related: { clubId },
-        idempotencyKey: dto.idempotencyKey,
-        operatorNote: dto.operatorNote,
+    const paymentDto: RecordPaymentDto = {
+      purpose: PaymentPurpose.MANUAL,
+      channel: dto.channel,
+      status: PaymentStatus.CAPTURED,
+      amount: {
+        gross: dto.amount,
+        discount: 0,
+        tax: 0,
+        providerShare: 0,
+        platformFee: 0,
+        gatewayFee: 0,
+        net: dto.amount,
       },
-      { operatorUserId, actorId: operatorUserId, request },
-    );
+      reference: {
+        orderId: dto.orderId ?? `debt:${debtId}:${dto.idempotencyKey}`,
+      },
+      payer: {},
+      related: { clubId },
+      idempotencyKey: dto.idempotencyKey,
+      operatorNote: dto.operatorNote,
+    };
 
-    if (!result.idempotent) {
+    const committed = await this.transactions.run(async (session) => {
+      const debt = await this.findClubDebt(clubId, debtId, session);
+      paymentDto.payer = {
+        userId: debt.holder.userId?.toString(),
+        guest: debt.holder.guest
+          ? {
+              name: debt.holder.guest.name,
+              phone: debt.holder.guest.phone,
+            }
+          : undefined,
+      };
+
+      const result = await this.recordPayment(paymentDto, {
+        operatorUserId,
+        actorId: operatorUserId,
+        session,
+      });
+
+      if (result.idempotent) {
+        const alreadyApplied = debt.paymentIds.some((paymentId) =>
+          paymentId.equals(result.payment._id),
+        );
+        if (!alreadyApplied) {
+          throw new ConflictException(
+            'Idempotency key is already used by another payment',
+          );
+        }
+        return { debt, result };
+      }
+
+      if (
+        debt.status === DebtStatus.SETTLED ||
+        debt.status === DebtStatus.WRITTEN_OFF
+      ) {
+        throw new BadRequestException(`Debt is ${debt.status}`);
+      }
+      if (dto.amount > debt.remaining) {
+        throw new BadRequestException('Amount exceeds remaining balance');
+      }
+
       debt.remaining = Math.max(0, debt.remaining - dto.amount);
       debt.paymentIds.push(result.payment._id);
       debt.status =
         debt.remaining === 0 ? DebtStatus.SETTLED : DebtStatus.PARTIAL;
-      await debt.save();
+      await debt.save({ session });
 
       if (debt.status === DebtStatus.SETTLED) {
         await this.installmentModel.updateMany(
@@ -1642,15 +1740,26 @@ export class FinanceService {
             },
           },
           { $set: { status: InstallmentStatus.PAID, paidAt: new Date() } },
+          { session },
         );
       }
+
+      return { debt, result };
+    });
+
+    if (!committed.result.idempotent) {
+      await this.runPaymentPostCommitEffects(
+        paymentDto,
+        { operatorUserId, actorId: operatorUserId, request },
+        committed.result,
+      );
     }
 
     return {
-      debt: debt.toObject(),
-      payment: result.payment,
-      ledger: result.ledger,
-      idempotent: result.idempotent,
+      debt: committed.debt.toObject(),
+      payment: committed.result.payment,
+      ledger: committed.result.ledger,
+      idempotent: committed.result.idempotent,
     };
   }
 
@@ -1713,6 +1822,7 @@ export class FinanceService {
   private async normalizeSplitWithCompensation(
     input: RecordPaymentDto['amount'],
     related: { clubId?: Types.ObjectId; coachUserId?: Types.ObjectId },
+    session?: ClientSession,
   ): Promise<PaymentAmountSplit> {
     if (input.providerShare !== undefined && input.providerShare !== null) {
       return this.normalizeSplit(input);
@@ -1750,6 +1860,7 @@ export class FinanceService {
         ],
       })
       .sort({ coachUserId: -1, 'effective.from': -1 })
+      .session(session ?? null)
       .lean();
 
     if (!rule) {
@@ -2052,40 +2163,29 @@ export class FinanceService {
     purpose: PaymentPurpose,
     split: PaymentAmountSplit,
     owner?: WalletOwnerRef,
+    session?: ClientSession,
   ) {
     if (!owner) return;
     const paid = split.gross - split.discount;
 
     if (purpose === PaymentPurpose.WALLET_TOPUP) {
-      const wallet = await this.getOrCreateWallet(owner);
+      const wallet = await this.getOrCreateWallet(owner, session);
       await this.walletModel.updateOne(
         { _id: wallet._id },
         { $inc: { balance: paid } },
+        { session },
       );
-      this.audit.log({
-        action: AuditAction.FINANCE_WALLET_TOPUP,
-        targetUserId:
-          owner.type === WalletOwnerType.USER ? owner.id : undefined,
-        metadata: {
-          ownerType: owner.type,
-          ownerId: owner.id.toString(),
-          amount: paid,
-        },
-      });
       return;
     }
 
     if (channel === PaymentChannel.WALLET) {
-      const wallet = await this.getOrCreateWallet(owner);
-      if (wallet.balance < paid) {
-        throw new BadRequestException('Insufficient wallet balance');
-      }
-      await this.walletModel.updateOne(
+      const wallet = await this.getOrCreateWallet(owner, session);
+      const debit = await this.walletModel.updateOne(
         { _id: wallet._id, balance: { $gte: paid } },
         { $inc: { balance: -paid } },
+        { session },
       );
-      const refreshed = await this.walletModel.findById(wallet._id).lean();
-      if (!refreshed || refreshed.balance < 0) {
+      if (debit.modifiedCount !== 1) {
         throw new BadRequestException('Insufficient wallet balance');
       }
     }
@@ -2193,14 +2293,20 @@ export class FinanceService {
     return shift;
   }
 
-  private async findClubDebt(clubId: string, debtId: string) {
+  private async findClubDebt(
+    clubId: string,
+    debtId: string,
+    session?: ClientSession,
+  ) {
     if (!Types.ObjectId.isValid(debtId)) {
       throw new NotFoundException('Debt not found');
     }
-    const debt = await this.debtModel.findOne({
-      _id: new Types.ObjectId(debtId),
-      clubId: this.toObjectId(clubId, 'clubId'),
-    });
+    const debt = await this.debtModel
+      .findOne({
+        _id: new Types.ObjectId(debtId),
+        clubId: this.toObjectId(clubId, 'clubId'),
+      })
+      .session(session ?? null);
     if (!debt) throw new NotFoundException('Debt not found');
     return debt;
   }

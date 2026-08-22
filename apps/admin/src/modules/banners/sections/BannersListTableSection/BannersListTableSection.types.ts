@@ -3,11 +3,12 @@ import type { AdminBanner } from "@repo/api";
 export type BannersListTableSectionProps = {
   items: AdminBanner[];
   total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
   loading: boolean;
-  fetchingMore: boolean;
-  hasMore: boolean;
   error: string | null;
-  onLoadMore: () => void;
+  onPageChange: (page: number) => void;
   onEdit: (row: AdminBanner) => void;
   onDelete: (row: AdminBanner) => void;
   className?: string;

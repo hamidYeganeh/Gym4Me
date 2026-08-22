@@ -7,10 +7,9 @@ export const onboardingFooterSectionVariants = tv({
     continue:
       "min-h-14 w-full rounded-[1.35rem] text-base font-bold text-accent-foreground",
     continueSoft:
-      "min-h-14 w-full rounded-[1.35rem] bg-accent/25 text-base font-bold text-accent data-[hovered=true]:bg-accent/30 data-[pressed=true]:bg-accent/35",
-    continueIcon: "ms-2 size-5",
+      "min-h-14 w-full rounded-[1.35rem] bg-default text-base font-bold text-muted opacity-100",
+    continueIcon: "ms-2 size-5 rtl:rotate-180",
     secondaryAction:
       "text-sm font-bold text-accent outline-none data-[hovered=true]:bg-transparent data-[hovered=true]:opacity-80",
-    skip: "text-sm font-semibold text-danger outline-none data-[hovered=true]:bg-transparent data-[hovered=true]:opacity-80",
   },
 });

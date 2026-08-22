@@ -14,6 +14,7 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '../common/enums';
 import {
   FeatureFlagKeyParamDto,
+  ListAppConfigQueryDto,
   MobileBootstrapQueryDto,
   UpsertFeatureFlagDto,
   UpsertReleasePolicyDto,
@@ -43,8 +44,8 @@ export class AdminAppConfigController {
   constructor(private readonly appConfig: AppConfigService) {}
 
   @Get('feature-flags')
-  listFeatureFlags() {
-    return this.appConfig.listFeatureFlags();
+  listFeatureFlags(@Query() query: ListAppConfigQueryDto) {
+    return this.appConfig.listFeatureFlags(query);
   }
 
   @Put('feature-flags/:key')
@@ -57,8 +58,8 @@ export class AdminAppConfigController {
   }
 
   @Get('release-policies')
-  listReleasePolicies() {
-    return this.appConfig.listReleasePolicies();
+  listReleasePolicies(@Query() query: ListAppConfigQueryDto) {
+    return this.appConfig.listReleasePolicies(query);
   }
 
   @Put('release-policies')

@@ -6,10 +6,3 @@ export type SocialReportsHeaderSectionProps = {
   onRefresh: () => void;
   className?: string;
 };
-
-export const SOCIAL_REPORT_STATUS_FILTERS: Array<SocialReportStatus | "all"> = [
-  "all",
-  "open",
-  "resolved",
-  "rejected",
-];

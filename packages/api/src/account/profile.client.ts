@@ -1,12 +1,15 @@
 import type { ApiClient } from "../client";
-import type { PublicUser } from "../types";
+import type { FavouriteLocation, PublicUser } from "../types";
 import type {
   AthleteProfile,
   CoachProfile,
+  CreateFavouriteLocationInput,
+  FavouriteLocationsList,
   ProfileSettings,
   SubmitCoachVerificationInput,
   UpdateAthleteProfileInput,
   UpdateCoachProfileInput,
+  UpdateFavouriteLocationInput,
   UpdateMeInput,
   UpdateProfileSettingsInput,
 } from "./profile.dto";
@@ -34,6 +37,34 @@ export function createAccountProfileApi(client: ApiClient) {
       return client.request<ProfileSettings>(ep.settings, {
         method: "PATCH",
         body: input,
+      });
+    },
+
+    listFavouriteLocations() {
+      return client.request<FavouriteLocationsList>(ep.locations);
+    },
+
+    getFavouriteLocation(id: string) {
+      return client.request<FavouriteLocation>(ep.location(id));
+    },
+
+    createFavouriteLocation(input: CreateFavouriteLocationInput) {
+      return client.request<FavouriteLocation>(ep.locations, {
+        method: "POST",
+        body: input,
+      });
+    },
+
+    updateFavouriteLocation(id: string, input: UpdateFavouriteLocationInput) {
+      return client.request<FavouriteLocation>(ep.location(id), {
+        method: "PATCH",
+        body: input,
+      });
+    },
+
+    deleteFavouriteLocation(id: string) {
+      return client.request<FavouriteLocationsList>(ep.location(id), {
+        method: "DELETE",
       });
     },
 

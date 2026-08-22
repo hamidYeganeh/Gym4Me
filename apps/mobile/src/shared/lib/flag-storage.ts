@@ -18,6 +18,11 @@ export function onboardingProfileDoneKey(userId: string): string {
   return `${FLAG_KEYS.onboardingProfileDone}:${userId}`;
 }
 
+/** Per-account dismissal of athlete-home role-upgrade cards. */
+export function roleUpgradeDismissedKey(userId: string): string {
+  return `gym4me.athlete.roleUpgradeDismissed:${userId}`;
+}
+
 let hydration: Promise<void> | null = null;
 
 /** Copy persisted flags from Capacitor Preferences into localStorage (once). */
@@ -40,15 +45,12 @@ export function hydrateFlags(): Promise<void> {
 }
 
 /**
- * Ensure a per-user onboarding flag is available synchronously after cold start.
- * Call after session user id is known (Preferences → localStorage).
+ * Copy one persisted flag from Capacitor Preferences into localStorage.
+ * Use for per-user keys that are not in `FLAG_KEYS`.
  */
-export async function hydrateOnboardingProfileFlag(
-  userId: string,
-): Promise<void> {
-  if (typeof window === "undefined" || !userId) return;
+export async function hydratePersistedFlag(key: string): Promise<void> {
+  if (typeof window === "undefined" || !key) return;
   await hydrateFlags();
-  const key = onboardingProfileDoneKey(userId);
   if (window.localStorage.getItem(key) != null) return;
   try {
     const { value } = await Preferences.get({ key });
@@ -58,6 +60,17 @@ export async function hydrateOnboardingProfileFlag(
   } catch {
     // Best effort.
   }
+}
+
+/**
+ * Ensure a per-user onboarding flag is available synchronously after cold start.
+ * Call after session user id is known (Preferences → localStorage).
+ */
+export async function hydrateOnboardingProfileFlag(
+  userId: string,
+): Promise<void> {
+  if (!userId) return;
+  await hydratePersistedFlag(onboardingProfileDoneKey(userId));
 }
 
 /** Synchronous flag read (call `hydrateFlags` first on boot paths). */

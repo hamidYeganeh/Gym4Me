@@ -1,10 +1,10 @@
 import type { ApiClient } from "../client";
+import type { Paginated } from "../types";
 import { adminNotificationTemplatesEndpoints as ep } from "./notification-templates.endpoint";
 import type {
   CreateNotificationTemplateInput,
   ListNotificationTemplatesQuery,
   NotificationTemplate,
-  NotificationTemplatesResponse,
   UpdateNotificationTemplateInput,
 } from "./notification-templates.dto";
 
@@ -12,7 +12,9 @@ import type {
 export function createAdminNotificationTemplatesApi(client: ApiClient) {
   return {
     list(query: ListNotificationTemplatesQuery = {}) {
-      return client.request<NotificationTemplatesResponse>(ep.root, { query });
+      return client.request<Paginated<NotificationTemplate>>(ep.root, {
+        query,
+      });
     },
 
     get(key: string) {

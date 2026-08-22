@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@heroui/react/button";
 import { Chip } from "@heroui/react/chip";
@@ -7,13 +7,32 @@ import type { NotificationTemplate } from "@repo/api";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
 import { AdminDataTable, AdminShell } from "@/shared/components";
-import { useAdminInfiniteQuery } from "@/shared/hooks";
+import {
+  useAdminListQueryParams,
+  useAdminPaginatedQuery,
+} from "@/shared/hooks";
 import { adminNotificationTemplates } from "@/shared/lib/api";
+import {
+  adminListPaginationProps,
+  adminListPaginationSummary,
+} from "@/shared/lib/admin-list-pagination";
 import { routes } from "@/shared/lib/routes";
 import { notificationTemplatesScreenVariants } from "./NotificationTemplatesScreen.styles";
 import type { NotificationTemplatesScreenProps } from "./NotificationTemplatesScreen.types";
 
+const PAGE_SIZE = 30;
+const FILTER_KEYS = [] as const;
 const columnHelper = createColumnHelper<NotificationTemplate>();
+
+type TemplatesFilters = {
+  __unused?: string;
+};
+
+const FILTER_DEFAULTS = {
+  search: "",
+  page: 1,
+  page_size: PAGE_SIZE,
+};
 
 type TemplateTableMeta = {
   actionsClassName: string;
@@ -24,39 +43,48 @@ export function NotificationTemplatesScreen({
   className,
 }: NotificationTemplatesScreenProps) {
   const t = useTranslations("Admin.Ops");
+  const tCommon = useTranslations("Admin.Common");
   const navigate = useNavigate();
   const styles = notificationTemplatesScreenVariants();
 
-  const [search, setSearch] = useState("");
+  const { search, searchInput, setSearchInput, page, pageSize, setPage } =
+    useAdminListQueryParams<TemplatesFilters>({
+      filterKeys: FILTER_KEYS,
+      defaults: FILTER_DEFAULTS,
+    });
 
-  const queryKey = useMemo(() => JSON.stringify({ search }), [search]);
+  const queryKey = useMemo(
+    () => JSON.stringify({ search, pageSize }),
+    [pageSize, search],
+  );
 
   const fetchPage = useCallback(
-    async (page: number, pageSize: number) => {
-      const response = await adminNotificationTemplates.list({
+    async (nextPage: number, nextPageSize: number) => {
+      return adminNotificationTemplates.list({
+        page: nextPage,
+        page_size: nextPageSize,
         search: search.trim() || undefined,
       });
-      return {
-        result: response.items,
-        pagination: {
-          page,
-          page_size: pageSize,
-          next: null,
-          prev: null,
-          total: response.items.length,
-        },
-      };
     },
     [search],
   );
 
-  const { items, loading, error, reload } =
-    useAdminInfiniteQuery<NotificationTemplate>({
-      queryKey,
-      pageSize: 500,
-      errorFallback: t("templates.errorLoad"),
-      fetchPage,
-    });
+  const {
+    items,
+    total,
+    totalPages,
+    loading,
+    error,
+    setPage: changePage,
+    reload,
+  } = useAdminPaginatedQuery<NotificationTemplate>({
+    queryKey,
+    page,
+    pageSize,
+    onPageChange: setPage,
+    errorFallback: t("templates.errorLoad"),
+    fetchPage,
+  });
 
   const columns = useMemo(
     () =>
@@ -148,14 +176,16 @@ export function NotificationTemplatesScreen({
     onEdit: (row) => navigate(routes.opsTemplateEdit(row.key)),
   };
 
+  const summary = adminListPaginationSummary(page, pageSize, total);
+
   return (
     <AdminShell
       activeNavId="ops"
       className={className}
       opsSection={{
         activeTabId: "templates",
-        searchValue: search,
-        onSearchChange: setSearch,
+        searchValue: searchInput,
+        onSearchChange: setSearchInput,
       }}
     >
       <div className={styles.content()}>
@@ -180,16 +210,17 @@ export function NotificationTemplatesScreen({
           emptyLabel={t("templates.empty")}
           error={error}
           getRowId={(row) => row.id}
-          hasMore={false}
-          isFetchingMore={false}
           isLoading={loading}
           loadingLabel={t("loading")}
-          loadingMoreLabel={t("loadingMore")}
           meta={meta}
-          onLoadMore={() => {}}
-          summaryLabel={t("templates.summary", {
-            loaded: items.length,
+          pagination={adminListPaginationProps({
+            page,
+            totalPages,
+            previousLabel: tCommon("pagination.previous"),
+            nextLabel: tCommon("pagination.next"),
+            onPageChange: changePage,
           })}
+          summaryLabel={tCommon("pagination.summary", summary)}
         />
       </div>
     </AdminShell>

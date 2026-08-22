@@ -1,6 +1,7 @@
 "use client";
 
 import type { ComponentType } from "react";
+import { ScrollShadow } from "@heroui/react/scroll-shadow";
 import { Spinner } from "@heroui/react/spinner";
 import { Typography } from "@heroui/react/typography";
 import { BarbellHorizontal } from "@repo/icons/BarbellHorizontal";
@@ -119,23 +120,30 @@ export function OnboardingSportsSection({
 
   return (
     <div className={styles.root({ className })}>
-      <div aria-label={label} className={styles.grid()} role="group">
-        {options.map((option) => {
-          const isSelected = selected.includes(option.id);
-          const Icon = resolveSportIcon(option.slug, option.icon);
+      <ScrollShadow
+        hideScrollBar
+        className={styles.scroller()}
+        orientation="vertical"
+        size={56}
+      >
+        <div aria-label={label} className={styles.grid()} role="group">
+          {options.map((option) => {
+            const isSelected = selected.includes(option.id);
+            const Icon = resolveSportIcon(option.slug, option.icon);
 
-          return (
-            <SportSelectCard
-              actionLabel={option.label}
-              icon={<Icon aria-hidden size={32} />}
-              isSelected={isSelected}
-              key={option.id}
-              label={option.label}
-              onChange={() => onToggle(option.id)}
-            />
-          );
-        })}
-      </div>
+            return (
+              <SportSelectCard
+                actionLabel={option.label}
+                icon={<Icon aria-hidden size={32} />}
+                isSelected={isSelected}
+                key={option.id}
+                label={option.label}
+                onChange={() => onToggle(option.id)}
+              />
+            );
+          })}
+        </div>
+      </ScrollShadow>
     </div>
   );
 }

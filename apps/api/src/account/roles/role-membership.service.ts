@@ -548,9 +548,7 @@ export class RoleMembershipService {
   }
 
   private toPublic(
-    doc:
-      | RoleRequestDocument
-      | (RoleRequest & { _id: Types.ObjectId }),
+    doc: RoleRequestDocument | (RoleRequest & { _id: Types.ObjectId }),
   ) {
     const application = doc.application ?? { documentMediaIds: [] };
     const review = doc.review ?? {};

@@ -9,6 +9,8 @@ export type {
   AthleteLifestyle,
   AthleteProfile,
   CoachProfile,
+  CreateFavouriteLocationInput,
+  FavouriteLocationsList,
   ProfileSettings,
   SubmitCoachVerificationInput,
   UpdateAddressInput,
@@ -16,6 +18,7 @@ export type {
   UpdateAthleteLifestyleInput,
   UpdateAthleteProfileInput,
   UpdateCoachProfileInput,
+  UpdateFavouriteLocationInput,
   UpdateMeInput,
   UpdateProfileSettingsInput,
 } from "./profile.dto";

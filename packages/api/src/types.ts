@@ -58,7 +58,26 @@ export type ClubLifecycleStatus =
   | "rejected"
   | "suspended";
 
+/** Mirrors `FavouriteLocationKind` in apps/api. */
+export type FavouriteLocationKind = "home" | "work" | "gym" | "other";
+
 /** Mirrors `UsersService.toPublic` nested response shape. */
+export type PublicAddress = {
+  provinceId: string | null;
+  city: string | null;
+  street: string | null;
+  apartment: string | null;
+  postalCode: string | null;
+  point: { lat: number; lng: number } | null;
+};
+
+export type FavouriteLocation = {
+  id: string;
+  kind: FavouriteLocationKind;
+  label: string | null;
+  address: PublicAddress;
+};
+
 export type PublicUser = {
   id: string;
   phone: string;
@@ -73,14 +92,8 @@ export type PublicUser = {
     gender: string | null;
     birthDate: string | null;
   };
-  address: {
-    provinceId: string | null;
-    city: string | null;
-    street: string | null;
-    apartment: string | null;
-    postalCode: string | null;
-    point: { lat: number; lng: number } | null;
-  };
+  address: PublicAddress;
+  favouriteLocations: FavouriteLocation[];
   nationalId: string | null;
   roles: Role[];
   code: string | null;
@@ -94,15 +107,26 @@ export type PublicUser = {
   createdAt: string;
 };
 
+export type ApiErrorMessage = string | string[] | Record<string, string[]>;
+
+/** Success or error payload message shapes. */
+export type ApiMessage = ApiErrorMessage;
+
 export type PaginationMeta = {
   page: number;
   page_size: number;
   next: number | null;
   prev: number | null;
-  total: number;
+  /** Total matching rows across all pages. */
+  count: number;
+  /**
+   * @deprecated Prefer `count`. Kept for older clients during migration.
+   */
+  total?: number;
 };
 
 export type Paginated<T> = {
+  message?: ApiMessage;
   pagination: PaginationMeta;
   result: T[];
 };
@@ -136,7 +160,10 @@ export type AuthSession = TokenPair & {
   isNewUser?: boolean;
 };
 
-export type ApiErrorMessage = string | string[] | Record<string, string[]>;
+/** Resolve list total from `count` (preferred) or legacy `total`. */
+export function paginationCount(meta: PaginationMeta): number {
+  return meta.count ?? meta.total ?? 0;
+}
 
 export type ApiErrorBody = {
   statusCode?: number;

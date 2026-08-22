@@ -1,4 +1,3 @@
-/* eslint-disable */
 /** Auto-generated country flag SVGs. Do not edit by hand. */
 
 export const FLAG_SVG_BY_CODE = {
@@ -5908,4 +5907,3 @@ export const FLAG_SVG_BY_CODE = {
 export type FlagCode = keyof typeof FLAG_SVG_BY_CODE;
 
 export const FLAG_CODES = Object.keys(FLAG_SVG_BY_CODE) as FlagCode[];
-

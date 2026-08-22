@@ -1,7 +1,6 @@
 import type {
   BannerAspectRatio,
   BannerLinkKind,
-  BannerOverlayPlacement,
   BannerPlacement,
   BannerRadius,
   ListQuery,

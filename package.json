@@ -13,7 +13,8 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
-    "test": "turbo run test --filter=api",
+    "test": "turbo run test",
+    "test:frontend": "turbo run test --filter=mobile --filter=admin --filter=website --filter=@repo/api",
     "mobile:cap:sync": "npm run cap:sync --workspace=mobile",
     "mobile:cap:assets": "npm run cap:assets --workspace=mobile",
     "mobile:android:apk": "npm run android:apk --workspace=mobile",
@@ -34,7 +35,10 @@
     "docker:android:apk": "bash scripts/docker-android-release.sh apk:release"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "jest": "^30.0.0",
     "prettier": "^3.7.4",
+    "ts-jest": "^29.2.5",
     "turbo": "^2.10.8",
     "typescript": "5.9.2"
   },

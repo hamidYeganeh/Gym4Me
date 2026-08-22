@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types, type QueryFilter } from 'mongoose';
+import { Model, Types, type ClientSession, type QueryFilter } from 'mongoose';
 import { randomBytes } from 'node:crypto';
 import {
   BookingActor,
@@ -24,6 +24,7 @@ import {
   VerificationStatus,
 } from '../../common/enums';
 import { PaymentGatewayService } from '../../common/payment';
+import { MongoTransactionService } from '../../common/mongo/mongo-transaction.service';
 import {
   paginatedResult,
   resolvePageSize,
@@ -33,8 +34,10 @@ import {
   resolveListSort,
 } from '../../common/utils/list-query.util';
 import { FinanceService } from '../../finance/finance.service';
-import { NotificationsService } from '../../notifications/notifications.service';
-import { OutboxService } from '../../outbox/outbox.service';
+import {
+  OutboxService,
+  type OutboxNotification,
+} from '../../outbox/outbox.service';
 import { Booking, BookingDocument } from '../../schemas/booking.schema';
 import { ClubClass, ClubClassDocument } from '../../schemas/club-class.schema';
 import { Club, ClubDocument } from '../../schemas/club.schema';
@@ -126,9 +129,9 @@ export class BookingsService {
     private readonly clubSlots: ClubSlotsService,
     private readonly gateway: PaymentGatewayService,
     private readonly finance: FinanceService,
-    private readonly notifications: NotificationsService,
     private readonly config: ConfigService,
     private readonly outbox: OutboxService,
+    private readonly transactions: MongoTransactionService,
   ) {}
 
   private paymentTtlMs() {
@@ -224,55 +227,83 @@ export class BookingsService {
       );
     }
 
-    // Atomically occupy the slot: open → booked.
-    const slot = await this.slotModel.findOneAndUpdate(
-      {
-        _id: new Types.ObjectId(dto.slotId),
-        coachUserId: new Types.ObjectId(dto.coachUserId),
-        status: CoachSlotStatus.OPEN,
-        startsAt: { $gt: new Date() },
-      },
-      { $set: { status: CoachSlotStatus.BOOKED } },
-      { new: true },
-    );
-    if (!slot) {
-      throw new ConflictException('Slot is no longer available');
-    }
-
     try {
-      // Coupons are stored for later validation infra; no discount engine yet.
-      const discount = 0;
-      const booking = await this.bookingModel.create({
-        code: this.generateCode(),
-        idempotencyKey: dto.idempotencyKey,
-        athleteId: new Types.ObjectId(athleteId),
-        resource: { type: BookingResourceType.COACH, refId: slot._id },
-        coachUserId: new Types.ObjectId(dto.coachUserId),
-        slotId: slot._id,
-        clubId:
-          dto.consultationKind === ConsultationKind.IN_PERSON
-            ? slot.clubId
-            : undefined,
-        consultationKind: dto.consultationKind,
-        startsAt: slot.startsAt,
-        endsAt: slot.endsAt,
-        intake: {
-          note: dto.intake?.note,
-          medicalConditionKeys: dto.intake?.medicalConditionKeys ?? [],
-          supplementKeys: dto.intake?.supplementKeys ?? [],
-        },
-        pricing: {
-          amount: price,
-          discount,
-          couponCode: dto.couponCode,
-          total: Math.max(0, price - discount),
-        },
-        status: BookingStatus.PENDING,
-        approvalExpiresAt: this.approvalExpiresAt(),
+      const booking = await this.transactions.run(async (session) => {
+        if (dto.idempotencyKey) {
+          const existing = await this.bookingModel
+            .findOne({
+              athleteId: new Types.ObjectId(athleteId),
+              idempotencyKey: dto.idempotencyKey,
+            })
+            .session(session);
+          if (existing) return existing;
+        }
+
+        // Slot occupation and booking creation commit together.
+        const slot = await this.slotModel.findOneAndUpdate(
+          {
+            _id: new Types.ObjectId(dto.slotId),
+            coachUserId: new Types.ObjectId(dto.coachUserId),
+            status: CoachSlotStatus.OPEN,
+            startsAt: { $gt: new Date() },
+          },
+          { $set: { status: CoachSlotStatus.BOOKED } },
+          { new: true, session },
+        );
+        if (!slot) {
+          throw new ConflictException('Slot is no longer available');
+        }
+
+        // Coupons are reserved for the pricing engine; no silent discount.
+        const discount = 0;
+        const [created] = await this.bookingModel.create(
+          [
+            {
+              code: this.generateCode(),
+              idempotencyKey: dto.idempotencyKey,
+              athleteId: new Types.ObjectId(athleteId),
+              resource: {
+                type: BookingResourceType.COACH,
+                refId: slot._id,
+              },
+              coachUserId: new Types.ObjectId(dto.coachUserId),
+              slotId: slot._id,
+              clubId:
+                dto.consultationKind === ConsultationKind.IN_PERSON
+                  ? slot.clubId
+                  : undefined,
+              consultationKind: dto.consultationKind,
+              startsAt: slot.startsAt,
+              endsAt: slot.endsAt,
+              intake: {
+                note: dto.intake?.note,
+                medicalConditionKeys: dto.intake?.medicalConditionKeys ?? [],
+                supplementKeys: dto.intake?.supplementKeys ?? [],
+              },
+              pricing: {
+                amount: price,
+                discount,
+                couponCode: dto.couponCode,
+                total: Math.max(0, price - discount),
+              },
+              status: BookingStatus.PENDING,
+              approvalExpiresAt: this.approvalExpiresAt(),
+            },
+          ],
+          { session },
+        );
+        if (!created) throw new Error('Booking was not created');
+        return created;
       });
       return this.project(booking, 'athlete');
     } catch (error) {
-      await this.releaseCoachSlot(slot._id);
+      if (dto.idempotencyKey) {
+        const existing = await this.bookingModel.findOne({
+          athleteId: new Types.ObjectId(athleteId),
+          idempotencyKey: dto.idempotencyKey,
+        });
+        if (existing) return this.project(existing, 'athlete');
+      }
       throw error;
     }
   }
@@ -280,17 +311,16 @@ export class BookingsService {
   // ── Athlete: club bookings (session / class / space) ──────────────────
 
   async createClubBooking(athleteId: string, dto: CreateClubBookingDto) {
-    const club = await this.clubModel.findById(new Types.ObjectId(dto.clubId));
-    if (!club) throw new NotFoundException('Club not found');
-
     const dates = [...new Set(dto.dates)].sort();
+    const idempotencyKeys = dto.idempotencyKey
+      ? dates.map((date) => `${dto.idempotencyKey}:${date}`)
+      : [];
 
     if (dto.idempotencyKey) {
-      const keys = dates.map((date) => `${dto.idempotencyKey}:${date}`);
       const existing = await this.bookingModel
         .find({
           athleteId: new Types.ObjectId(athleteId),
-          idempotencyKey: { $in: keys },
+          idempotencyKey: { $in: idempotencyKeys },
         })
         .sort({ startsAt: 1 });
       if (existing.length === dates.length) {
@@ -305,124 +335,210 @@ export class BookingsService {
         );
       }
     }
-    const attendeeCount = dto.attendeeCount ?? 1;
-
-    // Resolve every occurrence up-front so we fail before occupying seats.
-    const resolved = await Promise.all(
-      dates.map((date) =>
-        this.clubSlots.resolveBookableOccurrence(dto.slotId, date),
-      ),
-    );
-    const slot = resolved[0].slot;
-    if (slot.clubId.toString() !== dto.clubId) {
-      throw new NotFoundException('Slot not found');
-    }
-    if (attendeeCount > slot.capacity) {
-      throw new BadRequestException(
-        'attendeeCount exceeds the occurrence capacity',
-      );
-    }
-
-    const now = Date.now();
-    for (const { occurrence } of resolved) {
-      const startsAt = occurrenceDate(occurrence.date, occurrence.startTime);
-      if (startsAt.getTime() <= now) {
-        throw new BadRequestException(
-          `Occurrence ${occurrence.date} is in the past`,
-        );
-      }
-    }
-
-    // One active booking per athlete per occurrence (conflict lock, D12).
-    const duplicate = await this.bookingModel.findOne({
-      athleteId: new Types.ObjectId(athleteId),
-      'resource.refId': slot._id,
-      'occurrence.date': { $in: dates },
-      status: { $in: [...ACTIVE_STATUSES] },
-    });
-    if (duplicate) {
-      throw new ConflictException(
-        'You already have a booking for one of these occurrences',
-      );
-    }
-
-    const resourceType = SLOT_KIND_TO_RESOURCE[slot.kind];
-    const recurringGroupId =
-      dates.length > 1 ? new Types.ObjectId() : undefined;
-    const price = slot.price ?? 0;
-    const occupied: string[] = [];
-    const created: BookingDocument[] = [];
-
+    let transactionResult: {
+      recurringGroupId?: Types.ObjectId;
+      created: BookingDocument[];
+    };
     try {
-      for (const { occurrence } of resolved) {
-        const ok = await this.clubSlots.occupyOccurrence(
-          slot._id,
-          occurrence.date,
-          attendeeCount,
-          slot.capacity,
-        );
-        if (!ok) {
-          throw new ConflictException(
-            `Occurrence ${occurrence.date} is fully booked`,
+      transactionResult = await this.transactions.run(async (session) => {
+        const club = await this.clubModel
+          .findById(new Types.ObjectId(dto.clubId))
+          .session(session);
+        if (!club) throw new NotFoundException('Club not found');
+
+        if (dto.idempotencyKey) {
+          const existing = await this.bookingModel
+            .find({
+              athleteId: new Types.ObjectId(athleteId),
+              idempotencyKey: { $in: idempotencyKeys },
+            })
+            .sort({ startsAt: 1 })
+            .session(session);
+          if (existing.length === dates.length) {
+            return {
+              recurringGroupId: existing[0]?.recurringGroupId,
+              created: existing,
+            };
+          }
+          if (existing.length > 0) {
+            throw new ConflictException(
+              'A partial booking retry exists; refresh bookings before retrying',
+            );
+          }
+        }
+
+        // Mongo transactions do not support parallel operations on one session.
+        const resolved: Awaited<
+          ReturnType<ClubSlotsService['resolveBookableOccurrence']>
+        >[] = [];
+        for (const date of dates) {
+          resolved.push(
+            await this.clubSlots.resolveBookableOccurrence(
+              dto.slotId,
+              date,
+              session,
+            ),
           );
         }
-        occupied.push(occurrence.date);
 
-        const amount = price * attendeeCount;
-        const booking = await this.bookingModel.create({
-          code: this.generateCode(),
-          idempotencyKey: dto.idempotencyKey
-            ? `${dto.idempotencyKey}:${occurrence.date}`
-            : undefined,
-          athleteId: new Types.ObjectId(athleteId),
-          resource: { type: resourceType, refId: slot._id },
-          clubId: slot.clubId,
-          occurrence,
-          recurringGroupId,
-          attendeeCount,
-          startsAt: occurrenceDate(occurrence.date, occurrence.startTime),
-          endsAt: occurrenceDate(occurrence.date, occurrence.endTime),
-          intake: {
-            note: dto.intake?.note,
-            medicalConditionKeys: dto.intake?.medicalConditionKeys ?? [],
-            supplementKeys: dto.intake?.supplementKeys ?? [],
-          },
-          pricing: {
-            amount,
-            discount: 0,
-            couponCode: dto.couponCode,
-            total: amount,
-          },
-          status:
-            amount === 0
-              ? BookingStatus.CONFIRMED
-              : BookingStatus.AWAITING_PAYMENT,
-          paymentExpiresAt: amount === 0 ? undefined : this.paymentExpiresAt(),
-        });
-        created.push(booking);
-      }
+        const first = resolved[0];
+        if (!first) throw new BadRequestException('No booking dates supplied');
+        const slot = first.slot;
+        if (slot.clubId.toString() !== dto.clubId) {
+          throw new NotFoundException('Slot not found');
+        }
+
+        const attendeeCount = dto.attendeeCount ?? 1;
+        if (attendeeCount > slot.capacity) {
+          throw new BadRequestException(
+            'attendeeCount exceeds the occurrence capacity',
+          );
+        }
+
+        const now = Date.now();
+        for (const { occurrence } of resolved) {
+          const startsAt = occurrenceDate(
+            occurrence.date,
+            occurrence.startTime,
+          );
+          if (startsAt.getTime() <= now) {
+            throw new BadRequestException(
+              `Occurrence ${occurrence.date} is in the past`,
+            );
+          }
+        }
+
+        const duplicate = await this.bookingModel
+          .findOne({
+            athleteId: new Types.ObjectId(athleteId),
+            'resource.refId': slot._id,
+            'occurrence.date': { $in: dates },
+            status: { $in: [...ACTIVE_STATUSES] },
+          })
+          .session(session);
+        if (duplicate) {
+          throw new ConflictException(
+            'You already have a booking for one of these occurrences',
+          );
+        }
+
+        const resourceType = SLOT_KIND_TO_RESOURCE[slot.kind];
+        const recurringGroupId =
+          dates.length > 1 ? new Types.ObjectId() : undefined;
+        const price = slot.price ?? 0;
+        const created: BookingDocument[] = [];
+
+        for (const { occurrence } of resolved) {
+          const ok = await this.clubSlots.occupyOccurrence(
+            slot._id,
+            occurrence.date,
+            attendeeCount,
+            slot.capacity,
+            session,
+          );
+          if (!ok) {
+            throw new ConflictException(
+              `Occurrence ${occurrence.date} is fully booked`,
+            );
+          }
+
+          const amount = price * attendeeCount;
+          const [booking] = await this.bookingModel.create(
+            [
+              {
+                code: this.generateCode(),
+                idempotencyKey: dto.idempotencyKey
+                  ? `${dto.idempotencyKey}:${occurrence.date}`
+                  : undefined,
+                athleteId: new Types.ObjectId(athleteId),
+                resource: { type: resourceType, refId: slot._id },
+                clubId: slot.clubId,
+                occurrence,
+                recurringGroupId,
+                attendeeCount,
+                startsAt: occurrenceDate(occurrence.date, occurrence.startTime),
+                endsAt: occurrenceDate(occurrence.date, occurrence.endTime),
+                intake: {
+                  note: dto.intake?.note,
+                  medicalConditionKeys: dto.intake?.medicalConditionKeys ?? [],
+                  supplementKeys: dto.intake?.supplementKeys ?? [],
+                },
+                pricing: {
+                  amount,
+                  discount: 0,
+                  couponCode: dto.couponCode,
+                  total: amount,
+                },
+                status:
+                  amount === 0
+                    ? BookingStatus.CONFIRMED
+                    : BookingStatus.AWAITING_PAYMENT,
+                paymentExpiresAt:
+                  amount === 0 ? undefined : this.paymentExpiresAt(),
+              },
+            ],
+            { session },
+          );
+          if (!booking) throw new Error('Booking was not created');
+          created.push(booking);
+
+          if (amount === 0) {
+            await this.outbox.enqueue(
+              {
+                eventName: 'booking.confirmed',
+                payload: {
+                  bookingId: booking._id.toString(),
+                  code: booking.code,
+                  athleteId: booking.athleteId.toString(),
+                  clubId: booking.clubId?.toString() ?? null,
+                  notification: {
+                    userId: booking.athleteId.toString(),
+                    templateKey: NotificationTemplateKey.BOOKING_CONFIRMED,
+                    params: {
+                      clubName: club.identity.name,
+                      date: occurrence.date,
+                      time: occurrence.startTime,
+                    },
+                    payload: {
+                      bookingId: booking._id.toString(),
+                      code: booking.code,
+                    },
+                    critical: true,
+                  },
+                },
+                idempotencyKey: `outbox:booking.confirmed:${booking._id.toString()}`,
+              },
+              session,
+            );
+          }
+        }
+
+        return { recurringGroupId, created };
+      });
     } catch (error) {
-      // Roll back everything: created bookings + occupied seats.
-      if (created.length) {
-        await this.bookingModel.deleteMany({
-          _id: { $in: created.map((b) => b._id) },
-        });
-      }
-      for (const date of occupied) {
-        await this.clubSlots.releaseOccurrence(slot._id, date, attendeeCount);
+      if (dto.idempotencyKey) {
+        const existing = await this.bookingModel
+          .find({
+            athleteId: new Types.ObjectId(athleteId),
+            idempotencyKey: { $in: idempotencyKeys },
+          })
+          .sort({ startsAt: 1 });
+        if (existing.length === dates.length) {
+          return {
+            recurringGroupId: existing[0]?.recurringGroupId?.toString() ?? null,
+            bookings: await this.projectMany(existing, 'athlete'),
+          };
+        }
       }
       throw error;
     }
 
-    for (const booking of created) {
-      if (booking.status === BookingStatus.CONFIRMED) {
-        await this.notifyConfirmed(booking);
-      }
-    }
-
-    const bookings = await this.projectMany(created, 'athlete');
+    const bookings = await this.projectMany(
+      transactionResult.created,
+      'athlete',
+    );
     return {
-      recurringGroupId: recurringGroupId?.toString() ?? null,
+      recurringGroupId: transactionResult.recurringGroupId?.toString() ?? null,
       bookings,
     };
   }
@@ -503,43 +619,106 @@ export class BookingsService {
       );
     }
 
-    booking.payment = {
-      ...booking.payment,
-      refId: verification.refId,
-      paidAt: new Date(),
-    };
-    booking.status = BookingStatus.CONFIRMED;
-    booking.markModified('payment');
-    await booking.save();
+    const clubName = await this.resolveClubName(booking);
+    const committed = await this.transactions.run(async (session) => {
+      const current = await this.bookingModel
+        .findOne({ _id: booking._id, athleteId: booking.athleteId })
+        .session(session);
+      if (!current) throw new NotFoundException('Booking not found');
+      if (current.status === BookingStatus.CONFIRMED) {
+        return {
+          booking: current,
+          paymentDto: null,
+          paymentResult: null,
+        };
+      }
+      if (current.status !== BookingStatus.AWAITING_PAYMENT) {
+        throw new ConflictException('Booking is not awaiting payment');
+      }
+      if (current.payment?.authority !== dto.authority) {
+        throw new BadRequestException('Unknown payment authority');
+      }
 
-    await this.finance.recordPayment(
-      {
+      current.payment = {
+        ...current.payment,
+        refId: verification.refId,
+        paidAt: new Date(),
+      };
+      current.status = BookingStatus.CONFIRMED;
+      current.paymentExpiresAt = undefined;
+      current.markModified('payment');
+      await current.save({ session });
+
+      const paymentDto = {
         purpose: PaymentPurpose.BOOKING,
         channel: PaymentChannel.ZARINPAL,
         status: PaymentStatus.CAPTURED,
         amount: {
-          gross: booking.pricing.amount,
-          discount: booking.pricing.discount,
-          net: booking.pricing.total,
+          gross: current.pricing.amount,
+          discount: current.pricing.discount,
+          net: current.pricing.total,
         },
         reference: {
-          orderId: booking.code,
+          orderId: current.code,
           authority: dto.authority,
           gatewayRefId: verification.refId,
         },
         payer: { userId: athleteId },
         related: {
-          bookingId: booking._id.toString(),
-          clubId: booking.clubId?.toString(),
-          coachUserId: booking.coachUserId?.toString(),
+          bookingId: current._id.toString(),
+          clubId: current.clubId?.toString(),
+          coachUserId: current.coachUserId?.toString(),
         },
-        idempotencyKey: `booking:${booking._id.toString()}:pay:${dto.authority}`,
-      },
-      { actorId: athleteId },
-    );
+        idempotencyKey: `booking:${current._id.toString()}:pay:${dto.authority}`,
+      };
+      const paymentResult = await this.finance.recordPayment(paymentDto, {
+        actorId: athleteId,
+        session,
+      });
 
-    await this.notifyConfirmed(booking);
-    return this.project(booking, 'athlete');
+      await this.outbox.enqueue(
+        {
+          eventName: 'booking.confirmed',
+          payload: {
+            bookingId: current._id.toString(),
+            code: current.code,
+            athleteId: current.athleteId.toString(),
+            clubId: current.clubId?.toString() ?? null,
+            notification: {
+              userId: current.athleteId.toString(),
+              templateKey: NotificationTemplateKey.BOOKING_CONFIRMED,
+              params: {
+                clubName: clubName ?? 'Gym4Me',
+                date:
+                  current.occurrence?.date ??
+                  current.startsAt.toISOString().slice(0, 10),
+                time:
+                  current.occurrence?.startTime ??
+                  formatTimeTehran(current.startsAt),
+              },
+              payload: {
+                bookingId: current._id.toString(),
+                code: current.code,
+              },
+              critical: true,
+            },
+          },
+          idempotencyKey: `outbox:booking.confirmed:${current._id.toString()}`,
+        },
+        session,
+      );
+
+      return { booking: current, paymentDto, paymentResult };
+    });
+
+    if (committed.paymentDto && committed.paymentResult) {
+      await this.finance.runPaymentPostCommitEffects(
+        committed.paymentDto,
+        { actorId: athleteId },
+        committed.paymentResult,
+      );
+    }
+    return this.project(committed.booking, 'athlete');
   }
 
   async reschedule(athleteId: string, id: string, dto: RescheduleBookingDto) {
@@ -566,40 +745,56 @@ export class BookingsService {
     if (!dto.slotId) {
       throw new BadRequestException('slotId is required');
     }
-    if (booking.slotId?.toString() === dto.slotId) {
-      throw new BadRequestException('Booking already uses this slot');
-    }
+    const updated = await this.transactions.run(async (session) => {
+      const current = await this.bookingModel
+        .findById(booking._id)
+        .session(session);
+      if (!current) throw new NotFoundException('Booking not found');
+      if (
+        current.status !== BookingStatus.AWAITING_PAYMENT &&
+        current.status !== BookingStatus.CONFIRMED
+      ) {
+        throw new ConflictException('Booking can no longer be rescheduled');
+      }
+      if (current.slotId?.toString() === dto.slotId) {
+        throw new BadRequestException('Booking already uses this slot');
+      }
 
-    const newSlot = await this.slotModel.findOneAndUpdate(
-      {
-        _id: new Types.ObjectId(dto.slotId),
-        coachUserId: booking.coachUserId,
-        status: CoachSlotStatus.OPEN,
-        startsAt: { $gt: new Date() },
-      },
-      { $set: { status: CoachSlotStatus.BOOKED } },
-      { new: true },
-    );
-    if (!newSlot) {
-      throw new ConflictException('Selected slot is no longer available');
-    }
+      const newSlot = await this.slotModel.findOneAndUpdate(
+        {
+          _id: new Types.ObjectId(dto.slotId),
+          coachUserId: current.coachUserId,
+          status: CoachSlotStatus.OPEN,
+          startsAt: { $gt: new Date() },
+        },
+        { $set: { status: CoachSlotStatus.BOOKED } },
+        { new: true, session },
+      );
+      if (!newSlot) {
+        throw new ConflictException('Selected slot is no longer available');
+      }
 
-    const previousSlotId = booking.slotId!;
-    booking.rescheduledFromSlotId = previousSlotId;
-    booking.slotId = newSlot._id;
-    booking.resource = {
-      type: BookingResourceType.COACH,
-      refId: newSlot._id,
-    };
-    booking.startsAt = newSlot.startsAt;
-    booking.endsAt = newSlot.endsAt;
-    if (booking.consultationKind === ConsultationKind.IN_PERSON) {
-      booking.clubId = newSlot.clubId;
-    }
-    booking.markModified('resource');
-    await booking.save();
-    await this.releaseCoachSlot(previousSlotId);
-    return this.project(booking, 'athlete');
+      const previousSlotId = current.slotId;
+      if (!previousSlotId) {
+        throw new ConflictException('Booking has no occupied coach slot');
+      }
+      current.rescheduledFromSlotId = previousSlotId;
+      current.slotId = newSlot._id;
+      current.resource = {
+        type: BookingResourceType.COACH,
+        refId: newSlot._id,
+      };
+      current.startsAt = newSlot.startsAt;
+      current.endsAt = newSlot.endsAt;
+      if (current.consultationKind === ConsultationKind.IN_PERSON) {
+        current.clubId = newSlot.clubId;
+      }
+      current.markModified('resource');
+      await current.save({ session });
+      await this.releaseCoachSlot(previousSlotId, session);
+      return current;
+    });
+    return this.project(updated, 'athlete');
   }
 
   private async rescheduleClubBooking(
@@ -609,63 +804,85 @@ export class BookingsService {
     if (!dto.date) {
       throw new BadRequestException('date is required');
     }
-    const targetSlotId = dto.slotId ?? booking.resource.refId.toString();
-    if (
-      targetSlotId === booking.resource.refId.toString() &&
-      dto.date === booking.occurrence?.date
-    ) {
-      throw new BadRequestException('Booking already uses this occurrence');
-    }
+    const targetDate = dto.date;
+    const updated = await this.transactions.run(async (session) => {
+      const current = await this.bookingModel
+        .findById(booking._id)
+        .session(session);
+      if (!current) throw new NotFoundException('Booking not found');
+      if (
+        current.status !== BookingStatus.AWAITING_PAYMENT &&
+        current.status !== BookingStatus.CONFIRMED
+      ) {
+        throw new ConflictException('Booking can no longer be rescheduled');
+      }
 
-    const { slot, occurrence } = await this.clubSlots.resolveBookableOccurrence(
-      targetSlotId,
-      dto.date,
-    );
-    if (slot.clubId.toString() !== booking.clubId?.toString()) {
-      throw new BadRequestException('Slot belongs to a different club');
-    }
-    if (SLOT_KIND_TO_RESOURCE[slot.kind] !== booking.resource.type) {
-      throw new BadRequestException('Slot kind does not match the booking');
-    }
-    const startsAt = occurrenceDate(occurrence.date, occurrence.startTime);
-    if (startsAt.getTime() <= Date.now()) {
-      throw new BadRequestException('Occurrence is in the past');
-    }
-    if (booking.attendeeCount > slot.capacity) {
-      throw new BadRequestException(
-        'attendeeCount exceeds the occurrence capacity',
+      const targetSlotId = dto.slotId ?? current.resource.refId.toString();
+      if (
+        targetSlotId === current.resource.refId.toString() &&
+        targetDate === current.occurrence?.date
+      ) {
+        throw new BadRequestException('Booking already uses this occurrence');
+      }
+
+      const { slot, occurrence } =
+        await this.clubSlots.resolveBookableOccurrence(
+          targetSlotId,
+          targetDate,
+          session,
+        );
+      if (slot.clubId.toString() !== current.clubId?.toString()) {
+        throw new BadRequestException('Slot belongs to a different club');
+      }
+      if (SLOT_KIND_TO_RESOURCE[slot.kind] !== current.resource.type) {
+        throw new BadRequestException('Slot kind does not match the booking');
+      }
+      const startsAt = occurrenceDate(occurrence.date, occurrence.startTime);
+      if (startsAt.getTime() <= Date.now()) {
+        throw new BadRequestException('Occurrence is in the past');
+      }
+      if (current.attendeeCount > slot.capacity) {
+        throw new BadRequestException(
+          'attendeeCount exceeds the occurrence capacity',
+        );
+      }
+
+      const ok = await this.clubSlots.occupyOccurrence(
+        slot._id,
+        occurrence.date,
+        current.attendeeCount,
+        slot.capacity,
+        session,
       );
-    }
+      if (!ok) {
+        throw new ConflictException('Selected occurrence is fully booked');
+      }
 
-    const ok = await this.clubSlots.occupyOccurrence(
-      slot._id,
-      occurrence.date,
-      booking.attendeeCount,
-      slot.capacity,
-    );
-    if (!ok) {
-      throw new ConflictException('Selected occurrence is fully booked');
-    }
+      const previousRefId = current.resource.refId;
+      const previousDate = current.occurrence?.date;
+      if (!previousDate) {
+        throw new ConflictException('Booking has no occupied occurrence');
+      }
 
-    const previousRefId = booking.resource.refId;
-    const previousDate = booking.occurrence!.date;
-
-    booking.resource = {
-      type: SLOT_KIND_TO_RESOURCE[slot.kind],
-      refId: slot._id,
-    };
-    booking.occurrence = occurrence;
-    booking.startsAt = startsAt;
-    booking.endsAt = occurrenceDate(occurrence.date, occurrence.endTime);
-    booking.markModified('resource');
-    booking.markModified('occurrence');
-    await booking.save();
-    await this.clubSlots.releaseOccurrence(
-      previousRefId,
-      previousDate,
-      booking.attendeeCount,
-    );
-    return this.project(booking, 'athlete');
+      current.resource = {
+        type: SLOT_KIND_TO_RESOURCE[slot.kind],
+        refId: slot._id,
+      };
+      current.occurrence = occurrence;
+      current.startsAt = startsAt;
+      current.endsAt = occurrenceDate(occurrence.date, occurrence.endTime);
+      current.markModified('resource');
+      current.markModified('occurrence');
+      await current.save({ session });
+      await this.clubSlots.releaseOccurrence(
+        previousRefId,
+        previousDate,
+        current.attendeeCount,
+        session,
+      );
+      return current;
+    });
+    return this.project(updated, 'athlete');
   }
 
   async cancelByAthlete(athleteId: string, id: string, dto: CancelBookingDto) {
@@ -740,31 +957,88 @@ export class BookingsService {
       throw new ConflictException('Booking is not awaiting coach approval');
     }
 
-    booking.approvalExpiresAt = undefined;
-    if (booking.pricing.total > 0) {
-      booking.status = BookingStatus.AWAITING_PAYMENT;
-      booking.paymentExpiresAt = this.paymentExpiresAt();
-    } else {
-      booking.status = BookingStatus.CONFIRMED;
-      booking.paymentExpiresAt = undefined;
-    }
-    await booking.save();
-    if (booking.status === BookingStatus.CONFIRMED) {
-      await this.notifyConfirmed(booking);
-    } else if (booking.paymentExpiresAt) {
-      await this.notifications.dispatch({
-        userId: booking.athleteId,
-        templateKey: NotificationTemplateKey.BOOKING_APPROVED_PAYMENT_REQUIRED,
-        params: { deadline: booking.paymentExpiresAt.toISOString() },
-        payload: {
-          bookingId: booking._id.toString(),
-          action: 'pay_booking',
+    const accepted = await this.transactions.run(async (session) => {
+      const current = await this.bookingModel
+        .findOne({
+          _id: booking._id,
+          coachUserId: new Types.ObjectId(coachUserId),
+        })
+        .session(session);
+      if (!current) throw new NotFoundException('Booking not found');
+      if (current.status !== BookingStatus.PENDING) {
+        throw new ConflictException('Booking is not awaiting coach approval');
+      }
+
+      current.approvalExpiresAt = undefined;
+      if (current.pricing.total > 0) {
+        current.status = BookingStatus.AWAITING_PAYMENT;
+        current.paymentExpiresAt = this.paymentExpiresAt();
+      } else {
+        current.status = BookingStatus.CONFIRMED;
+        current.paymentExpiresAt = undefined;
+      }
+      await current.save({ session });
+
+      const confirmed = current.status === BookingStatus.CONFIRMED;
+      let clubName = 'Gym4Me';
+      if (confirmed && current.clubId) {
+        const club = await this.clubModel
+          .findById(current.clubId)
+          .select({ 'identity.name': 1 })
+          .session(session);
+        clubName = club?.identity?.name ?? clubName;
+      }
+      const notification: OutboxNotification = confirmed
+        ? {
+            userId: current.athleteId.toString(),
+            templateKey: NotificationTemplateKey.BOOKING_CONFIRMED,
+            params: {
+              clubName,
+              date:
+                current.occurrence?.date ??
+                current.startsAt.toISOString().slice(0, 10),
+              time:
+                current.occurrence?.startTime ??
+                formatTimeTehran(current.startsAt),
+            },
+            payload: {
+              bookingId: current._id.toString(),
+              code: current.code,
+            },
+            critical: true,
+          }
+        : {
+            userId: current.athleteId.toString(),
+            templateKey:
+              NotificationTemplateKey.BOOKING_APPROVED_PAYMENT_REQUIRED,
+            params: {
+              deadline: current.paymentExpiresAt?.toISOString() ?? '',
+            },
+            payload: {
+              bookingId: current._id.toString(),
+              action: 'pay_booking',
+            },
+            critical: true,
+          };
+      await this.outbox.enqueue(
+        {
+          eventName: confirmed
+            ? 'booking.confirmed'
+            : 'booking.approved.payment_required',
+          payload: {
+            bookingId: current._id.toString(),
+            athleteId: current.athleteId.toString(),
+            notification,
+          },
+          idempotencyKey: confirmed
+            ? `outbox:booking.confirmed:${current._id.toString()}`
+            : `outbox:booking.approved:${current._id.toString()}`,
         },
-        critical: true,
-        idempotencyKey: `booking.approved:${booking._id.toString()}`,
-      });
-    }
-    return this.project(booking, 'coach');
+        session,
+      );
+      return current;
+    });
+    return this.project(accepted, 'coach');
   }
 
   async cancellationPreviewForCoach(coachUserId: string, id: string) {
@@ -937,72 +1211,115 @@ export class BookingsService {
     actor: BookingActor,
     audience: Audience,
   ) {
-    const cancellable: BookingStatus[] = [
-      BookingStatus.PENDING,
-      BookingStatus.AWAITING_PAYMENT,
-      BookingStatus.CONFIRMED,
-    ];
-    if (!cancellable.includes(booking.status)) {
-      throw new ConflictException('Booking can no longer be cancelled');
-    }
-
-    const wasPaid = Boolean(booking.payment?.paidAt);
     const providerCancel =
       actor === BookingActor.COACH || actor === BookingActor.CLUB;
     const systemExpire =
       actor === BookingActor.SYSTEM ||
       (actor === BookingActor.ADMIN && dto.reasonKey === 'payment_ttl_expired');
-
-    let nextStatus: BookingStatus;
-    if (systemExpire || booking.status === BookingStatus.AWAITING_PAYMENT) {
-      nextStatus = BookingStatus.CANCELLED;
-    } else if (providerCancel && wasPaid) {
-      // A provider cancellation always returns captured funds; athlete
-      // cancellation-window fees never apply to a provider-initiated cancel.
-      nextStatus = BookingStatus.REFUND_REQUESTED;
-    } else if (wasPaid) {
-      const refundEligible = await this.isRefundEligible(booking);
-      nextStatus = refundEligible
-        ? BookingStatus.REFUND_REQUESTED
-        : BookingStatus.CANCELLED;
-    } else if (providerCancel) {
-      nextStatus = BookingStatus.REJECTED;
-    } else {
-      nextStatus = BookingStatus.CANCELLED;
-    }
-
-    booking.status = nextStatus;
-    booking.paymentExpiresAt = undefined;
-    booking.approvalExpiresAt = undefined;
-    booking.cancellation = {
-      reasonKey: dto.reasonKey,
-      note: dto.note,
-      cancelledAt: new Date(),
-      cancelledBy: actor === BookingActor.SYSTEM ? BookingActor.ADMIN : actor,
-    };
-    booking.markModified('cancellation');
-    await booking.save();
-    await this.releaseResource(booking);
-    if (
+    const shouldNotifyAthlete =
       providerCancel ||
       actor === BookingActor.ADMIN ||
-      actor === BookingActor.SYSTEM
-    ) {
-      await this.notifyProviderCancelled(booking);
-    }
-    return this.project(booking, audience);
+      actor === BookingActor.SYSTEM;
+
+    const cancelled = await this.transactions.run(async (session) => {
+      const current = await this.bookingModel
+        .findById(booking._id)
+        .session(session);
+      if (!current) throw new NotFoundException('Booking not found');
+
+      const cancellable: BookingStatus[] = [
+        BookingStatus.PENDING,
+        BookingStatus.AWAITING_PAYMENT,
+        BookingStatus.CONFIRMED,
+      ];
+      if (!cancellable.includes(current.status)) {
+        throw new ConflictException('Booking can no longer be cancelled');
+      }
+
+      const wasPaid = Boolean(current.payment?.paidAt);
+      let nextStatus: BookingStatus;
+      if (systemExpire || current.status === BookingStatus.AWAITING_PAYMENT) {
+        nextStatus = BookingStatus.CANCELLED;
+      } else if (providerCancel && wasPaid) {
+        nextStatus = BookingStatus.REFUND_REQUESTED;
+      } else if (wasPaid) {
+        const refundEligible = await this.isRefundEligible(current, session);
+        nextStatus = refundEligible
+          ? BookingStatus.REFUND_REQUESTED
+          : BookingStatus.CANCELLED;
+      } else if (providerCancel) {
+        nextStatus = BookingStatus.REJECTED;
+      } else {
+        nextStatus = BookingStatus.CANCELLED;
+      }
+
+      current.status = nextStatus;
+      current.paymentExpiresAt = undefined;
+      current.approvalExpiresAt = undefined;
+      current.cancellation = {
+        reasonKey: dto.reasonKey,
+        note: dto.note,
+        cancelledAt: new Date(),
+        cancelledBy: actor === BookingActor.SYSTEM ? BookingActor.ADMIN : actor,
+      };
+      current.markModified('cancellation');
+      await current.save({ session });
+      await this.releaseResource(current, session);
+
+      if (shouldNotifyAthlete) {
+        await this.outbox.enqueue(
+          {
+            eventName: 'booking.cancelled_by_provider',
+            payload: {
+              bookingId: current._id.toString(),
+              code: current.code,
+              athleteId: current.athleteId.toString(),
+              clubId: current.clubId?.toString() ?? null,
+              notification: {
+                userId: current.athleteId.toString(),
+                templateKey:
+                  NotificationTemplateKey.BOOKING_CANCELLED_BY_PROVIDER,
+                params: {
+                  subject: `رزرو ${current.code}`,
+                  date:
+                    current.occurrence?.date ??
+                    current.startsAt.toISOString().slice(0, 10),
+                },
+                payload: {
+                  bookingId: current._id.toString(),
+                  code: current.code,
+                },
+                critical: true,
+              },
+            },
+            idempotencyKey: `outbox:booking.provider_cancelled:${current._id.toString()}`,
+          },
+          session,
+        );
+      }
+      return current;
+    });
+
+    return this.project(cancelled, audience);
   }
 
   /** Apply club.cancellation rules: refund if hours remaining >= matching rule with feePercent < 100. */
-  private async isRefundEligible(booking: BookingDocument): Promise<boolean> {
-    return (await this.cancellationFeePercent(booking)) < 100;
+  private async isRefundEligible(
+    booking: BookingDocument,
+    session?: ClientSession,
+  ): Promise<boolean> {
+    return (await this.cancellationFeePercent(booking, session)) < 100;
   }
 
   private async cancellationFeePercent(
     booking: BookingDocument,
+    session?: ClientSession,
   ): Promise<number> {
     if (!booking.clubId) return 0;
-    const club = await this.clubModel.findById(booking.clubId).lean();
+    const club = await this.clubModel
+      .findById(booking.clubId)
+      .session(session ?? null)
+      .lean();
     const rules = club?.cancellation?.rules ?? [];
     if (!rules.length) return 0;
 
@@ -1032,9 +1349,12 @@ export class BookingsService {
     };
   }
 
-  private async releaseResource(booking: BookingDocument) {
+  private async releaseResource(
+    booking: BookingDocument,
+    session?: ClientSession,
+  ) {
     if (booking.resource.type === BookingResourceType.COACH) {
-      if (booking.slotId) await this.releaseCoachSlot(booking.slotId);
+      if (booking.slotId) await this.releaseCoachSlot(booking.slotId, session);
       return;
     }
     if (booking.occurrence) {
@@ -1042,6 +1362,7 @@ export class BookingsService {
         booking.resource.refId,
         booking.occurrence.date,
         booking.attendeeCount,
+        session,
       );
     }
   }
@@ -1134,70 +1455,19 @@ export class BookingsService {
     return booking;
   }
 
-  private async releaseCoachSlot(slotId: Types.ObjectId) {
+  private async releaseCoachSlot(
+    slotId: Types.ObjectId,
+    session?: ClientSession,
+  ) {
     await this.slotModel.updateOne(
       { _id: slotId, status: CoachSlotStatus.BOOKED },
       { $set: { status: CoachSlotStatus.OPEN } },
+      { session },
     );
   }
 
   private generateCode(): string {
     return `BK-${randomBytes(4).toString('hex').toUpperCase()}`;
-  }
-
-  // ── Notifications ──────────────────────────────────────────────────────
-
-  private async notifyConfirmed(booking: BookingDocument) {
-    const clubName = await this.resolveClubName(booking);
-    await this.notifications.dispatch({
-      userId: booking.athleteId,
-      templateKey: NotificationTemplateKey.BOOKING_CONFIRMED,
-      params: {
-        clubName: clubName ?? 'Gym4Me',
-        date:
-          booking.occurrence?.date ??
-          booking.startsAt.toISOString().slice(0, 10),
-        time:
-          booking.occurrence?.startTime ?? formatTimeTehran(booking.startsAt),
-      },
-      payload: { bookingId: booking._id.toString(), code: booking.code },
-      critical: true,
-      idempotencyKey: `booking.confirmed:${booking._id.toString()}`,
-    });
-
-    // R3: enqueue domain event (worker marks published; notifications already sent).
-    try {
-      await this.outbox.enqueue({
-        eventName: 'booking.confirmed',
-        payload: {
-          bookingId: booking._id.toString(),
-          code: booking.code,
-          athleteId: booking.athleteId.toString(),
-          clubId: booking.clubId?.toString() ?? null,
-        },
-        idempotencyKey: `outbox:booking.confirmed:${booking._id.toString()}`,
-      });
-    } catch (err) {
-      this.logger.warn(
-        `Outbox enqueue failed for booking ${booking._id.toString()}: ${String(err)}`,
-      );
-    }
-  }
-
-  private async notifyProviderCancelled(booking: BookingDocument) {
-    await this.notifications.dispatch({
-      userId: booking.athleteId,
-      templateKey: NotificationTemplateKey.BOOKING_CANCELLED_BY_PROVIDER,
-      params: {
-        subject: `رزرو ${booking.code}`,
-        date:
-          booking.occurrence?.date ??
-          booking.startsAt.toISOString().slice(0, 10),
-      },
-      payload: { bookingId: booking._id.toString(), code: booking.code },
-      critical: true,
-      idempotencyKey: `booking.provider_cancelled:${booking._id.toString()}`,
-    });
   }
 
   private async resolveClubName(

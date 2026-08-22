@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { Button } from "@heroui/react/button";
 import { Chip } from "@heroui/react/chip";
 import { Typography } from "@heroui/react/typography";
@@ -8,11 +8,21 @@ import type {
   Paginated,
   SessionPackage,
 } from "@repo/api";
-import { FilterChip } from "@repo/ui/kit/FilterChip";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
-import { AdminDataTable, AdminShell } from "@/shared/components";
-import { useAdminInfiniteQuery } from "@/shared/hooks";
+import {
+  AdminDataTable,
+  AdminFilterSelect,
+  AdminShell,
+} from "@/shared/components";
+import {
+  useAdminListQueryParams,
+  useAdminPaginatedQuery,
+} from "@/shared/hooks";
+import {
+  adminListPaginationProps,
+  adminListPaginationSummary,
+} from "@/shared/lib/admin-list-pagination";
 import { adminCoaching } from "@/shared/lib/api";
 import { formatAdminDate } from "@/shared/lib/user-format";
 import { coachingListsScreenVariants } from "./CoachingListsScreen.styles";
@@ -22,7 +32,23 @@ import type {
 } from "./CoachingListsScreen.types";
 
 const PAGE_SIZE = 30;
+const FILTER_KEYS = ["view"] as const;
 const VIEWS: CoachingView[] = ["services", "packages", "students"];
+
+type CoachingListFilters = {
+  view: CoachingView;
+};
+
+const FILTER_DEFAULTS: CoachingListFilters & {
+  search: string;
+  page: number;
+  page_size: number;
+} = {
+  view: "services",
+  search: "",
+  page: 1,
+  page_size: PAGE_SIZE,
+};
 
 const serviceHelper = createColumnHelper<AdminCoachService>();
 const packageHelper = createColumnHelper<SessionPackage>();
@@ -32,8 +58,18 @@ type CoachingRow = AdminCoachService | SessionPackage | CoachStudent;
 
 export function CoachingListsScreen({ className }: CoachingListsScreenProps) {
   const t = useTranslations("Admin.Catalog");
+  const tCommon = useTranslations("Admin.Common");
   const styles = coachingListsScreenVariants();
-  const [view, setView] = useState<CoachingView>("services");
+  const { filters, setFilter,
+    page,
+    pageSize,
+    setPage,
+  } =
+    useAdminListQueryParams<CoachingListFilters>({
+      filterKeys: FILTER_KEYS,
+      defaults: FILTER_DEFAULTS,
+    });
+  const view = VIEWS.includes(filters.view) ? filters.view : "services";
 
   const fetchPage = useCallback(
     async (page: number, pageSize: number): Promise<Paginated<CoachingRow>> => {
@@ -48,15 +84,16 @@ export function CoachingListsScreen({ className }: CoachingListsScreenProps) {
   const {
     items,
     total,
+    totalPages,
     loading,
-    fetchingMore,
-    hasMore,
     error,
-    loadMore,
+    setPage: changePage,
     reload,
-  } = useAdminInfiniteQuery<CoachingRow>({
-    queryKey: JSON.stringify({ view, pageSize: PAGE_SIZE }),
-    pageSize: PAGE_SIZE,
+  } = useAdminPaginatedQuery<CoachingRow>({
+    queryKey: JSON.stringify({ view, pageSize }),
+    page,
+    pageSize,
+    onPageChange: setPage,
     errorFallback: t("coaching.errorLoad"),
     fetchPage,
   });
@@ -172,6 +209,8 @@ export function CoachingListsScreen({ className }: CoachingListsScreenProps) {
         : studentColumns
   ) as ColumnDef<CoachingRow, unknown>[];
 
+  const summary = adminListPaginationSummary(page, pageSize, total);
+
   return (
     <AdminShell
       activeNavId="catalogs"
@@ -186,16 +225,23 @@ export function CoachingListsScreen({ className }: CoachingListsScreenProps) {
           <Typography className={styles.subtitle()}>
             {t("coaching.subtitle")}
           </Typography>
-          <div className={styles.actions()}>
-            {VIEWS.map((item) => (
-              <FilterChip
-                key={item}
-                onPress={() => setView(item)}
-                selected={view === item}
-              >
-                {t(`coaching.views.${item}`)}
-              </FilterChip>
-            ))}
+          <div className={styles.filters()}>
+            <AdminFilterSelect
+              label={t("coaching.filters.view")}
+              options={VIEWS.map((item) => ({
+                value: item,
+                label: t(`coaching.views.${item}`),
+              }))}
+              value={view}
+              onChange={(value) =>
+                setFilter(
+                  "view",
+                  (VIEWS.includes(value as CoachingView)
+                    ? value
+                    : "services") as CoachingView,
+                )
+              }
+            />
             <Button size="sm" variant="ghost" onPress={() => void reload()}>
               {t("refresh")}
             </Button>
@@ -209,16 +255,16 @@ export function CoachingListsScreen({ className }: CoachingListsScreenProps) {
           emptyLabel={t("coaching.empty")}
           error={error}
           getRowId={(row) => row.id}
-          hasMore={hasMore}
-          isFetchingMore={fetchingMore}
           isLoading={loading}
           loadingLabel={t("loading")}
-          loadingMoreLabel={t("loadingMore")}
-          onLoadMore={loadMore}
-          summaryLabel={t("coaching.summary", {
-            loaded: items.length,
-            total,
+          pagination={adminListPaginationProps({
+            page,
+            totalPages,
+            previousLabel: tCommon("pagination.previous"),
+            nextLabel: tCommon("pagination.next"),
+            onPageChange: changePage,
           })}
+          summaryLabel={tCommon("pagination.summary", summary)}
         />
       </div>
     </AdminShell>

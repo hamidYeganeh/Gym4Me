@@ -14,6 +14,7 @@ import {
   AchievementsCreateScreen,
   AchievementsEditScreen,
   AchievementsListScreen,
+  AdminProfileScreen,
   AnalyticsOverviewScreen,
   ArticlesCreateScreen,
   ArticlesEditScreen,
@@ -147,6 +148,10 @@ export function AppRouter() {
                 path="/"
               />
               <Route element={<DashboardHomeScreen />} path="/dashboard" />
+              <Route
+                element={<AdminProfileScreen />}
+                path="/dashboard/profile"
+              />
               <Route element={<AnalyticsOverviewScreen />} path="/analytics" />
               <Route element={<UsersListScreen />} path="/dashboard/users" />
               <Route element={<UsersCreateScreen />} path="/dashboard/users/new" />

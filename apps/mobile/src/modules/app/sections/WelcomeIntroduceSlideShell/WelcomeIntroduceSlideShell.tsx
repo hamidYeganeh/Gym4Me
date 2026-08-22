@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { MediaImage } from "@repo/ui/common/MediaImage";
 import { welcomeIntroduceSlideShellVariants } from "./WelcomeIntroduceSlideShell.styles";
 import type { WelcomeIntroduceSlideShellProps } from "./WelcomeIntroduceSlideShell.types";
 
@@ -14,13 +14,13 @@ export function WelcomeIntroduceSlideShell({
 
   return (
     <section aria-label={title} className={styles.root({ className })}>
-      <Image
+      <MediaImage
         alt=""
+        aria-hidden
         className={styles.image()}
-        fill
+        image={imageSrc}
         priority={priority}
         sizes="100vw"
-        src={imageSrc}
       />
     </section>
   );

@@ -4,7 +4,10 @@ import type { Exercise } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { AdminShell } from "@/shared/components";
-import { useAdminInfiniteQuery } from "@/shared/hooks";
+import {
+  useAdminListQueryParams,
+  useAdminPaginatedQuery,
+} from "@/shared/hooks";
 import { adminProgress } from "@/shared/lib/api";
 import { routes } from "@/shared/lib/routes";
 import { ExercisesCatalogHeaderSection } from "../../sections/ExercisesCatalogHeaderSection";
@@ -29,9 +32,14 @@ export function ExercisesCatalogScreen({
   const [actionPending, setActionPending] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
+  const { page, pageSize, setPage } = useAdminListQueryParams<Record<never, never>>({
+    filterKeys: [],
+    defaults: { page: 1, page_size: PAGE_SIZE },
+  });
+
   const queryKey = useMemo(
-    () => JSON.stringify({ search, pageSize: PAGE_SIZE }),
-    [search],
+    () => JSON.stringify({ search, pageSize }),
+    [pageSize, search],
   );
 
   const fetchPage = useCallback(
@@ -48,15 +56,16 @@ export function ExercisesCatalogScreen({
   const {
     items,
     total,
+    totalPages,
     loading,
-    fetchingMore,
-    hasMore,
     error,
-    loadMore,
+    setPage: changePage,
     reload,
-  } = useAdminInfiniteQuery<Exercise>({
+  } = useAdminPaginatedQuery<Exercise>({
     queryKey,
-    pageSize: PAGE_SIZE,
+    page,
+    pageSize,
+    onPageChange: setPage,
     errorFallback: t("exercises.errorLoad"),
     fetchPage,
   });
@@ -96,8 +105,6 @@ export function ExercisesCatalogScreen({
 
         <ExercisesCatalogTableSection
           error={error}
-          fetchingMore={fetchingMore}
-          hasMore={hasMore}
           items={items}
           loading={loading}
           total={total}
@@ -111,7 +118,10 @@ export function ExercisesCatalogScreen({
             setActionError(null);
           }}
           onEdit={(row) => navigate(routes.catalogExerciseEdit(row.id))}
-          onLoadMore={loadMore}
+          page={page}
+          pageSize={pageSize}
+          totalPages={totalPages}
+          onPageChange={changePage}
           onReject={(row) => {
             setRejecting(row);
             setRejectionReason("");

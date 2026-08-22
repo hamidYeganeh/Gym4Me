@@ -5,10 +5,12 @@ import {
   type UseQueryOptions,
 } from "@tanstack/react-query";
 import { useMemo } from "react";
+import type { Paginated } from "../types";
 import { useApiClient } from "../react";
 import {
   createAppConfigApi,
   type AppConfigApi,
+  type ListAppConfigQuery,
 } from "./app-config.client";
 import type {
   AppBootstrap,
@@ -41,29 +43,31 @@ export function useAppBootstrap(
 }
 
 export function useFeatureFlags(
+  query: ListAppConfigQuery = {},
   options?: Omit<
-    UseQueryOptions<FeatureFlag[], Error>,
+    UseQueryOptions<Paginated<FeatureFlag>, Error>,
     "queryKey" | "queryFn"
   >,
 ) {
   const api = useAppConfigApi();
   return useQuery({
-    queryKey: appConfigKeys.featureFlags(),
-    queryFn: () => api.listFeatureFlags(),
+    queryKey: appConfigKeys.featureFlags(query),
+    queryFn: () => api.listFeatureFlags(query),
     ...options,
   });
 }
 
 export function useReleasePolicies(
+  query: ListAppConfigQuery = {},
   options?: Omit<
-    UseQueryOptions<MobileReleasePolicy[], Error>,
+    UseQueryOptions<Paginated<MobileReleasePolicy>, Error>,
     "queryKey" | "queryFn"
   >,
 ) {
   const api = useAppConfigApi();
   return useQuery({
-    queryKey: appConfigKeys.releasePolicies(),
-    queryFn: () => api.listReleasePolicies(),
+    queryKey: appConfigKeys.releasePolicies(query),
+    queryFn: () => api.listReleasePolicies(query),
     ...options,
   });
 }

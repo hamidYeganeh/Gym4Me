@@ -4,7 +4,10 @@ import type { FoodItem, FoodItemStatus } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { AdminShell } from "@/shared/components";
-import { useAdminInfiniteQuery } from "@/shared/hooks";
+import {
+  useAdminListQueryParams,
+  useAdminPaginatedQuery,
+} from "@/shared/hooks";
 import { adminNutrition } from "@/shared/lib/api";
 import { routes } from "@/shared/lib/routes";
 import {
@@ -18,16 +21,41 @@ import { foodItemsScreenVariants } from "./FoodItemsScreen.styles";
 import type { FoodItemsScreenProps } from "./FoodItemsScreen.types";
 
 const PAGE_SIZE = 30;
+const FILTER_KEYS = ["status"] as const;
+
+type FoodItemsFilters = {
+  status: FoodItemStatus | "all";
+};
+
+const FILTER_DEFAULTS: FoodItemsFilters & {
+  search: string;
+  page: number;
+  page_size: number;
+} = {
+  status: "all",
+  search: "",
+  page: 1,
+  page_size: PAGE_SIZE,
+};
 
 export function FoodItemsScreen({ className }: FoodItemsScreenProps) {
   const t = useTranslations("Admin.Catalog");
   const navigate = useNavigate();
   const styles = foodItemsScreenVariants();
 
-  const [statusFilter, setStatusFilter] = useState<FoodItemStatus | "all">(
-    "all",
-  );
-  const [search, setSearch] = useState("");
+  const {
+    search,
+    searchInput,
+    setSearchInput,
+    filters,
+    setFilter,
+    page,
+    pageSize,
+    setPage,
+  } = useAdminListQueryParams<FoodItemsFilters>({
+    filterKeys: FILTER_KEYS,
+    defaults: FILTER_DEFAULTS,
+  });
   const [archiving, setArchiving] = useState<FoodItem | null>(null);
   const [archivePending, setArchivePending] = useState(false);
   const [archiveError, setArchiveError] = useState<string | null>(null);
@@ -50,8 +78,8 @@ export function FoodItemsScreen({ className }: FoodItemsScreenProps) {
   }, []);
 
   const queryKey = useMemo(
-    () => JSON.stringify({ statusFilter, search, pageSize: PAGE_SIZE }),
-    [statusFilter, search],
+    () => JSON.stringify({ filters, search, pageSize }),
+    [filters, pageSize, search],
   );
 
   const fetchPage = useCallback(
@@ -59,25 +87,26 @@ export function FoodItemsScreen({ className }: FoodItemsScreenProps) {
       return adminNutrition.listFoodItems({
         page,
         page_size: pageSize,
-        status: statusFilter === "all" ? undefined : statusFilter,
+        status: filters.status === "all" ? undefined : filters.status,
         search: search.trim() || undefined,
       });
     },
-    [statusFilter, search],
+    [filters, search],
   );
 
   const {
     items,
     total,
+    totalPages,
     loading,
-    fetchingMore,
-    hasMore,
     error,
-    loadMore,
+    setPage: changePage,
     reload,
-  } = useAdminInfiniteQuery<FoodItem>({
+  } = useAdminPaginatedQuery<FoodItem>({
     queryKey,
-    pageSize: PAGE_SIZE,
+    page,
+    pageSize,
+    onPageChange: setPage,
     errorFallback: t("food.errorLoad"),
     fetchPage,
   });
@@ -105,23 +134,21 @@ export function FoodItemsScreen({ className }: FoodItemsScreenProps) {
       className={className}
       catalogSection={{
         activeTabId: "food",
-        searchValue: search,
-        onSearchChange: setSearch,
+        searchValue: searchInput,
+        onSearchChange: setSearchInput,
       }}
     >
       <div className={styles.content()}>
         <FoodItemsHeaderSection
-          statusFilter={statusFilter}
+          statusFilter={filters.status}
           onCreate={() => navigate(routes.catalogFoodNew)}
           onRefresh={() => void reload()}
-          onStatusChange={setStatusFilter}
+          onStatusChange={(value) => setFilter("status", value)}
         />
 
         <FoodItemsTableSection
           categoryLabels={categoryLabels}
           error={error}
-          fetchingMore={fetchingMore}
-          hasMore={hasMore}
           items={items}
           loading={loading}
           total={total}
@@ -130,7 +157,10 @@ export function FoodItemsScreen({ className }: FoodItemsScreenProps) {
             setArchiveError(null);
           }}
           onEdit={(row) => navigate(routes.catalogFoodEdit(row.id))}
-          onLoadMore={loadMore}
+          page={page}
+          pageSize={pageSize}
+          totalPages={totalPages}
+          onPageChange={changePage}
         />
       </div>
 

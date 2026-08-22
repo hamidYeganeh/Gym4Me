@@ -199,6 +199,24 @@ export class UpdateNotificationTemplateDto {
 
 export class ListTemplatesQueryDto {
   @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page_size?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  limit?: number;
+
+  @IsOptional()
   @Transform(toStringArray)
   @IsArray()
   @IsEnum(EntityStatus, { each: true })

@@ -5,6 +5,10 @@ import type { AdminFaqItem } from "@repo/api";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
 import { AdminDataTable } from "@/shared/components";
+import {
+  adminListPaginationProps,
+  adminListPaginationSummary,
+} from "@/shared/lib/admin-list-pagination";
 import { faqListTableSectionVariants } from "./FaqListTableSection.styles";
 import type {
   FaqListTableSectionProps,
@@ -16,16 +20,18 @@ const columnHelper = createColumnHelper<AdminFaqItem>();
 export function FaqListTableSection({
   items,
   total,
+  page,
+  pageSize,
+  totalPages,
   loading,
-  fetchingMore,
-  hasMore,
   error,
-  onLoadMore,
+  onPageChange,
   onEdit,
   onDelete,
   className,
 }: FaqListTableSectionProps) {
   const t = useTranslations("Admin.Support");
+  const tCommon = useTranslations("Admin.Common");
   const styles = faqListTableSectionVariants();
 
   const columns = useMemo(
@@ -111,6 +117,8 @@ export function FaqListTableSection({
     onDelete,
   };
 
+  const summary = adminListPaginationSummary(page, pageSize, total);
+
   return (
     <AdminDataTable
       ariaLabel={t("faqTitle")}
@@ -120,17 +128,17 @@ export function FaqListTableSection({
       emptyLabel={t("faqEmpty")}
       error={error}
       getRowId={(row) => row.id}
-      hasMore={hasMore}
-      isFetchingMore={fetchingMore}
       isLoading={loading}
       loadingLabel={t("loading")}
-      loadingMoreLabel={t("loadingMore")}
       meta={meta}
-      summaryLabel={t("infinite.summary", {
-        loaded: items.length,
-        total,
+      pagination={adminListPaginationProps({
+        page,
+        totalPages,
+        previousLabel: tCommon("pagination.previous"),
+        nextLabel: tCommon("pagination.next"),
+        onPageChange,
       })}
-      onLoadMore={onLoadMore}
+      summaryLabel={tCommon("pagination.summary", summary)}
     />
   );
 }

@@ -14,6 +14,11 @@ import { slugify } from '../../common/utils/slug.util';
 import { MediaService } from '../../media/media.service';
 import { Sport, SportDocument } from '../../schemas/sport.schema';
 import { CreateSportDto, UpdateSportDto } from './dto/sport.dto';
+import {
+  DEFAULT_SPORT_TREE,
+  LEGACY_SPORT_ICONS,
+  type SportDefaultNode,
+} from './sport-defaults';
 
 const PARENT_KIND: Record<SportKind, SportKind | null> = {
   [SportKind.CATEGORY]: null,
@@ -200,7 +205,14 @@ export class SportService {
   async upsertSeed(dto: CreateSportDto) {
     const slug = dto.slug || slugify(dto.name);
     const existing = await this.sportModel.findOne({ kind: dto.kind, slug });
-    if (existing) return existing;
+    if (existing) {
+      const nextIcon = this.resolveSeedIcon(dto.icon, existing.icon);
+      if (nextIcon && nextIcon !== existing.icon) {
+        existing.icon = nextIcon;
+        await existing.save();
+      }
+      return existing;
+    }
 
     const { parentId, ancestors } = await this.resolveParent(
       dto.kind,
@@ -217,6 +229,85 @@ export class SportService {
       order: dto.order ?? 0,
       isActive: true,
     });
+  }
+
+  /**
+   * Idempotent: create missing sport tree nodes and upgrade legacy icons.
+   */
+  async seedDefaults(adminId?: string, request?: Request) {
+    const created: string[] = [];
+    const updated: string[] = [];
+    const skipped: string[] = [];
+
+    const walk = async (
+      nodes: SportDefaultNode[],
+      parentId?: string,
+    ): Promise<void> => {
+      for (const node of nodes) {
+        const label = `${node.kind}:${node.slug}`;
+        const existing = await this.sportModel.findOne({
+          kind: node.kind,
+          slug: node.slug,
+        });
+
+        if (!existing) {
+          const { parentId: resolvedParent, ancestors } =
+            await this.resolveParent(node.kind, parentId);
+          const doc = await this.sportModel.create({
+            kind: node.kind,
+            name: node.name,
+            slug: node.slug,
+            icon: node.icon,
+            parentId: resolvedParent,
+            ancestors,
+            order: node.order ?? 0,
+            isActive: true,
+          });
+          created.push(label);
+          if (node.children?.length) {
+            await walk(node.children, doc._id.toString());
+          }
+          continue;
+        }
+
+        const nextIcon = this.resolveSeedIcon(node.icon, existing.icon);
+        if (nextIcon && nextIcon !== existing.icon) {
+          existing.icon = nextIcon;
+          await existing.save();
+          updated.push(label);
+        } else {
+          skipped.push(label);
+        }
+
+        if (node.children?.length) {
+          await walk(node.children, existing._id.toString());
+        }
+      }
+    };
+
+    await walk(DEFAULT_SPORT_TREE);
+
+    if (adminId && request) {
+      this.audit.log({
+        action: AuditAction.SPORT_DEFAULTS_SEEDED,
+        actorId: adminId,
+        metadata: { created, updated, skipped },
+        request,
+      });
+    }
+
+    return { created, updated, skipped };
+  }
+
+  private resolveSeedIcon(
+    desired?: string,
+    current?: string,
+  ): string | undefined {
+    if (!desired) return undefined;
+    if (!current) return desired;
+    if (current === desired) return undefined;
+    if (LEGACY_SPORT_ICONS[current]) return desired;
+    return undefined;
   }
 
   private async resolveParent(kind: SportKind, parentId?: string) {

@@ -23,6 +23,10 @@ import {
   resolveListSort,
 } from '../common/utils/list-query.util';
 import {
+  paginatedResult,
+  resolvePageSize,
+} from '../common/utils/pagination.util';
+import {
   DeviceToken,
   DeviceTokenDocument,
 } from '../schemas/device-token.schema';
@@ -424,6 +428,7 @@ export class NotificationsService implements OnModuleInit {
   // ------------------------------------------------- admin template CRUD
 
   async listTemplates(query: ListTemplatesQueryDto) {
+    const { page, pageSize } = resolvePageSize(query);
     const filter: Record<string, unknown> = {
       ...createSearchFilter(query.search, [
         'key',
@@ -445,8 +450,21 @@ export class NotificationsService implements OnModuleInit {
       },
       { key: 1 },
     );
-    const items = await this.templateModel.find(filter).sort(sort).lean();
-    return { items: items.map((t) => this.templateToPublic(t)) };
+    const [items, count] = await Promise.all([
+      this.templateModel
+        .find(filter)
+        .sort(sort)
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .lean(),
+      this.templateModel.countDocuments(filter),
+    ]);
+    return paginatedResult(
+      items.map((t) => this.templateToPublic(t)),
+      count,
+      page,
+      pageSize,
+    );
   }
 
   async getTemplate(key: string) {

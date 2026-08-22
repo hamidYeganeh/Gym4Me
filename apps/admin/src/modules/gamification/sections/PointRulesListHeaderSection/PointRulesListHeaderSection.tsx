@@ -1,14 +1,20 @@
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
-import { FilterChip } from "@repo/ui/kit/FilterChip";
+import type { EntityStatus, PointRuleEvent } from "@repo/api";
 import { useTranslations } from "next-intl";
-import { POINT_RULE_EVENTS } from "../../lib/gamification-constants";
+import { AdminFilterSelect } from "@/shared/components";
+import {
+  ENTITY_STATUSES,
+  POINT_RULE_EVENTS,
+} from "../../lib/gamification-constants";
 import { pointRulesListHeaderSectionVariants } from "./PointRulesListHeaderSection.styles";
 import type { PointRulesListHeaderSectionProps } from "./PointRulesListHeaderSection.types";
 
 export function PointRulesListHeaderSection({
   eventFilter,
+  statusFilter,
   onEventChange,
+  onStatusChange,
   onCreate,
   onRefresh,
   className,
@@ -22,16 +28,31 @@ export function PointRulesListHeaderSection({
         {t("rules.title")}
       </Typography>
       <Typography className={styles.subtitle()}>{t("rules.subtitle")}</Typography>
-      <div className={styles.actions()}>
-        {(["all", ...POINT_RULE_EVENTS] as const).map((value) => (
-          <FilterChip
-            key={value}
-            onPress={() => onEventChange(value)}
-            selected={eventFilter === value}
-          >
-            {value === "all" ? t("filterAll") : t(`events.${value}`)}
-          </FilterChip>
-        ))}
+      <div className={styles.filters()}>
+        <AdminFilterSelect
+          allLabel={t("filterAll")}
+          label={t("filters.event")}
+          options={POINT_RULE_EVENTS.map((item) => ({
+            value: item,
+            label: t(`events.${item}`),
+          }))}
+          value={eventFilter}
+          onChange={(value) =>
+            onEventChange(value as PointRuleEvent | "all")
+          }
+        />
+        <AdminFilterSelect
+          allLabel={t("filterAll")}
+          label={t("filters.status")}
+          options={ENTITY_STATUSES.map((item) => ({
+            value: item,
+            label: t(`statuses.${item}`),
+          }))}
+          value={statusFilter}
+          onChange={(value) =>
+            onStatusChange(value as EntityStatus | "all")
+          }
+        />
         <Button size="sm" variant="primary" onPress={onCreate}>
           {t("rules.actions.create")}
         </Button>

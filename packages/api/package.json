@@ -58,7 +58,8 @@
   },
   "scripts": {
     "check-types": "tsc --noEmit",
-    "lint": "eslint src --max-warnings 0"
+    "lint": "eslint src --max-warnings 0",
+    "test": "jest --config ./jest.config.cjs --runInBand"
   },
   "peerDependencies": {
     "@tanstack/react-query": "^5.0.0",

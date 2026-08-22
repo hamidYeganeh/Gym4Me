@@ -8,12 +8,10 @@ export function OnboardingFooterSection({
   isCaloriesStep,
   isAvatarStep,
   isAvatarUploading,
+  hasAvatar,
   canContinue,
-  calories,
-  caloriesKnown,
   goNext,
   handleCaloriesUnknown,
-  requestFinish,
   className,
 }: OnboardingFooterSectionProps) {
   const styles = onboardingFooterSectionVariants();
@@ -25,14 +23,11 @@ export function OnboardingFooterSection({
       <div className={styles.root({ className })}>
         <div className={styles.stack()}>
           <Button
-            className={
-              calories > 0 || !caloriesKnown
-                ? styles.continue()
-                : styles.continueSoft()
-            }
+            className={canContinue ? styles.continue() : styles.continueSoft()}
             fullWidth
+            isDisabled={!canContinue}
             size="lg"
-            variant={calories > 0 || !caloriesKnown ? "primary" : "secondary"}
+            variant={canContinue ? "primary" : "secondary"}
             onPress={goNext}
           >
             {t("continue")}
@@ -58,31 +53,20 @@ export function OnboardingFooterSection({
   if (isAvatarStep) {
     return (
       <div className={styles.root({ className })}>
-        <div className={styles.stack()}>
-          <Button
-            aria-disabled={!canContinue}
-            className={canContinue ? styles.continue() : styles.continueSoft()}
-            fullWidth
-            size="lg"
-            variant={canContinue ? "primary" : "secondary"}
-            onPress={goNext}
-          >
-            {t("continue")}
-            <ArrowRight
-              aria-hidden
-              className={styles.continueIcon()}
-              size={20}
-            />
-          </Button>
-          <Button
-            className={styles.skip()}
-            size="sm"
-            variant="ghost"
-            onPress={requestFinish}
-          >
-            {t("avatar.skip")}
-          </Button>
-        </div>
+        <Button
+          className={styles.continue()}
+          fullWidth
+          size="lg"
+          variant="primary"
+          onPress={goNext}
+        >
+          {hasAvatar ? t("finish") : t("avatar.finishWithoutPhoto")}
+          <ArrowRight
+            aria-hidden
+            className={styles.continueIcon()}
+            size={20}
+          />
+        </Button>
       </div>
     );
   }
@@ -90,9 +74,9 @@ export function OnboardingFooterSection({
   return (
     <div className={styles.root({ className })}>
       <Button
-        aria-disabled={!canContinue}
         className={canContinue ? styles.continue() : styles.continueSoft()}
         fullWidth
+        isDisabled={!canContinue}
         size="lg"
         variant={canContinue ? "primary" : "secondary"}
         onPress={goNext}

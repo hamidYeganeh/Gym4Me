@@ -133,6 +133,14 @@ export enum LocationKind {
   DISTRICT = 'district',
 }
 
+/** Saved places on a user profile (home/work/gym are unique per user). */
+export enum FavouriteLocationKind {
+  HOME = 'home',
+  WORK = 'work',
+  GYM = 'gym',
+  OTHER = 'other',
+}
+
 export enum SportKind {
   CATEGORY = 'category',
   SPORT = 'sport',
@@ -592,6 +600,9 @@ export enum AuditAction {
   ACHIEVEMENT_GRANTED = 'club.achievement_granted',
   MEDIA_UPLOADED = 'media.uploaded',
   PROFILE_SETTINGS_UPDATED = 'profile.settings_updated',
+  PROFILE_FAVOURITE_LOCATION_CREATED = 'profile.favourite_location_created',
+  PROFILE_FAVOURITE_LOCATION_UPDATED = 'profile.favourite_location_updated',
+  PROFILE_FAVOURITE_LOCATION_DELETED = 'profile.favourite_location_deleted',
   CHOICE_CREATED = 'basics.choice_created',
   CHOICE_UPDATED = 'basics.choice_updated',
   CHOICE_DELETED = 'basics.choice_deleted',
@@ -599,12 +610,15 @@ export enum AuditAction {
   LOCATION_CREATED = 'basics.location_created',
   LOCATION_UPDATED = 'basics.location_updated',
   LOCATION_DELETED = 'basics.location_deleted',
+  LOCATION_DEFAULTS_SEEDED = 'basics.location_defaults_seeded',
   SPORT_CREATED = 'basics.sport_created',
   SPORT_UPDATED = 'basics.sport_updated',
   SPORT_DELETED = 'basics.sport_deleted',
+  SPORT_DEFAULTS_SEEDED = 'basics.sport_defaults_seeded',
   REF_CREATED = 'basics.ref_created',
   REF_UPDATED = 'basics.ref_updated',
   REF_DELETED = 'basics.ref_deleted',
+  REF_DEFAULTS_SEEDED = 'basics.ref_defaults_seeded',
   SUPPORT_TICKET_CREATED = 'support.ticket_created',
   SUPPORT_TICKET_REPLIED = 'support.ticket_replied',
   SUPPORT_TICKET_UPDATED = 'support.ticket_updated',
@@ -626,6 +640,7 @@ export enum AuditAction {
   GAMIFICATION_ACHIEVEMENT_CREATED = 'gamification.achievement_created',
   GAMIFICATION_ACHIEVEMENT_UPDATED = 'gamification.achievement_updated',
   GAMIFICATION_ACHIEVEMENT_DELETED = 'gamification.achievement_deleted',
+  GAMIFICATION_ACHIEVEMENT_DEFAULTS_SEEDED = 'gamification.achievement_defaults_seeded',
   GAMIFICATION_ACHIEVEMENT_GRANTED = 'gamification.achievement_granted',
   GAMIFICATION_ACHIEVEMENT_REVOKED = 'gamification.achievement_revoked',
   GAMIFICATION_POINT_RULE_CREATED = 'gamification.point_rule_created',

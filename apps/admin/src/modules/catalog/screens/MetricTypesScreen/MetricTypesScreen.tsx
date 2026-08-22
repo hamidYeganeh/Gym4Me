@@ -12,7 +12,14 @@ import {
   AdminDataTable,
   AdminShell,
 } from "@/shared/components";
-import { useAdminInfiniteQuery } from "@/shared/hooks";
+import {
+  useAdminListQueryParams,
+  useAdminPaginatedQuery,
+} from "@/shared/hooks";
+import {
+  adminListPaginationProps,
+  adminListPaginationSummary,
+} from "@/shared/lib/admin-list-pagination";
 import { adminProgress } from "@/shared/lib/api";
 import { routes } from "@/shared/lib/routes";
 import { metricTypesScreenVariants } from "./MetricTypesScreen.styles";
@@ -30,6 +37,7 @@ type MetricTableMeta = {
 
 export function MetricTypesScreen({ className }: MetricTypesScreenProps) {
   const t = useTranslations("Admin.Catalog");
+  const tCommon = useTranslations("Admin.Common");
   const navigate = useNavigate();
   const styles = metricTypesScreenVariants();
 
@@ -38,9 +46,14 @@ export function MetricTypesScreen({ className }: MetricTypesScreenProps) {
   const [archivePending, setArchivePending] = useState(false);
   const [archiveError, setArchiveError] = useState<string | null>(null);
 
+  const { page, pageSize, setPage } = useAdminListQueryParams<Record<never, never>>({
+    filterKeys: [],
+    defaults: { page: 1, page_size: PAGE_SIZE },
+  });
+
   const queryKey = useMemo(
-    () => JSON.stringify({ search, pageSize: PAGE_SIZE }),
-    [search],
+    () => JSON.stringify({ search, pageSize }),
+    [pageSize, search],
   );
 
   const fetchPage = useCallback(
@@ -57,15 +70,16 @@ export function MetricTypesScreen({ className }: MetricTypesScreenProps) {
   const {
     items,
     total,
+    totalPages,
     loading,
-    fetchingMore,
-    hasMore,
     error,
-    loadMore,
+    setPage: changePage,
     reload,
-  } = useAdminInfiniteQuery<MetricType>({
+  } = useAdminPaginatedQuery<MetricType>({
     queryKey,
-    pageSize: PAGE_SIZE,
+    page,
+    pageSize,
+    onPageChange: setPage,
     errorFallback: t("metrics.errorLoad"),
     fetchPage,
   });
@@ -158,6 +172,8 @@ export function MetricTypesScreen({ className }: MetricTypesScreenProps) {
     }
   };
 
+  const summary = adminListPaginationSummary(page, pageSize, total);
+
   return (
     <AdminShell
       activeNavId="catalogs"
@@ -197,17 +213,17 @@ export function MetricTypesScreen({ className }: MetricTypesScreenProps) {
           emptyLabel={t("metrics.empty")}
           error={error}
           getRowId={(row) => row.id}
-          hasMore={hasMore}
-          isFetchingMore={fetchingMore}
           isLoading={loading}
           loadingLabel={t("loading")}
-          loadingMoreLabel={t("loadingMore")}
           meta={meta}
-          onLoadMore={loadMore}
-          summaryLabel={t("metrics.summary", {
-            loaded: items.length,
-            total,
+          pagination={adminListPaginationProps({
+            page,
+            totalPages,
+            previousLabel: tCommon("pagination.previous"),
+            nextLabel: tCommon("pagination.next"),
+            onPageChange: changePage,
           })}
+          summaryLabel={tCommon("pagination.summary", summary)}
         />
       </div>
 

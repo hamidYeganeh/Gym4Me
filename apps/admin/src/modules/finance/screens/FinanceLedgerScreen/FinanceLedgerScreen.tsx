@@ -1,39 +1,86 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { Button } from "@heroui/react/button";
 import { Chip } from "@heroui/react/chip";
+import { Input } from "@heroui/react/input";
+import { Label } from "@heroui/react/label";
+import { TextField } from "@heroui/react/textfield";
 import { Typography } from "@heroui/react/typography";
-import type { AdminLedgerEntry } from "@repo/api";
-import { FilterChip } from "@repo/ui/kit/FilterChip";
+import type { AdminLedgerEntry, LedgerEntryKind } from "@repo/api";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
-import { AdminDataTable, AdminShell } from "@/shared/components";
-import { useAdminInfiniteQuery } from "@/shared/hooks";
+import {
+  AdminDataTable,
+  AdminFilterSelect,
+  AdminShell,
+} from "@/shared/components";
+import {
+  useAdminListQueryParams,
+  useAdminPaginatedQuery,
+} from "@/shared/hooks";
+import {
+  adminListPaginationProps,
+  adminListPaginationSummary,
+} from "@/shared/lib/admin-list-pagination";
 import { adminFinance } from "@/shared/lib/api";
 import { formatAdminDate } from "@/shared/lib/user-format";
 import { financeLedgerScreenVariants } from "./FinanceLedgerScreen.styles";
 import type { FinanceLedgerScreenProps } from "./FinanceLedgerScreen.types";
 
 const PAGE_SIZE = 40;
-const KINDS = [
-  "all",
+const FILTER_KEYS = ["kind", "clubId", "paymentId", "from", "to"] as const;
+
+const LEDGER_KINDS: LedgerEntryKind[] = [
   "payment",
   "refund",
   "payout",
   "wallet_topup",
   "wallet_spend",
   "adjustment",
-] as const;
+];
+
+type FinanceLedgerFilters = {
+  kind: LedgerEntryKind | "all";
+  clubId: string;
+  paymentId: string;
+  from: string;
+  to: string;
+};
+
+const FILTER_DEFAULTS: FinanceLedgerFilters & {
+  search: string;
+  page: number;
+  page_size: number;
+} = {
+  kind: "all",
+  clubId: "",
+  paymentId: "",
+  from: "",
+  to: "",
+  search: "",
+  page: 1,
+  page_size: PAGE_SIZE,
+};
 
 const columnHelper = createColumnHelper<AdminLedgerEntry>();
 
 export function FinanceLedgerScreen({ className }: FinanceLedgerScreenProps) {
   const t = useTranslations("Admin.Finance");
+  const tCommon = useTranslations("Admin.Common");
   const styles = financeLedgerScreenVariants();
-  const [kindFilter, setKindFilter] = useState<(typeof KINDS)[number]>("all");
+
+  const { filters, setFilter,
+    page,
+    pageSize,
+    setPage,
+  } =
+    useAdminListQueryParams<FinanceLedgerFilters>({
+      filterKeys: FILTER_KEYS,
+      defaults: FILTER_DEFAULTS,
+    });
 
   const queryKey = useMemo(
-    () => JSON.stringify({ kindFilter, pageSize: PAGE_SIZE }),
-    [kindFilter],
+    () => JSON.stringify({ filters, pageSize }),
+    [filters, pageSize],
   );
 
   const fetchPage = useCallback(
@@ -41,24 +88,29 @@ export function FinanceLedgerScreen({ className }: FinanceLedgerScreenProps) {
       return adminFinance.listLedger({
         page,
         page_size: pageSize,
-        kind: kindFilter === "all" ? undefined : kindFilter,
+        kind: filters.kind === "all" ? undefined : filters.kind,
+        clubId: filters.clubId.trim() || undefined,
+        paymentId: filters.paymentId.trim() || undefined,
+        from: filters.from.trim() || undefined,
+        to: filters.to.trim() || undefined,
       });
     },
-    [kindFilter],
+    [filters],
   );
 
   const {
     items,
     total,
+    totalPages,
     loading,
-    fetchingMore,
-    hasMore,
     error,
-    loadMore,
+    setPage: changePage,
     reload,
-  } = useAdminInfiniteQuery<AdminLedgerEntry>({
+  } = useAdminPaginatedQuery<AdminLedgerEntry>({
     queryKey,
-    pageSize: PAGE_SIZE,
+    page,
+    pageSize,
+    onPageChange: setPage,
     errorFallback: t("errorLoad"),
     fetchPage,
   });
@@ -97,6 +149,8 @@ export function FinanceLedgerScreen({ className }: FinanceLedgerScreenProps) {
     [t],
   );
 
+  const summary = adminListPaginationSummary(page, pageSize, total);
+
   return (
     <AdminShell
       activeNavId="finance"
@@ -118,16 +172,65 @@ export function FinanceLedgerScreen({ className }: FinanceLedgerScreenProps) {
           </div>
         </section>
 
-        <div className="flex flex-wrap gap-1.5">
-          {KINDS.map((kind) => (
-            <FilterChip
-              key={kind}
-              onPress={() => setKindFilter(kind)}
-              selected={kindFilter === kind}
-            >
-              {kind === "all" ? t("filterAll") : kind}
-            </FilterChip>
-          ))}
+        <div className={styles.filters()}>
+          <AdminFilterSelect
+            allLabel={t("filterAll")}
+            label={t("filters.kind")}
+            options={LEDGER_KINDS.map((item) => ({
+              value: item,
+              label: t(`ledgerKind.${item}`),
+            }))}
+            value={filters.kind}
+            onChange={(value) =>
+              setFilter("kind", value as FinanceLedgerFilters["kind"])
+            }
+          />
+          <TextField
+            className={styles.field()}
+            name="clubId"
+            value={filters.clubId}
+            onChange={(value) => setFilter("clubId", value)}
+          >
+            <Label className={styles.label()}>{t("filters.clubId")}</Label>
+            <Input
+              className={styles.input()}
+              dir="ltr"
+              placeholder={t("filters.idPlaceholder")}
+            />
+          </TextField>
+          <TextField
+            className={styles.field()}
+            name="paymentId"
+            value={filters.paymentId}
+            onChange={(value) => setFilter("paymentId", value)}
+          >
+            <Label className={styles.label()}>{t("filters.paymentId")}</Label>
+            <Input
+              className={styles.input()}
+              dir="ltr"
+              placeholder={t("filters.idPlaceholder")}
+            />
+          </TextField>
+          <TextField
+            className={styles.field()}
+            name="from"
+            type="date"
+            value={filters.from}
+            onChange={(value) => setFilter("from", value)}
+          >
+            <Label className={styles.label()}>{t("filters.from")}</Label>
+            <Input className={styles.input()} />
+          </TextField>
+          <TextField
+            className={styles.field()}
+            name="to"
+            type="date"
+            value={filters.to}
+            onChange={(value) => setFilter("to", value)}
+          >
+            <Label className={styles.label()}>{t("filters.to")}</Label>
+            <Input className={styles.input()} />
+          </TextField>
         </div>
 
         <AdminDataTable
@@ -137,16 +240,16 @@ export function FinanceLedgerScreen({ className }: FinanceLedgerScreenProps) {
           emptyLabel={t("empty")}
           error={error}
           getRowId={(row) => row.id}
-          hasMore={hasMore}
-          isFetchingMore={fetchingMore}
           isLoading={loading}
           loadingLabel={t("loading")}
-          loadingMoreLabel={t("loadingMore")}
-          onLoadMore={loadMore}
-          summaryLabel={t("infinite.summary", {
-            loaded: items.length,
-            total,
+          pagination={adminListPaginationProps({
+            page,
+            totalPages,
+            previousLabel: tCommon("pagination.previous"),
+            nextLabel: tCommon("pagination.next"),
+            onPageChange: changePage,
           })}
+          summaryLabel={tCommon("pagination.summary", summary)}
         />
       </div>
     </AdminShell>

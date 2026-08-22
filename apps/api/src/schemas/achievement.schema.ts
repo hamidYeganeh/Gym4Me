@@ -37,6 +37,10 @@ export const AchievementGrantConfigSchema = SchemaFactory.createForClass(
 
 @Schema({ timestamps: true, collection: 'achievements' })
 export class Achievement {
+  /** Stable seed / system key (sparse unique). */
+  @Prop({ trim: true, unique: true, sparse: true, index: true })
+  key?: string;
+
   @Prop({ required: true, trim: true })
   title!: string;
 

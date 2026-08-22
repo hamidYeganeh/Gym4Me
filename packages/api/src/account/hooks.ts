@@ -1,11 +1,15 @@
 export {
   useAccountAthleteProfile,
   useAccountCoachProfile,
+  useAccountFavouriteLocations,
   useAccountProfileMe,
   useAccountProfileSettings,
+  useCreateAccountFavouriteLocation,
+  useDeleteAccountFavouriteLocation,
   useSubmitCoachVerification,
   useUpdateAccountAthleteProfile,
   useUpdateAccountCoachProfile,
+  useUpdateAccountFavouriteLocation,
   useUpdateAccountProfileMe,
   useUpdateAccountProfileSettings,
 } from "./profile.hooks";

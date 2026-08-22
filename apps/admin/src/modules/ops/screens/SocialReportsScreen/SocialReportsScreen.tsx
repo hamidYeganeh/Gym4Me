@@ -3,7 +3,10 @@ import type { SocialReport, SocialReportStatus } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { AdminShell } from "@/shared/components";
-import { useAdminInfiniteQuery } from "@/shared/hooks";
+import {
+  useAdminListQueryParams,
+  useAdminPaginatedQuery,
+} from "@/shared/hooks";
 import { adminSocial } from "@/shared/lib/api";
 import { SocialReportsHeaderSection } from "../../sections/SocialReportsHeaderSection";
 import { SocialReportsResolveDrawerSection } from "../../sections/SocialReportsResolveDrawerSection";
@@ -12,14 +15,36 @@ import { socialReportsScreenVariants } from "./SocialReportsScreen.styles";
 import type { SocialReportsScreenProps } from "./SocialReportsScreen.types";
 
 const PAGE_SIZE = 30;
+const FILTER_KEYS = ["status"] as const;
+
+type SocialReportsFilters = {
+  status: SocialReportStatus | "all";
+};
+
+const FILTER_DEFAULTS: SocialReportsFilters & {
+  search: string;
+  page: number;
+  page_size: number;
+} = {
+  status: "open",
+  search: "",
+  page: 1,
+  page_size: PAGE_SIZE,
+};
 
 export function SocialReportsScreen({ className }: SocialReportsScreenProps) {
   const t = useTranslations("Admin.Ops");
   const styles = socialReportsScreenVariants();
 
-  const [statusFilter, setStatusFilter] = useState<SocialReportStatus | "all">(
-    "open",
-  );
+  const { filters, setFilter,
+    page,
+    pageSize,
+    setPage,
+  } =
+    useAdminListQueryParams<SocialReportsFilters>({
+      filterKeys: FILTER_KEYS,
+      defaults: FILTER_DEFAULTS,
+    });
   const [resolving, setResolving] = useState<{
     report: SocialReport;
     resolution: "resolved" | "rejected";
@@ -29,8 +54,8 @@ export function SocialReportsScreen({ className }: SocialReportsScreenProps) {
   const [actionError, setActionError] = useState<string | null>(null);
 
   const queryKey = useMemo(
-    () => JSON.stringify({ statusFilter, pageSize: PAGE_SIZE }),
-    [statusFilter],
+    () => JSON.stringify({ filters, pageSize }),
+    [filters, pageSize],
   );
 
   const fetchPage = useCallback(
@@ -38,24 +63,25 @@ export function SocialReportsScreen({ className }: SocialReportsScreenProps) {
       return adminSocial.listReports({
         page,
         page_size: pageSize,
-        status: statusFilter === "all" ? undefined : statusFilter,
+        status: filters.status === "all" ? undefined : filters.status,
       });
     },
-    [statusFilter],
+    [filters],
   );
 
   const {
     items,
     total,
+    totalPages,
     loading,
-    fetchingMore,
-    hasMore,
     error,
-    loadMore,
+    setPage: changePage,
     reload,
-  } = useAdminInfiniteQuery<SocialReport>({
+  } = useAdminPaginatedQuery<SocialReport>({
     queryKey,
-    pageSize: PAGE_SIZE,
+    page,
+    pageSize,
+    onPageChange: setPage,
     errorFallback: t("social.errorLoad"),
     fetchPage,
   });
@@ -86,19 +112,20 @@ export function SocialReportsScreen({ className }: SocialReportsScreenProps) {
     >
       <div className={styles.content()}>
         <SocialReportsHeaderSection
-          statusFilter={statusFilter}
+          statusFilter={filters.status}
           onRefresh={() => void reload()}
-          onStatusChange={setStatusFilter}
+          onStatusChange={(value) => setFilter("status", value)}
         />
 
         <SocialReportsTableSection
           error={error}
-          fetchingMore={fetchingMore}
-          hasMore={hasMore}
           items={items}
           loading={loading}
           total={total}
-          onLoadMore={loadMore}
+          page={page}
+          pageSize={pageSize}
+          totalPages={totalPages}
+          onPageChange={changePage}
           onResolve={(report, resolution) => {
             setResolving({ report, resolution });
             setNote("");

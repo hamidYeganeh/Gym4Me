@@ -1,12 +1,16 @@
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
-import { FilterChip } from "@repo/ui/kit/FilterChip";
+import type { SocialReportStatus } from "@repo/api";
 import { useTranslations } from "next-intl";
+import { AdminFilterSelect } from "@/shared/components";
 import { socialReportsHeaderSectionVariants } from "./SocialReportsHeaderSection.styles";
-import {
-  SOCIAL_REPORT_STATUS_FILTERS,
-  type SocialReportsHeaderSectionProps,
-} from "./SocialReportsHeaderSection.types";
+import type { SocialReportsHeaderSectionProps } from "./SocialReportsHeaderSection.types";
+
+const SOCIAL_REPORT_STATUSES: SocialReportStatus[] = [
+  "open",
+  "resolved",
+  "rejected",
+];
 
 export function SocialReportsHeaderSection({
   statusFilter,
@@ -23,16 +27,17 @@ export function SocialReportsHeaderSection({
         {t("social.title")}
       </Typography>
       <Typography className={styles.subtitle()}>{t("social.subtitle")}</Typography>
-      <div className={styles.actions()}>
-        {SOCIAL_REPORT_STATUS_FILTERS.map((status) => (
-          <FilterChip
-            key={status}
-            onPress={() => onStatusChange(status)}
-            selected={statusFilter === status}
-          >
-            {status === "all" ? t("filterAll") : status}
-          </FilterChip>
-        ))}
+      <div className={styles.filters()}>
+        <AdminFilterSelect
+          allLabel={t("filterAll")}
+          label={t("social.filters.status")}
+          options={SOCIAL_REPORT_STATUSES.map((item) => ({
+            value: item,
+            label: t(`social.statuses.${item}`),
+          }))}
+          value={statusFilter}
+          onChange={(value) => onStatusChange(value as typeof statusFilter)}
+        />
         <Button size="sm" variant="ghost" onPress={onRefresh}>
           {t("refresh")}
         </Button>

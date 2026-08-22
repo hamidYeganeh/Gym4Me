@@ -1,9 +1,12 @@
 import { useCallback, useMemo, useState } from "react";
-import type { Payout, PayoutStatus } from "@repo/api";
+import type { Payout, PayoutRecipientType, PayoutStatus } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { AdminShell } from "@/shared/components";
-import { useAdminInfiniteQuery } from "@/shared/hooks";
+import {
+  useAdminListQueryParams,
+  useAdminPaginatedQuery,
+} from "@/shared/hooks";
 import { adminFinance } from "@/shared/lib/api";
 import { PayoutsListFiltersSection } from "../../sections/PayoutsListFiltersSection";
 import { PayoutsListHeaderSection } from "../../sections/PayoutsListHeaderSection";
@@ -13,14 +16,46 @@ import { payoutsListScreenVariants } from "./PayoutsListScreen.styles";
 import type { PayoutsListScreenProps } from "./PayoutsListScreen.types";
 
 const PAGE_SIZE = 30;
+const FILTER_KEYS = [
+  "status",
+  "recipientType",
+  "recipientId",
+  "clubId",
+] as const;
+
+type PayoutsListFilters = {
+  status: PayoutStatus | "all";
+  recipientType: PayoutRecipientType | "all";
+  recipientId: string;
+  clubId: string;
+};
+
+const FILTER_DEFAULTS: PayoutsListFilters & {
+  search: string;
+  page: number;
+  page_size: number;
+} = {
+  status: "all",
+  recipientType: "all",
+  recipientId: "",
+  clubId: "",
+  search: "",
+  page: 1,
+  page_size: PAGE_SIZE,
+};
 
 export function PayoutsListScreen({ className }: PayoutsListScreenProps) {
   const t = useTranslations("Admin.Finance");
   const styles = payoutsListScreenVariants();
 
-  const [statusFilter, setStatusFilter] = useState<PayoutStatus | "all">(
-    "all",
-  );
+  const { filters, setFilter,
+    page,
+    pageSize,
+    setPage,
+  } = useAdminListQueryParams<PayoutsListFilters>({
+    filterKeys: FILTER_KEYS,
+    defaults: FILTER_DEFAULTS,
+  });
   const [settling, setSettling] = useState<Payout | null>(null);
   const [actionPending, setActionPending] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -37,8 +72,8 @@ export function PayoutsListScreen({ className }: PayoutsListScreenProps) {
   const [resolveNote, setResolveNote] = useState("");
 
   const queryKey = useMemo(
-    () => JSON.stringify({ statusFilter, pageSize: PAGE_SIZE }),
-    [statusFilter],
+    () => JSON.stringify({ filters, pageSize }),
+    [filters, pageSize],
   );
 
   const fetchPage = useCallback(
@@ -46,24 +81,29 @@ export function PayoutsListScreen({ className }: PayoutsListScreenProps) {
       return adminFinance.listPayouts({
         page,
         page_size: pageSize,
-        status: statusFilter === "all" ? undefined : statusFilter,
+        status: filters.status === "all" ? undefined : filters.status,
+        recipientType:
+          filters.recipientType === "all" ? undefined : filters.recipientType,
+        recipientId: filters.recipientId.trim() || undefined,
+        clubId: filters.clubId.trim() || undefined,
       });
     },
-    [statusFilter],
+    [filters],
   );
 
   const {
     items,
     total,
+    totalPages,
     loading,
-    fetchingMore,
-    hasMore,
     error,
-    loadMore,
+    setPage: changePage,
     reload,
-  } = useAdminInfiniteQuery<Payout>({
+  } = useAdminPaginatedQuery<Payout>({
     queryKey,
-    pageSize: PAGE_SIZE,
+    page,
+    pageSize,
+    onPageChange: setPage,
     errorFallback: t("payouts.errorLoad"),
     fetchPage,
   });
@@ -110,14 +150,18 @@ export function PayoutsListScreen({ className }: PayoutsListScreenProps) {
         />
 
         <PayoutsListFiltersSection
-          statusFilter={statusFilter}
-          onStatusChange={setStatusFilter}
+          clubId={filters.clubId}
+          recipientId={filters.recipientId}
+          recipientTypeFilter={filters.recipientType}
+          statusFilter={filters.status}
+          onClubIdChange={(value) => setFilter("clubId", value)}
+          onRecipientIdChange={(value) => setFilter("recipientId", value)}
+          onRecipientTypeChange={(value) => setFilter("recipientType", value)}
+          onStatusChange={(value) => setFilter("status", value)}
         />
 
         <PayoutsListTableSection
           error={error}
-          fetchingMore={fetchingMore}
-          hasMore={hasMore}
           items={items}
           loading={loading}
           total={total}
@@ -126,7 +170,10 @@ export function PayoutsListScreen({ className }: PayoutsListScreenProps) {
             setDisputeReason("");
             setActionError(null);
           }}
-          onLoadMore={loadMore}
+          page={page}
+          pageSize={pageSize}
+          totalPages={totalPages}
+          onPageChange={changePage}
           onResolve={(row) => {
             setResolving(row);
             setResolveNote("");

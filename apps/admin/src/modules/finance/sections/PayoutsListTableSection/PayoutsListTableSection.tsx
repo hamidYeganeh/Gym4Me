@@ -5,6 +5,10 @@ import type { Payout } from "@repo/api";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
 import { AdminDataTable } from "@/shared/components";
+import {
+  adminListPaginationProps,
+  adminListPaginationSummary,
+} from "@/shared/lib/admin-list-pagination";
 import { formatAdminDate } from "@/shared/lib/user-format";
 import { payoutsListTableSectionVariants } from "./PayoutsListTableSection.styles";
 import type {
@@ -17,17 +21,19 @@ const columnHelper = createColumnHelper<Payout>();
 export function PayoutsListTableSection({
   items,
   total,
+  page,
+  pageSize,
+  totalPages,
   loading,
-  fetchingMore,
-  hasMore,
   error,
-  onLoadMore,
+  onPageChange,
   onSettle,
   onDispute,
   onResolve,
   className,
 }: PayoutsListTableSectionProps) {
   const t = useTranslations("Admin.Finance");
+  const tCommon = useTranslations("Admin.Common");
   const styles = payoutsListTableSectionVariants();
 
   const columns = useMemo(
@@ -137,6 +143,8 @@ export function PayoutsListTableSection({
     [onDispute, onResolve, onSettle, styles],
   );
 
+  const summary = adminListPaginationSummary(page, pageSize, total);
+
   return (
     <AdminDataTable
       ariaLabel={t("payouts.title")}
@@ -146,17 +154,17 @@ export function PayoutsListTableSection({
       emptyLabel={t("payouts.empty")}
       error={error}
       getRowId={(row) => row._id}
-      hasMore={hasMore}
-      isFetchingMore={fetchingMore}
       isLoading={loading}
       loadingLabel={t("loading")}
-      loadingMoreLabel={t("loadingMore")}
       meta={meta}
-      summaryLabel={t("payouts.summary", {
-        loaded: items.length,
-        total,
+      pagination={adminListPaginationProps({
+        page,
+        totalPages,
+        previousLabel: tCommon("pagination.previous"),
+        nextLabel: tCommon("pagination.next"),
+        onPageChange,
       })}
-      onLoadMore={onLoadMore}
+      summaryLabel={tCommon("pagination.summary", summary)}
     />
   );
 }

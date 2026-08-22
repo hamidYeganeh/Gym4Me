@@ -5,6 +5,10 @@ import type { Exercise } from "@repo/api";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
 import { AdminDataTable } from "@/shared/components";
+import {
+  adminListPaginationProps,
+  adminListPaginationSummary,
+} from "@/shared/lib/admin-list-pagination";
 import { exercisesCatalogTableSectionVariants } from "./ExercisesCatalogTableSection.styles";
 import type {
   ExerciseTableMeta,
@@ -16,11 +20,12 @@ const columnHelper = createColumnHelper<Exercise>();
 export function ExercisesCatalogTableSection({
   items,
   total,
+  page,
+  pageSize,
+  totalPages,
   loading,
-  fetchingMore,
-  hasMore,
   error,
-  onLoadMore,
+  onPageChange,
   onEdit,
   onApprove,
   onReject,
@@ -28,6 +33,7 @@ export function ExercisesCatalogTableSection({
   className,
 }: ExercisesCatalogTableSectionProps) {
   const t = useTranslations("Admin.Catalog");
+  const tCommon = useTranslations("Admin.Common");
   const styles = exercisesCatalogTableSectionVariants();
 
   const columns = useMemo(
@@ -136,6 +142,8 @@ export function ExercisesCatalogTableSection({
     onArchive,
   };
 
+  const summary = adminListPaginationSummary(page, pageSize, total);
+
   return (
     <AdminDataTable
       ariaLabel={t("exercises.title")}
@@ -145,14 +153,17 @@ export function ExercisesCatalogTableSection({
       emptyLabel={t("exercises.empty")}
       error={error}
       getRowId={(row) => row.id}
-      hasMore={hasMore}
-      isFetchingMore={fetchingMore}
       isLoading={loading}
       loadingLabel={t("loading")}
-      loadingMoreLabel={t("loadingMore")}
       meta={meta}
-      summaryLabel={t("exercises.summary", { loaded: items.length, total })}
-      onLoadMore={onLoadMore}
+      pagination={adminListPaginationProps({
+        page,
+        totalPages,
+        previousLabel: tCommon("pagination.previous"),
+        nextLabel: tCommon("pagination.next"),
+        onPageChange,
+      })}
+      summaryLabel={tCommon("pagination.summary", summary)}
     />
   );
 }

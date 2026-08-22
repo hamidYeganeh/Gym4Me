@@ -45,12 +45,15 @@ export function ClubsListScreen({ className }: ClubsListScreenProps) {
     sortOrder,
     sort,
     setSort,
+    page,
+    pageSize,
+    setPage,
   } = useAdminListQueryParams<
     ClubsListFilters,
     NonNullable<ClubListQuery["sortBy"]>
   >({
       filterKeys: FILTER_KEYS,
-      defaults: FILTER_DEFAULTS,
+      defaults: { ...FILTER_DEFAULTS, page: 1, page_size: PAGE_SIZE },
       defaultSort: { column: "createdAt", direction: "descending" },
     });
 
@@ -62,11 +65,12 @@ export function ClubsListScreen({ className }: ClubsListScreenProps) {
         operationalStatus: filters.operationalStatus,
         sortBy,
         sortOrder,
-        pageSize: PAGE_SIZE,
+        pageSize,
       }),
     [
       filters.lifecycleStatus,
       filters.operationalStatus,
+      pageSize,
       search,
       sortBy,
       sortOrder,
@@ -74,10 +78,10 @@ export function ClubsListScreen({ className }: ClubsListScreenProps) {
   );
 
   const fetchPage = useCallback(
-    async (page: number, pageSize: number) => {
+    async (nextPage: number, nextPageSize: number) => {
       return listClubs({
-        page,
-        limit: pageSize,
+        page: nextPage,
+        limit: nextPageSize,
         search: search || undefined,
         lifecycleStatus:
           filters.lifecycleStatus.length === 0
@@ -103,16 +107,16 @@ export function ClubsListScreen({ className }: ClubsListScreenProps) {
   const {
     items,
     total,
-    page,
-    pageSize,
     totalPages,
     loading,
     error,
-    setPage,
+    setPage: changePage,
     reload,
   } = useAdminPaginatedQuery<Club>({
     queryKey,
-    pageSize: PAGE_SIZE,
+    page,
+    pageSize,
+    onPageChange: setPage,
     errorFallback: t("errorLoad"),
     fetchPage,
   });
@@ -154,7 +158,7 @@ export function ClubsListScreen({ className }: ClubsListScreenProps) {
           }
           total={total}
           totalPages={totalPages}
-          onPageChange={setPage}
+          onPageChange={changePage}
           onSortChange={setSort}
           onView={(clubId) => navigate(routes.club(clubId))}
         />

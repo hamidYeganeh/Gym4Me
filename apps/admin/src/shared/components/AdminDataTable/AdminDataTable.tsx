@@ -65,7 +65,6 @@ export function AdminDataTable<TData>({
     setScrollEl(node);
   }, []);
 
-  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table
   const table = useReactTable({
     data,
     columns,
@@ -224,7 +223,7 @@ export function AdminDataTable<TData>({
       {!isLoading && data.length > 0 ? (
         <div className={styles.footer()}>
           {summaryLabel ? <Typography>{summaryLabel}</Typography> : <span />}
-          {pagination && pagination.totalPages > 1 ? (
+          {pagination ? (
             <Pagination size="sm">
               <Pagination.Content>
                 <Pagination.Item>

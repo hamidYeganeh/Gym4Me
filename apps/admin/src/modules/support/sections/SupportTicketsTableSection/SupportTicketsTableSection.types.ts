@@ -4,11 +4,12 @@ import type { ColumnDef } from "@tanstack/react-table";
 export type SupportTicketsTableSectionProps = {
   items: SupportTicket[];
   total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
   loading: boolean;
-  fetchingMore: boolean;
-  hasMore: boolean;
   error: string | null;
-  onLoadMore: () => void;
+  onPageChange: (page: number) => void;
   onView: (row: SupportTicket) => void;
   className?: string;
 };

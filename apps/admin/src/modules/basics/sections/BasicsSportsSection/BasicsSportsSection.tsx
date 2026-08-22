@@ -18,9 +18,11 @@ import { Table } from "@heroui/react/table";
 import { Typography } from "@heroui/react/typography";
 import { ApiError, type SportNode } from "@repo/api";
 import { ArrowRotateClockwise1 } from "@repo/icons/ArrowRotateClockwise1";
+import { CloudDownload1 } from "@repo/icons/CloudDownload1";
 import { Pencil1 } from "@repo/icons/Pencil1";
 import { Plus } from "@repo/icons/Plus";
 import { Trash2 } from "@repo/icons/Trash2";
+import { toast } from "@repo/ui/kit/Toast";
 import { useTranslations } from "next-intl";
 import { adminBasics } from "@/shared/lib/api";
 import { routes } from "@/shared/lib/routes";
@@ -40,6 +42,7 @@ export function BasicsSportsSection({
   const [parents, setParents] = useState<SportNode[]>([]);
   const [items, setItems] = useState<SportNode[]>([]);
   const [loading, setLoading] = useState(true);
+  const [seeding, setSeeding] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -129,6 +132,32 @@ export function BasicsSportsSection({
     }
   };
 
+  const handleSeedDefaults = async () => {
+    setSeeding(true);
+    setError(null);
+    try {
+      const result = await adminBasics.seedSportDefaults();
+      toast.success(
+        t("importDefaultsDone", {
+          created: result.created.length,
+          updated: result.updated.length,
+          skipped: result.skipped.length,
+        }),
+      );
+      await loadParents();
+      await load();
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? err.message || t("importDefaultsError")
+          : t("importDefaultsError");
+      setError(message);
+      toast.error(message);
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   return (
     <div className={styles.root()}>
       <section className={styles.intro()}>
@@ -141,6 +170,14 @@ export function BasicsSportsSection({
           </Typography>
         </div>
         <div className={styles.introActions()}>
+          <Button
+            isDisabled={seeding}
+            variant="outline"
+            onPress={() => void handleSeedDefaults()}
+          >
+            <CloudDownload1 size={18} />
+            {t("importDefaults")}
+          </Button>
           <Button variant="outline" onPress={() => void load()}>
             <ArrowRotateClockwise1 size={18} />
             {t("refresh")}

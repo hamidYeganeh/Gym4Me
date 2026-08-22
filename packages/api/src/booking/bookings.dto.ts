@@ -97,7 +97,10 @@ export type BookingsListQuery = {
   page?: number;
   page_size?: number;
   limit?: number;
-  status?: BookingStatus;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  status?: BookingStatus | BookingStatus[];
   bucket?: "upcoming" | "past" | "cancelled";
   from?: string;
   to?: string;

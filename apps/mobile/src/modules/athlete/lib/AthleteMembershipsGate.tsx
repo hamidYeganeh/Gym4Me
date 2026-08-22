@@ -4,6 +4,7 @@ import { Spinner } from "@heroui/react/spinner";
 import { Typography } from "@heroui/react/typography";
 import { useCallback, useEffect, useState } from "react";
 import { accountMemberships } from "@/shared/lib/api";
+import { useRouter } from "@/shared/lib/app-router";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { AthleteMembershipsScreen } from "../screens/AthleteMembershipsScreen";
 import { mapApiMembershipToAthlete } from "./api-memberships";
@@ -16,6 +17,7 @@ import {
  * Client gate: live memberships for signed-in athletes, demo fixtures otherwise.
  */
 export function AthleteMembershipsGate() {
+  const router = useRouter();
   const { isAuthenticated, isReady } = useAuth();
   const [memberships, setMemberships] = useState<AthleteMembership[] | null>(
     null,
@@ -60,7 +62,7 @@ export function AthleteMembershipsGate() {
             const invoice = await accountFinance.issueInvoiceFromPayment({
               paymentId: created.paymentId,
             });
-            window.location.assign(
+            router.push(
               `/athlete/payment/${invoice.id}?status=success&source=membership`,
             );
             return;
@@ -75,7 +77,7 @@ export function AthleteMembershipsGate() {
         setPending(false);
       }
     },
-    [reload],
+    [reload, router],
   );
 
   if (!memberships) {

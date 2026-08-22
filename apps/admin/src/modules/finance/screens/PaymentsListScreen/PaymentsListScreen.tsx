@@ -1,21 +1,46 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { Button } from "@heroui/react/button";
 import { Chip } from "@heroui/react/chip";
+import { Input } from "@heroui/react/input";
+import { Label } from "@heroui/react/label";
+import { TextField } from "@heroui/react/textfield";
 import { Typography } from "@heroui/react/typography";
-import type { PaymentRecord, PaymentStatus } from "@repo/api";
-import { FilterChip } from "@repo/ui/kit/FilterChip";
+import type {
+  PaymentChannel,
+  PaymentPurpose,
+  PaymentRecord,
+  PaymentStatus,
+} from "@repo/api";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
-import { AdminDataTable, AdminShell } from "@/shared/components";
-import { useAdminInfiniteQuery } from "@/shared/hooks";
+import {
+  AdminDataTable,
+  AdminFilterSelect,
+  AdminShell,
+} from "@/shared/components";
+import {
+  useAdminListQueryParams,
+  useAdminPaginatedQuery,
+} from "@/shared/hooks";
+import {
+  adminListPaginationProps,
+  adminListPaginationSummary,
+} from "@/shared/lib/admin-list-pagination";
 import { adminFinance } from "@/shared/lib/api";
 import { formatAdminDate } from "@/shared/lib/user-format";
 import { paymentsListScreenVariants } from "./PaymentsListScreen.styles";
 import type { PaymentsListScreenProps } from "./PaymentsListScreen.types";
 
 const PAGE_SIZE = 30;
-const STATUSES: Array<PaymentStatus | "all"> = [
-  "all",
+const FILTER_KEYS = [
+  "status",
+  "channel",
+  "purpose",
+  "clubId",
+  "payerUserId",
+] as const;
+
+const PAYMENT_STATUSES: PaymentStatus[] = [
   "pending",
   "authorized",
   "captured",
@@ -24,19 +49,65 @@ const STATUSES: Array<PaymentStatus | "all"> = [
   "partially_refunded",
   "cancelled",
 ];
+const PAYMENT_CHANNELS: PaymentChannel[] = [
+  "zarinpal",
+  "cash",
+  "pos",
+  "card_to_card",
+  "wallet",
+  "mixed",
+];
+const PAYMENT_PURPOSES: PaymentPurpose[] = [
+  "booking",
+  "membership",
+  "wallet_topup",
+  "package",
+  "platform_subscription",
+  "manual",
+];
+
+type PaymentsListFilters = {
+  status: PaymentStatus | "all";
+  channel: PaymentChannel | "all";
+  purpose: PaymentPurpose | "all";
+  clubId: string;
+  payerUserId: string;
+};
+
+const FILTER_DEFAULTS: PaymentsListFilters & {
+  search: string;
+  page: number;
+  page_size: number;
+} = {
+  status: "all",
+  channel: "all",
+  purpose: "all",
+  clubId: "",
+  payerUserId: "",
+  search: "",
+  page: 1,
+  page_size: PAGE_SIZE,
+};
 
 const columnHelper = createColumnHelper<PaymentRecord>();
 
 export function PaymentsListScreen({ className }: PaymentsListScreenProps) {
   const t = useTranslations("Admin.Finance");
+  const tCommon = useTranslations("Admin.Common");
   const styles = paymentsListScreenVariants();
-  const [statusFilter, setStatusFilter] = useState<PaymentStatus | "all">(
-    "all",
-  );
+
+  const { filters, setFilter,
+    page,
+    pageSize,
+    setPage,
+  } = useAdminListQueryParams<PaymentsListFilters>({
+    filterKeys: FILTER_KEYS,
+    defaults: FILTER_DEFAULTS,
+  });
 
   const queryKey = useMemo(
-    () => JSON.stringify({ statusFilter, pageSize: PAGE_SIZE }),
-    [statusFilter],
+    () => JSON.stringify({ filters, pageSize }),
+    [filters, pageSize],
   );
 
   const fetchPage = useCallback(
@@ -44,24 +115,29 @@ export function PaymentsListScreen({ className }: PaymentsListScreenProps) {
       return adminFinance.listPayments({
         page,
         page_size: pageSize,
-        status: statusFilter === "all" ? undefined : statusFilter,
+        status: filters.status === "all" ? undefined : filters.status,
+        channel: filters.channel === "all" ? undefined : filters.channel,
+        purpose: filters.purpose === "all" ? undefined : filters.purpose,
+        clubId: filters.clubId.trim() || undefined,
+        payerUserId: filters.payerUserId.trim() || undefined,
       });
     },
-    [statusFilter],
+    [filters],
   );
 
   const {
     items,
     total,
+    totalPages,
     loading,
-    fetchingMore,
-    hasMore,
     error,
-    loadMore,
+    setPage: changePage,
     reload,
-  } = useAdminInfiniteQuery<PaymentRecord>({
+  } = useAdminPaginatedQuery<PaymentRecord>({
     queryKey,
-    pageSize: PAGE_SIZE,
+    page,
+    pageSize,
+    onPageChange: setPage,
     errorFallback: t("payments.errorLoad"),
     fetchPage,
   });
@@ -127,6 +203,8 @@ export function PaymentsListScreen({ className }: PaymentsListScreenProps) {
     [t],
   );
 
+  const summary = adminListPaginationSummary(page, pageSize, total);
+
   return (
     <AdminShell
       activeNavId="finance"
@@ -148,16 +226,69 @@ export function PaymentsListScreen({ className }: PaymentsListScreenProps) {
           </div>
         </section>
 
-        <div className="flex flex-wrap gap-1.5">
-          {STATUSES.map((status) => (
-            <FilterChip
-              key={status}
-              onPress={() => setStatusFilter(status)}
-              selected={statusFilter === status}
-            >
-              {status === "all" ? t("filterAll") : status}
-            </FilterChip>
-          ))}
+        <div className={styles.filters()}>
+          <AdminFilterSelect
+            allLabel={t("filterAll")}
+            label={t("filters.status")}
+            options={PAYMENT_STATUSES.map((item) => ({
+              value: item,
+              label: t(`paymentStatus.${item}`),
+            }))}
+            value={filters.status}
+            onChange={(value) =>
+              setFilter("status", value as PaymentsListFilters["status"])
+            }
+          />
+          <AdminFilterSelect
+            allLabel={t("filterAll")}
+            label={t("filters.channel")}
+            options={PAYMENT_CHANNELS.map((item) => ({
+              value: item,
+              label: t(`paymentChannel.${item}`),
+            }))}
+            value={filters.channel}
+            onChange={(value) =>
+              setFilter("channel", value as PaymentsListFilters["channel"])
+            }
+          />
+          <AdminFilterSelect
+            allLabel={t("filterAll")}
+            label={t("filters.purpose")}
+            options={PAYMENT_PURPOSES.map((item) => ({
+              value: item,
+              label: t(`paymentPurpose.${item}`),
+            }))}
+            value={filters.purpose}
+            onChange={(value) =>
+              setFilter("purpose", value as PaymentsListFilters["purpose"])
+            }
+          />
+          <TextField
+            className={styles.field()}
+            name="clubId"
+            value={filters.clubId}
+            onChange={(value) => setFilter("clubId", value)}
+          >
+            <Label className={styles.label()}>{t("filters.clubId")}</Label>
+            <Input
+              className={styles.input()}
+              dir="ltr"
+              placeholder={t("filters.idPlaceholder")}
+            />
+          </TextField>
+          <TextField
+            className={styles.field()}
+            name="payerUserId"
+            value={filters.payerUserId}
+            onChange={(value) => setFilter("payerUserId", value)}
+          >
+            <Label className={styles.label()}>{t("filters.payerUserId")}</Label>
+            <Input
+              className={styles.input()}
+              dir="ltr"
+              placeholder={t("filters.idPlaceholder")}
+            />
+          </TextField>
         </div>
 
         <AdminDataTable
@@ -167,16 +298,16 @@ export function PaymentsListScreen({ className }: PaymentsListScreenProps) {
           emptyLabel={t("payments.empty")}
           error={error}
           getRowId={(row) => row._id}
-          hasMore={hasMore}
-          isFetchingMore={fetchingMore}
           isLoading={loading}
           loadingLabel={t("loading")}
-          loadingMoreLabel={t("loadingMore")}
-          onLoadMore={loadMore}
-          summaryLabel={t("payments.summary", {
-            loaded: items.length,
-            total,
+          pagination={adminListPaginationProps({
+            page,
+            totalPages,
+            previousLabel: tCommon("pagination.previous"),
+            nextLabel: tCommon("pagination.next"),
+            onPageChange: changePage,
           })}
+          summaryLabel={tCommon("pagination.summary", summary)}
         />
       </div>
     </AdminShell>

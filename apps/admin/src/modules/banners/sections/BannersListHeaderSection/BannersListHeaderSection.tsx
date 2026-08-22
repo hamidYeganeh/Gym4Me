@@ -1,7 +1,8 @@
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
-import { FilterChip } from "@repo/ui/kit/FilterChip";
+import type { BannerPlacement, PublishStatus } from "@repo/api";
 import { useTranslations } from "next-intl";
+import { AdminFilterSelect } from "@/shared/components";
 import {
   BANNER_PLACEMENTS,
   PUBLISH_STATUSES,
@@ -27,33 +28,37 @@ export function BannersListHeaderSection({
         {t("title")}
       </Typography>
       <Typography className={styles.subtitle()}>{t("subtitle")}</Typography>
-      <div className={styles.actions()}>
-        {(["all", ...PUBLISH_STATUSES] as const).map((value) => (
-          <FilterChip
-            key={value}
-            onPress={() => onStatusChange(value)}
-            selected={statusFilter === value}
-          >
-            {value === "all" ? t("filterAll") : t(`publishStatus.${value}`)}
-          </FilterChip>
-        ))}
+      <div className={styles.filters()}>
+        <AdminFilterSelect
+          allLabel={t("filterAll")}
+          label={t("filters.publishStatus")}
+          options={PUBLISH_STATUSES.map((item) => ({
+            value: item,
+            label: t(`publishStatus.${item}`),
+          }))}
+          value={statusFilter}
+          onChange={(value) =>
+            onStatusChange(value as PublishStatus | "all")
+          }
+        />
+        <AdminFilterSelect
+          allLabel={t("filterAll")}
+          label={t("filters.placement")}
+          options={BANNER_PLACEMENTS.map((item) => ({
+            value: item,
+            label: t(`placements.${item}`),
+          }))}
+          value={placementFilter}
+          onChange={(value) =>
+            onPlacementChange(value as BannerPlacement | "all")
+          }
+        />
         <Button size="sm" variant="primary" onPress={onCreate}>
           {t("actions.create")}
         </Button>
         <Button size="sm" variant="ghost" onPress={onRefresh}>
           {t("refresh")}
         </Button>
-      </div>
-      <div className={styles.actions()}>
-        {(["all", ...BANNER_PLACEMENTS] as const).map((value) => (
-          <FilterChip
-            key={value}
-            onPress={() => onPlacementChange(value)}
-            selected={placementFilter === value}
-          >
-            {value === "all" ? t("filterAll") : t(`placements.${value}`)}
-          </FilterChip>
-        ))}
       </div>
     </section>
   );

@@ -289,20 +289,26 @@ CBOOKING_STATUS=$(echo "$CBOOKING" | jq -r '.status // empty')
 check "S9.4 consult booking created" "true" "$([ -n "$CBOOKING_ID" ] && echo true || echo false)"
 note "consult booking=$CBOOKING_ID status=$CBOOKING_STATUS"
 
+if [ "$CBOOKING_STATUS" = "pending" ]; then
+  CACCEPT=$(jpost_auth "/coach/bookings/$CBOOKING_ID/accept" "$COACH_TOKEN")
+  CBOOKING_STATUS=$(echo "$CACCEPT" | jq -r '.status // empty')
+  check "S9.5 coach accepts consult" "awaiting_payment" "$CBOOKING_STATUS"
+fi
+
 if [ "$CBOOKING_STATUS" = "awaiting_payment" ]; then
   CVERIFY=$(pay_and_verify "$CBOOKING_ID" "$ATH_TOKEN")
-  check "S9.5 consult booking confirmed" "confirmed" "$(echo "$CVERIFY" | jq -r '.status // empty')"
+  check "S9.6 consult payment confirms booking" "confirmed" "$(echo "$CVERIFY" | jq -r '.status // empty')"
 else
-  check "S9.5 consult booking confirmed" "confirmed" "$CBOOKING_STATUS"
+  check "S9.6 consult booking confirmed" "confirmed" "$CBOOKING_STATUS"
 fi
 
 COACH_BOOKINGS=$(jget_auth "/coach/bookings?page=1&page_size=50" "$COACH_TOKEN")
-check "S9.6 coach sees consult booking" "true" "$(echo "$COACH_BOOKINGS" | jq -r --arg id "$CBOOKING_ID" '[(.result // .items // [])[] | select((.id // ._id) == $id)] | length >= 1')"
+check "S9.7 coach sees consult booking" "true" "$(echo "$COACH_BOOKINGS" | jq -r --arg id "$CBOOKING_ID" '[(.result // .items // [])[] | select((.id // ._id) == $id)] | length >= 1')"
 
 CCHECKIN=$(jpost_auth "/coach/bookings/$CBOOKING_ID/checkin" "$COACH_TOKEN")
-check "S9.7 coach checks athlete in" "checked_in" "$(echo "$CCHECKIN" | jq -r '.status // empty')"
+check "S9.8 coach checks athlete in" "checked_in" "$(echo "$CCHECKIN" | jq -r '.status // empty')"
 CCOMPLETE=$(jpost_auth "/coach/bookings/$CBOOKING_ID/complete" "$COACH_TOKEN")
-check "S9.8 coach completes consult" "completed" "$(echo "$CCOMPLETE" | jq -r '.status // empty')"
+check "S9.9 coach completes consult" "completed" "$(echo "$CCOMPLETE" | jq -r '.status // empty')"
 
 echo ""
 echo "════ S10: ادمین صف‌های تأیید را می‌بندد ════"

@@ -43,12 +43,15 @@ export function UsersListScreen({ className }: UsersListScreenProps) {
     sortOrder,
     sort,
     setSort,
+    page,
+    pageSize,
+    setPage,
   } = useAdminListQueryParams<
     UsersListFilters,
     NonNullable<ListAdminUsersQuery["sortBy"]>
   >({
       filterKeys: FILTER_KEYS,
-      defaults: FILTER_DEFAULTS,
+      defaults: { ...FILTER_DEFAULTS, page: 1, page_size: PAGE_SIZE },
       defaultSort: { column: "createdAt", direction: "descending" },
     });
 
@@ -60,16 +63,16 @@ export function UsersListScreen({ className }: UsersListScreenProps) {
         role: filters.role,
         sortBy,
         sortOrder,
-        pageSize: PAGE_SIZE,
+        pageSize,
       }),
-    [filters.role, filters.status, search, sortBy, sortOrder],
+    [filters.role, filters.status, pageSize, search, sortBy, sortOrder],
   );
 
   const fetchPage = useCallback(
-    async (page: number, pageSize: number) => {
+    async (nextPage: number, nextPageSize: number) => {
       return adminUsers.list({
-        page,
-        limit: pageSize,
+        page: nextPage,
+        limit: nextPageSize,
         search: search || undefined,
         status: filters.status.length > 0 ? filters.status : undefined,
         role: filters.role === "all" ? undefined : filters.role,
@@ -83,16 +86,16 @@ export function UsersListScreen({ className }: UsersListScreenProps) {
   const {
     items,
     total,
-    page,
-    pageSize,
     totalPages,
     loading,
     error,
-    setPage,
+    setPage: changePage,
     reload,
   } = useAdminPaginatedQuery<PublicUser>({
     queryKey,
-    pageSize: PAGE_SIZE,
+    page,
+    pageSize,
+    onPageChange: setPage,
     errorFallback: t("errorLoad"),
     fetchPage,
   });
@@ -130,7 +133,7 @@ export function UsersListScreen({ className }: UsersListScreenProps) {
           }
           total={total}
           totalPages={totalPages}
-          onPageChange={setPage}
+          onPageChange={changePage}
           onSortChange={setSort}
           onView={(userId) => navigate(routes.user(userId))}
         />

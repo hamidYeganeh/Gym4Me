@@ -3,11 +3,12 @@ import type { CoachVerificationItem } from "@repo/api";
 export type CoachVerificationsTableSectionProps = {
   items: CoachVerificationItem[];
   total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
   loading: boolean;
-  fetchingMore: boolean;
-  hasMore: boolean;
   error: string | null;
-  onLoadMore: () => void;
+  onPageChange: (page: number) => void;
   onReview: (row: CoachVerificationItem) => void;
   className?: string;
 };

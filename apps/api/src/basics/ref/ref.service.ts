@@ -14,6 +14,7 @@ import { slugify } from '../../common/utils/slug.util';
 import { MediaService } from '../../media/media.service';
 import { RefItem, RefItemDocument } from '../../schemas/ref-item.schema';
 import { CreateRefItemDto, UpdateRefItemDto } from './dto/ref.dto';
+import { DEFAULT_REFS } from './ref-defaults';
 
 const REF_TYPES = new Set<string>(Object.values(RefType));
 
@@ -152,7 +153,13 @@ export class RefService {
   async upsertSeed(type: RefType, dto: CreateRefItemDto) {
     const slug = dto.slug || slugify(dto.name);
     const existing = await this.refModel.findOne({ type, slug });
-    if (existing) return existing;
+    if (existing) {
+      if (dto.icon && !existing.icon) {
+        existing.icon = dto.icon;
+        await existing.save();
+      }
+      return existing;
+    }
     return this.refModel.create({
       type,
       name: dto.name,
@@ -163,6 +170,60 @@ export class RefService {
       status: RefStatus.APPROVED,
       isActive: true,
     });
+  }
+
+  /**
+   * Idempotent: create missing default refs (optionally scoped to one type)
+   * and fill missing icons.
+   */
+  async seedDefaults(type?: RefType, adminId?: string, request?: Request) {
+    const created: string[] = [];
+    const updated: string[] = [];
+    const skipped: string[] = [];
+
+    const types = type ? [type] : (Object.keys(DEFAULT_REFS) as RefType[]);
+
+    for (const refType of types) {
+      const seeds = DEFAULT_REFS[refType] ?? [];
+      for (const seed of seeds) {
+        const label = `${refType}:${seed.slug}`;
+        const existing = await this.refModel.findOne({
+          type: refType,
+          slug: seed.slug,
+        });
+        if (!existing) {
+          await this.refModel.create({
+            type: refType,
+            name: seed.name,
+            slug: seed.slug,
+            icon: seed.icon,
+            order: seed.order ?? 0,
+            status: RefStatus.APPROVED,
+            isActive: true,
+          });
+          created.push(label);
+          continue;
+        }
+        if (seed.icon && !existing.icon) {
+          existing.icon = seed.icon;
+          await existing.save();
+          updated.push(label);
+        } else {
+          skipped.push(label);
+        }
+      }
+    }
+
+    if (adminId && request) {
+      this.audit.log({
+        action: AuditAction.REF_DEFAULTS_SEEDED,
+        actorId: adminId,
+        metadata: { type: type ?? 'all', created, updated, skipped },
+        request,
+      });
+    }
+
+    return { created, updated, skipped };
   }
 
   private async uniqueSlug(
