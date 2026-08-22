@@ -56,10 +56,14 @@ function ApiNoticeCopy({
 
 export function ApiToastBridge({ client }: { client: ApiClient }) {
   const locale = useLocale();
+  const t = useTranslations("Api") as unknown as Translate;
 
   useEffect(() => {
     client.setLocale(locale);
-    return client.subscribeNotices((notice: ApiNotice) => {
+    client.setMessageResolver((messageKey) =>
+      translateNotice(t, locale, messageKey),
+    );
+    const unsubscribe = client.subscribeNotices((notice: ApiNotice) => {
       toastNotice(
         notice.variant,
         <ApiNoticeCopy messageKey={`titles.${notice.variant}`} />,
@@ -74,7 +78,11 @@ export function ApiToastBridge({ client }: { client: ApiClient }) {
         },
       );
     });
-  }, [client, locale]);
+    return () => {
+      unsubscribe();
+      client.setMessageResolver(undefined);
+    };
+  }, [client, locale, t]);
 
   return null;
 }

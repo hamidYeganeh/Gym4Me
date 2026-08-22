@@ -1,7 +1,4 @@
-import {
-  ClubLifecycleStatus,
-  ClubOperationalStatus,
-} from '../../common/enums';
+import { ClubLifecycleStatus, ClubOperationalStatus } from '../../common/enums';
 
 /** Same visibility as `GET /discovery/clubs` (approved, active, not a branch). */
 export const DISCOVERY_VISIBLE_CLUB_MATCH = {

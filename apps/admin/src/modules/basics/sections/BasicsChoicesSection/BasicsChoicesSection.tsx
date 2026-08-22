@@ -103,7 +103,7 @@ export function BasicsChoicesSection({ search }: BasicsChoicesSectionProps) {
         }),
       );
       await load();
-    } catch (err) {
+    } catch {
       setError(t("importDefaultsError"));
     } finally {
       setSeeding(false);

@@ -1,4 +1,4 @@
-import { statsColors } from "@repo/theme";
+import { statsColors } from "@repo/theme/stats-colors";
 import type { ClubRouteMapLatLng } from "@repo/ui/cards/ClubRouteMapCard";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import {

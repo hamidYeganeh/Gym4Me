@@ -7,7 +7,7 @@ import { SleepZzz } from "@repo/icons/SleepZzz";
 import { SmileHappy } from "@repo/icons/SmileHappy";
 import { WaterDrop } from "@repo/icons/WaterDrop";
 import { WeightScale } from "@repo/icons/WeightScale";
-import { statsColors } from "@repo/theme";
+import { statsColors } from "@repo/theme/stats-colors";
 import {
   MetricCard,
   type MetricCardChart,

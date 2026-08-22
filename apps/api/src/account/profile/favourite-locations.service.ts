@@ -54,9 +54,7 @@ export class FavouriteLocationsService {
     }
     this.assertLabel(dto.kind, dto.label);
     if (findExclusiveKindConflict(items, dto.kind)) {
-      throw new ConflictException(
-        `A ${dto.kind} location is already saved`,
-      );
+      throw new ConflictException(`A ${dto.kind} location is already saved`);
     }
 
     const address = applyAddressPatch({}, dto.address ?? {});
@@ -103,9 +101,7 @@ export class FavouriteLocationsService {
       dto.label === undefined ? item.label : this.normalizeLabel(dto.label);
     this.assertLabel(nextKind, nextLabel);
     if (findExclusiveKindConflict(items, nextKind, id)) {
-      throw new ConflictException(
-        `A ${nextKind} location is already saved`,
-      );
+      throw new ConflictException(`A ${nextKind} location is already saved`);
     }
 
     item.kind = nextKind;

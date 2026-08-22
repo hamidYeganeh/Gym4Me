@@ -6,30 +6,20 @@ import {
 } from "./athlete-home-setup";
 
 function user(overrides: Partial<PublicUser> = {}): PublicUser {
+  const { address, avatar, demographics, kyc, name, ...userOverrides } =
+    overrides;
   return {
-    address: {
-      apartment: null,
-      city: null,
-      point: null,
-      postalCode: null,
-      provinceId: null,
-      street: null,
-    },
     favouriteLocations: [],
-    avatar: { mediaId: null },
     code: null,
     createdAt: "2026-01-01T00:00:00.000Z",
-    demographics: { birthDate: null, gender: null },
     id: "user-1",
-    kyc: { status: "none", verifiedAt: null },
-    name: { first: null, last: null },
     nationalId: null,
     phone: "+989120000000",
     phoneVerifiedAt: "2026-01-01T00:00:00.000Z",
     referralCode: null,
     roles: ["athlete"],
     status: "active",
-    ...overrides,
+    ...userOverrides,
     address: {
       apartment: null,
       city: null,
@@ -37,21 +27,21 @@ function user(overrides: Partial<PublicUser> = {}): PublicUser {
       postalCode: null,
       provinceId: null,
       street: null,
-      ...overrides.address,
+      ...address,
     },
-    avatar: { mediaId: null, ...overrides.avatar },
-    demographics: { birthDate: null, gender: null, ...overrides.demographics },
-    kyc: { status: "none", verifiedAt: null, ...overrides.kyc },
-    name: { first: null, last: null, ...overrides.name },
+    avatar: { mediaId: null, ...avatar },
+    demographics: { birthDate: null, gender: null, ...demographics },
+    kyc: { status: "none", verifiedAt: null, ...kyc },
+    name: { first: null, last: null, ...name },
   };
 }
 
 function athleteProfile(
   overrides: Partial<AthleteProfile> = {},
 ): AthleteProfile {
+  const { body, ...profileOverrides } = overrides;
   return {
     bio: null,
-    body: { heightCm: null, weightKg: null },
     createdAt: "2026-01-01T00:00:00.000Z",
     goalKeys: [],
     health: {
@@ -77,8 +67,8 @@ function athleteProfile(
     sportIds: [],
     updatedAt: "2026-01-01T00:00:00.000Z",
     userId: "user-1",
-    ...overrides,
-    body: { heightCm: null, weightKg: null, ...overrides.body },
+    ...profileOverrides,
+    body: { heightCm: null, weightKg: null, ...body },
   };
 }
 

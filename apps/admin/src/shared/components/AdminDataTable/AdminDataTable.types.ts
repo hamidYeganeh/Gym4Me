@@ -28,6 +28,8 @@ export type AdminDataTableProps<TData, TMeta = TableMeta<TData>> = {
   isFetchingMore?: boolean;
   hasMore?: boolean;
   onLoadMore?: () => void;
+  /** Opens the canonical detail/edit page when a non-interactive row area is pressed. */
+  onRowPress?: (row: TData) => void;
   estimateRowHeight?: number;
   sort?: AdminDataTableSort;
   onSortChange?: (sort: AdminDataTableSort) => void;

@@ -1423,22 +1423,20 @@ export class ClubsService {
       return toSportPublic(sport as SportLike, sportRelated);
     };
 
-    const extraLocationIds = collectLocationRelatedIds(
-      locationDocs as LocationLike[],
-    ).filter(
+    const extraLocationIds = collectLocationRelatedIds(locationDocs).filter(
       (id) => !locationDocs.some((doc) => doc._id.toString() === id.toString()),
     );
     const extraLocations = extraLocationIds.length
       ? await this.locationModel.find({ _id: { $in: extraLocationIds } }).lean()
       : [];
     const locationRelated = new Map<string, LocationLike>([
-      ...locationDocs.map((doc) => [doc._id.toString(), doc as LocationLike] as const),
+      ...locationDocs.map((doc) => [doc._id.toString(), doc] as const),
       ...extraLocations.map(
         (doc) => [doc._id.toString(), doc as LocationLike] as const,
       ),
     ]);
     const location = locationId
-      ? locationRelated.get(locationId.toString()) ?? null
+      ? (locationRelated.get(locationId.toString()) ?? null)
       : null;
 
     return {
@@ -1496,9 +1494,7 @@ export class ClubsService {
               const doc = locationRelated.get(id.toString());
               return doc ? toLocationRef(doc) : { id: id.toString() };
             }),
-            node: location
-              ? toLocationPublic(location, locationRelated)
-              : null,
+            node: location ? toLocationPublic(location, locationRelated) : null,
           }
         : null,
       reviewsSummary: {

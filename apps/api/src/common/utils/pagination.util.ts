@@ -37,7 +37,7 @@ export function paginatedResult<T>(
   count: number,
   page: number,
   pageSize: number,
-  message: ApiMessage = 'success',
+  message: ApiMessage = 'success.generic',
 ): PaginatedResult<T> {
   const totalPages = pageSize > 0 ? Math.ceil(count / pageSize) : 0;
   return {

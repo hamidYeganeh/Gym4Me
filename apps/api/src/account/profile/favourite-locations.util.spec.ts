@@ -65,9 +65,9 @@ describe('favourite-locations.util', () => {
       { _id: homeId, kind: FavouriteLocationKind.HOME },
       { _id: new Types.ObjectId(), kind: FavouriteLocationKind.OTHER },
     ];
-    expect(
-      findExclusiveKindConflict(items, FavouriteLocationKind.HOME),
-    ).toBe(true);
+    expect(findExclusiveKindConflict(items, FavouriteLocationKind.HOME)).toBe(
+      true,
+    );
     expect(
       findExclusiveKindConflict(
         items,
@@ -75,12 +75,12 @@ describe('favourite-locations.util', () => {
         homeId.toString(),
       ),
     ).toBe(false);
-    expect(
-      findExclusiveKindConflict(items, FavouriteLocationKind.WORK),
-    ).toBe(false);
-    expect(
-      findExclusiveKindConflict(items, FavouriteLocationKind.OTHER),
-    ).toBe(false);
+    expect(findExclusiveKindConflict(items, FavouriteLocationKind.WORK)).toBe(
+      false,
+    );
+    expect(findExclusiveKindConflict(items, FavouriteLocationKind.OTHER)).toBe(
+      false,
+    );
   });
 
   it('patches nested address and maps a public favourite location', () => {

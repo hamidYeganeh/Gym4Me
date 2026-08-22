@@ -33,6 +33,13 @@ export type AdminDashboardBreadcrumb = {
   onPress?: () => void;
 };
 
+export type AdminDashboardSecondaryNavItem = {
+  id: string;
+  label: string;
+  isActive?: boolean;
+  onPress?: () => void;
+};
+
 export type AdminDashboardLabels = {
   greeting: string;
   searchPlaceholder: string;
@@ -59,5 +66,11 @@ export type AdminDashboardLayoutProps = {
   breadcrumbs?: AdminDashboardBreadcrumb[];
   /** Replaces the default greeting + search header content. */
   header?: ReactNode;
+  /** Contextual navigation rendered as a second panel beside the icon rail. */
+  secondaryNav?: {
+    ariaLabel: string;
+    title: string;
+    items: AdminDashboardSecondaryNavItem[];
+  };
   className?: string;
 };

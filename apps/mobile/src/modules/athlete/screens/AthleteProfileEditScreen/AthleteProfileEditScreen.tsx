@@ -11,12 +11,11 @@ import { TextField } from "@heroui/react/textfield";
 import { Typography } from "@heroui/react/typography";
 import { ApiError } from "@repo/api";
 import { Check } from "@repo/icons/Check";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { Lock1 } from "@repo/icons/Lock1";
 import { Note1 } from "@repo/icons/Note1";
 import { Ruler1 } from "@repo/icons/Ruler1";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { accountProfile } from "@/shared/lib/api";
 import { athleteProfileEditScreenVariants } from "./AthleteProfileEditScreen.styles";
@@ -83,19 +82,9 @@ export function AthleteProfileEditScreen({
     <AppLayout
       className={styles.root({ className })}
       header={
-        <Header
-          appearance="bar"
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={() => router.push("/athlete/profile")}
-              size="lg"
-              variant="tertiary"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
-            </Button>
-          }
+        <SecondaryPageHeader
+          backAriaLabel={t("back")}
+          onBack={() => router.push("/athlete/profile")}
           title={t("title")}
         />
       }
@@ -159,7 +148,11 @@ export function AthleteProfileEditScreen({
             </Typography>
           ) : null}
           {notice ? (
-            <Typography className={styles.notice()} role="status" type="body-sm">
+            <Typography
+              className={styles.notice()}
+              role="status"
+              type="body-sm"
+            >
               {notice}
             </Typography>
           ) : null}

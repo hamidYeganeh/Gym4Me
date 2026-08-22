@@ -1,4 +1,4 @@
-import { statsColors } from "@repo/theme";
+import { statsColors } from "@repo/theme/stats-colors";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import type { ClubMembership } from "@repo/api";
 import {

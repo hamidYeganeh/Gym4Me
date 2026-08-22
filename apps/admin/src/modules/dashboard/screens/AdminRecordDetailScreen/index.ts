@@ -1,0 +1,1 @@
+export { AdminRecordDetailScreen } from "./AdminRecordDetailScreen";

@@ -2,27 +2,20 @@
 
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { Compass } from "@repo/icons/Compass";
 import {
   ReservationCard,
   type ReservationCardStatusColor,
 } from "@repo/ui/cards/ReservationCard";
-import {
-  EMPTY_STATE_ILLUSTRATIONS,
-  EmptyState,
-} from "@repo/ui/kit/EmptyState";
+import { EMPTY_STATE_ILLUSTRATIONS, EmptyState } from "@repo/ui/kit/EmptyState";
 import { FilterChip, FilterChipBar } from "@repo/ui/kit/FilterChip";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/shared/lib/app-router";
 
 import { useState } from "react";
-import {
-  canManageBooking,
-  type BookingStatus,
-} from "../../lib/bookings-data";
+import { canManageBooking, type BookingStatus } from "../../lib/bookings-data";
 import { athleteBookingsScreenStyles as styles } from "./AthleteBookingsScreen.styles";
 import type {
   AthleteBookingsScreenProps,
@@ -60,10 +53,13 @@ export function getBookingStatusColor(
   }
 }
 
-export function AthleteBookingsScreen({ bookings }: AthleteBookingsScreenProps) {
+export function AthleteBookingsScreen({
+  bookings,
+}: AthleteBookingsScreenProps) {
   const t = useTranslations("AthleteBookings");
   const router = useRouter();
-  const [activeFilter, setActiveFilter] = useState<BookingsFilterId>("upcoming");
+  const [activeFilter, setActiveFilter] =
+    useState<BookingsFilterId>("upcoming");
 
   const visibleBookings = bookings.filter((booking) =>
     FILTER_STATUSES[activeFilter].includes(booking.status),
@@ -73,18 +69,10 @@ export function AthleteBookingsScreen({ bookings }: AthleteBookingsScreenProps) 
     <AppLayout
       className={styles.root}
       header={
-        <Header
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={() => router.back()}
-              size="lg"
-              variant="ghost"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
-            </Button>
-          }
+        <SecondaryPageHeader
+          backAriaLabel={t("back")}
+          onBack={() => router.back()}
+          title={t("title")}
         />
       }
     >
@@ -134,9 +122,7 @@ export function AthleteBookingsScreen({ bookings }: AthleteBookingsScreenProps) 
                       ? () => router.push(`/athlete/bookings/${booking.id}`)
                       : undefined
                   }
-                  onPress={() =>
-                    router.push(`/athlete/bookings/${booking.id}`)
-                  }
+                  onPress={() => router.push(`/athlete/bookings/${booking.id}`)}
                   onReschedule={
                     manageable
                       ? () => router.push(`/athlete/bookings/${booking.id}`)
@@ -146,7 +132,9 @@ export function AthleteBookingsScreen({ bookings }: AthleteBookingsScreenProps) 
                   ratingCount={booking.coach?.ratingCount}
                   rescheduleLabel={t("reschedule")}
                   sessionTitle={booking.title}
-                  specialtyLabel={booking.coach?.specialtyLabel ?? booking.clubName}
+                  specialtyLabel={
+                    booking.coach?.specialtyLabel ?? booking.clubName
+                  }
                   statusColor={getBookingStatusColor(booking.status)}
                   statusLabel={t(`status.${booking.status}`)}
                   verifiedLabel={t("verified")}

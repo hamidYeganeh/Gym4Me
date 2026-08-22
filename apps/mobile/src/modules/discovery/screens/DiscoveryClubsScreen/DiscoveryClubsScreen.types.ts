@@ -1,4 +1,5 @@
 import type { HomeEditorialArticle } from "../../lib/articles-home";
+import type { HomeClassItem } from "../../lib/home-browse-data";
 import type { HomeClubCategoryItem } from "../../lib/club-categories-home";
 import type { BrowseClub } from "../../lib/clubs-browse-data";
 import type { HomeLocationItem, HomeSportItem } from "../../lib/home-browse-data";
@@ -30,4 +31,6 @@ export type DiscoveryClubsScreenProps = {
   onClearFilters?: () => void;
   articles?: HomeEditorialArticle[];
   articlesLoading?: boolean;
+  classes?: HomeClassItem[];
+  classesLoading?: boolean;
 };

@@ -4,8 +4,13 @@ export class ApiError extends Error {
   readonly status: number;
   readonly body: ApiErrorBody | null;
 
-  constructor(status: number, body: ApiErrorBody | null, fallbackMessage: string) {
-    const message = resolveMessage(body) ?? fallbackMessage;
+  constructor(
+    status: number,
+    body: ApiErrorBody | null,
+    fallbackMessage: string,
+    displayMessage?: string,
+  ) {
+    const message = displayMessage ?? resolveMessage(body) ?? fallbackMessage;
     super(message);
     this.name = "ApiError";
     this.status = status;

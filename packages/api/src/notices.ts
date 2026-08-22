@@ -59,9 +59,9 @@ export function flattenApiMessage(message: unknown): string | null {
 export function isValidationMessage(message: unknown): boolean {
   return Boolean(
     message &&
-      typeof message === "object" &&
-      !Array.isArray(message) &&
-      Object.keys(message as object).length > 0,
+    typeof message === "object" &&
+    !Array.isArray(message) &&
+    Object.keys(message as object).length > 0,
   );
 }
 
@@ -108,7 +108,14 @@ function errorVariant(status: number, code?: string): ApiNoticeVariant {
   return "danger";
 }
 
-function fromExactOrPattern(text: string): Pick<ApiNotice, "messageKey" | "params"> {
+function fromExactOrPattern(
+  text: string,
+): Pick<ApiNotice, "messageKey" | "params"> {
+  // New API responses return next-intl keys directly. Keep the legacy literal
+  // catalog below for rolling deployments and older endpoints.
+  if (/^(?:errors|success|exact|patterns)\.[a-zA-Z0-9.]+$/.test(text)) {
+    return { messageKey: text };
+  }
   const exact = EXACT_API_MESSAGES[normalize(text)];
   if (exact) return { messageKey: `exact.${exact}` };
 
@@ -149,7 +156,9 @@ export function resolveNetworkNotice(): ApiNotice {
   return { variant: "danger", messageKey: "errors.network" };
 }
 
-export function resolveApiNotice(input: ResolveApiNoticeInput): ApiNotice | null {
+export function resolveApiNotice(
+  input: ResolveApiNoticeInput,
+): ApiNotice | null {
   if (input.silent) return null;
 
   if (input.ok) {

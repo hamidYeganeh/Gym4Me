@@ -1,4 +1,4 @@
-import { statsColors } from "@repo/theme";
+import { statsColors } from "@repo/theme/stats-colors";
 
 export type OwnerAnalyticsPeriodId = "week" | "month" | "quarter";
 

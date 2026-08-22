@@ -12,12 +12,11 @@ import { Typography } from "@heroui/react/typography";
 import type { CoachProfile } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { Check } from "@repo/icons/Check";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { Lock1 } from "@repo/icons/Lock1";
 import { Note1 } from "@repo/icons/Note1";
 import { SealCheck } from "@repo/icons/SealCheck";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { accountProfile, mediaApi } from "@/shared/lib/api";
 import { coachProfileEditScreenVariants } from "./CoachProfileEditScreen.styles";
@@ -100,19 +99,9 @@ export function CoachProfileEditScreen({
     <AppLayout
       className={styles.root({ className })}
       header={
-        <Header
-          appearance="bar"
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={() => router.push("/coach/profile")}
-              size="lg"
-              variant="tertiary"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
-            </Button>
-          }
+        <SecondaryPageHeader
+          backAriaLabel={t("back")}
+          onBack={() => router.push("/coach/profile")}
           title={t("title")}
         />
       }
@@ -167,7 +156,11 @@ export function CoachProfileEditScreen({
             </Typography>
           ) : null}
           {notice ? (
-            <Typography className={styles.notice()} role="status" type="body-sm">
+            <Typography
+              className={styles.notice()}
+              role="status"
+              type="body-sm"
+            >
               {notice}
             </Typography>
           ) : null}

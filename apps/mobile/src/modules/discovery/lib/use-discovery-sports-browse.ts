@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { statsPalette } from "@repo/theme";
+import { statsPalette } from "@repo/theme/stats-colors";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { basicsSports, mediaFileUrl } from "@/shared/lib/api";
 import {

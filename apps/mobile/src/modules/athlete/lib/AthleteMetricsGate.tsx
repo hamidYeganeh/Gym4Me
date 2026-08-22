@@ -1,7 +1,7 @@
 "use client";
 
 import { Spinner } from "@heroui/react/spinner";
-import { statsColors } from "@repo/theme";
+import { statsColors } from "@repo/theme/stats-colors";
 import type { MetricType, ProgressMetric } from "@repo/api";
 import { useEffect, useState } from "react";
 import { accountProfile, accountProgress } from "@/shared/lib/api";

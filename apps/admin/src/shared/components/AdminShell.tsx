@@ -6,6 +6,7 @@ import {
   type AdminDashboardBreadcrumb,
   type AdminDashboardLabels,
   type AdminDashboardNavId,
+  type AdminDashboardSecondaryNavItem,
 } from "@repo/ui/layout/AdminDashboardLayout";
 import {
   AdminSectionHeader,
@@ -30,18 +31,10 @@ export type GamificationSectionTabId = "achievements" | "rules" | "ledger";
 export type FinanceSectionTabId = "ledger" | "payments" | "payouts" | "refunds";
 
 export type CatalogSectionTabId =
-  | "plans"
-  | "food"
-  | "exercises"
-  | "metrics"
-  | "coaching";
+  "plans" | "food" | "exercises" | "metrics" | "coaching";
 
 export type OpsSectionTabId =
-  | "social"
-  | "audit"
-  | "templates"
-  | "flags"
-  | "releases";
+  "social" | "audit" | "templates" | "flags" | "releases";
 
 export type AnalyticsSectionPeriodId = "week" | "month" | "quarter";
 
@@ -354,8 +347,7 @@ export function AdminShell({
     ) => {
       trail.push({
         label,
-        onPress:
-          isCurrent || !href ? undefined : () => navigate(href),
+        onPress: isCurrent || !href ? undefined : () => navigate(href),
       });
     };
 
@@ -364,15 +356,15 @@ export function AdminShell({
         extraBreadcrumbs.length > 0 ||
         Boolean(
           (usersSection && usersSection.activeTabId !== "users") ||
-            (supportSection && supportSection.activeTabId !== "tickets") ||
-            (gamificationSection &&
-              gamificationSection.activeTabId !== "achievements") ||
-            (financeSection && financeSection.activeTabId !== "ledger") ||
-            (catalogSection && catalogSection.activeTabId !== "plans") ||
-            (opsSection && opsSection.activeTabId !== "social") ||
-            locationsSection ||
-            sportsSection ||
-            refsSection,
+          (supportSection && supportSection.activeTabId !== "tickets") ||
+          (gamificationSection &&
+            gamificationSection.activeTabId !== "achievements") ||
+          (financeSection && financeSection.activeTabId !== "ledger") ||
+          (catalogSection && catalogSection.activeTabId !== "plans") ||
+          (opsSection && opsSection.activeTabId !== "social") ||
+          locationsSection ||
+          sportsSection ||
+          refsSection,
         );
       pushCurrentOrLink(
         labels.nav[activeNavId],
@@ -478,12 +470,8 @@ export function AdminShell({
             : t("Users.searchPlaceholder")
         }
         searchValue={usersSection.searchValue}
-        tabs={usersTabs}
         onFilterPress={usersSection.onFilterPress}
         onSearchChange={usersSection.onSearchChange}
-        onTabPress={(id) =>
-          navigate(usersTabPath[id as UsersSectionTabId] ?? routes.users)
-        }
       />
     );
   } else if (clubsSection) {
@@ -505,10 +493,8 @@ export function AdminShell({
         searchAriaLabel={t("Basics.searchAriaLabel")}
         searchPlaceholder={t("Basics.searchPlaceholder")}
         searchValue={locationsSection.searchValue}
-        tabs={locationTabs}
         onFilterPress={locationsSection.onFilterPress}
         onSearchChange={locationsSection.onSearchChange}
-        onTabPress={(id) => navigate(routes.locations(id as LocationKind))}
       />
     );
   } else if (sportsSection) {
@@ -519,10 +505,8 @@ export function AdminShell({
         searchAriaLabel={t("Basics.searchAriaLabel")}
         searchPlaceholder={t("Basics.searchPlaceholder")}
         searchValue={sportsSection.searchValue}
-        tabs={sportTabs}
         onFilterPress={sportsSection.onFilterPress}
         onSearchChange={sportsSection.onSearchChange}
-        onTabPress={(id) => navigate(routes.sports(id as SportKind))}
       />
     );
   } else if (refsSection) {
@@ -533,10 +517,8 @@ export function AdminShell({
         searchAriaLabel={t("Basics.searchAriaLabel")}
         searchPlaceholder={t("Basics.searchPlaceholder")}
         searchValue={refsSection.searchValue}
-        tabs={refTabs}
         onFilterPress={refsSection.onFilterPress}
         onSearchChange={refsSection.onSearchChange}
-        onTabPress={(id) => navigate(routes.refs(id as RefType))}
       />
     );
   } else if (analyticsSection) {
@@ -563,12 +545,8 @@ export function AdminShell({
         searchAriaLabel={t("Support.searchAriaLabel")}
         searchPlaceholder={t("Support.searchPlaceholder")}
         searchValue={supportSection.searchValue}
-        tabs={supportTabs}
         onFilterPress={supportSection.onFilterPress}
         onSearchChange={supportSection.onSearchChange}
-        onTabPress={(id) =>
-          navigate(supportTabPath[id as SupportSectionTabId] ?? routes.support)
-        }
       />
     );
   } else if (articlesSection) {
@@ -601,15 +579,8 @@ export function AdminShell({
         searchAriaLabel={t("Gamification.searchAriaLabel")}
         searchPlaceholder={t("Gamification.searchPlaceholder")}
         searchValue={gamificationSection.searchValue}
-        tabs={gamificationTabs}
         onFilterPress={gamificationSection.onFilterPress}
         onSearchChange={gamificationSection.onSearchChange}
-        onTabPress={(id) =>
-          navigate(
-            gamificationTabPath[id as GamificationSectionTabId] ??
-              routes.gamification,
-          )
-        }
       />
     );
   } else if (financeSection) {
@@ -620,14 +591,8 @@ export function AdminShell({
         searchAriaLabel={t("Finance.searchAriaLabel")}
         searchPlaceholder={t("Finance.searchPlaceholder")}
         searchValue={financeSection.searchValue}
-        tabs={financeTabs}
         onFilterPress={financeSection.onFilterPress}
         onSearchChange={financeSection.onSearchChange}
-        onTabPress={(id) =>
-          navigate(
-            financeTabPath[id as FinanceSectionTabId] ?? routes.financeLedger,
-          )
-        }
       />
     );
   } else if (catalogSection) {
@@ -638,14 +603,8 @@ export function AdminShell({
         searchAriaLabel={t("Catalog.searchAriaLabel")}
         searchPlaceholder={t("Catalog.searchPlaceholder")}
         searchValue={catalogSection.searchValue}
-        tabs={catalogTabs}
         onFilterPress={catalogSection.onFilterPress}
         onSearchChange={catalogSection.onSearchChange}
-        onTabPress={(id) =>
-          navigate(
-            catalogTabPath[id as CatalogSectionTabId] ?? routes.catalogPlans,
-          )
-        }
       />
     );
   } else if (opsSection) {
@@ -656,12 +615,8 @@ export function AdminShell({
         searchAriaLabel={t("Ops.searchAriaLabel")}
         searchPlaceholder={t("Ops.searchPlaceholder")}
         searchValue={opsSection.searchValue}
-        tabs={opsTabs}
         onFilterPress={opsSection.onFilterPress}
         onSearchChange={opsSection.onSearchChange}
-        onTabPress={(id) =>
-          navigate(opsTabPath[id as OpsSectionTabId] ?? routes.opsSocial)
-        }
       />
     );
   } else if (choicesSection) {
@@ -679,6 +634,115 @@ export function AdminShell({
     header = undefined;
   }
 
+  const secondaryItems = (
+    tabs: AdminSectionHeaderTab[],
+    activeId: string,
+    pathFor: (id: string) => string,
+  ): AdminDashboardSecondaryNavItem[] =>
+    tabs.map((tab) => ({
+      id: tab.id,
+      label: tab.label,
+      isActive: tab.id === activeId,
+      onPress: () => navigate(pathFor(tab.id)),
+    }));
+
+  const secondaryNav = usersSection
+    ? {
+        ariaLabel: t("Users.title"),
+        title: labels.nav.users,
+        items: secondaryItems(
+          usersTabs,
+          usersSection.activeTabId,
+          (id) => usersTabPath[id as UsersSectionTabId] ?? routes.users,
+        ),
+      }
+    : locationsSection
+      ? {
+          ariaLabel: labels.nav.locations,
+          title: labels.nav.locations,
+          items: secondaryItems(
+            locationTabs,
+            locationsSection.activeTabId,
+            (id) => routes.locations(id as LocationKind),
+          ),
+        }
+      : sportsSection
+        ? {
+            ariaLabel: labels.nav.sports,
+            title: labels.nav.sports,
+            items: secondaryItems(sportTabs, sportsSection.activeTabId, (id) =>
+              routes.sports(id as SportKind),
+            ),
+          }
+        : refsSection
+          ? {
+              ariaLabel: labels.nav.refs,
+              title: labels.nav.refs,
+              items: secondaryItems(refTabs, refsSection.activeTabId, (id) =>
+                routes.refs(id as RefType),
+              ),
+            }
+          : supportSection
+            ? {
+                ariaLabel: labels.nav.support,
+                title: labels.nav.support,
+                items: secondaryItems(
+                  supportTabs,
+                  supportSection.activeTabId,
+                  (id) =>
+                    supportTabPath[id as SupportSectionTabId] ?? routes.support,
+                ),
+              }
+            : gamificationSection
+              ? {
+                  ariaLabel: labels.nav.gamification,
+                  title: labels.nav.gamification,
+                  items: secondaryItems(
+                    gamificationTabs,
+                    gamificationSection.activeTabId,
+                    (id) =>
+                      gamificationTabPath[id as GamificationSectionTabId] ??
+                      routes.gamification,
+                  ),
+                }
+              : financeSection
+                ? {
+                    ariaLabel: labels.nav.finance,
+                    title: labels.nav.finance,
+                    items: secondaryItems(
+                      financeTabs,
+                      financeSection.activeTabId,
+                      (id) =>
+                        financeTabPath[id as FinanceSectionTabId] ??
+                        routes.financeLedger,
+                    ),
+                  }
+                : catalogSection
+                  ? {
+                      ariaLabel: labels.nav.catalogs,
+                      title: labels.nav.catalogs,
+                      items: secondaryItems(
+                        catalogTabs,
+                        catalogSection.activeTabId,
+                        (id) =>
+                          catalogTabPath[id as CatalogSectionTabId] ??
+                          routes.catalogPlans,
+                      ),
+                    }
+                  : opsSection
+                    ? {
+                        ariaLabel: labels.nav.ops,
+                        title: labels.nav.ops,
+                        items: secondaryItems(
+                          opsTabs,
+                          opsSection.activeTabId,
+                          (id) =>
+                            opsTabPath[id as OpsSectionTabId] ??
+                            routes.opsSocial,
+                        ),
+                      }
+                    : undefined;
+
   return (
     <AdminDashboardLayout
       activeNavId={activeNavId}
@@ -688,6 +752,7 @@ export function AdminShell({
       header={header}
       labels={labels}
       notificationCount={0}
+      secondaryNav={secondaryNav}
       onAvatarPress={() => navigate(routes.profile)}
       onLogoPress={() => navigate(routes.dashboard)}
       onNavPress={handleNav}

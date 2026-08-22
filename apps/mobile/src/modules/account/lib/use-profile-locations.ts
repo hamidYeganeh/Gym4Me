@@ -139,22 +139,28 @@ export function useProfileLocations() {
   );
 
   const save = useCallback(async () => {
-    const built = editingId
-      ? buildFavouriteLocationUpdateInput(values)
-      : buildFavouriteLocationInput(values);
-    if (!built.ok) {
-      setFormError(formErrorMessage(built.error, t));
-      return false;
+    let saveLocation: () => Promise<unknown>;
+    if (editingId) {
+      const built = buildFavouriteLocationUpdateInput(values);
+      if (!built.ok) {
+        setFormError(formErrorMessage(built.error, t));
+        return false;
+      }
+      saveLocation = () =>
+        accountProfile.updateFavouriteLocation(editingId, built.input);
+    } else {
+      const built = buildFavouriteLocationInput(values);
+      if (!built.ok) {
+        setFormError(formErrorMessage(built.error, t));
+        return false;
+      }
+      saveLocation = () => accountProfile.createFavouriteLocation(built.input);
     }
 
     setIsPending(true);
     setFormError(null);
     try {
-      if (editingId) {
-        await accountProfile.updateFavouriteLocation(editingId, built.input);
-      } else {
-        await accountProfile.createFavouriteLocation(built.input);
-      }
+      await saveLocation();
       const next = await accountProfile.listFavouriteLocations();
       setItems(next.items);
       await syncUser();
@@ -162,7 +168,9 @@ export function useProfileLocations() {
       setEditingId(null);
       return true;
     } catch (err) {
-      setFormError(apiErrorMessage(err, t("errorSave"), t("kindTaken"), t("limitReached")));
+      setFormError(
+        apiErrorMessage(err, t("errorSave"), t("kindTaken"), t("limitReached")),
+      );
       return false;
     } finally {
       setIsPending(false);
@@ -181,7 +189,14 @@ export function useProfileLocations() {
       setEditingId(null);
       return true;
     } catch (err) {
-      setFormError(apiErrorMessage(err, t("errorDelete"), t("kindTaken"), t("limitReached")));
+      setFormError(
+        apiErrorMessage(
+          err,
+          t("errorDelete"),
+          t("kindTaken"),
+          t("limitReached"),
+        ),
+      );
       return false;
     } finally {
       setIsDeleting(false);

@@ -1,5 +1,5 @@
 import type { SportNode } from "@repo/api";
-import { statsColors, statsPalette } from "@repo/theme";
+import { statsColors, statsPalette } from "@repo/theme/stats-colors";
 import { mapSportToHomeItem, type HomeSportItem } from "./home-browse-data";
 
 export type HomeSportCategoryItem = {

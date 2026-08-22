@@ -12,10 +12,7 @@ import { useRouter } from "@/shared/lib/app-router";
 import { useTranslations } from "next-intl";
 import type { KycStatusResponse } from "@repo/api";
 import { ApiError } from "@repo/api";
-import {
-  isoToJalaliDisplay,
-  jalaliDisplayToIso,
-} from "@/shared/lib/jalali";
+import { isoToJalaliDisplay, jalaliDisplayToIso } from "@/shared/lib/jalali";
 import { accountKyc } from "@/shared/lib/api";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { useDevicePermissions } from "@/shared/providers/DevicePermissionsProvider";
@@ -25,6 +22,7 @@ const PROCESSING_TICK_MS = 900;
 
 export function useKycStatus(roleSegment = "athlete") {
   const t = useTranslations("Mobile.Kyc");
+  const apiT = useTranslations("Api");
   const router = useRouter();
   const { user, refreshUser } = useAuth();
   const { ensurePermission } = useDevicePermissions();
@@ -45,6 +43,14 @@ export function useKycStatus(roleSegment = "athlete") {
 
   const profilePath = `/${roleSegment}/profile`;
 
+  const localizeApiMessage = useCallback(
+    (message: string | null | undefined, fallback: string) => {
+      if (!message) return fallback;
+      return apiT.has(message) ? apiT(message) : fallback;
+    },
+    [apiT],
+  );
+
   const stopCamera = useCallback(() => {
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
@@ -53,7 +59,18 @@ export function useKycStatus(roleSegment = "athlete") {
 
   const load = useCallback(async () => {
     const next = await accountKyc.status();
-    setStatus(next);
+    setStatus({
+      ...next,
+      identity: {
+        ...next.identity,
+        rejectionReason: next.identity.rejectionReason
+          ? localizeApiMessage(
+              next.identity.rejectionReason,
+              t("errorRejected"),
+            )
+          : null,
+      },
+    });
     if (next.kycStatus === "approved") {
       setStep("success");
     } else if (next.kycStatus === "pending") {
@@ -66,7 +83,7 @@ export function useKycStatus(roleSegment = "athlete") {
     } else {
       setStep("intro");
     }
-  }, []);
+  }, [localizeApiMessage, t]);
 
   useEffect(() => {
     void load().catch(() => {
@@ -194,10 +211,16 @@ export function useKycStatus(roleSegment = "athlete") {
         setStep("pending");
       } else {
         setStep("rejected");
-        setError(next.identity.rejectionReason ?? t("errorRejected"));
+        setError(
+          localizeApiMessage(next.identity.rejectionReason, t("errorRejected")),
+        );
       }
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t("error"));
+      setError(
+        err instanceof ApiError
+          ? localizeApiMessage(err.message, t("error"))
+          : t("error"),
+      );
       setStep("details");
     } finally {
       setIsPending(false);

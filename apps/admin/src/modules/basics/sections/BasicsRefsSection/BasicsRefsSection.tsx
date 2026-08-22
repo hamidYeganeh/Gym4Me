@@ -102,7 +102,7 @@ export function BasicsRefsSection({ search, type }: BasicsRefsSectionProps) {
         }),
       );
       await load();
-    } catch (err) {
+    } catch {
       setError(t("importDefaultsError"));
     } finally {
       setSeeding(false);

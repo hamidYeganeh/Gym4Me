@@ -1,4 +1,4 @@
-import { statsColors, statsPalette } from "@repo/theme";
+import { statsColors, statsPalette } from "@repo/theme/stats-colors";
 
 const MOCK = "/assets/images/landing/mock";
 const PHONE = "/assets/images/landing/phone";

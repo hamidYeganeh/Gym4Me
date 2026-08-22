@@ -30,14 +30,14 @@ export class NotificationPreferencesService {
   ) {}
 
   async getOrCreate(userId: string) {
-    let doc = await this.preferenceModel.findOne({
-      userId: new Types.ObjectId(userId),
-    });
-    if (!doc) {
-      doc = await this.preferenceModel.create({
-        userId: new Types.ObjectId(userId),
-      });
-    }
+    const objectId = new Types.ObjectId(userId);
+    // A single atomic upsert avoids duplicate-key 500s when a new session loads
+    // this endpoint more than once (for example React Strict Mode + hydration).
+    const doc = await this.preferenceModel.findOneAndUpdate(
+      { userId: objectId },
+      { $setOnInsert: { userId: objectId } },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    );
     return this.toPublic(doc);
   }
 

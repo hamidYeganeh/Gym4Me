@@ -23,10 +23,10 @@ export function DiscoveryHomeClassesSection({
       hint={t("classesHint")}
       seeAllLabel={t("seeAll")}
       title={t("classesTitle")}
-      onSeeAll={() => router.push("/discovery/clubs")}
+      onSeeAll={() => router.push("/discovery/classes")}
     >
       {classes.map((item) => {
-        const href = `/discovery/clubs/${item.clubId}/classes/${item.id}`;
+        const href = `/discovery/classes/${item.id}?clubId=${encodeURIComponent(item.clubId)}`;
         return (
           <ClubClassCard
             actionLabel={t("viewClass")}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { statsColors } from "@repo/theme";
+import { statsColors } from "@repo/theme/stats-colors";
 import type { MetricGoal, ProgressMetric } from "@repo/api";
 import { Fire1 } from "@repo/icons/Fire1";
 import { FootSteps } from "@repo/icons/FootSteps";

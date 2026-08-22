@@ -1,4 +1,4 @@
-import { statsColors, statsPalette } from "@repo/theme";
+import { statsColors, statsPalette } from "@repo/theme/stats-colors";
 import { MOCK_SPORTS, type HomeSportItem } from "./home-browse-data";
 import {
   BROWSE_CLUBS,

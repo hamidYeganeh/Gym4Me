@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -64,7 +65,7 @@ export class KycService {
     request: Request,
   ) {
     if (!isValidIranNationalId(dto.nationalId)) {
-      throw new BadRequestException('Invalid national ID');
+      throw new BadRequestException('exact.invalidNationalId');
     }
 
     const user = await this.users.findById(userId);
@@ -74,7 +75,7 @@ export class KycService {
       _id: { $ne: user._id },
     });
     if (usedByOther) {
-      throw new ConflictException('National ID already registered');
+      throw new ConflictException('exact.nationalIdAlreadyRegistered');
     }
 
     const pending = await this.kycModel.exists({
@@ -83,17 +84,25 @@ export class KycService {
       status: KycRequestStatus.PENDING,
     });
     if (pending) {
-      throw new ConflictException('An identity check is already pending');
+      throw new ConflictException('exact.anIdentityCheckIsAlreadyPending');
     }
     if (user.kycStatus === KycStatus.APPROVED) {
-      throw new ConflictException('Identity already verified');
+      throw new ConflictException('exact.identityAlreadyVerified');
     }
 
-    const result = await this.provider.verifyIdentity({
-      phone: user.phone,
-      nationalId: dto.nationalId,
-      birthDate: dto.birthDate,
-    });
+    const result = await this.provider
+      .verifyIdentity({
+        phone: user.phone,
+        nationalId: dto.nationalId,
+        birthDate: dto.birthDate,
+      })
+      .catch((error: unknown) => {
+        const key =
+          error instanceof Error && error.message.startsWith('errors.')
+            ? error.message
+            : 'errors.kycProviderUnavailable';
+        throw new ServiceUnavailableException(key);
+      });
 
     const kycRequest = await this.kycModel.create({
       userId: user._id,
@@ -154,7 +163,9 @@ export class KycService {
       request,
     });
 
-    return this.toPublicRequest(kycRequest.toObject());
+    // Keep the document upload response aligned with the identity endpoint so
+    // clients always receive the complete KYC state after either submission.
+    return this.status(userId);
   }
 
   async myDocuments(userId: string) {

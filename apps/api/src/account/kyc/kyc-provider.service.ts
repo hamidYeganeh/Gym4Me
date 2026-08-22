@@ -46,6 +46,84 @@ export class MockKycProviderService extends KycProviderService {
   }
 }
 
+type ApiIrShahkarResponse = {
+  data?: boolean;
+  success?: boolean;
+  code?: number;
+  message?: string | null;
+};
+
+/** Phone ownership verification through api.ir's Shahkar endpoint. */
+@Injectable()
+export class ApiIrKycProviderService extends KycProviderService {
+  private readonly logger = new Logger('ApiIrKycProvider');
+  private readonly baseUrl: string;
+  private readonly apiKey: string;
+
+  constructor(config: ConfigService) {
+    super();
+    this.baseUrl = (
+      config.get<string>('API_IR_BASE_URL') ?? 'https://s.api.ir'
+    ).replace(/\/$/, '');
+    this.apiKey = config.get<string>('API_IR_API_KEY', '').trim();
+  }
+
+  async verifyIdentity(
+    input: IdentityCheckInput,
+  ): Promise<IdentityCheckResult> {
+    if (!this.apiKey) {
+      throw new Error('errors.kycProviderNotConfigured');
+    }
+
+    const mobile = this.toLocalPhone(input.phone);
+    const response = await fetch(`${this.baseUrl}/api/sw1/Shahkar`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        nationalCode: input.nationalId,
+        mobile,
+        isCompany: false,
+      }),
+    });
+    const body = (await response
+      .json()
+      .catch(() => null)) as ApiIrShahkarResponse | null;
+
+    if (!response.ok || !body || typeof body.data !== 'boolean') {
+      this.logger.error(
+        `api.ir Shahkar failed: http=${response.status} code=${body?.code ?? 'unknown'}`,
+      );
+      throw new Error('errors.kycProviderUnavailable');
+    }
+
+    return {
+      // api.ir's Shahkar result is carried by `data`; some responses report
+      // `success: false` even when the boolean result is present.
+      approved: body.data,
+      reason: body.data ? undefined : 'errors.shahkarMismatch',
+      raw: {
+        provider: 'api.ir-shahkar',
+        data: body.data,
+        success: body.success ?? null,
+        code: body.code ?? null,
+        message: body.message ?? null,
+        checkedAt: new Date().toISOString(),
+      },
+    };
+  }
+
+  private toLocalPhone(phone: string): string {
+    if (phone.startsWith('+98')) return `0${phone.slice(3)}`;
+    if (phone.startsWith('98') && phone.length === 12) {
+      return `0${phone.slice(2)}`;
+    }
+    return phone;
+  }
+}
+
 type FinnotechTokenResponse = {
   result?: { value?: string; lifeTime?: number };
   status?: string;

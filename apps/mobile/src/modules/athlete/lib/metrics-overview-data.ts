@@ -1,4 +1,4 @@
-import { statsColors } from "@repo/theme";
+import { statsColors } from "@repo/theme/stats-colors";
 import type { MetricCardChart } from "@repo/ui/cards/MetricCard";
 
 export type AthleteMetricId =

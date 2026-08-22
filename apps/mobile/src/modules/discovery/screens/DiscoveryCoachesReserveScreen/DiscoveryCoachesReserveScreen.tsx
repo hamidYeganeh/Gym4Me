@@ -1,10 +1,8 @@
 "use client";
 
-import { Button } from "@heroui/react/button";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { duration, ease } from "@repo/theme";
 import { FormStepper } from "@repo/ui/kit/FormStepper";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import {
   AnimatePresence,
   motion,
@@ -59,18 +57,10 @@ export function DiscoveryCoachesReserveScreen({
   return (
     <div className={styles.root}>
       <div className={styles.scroll}>
-        <Header
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={reserve.goBack}
-              size="lg"
-              variant="ghost"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
-            </Button>
-          }
+        <SecondaryPageHeader
+          backAriaLabel={t("back")}
+          onBack={reserve.goBack}
+          title={coach.name}
         />
 
         <div className={styles.main}>

@@ -119,9 +119,9 @@ export function favouriteLocationHasContent(
 ): boolean {
   return Boolean(
     address.city?.trim() ||
-      address.street?.trim() ||
-      address.apartment?.trim() ||
-      address.point,
+    address.street?.trim() ||
+    address.apartment?.trim() ||
+    address.point,
   );
 }
 

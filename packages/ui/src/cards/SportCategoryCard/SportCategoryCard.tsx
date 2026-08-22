@@ -4,7 +4,7 @@ import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import { ArrowRight } from "@repo/icons/ArrowRight";
 import { PersonKarate } from "@repo/icons/PersonKarate";
-import { statsColors } from "@repo/theme";
+import { statsColors } from "@repo/theme/stats-colors";
 import type { CSSProperties } from "react";
 import { MediaImage } from "../../common/MediaImage";
 import { sportCategoryCardVariants } from "./SportCategoryCard.styles";

@@ -1,5 +1,11 @@
 import { Suspense } from "react";
-import { BrowserRouter, Navigate, Route, Routes, useParams } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useParams,
+} from "react-router-dom";
 import { AdminDocumentMeta } from "@/shared/components/AdminDocumentMeta";
 import { RouteFallback } from "@/shared/components/RouteFallback";
 import {
@@ -15,6 +21,7 @@ import {
   AchievementsEditScreen,
   AchievementsListScreen,
   AdminProfileScreen,
+  AdminRecordDetailScreen,
   AnalyticsOverviewScreen,
   ArticlesCreateScreen,
   ArticlesEditScreen,
@@ -149,12 +156,19 @@ export function AppRouter() {
               />
               <Route element={<DashboardHomeScreen />} path="/dashboard" />
               <Route
+                element={<AdminRecordDetailScreen />}
+                path="/dashboard/records/:recordId"
+              />
+              <Route
                 element={<AdminProfileScreen />}
                 path="/dashboard/profile"
               />
               <Route element={<AnalyticsOverviewScreen />} path="/analytics" />
               <Route element={<UsersListScreen />} path="/dashboard/users" />
-              <Route element={<UsersCreateScreen />} path="/dashboard/users/new" />
+              <Route
+                element={<UsersCreateScreen />}
+                path="/dashboard/users/new"
+              />
               <Route element={<KycListScreen />} path="/dashboard/users/kyc" />
               <Route
                 element={<CoachVerificationsScreen />}
@@ -173,7 +187,10 @@ export function AppRouter() {
                 path="/dashboard/users/:userId"
               />
               <Route element={<ClubsListScreen />} path="/dashboard/clubs" />
-              <Route element={<ClubsCreateScreen />} path="/dashboard/clubs/new" />
+              <Route
+                element={<ClubsCreateScreen />}
+                path="/dashboard/clubs/new"
+              />
               <Route
                 element={<ClubSlotsCreateScreen />}
                 path="/dashboard/clubs/:clubId/slots/new"
@@ -219,7 +236,10 @@ export function AppRouter() {
                 path="/dashboard/sports/:kind/:sportId/edit"
               />
               <Route element={<SportsRoute />} path="/dashboard/sports/:kind" />
-              <Route element={<ChoicesListScreen />} path="/dashboard/choices" />
+              <Route
+                element={<ChoicesListScreen />}
+                path="/dashboard/choices"
+              />
               <Route
                 element={<ChoicesCreateScreen />}
                 path="/dashboard/choices/new"
@@ -253,7 +273,10 @@ export function AppRouter() {
                 element={<FaqEditScreen />}
                 path="/dashboard/support/faq/:faqId/edit"
               />
-              <Route element={<FaqListScreen />} path="/dashboard/support/faq" />
+              <Route
+                element={<FaqListScreen />}
+                path="/dashboard/support/faq"
+              />
               <Route
                 element={<ArticlesCreateScreen />}
                 path="/dashboard/articles/new"
@@ -382,7 +405,10 @@ export function AppRouter() {
                 element={<SocialReportsScreen />}
                 path="/dashboard/ops/social"
               />
-              <Route element={<AuditLogsScreen />} path="/dashboard/ops/audit" />
+              <Route
+                element={<AuditLogsScreen />}
+                path="/dashboard/ops/audit"
+              />
               <Route
                 element={<NotificationTemplatesEditScreen />}
                 path="/dashboard/ops/templates/:templateKey/edit"

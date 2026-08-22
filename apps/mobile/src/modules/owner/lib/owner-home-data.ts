@@ -1,4 +1,4 @@
-import { statsColors } from "@repo/theme";
+import { statsColors } from "@repo/theme/stats-colors";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 
 export type OwnerHomeStatChart = "line" | "bar";

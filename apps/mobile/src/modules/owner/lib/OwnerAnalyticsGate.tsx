@@ -2,7 +2,7 @@
 
 import { Spinner } from "@heroui/react/spinner";
 import type { OwnerFinanceAnalytics } from "@repo/api";
-import { statsColors } from "@repo/theme";
+import { statsColors } from "@repo/theme/stats-colors";
 import { useEffect, useState } from "react";
 import { accountClubs, accountFinance } from "@/shared/lib/api";
 import { useAuth } from "@/shared/providers/AuthProvider";

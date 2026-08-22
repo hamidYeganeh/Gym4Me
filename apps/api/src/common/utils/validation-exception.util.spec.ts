@@ -69,7 +69,8 @@ describe('validationExceptionFactory', () => {
     expect(response).toEqual({
       statusCode: 400,
       error: 'Bad Request',
-      message: { code: ['code must be 6 characters'] },
+      message: 'errors.validation',
+      fieldErrors: { code: ['code must be 6 characters'] },
     });
   });
 });

@@ -37,11 +37,12 @@ export function flattenValidationErrors(
 }
 
 export function validationExceptionFactory(errors: ValidationError[]) {
-  const message = flattenValidationErrors(errors);
+  const fieldErrors = flattenValidationErrors(errors);
   return new BadRequestException({
     statusCode: HttpStatus.BAD_REQUEST,
     error: 'Bad Request',
-    message: Object.keys(message).length > 0 ? message : 'Validation failed',
+    message: 'errors.validation',
+    fieldErrors,
   });
 }
 

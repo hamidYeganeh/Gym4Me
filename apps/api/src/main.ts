@@ -3,6 +3,8 @@ import { NestFactory } from '@nestjs/core';
 import { mkdirSync } from 'fs';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
+import { ApiMessageKeyFilter } from './common/filters/api-message-key.filter';
+import { ApiMessageKeyInterceptor } from './common/interceptors/api-message-key.interceptor';
 import {
   assertSecurityConfig,
   resolveCorsOrigin,
@@ -32,6 +34,8 @@ async function bootstrap() {
     credentials: true,
   });
   app.useGlobalPipes(createAppValidationPipe());
+  app.useGlobalFilters(new ApiMessageKeyFilter());
+  app.useGlobalInterceptors(new ApiMessageKeyInterceptor());
   app.enableShutdownHooks();
 
   const enableSwagger =

@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./heroui.css": "./heroui.css",
+    "./stats-colors": "./src/stats-colors.ts",
     "./tokens.css": "./tokens.css"
   },
   "scripts": {

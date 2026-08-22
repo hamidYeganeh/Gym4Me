@@ -21,17 +21,15 @@ export function KycStatusScanSection({
 
   return (
     <main className={styles.root({ className })}>
-      {cameraReady ? (
-        <video
-          ref={videoRef}
-          autoPlay
-          className={styles.video()}
-          muted
-          playsInline
-        />
-      ) : (
-        <div aria-hidden className={styles.fallback()} />
-      )}
+      <video
+        ref={videoRef}
+        autoPlay
+        aria-hidden={!cameraReady}
+        className={styles.video()}
+        muted
+        playsInline
+      />
+      {!cameraReady ? <div aria-hidden className={styles.fallback()} /> : null}
       <div aria-hidden className={styles.grid()} />
 
       <Button
@@ -79,6 +77,7 @@ export function KycStatusScanSection({
         <input
           ref={fileInputRef}
           accept="image/jpeg,image/png,image/webp"
+          capture="environment"
           className={styles.fileInput()}
           type="file"
           onChange={(event) => {

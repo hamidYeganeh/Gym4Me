@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 type AdminListFilterValue = string | readonly string[];
@@ -137,19 +137,22 @@ export function useAdminListQueryParams<
     );
   };
 
-  const setPage = (nextPage: number) => {
-    if (!syncPagination) return;
-    setSearchParams(
-      (current) => {
-        const params = new URLSearchParams(current);
-        const safe = Math.max(1, Math.floor(nextPage) || 1);
-        if (safe === defaultPage) params.delete("page");
-        else params.set("page", String(safe));
-        return params;
-      },
-      { replace: true },
-    );
-  };
+  const setPage = useCallback(
+    (nextPage: number) => {
+      if (!syncPagination) return;
+      setSearchParams(
+        (current) => {
+          const params = new URLSearchParams(current);
+          const safe = Math.max(1, Math.floor(nextPage) || 1);
+          if (safe === defaultPage) params.delete("page");
+          else params.set("page", String(safe));
+          return params;
+        },
+        { replace: true },
+      );
+    },
+    [defaultPage, setSearchParams, syncPagination],
+  );
 
   const setPageSize = (nextSize: number) => {
     if (!syncPagination) return;

@@ -2,10 +2,9 @@
 
 import { Button } from "@heroui/react/button";
 import { Calendar2 } from "@repo/icons/Calendar2";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { Plus } from "@repo/icons/Plus";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/shared/lib/app-router";
 
@@ -43,7 +42,9 @@ export function CoachCalendarDailyScreen({
     <AppLayout
       className={styles.root}
       header={
-        <Header
+        <SecondaryPageHeader
+          backAriaLabel={t("back")}
+          onBack={() => router.back()}
           endContent={
             <Button
               aria-label={t("calendar")}
@@ -52,17 +53,6 @@ export function CoachCalendarDailyScreen({
               variant="ghost"
             >
               <Calendar2 size={22} />
-            </Button>
-          }
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={() => router.back()}
-              size="lg"
-              variant="ghost"
-            >
-              <ChevronLeft size={22} />
             </Button>
           }
           title={t("title")}

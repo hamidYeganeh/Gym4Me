@@ -8,6 +8,7 @@ import { DiscoveryBrowseClubsEmptySection } from "../../sections/DiscoveryBrowse
 import { DiscoveryHomeArticlesSection } from "../../sections/DiscoveryHomeArticlesSection";
 import { DiscoveryHomeBannersSection } from "../../sections/DiscoveryHomeBannersSection";
 import { DiscoveryHomeCitiesSection } from "../../sections/DiscoveryHomeCitiesSection";
+import { DiscoveryHomeClassesSection } from "../../sections/DiscoveryHomeClassesSection";
 import { DiscoveryHomeClubCategoriesSection } from "../../sections/DiscoveryHomeClubCategoriesSection";
 import { DiscoveryHomeClubsRailSection } from "../../sections/DiscoveryHomeClubsRailSection";
 import { DiscoveryHomeHeaderSection } from "../../sections/DiscoveryHomeHeaderSection";
@@ -41,6 +42,8 @@ export function DiscoveryClubsScreen({
   onClearFilters,
   articles = [],
   articlesLoading = false,
+  classes = [],
+  classesLoading = false,
 }: DiscoveryClubsScreenProps) {
   const tHome = useTranslations("DiscoveryHome");
   const tClubs = useTranslations("DiscoveryClubs");
@@ -128,6 +131,9 @@ export function DiscoveryClubsScreen({
             title={tClubs("openNowTitle")}
             tone="accent"
           />
+          {classesLoading && classes.length === 0 ? null : (
+            <DiscoveryHomeClassesSection classes={classes} />
+          )}
           <DiscoveryHomeArticlesSection
             articles={articles}
             isLoading={articlesLoading}

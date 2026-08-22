@@ -5,6 +5,7 @@ import { KycRequest, KycRequestSchema } from '../../schemas/kyc-request.schema';
 import { UsersModule } from '../../users/users.module';
 import { KycController } from './kyc.controller';
 import {
+  ApiIrKycProviderService,
   FinnotechKycProviderService,
   KycProviderService,
   MockKycProviderService,
@@ -28,6 +29,9 @@ import { KycService } from './kyc.service';
         const provider = (
           config.get<string>('KYC_PROVIDER', 'mock') ?? 'mock'
         ).toLowerCase();
+        if (provider === 'api_ir' || provider === 'api.ir') {
+          return new ApiIrKycProviderService(config);
+        }
         if (provider === 'finnotech') {
           return new FinnotechKycProviderService(config);
         }

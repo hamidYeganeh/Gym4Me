@@ -97,6 +97,7 @@ export function AdminDashboardLayout({
   notificationCount = 0,
   breadcrumbs = [],
   header,
+  secondaryNav,
   className,
 }: AdminDashboardLayoutProps) {
   const { resolvedTheme, setTheme } = useTheme();
@@ -213,6 +214,34 @@ export function AdminDashboardLayout({
         </div>
       </aside>
 
+      {secondaryNav ? (
+        <aside
+          aria-label={secondaryNav.ariaLabel}
+          className={styles.secondaryPanel()}
+        >
+          <Typography className={styles.secondaryTitle()}>
+            {secondaryNav.title}
+          </Typography>
+          <nav className={styles.secondaryNav()}>
+            {secondaryNav.items.map((item) => (
+              <Button
+                key={item.id}
+                aria-current={item.isActive ? "page" : undefined}
+                className={styles.secondaryItem({
+                  className: item.isActive
+                    ? styles.secondaryItemActive()
+                    : undefined,
+                })}
+                variant="ghost"
+                onPress={item.isActive ? undefined : item.onPress}
+              >
+                {item.label}
+              </Button>
+            ))}
+          </nav>
+        </aside>
+      ) : null}
+
       <div className={styles.main()}>
         <header
           className={hasCustomHeader ? styles.headerSection() : styles.header()}
@@ -241,42 +270,46 @@ export function AdminDashboardLayout({
               </>
             ) : (
               <>
-              <Typography className={styles.greeting()} type="h3" weight="bold">
-                {labels.greeting}
-              </Typography>
-
-              <div className={styles.headerActions()}>
-                <SearchField
-                  aria-label={labels.searchAriaLabel}
-                  autoComplete="off"
-                  className={styles.search()}
-                  name="admin-search"
-                  variant="secondary"
+                <Typography
+                  className={styles.greeting()}
+                  type="h3"
+                  weight="bold"
                 >
-                  <SearchField.Group className={styles.searchGroup()}>
-                    <SearchField.SearchIcon />
-                    <SearchField.Input
-                      autoComplete="off"
-                      autoCapitalize="none"
-                      autoCorrect="off"
-                      className={styles.searchInput()}
-                      placeholder={labels.searchPlaceholder}
-                      spellCheck={false}
-                    />
-                    <Button
-                      isIconOnly
-                      size="lg"
-                      variant="ghost"
-                      aria-label={labels.filtersAriaLabel}
-                      className={styles.filterButton()}
-                      onPress={onFilterPress}
-                    >
-                      <SliderLineThreeHorizontal size={18} />
-                    </Button>
-                  </SearchField.Group>
-                </SearchField>
-                {themeToggle}
-              </div>
+                  {labels.greeting}
+                </Typography>
+
+                <div className={styles.headerActions()}>
+                  <SearchField
+                    aria-label={labels.searchAriaLabel}
+                    autoComplete="off"
+                    className={styles.search()}
+                    name="admin-search"
+                    variant="secondary"
+                  >
+                    <SearchField.Group className={styles.searchGroup()}>
+                      <SearchField.SearchIcon />
+                      <SearchField.Input
+                        autoComplete="off"
+                        autoCapitalize="none"
+                        autoCorrect="off"
+                        className={styles.searchInput()}
+                        placeholder={labels.searchPlaceholder}
+                        spellCheck={false}
+                      />
+                      <Button
+                        isIconOnly
+                        size="lg"
+                        variant="ghost"
+                        aria-label={labels.filtersAriaLabel}
+                        className={styles.filterButton()}
+                        onPress={onFilterPress}
+                      >
+                        <SliderLineThreeHorizontal size={18} />
+                      </Button>
+                    </SearchField.Group>
+                  </SearchField>
+                  {themeToggle}
+                </div>
               </>
             )}
           </div>

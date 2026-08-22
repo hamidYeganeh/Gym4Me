@@ -8,7 +8,10 @@ export type ProfileLocationsListItemView = {
   icon: ReactNode;
 };
 
-export type ProfileLocationsListSectionProps = HTMLAttributes<HTMLDivElement> & {
+export type ProfileLocationsListSectionProps = Omit<
+  HTMLAttributes<HTMLDivElement>,
+  "onSelect"
+> & {
   items: ProfileLocationsListItemView[];
   loading: boolean;
   error: string | null;

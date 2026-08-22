@@ -12,10 +12,12 @@ import {
 function location(
   overrides: Partial<FavouriteLocation> = {},
 ): FavouriteLocation {
+  const { address, ...locationOverrides } = overrides;
   return {
     id: "loc-1",
     kind: "home",
     label: "خانه",
+    ...locationOverrides,
     address: {
       apartment: "۱۲",
       city: "تهران",
@@ -23,16 +25,7 @@ function location(
       postalCode: "1234567890",
       provinceId: "prov-1",
       street: "ولیعصر",
-    },
-    ...overrides,
-    address: {
-      apartment: "۱۲",
-      city: "تهران",
-      point: { lat: 35.7, lng: 51.4 },
-      postalCode: "1234567890",
-      provinceId: "prov-1",
-      street: "ولیعصر",
-      ...overrides.address,
+      ...address,
     },
   };
 }

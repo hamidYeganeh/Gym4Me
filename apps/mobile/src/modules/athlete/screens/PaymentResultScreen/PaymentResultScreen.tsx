@@ -6,7 +6,7 @@ import { CheckCircle } from "@repo/icons/CheckCircle";
 import { CloseXCircle } from "@repo/icons/CloseXCircle";
 import { EmptyState } from "@repo/ui/kit/EmptyState";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { getInvoice } from "../../lib/payment-data";
@@ -36,7 +36,7 @@ export function PaymentResultScreen({
   return (
     <AppLayout
       className={styles.root}
-      header={<Header title={t("pageTitle")} />}
+      header={<SecondaryPageHeader showBack={false} title={t("pageTitle")} />}
     >
       <div className={styles.content}>
         <EmptyState
@@ -53,9 +53,7 @@ export function PaymentResultScreen({
             label: isSuccess ? t("viewBookings") : t("retry"),
             endContent: isSuccess ? <ArrowRight size={18} /> : undefined,
             onPress: () =>
-              isSuccess
-                ? router.push("/athlete/bookings")
-                : router.back(),
+              isSuccess ? router.push("/athlete/bookings") : router.back(),
           }}
           secondaryAction={{
             label: isSuccess ? t("seeInvoice") : t("backHome"),

@@ -9,6 +9,7 @@ import {
   sortClubsByRating,
 } from "../../lib/clubs-browse-data";
 import { useDiscoveryClubsBrowse } from "../../lib/use-discovery-clubs-browse";
+import { useDiscoveryClassesBrowse } from "../../lib/use-discovery-classes-browse";
 import { useDiscoveryHomeArticles } from "../../lib/use-discovery-home-articles";
 import { useDiscoveryHomeCategories } from "../../lib/use-discovery-home-categories";
 import { useDiscoveryHomeCities } from "../../lib/use-discovery-home-cities";
@@ -49,6 +50,7 @@ export function DiscoveryClubsScreenLoader() {
   const nearby = useDiscoveryHomeNearbyClubs();
   const district = useDiscoveryHomeDistrictClubs();
   const articles = useDiscoveryHomeArticles();
+  const classes = useDiscoveryClassesBrowse();
   const browse = useDiscoveryClubsBrowse({
     locationId,
     sportId,
@@ -70,6 +72,8 @@ export function DiscoveryClubsScreenLoader() {
     <DiscoveryClubsScreen
       articles={articles.articles}
       articlesLoading={articles.isLoading}
+      classes={classes.classes.slice(0, 10)}
+      classesLoading={classes.isLoading}
       banners={banners.slides}
       bannersLoading={banners.isLoading}
       categories={categories.categories}

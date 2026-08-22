@@ -1,4 +1,4 @@
-import { statsColors } from "@repo/theme";
+import { statsColors } from "@repo/theme/stats-colors";
 
 export type OwnerSettlementState = "paid" | "processing" | "upcoming";
 export type OwnerTransactionKind = "membership" | "booking" | "refund";

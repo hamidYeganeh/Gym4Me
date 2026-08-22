@@ -5,6 +5,8 @@ export const routes = {
   otp: "/otp",
   forgotPassword: "/forgot-password",
   dashboard: "/dashboard",
+  record: (recordId: string) =>
+    `/dashboard/records/${encodeURIComponent(recordId)}`,
   profile: "/dashboard/profile",
   analytics: "/analytics",
   users: "/dashboard/users",
@@ -21,8 +23,7 @@ export const routes = {
   clubSlotNew: (clubId: string) => `/dashboard/clubs/${clubId}/slots/new`,
   clubSlotEdit: (clubId: string, slotId: string) =>
     `/dashboard/clubs/${clubId}/slots/${slotId}/edit`,
-  locations: (kind: LocationKind = "country") =>
-    `/dashboard/locations/${kind}`,
+  locations: (kind: LocationKind = "country") => `/dashboard/locations/${kind}`,
   locationNew: (kind: LocationKind) => `/dashboard/locations/${kind}/new`,
   locationEdit: (kind: LocationKind, locationId: string) =>
     `/dashboard/locations/${kind}/${locationId}/edit`,
@@ -32,7 +33,8 @@ export const routes = {
     `/dashboard/sports/${kind}/${sportId}/edit`,
   choices: "/dashboard/choices",
   choicesNew: "/dashboard/choices/new",
-  choiceEdit: (key: string) => `/dashboard/choices/${encodeURIComponent(key)}/edit`,
+  choiceEdit: (key: string) =>
+    `/dashboard/choices/${encodeURIComponent(key)}/edit`,
   refs: (type: RefType = "equipment") => `/dashboard/refs/${type}`,
   refNew: (type: RefType) => `/dashboard/refs/${type}/new`,
   refEdit: (type: RefType, refId: string) =>
@@ -63,7 +65,8 @@ export const routes = {
   bookings: "/dashboard/bookings",
   catalogPlans: "/dashboard/catalog/plans",
   catalogPlanNew: "/dashboard/catalog/plans/new",
-  catalogPlanEdit: (planId: string) => `/dashboard/catalog/plans/${planId}/edit`,
+  catalogPlanEdit: (planId: string) =>
+    `/dashboard/catalog/plans/${planId}/edit`,
   catalogFood: "/dashboard/catalog/food",
   catalogFoodNew: "/dashboard/catalog/food/new",
   catalogFoodEdit: (foodId: string) => `/dashboard/catalog/food/${foodId}/edit`,

@@ -9,7 +9,7 @@ import { ChevronRight } from "@repo/icons/ChevronRight";
 import { CoachAvailabilitySlots } from "@repo/ui/cards/CoachAvailabilitySlots";
 import { StickyBottomActions } from "@repo/ui/kit/StickyBottomActions";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/shared/lib/app-router";
 
@@ -112,21 +112,17 @@ export function AthleteBookingRescheduleScreen({
     }
   };
 
-  const backButton = (
-    <Button
-      aria-label={t("back")}
-      isIconOnly
-      onPress={() => router.back()}
-      size="lg"
-      variant="ghost"
-    >
-      <ChevronLeft className="text-foreground" size={22} />
-    </Button>
+  const pageHeader = (
+    <SecondaryPageHeader
+      backAriaLabel={t("back")}
+      onBack={() => router.back()}
+      title={t("title")}
+    />
   );
 
   if (isLoadingBooking) {
     return (
-      <AppLayout className={styles.root} header={<Header startContent={backButton} />}>
+      <AppLayout className={styles.root} header={pageHeader}>
         <div className={styles.loading}>
           <Spinner size="lg" />
         </div>
@@ -135,10 +131,7 @@ export function AthleteBookingRescheduleScreen({
   }
 
   return (
-    <AppLayout
-      className={styles.root}
-      header={<Header startContent={backButton} />}
-    >
+    <AppLayout className={styles.root} header={pageHeader}>
       <div className={styles.content}>
         <section className={styles.intro}>
           <Typography className={styles.introTitle} type="h1" weight="bold">
@@ -154,7 +147,11 @@ export function AthleteBookingRescheduleScreen({
             <Typography className={styles.currentLabel} type="body-sm">
               {t("currentSlot")}
             </Typography>
-            <Typography className={styles.currentValue} type="body" weight="semibold">
+            <Typography
+              className={styles.currentValue}
+              type="body"
+              weight="semibold"
+            >
               {formatJalaliDateTime(booking.startsAt)}
             </Typography>
           </div>

@@ -146,7 +146,7 @@ export function BasicsLocationsSection({
       );
       await loadParents();
       await load();
-    } catch (err) {
+    } catch {
       setError(t("importDefaultsError"));
     } finally {
       setSeeding(false);

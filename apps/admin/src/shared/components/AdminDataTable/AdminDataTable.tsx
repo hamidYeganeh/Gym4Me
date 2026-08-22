@@ -10,6 +10,8 @@ import {
   type TableMeta,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { useLocation, useNavigate } from "react-router-dom";
+import { routes } from "@/shared/lib/routes";
 import { adminDataTableVariants } from "./AdminDataTable.styles";
 import type { AdminDataTableProps } from "./AdminDataTable.types";
 
@@ -48,6 +50,7 @@ export function AdminDataTable<TData>({
   isFetchingMore = false,
   hasMore = false,
   onLoadMore,
+  onRowPress,
   estimateRowHeight = 56,
   sort,
   onSortChange,
@@ -57,6 +60,8 @@ export function AdminDataTable<TData>({
   className,
 }: AdminDataTableProps<TData>) {
   const styles = adminDataTableVariants();
+  const location = useLocation();
+  const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [scrollEl, setScrollEl] = useState<HTMLDivElement | null>(null);
 
@@ -80,6 +85,26 @@ export function AdminDataTable<TData>({
   });
 
   const rows = table.getRowModel().rows;
+  const metaRowPress = meta as
+    | {
+        onRowPress?: (row: TData) => void;
+        onView?: (row: TData) => void;
+        onEdit?: (row: TData) => void;
+      }
+    | undefined;
+  const handleRowPress =
+    onRowPress ??
+    metaRowPress?.onRowPress ??
+    metaRowPress?.onView ??
+    metaRowPress?.onEdit ??
+    ((row: TData) =>
+      navigate(routes.record(getRowId(row)), {
+        state: {
+          record: row,
+          title: ariaLabel,
+          returnTo: `${location.pathname}${location.search}`,
+        },
+      }));
   const shouldVirtualize = rows.length >= VIRTUALIZE_FROM;
 
   const virtualizer = useVirtualizer({
@@ -136,10 +161,7 @@ export function AdminDataTable<TData>({
         <Typography className={styles.empty()}>{emptyLabel}</Typography>
       ) : (
         <Table>
-          <Table.ScrollContainer
-            ref={setScrollRef}
-            className={styles.scroll()}
-          >
+          <Table.ScrollContainer ref={setScrollRef} className={styles.scroll()}>
             <Table.Content
               aria-label={ariaLabel}
               className={styles.table()}
@@ -188,13 +210,31 @@ export function AdminDataTable<TData>({
                   <tr aria-hidden>
                     <td
                       className={styles.spacerCell()}
-                      colSpan={Math.max(table.getVisibleLeafColumns().length, 1)}
+                      colSpan={Math.max(
+                        table.getVisibleLeafColumns().length,
+                        1,
+                      )}
                       style={{ height: paddingTop }}
                     />
                   </tr>
                 ) : null}
                 {visibleRows.map((row) => (
-                  <Table.Row key={row.id} id={row.id}>
+                  <Table.Row
+                    key={row.id}
+                    className={styles.interactiveRow()}
+                    id={row.id}
+                    onClick={(event) => {
+                      const target = event.target as HTMLElement;
+                      if (
+                        target.closest(
+                          "button,a,input,select,textarea,[role='button']",
+                        )
+                      ) {
+                        return;
+                      }
+                      handleRowPress(row.original);
+                    }}
+                  >
                     {row.getVisibleCells().map((cell) => (
                       <Table.Cell key={cell.id}>
                         {flexRender(
@@ -209,7 +249,10 @@ export function AdminDataTable<TData>({
                   <tr aria-hidden>
                     <td
                       className={styles.spacerCell()}
-                      colSpan={Math.max(table.getVisibleLeafColumns().length, 1)}
+                      colSpan={Math.max(
+                        table.getVisibleLeafColumns().length,
+                        1,
+                      )}
                       style={{ height: paddingBottom }}
                     />
                   </tr>
@@ -229,39 +272,33 @@ export function AdminDataTable<TData>({
                 <Pagination.Item>
                   <Pagination.Previous
                     isDisabled={pagination.page <= 1}
-                    onPress={() =>
-                      pagination.onPageChange(pagination.page - 1)
-                    }
+                    onPress={() => pagination.onPageChange(pagination.page - 1)}
                   >
                     <Pagination.PreviousIcon />
                     <span>{pagination.previousLabel}</span>
                   </Pagination.Previous>
                 </Pagination.Item>
-                {paginationItems(
-                  pagination.page,
-                  pagination.totalPages,
-                ).map((item) =>
-                  typeof item === "number" ? (
-                    <Pagination.Item key={item}>
-                      <Pagination.Link
-                        isActive={item === pagination.page}
-                        onPress={() => pagination.onPageChange(item)}
-                      >
-                        {item}
-                      </Pagination.Link>
-                    </Pagination.Item>
-                  ) : (
-                    <Pagination.Item key={item}>
-                      <Pagination.Ellipsis />
-                    </Pagination.Item>
-                  ),
+                {paginationItems(pagination.page, pagination.totalPages).map(
+                  (item) =>
+                    typeof item === "number" ? (
+                      <Pagination.Item key={item}>
+                        <Pagination.Link
+                          isActive={item === pagination.page}
+                          onPress={() => pagination.onPageChange(item)}
+                        >
+                          {item}
+                        </Pagination.Link>
+                      </Pagination.Item>
+                    ) : (
+                      <Pagination.Item key={item}>
+                        <Pagination.Ellipsis />
+                      </Pagination.Item>
+                    ),
                 )}
                 <Pagination.Item>
                   <Pagination.Next
                     isDisabled={pagination.page >= pagination.totalPages}
-                    onPress={() =>
-                      pagination.onPageChange(pagination.page + 1)
-                    }
+                    onPress={() => pagination.onPageChange(pagination.page + 1)}
                   >
                     <span>{pagination.nextLabel}</span>
                     <Pagination.NextIcon />

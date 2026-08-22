@@ -1,5 +1,5 @@
 import { Typography } from "@heroui/react/typography";
-import { statsColors } from "@repo/theme";
+import { statsColors } from "@repo/theme/stats-colors";
 import { StatsCard } from "@repo/ui/cards/StatsCard";
 import { AreaLineChart } from "@repo/ui/kit/AreaLineChart";
 import { ownerClubDetailOverviewSectionVariants } from "./OwnerClubDetailOverviewSection.styles";

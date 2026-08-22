@@ -2,7 +2,7 @@ import { Type } from 'class-transformer';
 import { IsDate, IsIn, IsString, Matches } from 'class-validator';
 
 export class SubmitIdentityDto {
-  @Matches(/^\d{10}$/, { message: 'nationalId must be 10 digits' })
+  @Matches(/^\d{10}$/, { message: 'errors.invalidNationalIdFormat' })
   nationalId!: string;
 
   @Type(() => Date)

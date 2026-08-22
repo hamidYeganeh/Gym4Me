@@ -28,7 +28,7 @@ import { Play } from "@repo/icons/Play";
 import { User } from "@repo/icons/User";
 import { WaterBottle1 } from "@repo/icons/WaterBottle1";
 import { WifiFull } from "@repo/icons/WifiFull";
-import { statsColors } from "@repo/theme";
+import { statsColors } from "@repo/theme/stats-colors";
 import {
   AchievementTag,
   type AchievementTagColor,

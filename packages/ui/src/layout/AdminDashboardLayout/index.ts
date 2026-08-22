@@ -6,4 +6,5 @@ export type {
   AdminDashboardLayoutProps,
   AdminDashboardNavId,
   AdminDashboardNavItem,
+  AdminDashboardSecondaryNavItem,
 } from "./AdminDashboardLayout.types";

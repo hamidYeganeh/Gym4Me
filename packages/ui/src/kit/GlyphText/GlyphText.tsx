@@ -1,6 +1,6 @@
 "use client";
 
-import { statsColors } from "@repo/theme";
+import { statsColors } from "@repo/theme/stats-colors";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   animate,

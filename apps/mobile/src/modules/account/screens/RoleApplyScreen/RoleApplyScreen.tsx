@@ -8,6 +8,9 @@ import { Typography } from "@heroui/react/typography";
 import type { Role, RoleOverviewResponse } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
+import { Bicep } from "@repo/icons/Bicep";
+import { Building2 } from "@repo/icons/Building2";
+import { Whistle } from "@repo/icons/Whistle";
 import { CallToActionCard } from "@repo/ui/cards/CallToActionCard";
 import type { CallToActionCardVariant } from "@repo/ui/cards/CallToActionCard";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
@@ -42,6 +45,12 @@ const ACTION_CARDS: {
   },
 ];
 
+function roleIcon(role: Role) {
+  if (role === "coach") return <Whistle size={24} />;
+  if (role === "club_owner") return <Building2 size={24} />;
+  return <Bicep size={24} />;
+}
+
 export function RoleApplyScreen({
   className,
   roleSegment = "athlete",
@@ -49,7 +58,7 @@ export function RoleApplyScreen({
   const t = useTranslations("Mobile.RoleApply");
   const styles = roleApplyScreenVariants();
   const router = useRouter();
-  const { user, switchRole } = useAuth();
+  const { activeRole, user, switchRole } = useAuth();
   const [overview, setOverview] = useState<RoleOverviewResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pendingRole, setPendingRole] = useState<Role | null>(null);
@@ -129,11 +138,13 @@ export function RoleApplyScreen({
 
   const availabilities =
     overview?.availabilities.filter((item) => item.canSwitch) ??
-    (user?.roles ?? []).map((role) => ({
-      role,
-      canSwitch: true,
-      active: false,
-    }));
+    (user?.roles ?? [])
+      .filter((role) => role !== activeRole)
+      .map((role) => ({
+        role,
+        canSwitch: true,
+        active: false,
+      }));
 
   const actionByRole = new Map(
     (overview?.actions ?? []).map((item) => [item.role, item]),
@@ -166,7 +177,11 @@ export function RoleApplyScreen({
           >
             {t("availabilitiesTitle")}
           </Typography>
-          <Typography className={styles.sectionHint()} color="muted" type="body-sm">
+          <Typography
+            className={styles.sectionHint()}
+            color="muted"
+            type="body-sm"
+          >
             {t("availabilitiesHint")}
           </Typography>
           <div className={styles.list()}>
@@ -186,7 +201,8 @@ export function RoleApplyScreen({
                   <CallToActionCard
                     key={item.role}
                     actionLabel={t("switch")}
-                    actionType="plus"
+                    actionType="icon"
+                    icon={roleIcon(item.role)}
                     aria-busy={pendingRole === item.role || undefined}
                     onAction={
                       pendingRole
@@ -212,11 +228,18 @@ export function RoleApplyScreen({
           >
             {t("actionsTitle")}
           </Typography>
-          <Typography className={styles.sectionHint()} color="muted" type="body-sm">
+          <Typography
+            className={styles.sectionHint()}
+            color="muted"
+            type="body-sm"
+          >
             {t("actionsHint")}
           </Typography>
           <div className={styles.list()}>
-            {ACTION_CARDS.map((card) => {
+            {ACTION_CARDS.filter((card) => {
+              const action = actionByRole.get(card.role);
+              return !(action?.hasRole ?? user?.roles.includes(card.role));
+            }).map((card) => {
               const action = actionByRole.get(card.role);
               const hasRole = Boolean(
                 action?.hasRole ?? user?.roles.includes(card.role),
@@ -247,7 +270,8 @@ export function RoleApplyScreen({
                 <CallToActionCard
                   key={card.role}
                   actionLabel={actionLabel}
-                  actionType={pending ? "pending" : "plus"}
+                  actionType={pending ? "pending" : "icon"}
+                  icon={roleIcon(card.role)}
                   aria-busy={pendingRole === card.role || undefined}
                   onAction={
                     pending || pendingRole || loading

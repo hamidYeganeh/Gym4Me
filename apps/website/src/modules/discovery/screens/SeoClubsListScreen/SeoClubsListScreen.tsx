@@ -51,11 +51,7 @@ export async function SeoClubsListScreen({ q = "" }: SeoClubsListScreenProps) {
               رشته‌ها و موقعیت را پیش از انتخاب ببینید.
             </p>
           </header>
-          <form
-            className={slots.searchForm()}
-            method="get"
-            role="search"
-          >
+          <form className={slots.searchForm()} method="get" role="search">
             <input
               className={slots.searchInput()}
               defaultValue={q}
@@ -70,12 +66,11 @@ export async function SeoClubsListScreen({ q = "" }: SeoClubsListScreenProps) {
             <ul className={slots.grid()}>
               {clubs.map((club) => (
                 <li className={slots.card()} key={club.id}>
-                  <Link
-                    className={slots.cardLink()}
-                    href={`/clubs/${club.id}`}
-                  >
+                  <Link className={slots.cardLink()} href={`/clubs/${club.id}`}>
                     <div className={slots.cardHeader()}>
-                      <h2 className={slots.cardTitle()}>{club.identity.name}</h2>
+                      <h2 className={slots.cardTitle()}>
+                        {club.identity.name}
+                      </h2>
                       <span className={slots.rating()}>
                         ★ {club.reviewsSummary.average.toFixed(1)}
                       </span>
@@ -88,7 +83,7 @@ export async function SeoClubsListScreen({ q = "" }: SeoClubsListScreenProps) {
                     <p className={slots.cardMeta()}>
                       {club.sports
                         .slice(0, 3)
-                        .map((sport) => sport.name)
+                        .map((sport) => ("name" in sport ? sport.name : null))
                         .filter(Boolean)
                         .join(" · ") ||
                         `${club.reviewsSummary.count} نظر تأییدشده`}
@@ -98,9 +93,7 @@ export async function SeoClubsListScreen({ q = "" }: SeoClubsListScreenProps) {
               ))}
             </ul>
           ) : (
-            <p className={slots.empty()}>
-              برای این جست‌وجو باشگاهی پیدا نشد.
-            </p>
+            <p className={slots.empty()}>برای این جست‌وجو باشگاهی پیدا نشد.</p>
           )}
         </div>
       </main>

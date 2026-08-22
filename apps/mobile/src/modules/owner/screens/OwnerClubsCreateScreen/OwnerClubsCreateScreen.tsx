@@ -3,11 +3,10 @@
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import { ArrowRight } from "@repo/icons/ArrowRight";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { FormStepper } from "@repo/ui/kit/FormStepper";
 import { StickyBottomActions } from "@repo/ui/kit/StickyBottomActions";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import {
   LAST_CLUB_CREATE_STEP,
   useOwnerClubsCreate,
@@ -27,18 +26,9 @@ export function OwnerClubsCreateScreen({
     <AppLayout
       className={styles.root({ className })}
       header={
-        <Header
-          startContent={
-            <Button
-              aria-label={wizard.t("back")}
-              isIconOnly
-              onPress={() => wizard.router.back()}
-              size="lg"
-              variant="ghost"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
-            </Button>
-          }
+        <SecondaryPageHeader
+          backAriaLabel={wizard.t("back")}
+          onBack={() => wizard.router.back()}
           title={wizard.t("title")}
         />
       }
@@ -78,12 +68,20 @@ export function OwnerClubsCreateScreen({
             />
 
             {wizard.error ? (
-              <Typography className={styles.error()} role="alert" type="body-sm">
+              <Typography
+                className={styles.error()}
+                role="alert"
+                type="body-sm"
+              >
                 {wizard.error}
               </Typography>
             ) : null}
             {wizard.notice ? (
-              <Typography className={styles.notice()} role="status" type="body-sm">
+              <Typography
+                className={styles.notice()}
+                role="status"
+                type="body-sm"
+              >
                 {wizard.notice}
               </Typography>
             ) : null}

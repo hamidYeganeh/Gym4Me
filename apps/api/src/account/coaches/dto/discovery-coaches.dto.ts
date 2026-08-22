@@ -1,4 +1,10 @@
-import { IsEnum, IsMongoId, IsOptional, IsString, MaxLength } from 'class-validator';
+import {
+  IsEnum,
+  IsMongoId,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 import { PaginationQueryDto } from '../../../basics/dto/common.dto';
 import { CoachType } from '../../../common/enums';
 

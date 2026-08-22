@@ -4,11 +4,10 @@ import { useState } from "react";
 import { Button } from "@heroui/react/button";
 import { Chip } from "@heroui/react/chip";
 import { Typography } from "@heroui/react/typography";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { Plus } from "@repo/icons/Plus";
 import type { CoachProgramState } from "../../lib/coach-programs-data";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/shared/lib/app-router";
 
@@ -46,18 +45,9 @@ export function CoachProgramEditorScreen({
     <AppLayout
       className={styles.root}
       header={
-        <Header
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={() => router.back()}
-              size="lg"
-              variant="ghost"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
-            </Button>
-          }
+        <SecondaryPageHeader
+          backAriaLabel={t("back")}
+          onBack={() => router.back()}
           title={program.title}
         />
       }
@@ -87,9 +77,7 @@ export function CoachProgramEditorScreen({
         <div className={styles.linkRow}>
           {!isEdit ? (
             <Button
-              onPress={() =>
-                router.push(`/coach/programs/${program.id}/edit`)
-              }
+              onPress={() => router.push(`/coach/programs/${program.id}/edit`)}
               variant="secondary"
             >
               {t("editAction")}
@@ -107,12 +95,20 @@ export function CoachProgramEditorScreen({
 
         {program.weeks.map((week) => (
           <article className={styles.weekCard} key={week.id}>
-            <Typography className={styles.weekTitle} type="h4" weight="semibold">
+            <Typography
+              className={styles.weekTitle}
+              type="h4"
+              weight="semibold"
+            >
               {week.label}
             </Typography>
             {week.days.map((day) => (
               <div className={styles.dayCard} key={day.id}>
-                <Typography className={styles.dayTitle} type="body" weight="semibold">
+                <Typography
+                  className={styles.dayTitle}
+                  type="body"
+                  weight="semibold"
+                >
                   {day.label}
                 </Typography>
                 {day.sessions.map((session) => (
@@ -129,7 +125,10 @@ export function CoachProgramEditorScreen({
                         <Typography type="body-sm" weight="medium">
                           {exercise.name}
                         </Typography>
-                        <Typography className={styles.exerciseMeta} type="body-sm">
+                        <Typography
+                          className={styles.exerciseMeta}
+                          type="body-sm"
+                        >
                           {t("exerciseMeta", {
                             sets: exercise.sets,
                             reps: exercise.reps,

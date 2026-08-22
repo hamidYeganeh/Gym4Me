@@ -1,4 +1,4 @@
-import { ApiError, KYC_REQUIRED_CODE } from "./errors";
+import { ApiError, flattenApiErrorMessage, KYC_REQUIRED_CODE } from "./errors";
 import {
   isAbortError,
   isNetworkError,
@@ -61,6 +61,7 @@ export class ApiClient {
   private readonly onUnauthorized?: () => void;
   private readonly onKycRequired?: (body: ApiErrorBody | null) => void;
   private readonly noticeListeners = new Set<ApiNoticeListener>();
+  private messageResolver?: (messageKey: string) => string;
   private locale: string;
   private refreshPromise: Promise<TokenPair | null> | null = null;
   private refreshPath: string | null = null;
@@ -87,6 +88,11 @@ export class ApiClient {
     return () => {
       this.noticeListeners.delete(listener);
     };
+  }
+
+  /** Let the active next-intl provider localize keyed API errors for forms. */
+  setMessageResolver(resolver?: (messageKey: string) => string) {
+    this.messageResolver = resolver;
   }
 
   /** Wire the refresh endpoint used by 401 retry (once per client). */
@@ -161,7 +167,8 @@ export class ApiClient {
 
   private resolveMethod(options: RequestOptions): HttpMethod {
     return (
-      options.method ?? (options.body !== undefined || options.formData ? "POST" : "GET")
+      options.method ??
+      (options.body !== undefined || options.formData ? "POST" : "GET")
     );
   }
 
@@ -340,9 +347,7 @@ export class ApiClient {
       this.onKycRequired?.(body);
     }
     const sessionExpired =
-      response.status === 401 &&
-      !options.public &&
-      !this.getAccessToken();
+      response.status === 401 && !options.public && !this.getAccessToken();
     this.emitNotice(
       resolveApiNotice({
         ok: false,
@@ -356,6 +361,12 @@ export class ApiClient {
       response.status,
       body,
       response.statusText || "Request failed",
+      (() => {
+        const key = flattenApiErrorMessage(body?.message);
+        return key && this.messageResolver
+          ? this.messageResolver(key)
+          : undefined;
+      })(),
     );
   }
 }

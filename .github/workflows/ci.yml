@@ -9,9 +9,18 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 env:
   TZ: Asia/Tehran
   NODE_ENV: test
+  NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
+  NPM_CONFIG_AUDIT: "false"
+  NPM_CONFIG_FUND: "false"
+  NPM_CONFIG_FETCH_RETRIES: "2"
+  NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: "10000"
+  NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: "60000"
   JWT_ACCESS_SECRET: ci-access-secret-that-is-longer-than-thirty-two-characters
   JWT_PASSWORD_RESET_SECRET: ci-password-reset-secret-that-is-longer-than-thirty-two
   SMS_PROVIDER: mock

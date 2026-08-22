@@ -3,14 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "@/shared/lib/app-router";
 
-import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import { ApiError } from "@repo/api";
 import type { SetPasswordInput } from "@repo/api";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { toast } from "@repo/ui/kit/Toast";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { Header } from "@repo/ui/layout/Header";
+import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { AuthSetPasswordForm } from "@/modules/auth/components/AuthSetPasswordForm";
 import { accountAuth } from "@/shared/lib/api-client";
@@ -49,19 +47,9 @@ export function SetPasswordScreen({
     <AppLayout
       className={styles.root({ className })}
       header={
-        <Header
-          appearance="bar"
-          startContent={
-            <Button
-              aria-label={t("back")}
-              isIconOnly
-              onPress={() => router.push(`/${roleSegment}/profile/security`)}
-              size="lg"
-              variant="tertiary"
-            >
-              <ChevronLeft className="text-foreground" size={22} />
-            </Button>
-          }
+        <SecondaryPageHeader
+          backAriaLabel={t("back")}
+          onBack={() => router.push(`/${roleSegment}/profile/security`)}
           title={t("title")}
         />
       }
