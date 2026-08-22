@@ -111,19 +111,11 @@ export function useOtpScreen() {
           heroAlt: t("heroAlt"),
         };
 
-  const getErrorMessage = (err: unknown) => {
-    if (err instanceof ApiError && err.status === 429) {
-      return t("errorRateLimited");
-    }
-    if (err instanceof ApiError && err.message) {
-      return err.message;
-    }
-    return step === "verify" ? t("errorInvalid") : tAuth("errorOtpRequest");
-  };
-
   const notifyError = (err: unknown) => {
+    if (err instanceof ApiError) return;
     toast.error(tAuth("toastErrorTitle"), {
-      description: getErrorMessage(err),
+      description:
+        step === "verify" ? t("errorInvalid") : tAuth("errorOtpRequest"),
     });
   };
 

@@ -18,6 +18,7 @@ import {
   AthleteExperience,
   AthleteMood,
   BloodGroup,
+  CoachType,
   Privacy,
   RhFactor,
 } from '../../../common/enums';
@@ -338,8 +339,8 @@ export class UpdateCoachProfileDto {
 
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
-  specialtyKeys?: string[];
+  @IsEnum(CoachType, { each: true })
+  coachTypes?: CoachType[];
 }
 
 export class SubmitCoachVerificationDto {

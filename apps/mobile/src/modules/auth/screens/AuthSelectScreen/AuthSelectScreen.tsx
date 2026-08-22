@@ -87,12 +87,11 @@ export function AuthSelectScreen({ className }: AuthSelectScreenProps) {
         next && next.startsWith("/") ? next : roleHomePath(session.activeRole),
       );
     } catch (error) {
-      toast.error(t("toastErrorTitle"), {
-        description:
-          error instanceof ApiError
-            ? t("biometricUnlockExpired")
-            : t("biometricFailed"),
-      });
+      if (!(error instanceof ApiError)) {
+        toast.error(t("toastErrorTitle"), {
+          description: t("biometricFailed"),
+        });
+      }
       setShowBiometric(false);
     } finally {
       setIsBiometricPending(false);

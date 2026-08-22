@@ -1,7 +1,7 @@
-import type { LocationNode, Paginated } from "../types";
+import type { LocationNode, LocationRef, Paginated } from "../types";
 
 export type LocationChildrenResponse = Paginated<LocationNode> & {
   parent: LocationNode;
 };
 
-export type { LocationNode };
+export type { LocationNode, LocationRef };

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
-import { DiscoveryClubsScreenLoader } from "@/modules/discovery/screens/DiscoveryClubsScreen/DiscoveryClubsScreenLoader";
+import { DiscoveryClubsScreenLoader } from "@/modules/discovery/screens/DiscoveryClubsScreen";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("DiscoveryClubs");

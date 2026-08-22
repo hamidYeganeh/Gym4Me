@@ -1,6 +1,16 @@
 import { ApiError, KYC_REQUIRED_CODE } from "./errors";
+import {
+  isAbortError,
+  isNetworkError,
+  resolveApiNotice,
+  resolveNetworkNotice,
+  type ApiNotice,
+  type HttpMethod,
+} from "./notices";
 import type { ApiErrorBody, AuthSession, TokenPair } from "./types";
 import type { TokenStorage } from "./storage";
+
+export type ApiNoticeListener = (notice: ApiNotice) => void;
 
 export type ApiClientOptions = {
   /** Base URL including version, e.g. `http://localhost:8088/api/v1` */
@@ -12,10 +22,12 @@ export type ApiClientOptions = {
   onUnauthorized?: () => void;
   /** Called when a 403 with `code: 'KYC_REQUIRED'` is returned (identity verification needed). */
   onKycRequired?: (body: ApiErrorBody | null) => void;
+  /** Initial UI locale used for `Accept-Language`. */
+  locale?: string;
 };
 
 export type RequestOptions = {
-  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  method?: HttpMethod;
   body?: unknown;
   /** Multipart body — Content-Type is left unset so the boundary is set by fetch. */
   formData?: FormData;
@@ -31,6 +43,8 @@ export type RequestOptions = {
   headers?: HeadersInit;
   /** Skip Authorization header even if a token exists. */
   public?: boolean;
+  /** Skip the global API toast for this request. */
+  silent?: boolean;
   /**
    * Call a VERSION_NEUTRAL route under `/api/...` instead of `/api/vN/...`.
    * Strips a trailing `/v\\d+` segment from the configured baseUrl.
@@ -46,6 +60,8 @@ export class ApiClient {
   private readonly getAccessToken: () => string | null;
   private readonly onUnauthorized?: () => void;
   private readonly onKycRequired?: (body: ApiErrorBody | null) => void;
+  private readonly noticeListeners = new Set<ApiNoticeListener>();
+  private locale: string;
   private refreshPromise: Promise<TokenPair | null> | null = null;
   private refreshPath: string | null = null;
 
@@ -58,6 +74,19 @@ export class ApiClient {
       (() => this.storage?.get()?.accessToken ?? null);
     this.onUnauthorized = options.onUnauthorized;
     this.onKycRequired = options.onKycRequired;
+    this.locale = options.locale ?? "fa";
+  }
+
+  /** Keep API `Accept-Language` aligned with the active UI locale. */
+  setLocale(locale: string) {
+    this.locale = locale;
+  }
+
+  subscribeNotices(listener: ApiNoticeListener): () => void {
+    this.noticeListeners.add(listener);
+    return () => {
+      this.noticeListeners.delete(listener);
+    };
   }
 
   /** Wire the refresh endpoint used by 401 retry (once per client). */
@@ -82,8 +111,13 @@ export class ApiClient {
     options: RequestOptions = {},
     isRetry = false,
   ): Promise<T> {
-    const response = await this.sendWithAuthRetry(path, options, isRetry);
-    return this.parseResponse<T>(response);
+    try {
+      const response = await this.sendWithAuthRetry(path, options, isRetry);
+      return await this.parseResponse<T>(response, options);
+    } catch (error) {
+      this.emitTransportNotice(error, options.silent === true);
+      throw error;
+    }
   }
 
   /** Authenticated binary download (KYC docs, exports). */
@@ -92,18 +126,50 @@ export class ApiClient {
     options: RequestOptions = {},
     isRetry = false,
   ): Promise<Blob> {
-    const response = await this.sendWithAuthRetry(path, options, isRetry);
-    if (!response.ok) {
-      const text = await response.text();
-      let data: ApiErrorBody | null = null;
-      try {
-        data = text ? (JSON.parse(text) as ApiErrorBody) : null;
-      } catch {
-        data = null;
+    try {
+      const response = await this.sendWithAuthRetry(path, options, isRetry);
+      if (!response.ok) {
+        const text = await response.text();
+        let data: ApiErrorBody | null = null;
+        try {
+          data = text ? (JSON.parse(text) as ApiErrorBody) : null;
+        } catch {
+          data = null;
+        }
+        this.raiseError(response, data, options);
       }
-      this.raiseError(response, data);
+      return response.blob();
+    } catch (error) {
+      this.emitTransportNotice(error, options.silent === true);
+      throw error;
     }
-    return response.blob();
+  }
+
+  private emitNotice(notice: ApiNotice | null) {
+    if (!notice) return;
+    for (const listener of this.noticeListeners) {
+      listener(notice);
+    }
+  }
+
+  private emitTransportNotice(error: unknown, silent: boolean) {
+    if (silent || error instanceof ApiError || isAbortError(error)) return;
+    if (isNetworkError(error)) {
+      this.emitNotice(resolveNetworkNotice());
+    }
+  }
+
+  private resolveMethod(options: RequestOptions): HttpMethod {
+    return (
+      options.method ?? (options.body !== undefined || options.formData ? "POST" : "GET")
+    );
+  }
+
+  private acceptLanguage(): string {
+    const locale = this.locale.trim() || "fa";
+    if (locale === "fa" || locale.startsWith("fa-")) return "fa-IR";
+    if (locale === "en" || locale.startsWith("en-")) return "en";
+    return locale;
   }
 
   private async sendWithAuthRetry(
@@ -136,6 +202,9 @@ export class ApiClient {
     if (!headers.has("Accept")) {
       headers.set("Accept", "application/json");
     }
+    if (!headers.has("Accept-Language")) {
+      headers.set("Accept-Language", this.acceptLanguage());
+    }
 
     let body: BodyInit | undefined;
     if (options.formData) {
@@ -153,7 +222,7 @@ export class ApiClient {
     }
 
     return this.fetchImpl(url, {
-      method: options.method ?? (options.body !== undefined ? "POST" : "GET"),
+      method: this.resolveMethod(options),
       headers,
       body,
       signal: options.signal,
@@ -171,6 +240,7 @@ export class ApiClient {
         const response = await this.send(this.refreshPath!, {
           method: "POST",
           public: true,
+          silent: true,
           body: { refreshToken: current.refreshToken },
         });
 
@@ -216,25 +286,72 @@ export class ApiClient {
     return url.toString();
   }
 
-  private async parseResponse<T>(response: Response): Promise<T> {
+  private async parseResponse<T>(
+    response: Response,
+    options: RequestOptions,
+  ): Promise<T> {
     if (response.status === 204) {
+      this.emitNotice(
+        resolveApiNotice({
+          ok: true,
+          status: 204,
+          method: this.resolveMethod(options),
+          body: null,
+          silent: options.silent,
+        }),
+      );
       return undefined as T;
     }
 
     const text = await response.text();
-    const data = text ? (JSON.parse(text) as unknown) : null;
+    let data: unknown = null;
+    if (text) {
+      try {
+        data = JSON.parse(text) as unknown;
+      } catch (error) {
+        if (response.ok) throw error;
+        data = null;
+      }
+    }
 
     if (!response.ok) {
-      this.raiseError(response, (data as ApiErrorBody | null) ?? null);
+      this.raiseError(response, (data as ApiErrorBody | null) ?? null, options);
     }
+
+    this.emitNotice(
+      resolveApiNotice({
+        ok: true,
+        status: response.status,
+        method: this.resolveMethod(options),
+        body: data,
+        silent: options.silent,
+      }),
+    );
 
     return data as T;
   }
 
-  private raiseError(response: Response, body: ApiErrorBody | null): never {
+  private raiseError(
+    response: Response,
+    body: ApiErrorBody | null,
+    options: RequestOptions,
+  ): never {
     if (response.status === 403 && body?.code === KYC_REQUIRED_CODE) {
       this.onKycRequired?.(body);
     }
+    const sessionExpired =
+      response.status === 401 &&
+      !options.public &&
+      !this.getAccessToken();
+    this.emitNotice(
+      resolveApiNotice({
+        ok: false,
+        status: response.status,
+        method: this.resolveMethod(options),
+        body: body,
+        silent: options.silent || sessionExpired,
+      }),
+    );
     throw new ApiError(
       response.status,
       body,
@@ -248,3 +365,4 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
 }
 
 export { ApiError, KYC_REQUIRED_CODE };
+export type { ApiNotice } from "./notices";

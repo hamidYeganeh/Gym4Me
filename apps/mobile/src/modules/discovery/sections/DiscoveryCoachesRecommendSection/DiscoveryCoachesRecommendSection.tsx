@@ -3,13 +3,8 @@
 import { Link } from "@heroui/react/link";
 import { Typography } from "@heroui/react/typography";
 import { CoachFeatureCard } from "@repo/ui/cards/CoachFeatureCard";
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type UIEvent,
-} from "react";
+import { useCallback, useEffect, useState } from "react";
+import { DiscoverySectionCarousel } from "../DiscoverySectionCarousel";
 import { discoveryCoachesRecommendSectionStyles as styles } from "./DiscoveryCoachesRecommendSection.styles";
 import type { DiscoveryCoachesRecommendSectionProps } from "./DiscoveryCoachesRecommendSection.types";
 
@@ -27,7 +22,6 @@ export function DiscoveryCoachesRecommendSection({
   onClose,
   onCoachPress,
 }: DiscoveryCoachesRecommendSectionProps) {
-  const scrollerRef = useRef<HTMLDivElement>(null);
   const [visibleIds, setVisibleIds] = useState(() =>
     coaches.map((coach) => coach.id),
   );
@@ -42,32 +36,9 @@ export function DiscoveryCoachesRecommendSection({
     setActiveIndex(0);
   }, [coaches]);
 
-  const updateActiveIndex = useCallback(() => {
-    const scroller = scrollerRef.current;
-    if (!scroller || visibleCoaches.length === 0) return;
-
-    const slide = scroller.querySelector<HTMLElement>("[data-carousel-slide]");
-    if (!slide) return;
-
-    const slideWidth = slide.offsetWidth;
-    const gap = 12;
-    const index = Math.round(scroller.scrollLeft / (slideWidth + gap));
-    setActiveIndex(Math.min(Math.max(index, 0), visibleCoaches.length - 1));
-  }, [visibleCoaches.length]);
-
-  const onScroll = useCallback(
-    (_event: UIEvent<HTMLDivElement>) => {
-      updateActiveIndex();
-    },
-    [updateActiveIndex],
-  );
-
   const dismissCoach = useCallback(
     (id: string) => {
-      setVisibleIds((current) => {
-        const next = current.filter((coachId) => coachId !== id);
-        return next;
-      });
+      setVisibleIds((current) => current.filter((coachId) => coachId !== id));
       onClose?.(id);
     },
     [onClose],
@@ -105,18 +76,13 @@ export function DiscoveryCoachesRecommendSection({
         </Typography>
       ) : (
         <>
-          <div
-            aria-roledescription="carousel"
-            className={styles.carousel}
-            onScroll={onScroll}
-            ref={scrollerRef}
-          >
-            {visibleCoaches.map((coach) => (
-              <div
-                className={styles.slide}
-                data-carousel-slide
-                key={coach.id}
-              >
+          <div className={styles.carousel}>
+            <DiscoverySectionCarousel
+              ariaLabel={title}
+              slideClassName={styles.slide}
+              onSlideChange={setActiveIndex}
+            >
+              {visibleCoaches.map((coach) => (
                 <CoachFeatureCard
                   certifiedLabel={
                     coach.isCertified ? certifiedLabel : undefined
@@ -126,18 +92,19 @@ export function DiscoveryCoachesRecommendSection({
                   image={coach.image}
                   imageAlt={coach.name}
                   isNew={coach.isNew}
+                  key={coach.id}
                   newLabel={newLabel}
-                  onPress={() => onCoachPress?.(coach.id)}
-                  onClose={
-                    dismissible ? () => dismissCoach(coach.id) : undefined
-                  }
                   rating={coach.rating}
                   ratingCount={coach.ratingCount}
                   specialty={coach.specialty}
                   title={coach.name}
+                  onClose={
+                    dismissible ? () => dismissCoach(coach.id) : undefined
+                  }
+                  onPress={() => onCoachPress?.(coach.id)}
                 />
-              </div>
-            ))}
+              ))}
+            </DiscoverySectionCarousel>
           </div>
 
           {visibleCoaches.length > 1 ? (

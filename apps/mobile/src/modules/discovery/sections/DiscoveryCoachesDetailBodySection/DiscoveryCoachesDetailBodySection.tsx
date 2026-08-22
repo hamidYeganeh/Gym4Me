@@ -28,6 +28,7 @@ import { ReviewCard } from "@repo/ui/cards/ReviewCard";
 import { ReviewSummaryCard } from "@repo/ui/cards/ReviewSummaryCard";
 import { SocialMediaCard } from "@repo/ui/cards/SocialMediaCard";
 import { SportCard } from "@repo/ui/cards/SportCard";
+import { COACH_TYPES } from "@repo/api/discovery";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { swiperFreeOptions } from "@repo/ui/lib/swiper";
 import { useTranslations } from "next-intl";
@@ -293,6 +294,7 @@ function SpecialtiesSection({
   specialties: CoachDetailSpecialty[];
 }) {
   const t = useTranslations("CoachDetail");
+  const coachTypeLabel = useTranslations("Catalog.coachTypes");
   if (specialties.length === 0) return null;
 
   return (
@@ -309,7 +311,9 @@ function SpecialtiesSection({
               color={specialty.color}
               size="sm"
               sport={{
-                title: specialty.title,
+                title: (COACH_TYPES as readonly string[]).includes(specialty.id)
+                  ? coachTypeLabel(specialty.id)
+                  : specialty.title,
                 subtitle: specialty.subtitle,
                 backgroundImage: specialty.backgroundImage,
               }}

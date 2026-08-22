@@ -81,7 +81,9 @@ function colorForIndex(index: number): string {
     statsColors.red,
     statsColors.blue,
     statsColors.purple,
-    statsColors.yellow,
+    statsColors.green,
+    statsColors.rose,
+    statsColors.navy,
     "var(--success)",
     "var(--muted)",
   ];

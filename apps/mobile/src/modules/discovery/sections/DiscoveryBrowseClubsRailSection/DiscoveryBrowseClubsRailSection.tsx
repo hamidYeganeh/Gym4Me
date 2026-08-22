@@ -22,7 +22,6 @@ type RailConfig = {
   titleKey: string;
   hintKey: string;
   orientation: "horizontal" | "vertical" | "fullWidth";
-  scroller: "default" | "fullBleed";
   keyPrefix: string;
   selectClubs: (clubs: BrowseClub[]) => BrowseClub[];
 };
@@ -32,7 +31,6 @@ const RAIL_CONFIG: Record<DiscoveryBrowseClubsRailVariant, RailConfig> = {
     titleKey: "featuredTitle",
     hintKey: "featuredHint",
     orientation: "fullWidth",
-    scroller: "fullBleed",
     keyPrefix: "featured",
     selectClubs: (clubs) => sortClubsByRating(clubs).slice(0, 4),
   },
@@ -40,7 +38,6 @@ const RAIL_CONFIG: Record<DiscoveryBrowseClubsRailVariant, RailConfig> = {
     titleKey: "nearbyTitle",
     hintKey: "nearbyHint",
     orientation: "vertical",
-    scroller: "default",
     keyPrefix: "nearby",
     selectClubs: (clubs) => clubsNearby(clubs).slice(0, 8),
   },
@@ -48,7 +45,6 @@ const RAIL_CONFIG: Record<DiscoveryBrowseClubsRailVariant, RailConfig> = {
     titleKey: "openNowTitle",
     hintKey: "openNowHint",
     orientation: "horizontal",
-    scroller: "default",
     keyPrefix: "open",
     selectClubs: (clubs) => clubsOpenNow(clubs).slice(0, 8),
   },
@@ -56,7 +52,6 @@ const RAIL_CONFIG: Record<DiscoveryBrowseClubsRailVariant, RailConfig> = {
     titleKey: "topRatedTitle",
     hintKey: "topRatedHint",
     orientation: "vertical",
-    scroller: "default",
     keyPrefix: "top",
     selectClubs: (clubs) => sortClubsByRating(clubs).slice(0, 8),
   },
@@ -64,7 +59,6 @@ const RAIL_CONFIG: Record<DiscoveryBrowseClubsRailVariant, RailConfig> = {
     titleKey: "picksTitle",
     hintKey: "picksHint",
     orientation: "horizontal",
-    scroller: "default",
     keyPrefix: "pick",
     selectClubs: (clubs) => clubs.slice(0, 6),
   },
@@ -83,31 +77,26 @@ export function DiscoveryBrowseClubsRailSection({
 
   if (items.length === 0) return null;
 
-  const cardClass =
+  const slideClass =
     config.orientation === "fullWidth"
-      ? slots.cardFullWidth()
+      ? slots.slideFullWidth()
       : config.orientation === "horizontal"
-        ? slots.cardHorizontal()
-        : slots.cardVertical();
-
-  const scrollerClassName =
-    config.scroller === "fullBleed"
-      ? slots.fullBleedScroller()
-      : slots.scroller();
+        ? slots.slideHorizontal()
+        : slots.slideVertical();
 
   return (
     <DiscoverySectionRail
       accent={false}
       ariaLabel={t(config.titleKey)}
       hint={t(config.hintKey)}
-      scrollerClassName={scrollerClassName}
+      slideClassName={slideClass}
       title={t(config.titleKey)}
       titleSize="h4"
     >
       {items.map((club) => (
         <DiscoveryClubRailCard
           actionLabel={t("viewClub")}
-          className={cardClass}
+          className={slots.card()}
           club={club}
           favoriteLabel={t("favoriteLabel")}
           key={`${config.keyPrefix}-${club.id}`}

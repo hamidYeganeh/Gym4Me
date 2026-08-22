@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-import { VerificationStatus } from '../common/enums';
+import { CoachType, VerificationStatus } from '../common/enums';
 import { Media } from './media.schema';
 import { PointsSummary, PointsSummarySchema } from './point-transaction.schema';
 import { User } from './user.schema';
@@ -114,8 +114,8 @@ export class CoachProfile {
   @Prop({ type: [String], default: [] })
   sportIds!: string[];
 
-  @Prop({ type: [String], default: [] })
-  specialtyKeys!: string[];
+  @Prop({ type: [String], enum: Object.values(CoachType), default: [] })
+  coachTypes!: CoachType[];
 
   /** Derived cache of the points ledger. */
   @Prop({
@@ -129,3 +129,5 @@ export class CoachProfile {
 }
 
 export const CoachProfileSchema = SchemaFactory.createForClass(CoachProfile);
+
+CoachProfileSchema.index({ coachTypes: 1 });

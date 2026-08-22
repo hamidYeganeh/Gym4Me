@@ -76,6 +76,11 @@ export const achievementTagVariants = tv({
       blue: { root: "[--achievement:var(--stats-blue)]" },
       yellow: { root: "[--achievement:var(--stats-yellow)]" },
       purple: { root: "[--achievement:var(--stats-purple)]" },
+      green: { root: "[--achievement:var(--stats-green)]" },
+      navy: { root: "[--achievement:var(--stats-navy)]" },
+      midnight: { root: "[--achievement:var(--stats-midnight)]" },
+      rose: { root: "[--achievement:var(--stats-rose)]" },
+      forest: { root: "[--achievement:var(--stats-forest)]" },
     },
     size: {
       sm: {

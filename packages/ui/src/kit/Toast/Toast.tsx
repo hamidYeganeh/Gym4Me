@@ -5,7 +5,10 @@ import { useEffect, useState } from "react";
 import { I18nProvider } from "@react-aria/i18n";
 import { Toast as HeroToast, toast as heroToast, type ToastContentValue } from "@heroui/react/toast";
 import { ArrowRotateClockwise1 } from "@repo/icons/ArrowRotateClockwise1";
-import { ShapeCircle } from "@repo/icons/ShapeCircle";
+import { CheckCircle } from "@repo/icons/CheckCircle";
+import { CloseXCircle } from "@repo/icons/CloseXCircle";
+import { ExclamationMarkTriangle } from "@repo/icons/ExclamationMarkTriangle";
+import { InfoCircle } from "@repo/icons/InfoCircle";
 import { toastVariants } from "./Toast.styles";
 import type { ToasterProps, ToastIconType, ToastVisualVariant } from "./Toast.types";
 
@@ -47,18 +50,30 @@ function useDocumentLocale(): DocumentLocale {
 function DefaultToastIcon({
   type,
 }: {
-  type: ToastIconType | string | undefined;
+  type: ToastIconType | ToastVisualVariant | string | undefined;
 }) {
-  if (type === "loading") {
-    return (
-      <ArrowRotateClockwise1 aria-hidden className="animate-spin" size={20} />
-    );
+  const iconProps = { "aria-hidden": true as const, size: 20 };
+
+  switch (type) {
+    case "loading":
+      return <ArrowRotateClockwise1 className="animate-spin" {...iconProps} />;
+    case "success":
+      return <CheckCircle {...iconProps} />;
+    case "warning":
+      return <ExclamationMarkTriangle {...iconProps} />;
+    case "danger":
+    case "error":
+      return <CloseXCircle {...iconProps} />;
+    case "info":
+    case "accent":
+    case "default":
+    default:
+      return <InfoCircle {...iconProps} />;
   }
-  return <ShapeCircle aria-hidden size={20} />;
 }
 
 export type NotifyOptions = {
-  description?: string;
+  description?: ReactNode;
   indicator?: ReactNode;
 };
 
@@ -69,7 +84,34 @@ function withIcon(type: ToastIconType, options?: NotifyOptions) {
   };
 }
 
-type NotifyFn = (title: string, options?: NotifyOptions) => void;
+type NotifyFn = (title: ReactNode, options?: NotifyOptions) => void;
+
+export type ToastNoticeVariant =
+  | ToastVisualVariant
+  | ToastIconType
+  | "info"
+  | "error";
+
+export function toastNotice(
+  variant: ToastNoticeVariant,
+  title: ReactNode,
+  options?: NotifyOptions,
+) {
+  switch (variant) {
+    case "success":
+      toast.success(title, options);
+      return;
+    case "warning":
+      toast.warning(title, options);
+      return;
+    case "danger":
+    case "error":
+      toast.error(title, options);
+      return;
+    default:
+      toast.info(title, options);
+  }
+}
 
 export const toast: {
   success: NotifyFn;

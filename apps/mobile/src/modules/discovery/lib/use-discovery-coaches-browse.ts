@@ -22,7 +22,7 @@ import { mapDiscoveryCoachToBrowse } from "./map-discovery-coach";
 import { filterBrowseCoaches, type BrowseCoach } from "./coaches-browse-data";
 
 export type DiscoveryCoachesBrowseOptions = {
-  specialtyKey?: string | null;
+  coachType?: string | null;
   cityId?: string | null;
   availability?: string | null;
   verified?: string | null;
@@ -48,14 +48,14 @@ function locationImage(node: { coverMediaId: string | null }) {
 export function useDiscoveryCoachesBrowse(
   options: DiscoveryCoachesBrowseOptions = {},
 ): DiscoveryCoachesBrowseState {
-  const specialtyKey = options.specialtyKey ?? undefined;
+  const coachType = options.coachType ?? undefined;
   const cityId = options.cityId ?? undefined;
   const availability = options.availability ?? undefined;
   const verified = options.verified ?? undefined;
   const fresh = options.fresh ?? undefined;
 
   const initialFilter = matchCoachDiscoveryFilterFromQuery({
-    specialtyKey,
+    coachType,
     availability,
     verified,
     fresh,
@@ -128,13 +128,15 @@ export function useDiscoveryCoachesBrowse(
       const filter = COACH_DISCOVERY_FILTERS.find((f) => f.id === filterId);
       const scopedFromUrl = {
         ...(cityId ? { cityId } : {}),
-        ...(specialtyKey && filterId === "all" ? { specialtyKey } : {}),
+        ...(coachType && filterId === "all"
+          ? { coachType: coachType as DiscoveryCoachesQuery["coachType"] }
+          : {}),
       };
       const query: DiscoveryCoachesQuery = {
         page_size: 40,
         ...scopedFromUrl,
-        ...(filter?.query?.specialtyKey
-          ? { specialtyKey: filter.query.specialtyKey }
+        ...(filter?.query?.coachType
+          ? { coachType: filter.query.coachType as DiscoveryCoachesQuery["coachType"] }
           : {}),
       };
 
@@ -150,7 +152,7 @@ export function useDiscoveryCoachesBrowse(
         setIsLoading(false);
       }
     },
-    [availability, cityId, fresh, specialtyKey, verified],
+    [availability, cityId, fresh, coachType, verified],
   );
 
   useEffect(() => {

@@ -170,11 +170,9 @@ export function AchievementsListScreen({
       );
       void reload();
     } catch (err) {
-      toast.error(
-        err instanceof ApiError
-          ? err.message || t("importDefaultsError")
-          : t("importDefaultsError"),
-      );
+      if (!(err instanceof ApiError)) {
+        toast.error(t("importDefaultsError"));
+      }
     } finally {
       setSeeding(false);
     }

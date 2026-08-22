@@ -21,6 +21,10 @@ export const pieCssVars = {
   slice3: "var(--chart-3)",
   slice4: "var(--chart-4)",
   slice5: "var(--chart-5)",
+  slice6: "var(--chart-6)",
+  slice7: "var(--chart-7)",
+  slice8: "var(--chart-8)",
+  slice9: "var(--chart-9)",
 };
 
 // Default slice color palette
@@ -30,6 +34,10 @@ export const defaultPieColors = [
   pieCssVars.slice3,
   pieCssVars.slice4,
   pieCssVars.slice5,
+  pieCssVars.slice6,
+  pieCssVars.slice7,
+  pieCssVars.slice8,
+  pieCssVars.slice9,
 ];
 
 export interface PieData {

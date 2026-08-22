@@ -23,7 +23,6 @@ type RailConfig = {
   titleKey: string;
   hintKey: string;
   orientation: "horizontal" | "vertical" | "fullWidth";
-  scroller: "default" | "fullBleed";
   keyPrefix: string;
   selectCoaches: (coaches: BrowseCoach[]) => BrowseCoach[];
 };
@@ -33,7 +32,6 @@ const RAIL_CONFIG: Record<DiscoveryBrowseCoachesRailVariant, RailConfig> = {
     titleKey: "featuredTitle",
     hintKey: "featuredHint",
     orientation: "fullWidth",
-    scroller: "fullBleed",
     keyPrefix: "featured",
     selectCoaches: (coaches) => sortCoachesByRating(coaches).slice(0, 4),
   },
@@ -41,7 +39,6 @@ const RAIL_CONFIG: Record<DiscoveryBrowseCoachesRailVariant, RailConfig> = {
     titleKey: "nearbyTitle",
     hintKey: "nearbyHint",
     orientation: "vertical",
-    scroller: "default",
     keyPrefix: "nearby",
     selectCoaches: (coaches) => coachesNearby(coaches).slice(0, 8),
   },
@@ -49,7 +46,6 @@ const RAIL_CONFIG: Record<DiscoveryBrowseCoachesRailVariant, RailConfig> = {
     titleKey: "remoteTitle",
     hintKey: "remoteHint",
     orientation: "horizontal",
-    scroller: "default",
     keyPrefix: "remote",
     selectCoaches: (coaches) => coachesAvailableRemote(coaches).slice(0, 8),
   },
@@ -57,7 +53,6 @@ const RAIL_CONFIG: Record<DiscoveryBrowseCoachesRailVariant, RailConfig> = {
     titleKey: "inPersonTitle",
     hintKey: "inPersonHint",
     orientation: "vertical",
-    scroller: "default",
     keyPrefix: "in-person",
     selectCoaches: (coaches) => coachesAvailableInPerson(coaches).slice(0, 8),
   },
@@ -65,7 +60,6 @@ const RAIL_CONFIG: Record<DiscoveryBrowseCoachesRailVariant, RailConfig> = {
     titleKey: "topRatedTitle",
     hintKey: "topRatedHint",
     orientation: "vertical",
-    scroller: "default",
     keyPrefix: "top",
     selectCoaches: (coaches) => sortCoachesByRating(coaches).slice(0, 8),
   },
@@ -73,7 +67,6 @@ const RAIL_CONFIG: Record<DiscoveryBrowseCoachesRailVariant, RailConfig> = {
     titleKey: "picksTitle",
     hintKey: "picksHint",
     orientation: "horizontal",
-    scroller: "default",
     keyPrefix: "pick",
     selectCoaches: (coaches) => coaches.slice(0, 6),
   },
@@ -92,31 +85,26 @@ export function DiscoveryBrowseCoachesRailSection({
 
   if (items.length === 0) return null;
 
-  const cardClass =
+  const slideClass =
     config.orientation === "fullWidth"
-      ? slots.cardFullWidth()
+      ? slots.slideFullWidth()
       : config.orientation === "horizontal"
-        ? slots.cardHorizontal()
-        : slots.cardVertical();
-
-  const scrollerClassName =
-    config.scroller === "fullBleed"
-      ? slots.fullBleedScroller()
-      : slots.scroller();
+        ? slots.slideHorizontal()
+        : slots.slideVertical();
 
   return (
     <DiscoverySectionRail
       accent={false}
       ariaLabel={t(config.titleKey)}
       hint={t(config.hintKey)}
-      scrollerClassName={scrollerClassName}
+      slideClassName={slideClass}
       title={t(config.titleKey)}
       titleSize="h4"
     >
       {items.map((coach) => (
         <DiscoveryCoachRailCard
           actionLabel={t("viewCoach")}
-          className={cardClass}
+          className={slots.card()}
           coach={coach}
           favoriteLabel={t("favoriteLabel")}
           key={`${config.keyPrefix}-${coach.id}`}

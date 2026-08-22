@@ -17,7 +17,7 @@ describe('DEFAULT_REFS', () => {
     expect(DEFAULT_REFS[RefType.EQUIPMENT].length).toBeGreaterThanOrEqual(50);
     expect(DEFAULT_REFS[RefType.AMENITY].length).toBeGreaterThanOrEqual(30);
     expect(DEFAULT_REFS[RefType.CLUB_CATEGORY].length).toBeGreaterThanOrEqual(
-      20,
+      35,
     );
     expect(DEFAULT_REFS[RefType.GOAL_TYPE].length).toBeGreaterThanOrEqual(15);
     expect(DEFAULT_REFS[RefType.COACH_SPECIALTY].length).toBeGreaterThanOrEqual(
@@ -26,5 +26,28 @@ describe('DEFAULT_REFS', () => {
     expect(
       DEFAULT_REFS[RefType.REVIEW_CRITERION].length,
     ).toBeGreaterThanOrEqual(10);
+  });
+
+  it('includes Iran-market venue types in the club category catalog', () => {
+    const slugs = DEFAULT_REFS[RefType.CLUB_CATEGORY].map((item) => item.slug);
+
+    expect(slugs).toEqual(
+      expect.arrayContaining([
+        'zurkhaneh',
+        'wrestling-club',
+        'dance-studio',
+        'gymnastics-academy',
+        'weightlifting-club',
+        'functional-studio',
+        'padel-club',
+        'squash-club',
+        'volleyball-hall',
+        'basketball-court',
+        'bowling-alley',
+        'ice-rink',
+        'spa-wellness',
+        'golf-club',
+      ]),
+    );
   });
 });

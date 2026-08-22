@@ -1,50 +1,66 @@
 "use client";
 
-import { ArticleCard } from "@repo/ui/cards/ArticleCard";
-import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
+import {
+  ArticleEditorialCard,
+  ArticleEditorialCardSkeleton,
+} from "@repo/ui/cards/ArticleEditorialCard";
+import { BarbellHorizontal } from "@repo/icons/BarbellHorizontal";
 import { useTranslations } from "next-intl";
+import { useRouter } from "@/shared/lib/app-router";
+
+import { articleHomeHref } from "../../lib/articles-home";
 import { DiscoverySectionRail } from "../DiscoverySectionRail";
 import { discoveryHomeArticlesSectionVariants } from "./DiscoveryHomeArticlesSection.styles";
 import type { DiscoveryHomeArticlesSectionProps } from "./DiscoveryHomeArticlesSection.types";
 
+const ARTICLE_SKELETON_COUNT = 2;
+const CATEGORY_ICON_SIZE = 14;
+
 export function DiscoveryHomeArticlesSection({
   articles,
+  isLoading = false,
 }: DiscoveryHomeArticlesSectionProps) {
   const t = useTranslations("DiscoveryHome");
+  const tArticles = useTranslations("Articles");
+  const router = useRouter();
   const slots = discoveryHomeArticlesSectionVariants();
 
-  if (articles.length === 0) return null;
+  if (!isLoading && articles.length === 0) return null;
 
   return (
     <DiscoverySectionRail
       ariaLabel={t("articlesTitle")}
       hint={t("articlesHint")}
+      seeAllLabel={t("seeAll")}
+      sheet
+      slideClassName={slots.slide()}
       title={t("articlesTitle")}
+      tone="muted"
+      onSeeAll={() => router.push("/discovery/articles")}
     >
-      {articles.map((article) => (
-        <ArticleCard
-          actionLabel={t("viewArticle")}
-          author={{
-            name: article.authorName,
-            avatarSrc: article.authorAvatarSrc,
-          }}
-          category={article.category}
-          className={slots.card()}
-          coverSrc={article.coverSrc ?? PLACEHOLDER_IMAGE}
-          excerpt={article.excerpt ?? undefined}
-          key={article.id}
-          likesLabel={article.likesLabel}
-          orientation="vertical"
-          publishedAtLabel={article.publishedAtLabel}
-          readingTimeLabel={t("readingTime", {
-            minutes: article.readingTimeMinutes,
-          })}
-          tags={article.tags.map((tag) => ({ key: tag, label: tag }))}
-          title={article.title}
-          type="cover"
-          viewsLabel={article.viewsLabel}
-        />
-      ))}
+      {isLoading
+        ? Array.from({ length: ARTICLE_SKELETON_COUNT }, (_, index) => (
+            <ArticleEditorialCardSkeleton
+              className={slots.card()}
+              key={`article-skeleton-${index}`}
+            />
+          ))
+        : articles.map((article) => (
+            <ArticleEditorialCard
+              actionLabel={t("viewArticle")}
+              author={article.authorName}
+              category={tArticles(`kinds.${article.kind}`)}
+              categoryIcon={<BarbellHorizontal size={CATEGORY_ICON_SIZE} />}
+              className={slots.card()}
+              dateLabel={article.publishedAtLabel}
+              key={article.id}
+              readingTimeLabel={t("readingTime", {
+                minutes: article.readingTimeMinutes,
+              })}
+              title={article.title}
+              onPress={() => router.push(articleHomeHref(article.slug))}
+            />
+          ))}
     </DiscoverySectionRail>
   );
 }

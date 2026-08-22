@@ -50,7 +50,7 @@ export function slideOwnsChrome(step: OnboardingStepId): boolean {
 
 /** Slides whose body is a fixed-height inner scroller (not the whole page). */
 export function slideHasInnerScroll(step: OnboardingStepId): boolean {
-  return step === "goals" || step === "sports";
+  return step === "goals";
 }
 
 /** Full-bleed photo slides that need a footer scrim for the CTA. */

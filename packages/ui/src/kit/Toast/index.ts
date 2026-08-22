@@ -1,4 +1,4 @@
-export { toast, Toaster } from "./Toast";
+export { toast, toastNotice, Toaster } from "./Toast";
 export { toastVariants } from "./Toast.styles";
 export type {
   ToasterProps,
@@ -6,4 +6,4 @@ export type {
   ToastPlacement,
   ToastVisualVariant,
 } from "./Toast.types";
-export type { NotifyOptions } from "./Toast";
+export type { NotifyOptions, ToastNoticeVariant } from "./Toast";

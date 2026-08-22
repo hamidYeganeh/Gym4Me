@@ -15,6 +15,7 @@ import type {
   Club,
   ClubUserReview,
   CreateDiscoveryReviewInput,
+  DiscoveryClubFacets,
   DiscoveryClubReviewsQuery,
   DiscoveryClubsQuery,
 } from "./clubs.dto";
@@ -37,6 +38,20 @@ export function useDiscoveryClubsList(
   return useQuery({
     queryKey: discoveryClubsKeys.list(query),
     queryFn: () => api.list(query),
+    ...options,
+  });
+}
+
+export function useDiscoveryClubFacets(
+  options?: Omit<
+    UseQueryOptions<DiscoveryClubFacets, Error>,
+    "queryKey" | "queryFn"
+  >,
+) {
+  const api = useDiscoveryClubsApi();
+  return useQuery({
+    queryKey: discoveryClubsKeys.facets(),
+    queryFn: () => api.listFacets(),
     ...options,
   });
 }

@@ -22,7 +22,12 @@ export type AchievementTagColor =
   | "orange"
   | "blue"
   | "yellow"
-  | "purple";
+  | "purple"
+  | "green"
+  | "navy"
+  | "midnight"
+  | "rose"
+  | "forest";
 
 export type AchievementTagSize = "sm" | "md" | "lg";
 
@@ -35,7 +40,7 @@ export type AchievementTagProps = Omit<
   /**
    * Theme color for the tag.
    * Semantic: `accent` | `danger` | `success` | `warning`
-   * Stats: `red` | `orange` | `blue` | `yellow` | `purple`
+   * Stats: `red` | `orange` | `blue` | `yellow` | `purple` | `green` | `navy` | `midnight` | `rose` | `forest`
    * Defaults to `accent`.
    */
   color?: AchievementTagColor;

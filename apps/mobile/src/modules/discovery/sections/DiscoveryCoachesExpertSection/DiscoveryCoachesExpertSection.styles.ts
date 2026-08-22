@@ -7,6 +7,7 @@ export const discoveryCoachesExpertSectionStyles = {
   seeAll:
     "shrink-0 cursor-pointer text-sm font-semibold text-accent no-underline shadow-none",
   scroller:
-    "flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth px-screen pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-  card: "w-[6.5rem] shrink-0 snap-start",
+    "relative z-10 min-w-0 -mx-screen w-[calc(100%+2*var(--screen-margin))] max-w-none overflow-hidden",
+  slide: "!w-[6.5rem]",
+  card: "!w-full",
 } as const;

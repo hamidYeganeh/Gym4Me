@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import {
   PublicSiteFooter,
   PublicSiteHeader,
@@ -29,6 +30,7 @@ export async function SeoCoachDetailScreen({
   }
 
   const name = displayName(coach);
+  const coachTypeLabel = await getTranslations("Catalog.coachTypes");
   const image = mediaFileUrl(coach.user.avatar.mediaId) ?? undefined;
   const reviewedAt = coach.verification.reviewedAt
     ? new Date(coach.verification.reviewedAt).toLocaleDateString("fa-IR")
@@ -59,7 +61,9 @@ export async function SeoCoachDetailScreen({
           <h1 className={styles.title}>{name}</h1>
           <p className={styles.meta}>
             {coach.experience.headline ??
-              coach.specialtyKeys[0] ??
+              (coach.coachTypes[0]
+                ? coachTypeLabel(coach.coachTypes[0])
+                : null) ??
               "مربی ورزشی"}
           </p>
           <div className="flex flex-wrap gap-2 text-xs">

@@ -22,6 +22,8 @@ export type HomeSportItem = {
   slug: string;
   description: string | null;
   image?: string;
+  iconKey?: string | null;
+  parentId?: string | null;
 };
 
 export type HomeClassItem = {
@@ -126,6 +128,8 @@ export function mapSportToHomeItem(
     slug: node.slug,
     description: node.description,
     image,
+    iconKey: node.icon,
+    parentId: node.parentId,
   };
 }
 

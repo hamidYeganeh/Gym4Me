@@ -28,7 +28,7 @@ export class Sport {
   @Prop({ type: Types.ObjectId, ref: Sport.name, index: true })
   parentId?: Types.ObjectId;
 
-  @Prop({ type: [Types.ObjectId], default: [], index: true })
+  @Prop({ type: [Types.ObjectId], ref: Sport.name, default: [], index: true })
   ancestors!: Types.ObjectId[];
 
   @Prop({ default: 0 })

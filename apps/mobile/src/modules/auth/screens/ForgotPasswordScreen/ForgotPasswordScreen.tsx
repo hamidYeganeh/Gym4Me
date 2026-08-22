@@ -63,16 +63,9 @@ export function ForgotPasswordScreen({ className }: ForgotPasswordScreenProps) {
     heroAlt: t("heroAlt"),
   };
 
-  const getRequestError = (err: unknown) => {
-    if (err instanceof ApiError && err.status === 429) {
-      return t("errorRateLimited");
-    }
-    if (err instanceof ApiError && err.message) return err.message;
-    return t("errorRequest");
-  };
-
-  const notifyError = (message: string) => {
-    toast.error(tAuth("toastErrorTitle"), { description: message });
+  const notifyError = (err: unknown, fallback: string) => {
+    if (err instanceof ApiError) return;
+    toast.error(tAuth("toastErrorTitle"), { description: fallback });
   };
 
   const requestCode = async (payload: ForgotPasswordInput) => {
@@ -84,7 +77,7 @@ export function ForgotPasswordScreen({ className }: ForgotPasswordScreenProps) {
       setDebugCode(result.debugCode ?? null);
       setStep("otp");
     } catch (err) {
-      notifyError(getRequestError(err));
+      notifyError(err, t("errorRequest"));
     } finally {
       setIsPending(false);
     }
@@ -97,11 +90,7 @@ export function ForgotPasswordScreen({ className }: ForgotPasswordScreenProps) {
       setResetToken(result.resetToken);
       setStep("reset");
     } catch (err) {
-      notifyError(
-        err instanceof ApiError && err.message
-          ? err.message
-          : t("errorOtpInvalid"),
-      );
+      notifyError(err, t("errorOtpInvalid"));
     } finally {
       setIsPending(false);
     }
@@ -116,11 +105,7 @@ export function ForgotPasswordScreen({ className }: ForgotPasswordScreenProps) {
       });
       setStep("done");
     } catch (err) {
-      notifyError(
-        err instanceof ApiError && err.message
-          ? err.message
-          : t("errorReset"),
-      );
+      notifyError(err, t("errorReset"));
     } finally {
       setIsPending(false);
     }
@@ -137,7 +122,7 @@ export function ForgotPasswordScreen({ className }: ForgotPasswordScreenProps) {
         description: t("resent"),
       });
     } catch (err) {
-      notifyError(getRequestError(err));
+      notifyError(err, t("errorRequest"));
     } finally {
       setIsPending(false);
     }

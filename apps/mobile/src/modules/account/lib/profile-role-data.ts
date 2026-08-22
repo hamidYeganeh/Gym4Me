@@ -9,7 +9,19 @@ export type ProfileStatKey = {
 export type ProfileAchievementKey = {
   key: string;
   labelKey: string;
-  tone: "accent" | "stats-red" | "stats-blue" | "stats-yellow" | "stats-purple" | "stats-orange" | "muted";
+  tone:
+    | "accent"
+    | "stats-red"
+    | "stats-blue"
+    | "stats-yellow"
+    | "stats-purple"
+    | "stats-orange"
+    | "stats-green"
+    | "stats-navy"
+    | "stats-midnight"
+    | "stats-rose"
+    | "stats-forest"
+    | "muted";
   unlocked: boolean;
 };
 

@@ -34,6 +34,7 @@ import {
   ClubLifecycleStatus,
   ClubOperationalStatus,
   ClubUserReviewStatus,
+  CoachType,
   CoachStudentEngagementLevel,
   CoachStudentStatus,
   EntityStatus,
@@ -441,6 +442,7 @@ async function seed() {
     years: number;
     headline: string;
     sportIds: string[];
+    coachTypes: CoachType[];
     verification: VerificationStatus;
     pricing?: { consultation: { inPerson?: number; remote?: number } };
   }> = [
@@ -450,6 +452,11 @@ async function seed() {
       years: 8,
       headline: 'مربی کراسفیت و آمادگی جسمانی',
       sportIds: [crossfit._id.toString(), bodybuilding._id.toString()],
+      coachTypes: [
+        CoachType.CROSSFIT,
+        CoachType.FUNCTIONAL_TRAINING,
+        CoachType.GENERAL_FITNESS,
+      ],
       verification: VerificationStatus.APPROVED,
       pricing: { consultation: { inPerson: 350_000, remote: 200_000 } },
     },
@@ -459,6 +466,11 @@ async function seed() {
       years: 6,
       headline: 'مربی بدنسازی و فیتنس',
       sportIds: [bodybuilding._id.toString()],
+      coachTypes: [
+        CoachType.BODYBUILDING,
+        CoachType.WEIGHT_LOSS,
+        CoachType.WOMENS_FITNESS,
+      ],
       verification: VerificationStatus.APPROVED,
       pricing: { consultation: { inPerson: 300_000, remote: 180_000 } },
     },
@@ -468,6 +480,7 @@ async function seed() {
       years: 4,
       headline: 'مربی کیک‌بوکسینگ',
       sportIds: [kickboxing._id.toString()],
+      coachTypes: [CoachType.BOXING_KICKBOXING, CoachType.MARTIAL_ARTS],
       verification: VerificationStatus.PENDING,
     },
   ];
@@ -495,6 +508,7 @@ async function seed() {
           bio: seed.bio,
           experience: { years: seed.years, headline: seed.headline },
           sportIds: seed.sportIds,
+          coachTypes: seed.coachTypes,
           verification,
           ...(seed.pricing ? { pricing: seed.pricing } : {}),
         },

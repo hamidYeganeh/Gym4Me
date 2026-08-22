@@ -43,7 +43,12 @@ export class Location {
   parentId?: Types.ObjectId;
 
   /** Root → … → parent chain for fast subtree filters. */
-  @Prop({ type: [Types.ObjectId], default: [], index: true })
+  @Prop({
+    type: [Types.ObjectId],
+    ref: Location.name,
+    default: [],
+    index: true,
+  })
   ancestors!: Types.ObjectId[];
 
   @Prop({ type: GeoPointSchema })

@@ -1,6 +1,9 @@
 "use client";
 
-import { BannerCarousel } from "@repo/ui/kit/BannerCarousel";
+import {
+  BannerCarousel,
+  BannerCarouselSkeleton,
+} from "@repo/ui/kit/BannerCarousel";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/shared/lib/app-router";
 
@@ -21,9 +24,14 @@ function openBannerLink(
 
 export function DiscoveryHomeBannersSection({
   banners,
+  isLoading = false,
 }: DiscoveryHomeBannersSectionProps) {
   const t = useTranslations("DiscoveryHome");
   const router = useRouter();
+
+  if (isLoading) {
+    return <BannerCarouselSkeleton aspectRatio="16/9" radius="surface" />;
+  }
 
   if (banners.length === 0) return null;
 

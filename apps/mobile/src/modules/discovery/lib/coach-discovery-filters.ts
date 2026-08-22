@@ -17,7 +17,7 @@ export type CoachDiscoveryFilter = {
     availability?: "remote" | "in-person";
     verified?: "1";
     fresh?: "1";
-    specialtyKey?: string;
+    coachType?: string;
   };
 };
 
@@ -45,29 +45,45 @@ export const COACH_DISCOVERY_FILTERS: CoachDiscoveryFilter[] = [
   },
   {
     id: "hiit",
-    label: "HIIT",
-    query: { specialtyKey: "hiit" },
+    label: "کراس‌فیت",
+    query: { coachType: "crossfit" },
   },
   {
     id: "yoga",
     label: "یوگا",
-    query: { specialtyKey: "yoga" },
+    query: { coachType: "yoga" },
   },
   {
     id: "strength",
     label: "قدرتی",
-    query: { specialtyKey: "strength" },
+    query: { coachType: "strength-training" },
   },
   {
     id: "mobility",
-    label: "موبیلیتی",
-    query: { specialtyKey: "mobility" },
+    label: "پیلاتس",
+    query: { coachType: "pilates" },
   },
 ];
 
+const LEGACY_COACH_TYPE_PARAMS: Record<string, string> = {
+  hiit: "crossfit",
+  strength: "strength-training",
+  mobility: "pilates",
+  speed: "running",
+};
+
+/** Map browse/deep-link values onto the coach_type catalog. */
+export function resolveCoachTypeParam(
+  value: string | null | undefined,
+): string | undefined {
+  const trimmed = value?.trim();
+  if (!trimmed) return undefined;
+  return LEGACY_COACH_TYPE_PARAMS[trimmed] ?? trimmed;
+}
+
 /** Resolve a chip filter from discovery deep-link query params. */
 export function matchCoachDiscoveryFilterFromQuery(query: {
-  specialtyKey?: string | null;
+  coachType?: string | null;
   availability?: string | null;
   verified?: string | null;
   fresh?: string | null;
@@ -80,7 +96,7 @@ export function matchCoachDiscoveryFilterFromQuery(query: {
       return filter.id;
     if (q.fresh && (query.fresh === "1" || query.fresh === "true"))
       return filter.id;
-    if (q.specialtyKey && q.specialtyKey === query.specialtyKey) return filter.id;
+    if (q.coachType && q.coachType === query.coachType) return filter.id;
   }
   return "all";
 }

@@ -232,7 +232,7 @@ export const DEFAULT_REFS: Record<RefType, RefDefaultItem[]> = {
       slug: 'racket-sports-club',
       icon: 'Tennis',
     },
-    { name: 'باشگاه سوارکاری', slug: 'equestrian-club' },
+    { name: 'باشگاه سوارکاری', slug: 'equestrian-club', icon: 'PersonHiking' },
     { name: 'باشگاه تیراندازی', slug: 'shooting-club', icon: 'Archery' },
     { name: 'باشگاه سنگ‌نوردی', slug: 'climbing-gym', icon: 'PersonHiking' },
     { name: 'باشگاه دوچرخه‌سواری', slug: 'cycling-club', icon: 'Bicycle' },
@@ -241,7 +241,11 @@ export const DEFAULT_REFS: Record<RefType, RefDefaultItem[]> = {
       slug: 'outdoor-club',
       icon: 'PersonHiking',
     },
-    { name: 'باشگاه ورزش‌های زمستانی', slug: 'winter-sports-club' },
+    {
+      name: 'باشگاه ورزش‌های زمستانی',
+      slug: 'winter-sports-club',
+      icon: 'IceSkating',
+    },
     {
       name: 'آکادمی ورزشی کودکان',
       slug: 'kids-sports-academy',
@@ -253,6 +257,36 @@ export const DEFAULT_REFS: Record<RefType, RefDefaultItem[]> = {
       icon: 'PersonInjured',
     },
     { name: 'مجموعه ورزشی چندرشته‌ای', slug: 'multi-sport', icon: 'Building2' },
+    { name: 'زورخانه', slug: 'zurkhaneh', icon: 'PersonKarate' },
+    { name: 'باشگاه کشتی', slug: 'wrestling-club', icon: 'PersonKarate' },
+    {
+      name: 'استودیو رقص و ایروبیک',
+      slug: 'dance-studio',
+      icon: 'PersonAcrobatics',
+    },
+    {
+      name: 'سالن ژیمناستیک',
+      slug: 'gymnastics-academy',
+      icon: 'PersonAcrobatics',
+    },
+    {
+      name: 'باشگاه وزنه‌برداری',
+      slug: 'weightlifting-club',
+      icon: 'BarbellHorizontal',
+    },
+    {
+      name: 'استودیو تمرین عملکردی',
+      slug: 'functional-studio',
+      icon: 'PersonArmsSpread',
+    },
+    { name: 'باشگاه پدل', slug: 'padel-club', icon: 'Tennis' },
+    { name: 'سالن اسکواش', slug: 'squash-club', icon: 'Tennis' },
+    { name: 'سالن والیبال', slug: 'volleyball-hall', icon: 'Volleyball' },
+    { name: 'سالن بسکتبال', slug: 'basketball-court', icon: 'Basketball' },
+    { name: 'پیست بولینگ', slug: 'bowling-alley', icon: 'PersonDodgeball' },
+    { name: 'پیست یخ و پاتیناژ', slug: 'ice-rink', icon: 'IceSkating' },
+    { name: 'مرکز اسپا و سلامت', slug: 'spa-wellness', icon: 'HandHeart' },
+    { name: 'باشگاه گلف', slug: 'golf-club', icon: 'Golf' },
   ]),
   [RefType.REVIEW_CRITERION]: withOrder([
     {

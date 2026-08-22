@@ -17,6 +17,7 @@ import {
   CoachProfileDocument,
 } from '../../schemas/coach-profile.schema';
 import { User, UserDocument } from '../../schemas/user.schema';
+import { uniqueCoachTypes } from './coach-types';
 import { DiscoveryCoachesQueryDto } from './dto/discovery-coaches.dto';
 
 @Injectable()
@@ -42,8 +43,8 @@ export class DiscoveryCoachesService {
     if (query.cityId && Types.ObjectId.isValid(query.cityId)) {
       filter['serviceArea.cityId'] = new Types.ObjectId(query.cityId);
     }
-    if (query.specialtyKey?.trim()) {
-      filter.specialtyKeys = query.specialtyKey.trim();
+    if (query.coachType) {
+      filter.coachTypes = query.coachType;
     }
 
     const profiles = await this.coachModel
@@ -164,7 +165,7 @@ export class DiscoveryCoachesService {
         },
       },
       sportIds: profile.sportIds ?? [],
-      specialtyKeys: profile.specialtyKeys ?? [],
+      coachTypes: uniqueCoachTypes(profile.coachTypes),
       ...(clubs ? { clubs } : {}),
       createdAt: profile.createdAt,
       updatedAt: profile.updatedAt,

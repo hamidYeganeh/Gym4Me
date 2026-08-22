@@ -1,6 +1,7 @@
 /** Public discovery clubs (`/discovery/clubs`). */
 export const discoveryClubsEndpoints = {
   root: "/discovery/clubs",
+  facets: "/discovery/clubs/facets",
   byId: (clubId: string) => `/discovery/clubs/${clubId}`,
   reviews: (clubId: string) => `/discovery/clubs/${clubId}/reviews`,
   branches: (clubId: string) => `/discovery/clubs/${clubId}/branches`,

@@ -3,6 +3,7 @@ import type {
   AthleteExperience,
   AthleteMood,
   BloodGroup,
+  CoachType,
   FavouriteLocation,
   FavouriteLocationKind,
   Privacy,
@@ -132,7 +133,7 @@ export type CoachProfile = {
   };
   serviceArea: { cityId: string | null };
   sportIds: string[];
-  specialtyKeys: string[];
+  coachTypes: CoachType[];
   createdAt: string;
   updatedAt: string;
 };
@@ -142,7 +143,7 @@ export type UpdateCoachProfileInput = {
   experience?: { years?: number; headline?: string };
   serviceArea?: { cityId?: string | null };
   sportIds?: string[];
-  specialtyKeys?: string[];
+  coachTypes?: CoachType[];
 };
 
 export type SubmitCoachVerificationInput = {

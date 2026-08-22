@@ -3,6 +3,8 @@ import { getRequestConfig } from "next-intl/server";
 
 const WEBSITE_MESSAGE_KEYS = [
   "Metadata",
+  "Catalog",
+  "Api",
   "MarketingLanding",
   "PublicSite",
   "Articles",

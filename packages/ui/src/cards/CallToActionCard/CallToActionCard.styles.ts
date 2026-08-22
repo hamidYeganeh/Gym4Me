@@ -48,6 +48,9 @@ export const callToActionCardVariants = tv({
       plus: {
         action: "size-11 rounded-[0.875rem]",
       },
+      pending: {
+        action: "size-11 rounded-[0.875rem]",
+      },
       icon: {
         action: "size-12 rounded-2xl ring-4",
       },
@@ -77,6 +80,22 @@ export const callToActionCardVariants = tv({
       actionType: "plus",
       class: {
         action: "bg-accent text-accent-foreground hover:opacity-90",
+      },
+    },
+    {
+      variant: "primary",
+      actionType: "pending",
+      class: {
+        action:
+          "cursor-default bg-accent-foreground/80 text-accent opacity-100 aria-disabled:opacity-100",
+      },
+    },
+    {
+      variant: "outlined",
+      actionType: "pending",
+      class: {
+        action:
+          "cursor-default bg-accent/80 text-accent-foreground opacity-100 aria-disabled:opacity-100",
       },
     },
     {
@@ -114,6 +133,14 @@ export const callToActionCardVariants = tv({
       class: {
         action:
           "size-11 rounded-full bg-foreground text-background hover:opacity-90",
+      },
+    },
+    {
+      variant: "soft",
+      actionType: "pending",
+      class: {
+        action:
+          "size-11 cursor-default rounded-full bg-foreground/80 text-background opacity-100 aria-disabled:opacity-100",
       },
     },
     {

@@ -10,8 +10,9 @@ export type Sport = {
   /** Smaller top line (e.g. "Upcoming Exercise"). */
   subtitle: ReactNode;
   /**
-   * Optional background image — a URL string or a custom React node
-   * (e.g. `next/image`).
+   * Background image — a URL string or a custom React node
+   * (e.g. `next/image`). Falls back to the shared placeholder so the
+   * color overlay always sits on photography, like SportCategoryCard.
    */
   backgroundImage?: string | ReactNode;
   /** Optional sport / activity icon. Falls back to PersonKarate. */
@@ -49,7 +50,7 @@ export type SportCardProps = Omit<
   backgroundImageClassName?: string;
   /**
    * Overlay opacity over the background image (0–1). Uses `color` as the
-   * tint. Defaults to `0.55` when an image is present, otherwise unused.
+   * tint. Defaults to `0.55`.
    */
   overlayOpacity?: number;
   /** Extra classes for the circular affordance. */

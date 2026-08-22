@@ -132,7 +132,7 @@ function locationImage(node: { coverMediaId: string | null }) {
 }
 
 function sportImage(node: { coverMediaId: string | null }) {
-  return mediaFileUrl(node.coverMediaId) ?? undefined;
+  return mediaFileUrl(node.coverMediaId) ?? PLACEHOLDER_IMAGE;
 }
 
 export function useDiscoveryHome(): DiscoveryHomeState {

@@ -19,6 +19,11 @@ import {
   LEGACY_SPORT_ICONS,
   type SportDefaultNode,
 } from './sport-defaults';
+import {
+  collectSportRelatedIds,
+  toSportPublic,
+  type SportLike,
+} from './sport-public';
 
 const PARENT_KIND: Record<SportKind, SportKind | null> = {
   [SportKind.CATEGORY]: null,
@@ -67,7 +72,7 @@ export class SportService {
       .find(filter)
       .sort({ order: 1, name: 1 })
       .lean();
-    return asSinglePageResult(items.map((s) => this.toPublic(s)));
+    return asSinglePageResult(await this.mapPublic(items));
   }
 
   async getById(id: string, admin = false) {
@@ -75,7 +80,7 @@ export class SportService {
     if (!admin && !sport.isActive) {
       throw new NotFoundException('Sport not found');
     }
-    return this.toPublic(sport);
+    return (await this.mapPublic([sport]))[0];
   }
 
   async listChildren(parentId: string, admin = false) {
@@ -85,7 +90,10 @@ export class SportService {
     }
     const childKind = CHILD_KIND[parent.kind];
     if (!childKind) {
-      return { parent: this.toPublic(parent), ...asSinglePageResult([]) };
+      return {
+        parent: (await this.mapPublic([parent]))[0],
+        ...asSinglePageResult([]),
+      };
     }
 
     const filter: Record<string, unknown> = {
@@ -98,10 +106,14 @@ export class SportService {
       .find(filter)
       .sort({ order: 1, name: 1 })
       .lean();
+    const [publicParent, ...publicItems] = await this.mapPublic([
+      parent,
+      ...items,
+    ]);
 
     return {
-      parent: this.toPublic(parent),
-      ...asSinglePageResult(items.map((s) => this.toPublic(s))),
+      parent: publicParent,
+      ...asSinglePageResult(publicItems),
     };
   }
 
@@ -135,7 +147,7 @@ export class SportService {
       request,
     });
 
-    return this.toPublic(sport);
+    return (await this.mapPublic([sport]))[0];
   }
 
   async update(
@@ -176,7 +188,7 @@ export class SportService {
       request,
     });
 
-    return this.toPublic(sport);
+    return (await this.mapPublic([sport]))[0];
   }
 
   async remove(id: string, adminId: string, request: Request) {
@@ -362,19 +374,14 @@ export class SportService {
     return sport;
   }
 
-  private toPublic(sport: Sport & { _id: Types.ObjectId }) {
-    return {
-      id: sport._id.toString(),
-      kind: sport.kind,
-      name: sport.name,
-      slug: sport.slug,
-      description: sport.description ?? null,
-      icon: sport.icon ?? null,
-      coverMediaId: sport.coverMediaId?.toString() ?? null,
-      parentId: sport.parentId?.toString() ?? null,
-      ancestors: (sport.ancestors ?? []).map((a) => a.toString()),
-      order: sport.order,
-      isActive: sport.isActive,
-    };
+  private async mapPublic(items: SportLike[]) {
+    const ids = collectSportRelatedIds(items);
+    const relatedDocs = ids.length
+      ? await this.sportModel.find({ _id: { $in: ids } }).lean()
+      : [];
+    const related = new Map(
+      relatedDocs.map((doc) => [doc._id.toString(), doc] as const),
+    );
+    return items.map((item) => toSportPublic(item, related));
   }
 }

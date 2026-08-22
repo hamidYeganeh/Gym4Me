@@ -8,8 +8,9 @@ export type CallToActionCardVariant = "primary" | "outlined" | "soft";
  * - `plus` — circular + button
  * - `icon` — squircle with a custom icon
  * - `button` — labeled pill (e.g. enrollment "Book Seat")
+ * - `pending` — waiting/hourglass, not actionable
  */
-export type CallToActionCardActionType = "plus" | "icon" | "button";
+export type CallToActionCardActionType = "plus" | "icon" | "button" | "pending";
 
 export type CallToActionCardProps = Omit<
   HTMLAttributes<HTMLDivElement>,

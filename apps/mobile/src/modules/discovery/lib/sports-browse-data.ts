@@ -1,4 +1,4 @@
-import { statsColors } from "@repo/theme";
+import { statsColors, statsPalette } from "@repo/theme";
 import { MOCK_SPORTS, type HomeSportItem } from "./home-browse-data";
 import {
   BROWSE_CLUBS,
@@ -10,6 +10,11 @@ export type BrowseSport = HomeSportItem & {
   color: string;
   /** Maps to club browse `sportIds` when filtering related clubs. */
   clubSportKey?: Exclude<ClubSportFilterId, "all">;
+};
+
+export type BrowseSportCategory = {
+  id: string;
+  name: string;
 };
 
 export type SportCategoryFilterId = "all" | string;
@@ -24,27 +29,11 @@ const SPORT_THEMES = [
     color: "var(--accent)",
     foregroundColor: "var(--accent-foreground)",
   },
-  {
-    color: statsColors.blue,
+  ...statsPalette.map((color) => ({
+    color,
     foregroundColor: statsColors.foreground,
-  },
-  {
-    color: statsColors.orange,
-    foregroundColor: statsColors.foreground,
-  },
-  {
-    color: statsColors.purple,
-    foregroundColor: statsColors.foreground,
-  },
-  {
-    color: statsColors.red,
-    foregroundColor: statsColors.foreground,
-  },
-  {
-    color: statsColors.yellow,
-    foregroundColor: "var(--eclipse)",
-  },
-] as const;
+  })),
+];
 
 /** Demo catalog for `/discovery/sports` (replaceable by API adapters). */
 export const BROWSE_SPORTS: BrowseSport[] = MOCK_SPORTS.map((sport, index) => ({
@@ -81,7 +70,18 @@ function clubSportKeyForSlug(
 
 export function buildSportCategoryFilters(
   sports: BrowseSport[],
+  categories: readonly BrowseSportCategory[] = [],
 ): SportCategoryFilter[] {
+  if (categories.length > 0) {
+    return [
+      { id: "all", label: "همه" },
+      ...categories.map((category) => ({
+        id: category.id,
+        label: category.name,
+      })),
+    ];
+  }
+
   const seen = new Set<string>();
   const filters: SportCategoryFilter[] = [{ id: "all", label: "همه" }];
   for (const sport of sports) {
@@ -99,6 +99,7 @@ export function filterBrowseSports(
 ): BrowseSport[] {
   if (categoryId === "all") return sports;
   return sports.filter((sport) => {
+    if (sport.parentId) return sport.parentId === categoryId;
     const key = (sport.description ?? "").trim() || "عمومی";
     return key === categoryId;
   });

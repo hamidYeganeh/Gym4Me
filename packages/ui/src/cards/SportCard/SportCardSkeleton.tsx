@@ -37,15 +37,19 @@ export function SportCardSkeleton({
       })}
       role="status"
     >
+      <Skeleton aria-hidden className="absolute inset-0 rounded-[inherit]" />
       <div className={slots.body()}>
         <div className={slots.content()}>
           <span aria-hidden className={slots.icon()}>
-            <Skeleton className={`${ICON_SIZE[size]} rounded-md`} />
+            <Skeleton className={`relative z-10 ${ICON_SIZE[size]} rounded-md`} />
           </span>
-          <Skeleton aria-hidden className="h-3.5 w-16 rounded-md" />
-          <Skeleton aria-hidden className={`${TITLE_SIZE[size]} rounded-lg`} />
+          <Skeleton aria-hidden className="relative z-10 h-3.5 w-16 rounded-md" />
+          <Skeleton
+            aria-hidden
+            className={`relative z-10 ${TITLE_SIZE[size]} rounded-lg`}
+          />
         </div>
-        <Skeleton aria-hidden className={slots.action()} />
+        <Skeleton aria-hidden className={`relative z-10 ${slots.action()}`} />
       </div>
     </div>
   );

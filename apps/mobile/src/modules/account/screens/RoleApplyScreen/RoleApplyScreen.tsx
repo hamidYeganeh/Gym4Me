@@ -247,7 +247,7 @@ export function RoleApplyScreen({
                 <CallToActionCard
                   key={card.role}
                   actionLabel={actionLabel}
-                  actionType="plus"
+                  actionType={pending ? "pending" : "plus"}
                   aria-busy={pendingRole === card.role || undefined}
                   onAction={
                     pending || pendingRole || loading

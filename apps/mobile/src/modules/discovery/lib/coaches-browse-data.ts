@@ -83,11 +83,11 @@ export type CoachFeatureItem = {
 const PORTRAIT = "/demo/coach-portrait.png";
 
 export const COACH_SPECIALTIES: CoachSpecialty[] = [
-  { id: "hiit", label: "HIIT" },
+  { id: "hiit", label: "کراس‌فیت" },
   { id: "strength", label: "قدرتی" },
   { id: "yoga", label: "یوگا" },
-  { id: "speed", label: "سرعت" },
-  { id: "mobility", label: "موبیلیتی" },
+  { id: "speed", label: "دویدن" },
+  { id: "mobility", label: "پیلاتس" },
 ];
 
 export const COACH_FEATURE_ITEMS: CoachFeatureItem[] = [
@@ -121,31 +121,31 @@ export const COACH_FEATURE_ITEMS: CoachFeatureItem[] = [
   },
   {
     id: "hiit",
-    title: "HIIT",
+    title: "کراس‌فیت",
     color: "red",
     iconKey: "hiit",
-    href: "/discovery/coaches?specialtyKey=hiit",
+    href: "/discovery/coaches?coachType=crossfit",
   },
   {
     id: "yoga",
     title: "یوگا",
     color: "accent",
     iconKey: "yoga",
-    href: "/discovery/coaches?specialtyKey=yoga",
+    href: "/discovery/coaches?coachType=yoga",
   },
   {
     id: "strength",
     title: "قدرتی",
     color: "warning",
     iconKey: "strength",
-    href: "/discovery/coaches?specialtyKey=strength",
+    href: "/discovery/coaches?coachType=strength-training",
   },
   {
     id: "mobility",
-    title: "موبیلیتی",
+    title: "پیلاتس",
     color: "yellow",
     iconKey: "mobility",
-    href: "/discovery/coaches?specialtyKey=mobility",
+    href: "/discovery/coaches?coachType=pilates",
   },
 ];
 

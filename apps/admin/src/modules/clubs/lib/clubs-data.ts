@@ -166,7 +166,14 @@ export const MOCK_CLUBS: Club[] = [
       point: { lng: 51.375, lat: 35.787 },
       direction: "north",
       locationId: "665f0loc0000000000000001",
-      ancestors: ["665f0loc0000000000000000"],
+      ancestors: [
+        {
+          id: "665f0loc0000000000000000",
+          kind: "country",
+          name: "ایران",
+          slug: "iran",
+        },
+      ],
     },
     reviewsSummary: {
       count: 48,

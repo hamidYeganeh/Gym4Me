@@ -6,6 +6,7 @@ import { ArrowRight } from "@repo/icons/ArrowRight";
 import { PersonKarate } from "@repo/icons/PersonKarate";
 import { statsColors } from "@repo/theme";
 import type { CSSProperties } from "react";
+import { PLACEHOLDER_IMAGE } from "../../common/placeholder";
 import { MediaImage } from "../../common/MediaImage";
 import { sportCardVariants } from "./SportCard.styles";
 import type { SportCardProps, SportCardSize } from "./SportCard.types";
@@ -58,7 +59,10 @@ export function SportCard({
 }: SportCardProps) {
   const { title, subtitle, backgroundImage, icon } = sport;
   const slots = sportCardVariants({ size });
-  const hasBackgroundImage = backgroundImage != null && backgroundImage !== "";
+  const resolvedBackgroundImage =
+    backgroundImage != null && backgroundImage !== ""
+      ? backgroundImage
+      : PLACEHOLDER_IMAGE;
   const arrowColor = actionForegroundColor ?? foregroundColor;
 
   const rootStyle: CSSProperties = {
@@ -81,25 +85,20 @@ export function SportCard({
       style={rootStyle}
       variant="ghost"
     >
-      {hasBackgroundImage && backgroundImage != null ? (
-        <MediaImage
-          alt=""
-          aria-hidden
-          className={slots.backgroundImage({
-            className: backgroundImageClassName,
-          })}
-          image={backgroundImage}
-          sizes="(max-width: 768px) 50vw, 240px"
-        />
-      ) : null}
-
-      {hasBackgroundImage ? (
-        <div
-          aria-hidden
-          className={slots.overlay()}
-          style={{ backgroundColor: color, opacity: overlayOpacity }}
-        />
-      ) : null}
+      <MediaImage
+        alt=""
+        aria-hidden
+        className={slots.backgroundImage({
+          className: backgroundImageClassName,
+        })}
+        image={resolvedBackgroundImage}
+        sizes="(max-width: 768px) 50vw, 240px"
+      />
+      <div
+        aria-hidden
+        className={slots.overlay()}
+        style={{ backgroundColor: color, opacity: overlayOpacity }}
+      />
 
       <div className={slots.body()}>
         <div className={slots.content()}>

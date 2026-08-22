@@ -16,7 +16,7 @@ export const onboardingIdentitySectionVariants = tv({
     sectionTitle: "text-base font-bold text-foreground",
     field: "w-full",
     input:
-      "min-h-12 rounded-2xl border-0 bg-default px-4 text-sm text-foreground shadow-none",
+      "min-h-12 rounded-2xl border-0 bg-default px-4 !text-base text-foreground shadow-none",
     row: "grid grid-cols-2 gap-3",
     trigger:
       "flex min-h-12 w-full items-center justify-between gap-2 rounded-2xl border-0 bg-default px-4 text-start text-sm text-foreground outline-none data-[hovered=true]:bg-default/80",

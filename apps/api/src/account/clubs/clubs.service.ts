@@ -53,6 +53,17 @@ import { RefItem, RefItemDocument } from '../../schemas/ref-item.schema';
 import { Sport, SportDocument } from '../../schemas/sport.schema';
 import { User, UserDocument } from '../../schemas/user.schema';
 import { UsersService } from '../../users/users.service';
+import {
+  collectLocationRelatedIds,
+  toLocationPublic,
+  toLocationRef,
+  type LocationLike,
+} from '../../basics/location/location-public';
+import {
+  collectSportRelatedIds,
+  toSportPublic,
+  type SportLike,
+} from '../../basics/sport/sport-public';
 import { ListClubReviewsQueryDto } from '../../admin/dto/admin-review.dto';
 import {
   AdminCreateClubDto,
@@ -70,6 +81,10 @@ import {
   SubmitClubReviewDto,
   UpdateClubDto,
 } from './dto/club.dto';
+import {
+  DISCOVERY_VISIBLE_CLUB_MATCH,
+  mapDiscoveryCategoryFacetRows,
+} from './discovery-club-facets';
 
 type ClubWriteDto = CreateClubDto | UpdateClubDto;
 
@@ -419,9 +434,7 @@ export class ClubsService {
   async discoveryList(query: DiscoveryClubsQueryDto) {
     const { page, pageSize } = resolvePageSize(query);
     const filter: QueryFilter<ClubDocument> = {
-      'review.status': ClubLifecycleStatus.APPROVED,
-      operationalStatus: ClubOperationalStatus.ACTIVE,
-      parentClubId: { $exists: false },
+      ...DISCOVERY_VISIBLE_CLUB_MATCH,
     };
 
     if (query.q?.trim()) {
@@ -510,6 +523,25 @@ export class ClubsService {
       page,
       pageSize,
     );
+  }
+
+  async discoveryCategoryFacets() {
+    const rows = await this.clubModel.aggregate<{
+      _id: Types.ObjectId | null;
+      count: number;
+    }>([
+      { $match: DISCOVERY_VISIBLE_CLUB_MATCH },
+      { $unwind: '$categories' },
+      {
+        $group: {
+          _id: '$categories.categoryId',
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { count: -1 } },
+    ]);
+
+    return { categories: mapDiscoveryCategoryFacetRows(rows) };
   }
 
   async discoveryGet(clubId: string) {
@@ -1325,11 +1357,16 @@ export class ClubsService {
     const amenityIds = (c.amenities ?? []).map((x) => x.amenityId);
     const categoryIds = (c.categories ?? []).map((x) => x.categoryId);
     const locationId = c.location?.locationId;
+    const locationAncestorIds = c.location?.ancestors ?? [];
     const ownerId = c.ownerId;
 
     const refIds = [...equipmentIds, ...amenityIds, ...categoryIds];
+    const locationLookupIds = [
+      ...(locationId ? [locationId] : []),
+      ...locationAncestorIds,
+    ];
 
-    const [coaches, sports, refs, location, owner] = await Promise.all([
+    const [coaches, sports, refs, locationDocs, owner] = await Promise.all([
       coachIds.length
         ? this.userModel.find({ _id: { $in: coachIds } })
         : Promise.resolve([] as UserDocument[]),
@@ -1339,9 +1376,9 @@ export class ClubsService {
       refIds.length
         ? this.refModel.find({ _id: { $in: refIds } }).lean()
         : Promise.resolve([]),
-      locationId
-        ? this.locationModel.findById(locationId).lean()
-        : Promise.resolve(null),
+      locationLookupIds.length
+        ? this.locationModel.find({ _id: { $in: locationLookupIds } }).lean()
+        : Promise.resolve([] as LocationLike[]),
       ownerId ? this.userModel.findById(ownerId) : Promise.resolve(null),
     ]);
 
@@ -1368,23 +1405,41 @@ export class ClubsService {
       };
     };
 
-    const toSportPublic = (id: Types.ObjectId) => {
+    const sportRelatedIds = collectSportRelatedIds(sports as SportLike[]);
+    const missingSportIds = sportRelatedIds.filter(
+      (id) => !sportById.has(id.toString()),
+    );
+    const extraSports = missingSportIds.length
+      ? await this.sportModel.find({ _id: { $in: missingSportIds } }).lean()
+      : [];
+    const sportRelated = new Map<string, SportLike>([
+      ...sports.map((s) => [s._id.toString(), s as SportLike] as const),
+      ...extraSports.map((s) => [s._id.toString(), s as SportLike] as const),
+    ]);
+
+    const toClubSportPublic = (id: Types.ObjectId) => {
       const sport = sportById.get(id.toString());
       if (!sport) return { id: id.toString() };
-      return {
-        id: sport._id.toString(),
-        kind: sport.kind,
-        name: sport.name,
-        slug: sport.slug,
-        description: sport.description ?? null,
-        icon: sport.icon ?? null,
-        coverMediaId: sport.coverMediaId?.toString() ?? null,
-        parentId: sport.parentId?.toString() ?? null,
-        ancestors: (sport.ancestors ?? []).map((a) => a.toString()),
-        order: sport.order,
-        isActive: sport.isActive,
-      };
+      return toSportPublic(sport as SportLike, sportRelated);
     };
+
+    const extraLocationIds = collectLocationRelatedIds(
+      locationDocs as LocationLike[],
+    ).filter(
+      (id) => !locationDocs.some((doc) => doc._id.toString() === id.toString()),
+    );
+    const extraLocations = extraLocationIds.length
+      ? await this.locationModel.find({ _id: { $in: extraLocationIds } }).lean()
+      : [];
+    const locationRelated = new Map<string, LocationLike>([
+      ...locationDocs.map((doc) => [doc._id.toString(), doc as LocationLike] as const),
+      ...extraLocations.map(
+        (doc) => [doc._id.toString(), doc as LocationLike] as const,
+      ),
+    ]);
+    const location = locationId
+      ? locationRelated.get(locationId.toString()) ?? null
+      : null;
 
     return {
       id: c._id.toString(),
@@ -1416,7 +1471,7 @@ export class ClubsService {
       equipments: equipmentIds.map((id) => toRefPublic(id)),
       amenities: amenityIds.map((id) => toRefPublic(id)),
       categories: categoryIds.map((id) => toRefPublic(id)),
-      sports: sportIds.map((id) => toSportPublic(id)),
+      sports: sportIds.map((id) => toClubSportPublic(id)),
       classes: (c.classes ?? []).map((x) => ({
         classId: x.classId.toString(),
       })),
@@ -1437,16 +1492,12 @@ export class ClubsService {
               : null,
             direction: c.location.direction ?? null,
             locationId: c.location.locationId?.toString() ?? null,
-            ancestors: (c.location.ancestors ?? []).map((a) => a.toString()),
+            ancestors: (c.location.ancestors ?? []).map((id) => {
+              const doc = locationRelated.get(id.toString());
+              return doc ? toLocationRef(doc) : { id: id.toString() };
+            }),
             node: location
-              ? {
-                  id: location._id.toString(),
-                  kind: location.kind,
-                  name: location.name,
-                  slug: location.slug,
-                  flagSvg: location.flagSvg ?? null,
-                  parentId: location.parentId?.toString() ?? null,
-                }
+              ? toLocationPublic(location, locationRelated)
               : null,
           }
         : null,

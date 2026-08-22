@@ -2,6 +2,7 @@ import { tv } from "tailwind-variants";
 
 export const discoveryHomeArticlesSectionVariants = tv({
   slots: {
-    card: "w-[min(19rem,82vw)] shrink-0 snap-start",
+    slide: "!w-[min(21.5rem,88vw)]",
+    card: "!w-full",
   },
 });

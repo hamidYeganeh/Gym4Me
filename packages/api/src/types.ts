@@ -31,6 +31,41 @@ export type Privacy = "public" | "followers" | "coach_only" | "private";
 /** Mirrors `AthleteBodyType` in apps/api. */
 export type AthleteBodyType = "endomorph" | "ectomorph" | "mesomorph";
 
+/** Mirrors `CoachType` in apps/api. A coach may have multiple. */
+export const COACH_TYPES = [
+  "bodybuilding",
+  "strength-training",
+  "weight-loss",
+  "functional-training",
+  "crossfit",
+  "cardio-endurance",
+  "general-fitness",
+  "corrective-exercise",
+  "sports-rehabilitation",
+  "yoga",
+  "pilates",
+  "meditation-breathwork",
+  "football-futsal",
+  "volleyball",
+  "basketball",
+  "racket-sports",
+  "swimming-aquatics",
+  "boxing-kickboxing",
+  "martial-arts",
+  "running",
+  "cycling",
+  "outdoor-conditioning",
+  "youth-fitness",
+  "senior-fitness",
+  "womens-fitness",
+  "prenatal-postnatal",
+  "adaptive-fitness",
+  "contest-prep",
+  "sports-nutrition",
+] as const;
+
+export type CoachType = (typeof COACH_TYPES)[number];
+
 /** Mirrors `AthleteExperience` in apps/api. */
 export type AthleteExperience = "beginner" | "experienced";
 
@@ -225,6 +260,23 @@ export type GeoCoordinates = {
   lat: number;
 };
 
+/** Populated location without nested parent/ancestors (used on those fields). */
+export type LocationRef = {
+  id: string;
+  kind?: LocationKind;
+  name?: string;
+  slug?: string;
+  description?: string | null;
+  icon?: string | null;
+  /** Inline SVG markup for countries. */
+  flagSvg?: string | null;
+  parentId?: string | null;
+  coordinates?: GeoCoordinates | null;
+  coverMediaId?: string | null;
+  order?: number;
+  isActive?: boolean;
+};
+
 /** Mirrors `LocationService.toPublic`. */
 export type LocationNode = {
   id: string;
@@ -236,11 +288,26 @@ export type LocationNode = {
   /** Inline SVG markup for countries. */
   flagSvg: string | null;
   parentId: string | null;
-  ancestors: string[];
+  parent: LocationRef | null;
+  ancestors: LocationRef[];
   coordinates: GeoCoordinates | null;
   coverMediaId: string | null;
   order: number;
   isActive: boolean;
+};
+
+/** Populated sport without nested parent/ancestors (used on those fields). */
+export type SportRef = {
+  id: string;
+  kind?: SportKind;
+  name?: string;
+  slug?: string;
+  description?: string | null;
+  icon?: string | null;
+  coverMediaId?: string | null;
+  parentId?: string | null;
+  order?: number;
+  isActive?: boolean;
 };
 
 /** Mirrors `SportService.toPublic`. */
@@ -253,7 +320,8 @@ export type SportNode = {
   icon: string | null;
   coverMediaId: string | null;
   parentId: string | null;
-  ancestors: string[];
+  parent: SportRef | null;
+  ancestors: SportRef[];
   order: number;
   isActive: boolean;
 };

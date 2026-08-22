@@ -47,7 +47,6 @@ export function DiscoveryBrowseCoachesLocationsSection({
       accent={false}
       ariaLabel={t(config.titleKey)}
       hint={t(config.hintKey)}
-      scrollerClassName={slots.scroller()}
       title={t(config.titleKey)}
       titleSize="h4"
     >

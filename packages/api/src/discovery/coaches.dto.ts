@@ -1,4 +1,4 @@
-import type { VerificationStatus } from "../types";
+import type { CoachType, VerificationStatus } from "../types";
 
 export type DiscoveryCoachesQuery = {
   page?: number;
@@ -7,7 +7,7 @@ export type DiscoveryCoachesQuery = {
   q?: string;
   sportId?: string;
   cityId?: string;
-  specialtyKey?: string;
+  coachType?: CoachType;
   gender?: string;
 };
 
@@ -46,7 +46,7 @@ export type DiscoveryCoach = {
   serviceArea: { cityId: string | null };
   pricing: { consultation: CoachConsultationPricing };
   sportIds: string[];
-  specialtyKeys: string[];
+  coachTypes: CoachType[];
   clubs?: DiscoveryCoachClub[];
   createdAt: string;
   updatedAt: string;

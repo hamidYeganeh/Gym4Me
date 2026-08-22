@@ -1,94 +1,145 @@
 "use client";
 
-import { Typography } from "@heroui/react/typography";
-import { FilterChip, FilterChipBar } from "@repo/ui/kit/FilterChip";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
-import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
-import { useRouter } from "@/shared/lib/app-router";
 
-import { DiscoveryBrowseClubsAllSection } from "../../sections/DiscoveryBrowseClubsAllSection";
+import { districtClubsSeeAllHref } from "../../lib/district-clubs-home";
 import { DiscoveryBrowseClubsEmptySection } from "../../sections/DiscoveryBrowseClubsEmptySection";
-import { DiscoveryBrowseClubsLoadingSection } from "../../sections/DiscoveryBrowseClubsLoadingSection";
-import { DiscoveryBrowseClubsLocationsSection } from "../../sections/DiscoveryBrowseClubsLocationsSection";
-import { DiscoveryBrowseClubsRailSection } from "../../sections/DiscoveryBrowseClubsRailSection";
+import { DiscoveryHomeArticlesSection } from "../../sections/DiscoveryHomeArticlesSection";
+import { DiscoveryHomeBannersSection } from "../../sections/DiscoveryHomeBannersSection";
+import { DiscoveryHomeCitiesSection } from "../../sections/DiscoveryHomeCitiesSection";
+import { DiscoveryHomeClubCategoriesSection } from "../../sections/DiscoveryHomeClubCategoriesSection";
+import { DiscoveryHomeClubsRailSection } from "../../sections/DiscoveryHomeClubsRailSection";
+import { DiscoveryHomeHeaderSection } from "../../sections/DiscoveryHomeHeaderSection";
+import { DiscoveryHomeSportCategoriesSection } from "../../sections/DiscoveryHomeSportCategoriesSection";
+import { DiscoveryHomeSportsSection } from "../../sections/DiscoveryHomeSportsSection";
 import { discoveryClubsScreenStyles as styles } from "./DiscoveryClubsScreen.styles";
 import type { DiscoveryClubsScreenProps } from "./DiscoveryClubsScreen.types";
 
 export function DiscoveryClubsScreen({
-  clubs,
-  discoveryFilters,
-  activeFilter,
-  onFilterChange,
-  provinces,
-  cities,
-  districts,
-  isLoading,
+  banners = [],
+  bannersLoading = false,
+  categories = [],
+  categoriesLoading = false,
+  sportCategories = [],
+  sportCategoriesLoading = false,
+  sports = [],
+  sportsLoading = false,
+  cities = [],
+  citiesLoading = false,
+  nearbyClubs = [],
+  nearbyClubsLoading = false,
+  districtClubs = [],
+  districtClubsLoading = false,
+  districtName = null,
+  districtLocationId = null,
+  openNowClubs = [],
+  topRatedClubs = [],
+  clubsLoading = false,
+  clubsCount = 0,
+  hideDistrictRail = false,
+  onClearFilters,
+  articles = [],
+  articlesLoading = false,
 }: DiscoveryClubsScreenProps) {
-  const t = useTranslations("DiscoveryClubs");
-  const router = useRouter();
+  const tHome = useTranslations("DiscoveryHome");
+  const tClubs = useTranslations("DiscoveryClubs");
+  const districtTitle = districtName
+    ? tHome("districtClubsTitle", { district: districtName })
+    : tHome("districtClubsTitleFallback");
+  const districtHint = districtName
+    ? tHome("districtClubsHint", { district: districtName })
+    : tHome("districtClubsHintFallback");
+  const districtSeeAllHref = districtLocationId
+    ? districtClubsSeeAllHref(districtLocationId)
+    : undefined;
 
   return (
     <AppLayout
       className={styles.root}
       header={
-        <SecondaryPageHeader
-          backAriaLabel={t("back")}
-          onBack={() => router.back()}
-          title={t("title")}
-        />
+        <DiscoveryHomeHeaderSection locationLabel={tHome("locationFallback")} />
       }
     >
       <div className={styles.content}>
-        <section className={styles.intro}>
-          <Typography className={styles.introSubtitle} type="body">
-            {t("subtitle")}
-          </Typography>
-        </section>
-
-        <FilterChipBar aria-label={t("filtersLabel")}>
-          {discoveryFilters.map((filter) => (
-            <FilterChip
-              key={filter.id}
-              onPress={() => onFilterChange(filter.id)}
-              selected={activeFilter === filter.id}
-            >
-              {filter.label}
-            </FilterChip>
-          ))}
-        </FilterChipBar>
-
-        <Typography className={styles.meta} type="body-sm">
-          {isLoading
-            ? t("loading")
-            : t("resultsCount", { count: clubs.length })}
-        </Typography>
-
-        <DiscoveryBrowseClubsLoadingSection
-          clubsCount={clubs.length}
-          isLoading={isLoading}
-        />
-
-        <DiscoveryBrowseClubsRailSection clubs={clubs} variant="featured" />
-        <DiscoveryBrowseClubsLocationsSection
-          items={provinces}
-          variant="provinces"
-        />
-        <DiscoveryBrowseClubsRailSection clubs={clubs} variant="nearby" />
-        <DiscoveryBrowseClubsLocationsSection items={cities} variant="cities" />
-        <DiscoveryBrowseClubsRailSection clubs={clubs} variant="openNow" />
-        <DiscoveryBrowseClubsLocationsSection
-          items={districts}
-          variant="districts"
-        />
-        <DiscoveryBrowseClubsRailSection clubs={clubs} variant="topRated" />
-        <DiscoveryBrowseClubsRailSection clubs={clubs} variant="picks" />
-        <DiscoveryBrowseClubsAllSection clubs={clubs} />
-        <DiscoveryBrowseClubsEmptySection
-          clubsCount={clubs.length}
-          isLoading={isLoading}
-          onViewAll={() => onFilterChange("all")}
-        />
+        <div className={styles.banners}>
+          <DiscoveryHomeBannersSection
+            banners={banners}
+            isLoading={bannersLoading}
+          />
+        </div>
+        <div className={styles.sheets}>
+          <DiscoveryHomeClubCategoriesSection
+            categories={categories}
+            isLoading={categoriesLoading}
+          />
+          <DiscoveryHomeSportCategoriesSection
+            categories={sportCategories}
+            isLoading={sportCategoriesLoading}
+          />
+          <DiscoveryHomeSportsSection
+            isLoading={sportsLoading}
+            sports={sports}
+          />
+          <DiscoveryHomeCitiesSection
+            cities={cities}
+            isLoading={citiesLoading}
+            seeAllHref={null}
+          />
+          {hideDistrictRail ? null : (
+            <DiscoveryHomeClubsRailSection
+              ariaLabel={districtTitle}
+              clubs={districtClubs}
+              hint={districtHint}
+              isLoading={districtClubsLoading}
+              keyPrefix="district"
+              pattern
+              seeAllHref={districtSeeAllHref}
+              title={districtTitle}
+              tone="warning"
+            />
+          )}
+          <DiscoveryHomeClubsRailSection
+            ariaLabel={tHome("nearbyTitle")}
+            clubs={nearbyClubs}
+            hint={tHome("nearbyHint")}
+            isLoading={nearbyClubsLoading}
+            keyPrefix="nearby"
+            title={tHome("nearbyTitle")}
+            tone="surface"
+          />
+          <DiscoveryHomeClubsRailSection
+            ariaLabel={tClubs("topRatedTitle")}
+            clubs={topRatedClubs}
+            hint={tClubs("topRatedHint")}
+            isLoading={clubsLoading}
+            keyPrefix="top"
+            title={tClubs("topRatedTitle")}
+            tone="warning"
+          />
+          <DiscoveryHomeClubsRailSection
+            ariaLabel={tClubs("openNowTitle")}
+            clubs={openNowClubs}
+            hint={tClubs("openNowHint")}
+            isLoading={clubsLoading}
+            keyPrefix="open"
+            orientation="horizontal"
+            pattern
+            title={tClubs("openNowTitle")}
+            tone="accent"
+          />
+          <DiscoveryHomeArticlesSection
+            articles={articles}
+            isLoading={articlesLoading}
+          />
+        </div>
+        <div className={styles.empty}>
+          <DiscoveryBrowseClubsEmptySection
+            clubsCount={clubsCount}
+            isLoading={clubsLoading}
+            onViewAll={() => onClearFilters?.()}
+          />
+        </div>
       </div>
     </AppLayout>
   );

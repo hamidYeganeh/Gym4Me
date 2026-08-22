@@ -147,6 +147,39 @@ export enum SportKind {
   BRANCH = 'branch',
 }
 
+/** Coaching focus areas. A coach profile may list several. */
+export enum CoachType {
+  BODYBUILDING = 'bodybuilding',
+  STRENGTH_TRAINING = 'strength-training',
+  WEIGHT_LOSS = 'weight-loss',
+  FUNCTIONAL_TRAINING = 'functional-training',
+  CROSSFIT = 'crossfit',
+  CARDIO_ENDURANCE = 'cardio-endurance',
+  GENERAL_FITNESS = 'general-fitness',
+  CORRECTIVE_EXERCISE = 'corrective-exercise',
+  SPORTS_REHABILITATION = 'sports-rehabilitation',
+  YOGA = 'yoga',
+  PILATES = 'pilates',
+  MEDITATION_BREATHWORK = 'meditation-breathwork',
+  FOOTBALL_FUTSAL = 'football-futsal',
+  VOLLEYBALL = 'volleyball',
+  BASKETBALL = 'basketball',
+  RACKET_SPORTS = 'racket-sports',
+  SWIMMING_AQUATICS = 'swimming-aquatics',
+  BOXING_KICKBOXING = 'boxing-kickboxing',
+  MARTIAL_ARTS = 'martial-arts',
+  RUNNING = 'running',
+  CYCLING = 'cycling',
+  OUTDOOR_CONDITIONING = 'outdoor-conditioning',
+  YOUTH_FITNESS = 'youth-fitness',
+  SENIOR_FITNESS = 'senior-fitness',
+  WOMENS_FITNESS = 'womens-fitness',
+  PRENATAL_POSTNATAL = 'prenatal-postnatal',
+  ADAPTIVE_FITNESS = 'adaptive-fitness',
+  CONTEST_PREP = 'contest-prep',
+  SPORTS_NUTRITION = 'sports-nutrition',
+}
+
 /** Whitelisted types for the generic RefItem collection. */
 export enum RefType {
   EQUIPMENT = 'equipment',

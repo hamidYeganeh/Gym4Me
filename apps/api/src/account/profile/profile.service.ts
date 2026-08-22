@@ -30,6 +30,7 @@ import {
 } from '../../schemas/coach-profile.schema';
 import { UsersService } from '../../users/users.service';
 import { ChoicesService } from '../../basics/choices/choices.service';
+import { uniqueCoachTypes } from '../coaches/coach-types';
 import {
   SubmitCoachVerificationDto,
   UpdateAthleteProfileDto,
@@ -319,8 +320,8 @@ export class ProfileService {
       profile.markModified('serviceArea');
     }
     if (dto.sportIds !== undefined) profile.sportIds = dto.sportIds;
-    if (dto.specialtyKeys !== undefined) {
-      profile.specialtyKeys = dto.specialtyKeys;
+    if (dto.coachTypes !== undefined) {
+      profile.coachTypes = uniqueCoachTypes(dto.coachTypes);
     }
     if (dto.pricing?.consultation) {
       const consultation = dto.pricing.consultation;
@@ -469,7 +470,7 @@ export class ProfileService {
         },
       },
       sportIds: profile.sportIds ?? [],
-      specialtyKeys: profile.specialtyKeys ?? [],
+      coachTypes: uniqueCoachTypes(profile.coachTypes),
       createdAt: profile.createdAt,
       updatedAt: profile.updatedAt,
     };

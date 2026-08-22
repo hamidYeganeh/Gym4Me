@@ -13,6 +13,8 @@ import type { Role, RoleRequest } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { Note1 } from "@repo/icons/Note1";
+import { FileItem, type FileItemStatus } from "@repo/ui/kit/FileItem";
+import { Uploader } from "@repo/ui/kit/Uploader";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
@@ -21,6 +23,27 @@ import { roleRequestWizardScreenVariants } from "./RoleRequestWizardScreen.style
 import type { RoleRequestWizardScreenProps } from "./RoleRequestWizardScreen.types";
 
 const FIELD_ICON = 18;
+
+const DOCUMENT_ACCEPT = {
+  "image/jpeg": [".jpg", ".jpeg"],
+  "image/png": [".png"],
+  "image/webp": [".webp"],
+  "application/pdf": [".pdf"],
+} as const;
+
+type DocumentUploadState = {
+  fileName: string;
+  fileSize: string;
+  status: FileItemStatus;
+  progress: number;
+  file: File | null;
+};
+
+function formatBytes(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 export function RoleRequestWizardScreen({
   className,
@@ -36,6 +59,8 @@ export function RoleRequestWizardScreen({
   const [years, setYears] = useState("");
   const [note, setNote] = useState("");
   const [documentId, setDocumentId] = useState<string | null>(null);
+  const [documentUpload, setDocumentUpload] =
+    useState<DocumentUploadState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
@@ -76,6 +101,38 @@ export function RoleRequestWizardScreen({
     };
   }, [role, t]);
 
+  const uploadDocument = async (file: File) => {
+    setDocumentUpload({
+      fileName: file.name,
+      fileSize: formatBytes(file.size),
+      status: "uploading",
+      progress: 35,
+      file,
+    });
+    setError(null);
+    try {
+      const uploaded = await mediaApi.upload(file);
+      setDocumentId(uploaded.id);
+      setDocumentUpload({
+        fileName: file.name,
+        fileSize: formatBytes(file.size),
+        status: "success",
+        progress: 100,
+        file,
+      });
+      setNotice(t("documentUploaded"));
+    } catch (err) {
+      setDocumentUpload({
+        fileName: file.name,
+        fileSize: formatBytes(file.size),
+        status: "error",
+        progress: 65,
+        file,
+      });
+      setError(err instanceof ApiError ? err.message : t("error"));
+    }
+  };
+
   const handleUpload = async (file: File | null) => {
     if (!file) return;
     setUploading(true);
@@ -90,6 +147,20 @@ export function RoleRequestWizardScreen({
       setUploading(false);
     }
   };
+
+  const isDocumentUploading =
+    !isCoach && documentUpload?.status === "uploading";
+  const showOwnerUploader =
+    !isCoach &&
+    !documentId &&
+    (!documentUpload || documentUpload.status === "error");
+  const showOwnerFileItem =
+    !isCoach &&
+    (Boolean(documentId) ||
+      (documentUpload != null &&
+        (documentUpload.status === "uploading" ||
+          documentUpload.status === "success" ||
+          documentUpload.status === "error")));
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -220,20 +291,76 @@ export function RoleRequestWizardScreen({
             <Typography type="body-sm" weight="medium">
               {t("documents")}
             </Typography>
-            <input
-              accept="image/jpeg,image/png,image/webp,application/pdf"
-              className="block w-full text-sm text-muted file:me-3 file:rounded-full file:border-0 file:bg-accent file:px-4 file:py-2 file:text-sm file:font-semibold file:text-accent-foreground"
-              disabled={isLocked || uploading}
-              type="file"
-              onChange={(event) => {
-                const file = event.target.files?.[0] ?? null;
-                void handleUpload(file);
-              }}
-            />
-            {documentId ? (
-              <Typography color="muted" type="body-sm">
-                {t("documentReady")}
-              </Typography>
+
+            {showOwnerUploader ? (
+              <Uploader
+                accept={DOCUMENT_ACCEPT}
+                buttonLabel={t("uploaderButton")}
+                description={t("uploaderDescription")}
+                disabled={isLocked}
+                maxFiles={1}
+                multiple={false}
+                title={t("uploaderTitle")}
+                onDropAccepted={(files) => {
+                  const file = files[0];
+                  if (!file) return;
+                  void uploadDocument(file);
+                }}
+              />
+            ) : null}
+
+            {showOwnerFileItem ? (
+              <FileItem
+                fileName={documentUpload?.fileName ?? t("documentReady")}
+                fileSize={documentUpload?.fileSize}
+                progress={documentUpload?.progress}
+                removeLabel={t("removeUpload")}
+                retryLabel={t("retryUpload")}
+                status={
+                  documentUpload?.status === "uploading"
+                    ? "uploading"
+                    : documentUpload?.status === "error"
+                      ? "error"
+                      : "success"
+                }
+                statusMessage={
+                  documentUpload?.status === "error"
+                    ? t("uploadError")
+                    : documentId
+                      ? t("documentReady")
+                      : undefined
+                }
+                onRemove={() => {
+                  setDocumentUpload(null);
+                  setDocumentId(null);
+                  setNotice(null);
+                }}
+                onRetry={() => {
+                  const file = documentUpload?.file;
+                  if (!file) return;
+                  void uploadDocument(file);
+                }}
+              />
+            ) : null}
+
+            {isCoach ? (
+              <>
+                <input
+                  accept="image/jpeg,image/png,image/webp,application/pdf"
+                  className="block w-full text-sm text-muted file:me-3 file:rounded-full file:border-0 file:bg-accent file:px-4 file:py-2 file:text-sm file:font-semibold file:text-accent-foreground"
+                  disabled={isLocked || uploading}
+                  type="file"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0] ?? null;
+                    void handleUpload(file);
+                  }}
+                />
+                {documentId ? (
+                  <Typography color="muted" type="body-sm">
+                    {t("documentReady")}
+                  </Typography>
+                ) : null}
+              </>
             ) : null}
           </div>
 
@@ -251,7 +378,7 @@ export function RoleRequestWizardScreen({
           <Button
             fullWidth
             isDisabled={isLocked || !documentId}
-            isPending={isPending || uploading}
+            isPending={isPending || uploading || isDocumentUploading}
             size="lg"
             type="submit"
             variant="primary"

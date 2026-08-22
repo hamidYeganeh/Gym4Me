@@ -13,11 +13,7 @@ export class ApiError extends Error {
   }
 }
 
-function resolveMessage(body: ApiErrorBody | null): string | null {
-  return flattenApiErrorMessage(body?.message);
-}
-
-function flattenApiErrorMessage(message: unknown): string | null {
+export function flattenApiErrorMessage(message: unknown): string | null {
   if (typeof message === "string") return message || null;
   if (Array.isArray(message)) {
     const parts = message.filter(
@@ -37,6 +33,10 @@ function flattenApiErrorMessage(message: unknown): string | null {
     return parts.length > 0 ? parts.join(", ") : null;
   }
   return null;
+}
+
+function resolveMessage(body: ApiErrorBody | null): string | null {
+  return flattenApiErrorMessage(body?.message);
 }
 
 export const KYC_REQUIRED_CODE = "KYC_REQUIRED";

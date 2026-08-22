@@ -37,13 +37,9 @@ export function SetPasswordScreen({
       await logout({ revoke: true });
       router.replace("/auth/login");
     } catch (err) {
-      const description =
-        err instanceof ApiError && err.status === 401
-          ? t("errorCurrentInvalid")
-          : err instanceof ApiError && err.message
-            ? err.message
-            : t("errorSet");
-      toast.error(tAuth("toastErrorTitle"), { description });
+      if (!(err instanceof ApiError)) {
+        toast.error(tAuth("toastErrorTitle"), { description: t("errorSet") });
+      }
     } finally {
       setIsPending(false);
     }

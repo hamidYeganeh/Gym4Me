@@ -3,7 +3,11 @@ export {
   type BasicsLocationsApi,
 } from "./locations.client";
 export { basicsLocationsEndpoints } from "./locations.endpoint";
-export type { LocationChildrenResponse, LocationNode } from "./locations.dto";
+export type {
+  LocationChildrenResponse,
+  LocationNode,
+  LocationRef,
+} from "./locations.dto";
 export { basicsLocationsKeys } from "./locations.keys";
 
 export {
@@ -23,6 +27,7 @@ export type {
   ListSportsQuery,
   SportChildrenResponse,
   SportNode,
+  SportRef,
 } from "./sports.dto";
 export { basicsSportsKeys } from "./sports.keys";
 

@@ -25,29 +25,38 @@
 
   /*
    * Stats / chart palette (exact hex from design)
-   * Tailwind: bg-stats-red, text-stats-blue, …
+   * Tailwind: bg-stats-red, text-stats-blue, bg-stats-green, …
    */
-  --stats-red: #dc2626;
-  --stats-blue: #2563eb;
+  --stats-red: #9d1337;
+  --stats-purple: #6b3e74;
+  --stats-orange: #fa5425;
+  --stats-green: #1dc453;
+  --stats-blue: #043ddd;
+  --stats-navy: #0f2660;
+  --stats-midnight: #0b2358;
+  --stats-rose: #e65769;
+  --stats-forest: #417665;
   --stats-yellow: #ca8a04;
-  --stats-purple: #9333ea;
-  --stats-orange: #ea580c;
   --stats-foreground: #ffffff;
 
   /*
    * Bklit chart tokens — always resolve to Gym4Me / HeroUI theme colors.
    * Tailwind: bg-chart-1, text-chart-label, bg-popover, …
    */
-  --chart-1: var(--accent);
-  --chart-2: var(--stats-blue);
+  --chart-1: var(--stats-blue);
+  --chart-2: var(--stats-orange);
   --chart-3: var(--stats-purple);
-  --chart-4: var(--warning);
-  --chart-5: var(--stats-orange);
+  --chart-4: var(--stats-green);
+  --chart-5: var(--stats-rose);
+  --chart-6: var(--stats-red);
+  --chart-7: var(--stats-navy);
+  --chart-8: var(--stats-forest);
+  --chart-9: var(--stats-midnight);
   --chart-background: var(--surface);
   --chart-foreground: var(--foreground);
   --chart-foreground-muted: var(--muted);
-  --chart-line-primary: var(--accent);
-  --chart-line-secondary: var(--success);
+  --chart-line-primary: var(--stats-blue);
+  --chart-line-secondary: var(--stats-green);
   --chart-crosshair: var(--foreground);
   --chart-grid: var(--border);
   --chart-brush-border: var(--border);
@@ -60,8 +69,8 @@
   --chart-marker-badge-background: var(--accent);
   --chart-marker-badge-foreground: var(--accent-foreground);
   --chart-label: var(--muted);
-  --chart-indicator-color: var(--accent);
-  --chart-indicator-secondary-color: var(--success);
+  --chart-indicator-color: var(--stats-blue);
+  --chart-indicator-secondary-color: var(--stats-green);
   --chart-segment-background: color-mix(
     in oklab,
     var(--foreground) 6%,
@@ -82,6 +91,15 @@
   /* App surface radii (beyond HeroUI --radius / --field-radius) */
   --surface-radius: 1.5rem;
   --surface-radius-compact: 0.875rem;
+
+  /*
+   * Discovery home sheets — stacked bands with rounded tops.
+   * Overlap matches the radius so the next curve sits on the previous band.
+   * Gap is extra color below the cards before that curve.
+   */
+  --discovery-sheet-radius: 4rem;
+  --discovery-sheet-overlap: 4rem;
+  --discovery-sheet-gap: 2.5rem;
 
   /*
    * Screen layout grid (design frame 375×812)
@@ -161,11 +179,16 @@
   --map-tile-filter: grayscale(1) brightness(0.78) contrast(1.18) saturate(0);
 
   /* Stats / chart palette (same in dark — saturated cards stay vivid) */
-  --stats-red: #dc2626;
-  --stats-blue: #2563eb;
+  --stats-red: #9d1337;
+  --stats-purple: #6b3e74;
+  --stats-orange: #fa5425;
+  --stats-green: #1dc453;
+  --stats-blue: #043ddd;
+  --stats-navy: #0f2660;
+  --stats-midnight: #0b2358;
+  --stats-rose: #e65769;
+  --stats-forest: #417665;
   --stats-yellow: #ca8a04;
-  --stats-purple: #9333ea;
-  --stats-orange: #ea580c;
   --stats-foreground: #ffffff;
 }
 
@@ -176,6 +199,11 @@
   --color-stats-yellow: var(--stats-yellow);
   --color-stats-purple: var(--stats-purple);
   --color-stats-orange: var(--stats-orange);
+  --color-stats-green: var(--stats-green);
+  --color-stats-navy: var(--stats-navy);
+  --color-stats-midnight: var(--stats-midnight);
+  --color-stats-rose: var(--stats-rose);
+  --color-stats-forest: var(--stats-forest);
   --color-stats-foreground: var(--stats-foreground);
 
   --color-chart-1: var(--chart-1);
@@ -183,6 +211,10 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+  --color-chart-7: var(--chart-7);
+  --color-chart-8: var(--chart-8);
+  --color-chart-9: var(--chart-9);
   --color-chart-background: var(--chart-background);
   --color-chart-foreground: var(--chart-foreground);
   --color-chart-foreground-muted: var(--chart-foreground-muted);

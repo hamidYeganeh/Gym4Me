@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { statsPalette } from "@repo/theme";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { basicsSports, mediaFileUrl } from "@/shared/lib/api";
 import {
@@ -8,6 +9,7 @@ import {
   buildSportCategoryFilters,
   filterBrowseSports,
   type BrowseSport,
+  type BrowseSportCategory,
   type SportCategoryFilter,
   type SportCategoryFilterId,
 } from "./sports-browse-data";
@@ -26,14 +28,7 @@ export type DiscoverySportsBrowseState = {
   setActiveFilter: (id: SportCategoryFilterId) => void;
 };
 
-const SPORT_COLORS = [
-  "var(--stats-blue)",
-  "var(--stats-orange)",
-  "var(--stats-yellow)",
-  "var(--stats-purple)",
-  "var(--stats-red)",
-  "var(--accent)",
-] as const;
+const SPORT_COLORS = ["var(--accent)", ...statsPalette] as const;
 
 export function useDiscoverySportsBrowse(
   options: DiscoverySportsBrowseOptions = {},
@@ -42,6 +37,7 @@ export function useDiscoverySportsBrowse(
   const [activeFilter, setActiveFilter] =
     useState<SportCategoryFilterId>(categoryFromQuery);
   const [sports, setSports] = useState<BrowseSport[]>(BROWSE_SPORTS);
+  const [categories, setCategories] = useState<BrowseSportCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [source, setSource] = useState<"api" | "mock">("mock");
 
@@ -54,14 +50,23 @@ export function useDiscoverySportsBrowse(
 
     void (async () => {
       try {
-        const page = await basicsSports.listSports();
+        const [page, categoriesPage] = await Promise.all([
+          basicsSports.listSports(),
+          basicsSports.listCategories().catch(() => null),
+        ]);
         if (cancelled) return;
         if (page.result.length === 0) {
           setSports(BROWSE_SPORTS);
+          setCategories([]);
           setSource("mock");
           setIsLoading(false);
           return;
         }
+        setCategories(
+          (categoriesPage?.result ?? [])
+            .filter((node) => node.isActive)
+            .map((node) => ({ id: node.id, name: node.name })),
+        );
         setSports(
           page.result.slice(0, 48).map((node, index) => {
             const mapped = mapSportToHomeItem(
@@ -85,6 +90,7 @@ export function useDiscoverySportsBrowse(
       } catch {
         if (cancelled) return;
         setSports(BROWSE_SPORTS);
+        setCategories([]);
         setSource("mock");
         setIsLoading(false);
       }
@@ -96,8 +102,8 @@ export function useDiscoverySportsBrowse(
   }, []);
 
   const filters = useMemo(
-    () => buildSportCategoryFilters(sports),
-    [sports],
+    () => buildSportCategoryFilters(sports, categories),
+    [sports, categories],
   );
 
   const filtered = useMemo(

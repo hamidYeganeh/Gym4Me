@@ -49,12 +49,11 @@ export function SignInScreen({ className }: SignInScreenProps) {
       void payload.remember;
       router.replace(postAuthPath(session, next));
     } catch (err) {
-      toast.error(t("toastErrorTitle"), {
-        description:
-          err instanceof ApiError
-            ? err.message || t("errorInvalid")
-            : t("errorInvalid"),
-      });
+      if (!(err instanceof ApiError)) {
+        toast.error(t("toastErrorTitle"), {
+          description: t("errorInvalid"),
+        });
+      }
     } finally {
       setIsPending(false);
     }

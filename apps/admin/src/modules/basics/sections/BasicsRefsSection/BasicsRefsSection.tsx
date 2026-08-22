@@ -103,12 +103,7 @@ export function BasicsRefsSection({ search, type }: BasicsRefsSectionProps) {
       );
       await load();
     } catch (err) {
-      const message =
-        err instanceof ApiError
-          ? err.message || t("importDefaultsError")
-          : t("importDefaultsError");
-      setError(message);
-      toast.error(message);
+      setError(t("importDefaultsError"));
     } finally {
       setSeeding(false);
     }

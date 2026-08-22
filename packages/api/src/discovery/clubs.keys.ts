@@ -5,6 +5,7 @@ export const discoveryClubsKeys = {
   lists: () => [...discoveryClubsKeys.all, "list"] as const,
   list: (query: DiscoveryClubsQuery = {}) =>
     [...discoveryClubsKeys.lists(), query] as const,
+  facets: () => [...discoveryClubsKeys.all, "facets"] as const,
   details: () => [...discoveryClubsKeys.all, "detail"] as const,
   detail: (clubId: string) => [...discoveryClubsKeys.details(), clubId] as const,
   reviews: (clubId: string, query: DiscoveryClubReviewsQuery = {}) =>

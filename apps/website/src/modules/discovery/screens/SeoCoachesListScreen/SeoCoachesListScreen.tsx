@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import {
   PublicSiteFooter,
   PublicSiteHeader,
@@ -12,6 +13,7 @@ export async function SeoCoachesListScreen({
   q = "",
 }: SeoCoachesListScreenProps) {
   const slots = styles();
+  const coachTypeLabel = await getTranslations("Catalog.coachTypes");
   let coaches: Awaited<ReturnType<typeof discoveryCoaches.list>>["result"] = [];
 
   try {
@@ -95,7 +97,9 @@ export async function SeoCoachesListScreen({
                       <p className={slots.cardBody()}>
                         {coach.experience.headline ??
                           coach.bio ??
-                          coach.specialtyKeys.join(" · ")}
+                          coach.coachTypes
+                            .map((type) => coachTypeLabel(type))
+                            .join(" · ")}
                       </p>
                       <p className={slots.cardMeta()}>
                         {coach.experience.years ?? 0} سال سابقه

@@ -1,5 +1,6 @@
-import type { HomeArticleItem } from "../../lib/home-browse-data";
+import type { HomeEditorialArticle } from "../../lib/articles-home";
 
 export type DiscoveryHomeArticlesSectionProps = {
-  articles: HomeArticleItem[];
+  articles: HomeEditorialArticle[];
+  isLoading?: boolean;
 };

@@ -7,7 +7,7 @@ export type OnboardingSlideShellProps = {
   showChrome?: boolean;
   /** Full-viewport hero — no chrome padding; section paints edge-to-edge. */
   bleed?: boolean;
-  /** Fixed stage height with inner overflow (goals / sports lists). */
+  /** Fixed stage height with inner overflow (long lists). */
   innerScroll?: boolean;
   isActive: boolean;
   children?: ReactNode;

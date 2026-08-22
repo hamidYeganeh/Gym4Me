@@ -2,9 +2,21 @@ export {
   ApiClient,
   createApiClient,
   type ApiClientOptions,
+  type ApiNoticeListener,
   type RequestOptions,
 } from "./client";
 export { ApiError, KYC_REQUIRED_CODE, isKycRequiredError } from "./errors";
+export {
+  flattenApiMessage,
+  isAbortError,
+  isNetworkError,
+  resolveApiNotice,
+  resolveNetworkNotice,
+  type ApiNotice,
+  type ApiNoticeVariant,
+  type HttpMethod,
+  type ResolveApiNoticeInput,
+} from "./notices";
 export {
   ACCOUNT_SESSION_KEY,
   ADMIN_SESSION_KEY,
@@ -21,6 +33,7 @@ export type {
   ChoiceOption,
   ClubLifecycleStatus,
   AthleteBodyType,
+  CoachType,
   AthleteDiet,
   AthleteExperience,
   AthleteMood,
@@ -47,6 +60,7 @@ export type {
   KycStatus,
   LocationKind,
   LocationNode,
+  LocationRef,
   Paginated,
   PaginationMeta,
   Privacy,
@@ -61,6 +75,7 @@ export type {
   Role,
   SportKind,
   SportNode,
+  SportRef,
   SuccessResponse,
   SupportMessageAuthorKind,
   SupportRelatedEntityKind,
@@ -73,7 +88,7 @@ export type {
   UserStatus,
   VerificationStatus,
 } from "./types";
-export { paginationCount } from "./types";
+export { COACH_TYPES, paginationCount } from "./types";
 // React bindings intentionally NOT re-exported here — client-only code
 // (createContext) must stay out of server bundles. Use "@repo/api/react".
 export {
@@ -213,6 +228,8 @@ export {
   type DiscoveryClubSlotsApi,
   type DiscoveryCoachesApi,
   type DiscoveryCoachSlotsApi,
+  type DiscoveryClubCategoryFacet,
+  type DiscoveryClubFacets,
   type DiscoveryClubsQuery,
   type DiscoveryCoach,
   type DiscoveryCoachesQuery,

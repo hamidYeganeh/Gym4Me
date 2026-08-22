@@ -8,7 +8,7 @@ import {
 import { createAccountMembershipsApi } from "@repo/api/memberships";
 import { getApiBaseUrl } from "./env";
 
-const apiClient = createApiClient({
+export const apiClient = createApiClient({
   baseUrl: getApiBaseUrl(),
 });
 

@@ -51,13 +51,17 @@ export const chartCssVars = {
   tooltipBackground: "var(--chart-tooltip-background)",
 };
 
-/** Default scatter series colors from the chart palette (`--chart-1` … `--chart-5`). */
+/** Default scatter series colors from the chart palette (`--chart-1` … `--chart-9`). */
 export const defaultScatterColors = [
   "var(--chart-1)",
   "var(--chart-2)",
   "var(--chart-3)",
   "var(--chart-4)",
   "var(--chart-5)",
+  "var(--chart-6)",
+  "var(--chart-7)",
+  "var(--chart-8)",
+  "var(--chart-9)",
 ] as const;
 
 export interface Margin {

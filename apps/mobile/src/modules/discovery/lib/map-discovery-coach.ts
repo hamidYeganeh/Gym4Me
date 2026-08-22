@@ -1,5 +1,5 @@
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
-import type { DiscoveryCoach } from "@repo/api/discovery";
+import type { CoachType, DiscoveryCoach } from "@repo/api/discovery";
 import { mediaFileUrl } from "@/shared/lib/api";
 import type {
   BrowseCoach,
@@ -19,10 +19,25 @@ function displayName(coach: DiscoveryCoach) {
   );
 }
 
+const COACH_TYPE_TO_SPECIALTY: Partial<Record<CoachType, CoachSpecialtyId>> = {
+  yoga: "yoga",
+  pilates: "mobility",
+  "corrective-exercise": "mobility",
+  "sports-rehabilitation": "mobility",
+  "strength-training": "strength",
+  bodybuilding: "strength",
+  "contest-prep": "strength",
+  crossfit: "hiit",
+  "functional-training": "hiit",
+  "cardio-endurance": "hiit",
+  running: "speed",
+  cycling: "speed",
+};
+
 function specialtyLabel(coach: DiscoveryCoach) {
   return (
     coach.experience.headline ??
-    coach.specialtyKeys[0] ??
+    coach.coachTypes[0] ??
     "مربی ورزشی"
   );
 }
@@ -70,7 +85,7 @@ export function mapDiscoveryCoachToNearby(coach: DiscoveryCoach): NearbyCoach {
     name: displayName(coach),
     image: avatarUrl(coach),
     priceLabel: "",
-    specialtyId: "strength",
+    specialtyId: specialtyIdsFromCoach(coach)[0] ?? "strength",
     specialtyLabel: specialtyLabel(coach),
     distanceLabel: "",
     rating: 0,
@@ -80,21 +95,9 @@ export function mapDiscoveryCoachToNearby(coach: DiscoveryCoach): NearbyCoach {
 }
 
 function specialtyIdsFromCoach(coach: DiscoveryCoach): CoachSpecialtyId[] {
-  const ids: CoachSpecialtyId[] = [];
-  for (const key of coach.specialtyKeys) {
-    const normalized = key.toLowerCase();
-    if (normalized.includes("hiit")) ids.push("hiit");
-    else if (normalized.includes("yoga") || key.includes("یوگا")) ids.push("yoga");
-    else if (
-      normalized.includes("strength") ||
-      key.includes("قدر") ||
-      key.includes("بدن")
-    )
-      ids.push("strength");
-    else if (normalized.includes("mobil") || key.includes("موبیل"))
-      ids.push("mobility");
-    else if (normalized.includes("speed") || key.includes("سرعت")) ids.push("speed");
-  }
+  const ids = coach.coachTypes
+    .map((type) => COACH_TYPE_TO_SPECIALTY[type])
+    .filter((id): id is CoachSpecialtyId => id != null);
   return ids.length > 0 ? [...new Set(ids)] : ["strength"];
 }
 
@@ -165,9 +168,9 @@ export function mapDiscoveryCoachToDetail(coach: DiscoveryCoach): CoachDetail {
       milestones: [],
     },
     services: [],
-    specialties: coach.specialtyKeys.map((key) => ({
-      id: key,
-      title: key,
+    specialties: coach.coachTypes.map((type) => ({
+      id: type,
+      title: type,
       subtitle: "",
     })),
     consultationTypes: [],

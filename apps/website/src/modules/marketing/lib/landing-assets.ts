@@ -1,3 +1,5 @@
+import { statsColors, statsPalette } from "@repo/theme";
+
 const MOCK = "/assets/images/landing/mock";
 const PHONE = "/assets/images/landing/phone";
 
@@ -89,25 +91,13 @@ export const LANDING_SPORT_THEMES = [
     actionColor: "var(--accent-foreground)",
     actionForegroundColor: "var(--accent)",
   },
-  {
-    color: "var(--stats-blue)",
-    foregroundColor: "var(--stats-foreground)",
+  ...statsPalette.map((color) => ({
+    color,
+    foregroundColor: statsColors.foreground,
     actionColor: "var(--eclipse)",
-    actionForegroundColor: "var(--stats-foreground)",
-  },
-  {
-    color: "var(--stats-orange)",
-    foregroundColor: "var(--stats-foreground)",
-    actionColor: "var(--eclipse)",
-    actionForegroundColor: "var(--stats-foreground)",
-  },
-  {
-    color: "var(--foreground)",
-    foregroundColor: "var(--background)",
-    actionColor: "var(--accent)",
-    actionForegroundColor: "var(--accent-foreground)",
-  },
-] as const;
+    actionForegroundColor: statsColors.foreground,
+  })),
+];
 
 export const LANDING_CLUBS = [
   {

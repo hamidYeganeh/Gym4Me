@@ -25,11 +25,12 @@ export const swiperSnapOptions = {
 
 /** Free-scroll strip defaults — gallery / discovery card rows. */
 export const swiperFreeScrollOptions = {
-  freeMode: { enabled: true, sticky: false },
+  freeMode: { enabled: true, sticky: false, momentumRatio: 0.75 },
   slidesPerView: "auto",
   spaceBetween: 12,
   resistanceRatio: 0.85,
   speed: SWIPER_SPEED.smooth,
+  watchOverflow: true,
 } as const satisfies Partial<SwiperOptions>;
 
 /** Merge shared snap defaults with call-site overrides. */

@@ -22,6 +22,10 @@ export const ringCssVars = {
   ring3: "var(--chart-3)",
   ring4: "var(--chart-4)",
   ring5: "var(--chart-5)",
+  ring6: "var(--chart-6)",
+  ring7: "var(--chart-7)",
+  ring8: "var(--chart-8)",
+  ring9: "var(--chart-9)",
 };
 
 // Default ring color palette
@@ -31,6 +35,10 @@ export const defaultRingColors = [
   ringCssVars.ring3,
   ringCssVars.ring4,
   ringCssVars.ring5,
+  ringCssVars.ring6,
+  ringCssVars.ring7,
+  ringCssVars.ring8,
+  ringCssVars.ring9,
 ];
 
 export interface RingData {

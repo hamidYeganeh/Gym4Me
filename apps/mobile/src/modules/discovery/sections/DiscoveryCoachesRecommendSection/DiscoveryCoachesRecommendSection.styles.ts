@@ -7,8 +7,8 @@ export const discoveryCoachesRecommendSectionStyles = {
   seeAll:
     "shrink-0 cursor-pointer text-sm font-semibold text-accent no-underline shadow-none",
   carousel:
-    "flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth px-screen pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-  slide: "w-[min(78vw,280px)] shrink-0 snap-center",
+    "relative z-10 min-w-0 -mx-screen w-[calc(100%+2*var(--screen-margin))] max-w-none overflow-hidden",
+  slide: "!w-[min(78vw,280px)]",
   dots: "flex items-center justify-center gap-1.5 px-screen",
   dot: [
     "size-2 rounded-full bg-border transition-[width,background-color]",

@@ -23,10 +23,12 @@ export const onboardingGoalsSectionVariants = tv({
   variants: {
     selected: {
       true: {
-        option: "border-accent bg-accent/10 text-foreground",
-        optionIcon: "text-foreground",
-        check: "border-accent bg-accent text-accent-foreground",
-        checkIcon: "text-accent-foreground",
+        option:
+          "border-accent !bg-accent !text-accent-foreground data-[hovered=true]:!bg-accent",
+        optionIcon: "text-accent-foreground",
+        optionLabel: "text-accent-foreground",
+        check: "border-accent-foreground bg-accent-foreground text-accent",
+        checkIcon: "text-accent",
       },
       false: {
         option:

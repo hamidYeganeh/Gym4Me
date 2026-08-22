@@ -1,5 +1,6 @@
-import { IsMongoId, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsEnum, IsMongoId, IsOptional, IsString, MaxLength } from 'class-validator';
 import { PaginationQueryDto } from '../../../basics/dto/common.dto';
+import { CoachType } from '../../../common/enums';
 
 export class DiscoveryCoachesQueryDto extends PaginationQueryDto {
   @IsOptional()
@@ -16,9 +17,8 @@ export class DiscoveryCoachesQueryDto extends PaginationQueryDto {
   cityId?: string;
 
   @IsOptional()
-  @IsString()
-  @MaxLength(80)
-  specialtyKey?: string;
+  @IsEnum(CoachType)
+  coachType?: CoachType;
 
   /** Choice-group gender key, e.g. male | female. */
   @IsOptional()

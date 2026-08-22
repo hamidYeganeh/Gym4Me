@@ -1026,6 +1026,26 @@ export function ThemeDemo({ labels }: { labels: ThemeDemoLabels }) {
             className="size-6 rounded-full bg-stats-orange"
             title="stats-orange"
           />
+          <span
+            className="size-6 rounded-full bg-stats-green"
+            title="stats-green"
+          />
+          <span
+            className="size-6 rounded-full bg-stats-navy"
+            title="stats-navy"
+          />
+          <span
+            className="size-6 rounded-full bg-stats-midnight"
+            title="stats-midnight"
+          />
+          <span
+            className="size-6 rounded-full bg-stats-rose"
+            title="stats-rose"
+          />
+          <span
+            className="size-6 rounded-full bg-stats-forest"
+            title="stats-forest"
+          />
         </div>
         <div className="flex flex-wrap justify-center gap-4 py-2 w-full">
           <StatsCard

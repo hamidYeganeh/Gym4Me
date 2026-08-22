@@ -3,6 +3,8 @@
 import type { ReactNode } from "react";
 import { MediaImageProvider } from "@repo/ui/common/MediaImage";
 import { Toaster } from "@repo/ui/kit/Toast";
+import { apiClient } from "@/shared/lib/api-client";
+import { ApiToastBridge } from "./ApiToastBridge";
 import { AuthProvider } from "./AuthProvider";
 import { AppConfigProvider } from "./AppConfigProvider";
 import { DevicePermissionsProvider } from "./DevicePermissionsProvider";
@@ -16,6 +18,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
       <AppConfigProvider>
         <AuthProvider>
           <Toaster placement="top">
+            <ApiToastBridge client={apiClient} />
             <DevicePermissionsProvider>
               <PushNotificationsProvider />
               <ExitAppProvider />

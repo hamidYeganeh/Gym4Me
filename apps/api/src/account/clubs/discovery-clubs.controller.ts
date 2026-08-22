@@ -24,6 +24,15 @@ export class DiscoveryClubsController {
   }
 
   @Public()
+  @Get('facets')
+  @ApiOperation({
+    summary: 'Public club counts grouped by category',
+  })
+  facets() {
+    return this.clubs.discoveryCategoryFacets();
+  }
+
+  @Public()
   @Get(':clubId')
   @ApiOperation({ summary: 'Public club detail' })
   get(@Param('clubId') clubId: string) {

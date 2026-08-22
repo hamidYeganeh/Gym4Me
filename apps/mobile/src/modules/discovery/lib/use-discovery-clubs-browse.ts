@@ -24,6 +24,7 @@ import type { BrowseClub } from "./clubs-browse-data";
 export type DiscoveryClubsBrowseOptions = {
   locationId?: string | null;
   sportId?: string | null;
+  categoryId?: string | null;
   genderPolicy?: string | null;
   amenitySlug?: string | null;
   accessibility?: string | null;
@@ -52,6 +53,7 @@ export function useDiscoveryClubsBrowse(
 ): DiscoveryClubsBrowseState {
   const locationId = options.locationId ?? undefined;
   const sportId = options.sportId ?? undefined;
+  const categoryId = options.categoryId ?? undefined;
   const genderPolicy = options.genderPolicy ?? undefined;
   const amenitySlug = options.amenitySlug ?? undefined;
   const accessibility = options.accessibility ?? undefined;
@@ -134,6 +136,7 @@ export function useDiscoveryClubsBrowse(
       const scopedFromUrl = {
         ...(locationId ? { locationId } : {}),
         ...(sportId ? { sportId } : {}),
+        ...(categoryId ? { categoryId } : {}),
         ...(genderPolicy ? { genderPolicy } : {}),
         ...(amenitySlug ? { amenitySlug } : {}),
         ...(accessibility ? { accessibility } : {}),
@@ -163,6 +166,7 @@ export function useDiscoveryClubsBrowse(
       accessibility,
       ageGroupKey,
       amenitySlug,
+      categoryId,
       genderPolicy,
       levelKey,
       locationId,

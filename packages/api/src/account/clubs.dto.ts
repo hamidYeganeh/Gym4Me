@@ -1,6 +1,9 @@
 import type {
   ClubLifecycleStatus,
   GeoCoordinates,
+  LocationNode,
+  LocationRef,
+  SportNode,
 } from "../types";
 
 export type ClubOperationalStatus = "active" | "inactive";
@@ -52,28 +55,9 @@ export type ClubRefItem = {
 };
 
 /** Populated sport node; only `id` when the sport is missing. */
-export type ClubSportItem = {
-  id: string;
-  kind?: string;
-  name?: string;
-  slug?: string;
-  description?: string | null;
-  icon?: string | null;
-  coverMediaId?: string | null;
-  parentId?: string | null;
-  ancestors?: string[];
-  order?: number;
-  isActive?: boolean;
-};
+export type ClubSportItem = SportNode | { id: string };
 
-export type ClubLocationNode = {
-  id: string;
-  kind: string;
-  name: string;
-  slug: string;
-  flagSvg: string | null;
-  parentId: string | null;
-};
+export type ClubLocationNode = LocationNode;
 
 export type ClubCoachRef = {
   coachId: string;
@@ -135,7 +119,7 @@ export type Club = {
     point: GeoCoordinates | null;
     direction: GeoDirection | null;
     locationId: string | null;
-    ancestors: string[];
+    ancestors: LocationRef[];
     node?: ClubLocationNode | null;
   } | null;
   audience: {

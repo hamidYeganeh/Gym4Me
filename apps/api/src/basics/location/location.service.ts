@@ -18,6 +18,11 @@ import {
   DEFAULT_LOCATION_TREE,
   type LocationDefaultNode,
 } from './location-defaults';
+import {
+  collectLocationRelatedIds,
+  toLocationPublic,
+  type LocationLike,
+} from './location-public';
 
 const CHILD_KIND: Record<LocationKind, LocationKind | null> = {
   [LocationKind.COUNTRY]: LocationKind.PROVINCE,
@@ -58,7 +63,7 @@ export class LocationService {
       .find(filter)
       .sort({ order: 1, name: 1 })
       .lean();
-    return asSinglePageResult(items.map((l) => this.toPublic(l)));
+    return asSinglePageResult(await this.mapPublic(items));
   }
 
   async getById(id: string, admin = false) {
@@ -66,7 +71,7 @@ export class LocationService {
     if (!admin && !location.isActive) {
       throw new NotFoundException('Location not found');
     }
-    return this.toPublic(location);
+    return (await this.mapPublic([location]))[0];
   }
 
   async listChildren(parentId: string, admin = false) {
@@ -77,7 +82,7 @@ export class LocationService {
     const childKind = CHILD_KIND[parent.kind];
     if (!childKind) {
       return {
-        parent: this.toPublic(parent),
+        parent: (await this.mapPublic([parent]))[0],
         ...asSinglePageResult([]),
       };
     }
@@ -92,10 +97,14 @@ export class LocationService {
       .find(filter)
       .sort({ order: 1, name: 1 })
       .lean();
+    const [publicParent, ...publicItems] = await this.mapPublic([
+      parent,
+      ...items,
+    ]);
 
     return {
-      parent: this.toPublic(parent),
-      ...asSinglePageResult(items.map((l) => this.toPublic(l))),
+      parent: publicParent,
+      ...asSinglePageResult(publicItems),
     };
   }
 
@@ -133,7 +142,7 @@ export class LocationService {
       request,
     });
 
-    return this.toPublic(location);
+    return (await this.mapPublic([location]))[0];
   }
 
   async update(
@@ -189,7 +198,7 @@ export class LocationService {
       request,
     });
 
-    return this.toPublic(location);
+    return (await this.mapPublic([location]))[0];
   }
 
   async remove(id: string, adminId: string, request: Request) {
@@ -397,26 +406,14 @@ export class LocationService {
     return location;
   }
 
-  private toPublic(location: Location & { _id: Types.ObjectId }) {
-    return {
-      id: location._id.toString(),
-      kind: location.kind,
-      name: location.name,
-      slug: location.slug,
-      description: location.description ?? null,
-      icon: location.icon ?? null,
-      flagSvg: location.flagSvg ?? null,
-      parentId: location.parentId?.toString() ?? null,
-      ancestors: (location.ancestors ?? []).map((a) => a.toString()),
-      coordinates: location.center?.coordinates
-        ? {
-            lng: location.center.coordinates[0],
-            lat: location.center.coordinates[1],
-          }
-        : null,
-      coverMediaId: location.coverMediaId?.toString() ?? null,
-      order: location.order,
-      isActive: location.isActive,
-    };
+  private async mapPublic(items: LocationLike[]) {
+    const ids = collectLocationRelatedIds(items);
+    const relatedDocs = ids.length
+      ? await this.locationModel.find({ _id: { $in: ids } }).lean()
+      : [];
+    const related = new Map(
+      relatedDocs.map((doc) => [doc._id.toString(), doc] as const),
+    );
+    return items.map((item) => toLocationPublic(item, related));
   }
 }

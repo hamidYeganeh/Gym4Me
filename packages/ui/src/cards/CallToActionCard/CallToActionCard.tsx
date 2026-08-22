@@ -4,6 +4,7 @@ import { Button } from "@heroui/react/button";
 import { Chip } from "@heroui/react/chip";
 import { Typography } from "@heroui/react/typography";
 import { ChatLine } from "@repo/icons/ChatLine";
+import { Hourglass1 } from "@repo/icons/Hourglass1";
 import { Plus } from "@repo/icons/Plus";
 import { callToActionCardVariants } from "./CallToActionCard.styles";
 import type { CallToActionCardProps } from "./CallToActionCard.types";
@@ -24,11 +25,15 @@ export function CallToActionCard({
 }: CallToActionCardProps) {
   const isSoft = variant === "soft";
   const isLabeledButton = actionType === "button";
+  const isPending = actionType === "pending";
   const slots = callToActionCardVariants({ variant, actionType });
+  const iconSize = isSoft ? 18 : 22;
   const actionIcon =
-    actionType === "icon" && !isSoft
-      ? (icon ?? <ChatLine size={28} />)
-      : <Plus size={isSoft ? 18 : 22} />;
+    isPending
+      ? <Hourglass1 size={iconSize} />
+      : actionType === "icon" && !isSoft
+        ? (icon ?? <ChatLine size={28} />)
+        : <Plus size={iconSize} />;
   const hasBadge = badge != null && badge !== "";
   const hasMeta = meta != null && meta !== "";
 
@@ -46,8 +51,9 @@ export function CallToActionCard({
     <Button
       aria-label={actionLabel}
       className={slots.action({ className: actionClassName })}
+      isDisabled={isPending}
       isIconOnly
-      onPress={onAction}
+      onPress={isPending ? undefined : onAction}
       size="lg"
       variant="ghost"
     >

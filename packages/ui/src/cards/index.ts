@@ -1,5 +1,6 @@
 export * from "./AchievementTag";
 export * from "./ArticleCard";
+export * from "./ArticleEditorialCard";
 export * from "./BusyHoursCard";
 export * from "./CallToActionCard";
 export * from "./ClassCard";
@@ -8,6 +9,7 @@ export * from "./DistrictCard";
 export * from "./DisclosureCard";
 export * from "./ClubAmenityCard";
 export * from "./ClubBranchCard";
+export * from "./ClubCategoryTile";
 export * from "./ClubCancellationPolicy";
 export * from "./ClubCard";
 export * from "./ClubClassCard";

@@ -50,6 +50,21 @@ export const profileShowcaseSectionVariants = tv({
       "stats-orange": {
         achievementIcon: "bg-stats-orange text-stats-foreground",
       },
+      "stats-green": {
+        achievementIcon: "bg-stats-green text-stats-foreground",
+      },
+      "stats-navy": {
+        achievementIcon: "bg-stats-navy text-stats-foreground",
+      },
+      "stats-midnight": {
+        achievementIcon: "bg-stats-midnight text-stats-foreground",
+      },
+      "stats-rose": {
+        achievementIcon: "bg-stats-rose text-stats-foreground",
+      },
+      "stats-forest": {
+        achievementIcon: "bg-stats-forest text-stats-foreground",
+      },
       muted: {
         achievementIcon: "bg-default text-muted",
       },

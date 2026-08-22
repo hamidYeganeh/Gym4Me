@@ -1,17 +1,33 @@
+import type { HomeEditorialArticle } from "../../lib/articles-home";
+import type { HomeClubCategoryItem } from "../../lib/club-categories-home";
 import type { BrowseClub } from "../../lib/clubs-browse-data";
-import type {
-  ClubDiscoveryFilter,
-  ClubDiscoveryFilterId,
-} from "../../lib/club-discovery-filters";
-import type { HomeLocationItem } from "../../lib/home-browse-data";
+import type { HomeLocationItem, HomeSportItem } from "../../lib/home-browse-data";
+import type { HomeSportCategoryItem } from "../../lib/sports-home";
+import type { PlacementBannerSlide } from "../../lib/use-placement-banners";
 
 export type DiscoveryClubsScreenProps = {
-  clubs: BrowseClub[];
-  discoveryFilters: ClubDiscoveryFilter[];
-  activeFilter: ClubDiscoveryFilterId;
-  onFilterChange: (id: ClubDiscoveryFilterId) => void;
-  provinces: HomeLocationItem[];
-  cities: HomeLocationItem[];
-  districts: HomeLocationItem[];
-  isLoading?: boolean;
+  banners?: PlacementBannerSlide[];
+  bannersLoading?: boolean;
+  categories?: HomeClubCategoryItem[];
+  categoriesLoading?: boolean;
+  sportCategories?: HomeSportCategoryItem[];
+  sportCategoriesLoading?: boolean;
+  sports?: HomeSportItem[];
+  sportsLoading?: boolean;
+  cities?: HomeLocationItem[];
+  citiesLoading?: boolean;
+  nearbyClubs?: BrowseClub[];
+  nearbyClubsLoading?: boolean;
+  districtClubs?: BrowseClub[];
+  districtClubsLoading?: boolean;
+  districtName?: string | null;
+  districtLocationId?: string | null;
+  openNowClubs?: BrowseClub[];
+  topRatedClubs?: BrowseClub[];
+  clubsLoading?: boolean;
+  clubsCount?: number;
+  hideDistrictRail?: boolean;
+  onClearFilters?: () => void;
+  articles?: HomeEditorialArticle[];
+  articlesLoading?: boolean;
 };

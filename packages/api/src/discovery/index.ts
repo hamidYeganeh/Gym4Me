@@ -7,6 +7,8 @@ export type {
   Club,
   ClubUserReview,
   CreateDiscoveryReviewInput,
+  DiscoveryClubCategoryFacet,
+  DiscoveryClubFacets,
   DiscoveryClubReviewsQuery,
   DiscoveryClubsQuery,
 } from "./clubs.dto";
@@ -52,6 +54,8 @@ export type {
   DiscoveryCoachesQuery,
   DiscoveryCoachUser,
 } from "./coaches.dto";
+export { COACH_TYPES } from "../types";
+export type { CoachType } from "../types";
 export { discoveryCoachesKeys } from "./coaches.keys";
 
 export {

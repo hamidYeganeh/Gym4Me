@@ -1,5 +1,8 @@
 import type { Locale } from "./config";
-import fa from "../messages/fa.json";
+import apiFa from "../messages/api-fa.json";
+import faBase from "../messages/fa.json";
+
+const fa = { ...faBase, Api: apiFa };
 
 const messagesByLocale = {
   fa,

@@ -70,9 +70,11 @@ export type DiscoveryClubPayload = {
   location?: {
     address: string;
     point: { lng: number; lat: number } | null;
+    ancestors?: Array<{ name?: string; kind?: string; level?: string }>;
     node?: {
       name?: string;
-      ancestors?: Array<{ name?: string; level?: string }>;
+      kind?: string;
+      ancestors?: Array<{ name?: string; kind?: string; level?: string }>;
     } | null;
   } | null;
   contact?: {
@@ -327,16 +329,21 @@ export function mapDiscoveryClubToDetail(input: {
   const images = gallery.map((item) => item.url);
 
   const hours = formatOpenHours(club.operatingHours);
-  const ancestors = club.location?.node?.ancestors ?? [];
+  const ancestors =
+    club.location?.node?.ancestors ?? club.location?.ancestors ?? [];
+  const ancestorKind = (a: { kind?: string; level?: string }) =>
+    a.kind ?? a.level;
   const province =
-    ancestors.find((a) => a.level === "province")?.name ??
+    ancestors.find((a) => ancestorKind(a) === "province")?.name ??
     ancestors[ancestors.length - 1]?.name;
   const city =
-    ancestors.find((a) => a.level === "city")?.name ??
+    ancestors.find((a) => ancestorKind(a) === "city")?.name ??
     club.location?.node?.name;
   const neighborhood =
-    ancestors.find((a) => a.level === "district" || a.level === "neighborhood")
-      ?.name ?? club.location?.node?.name;
+    ancestors.find(
+      (a) =>
+        ancestorKind(a) === "district" || ancestorKind(a) === "neighborhood",
+    )?.name ?? club.location?.node?.name;
   const locationLabel =
     club.location?.address ||
     [province, city, neighborhood].filter(Boolean).join("، ") ||

@@ -53,6 +53,15 @@ const ROLE_REQUEST_SORT_FIELDS = {
   role: 'role',
 } as const;
 
+function isDuplicateKeyError(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    error.code === 11000
+  );
+}
+
 @Injectable()
 export class RoleMembershipService {
   constructor(
@@ -116,20 +125,7 @@ export class RoleMembershipService {
       throw new ConflictException(`You already have the "${role}" role`);
     }
 
-    let doc = await this.roleRequests.findOne({
-      userId: new Types.ObjectId(jwt.sub),
-      role,
-    });
-
-    if (!doc) {
-      doc = await this.roleRequests.create({
-        userId: new Types.ObjectId(jwt.sub),
-        role,
-        status: VerificationStatus.UNSUBMITTED,
-        application: { documentMediaIds: [] },
-        review: {},
-      });
-    }
+    const doc = await this.ensureRoleRequest(jwt.sub, role);
 
     if (role === Role.COACH) {
       await this.profiles.ensureCoachProfile(jwt.sub);
@@ -172,20 +168,7 @@ export class RoleMembershipService {
       throw new ConflictException(`You already have the "${role}" role`);
     }
 
-    let doc = await this.roleRequests.findOne({
-      userId: new Types.ObjectId(jwt.sub),
-      role,
-    });
-
-    if (!doc) {
-      doc = new this.roleRequests({
-        userId: new Types.ObjectId(jwt.sub),
-        role,
-        status: VerificationStatus.UNSUBMITTED,
-        application: { documentMediaIds: [] },
-        review: {},
-      });
-    }
+    const doc = await this.ensureRoleRequest(jwt.sub, role);
 
     if (doc.status === VerificationStatus.PENDING) {
       throw new ConflictException('Role request already pending review');
@@ -434,6 +417,46 @@ export class RoleMembershipService {
     );
 
     return false;
+  }
+
+  /**
+   * Idempotent shell for a self-service role request.
+   * Concurrent apply/submit calls can race on the unique (userId, role) index.
+   */
+  private async ensureRoleRequest(
+    userId: string,
+    role: Role,
+  ): Promise<RoleRequestDocument> {
+    const userObjectId = new Types.ObjectId(userId);
+    const filter = { userId: userObjectId, role };
+    const insert = {
+      userId: userObjectId,
+      role,
+      status: VerificationStatus.UNSUBMITTED,
+      application: { documentMediaIds: [] },
+      review: {},
+    };
+
+    try {
+      const doc = await this.roleRequests.findOneAndUpdate(
+        filter,
+        { $setOnInsert: insert },
+        { upsert: true, new: true },
+      );
+      if (!doc) {
+        throw new Error('Role request upsert returned null');
+      }
+      return doc;
+    } catch (err: unknown) {
+      if (!isDuplicateKeyError(err)) {
+        throw err;
+      }
+      const existing = await this.roleRequests.findOne(filter);
+      if (!existing) {
+        throw err;
+      }
+      return existing;
+    }
   }
 
   private async grantRole(userId: string, role: Role) {

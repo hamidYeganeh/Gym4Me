@@ -4,6 +4,7 @@ import type {
   Club,
   ClubUserReview,
   CreateDiscoveryReviewInput,
+  DiscoveryClubFacets,
   DiscoveryClubReviewsQuery,
   DiscoveryClubsQuery,
 } from "./clubs.dto";
@@ -15,6 +16,12 @@ export function createDiscoveryClubsApi(client: ApiClient) {
     list(query: DiscoveryClubsQuery = {}) {
       return client.request<Paginated<Club>>(ep.root, {
         query,
+        public: true,
+      });
+    },
+
+    listFacets() {
+      return client.request<DiscoveryClubFacets>(ep.facets, {
         public: true,
       });
     },

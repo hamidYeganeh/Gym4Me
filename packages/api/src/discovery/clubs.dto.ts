@@ -33,3 +33,12 @@ export type DiscoveryClubReviewsQuery = Record<
   string,
   string | number | boolean | null | undefined
 >;
+
+export type DiscoveryClubCategoryFacet = {
+  id: string;
+  count: number;
+};
+
+export type DiscoveryClubFacets = {
+  categories: DiscoveryClubCategoryFacet[];
+};

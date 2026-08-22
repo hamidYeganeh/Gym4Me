@@ -5,6 +5,8 @@ import { ThemeProvider } from "@repo/theme";
 import { Toaster } from "@repo/ui/kit/Toast";
 import { NextIntlClientProvider } from "next-intl";
 import { AppRouter } from "./app/App";
+import { apiClient } from "./shared/lib/api-client";
+import { ApiToastBridge } from "./shared/providers/ApiToastBridge";
 import "./index.css";
 
 const locale = defaultLocale;
@@ -15,6 +17,7 @@ createRoot(document.getElementById("root")!).render(
     <NextIntlClientProvider locale={locale} messages={messages}>
       <ThemeProvider defaultTheme="system" enableSystem>
         <Toaster>
+          <ApiToastBridge client={apiClient} />
           <AppRouter />
         </Toaster>
       </ThemeProvider>
