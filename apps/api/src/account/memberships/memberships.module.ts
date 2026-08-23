@@ -33,6 +33,7 @@ import {
   AthleteMembershipsController,
 } from './athlete-memberships.controller';
 import { AdminMembershipsController } from './admin-memberships.controller';
+import { SellMembershipCommand } from './application/commands/sell-membership.command';
 import {
   DiscoveryMembershipPlansController,
   DiscoveryPlatformPlansController,
@@ -69,7 +70,7 @@ import {
     AccountPlatformSubscriptionsController,
     AdminMembershipsController,
   ],
-  providers: [MembershipsService, StaffPermissionGuard],
+  providers: [SellMembershipCommand, MembershipsService, StaffPermissionGuard],
   exports: [MembershipsService],
 })
 export class MembershipsModule {}

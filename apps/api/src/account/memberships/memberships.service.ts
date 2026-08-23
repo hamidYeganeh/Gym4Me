@@ -17,8 +17,6 @@ import {
   MembershipStatus,
   MembershipTransferPolicy,
   PaymentChannel,
-  PaymentPurpose,
-  PaymentStatus,
   PlatformSubscriptionStatus,
   PublishStatus,
   SubscriptionRenewalMode,
@@ -28,9 +26,6 @@ import {
   resolvePageSize,
 } from '../../common/utils/pagination.util';
 import { normalizeIranPhone } from '../../common/utils/phone.util';
-import { CouponsService } from '../../coupons/coupons.service';
-import { FinanceService } from '../../finance/finance.service';
-import { MongoTransactionService } from '../../common/mongo/mongo-transaction.service';
 import { Club, ClubDocument } from '../../schemas/club.schema';
 import {
   ClubMembershipPlan,
@@ -75,6 +70,7 @@ import {
   UpdateMembershipPlanDto,
   UpdatePlatformPlanDto,
 } from './dto/membership.dto';
+import { SellMembershipCommand } from './application/commands/sell-membership.command';
 
 type ActorRef = {
   userId: string;
@@ -99,9 +95,7 @@ export class MembershipsService {
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
     private readonly audit: AuditService,
-    private readonly finance: FinanceService,
-    private readonly coupons: CouponsService,
-    private readonly transactions: MongoTransactionService,
+    private readonly sellMembershipCommand: SellMembershipCommand,
   ) {}
 
   // ── Access ──────────────────────────────────────────────────────────────
@@ -297,250 +291,15 @@ export class MembershipsService {
       importSource?: { batchKey: string; rowKey: string };
     },
   ) {
-    if (dto.idempotencyKey) {
-      const existing = await this.membershipModel.findOne({
-        clubId: new Types.ObjectId(clubId),
-        idempotencyKey: dto.idempotencyKey,
-      });
-      if (existing) {
-        const [enriched] = await this.toMembershipPublicMany([existing]);
-        return enriched;
-      }
-    }
-
-    const holder = this.normalizeHolder(dto.holder);
-    let committed: Awaited<ReturnType<MembershipsService['sellInTransaction']>>;
-    try {
-      committed = await this.transactions.run((session) =>
-        this.sellInTransaction(clubId, dto, actor, holder, options, session),
-      );
-    } catch (error) {
-      if (dto.idempotencyKey && (error as { code?: number }).code === 11000) {
-        const existing = await this.membershipModel.findOne({
-          clubId: new Types.ObjectId(clubId),
-          idempotencyKey: dto.idempotencyKey,
-        });
-        if (existing) {
-          const [enriched] = await this.toMembershipPublicMany([existing]);
-          return enriched;
-        }
-      }
-      throw error;
-    }
-
-    if (committed.idempotent) {
-      const [enriched] = await this.toMembershipPublicMany([
-        committed.membership,
-      ]);
-      return enriched;
-    }
-
-    if (committed.paymentDto && committed.paymentResult) {
-      await this.finance.runPaymentPostCommitEffects(
-        committed.paymentDto,
-        {
-          actorId: actor.userId,
-          operatorUserId: actor.userId,
-          request,
-        },
-        committed.paymentResult,
-      );
-    }
-
-    const { membership, plan, paymentId, debtId } = committed;
-
-    this.audit.log({
-      action: AuditAction.MEMBERSHIP_SOLD,
-      actorId: actor.userId,
-      targetUserId: holder.userId?.toString(),
-      metadata: {
-        clubId,
-        membershipId: membership._id.toString(),
-        planId: plan._id.toString(),
-        paymentId,
-        debtId,
-      },
+    const membership = await this.sellMembershipCommand.execute(
+      clubId,
+      dto,
+      actor,
       request,
-    });
-
+      options,
+    );
     const [enriched] = await this.toMembershipPublicMany([membership]);
     return enriched;
-  }
-
-  private async sellInTransaction(
-    clubId: string,
-    dto: SellMembershipDto,
-    actor: ActorRef,
-    holder: ReturnType<MembershipsService['normalizeHolder']>,
-    options:
-      | {
-          skipPayment?: boolean;
-          importSource?: { batchKey: string; rowKey: string };
-        }
-      | undefined,
-    session: ClientSession,
-  ) {
-    if (dto.idempotencyKey) {
-      const existing = await this.membershipModel
-        .findOne({
-          clubId: new Types.ObjectId(clubId),
-          idempotencyKey: dto.idempotencyKey,
-        })
-        .session(session);
-      if (existing) {
-        return {
-          membership: existing,
-          plan: null,
-          paymentId: existing.paymentId?.toString(),
-          debtId: undefined,
-          paymentDto: undefined,
-          paymentResult: undefined,
-          idempotent: true as const,
-        };
-      }
-    }
-
-    const plan = await this.findSellablePlan(clubId, dto.planId, session);
-    const membership = new this.membershipModel({
-      clubId: new Types.ObjectId(clubId),
-      planId: plan._id,
-      holder,
-      status: MembershipStatus.ACTIVE,
-      credit: this.buildCreditFromPlan(plan),
-      soldBy: new Types.ObjectId(actor.userId),
-      paymentId: dto.paymentId ? new Types.ObjectId(dto.paymentId) : undefined,
-      idempotencyKey: dto.idempotencyKey,
-      importSource: options?.importSource,
-    });
-    await membership.save({ session });
-
-    let paymentId = dto.paymentId;
-    let debtId: string | undefined;
-    let paymentDto: Parameters<FinanceService['recordPayment']>[0] | undefined;
-    let paymentResult:
-      Awaited<ReturnType<FinanceService['recordPayment']>> | undefined;
-    const gross = plan.pricing?.amount ?? 0;
-
-    if (!paymentId && gross > 0 && !options?.skipPayment) {
-      const channel = dto.channel ?? PaymentChannel.CASH;
-      const idempotencyKey =
-        dto.idempotencyKey ??
-        `membership-sell:${clubId}:${plan._id.toString()}:${membership._id.toString()}`;
-      let discount = 0;
-      if (dto.couponCode) {
-        const redeemed = await this.coupons.redeem(
-          dto.couponCode,
-          {
-            userId: holder.userId?.toString(),
-            clubId,
-            amount: gross,
-            contextKey: `membership:${membership._id.toString()}`,
-          },
-          session,
-        );
-        discount = redeemed.discount;
-      }
-
-      const payable = Math.max(0, gross - discount);
-      const collected = dto.paidAmount ?? payable;
-      if (collected > payable) {
-        throw new BadRequestException(
-          'paidAmount cannot exceed the membership payable amount',
-        );
-      }
-
-      if (collected > 0) {
-        const isFullPayment = collected === payable;
-        paymentDto = {
-          purpose: PaymentPurpose.MEMBERSHIP,
-          channel,
-          status: PaymentStatus.CAPTURED,
-          amount: isFullPayment
-            ? {
-                gross,
-                discount,
-                tax: plan.pricing?.tax ?? 0,
-              }
-            : { gross: collected },
-          reference: {
-            orderId: `mem_${membership._id.toString()}`,
-            externalRef: dto.externalRef,
-          },
-          payer: {
-            userId: holder.userId?.toString(),
-            guest: holder.guest
-              ? { name: holder.guest.name, phone: holder.guest.phone }
-              : undefined,
-          },
-          tenders: dto.tenders,
-          related: {
-            membershipId: membership._id.toString(),
-            clubId,
-          },
-          idempotencyKey,
-          operatorNote: `Desk/self membership sell by ${actor.userId}`,
-        };
-        paymentResult = await this.finance.recordPayment(paymentDto, {
-          actorId: actor.userId,
-          operatorUserId: actor.userId,
-          request: undefined,
-          session,
-        });
-        paymentId = paymentResult.payment._id.toString();
-        membership.paymentId = new Types.ObjectId(paymentId);
-        await membership.save({ session });
-      }
-
-      const outstanding = payable - collected;
-      if (outstanding > 0) {
-        const defaultDueAt = new Date();
-        defaultDueAt.setDate(defaultDueAt.getDate() + 30);
-        const created = await this.finance.createDebt(
-          clubId,
-          {
-            holder: {
-              userId: holder.userId?.toString(),
-              guest: holder.guest,
-            },
-            membershipId: membership._id.toString(),
-            principal: outstanding,
-            dueAt: dto.debt?.dueAt ?? defaultDueAt.toISOString(),
-            installmentCount: dto.debt?.installmentCount,
-            note:
-              dto.debt?.note ??
-              `Outstanding membership balance ${membership._id.toString()}`,
-          },
-          session,
-        );
-        debtId = created.debt._id.toString();
-      }
-    }
-
-    await this.appendEvent(
-      {
-        membershipId: membership._id,
-        type: MembershipEventType.SOLD,
-        actor,
-        payload: {
-          planId: plan._id.toString(),
-          clubId,
-          paymentId,
-          debtId,
-          importSource: options?.importSource,
-        },
-      },
-      session,
-    );
-
-    return {
-      membership,
-      plan,
-      paymentId,
-      debtId,
-      paymentDto,
-      paymentResult,
-      idempotent: false as const,
-    };
   }
 
   /** Validate or commit members parsed by the client from a CSV file. */
@@ -1377,25 +1136,6 @@ export class MembershipsService {
         ? { name: holder.guest.name, phone: holder.guest.phone }
         : undefined,
     };
-  }
-
-  private buildCreditFromPlan(plan: ClubMembershipPlanDocument) {
-    const credit: {
-      remainingSessions?: number;
-      remainingEntries?: number;
-      expiresAt?: Date;
-    } = {};
-
-    if (plan.kind === MembershipPlanKind.DURATION) {
-      const days = plan.durationDays ?? 30;
-      credit.expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
-    } else if (plan.kind === MembershipPlanKind.SESSIONS) {
-      credit.remainingSessions = plan.sessionsTotal;
-    } else if (plan.kind === MembershipPlanKind.ENTRIES) {
-      credit.remainingEntries = plan.entriesTotal;
-    }
-
-    return credit;
   }
 
   private async findClubOrFail(clubId: string) {

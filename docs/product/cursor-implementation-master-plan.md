@@ -166,7 +166,7 @@ G4M-002 → G4M-010 ┬→ G4M-011 ─┐                                ├→ 
   - queryها projection و pagination محدود داشته باشند؛ no unbounded list.
 - **معیار پذیرش:** هیچ رفتار API شکسته نشود؛ contract tests قبل/بعد یکسان؛ فایل جدید application service ترجیحاً زیر ۴۰۰ خط و یک مسئولیت داشته باشد.
 - **ریسک:** refactor گسترده همراه feature ممنوع؛ هر استخراج باید characterization test داشته باشد.
-- **پیشرفت فعلی:** سه use-case حساس ایجاد رزرو مربی، ایجاد رزرو باشگاه و verify پرداخت از `BookingsService` به commandهای مستقل زیر ۴۰۰ خط منتقل شدند؛ facade و قرارداد HTTP ثابت ماند، gateway بیرون transaction و Booking + Finance/Ledger + Outbox در session مشترک نگه داشته شدند. projection چندنقشی رزرو نیز به `BookingProjector` مستقل و batch-bounded منتقل شد. نوزده characterization test برای idempotency/race و retry ناقص، ظرفیت و رزرو اتمیک، snapshot/TTL قیمت، validation، callback ناموفق، post-commit مالی و read model نقش‌ها اضافه شده است.
+- **پیشرفت فعلی:** سه use-case حساس ایجاد رزرو مربی، ایجاد رزرو باشگاه و verify پرداخت از `BookingsService` به commandهای مستقل زیر ۴۰۰ خط منتقل شدند؛ facade و قرارداد HTTP ثابت ماند، gateway بیرون transaction و Booking + Finance/Ledger + Outbox در session مشترک نگه داشته شدند. projection چندنقشی رزرو نیز به `BookingProjector` مستقل و batch-bounded منتقل شد. فروش عضویت هم به command مستقل منتقل شده تا Membership + Coupon + Payment/Ledger + Debt + MembershipEvent اتمیک و effect/audit پس از commit بماند. مجموعاً ۲۴ characterization test برای idempotency/race و retry ناقص، ظرفیت، snapshot/TTL قیمت، validation، callback و post-commit مالی، read model نقش‌ها و فروش رایگان/اعتباری عضویت اضافه شده است.
 
 ---
 
