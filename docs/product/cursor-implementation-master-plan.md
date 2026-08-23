@@ -100,9 +100,9 @@ G4M-002 → G4M-010 ┬→ G4M-011 ─┐                                ├→ 
 | G4M-011    | P0     | BLOCKED | incremental Health Sync، cursor و offline queue واقعی | G4M-010                      |
 | G4M-012    | P1     | BLOCKED | حقوق داده و حذف حساب با retention روشن                | G4M-010                      |
 | G4M-013    | P1     | BLOCKED | observability و امنیت دادهٔ سلامت                     | G4M-011, G4M-012             |
-| G4M-020    | P0     | VERIFY  | حذف mock از مسیرهای production و demo isolation       | G4M-002                      |
+| G4M-020    | P0     | DONE    | حذف mock از مسیرهای production و demo isolation       | G4M-002                      |
 | G4M-021    | P0     | BLOCKED | discovery واقعی کامل و supply integrity               | G4M-020                      |
-| G4M-030    | P0     | BLOCKED | رزرو اتمیک، ظرفیت و idempotency سراسری                | G4M-003                      |
+| G4M-030    | P0     | READY   | رزرو اتمیک، ظرفیت و idempotency سراسری                | G4M-003                      |
 | G4M-031    | P0     | BLOCKED | پرداخت، coupon، wallet، refund و reconciliation واقعی | G4M-030                      |
 | G4M-040    | P0     | BLOCKED | workerهای چند-instance و outbox قابل اتکا             | G4M-003                      |
 | G4M-050    | P0     | BLOCKED | عضویت، subscription enforcement و عملیات پذیرش        | G4M-021, G4M-031, G4M-040    |
@@ -223,7 +223,7 @@ G4M-002 → G4M-010 ┬→ G4M-011 ─┐                                ├→ 
 
 ### G4M-020 — حذف mock از مسیرهای production و demo isolation
 
-- **وضعیت:** VERIFY (۲۰۲۶-۰۸-۲۳؛ منتظر CI رسمی commit نهایی)
+- **وضعیت:** DONE (۲۰۲۶-۰۸-۲۳)
 - **Persona/value:** GST/ATH/OWN؛ اعتماد به اطلاعات و جلوگیری از اقدام روی داده جعلی.
 - **استوری:** C1–C4، K1، N3.
 - **شواهد:** sports/classes/coach slots و notification inbox در error یا empty از fixtures استفاده می‌کنند.
@@ -234,7 +234,7 @@ G4M-002 → G4M-010 ┬→ G4M-011 ─┐                                ├→ 
   - admin club form owner/category/sport را از API واقعی بگیرد.
 - **معیار پذیرش:** جست‌وجوی production و inbox هیچ fixture نمایش ندهند؛ API outage قابل تشخیص باشد؛ demo route از analytics production جدا باشد.
 - **تست:** empty 200، 404، 401، timeout، offline cache، mock-id navigation guard.
-- **شواهد فعلی:** demo flag از phase خود Next مشتق و در export تولیدی حتی با env اشتباه `false` می‌شود؛ `/dev` در production به 404 تبدیل شده و تمام dynamic routeهای athlete/coach/owner/discovery فقط با ObjectId خنثی export می‌شوند. production gateهای هر سه نقش، community، search، wallet/payment، progress photo، dashboard و gallery metadata دیگر در empty/error یا unauthenticated به fixture و mutation صوری برنمی‌گردند. sports/classes/clubs/coaches/inbox و جزئیات club/coach/class/slot، empty واقعی را empty و outage را error با retry نشان می‌دهند؛ cache آخرین پاسخ واقعی discovery فقط با برچسب stale نمایش داده می‌شود. mock id به reserve/payment راه ندارد و فرم ساخت club ادمین owner/category/sport را از API واقعی می‌گیرد. تست‌های policy برای empty 200، خطاهای 404/401/timeout، offline stale cache و mock-id guard اضافه شده‌اند؛ suite موبایل `70/70`، type-check، lint بدون error و production build ۱۹۴ صفحه‌ای با `NEXT_PUBLIC_DEMO_MODE=true` سبزند، artifact نهایی flag را `false` ثبت می‌کند و اسکن متن قابل‌مشاهدهٔ ۱۸۷ HTML خروجی هیچ fixture شناخته‌شده‌ای پیدا نمی‌کند.
+- **شواهد فعلی:** demo flag از phase خود Next مشتق و در export تولیدی حتی با env اشتباه `false` می‌شود؛ `/dev` در production به 404 تبدیل شده و تمام dynamic routeهای athlete/coach/owner/discovery فقط با ObjectId خنثی export می‌شوند. production gateهای هر سه نقش، community، search، wallet/payment، progress photo، dashboard و gallery metadata دیگر در empty/error یا unauthenticated به fixture و mutation صوری برنمی‌گردند. sports/classes/clubs/coaches/inbox و جزئیات club/coach/class/slot، empty واقعی را empty و outage را error با retry نشان می‌دهند؛ cache آخرین پاسخ واقعی discovery فقط با برچسب stale نمایش داده می‌شود. mock id به reserve/payment راه ندارد و فرم ساخت club ادمین owner/category/sport را از API واقعی می‌گیرد. تست‌های policy برای empty 200، خطاهای 404/401/timeout، offline stale cache و mock-id guard اضافه شده‌اند؛ suite موبایل `70/70`، type-check، lint بدون error و production build ۱۹۴ صفحه‌ای با `NEXT_PUBLIC_DEMO_MODE=true` سبزند، artifact نهایی flag را `false` ثبت می‌کند و اسکن متن قابل‌مشاهدهٔ ۱۸۷ HTML خروجی هیچ fixture شناخته‌شده‌ای پیدا نمی‌کند. [CI رسمی commit `b986bc03`](https://github.com/hamidYeganeh/Gym4Me/actions/runs/32626507483) شامل integration واقعی Mongo/Redis، قراردادها، frontend tests، unit در Tehran/UTC، lint/type و build هر چهار workspace سبز است.
 
 ### G4M-021 — discovery واقعی کامل و supply integrity
 
