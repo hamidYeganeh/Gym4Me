@@ -2,6 +2,8 @@
 FROM node:22-bookworm-slim AS deps
 WORKDIR /app
 
+ARG NPM_CONFIG_REGISTRY=https://registry.npmjs.org/
+
 RUN apt-get update \
   && apt-get install -y --no-install-recommends python3 make g++ \
   && rm -rf /var/lib/apt/lists/*
@@ -20,9 +22,10 @@ COPY packages/theme/package.json packages/theme/
 COPY packages/typescript-config/package.json packages/typescript-config/
 COPY packages/ui/package.json packages/ui/
 
-# Lockfile pins registry.npmjs.org; project .npmrc mirror rewrites hosts and can 404.
+# Production can select a reachable trusted registry without changing source.
 RUN printf '%s\n' \
-  'registry=https://registry.npmjs.org/' \
+  "registry=${NPM_CONFIG_REGISTRY}" \
+  'replace-registry-host=always' \
   'fetch-retries=8' \
   'fetch-retry-mintimeout=20000' \
   'fetch-retry-maxtimeout=180000' \
