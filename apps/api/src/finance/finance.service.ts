@@ -98,6 +98,7 @@ import {
   UpsertCompensationRuleDto,
 } from './dto/finance.dto';
 import { assertPaymentIdempotencyMatch } from './payment-idempotency.policy';
+import { FinanceReadQuery } from './application/queries/finance-read.query';
 
 export type WalletOwnerRef = {
   type: WalletOwnerType;
@@ -144,6 +145,7 @@ export class FinanceService {
     @Inject(forwardRef(() => ReferralService))
     private readonly referral: ReferralService,
     private readonly transactions: MongoTransactionService,
+    private readonly financeReadQuery: FinanceReadQuery,
   ) {}
 
   // ── Club scope ──────────────────────────────────────────────────────────
@@ -518,57 +520,7 @@ export class FinanceService {
   }
 
   async listPayments(query: ListPaymentsQueryDto) {
-    const filter: QueryFilter<PaymentDocument> = {};
-    if (query.status) filter.status = { $in: query.status };
-    if (query.channel) filter.channel = { $in: query.channel };
-    if (query.purpose) filter.purpose = { $in: query.purpose };
-    if (query.clubId) {
-      filter['related.clubId'] = this.toObjectId(query.clubId, 'clubId');
-    }
-    if (query.payerUserId) {
-      filter['payer.userId'] = this.toObjectId(
-        query.payerUserId,
-        'payerUserId',
-      );
-    }
-    Object.assign(
-      filter,
-      createSearchFilter(query.search, [
-        'reference.orderId',
-        'reference.authority',
-        'reference.gatewayRefId',
-        'reference.externalRef',
-        'idempotencyKey',
-        'payer.guest.name',
-        'payer.guest.phone',
-        'operator.note',
-      ]),
-    );
-
-    const { page, pageSize } = resolvePageSize(query);
-    const sort = resolveListSort(
-      query,
-      {
-        createdAt: 'createdAt',
-        capturedAt: 'capturedAt',
-        amount: 'amount.gross',
-        status: 'status',
-        channel: 'channel',
-        purpose: 'purpose',
-        orderId: 'reference.orderId',
-      },
-      { createdAt: -1 },
-    );
-    const [items, total] = await Promise.all([
-      this.paymentModel
-        .find(filter)
-        .sort(sort)
-        .skip((page - 1) * pageSize)
-        .limit(pageSize)
-        .lean(),
-      this.paymentModel.countDocuments(filter),
-    ]);
-    return paginatedResult(items, total, page, pageSize);
+    return this.financeReadQuery.listPayments(query);
   }
 
   async getPayment(id: string) {
@@ -985,50 +937,7 @@ export class FinanceService {
   // ── Ledger (read-only; never update) ────────────────────────────────────
 
   async listLedger(query: ListLedgerQueryDto) {
-    const filter: QueryFilter<LedgerEntryDocument> = {};
-    if (query.kind) filter.kind = { $in: query.kind };
-    if (query.clubId) {
-      filter['related.clubId'] = this.toObjectId(query.clubId, 'clubId');
-    }
-    if (query.paymentId) {
-      filter.paymentId = this.toObjectId(query.paymentId, 'paymentId');
-    }
-    if (query.from || query.to) {
-      filter.occurredAt = {};
-      if (query.from) {
-        (filter.occurredAt as Record<string, Date>).$gte = new Date(query.from);
-      }
-      if (query.to) {
-        (filter.occurredAt as Record<string, Date>).$lte = new Date(query.to);
-      }
-    }
-    Object.assign(
-      filter,
-      createSearchFilter(query.search, ['dedupeKey', 'note']),
-    );
-
-    const { page, pageSize } = resolvePageSize(query);
-    const sort = resolveListSort(
-      query,
-      {
-        occurredAt: 'occurredAt',
-        createdAt: 'createdAt',
-        kind: 'kind',
-        amount: 'split.gross',
-        dedupeKey: 'dedupeKey',
-      },
-      { occurredAt: -1 },
-    );
-    const [items, total] = await Promise.all([
-      this.ledgerModel
-        .find(filter)
-        .sort(sort)
-        .skip((page - 1) * pageSize)
-        .limit(pageSize)
-        .lean(),
-      this.ledgerModel.countDocuments(filter),
-    ]);
-    return paginatedResult(items, total, page, pageSize);
+    return this.financeReadQuery.listLedger(query);
   }
 
   // ── Cash shifts ─────────────────────────────────────────────────────────

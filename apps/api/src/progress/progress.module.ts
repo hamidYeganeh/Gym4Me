@@ -39,6 +39,7 @@ import {
 } from '../schemas/workout-program.schema';
 import { AccountDataGrantsController } from './account-data-grants.controller';
 import { AccountProgressController } from './account-progress.controller';
+import { ListProgressMetricsQuery } from './application/queries/list-progress-metrics.query';
 import {
   AdminMetricTypesController,
   AdminProgressController,
@@ -69,7 +70,7 @@ import { ProgressService } from './progress.service';
     AccountProgressController,
     AccountDataGrantsController,
   ],
-  providers: [ProgressService],
+  providers: [ListProgressMetricsQuery, ProgressService],
   exports: [ProgressService],
 })
 export class ProgressModule {}

@@ -16,6 +16,7 @@ import { Location, LocationSchema } from '../../schemas/location.schema';
 import { RefItem, RefItemSchema } from '../../schemas/ref-item.schema';
 import { Sport, SportSchema } from '../../schemas/sport.schema';
 import { AdminClubsController } from './admin-clubs.controller';
+import { ClubsListQuery } from './application/queries/clubs-list.query';
 import { ClubsService } from './clubs.service';
 import { DiscoveryClubsController } from './discovery-clubs.controller';
 import { OwnerClubsController } from './owner-clubs.controller';
@@ -39,7 +40,7 @@ import { OwnerClubsController } from './owner-clubs.controller';
     AdminClubsController,
     DiscoveryClubsController,
   ],
-  providers: [ClubsService],
+  providers: [ClubsListQuery, ClubsService],
   exports: [ClubsService, MongooseModule],
 })
 export class ClubsModule {}

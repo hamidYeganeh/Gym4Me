@@ -89,6 +89,8 @@ import {
   UpsertHealthAssessmentDto,
   CoachingAnalyticsQueryDto,
 } from './dto/coaching.dto';
+import { CoachingStudentsQuery } from './application/queries/coaching-students.query';
+import { projectCoachStudent } from './application/projectors/coach-student.projector';
 
 @Injectable()
 export class CoachingService {
@@ -112,6 +114,7 @@ export class CoachingService {
     @InjectModel(CoachMessage.name)
     private readonly messageModel: Model<CoachMessageDocument>,
     private readonly audit: AuditService,
+    private readonly coachingStudents: CoachingStudentsQuery,
   ) {}
 
   // ── Services ────────────────────────────────────────────────────────────
@@ -498,55 +501,11 @@ export class CoachingService {
   // ── Students ────────────────────────────────────────────────────────────
 
   async listStudents(coachUserId: string, query: ListStudentsQueryDto) {
-    const filter: QueryFilter<CoachStudentDocument> = {
-      coachUserId: this.oid(coachUserId),
-    };
-    if (query.status) filter.status = query.status;
-    if (query.engagementLevel) {
-      filter['engagement.level'] = query.engagementLevel;
-    }
-
-    const { page, pageSize } = resolvePageSize(query);
-    const [items, total] = await Promise.all([
-      this.studentModel
-        .find(filter)
-        .sort({ updatedAt: -1 })
-        .skip((page - 1) * pageSize)
-        .limit(pageSize)
-        .lean(),
-      this.studentModel.countDocuments(filter),
-    ]);
-    return paginatedResult(
-      items.map((item) => this.toStudent(item)),
-      total,
-      page,
-      pageSize,
-    );
+    return this.coachingStudents.listForCoach(coachUserId, query);
   }
 
   async listMyCoaches(athleteUserId: string, query: ListStudentsQueryDto) {
-    const filter: QueryFilter<CoachStudentDocument> = {
-      athleteUserId: this.oid(athleteUserId),
-    };
-    if (query.status) filter.status = query.status;
-    else filter.status = CoachStudentStatus.ACTIVE;
-
-    const { page, pageSize } = resolvePageSize(query);
-    const [items, total] = await Promise.all([
-      this.studentModel
-        .find(filter)
-        .sort({ updatedAt: -1 })
-        .skip((page - 1) * pageSize)
-        .limit(pageSize)
-        .lean(),
-      this.studentModel.countDocuments(filter),
-    ]);
-    return paginatedResult(
-      items.map((item) => this.toStudent(item)),
-      total,
-      page,
-      pageSize,
-    );
+    return this.coachingStudents.listForAthlete(athleteUserId, query);
   }
 
   async linkStudent(
@@ -1361,25 +1320,7 @@ export class CoachingService {
     createdAt: Date;
     updatedAt: Date;
   }) {
-    return {
-      id: item._id.toString(),
-      coachUserId: item.coachUserId.toString(),
-      athleteUserId: item.athleteUserId.toString(),
-      status: item.status,
-      coaching: {
-        goalKey: item.coaching?.goalKey ?? null,
-        levelKey: item.coaching?.levelKey ?? null,
-      },
-      engagement: {
-        level: item.engagement?.level ?? CoachStudentEngagementLevel.HEALTHY,
-        progressPercent: item.engagement?.progressPercent ?? null,
-        scoredAt: item.engagement?.scoredAt?.toISOString() ?? null,
-        lastSessionAt: item.engagement?.lastSessionAt?.toISOString() ?? null,
-      },
-      notes: item.notes ?? null,
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt,
-    };
+    return projectCoachStudent(item);
   }
 
   private toLead(item: {

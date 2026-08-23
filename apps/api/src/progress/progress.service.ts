@@ -129,6 +129,8 @@ import {
   grantAllowsScope,
   metricKeysAllowedByGrant,
 } from './data-grant.policy';
+import { ListProgressMetricsQuery } from './application/queries/list-progress-metrics.query';
+import { projectProgressMetric } from './application/projectors/progress-metric.projector';
 
 const HEALTH_METRIC_SOURCES = new Set<MetricSource>([
   MetricSource.APPLE_HEALTH,
@@ -388,6 +390,7 @@ export class ProgressService {
     private readonly healthSyncStateModel: Model<HealthSyncStateDocument>,
     private readonly audit: AuditService,
     private readonly events: EventWriterService,
+    private readonly listProgressMetrics: ListProgressMetricsQuery,
   ) {}
 
   // ── Exercises ───────────────────────────────────────────────────────────
@@ -720,9 +723,7 @@ export class ProgressService {
       query.athleteUserId,
       'metrics',
     );
-    const filter: QueryFilter<ProgressMetricDocument> = {
-      athleteUserId: new Types.ObjectId(athleteUserId),
-    };
+    let allowedMetricKeys: string[] | undefined;
     if (query.metricKey) {
       await this.assertCoachMetricScopeIfNeeded(
         userId,
@@ -730,38 +731,16 @@ export class ProgressService {
         athleteUserId,
         [query.metricKey],
       );
-      filter.metricKey = query.metricKey;
     } else if (activeRole === Role.COACH) {
-      const allowed = await this.coachAllowedMetricKeys(userId, athleteUserId);
-      filter.metricKey = { $in: allowed };
+      allowedMetricKeys = await this.coachAllowedMetricKeys(
+        userId,
+        athleteUserId,
+      );
     }
-    if (query.source) filter.source = query.source;
-    if (query.from || query.to) {
-      const from = query.from ? new Date(query.from) : undefined;
-      const to = query.to ? new Date(query.to) : undefined;
-      if (from && to && from > to) {
-        throw new BadRequestException('from must be before to');
-      }
-      filter.recordedAt = {
-        ...(from ? { $gte: from } : {}),
-        ...(to ? { $lte: to } : {}),
-      };
-    }
-    const { page, pageSize } = resolvePageSize(query);
-    const [items, total] = await Promise.all([
-      this.metricModel
-        .find(filter)
-        .sort({ recordedAt: -1 })
-        .skip((page - 1) * pageSize)
-        .limit(pageSize)
-        .lean(),
-      this.metricModel.countDocuments(filter),
-    ]);
-    return paginatedResult(
-      items.map((item) => this.toMetric(item)),
-      total,
-      page,
-      pageSize,
+    return this.listProgressMetrics.execute(
+      athleteUserId,
+      query,
+      allowedMetricKeys,
     );
   }
 
@@ -1885,32 +1864,7 @@ export class ProgressService {
     createdAt: Date;
     updatedAt: Date;
   }) {
-    const periodStart = doc.period?.start ?? doc.periodStartAt ?? undefined;
-    const periodEnd = doc.period?.end ?? doc.periodEndAt ?? undefined;
-    return {
-      id: doc._id.toString(),
-      athleteUserId: doc.athleteUserId.toString(),
-      privacy: doc.privacy,
-      metricKey: doc.metricKey,
-      value: doc.value,
-      unit: doc.unit ?? null,
-      recordedAt: doc.recordedAt.toISOString(),
-      note: doc.note ?? null,
-      source: doc.source ?? MetricSource.MANUAL,
-      sourceRecordId: doc.sourceRecordId ?? null,
-      clientMutationId: doc.clientMutationId ?? null,
-      period:
-        periodStart || periodEnd
-          ? {
-              start: periodStart?.toISOString() ?? null,
-              end: periodEnd?.toISOString() ?? null,
-            }
-          : null,
-      periodStartAt: periodStart?.toISOString() ?? null,
-      periodEndAt: periodEnd?.toISOString() ?? null,
-      createdAt: doc.createdAt.toISOString(),
-      updatedAt: doc.updatedAt.toISOString(),
-    };
+    return projectProgressMetric(doc);
   }
 
   private async assertMetricValue(metricKey: string, value: number) {

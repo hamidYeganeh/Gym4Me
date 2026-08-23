@@ -34,6 +34,7 @@ import {
   SessionPackageSchema,
 } from '../../schemas/session-package.schema';
 import { AdminCoachingController } from './admin-coaching.controller';
+import { CoachingStudentsQuery } from './application/queries/coaching-students.query';
 import { AthleteCoachingController } from './athlete-coaching.controller';
 import { CoachCoachingController } from './coach-coaching.controller';
 import { CoachingService } from './coaching.service';
@@ -57,7 +58,7 @@ import { CoachingService } from './coaching.service';
     AthleteCoachingController,
     AdminCoachingController,
   ],
-  providers: [CoachingService],
+  providers: [CoachingStudentsQuery, CoachingService],
   exports: [CoachingService],
 })
 export class CoachingModule {}

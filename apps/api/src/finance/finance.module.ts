@@ -25,6 +25,7 @@ import { Payout, PayoutSchema } from '../schemas/payout.schema';
 import { User, UserSchema } from '../schemas/user.schema';
 import { Wallet, WalletSchema } from '../schemas/wallet.schema';
 import { AccountFinanceController } from './account-finance.controller';
+import { FinanceReadQuery } from './application/queries/finance-read.query';
 import { AdminFinanceController } from './admin-finance.controller';
 import { FinanceService } from './finance.service';
 import { OwnerFinanceController } from './owner-finance.controller';
@@ -53,7 +54,7 @@ import { OwnerFinanceController } from './owner-finance.controller';
     OwnerFinanceController,
     AdminFinanceController,
   ],
-  providers: [FinanceService],
+  providers: [FinanceReadQuery, FinanceService],
   exports: [FinanceService],
 })
 export class FinanceModule {}

@@ -20,7 +20,6 @@ import {
   GamificationSubjectType,
   OperatingHourAudience,
   PointRuleEvent,
-  RefType,
   Role,
   UserStatus,
   WeekdayStatus,
@@ -36,7 +35,6 @@ import {
   paginatedResult,
   resolvePageSize,
 } from '../../common/utils/pagination.util';
-import { escapeRegex } from '../../common/utils/escape-regex.util';
 import { assertCanMutateAsRole } from '../../common/utils/role-assert.util';
 import { Location, LocationDocument } from '../../schemas/location.schema';
 import { ClubClass, ClubClassDocument } from '../../schemas/club-class.schema';
@@ -85,17 +83,9 @@ import {
   DISCOVERY_VISIBLE_CLUB_MATCH,
   mapDiscoveryCategoryFacetRows,
 } from './discovery-club-facets';
+import { ClubsListQuery } from './application/queries/clubs-list.query';
 
 type ClubWriteDto = CreateClubDto | UpdateClubDto;
-
-const CLUB_SORT_FIELDS = {
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  name: 'identity.name',
-  status: 'review.status',
-  operationalStatus: 'operationalStatus',
-  rating: 'reviewsSummary.average',
-} as const;
 
 const CLUB_REVIEW_QUEUE_SORT_FIELDS = {
   submittedAt: 'review.submittedAt',
@@ -135,6 +125,7 @@ export class ClubsService {
     private readonly audit: AuditService,
     private readonly events: EventWriterService,
     private readonly gamification: GamificationService,
+    private readonly clubsListQuery: ClubsListQuery,
   ) {}
 
   // ── Owner ──────────────────────────────────────
@@ -432,91 +423,8 @@ export class ClubsService {
   // ── Discovery ──────────────────────────────────
 
   async discoveryList(query: DiscoveryClubsQueryDto) {
-    const { page, pageSize } = resolvePageSize(query);
-    const filter: QueryFilter<ClubDocument> = {
-      ...DISCOVERY_VISIBLE_CLUB_MATCH,
-    };
-
-    if (query.q?.trim()) {
-      const q = query.q.trim().slice(0, 64);
-      filter['identity.name'] = {
-        $regex: escapeRegex(q),
-        $options: 'i',
-      };
-    }
-    if (query.categoryId) {
-      filter['categories.categoryId'] = new Types.ObjectId(query.categoryId);
-    }
-    if (query.sportId) {
-      filter['sports.sportId'] = new Types.ObjectId(query.sportId);
-    }
-    if (query.locationId) {
-      const locOid = new Types.ObjectId(query.locationId);
-      filter.$or = [
-        { 'location.locationId': locOid },
-        { 'location.ancestors': locOid },
-      ];
-    }
-    if (query.direction) {
-      filter['location.direction'] = query.direction;
-    }
-    if (query.genderPolicy?.trim()) {
-      filter['audience.genderPolicy'] = query.genderPolicy.trim();
-    }
-    if (query.ageGroupKey?.trim()) {
-      filter['audience.ageGroupKeys'] = query.ageGroupKey.trim();
-    }
-    if (query.levelKey?.trim()) {
-      filter['audience.levelKeys'] = query.levelKey.trim();
-    }
-    if (query.accessibility?.trim()) {
-      filter['audience.accessibility'] = query.accessibility.trim();
-    }
-    if (query.amenitySlug?.trim()) {
-      const amenity = await this.refModel
-        .findOne({
-          type: RefType.AMENITY,
-          slug: query.amenitySlug.trim().toLowerCase(),
-          isActive: true,
-        })
-        .select({ _id: 1 })
-        .lean();
-      if (!amenity) {
-        return paginatedResult([], 0, page, pageSize);
-      }
-      filter['amenities.amenityId'] = amenity._id;
-    }
-
-    const useGeo =
-      query.lng !== undefined &&
-      query.lat !== undefined &&
-      Number.isFinite(query.lng) &&
-      Number.isFinite(query.lat);
-
-    if (useGeo) {
-      filter['location.point'] = {
-        $near: {
-          $geometry: {
-            type: 'Point',
-            coordinates: [query.lng!, query.lat!],
-          },
-          $maxDistance: query.radiusMeters ?? 10_000,
-        },
-      };
-    }
-
-    const [items, total] = await Promise.all([
-      this.clubModel
-        .find(filter)
-        .sort(
-          useGeo ? undefined : { 'reviewsSummary.average': -1, createdAt: -1 },
-        )
-        .skip((page - 1) * pageSize)
-        .limit(pageSize)
-        .lean(),
-      this.clubModel.countDocuments(filter),
-    ]);
-
+    const { items, total, page, pageSize } =
+      await this.clubsListQuery.discovery(query);
     return paginatedResult(
       await Promise.all(items.map((c) => this.toPublic(c))),
       total,
@@ -1218,59 +1126,8 @@ export class ClubsService {
   }
 
   private async listInternal(query: ListClubsQueryDto) {
-    const { page, pageSize } = resolvePageSize(query);
-    const filter: QueryFilter<ClubDocument> = {};
-    const andFilters: QueryFilter<ClubDocument>[] = [];
-
-    if (query.ownerId) filter.ownerId = new Types.ObjectId(query.ownerId);
-    const search = query.search ?? query.q;
-    if (search?.trim()) {
-      andFilters.push(
-        createSearchFilter(search, [
-          'identity.name',
-          'identity.description',
-          'contact.email',
-          'contact.phones.number',
-          'location.address',
-        ]),
-      );
-    }
-    if (query.categoryId) {
-      filter['categories.categoryId'] = new Types.ObjectId(query.categoryId);
-    }
-    if (query.sportId) {
-      filter['sports.sportId'] = new Types.ObjectId(query.sportId);
-    }
-    if (query.locationId) {
-      const locOid = new Types.ObjectId(query.locationId);
-      andFilters.push({
-        $or: [
-          { 'location.locationId': locOid },
-          { 'location.ancestors': locOid },
-        ],
-      });
-    }
-    if (query.direction) filter['location.direction'] = query.direction;
-    if (query.lifecycleStatus) {
-      filter['review.status'] = { $in: query.lifecycleStatus };
-    }
-    if (query.operationalStatus) {
-      filter.operationalStatus = { $in: query.operationalStatus };
-    }
-    if (andFilters.length > 0) filter.$and = andFilters;
-
-    const sort = resolveListSort(query, CLUB_SORT_FIELDS, { createdAt: -1 });
-
-    const [items, total] = await Promise.all([
-      this.clubModel
-        .find(filter)
-        .sort(sort)
-        .skip((page - 1) * pageSize)
-        .limit(pageSize)
-        .lean(),
-      this.clubModel.countDocuments(filter),
-    ]);
-
+    const { items, total, page, pageSize } =
+      await this.clubsListQuery.internal(query);
     return paginatedResult(
       await Promise.all(items.map((c) => this.toPublic(c))),
       total,
