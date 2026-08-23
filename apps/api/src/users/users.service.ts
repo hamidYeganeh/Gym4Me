@@ -95,6 +95,23 @@ export class UsersService {
     return this.userModel.findOne({ phone });
   }
 
+  /** Ensure a pre-existing account can participate in athlete-owned flows. */
+  async ensureAthlete(user: UserDocument): Promise<UserDocument> {
+    if (!user.roles.includes(Role.ATHLETE)) {
+      await this.userModel.updateOne(
+        { _id: user._id },
+        { $addToSet: { roles: Role.ATHLETE } },
+      );
+      user.roles.push(Role.ATHLETE);
+    }
+    await this.athleteModel.updateOne(
+      { userId: user._id },
+      { $setOnInsert: { userId: user._id } },
+      { upsert: true },
+    );
+    return user;
+  }
+
   async findByCode(code: string): Promise<UserDocument | null> {
     return this.userModel.findOne({ code: code.toLowerCase() });
   }

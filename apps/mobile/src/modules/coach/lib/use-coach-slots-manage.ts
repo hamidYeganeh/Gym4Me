@@ -27,6 +27,9 @@ export function useCoachSlotsManage() {
   const [draftDate, setDraftDate] = useState(today);
   const [draftTime, setDraftTime] = useState<string>("18:00");
   const [draftDuration, setDraftDuration] = useState<number>(60);
+  const [draftBufferBefore, setDraftBufferBefore] = useState<number>(0);
+  const [draftBufferAfter, setDraftBufferAfter] = useState<number>(0);
+  const [draftTravelBuffer, setDraftTravelBuffer] = useState<number>(0);
   const [draftClubId, setDraftClubId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
@@ -82,7 +85,16 @@ export function useCoachSlotsManage() {
         new Date(startsAt).getTime() + draftDuration * 60_000,
       ).toISOString();
       await coachSlots.create({
-        slots: [{ startsAt, endsAt, clubId: draftClubId }],
+        slots: [
+          {
+            startsAt,
+            endsAt,
+            clubId: draftClubId,
+            bufferBeforeMinutes: draftBufferBefore,
+            bufferAfterMinutes: draftBufferAfter,
+            travelBufferMinutes: draftClubId ? draftTravelBuffer : 0,
+          },
+        ],
       });
       await load();
     } catch (err) {
@@ -112,6 +124,9 @@ export function useCoachSlotsManage() {
     draftDate,
     draftTime,
     draftDuration,
+    draftBufferBefore,
+    draftBufferAfter,
+    draftTravelBuffer,
     draftClubId,
     isCreating,
     dayLabel,
@@ -119,6 +134,9 @@ export function useCoachSlotsManage() {
     setDraftDate,
     setDraftTime,
     setDraftDuration,
+    setDraftBufferBefore,
+    setDraftBufferAfter,
+    setDraftTravelBuffer,
     setDraftClubId,
     onCreate,
     onRemove,

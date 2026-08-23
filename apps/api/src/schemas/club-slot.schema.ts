@@ -107,6 +107,10 @@ export class ClubSlot {
   })
   status!: EntityStatus;
 
+  /** Transactional serialization point for this bookable resource. */
+  @Prop({ type: Number, default: 0, min: 0, select: false })
+  calendarRevision!: number;
+
   createdAt!: Date;
   updatedAt!: Date;
 }

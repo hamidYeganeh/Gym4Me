@@ -7,11 +7,13 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import {
+  CalendarResourceType,
   ClubLifecycleStatus,
   ClubOperationalStatus,
   CoachSlotStatus,
   VerificationStatus,
 } from '../../common/enums';
+import { MongoTransactionService } from '../../common/mongo/mongo-transaction.service';
 import { Club, ClubDocument } from '../../schemas/club.schema';
 import {
   CoachProfile,
@@ -19,6 +21,8 @@ import {
 } from '../../schemas/coach-profile.schema';
 import { CoachSlot, CoachSlotDocument } from '../../schemas/coach-slot.schema';
 import { CoachSlotInputDto } from './dto/coach-slot.dto';
+import { CalendarAvailabilityService } from '../calendar/calendar-availability.service';
+import { BookingCalendarGuard } from './application/services/booking-calendar-guard.service';
 
 const MAX_RANGE_DAYS = 62;
 
@@ -37,6 +41,9 @@ export class CoachSlotsService {
     private readonly coachModel: Model<CoachProfileDocument>,
     @InjectModel(Club.name)
     private readonly clubModel: Model<ClubDocument>,
+    private readonly transactions: MongoTransactionService,
+    private readonly calendarAvailability: CalendarAvailabilityService,
+    private readonly calendarGuard: BookingCalendarGuard,
   ) {}
 
   /** Public availability for the discovery reserve flow. */
@@ -101,21 +108,101 @@ export class CoachSlotsService {
         throw new BadRequestException('Slots must be in the future');
       }
       if (input.clubId) clubIds.add(input.clubId);
-      return { startsAt, endsAt, clubId: input.clubId ?? undefined };
+      const bufferBeforeMinutes = input.bufferBeforeMinutes ?? 0;
+      const bufferAfterMinutes = input.bufferAfterMinutes ?? 0;
+      const travelBufferMinutes = input.travelBufferMinutes ?? 0;
+      return {
+        startsAt,
+        endsAt,
+        clubId: input.clubId ?? undefined,
+        bufferBeforeMinutes,
+        bufferAfterMinutes,
+        travelBufferMinutes,
+        blockedStartsAt: new Date(
+          startsAt.getTime() -
+            (bufferBeforeMinutes + travelBufferMinutes) * 60_000,
+        ),
+        blockedEndsAt: new Date(
+          endsAt.getTime() +
+            (bufferAfterMinutes + travelBufferMinutes) * 60_000,
+        ),
+      };
     });
 
     await this.assertClubAffiliation(coachUserId, [...clubIds]);
+    for (let left = 0; left < parsed.length; left += 1) {
+      for (let right = left + 1; right < parsed.length; right += 1) {
+        if (
+          parsed[left].blockedStartsAt < parsed[right].blockedEndsAt &&
+          parsed[left].blockedEndsAt > parsed[right].blockedStartsAt
+        ) {
+          throw new ConflictException('Submitted coach slots overlap');
+        }
+      }
+    }
 
     try {
-      const created = await this.slotModel.create(
-        parsed.map((slot) => ({
-          coachUserId: new Types.ObjectId(coachUserId),
-          startsAt: slot.startsAt,
-          endsAt: slot.endsAt,
-          clubId: slot.clubId ? new Types.ObjectId(slot.clubId) : undefined,
-          status: CoachSlotStatus.OPEN,
-        })),
-      );
+      const created = await this.transactions.run(async (session) => {
+        const coachOid = new Types.ObjectId(coachUserId);
+        for (const clubId of [...clubIds].sort()) {
+          await this.calendarGuard.lockClubCalendar(
+            new Types.ObjectId(clubId),
+            session,
+          );
+        }
+        await this.calendarGuard.lockCoachCalendar(coachOid, session);
+        for (const slot of parsed) {
+          const clubOid = slot.clubId
+            ? new Types.ObjectId(slot.clubId)
+            : undefined;
+          await this.calendarAvailability.assertAvailable(
+            [
+              { type: CalendarResourceType.COACH, id: coachOid },
+              ...(clubOid
+                ? [{ type: CalendarResourceType.CLUB, id: clubOid }]
+                : []),
+            ],
+            slot.blockedStartsAt,
+            slot.blockedEndsAt,
+            session,
+          );
+          const overlap = await this.slotModel
+            .findOne({
+              coachUserId: coachOid,
+              status: { $in: [CoachSlotStatus.OPEN, CoachSlotStatus.BOOKED] },
+              $or: [
+                {
+                  blockedStartsAt: { $lt: slot.blockedEndsAt },
+                  blockedEndsAt: { $gt: slot.blockedStartsAt },
+                },
+                {
+                  blockedStartsAt: { $exists: false },
+                  startsAt: { $lt: slot.blockedEndsAt },
+                  endsAt: { $gt: slot.blockedStartsAt },
+                },
+              ],
+            })
+            .session(session);
+          if (overlap) {
+            throw new ConflictException('A coach slot overlaps this time');
+          }
+        }
+        return this.slotModel.create(
+          parsed.map((slot) => ({
+            coachUserId: coachOid,
+            startsAt: slot.startsAt,
+            endsAt: slot.endsAt,
+            bufferBeforeMinutes: slot.bufferBeforeMinutes,
+            bufferAfterMinutes: slot.bufferAfterMinutes,
+            travelBufferMinutes: slot.travelBufferMinutes,
+            blockedStartsAt: slot.blockedStartsAt,
+            blockedEndsAt: slot.blockedEndsAt,
+            clubId: slot.clubId ? new Types.ObjectId(slot.clubId) : undefined,
+            status: CoachSlotStatus.OPEN,
+          })),
+          { session },
+        );
+      });
       const clubById = await this.resolveClubs(created);
       return {
         slots: created.map((slot) => this.toPublicSlot(slot, clubById)),
@@ -216,6 +303,9 @@ export class CoachSlotsService {
       coachUserId: slot.coachUserId.toString(),
       startsAt: slot.startsAt,
       endsAt: slot.endsAt,
+      bufferBeforeMinutes: slot.bufferBeforeMinutes ?? 0,
+      bufferAfterMinutes: slot.bufferAfterMinutes ?? 0,
+      travelBufferMinutes: slot.travelBufferMinutes ?? 0,
       status: slot.status,
       club: clubId ? (clubById.get(clubId) ?? null) : null,
     };

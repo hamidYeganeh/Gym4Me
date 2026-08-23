@@ -13,13 +13,17 @@ import {
 } from '../../schemas/coach-profile.schema';
 import { CoachSlot, CoachSlotSchema } from '../../schemas/coach-slot.schema';
 import { User, UserSchema } from '../../schemas/user.schema';
+import { UsersModule } from '../../users/users.module';
 import { ClubSlotsModule } from '../club-slots/club-slots.module';
+import { CalendarModule } from '../calendar/calendar.module';
 import { ReferralModule } from '../referral/referral.module';
+import { StaffModule } from '../staff/staff.module';
 import { AdminBookingsController } from './admin-bookings.controller';
 import { CreateClubBookingCommand } from './application/commands/create-club-booking.command';
 import { CreateCoachBookingCommand } from './application/commands/create-coach-booking.command';
 import { VerifyBookingPaymentCommand } from './application/commands/verify-booking-payment.command';
 import { BookingProjector } from './application/projectors/booking.projector';
+import { BookingCalendarGuard } from './application/services/booking-calendar-guard.service';
 import { AthleteBookingsController } from './athlete-bookings.controller';
 import { BookingsExpireService } from './bookings-expire.service';
 import { BookingsService } from './bookings.service';
@@ -32,10 +36,13 @@ import { OwnerClubBookingsController } from './owner-club-bookings.controller';
 @Module({
   imports: [
     ClubSlotsModule,
+    CalendarModule,
     NotificationsModule,
     FinanceModule,
     OutboxModule,
     ReferralModule,
+    StaffModule,
+    UsersModule,
     MongooseModule.forFeature([
       { name: Booking.name, schema: BookingSchema },
       { name: CoachSlot.name, schema: CoachSlotSchema },
@@ -60,6 +67,7 @@ import { OwnerClubBookingsController } from './owner-club-bookings.controller';
     CreateCoachBookingCommand,
     VerifyBookingPaymentCommand,
     BookingProjector,
+    BookingCalendarGuard,
     BookingsService,
     BookingsExpireService,
   ],

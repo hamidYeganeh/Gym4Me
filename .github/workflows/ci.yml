@@ -149,6 +149,7 @@ jobs:
           jq -e '.paths["/api/v1/account/bookings"] and .paths["/api/v1/account/memberships"]' /tmp/gym4me-openapi.json
       - name: Critical product smoke flows
         run: |
+          node apps/api/test/booking-concurrency.cjs
           bash apps/api/test/smoke-bootstrap-progress.sh
           bash apps/api/test/smoke-booking.sh
           bash apps/api/test/smoke-membership.sh

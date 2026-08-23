@@ -4,7 +4,11 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums';
 import { BookingsService } from './bookings.service';
-import { CancelBookingDto, ListBookingsQueryDto } from './dto/booking.dto';
+import {
+  CancelBookingDto,
+  ListBookingsQueryDto,
+  RescheduleBookingDto,
+} from './dto/booking.dto';
 
 @ApiTags('coach-bookings')
 @ApiBearerAuth('access-token')
@@ -51,6 +55,16 @@ export class CoachBookingsController {
     @Body() dto: CancelBookingDto,
   ) {
     return this.bookings.cancelByCoach(userId, id, dto);
+  }
+
+  @Post(':id/reschedule')
+  @ApiOperation({ summary: 'Move a coach booking to another open slot' })
+  reschedule(
+    @CurrentUser('sub') userId: string,
+    @Param('id') id: string,
+    @Body() dto: RescheduleBookingDto,
+  ) {
+    return this.bookings.rescheduleByCoach(userId, id, dto);
   }
 
   @Post(':id/checkin')

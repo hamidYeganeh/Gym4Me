@@ -11,6 +11,7 @@ import type {
   Booking,
   BookingsListQuery,
   CancelBookingInput,
+  RescheduleBookingInput,
 } from "./bookings.dto";
 import {
   createCoachBookingsApi,
@@ -70,6 +71,23 @@ export function useCoachCancelBooking() {
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input?: CancelBookingInput }) =>
       api.cancel(id, input),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: coachBookingsKeys.all });
+    },
+  });
+}
+
+export function useCoachRescheduleBooking() {
+  const api = useCoachBookingsApi();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      input,
+    }: {
+      id: string;
+      input: RescheduleBookingInput;
+    }) => api.reschedule(id, input),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: coachBookingsKeys.all });
     },

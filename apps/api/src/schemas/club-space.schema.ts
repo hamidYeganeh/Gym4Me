@@ -41,6 +41,9 @@ export class ClubSpace {
   })
   status!: EntityStatus;
 
+  @Prop({ type: Number, default: 0, min: 0, select: false })
+  calendarRevision!: number;
+
   createdAt!: Date;
   updatedAt!: Date;
 }

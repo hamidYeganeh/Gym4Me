@@ -6,6 +6,7 @@ import type {
   BookingCancellationPreview,
   BookingsListQuery,
   CancelBookingInput,
+  RescheduleBookingInput,
 } from "./bookings.dto";
 
 /** Coach-side bookings (requires coach active role). */
@@ -31,6 +32,13 @@ export function createCoachBookingsApi(client: ApiClient) {
 
     cancel(id: string, input: CancelBookingInput = {}) {
       return client.request<Booking>(ep.cancel(id), {
+        method: "POST",
+        body: input,
+      });
+    },
+
+    reschedule(id: string, input: RescheduleBookingInput) {
+      return client.request<Booking>(ep.reschedule(id), {
         method: "POST",
         body: input,
       });

@@ -116,8 +116,13 @@ export function useRescheduleBooking() {
   const api = useAccountBookingsApi();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: RescheduleBookingInput }) =>
-      api.reschedule(id, input),
+    mutationFn: ({
+      id,
+      input,
+    }: {
+      id: string;
+      input: RescheduleBookingInput;
+    }) => api.reschedule(id, input),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: accountBookingsKeys.all });
     },

@@ -10,6 +10,9 @@ export function CoachSlotsManageCreateFormSection({
   dayLabel,
   timeLabel,
   durationLabel,
+  bufferBeforeLabel,
+  bufferAfterLabel,
+  travelBufferLabel,
   venueLabel,
   venueRemoteLabel,
   noClubsHint,
@@ -18,9 +21,13 @@ export function CoachSlotsManageCreateFormSection({
   draftDate,
   draftTime,
   draftDuration,
+  draftBufferBefore,
+  draftBufferAfter,
+  draftTravelBuffer,
   draftClubId,
   startTimes,
   durations,
+  bufferOptions,
   clubs,
   error = null,
   isCreating = false,
@@ -29,6 +36,9 @@ export function CoachSlotsManageCreateFormSection({
   onDraftDateChange,
   onDraftTimeChange,
   onDraftDurationChange,
+  onDraftBufferBeforeChange,
+  onDraftBufferAfterChange,
+  onDraftTravelBufferChange,
   onDraftClubIdChange,
   onCreate,
   className,
@@ -124,6 +134,46 @@ export function CoachSlotsManageCreateFormSection({
           </Typography>
         ) : null}
       </div>
+
+      {[
+        {
+          label: bufferBeforeLabel,
+          value: draftBufferBefore,
+          onChange: onDraftBufferBeforeChange,
+        },
+        {
+          label: bufferAfterLabel,
+          value: draftBufferAfter,
+          onChange: onDraftBufferAfterChange,
+        },
+        ...(draftClubId
+          ? [
+              {
+                label: travelBufferLabel,
+                value: draftTravelBuffer,
+                onChange: onDraftTravelBufferChange,
+              },
+            ]
+          : []),
+      ].map((buffer) => (
+        <div className={styles.fieldGroup()} key={buffer.label}>
+          <Typography className={styles.fieldLabel()} type="body-sm">
+            {buffer.label}
+          </Typography>
+          <FilterChipBar aria-label={buffer.label}>
+            {bufferOptions.map((minutes) => (
+              <FilterChip
+                key={minutes}
+                onPress={() => buffer.onChange(minutes)}
+                selected={buffer.value === minutes}
+                selectedVariant="solid"
+              >
+                {formatDuration(minutes)}
+              </FilterChip>
+            ))}
+          </FilterChipBar>
+        </div>
+      ))}
 
       <Button
         fullWidth

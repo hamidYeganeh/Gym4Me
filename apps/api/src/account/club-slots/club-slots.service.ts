@@ -8,8 +8,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types, type ClientSession } from 'mongoose';
 import type { Request } from 'express';
 import { AuditService } from '../../audit/audit.service';
+import { MongoTransactionService } from '../../common/mongo/mongo-transaction.service';
 import {
   AuditAction,
+  CalendarResourceType,
   EntityStatus,
   OccurrenceStatus,
   Role,
@@ -34,6 +36,7 @@ import {
 import { ClubSpace, ClubSpaceDocument } from '../../schemas/club-space.schema';
 import { User, UserDocument } from '../../schemas/user.schema';
 import { UsersService } from '../../users/users.service';
+import { CalendarAvailabilityService } from '../calendar/calendar-availability.service';
 import {
   CancelSlotOccurrenceDto,
   ClubCalendarQueryDto,
@@ -47,6 +50,7 @@ import {
 
 const MAX_CALENDAR_DAYS = 31;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const TEHRAN_OFFSET = '+03:30';
 
 @Injectable()
 export class ClubSlotsService {
@@ -63,6 +67,8 @@ export class ClubSlotsService {
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     private readonly users: UsersService,
     private readonly audit: AuditService,
+    private readonly calendarAvailability: CalendarAvailabilityService,
+    private readonly transactions: MongoTransactionService,
   ) {}
 
   // ── Access ────────────────────────────────────
@@ -465,16 +471,32 @@ export class ClubSlotsService {
     actorId: string,
     request: Request,
   ) {
-    const doc = await this.findSlotOrFail(clubId, slotId);
-    const exists = doc.schedule.exceptions.some((e) => e.date === dto.date);
-    if (!exists) {
-      doc.schedule.exceptions.push({
-        date: dto.date,
-        status: SlotExceptionStatus.CANCELLED,
-      });
-      doc.markModified('schedule');
-      await doc.save();
+    if (!Types.ObjectId.isValid(slotId)) {
+      throw new NotFoundException('Slot not found');
     }
+    const doc = await this.transactions.run(async (session) => {
+      const current = await this.slotModel
+        .findOne({
+          _id: new Types.ObjectId(slotId),
+          clubId: new Types.ObjectId(clubId),
+        })
+        .select('+calendarRevision')
+        .session(session);
+      if (!current) throw new NotFoundException('Slot not found');
+      const exists = current.schedule.exceptions.some(
+        (exception) => exception.date === dto.date,
+      );
+      if (!exists) {
+        current.schedule.exceptions.push({
+          date: dto.date,
+          status: SlotExceptionStatus.CANCELLED,
+        });
+        current.markModified('schedule');
+      }
+      current.calendarRevision = (current.calendarRevision ?? 0) + 1;
+      await current.save({ session });
+      return current;
+    });
 
     this.audit.log({
       action: AuditAction.CLUB_UPDATED,
@@ -546,6 +568,42 @@ export class ClubSlotsService {
     const spaceById = new Map(spaces.map((s) => [s._id.toString(), s]));
     const coachById = new Map(coaches.map((u) => [u._id.toString(), u]));
 
+    const blocks = await this.calendarAvailability.findOverlappingBlocks(
+      [
+        {
+          type: CalendarResourceType.CLUB,
+          id: new Types.ObjectId(clubId),
+        },
+        ...slots.map((slot) => ({
+          type: CalendarResourceType.SLOT,
+          id: slot._id,
+        })),
+        ...classes.map((clubClass) => ({
+          type: CalendarResourceType.CLASS,
+          id: clubClass._id,
+        })),
+        ...spaces.map((space) => ({
+          type: CalendarResourceType.SPACE,
+          id: space._id,
+        })),
+        ...coachIds.map((coachId) => ({
+          type: CalendarResourceType.COACH,
+          id: new Types.ObjectId(coachId),
+        })),
+      ],
+      occurrenceDate(days[0], '00:00'),
+      new Date(
+        occurrenceDate(days[days.length - 1], '00:00').getTime() + 86_400_000,
+      ),
+    );
+    const blocksByResource = new Map<string, typeof blocks>();
+    for (const block of blocks) {
+      const key = `${block.resource.type}:${block.resource.id.toString()}`;
+      const entries = blocksByResource.get(key) ?? [];
+      entries.push(block);
+      blocksByResource.set(key, entries);
+    }
+
     const occupancies = slots.length
       ? await this.occupancyModel
           .find({
@@ -590,6 +648,25 @@ export class ClubSlotsService {
         const coachId =
           slot.coachId?.toString() ?? classDoc?.coachId?.toString();
         const coach = coachId ? coachById.get(coachId) : undefined;
+        const startsAt = occurrenceDate(occ.date, occ.startTime);
+        const endsAt = occurrenceDate(occ.date, occ.endTime);
+        const resourceKeys = [
+          `${CalendarResourceType.CLUB}:${clubId}`,
+          `${CalendarResourceType.SLOT}:${slot._id.toString()}`,
+          ...(slot.classId
+            ? [`${CalendarResourceType.CLASS}:${slot.classId.toString()}`]
+            : []),
+          ...(slot.spaceId
+            ? [`${CalendarResourceType.SPACE}:${slot.spaceId.toString()}`]
+            : []),
+          ...(coachId ? [`${CalendarResourceType.COACH}:${coachId}`] : []),
+        ];
+        const isBlocked = resourceKeys.some((key) =>
+          (blocksByResource.get(key) ?? []).some(
+            (block) => block.window.from < endsAt && block.window.to > startsAt,
+          ),
+        );
+        if (isBlocked) continue;
         const reserved =
           reservedByKey.get(`${slot._id.toString()}:${occ.date}`) ?? 0;
 
@@ -700,8 +777,33 @@ export class ClubSlotsService {
     if (occurrence.status === OccurrenceStatus.CANCELLED) {
       throw new BadRequestException('This occurrence has been cancelled');
     }
+    const classDoc = slot.classId
+      ? await this.classModel.findById(slot.classId).session(session ?? null)
+      : null;
+    const companionCoachId = slot.coachId ?? classDoc?.coachId;
+    const startsAt = occurrenceDate(date, occurrence.startTime);
+    const endsAt = occurrenceDate(date, occurrence.endTime);
+    await this.calendarAvailability.assertAvailable(
+      [
+        { type: CalendarResourceType.CLUB, id: slot.clubId },
+        { type: CalendarResourceType.SLOT, id: slot._id },
+        ...(slot.classId
+          ? [{ type: CalendarResourceType.CLASS, id: slot.classId }]
+          : []),
+        ...(slot.spaceId
+          ? [{ type: CalendarResourceType.SPACE, id: slot.spaceId }]
+          : []),
+        ...(companionCoachId
+          ? [{ type: CalendarResourceType.COACH, id: companionCoachId }]
+          : []),
+      ],
+      startsAt,
+      endsAt,
+      session,
+    );
     return {
       slot,
+      companionCoachId,
       occurrence: {
         date,
         startTime: occurrence.startTime,
@@ -981,4 +1083,8 @@ function addDays(dateStr: string, days: number): string {
   const mm = String(dt.getUTCMonth() + 1).padStart(2, '0');
   const dd = String(dt.getUTCDate()).padStart(2, '0');
   return `${yy}-${mm}-${dd}`;
+}
+
+function occurrenceDate(date: string, time: string): Date {
+  return new Date(`${date}T${time}:00${TEHRAN_OFFSET}`);
 }

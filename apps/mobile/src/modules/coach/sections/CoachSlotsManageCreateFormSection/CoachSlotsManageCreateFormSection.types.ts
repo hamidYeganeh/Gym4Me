@@ -10,6 +10,9 @@ export type CoachSlotsManageCreateFormSectionProps = {
   dayLabel: string;
   timeLabel: string;
   durationLabel: string;
+  bufferBeforeLabel: string;
+  bufferAfterLabel: string;
+  travelBufferLabel: string;
   venueLabel: string;
   venueRemoteLabel: string;
   noClubsHint: string;
@@ -18,9 +21,13 @@ export type CoachSlotsManageCreateFormSectionProps = {
   draftDate: string;
   draftTime: string;
   draftDuration: number;
+  draftBufferBefore: number;
+  draftBufferAfter: number;
+  draftTravelBuffer: number;
   draftClubId: string | null;
   startTimes: readonly string[];
   durations: readonly number[];
+  bufferOptions: readonly number[];
   clubs: CoachSlotClub[];
   error?: string | null;
   isCreating?: boolean;
@@ -29,6 +36,9 @@ export type CoachSlotsManageCreateFormSectionProps = {
   onDraftDateChange: (date: string) => void;
   onDraftTimeChange: (time: string) => void;
   onDraftDurationChange: (minutes: number) => void;
+  onDraftBufferBeforeChange: (minutes: number) => void;
+  onDraftBufferAfterChange: (minutes: number) => void;
+  onDraftTravelBufferChange: (minutes: number) => void;
   onDraftClubIdChange: (clubId: string | null) => void;
   onCreate: () => void | Promise<void>;
   className?: string;

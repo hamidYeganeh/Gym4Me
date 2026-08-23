@@ -5,7 +5,6 @@ import { Input } from "@heroui/react/input";
 import { Label } from "@heroui/react/label";
 import { TextField } from "@heroui/react/textfield";
 import { Typography } from "@heroui/react/typography";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
@@ -20,10 +19,11 @@ import type { OwnerWalkInBookingScreenProps } from "./OwnerWalkInBookingScreen.t
 
 const RESOURCE_KEY: Record<
   OwnerWalkInResourceType,
-  "resourceClass" | "resourceSlot" | "resourceCoach"
+  "resourceClass" | "resourceSlot" | "resourceSpace" | "resourceCoach"
 > = {
   class: "resourceClass",
   slot: "resourceSlot",
+  space: "resourceSpace",
   coach: "resourceCoach",
 };
 
@@ -31,6 +31,8 @@ export function OwnerWalkInBookingScreen({
   bookings,
   form,
   pending = false,
+  error,
+  occurrenceOptions,
   onFormChange,
   onSubmit,
   className,
@@ -92,31 +94,57 @@ export function OwnerWalkInBookingScreen({
               value={form.phone}
             />
           </TextField>
-          <TextField>
-            <Label>{t("resourceTypeLabel")}</Label>
-            <select
-              className={styles.select()}
-              onChange={(event) =>
-                onFormChange({
-                  resourceType: event.target.value as OwnerWalkInResourceType,
-                })
-              }
-              value={form.resourceType}
-            >
-              <option value="class">{t("resourceClass")}</option>
-              <option value="slot">{t("resourceSlot")}</option>
-              <option value="coach">{t("resourceCoach")}</option>
-            </select>
-          </TextField>
+          {occurrenceOptions === undefined ? (
+            <TextField>
+              <Label>{t("resourceTypeLabel")}</Label>
+              <select
+                className={styles.select()}
+                onChange={(event) =>
+                  onFormChange({
+                    resourceType: event.target.value as OwnerWalkInResourceType,
+                  })
+                }
+                value={form.resourceType}
+              >
+                <option value="class">{t("resourceClass")}</option>
+                <option value="slot">{t("resourceSlot")}</option>
+                <option value="space">{t("resourceSpace")}</option>
+                <option value="coach">{t("resourceCoach")}</option>
+              </select>
+            </TextField>
+          ) : null}
           <TextField>
             <Label>{t("datetimeLabel")}</Label>
-            <Input
-              onChange={(event) =>
-                onFormChange({ datetime: event.target.value })
-              }
-              placeholder={t("datetimePlaceholder")}
-              value={form.datetime}
-            />
+            {occurrenceOptions ? (
+              <select
+                className={styles.select()}
+                onChange={(event) => {
+                  const option = occurrenceOptions.find(
+                    (item) => item.value === event.target.value,
+                  );
+                  onFormChange({
+                    datetime: event.target.value,
+                    resourceType: option?.resourceType ?? form.resourceType,
+                  });
+                }}
+                value={form.datetime}
+              >
+                <option value="">{t("selectOccurrence")}</option>
+                {occurrenceOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <Input
+                onChange={(event) =>
+                  onFormChange({ datetime: event.target.value })
+                }
+                placeholder={t("datetimePlaceholder")}
+                value={form.datetime}
+              />
+            )}
           </TextField>
           <TextField>
             <Label>{t("notesLabel")}</Label>
@@ -129,7 +157,7 @@ export function OwnerWalkInBookingScreen({
             isDisabled={
               pending ||
               !onSubmit ||
-              !form.name.trim() ||
+              (form.memberOrGuest === "guest" && !form.name.trim()) ||
               !form.phone.trim() ||
               !form.datetime.trim()
             }
@@ -140,10 +168,19 @@ export function OwnerWalkInBookingScreen({
           >
             {t("submit")}
           </Button>
+          {error ? (
+            <div aria-live="polite" className={styles.empty()} role="alert">
+              {error}
+            </div>
+          ) : null}
         </section>
 
         <section className={styles.section()}>
-          <Typography className={styles.sectionTitle()} type="h4" weight="semibold">
+          <Typography
+            className={styles.sectionTitle()}
+            type="h4"
+            weight="semibold"
+          >
             {t("listTitle")}
           </Typography>
           {bookings.length === 0 ? (
@@ -153,14 +190,22 @@ export function OwnerWalkInBookingScreen({
               {bookings.map((booking, index) => (
                 <div key={booking.id}>
                   <div className={styles.row()}>
-                    <Typography className={styles.rowLabel()} type="body" weight="semibold">
+                    <Typography
+                      className={styles.rowLabel()}
+                      type="body"
+                      weight="semibold"
+                    >
                       {booking.name}
                     </Typography>
                     <Typography className={styles.rowHint()} type="body-sm">
-                      {booking.memberOrGuest === "member" ? t("typeMember") : t("typeGuest")} · {booking.phone}
+                      {booking.memberOrGuest === "member"
+                        ? t("typeMember")
+                        : t("typeGuest")}{" "}
+                      · {booking.phone}
                     </Typography>
                     <Typography className={styles.rowHint()} type="body-sm">
-                      {t(RESOURCE_KEY[booking.resourceType])}: {booking.resourceLabel} · {booking.datetimeLabel}
+                      {t(RESOURCE_KEY[booking.resourceType])}:{" "}
+                      {booking.resourceLabel} · {booking.datetimeLabel}
                     </Typography>
                     {booking.notes ? (
                       <Typography className={styles.rowHint()} type="body-sm">

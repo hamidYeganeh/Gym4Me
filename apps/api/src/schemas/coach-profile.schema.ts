@@ -117,6 +117,10 @@ export class CoachProfile {
   @Prop({ type: [String], enum: Object.values(CoachType), default: [] })
   coachTypes!: CoachType[];
 
+  /** Transactional serialization point for overlapping calendar mutations. */
+  @Prop({ type: Number, default: 0, min: 0, select: false })
+  calendarRevision!: number;
+
   /** Derived cache of the points ledger. */
   @Prop({
     type: PointsSummarySchema,

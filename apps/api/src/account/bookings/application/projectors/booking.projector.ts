@@ -69,7 +69,7 @@ export class BookingProjector {
           .find({
             _id: { $in: [...userIds].map((id) => new Types.ObjectId(id)) },
           })
-          .select({ name: 1, avatar: 1, code: 1 })
+          .select({ name: 1, avatar: 1, code: 1, phone: 1 })
       : Promise.resolve([]);
     const clubsPromise: Promise<ClubDocument[]> = clubIds.length
       ? this.clubModel
@@ -113,6 +113,7 @@ export class BookingProjector {
               mediaId: counterpart.avatar?.mediaId?.toString() ?? null,
             },
             code: counterpart.code ?? null,
+            phone: audience === 'athlete' ? undefined : counterpart.phone,
           }
         : null;
 
@@ -120,6 +121,10 @@ export class BookingProjector {
         id: booking._id.toString(),
         code: booking.code,
         status: booking.status,
+        source: audience === 'athlete' ? undefined : booking.source,
+        holderType: audience === 'athlete' ? undefined : booking.holderType,
+        createdBy:
+          audience === 'athlete' ? undefined : booking.createdBy?.toString(),
         paymentExpiresAt: booking.paymentExpiresAt ?? null,
         approvalExpiresAt: booking.approvalExpiresAt ?? null,
         resource: {

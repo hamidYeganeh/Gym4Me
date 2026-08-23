@@ -23,6 +23,11 @@ import {
 import { Club, type ClubDocument } from '../../../../schemas/club.schema';
 import { ClubSlotsService } from '../../../club-slots/club-slots.service';
 import type { CreateClubBookingDto } from '../../dto/booking.dto';
+import {
+  assertMatchingBookingFingerprint,
+  clubBookingFingerprint,
+} from '../policies/booking-idempotency.policy';
+import { BookingCalendarGuard } from '../services/booking-calendar-guard.service';
 
 const ACTIVE_STATUSES = [
   BookingStatus.PENDING,
@@ -56,13 +61,20 @@ export class CreateClubBookingCommand {
     private readonly config: ConfigService,
     private readonly outbox: OutboxService,
     private readonly transactions: MongoTransactionService,
+    private readonly calendarGuard: BookingCalendarGuard,
   ) {}
 
   async execute(
     athleteId: string,
     dto: CreateClubBookingDto,
+    options?: {
+      source?: 'athlete' | 'desk';
+      holderType?: 'member' | 'guest';
+      createdBy?: Types.ObjectId;
+    },
   ): Promise<CreateClubBookingResult> {
     const dates = [...new Set(dto.dates)].sort();
+    const fingerprint = clubBookingFingerprint(athleteId, dto);
     const idempotencyKeys = dto.idempotencyKey
       ? dates.map((date) => `${dto.idempotencyKey}:${date}`)
       : [];
@@ -71,6 +83,7 @@ export class CreateClubBookingCommand {
       athleteId,
       idempotencyKeys,
     );
+    assertMatchingBookingFingerprint(replay, fingerprint);
     if (replay.length === dates.length && dates.length > 0) {
       return this.asResult(replay);
     }
@@ -88,6 +101,7 @@ export class CreateClubBookingCommand {
           idempotencyKeys,
           session,
         );
+        assertMatchingBookingFingerprint(transactionReplay, fingerprint);
         if (transactionReplay.length === dates.length && dates.length > 0) {
           return this.asResult(transactionReplay);
         }
@@ -121,13 +135,39 @@ export class CreateClubBookingCommand {
           );
         }
 
-        for (const { occurrence } of resolved) {
+        for (const { occurrence, companionCoachId } of resolved) {
           if (
             occurrenceDate(occurrence.date, occurrence.startTime).getTime() <=
             Date.now()
           ) {
             throw new BadRequestException(
               `Occurrence ${occurrence.date} is in the past`,
+            );
+          }
+          await this.calendarGuard.lockAndAssertClubResourceAvailable(
+            {
+              clubId: slot.clubId,
+              slotId: slot._id,
+              classId: slot.classId,
+              spaceId: slot.spaceId,
+            },
+            occurrence.date,
+            occurrenceDate(occurrence.date, occurrence.startTime),
+            occurrenceDate(occurrence.date, occurrence.endTime),
+            session,
+          );
+          if (companionCoachId) {
+            await this.calendarGuard.lockAndAssertCoachAvailable(
+              companionCoachId,
+              occurrenceDate(occurrence.date, occurrence.startTime),
+              occurrenceDate(occurrence.date, occurrence.endTime),
+              session,
+              {
+                allowedSharedOccurrence: {
+                  resourceRefId: slot._id,
+                  occurrenceDate: occurrence.date,
+                },
+              },
             );
           }
         }
@@ -152,7 +192,7 @@ export class CreateClubBookingCommand {
         const price = slot.price ?? 0;
         const bookings: BookingDocument[] = [];
 
-        for (const { occurrence } of resolved) {
+        for (const { occurrence, companionCoachId } of resolved) {
           const occupied = await this.clubSlots.occupyOccurrence(
             slot._id,
             occurrence.date,
@@ -174,9 +214,18 @@ export class CreateClubBookingCommand {
                 idempotencyKey: dto.idempotencyKey
                   ? `${dto.idempotencyKey}:${occurrence.date}`
                   : undefined,
+                idempotencyFingerprint: dto.idempotencyKey
+                  ? fingerprint
+                  : undefined,
                 athleteId: new Types.ObjectId(athleteId),
+                source: options?.source ?? 'athlete',
+                holderType: options?.holderType ?? 'member',
+                createdBy: options?.createdBy,
                 resource: { type: resourceType, refId: slot._id },
                 clubId: slot.clubId,
+                classId: slot.classId,
+                spaceId: slot.spaceId,
+                coachUserId: companionCoachId,
                 occurrence,
                 recurringGroupId,
                 attendeeCount,
@@ -218,6 +267,7 @@ export class CreateClubBookingCommand {
         athleteId,
         idempotencyKeys,
       );
+      assertMatchingBookingFingerprint(winningReplay, fingerprint);
       if (winningReplay.length === dates.length && dates.length > 0) {
         return this.asResult(winningReplay);
       }
@@ -236,6 +286,7 @@ export class CreateClubBookingCommand {
         athleteId: new Types.ObjectId(athleteId),
         idempotencyKey: { $in: idempotencyKeys },
       })
+      .select('+idempotencyFingerprint')
       .sort({ startsAt: 1 });
     return session ? query.session(session) : query;
   }

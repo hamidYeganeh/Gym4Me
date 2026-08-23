@@ -6,10 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useApiClient } from "../react";
-import {
-  createCoachSlotsApi,
-  type CoachSlotsApi,
-} from "./coach-slots.client";
+import { createCoachSlotsApi, type CoachSlotsApi } from "./coach-slots.client";
 import type {
   CoachSlotClub,
   CoachSlotsListResponse,
@@ -39,7 +36,10 @@ export function useCoachSlotsList(
 }
 
 export function useCoachSlotClubs(
-  options?: Omit<UseQueryOptions<CoachSlotClub[], Error>, "queryKey" | "queryFn">,
+  options?: Omit<
+    UseQueryOptions<CoachSlotClub[], Error>,
+    "queryKey" | "queryFn"
+  >,
 ) {
   const api = useCoachSlotsApi();
   return useQuery({

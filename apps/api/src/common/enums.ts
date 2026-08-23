@@ -470,6 +470,7 @@ export enum NotificationTemplateKey {
   BOOKING_REJECTED = 'booking.rejected',
   BOOKING_REMINDER = 'booking.reminder',
   BOOKING_CANCELLED_BY_PROVIDER = 'booking.cancelled_by_provider',
+  BOOKING_RESCHEDULED = 'booking.rescheduled',
   WAITLIST_OFFER = 'waitlist.offer',
   MEMBERSHIP_EXPIRING = 'membership.expiring',
   LIFECYCLE_LOW_CREDITS = 'lifecycle.low_credits',

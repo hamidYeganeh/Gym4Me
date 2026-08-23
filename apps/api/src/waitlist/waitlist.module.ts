@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { StaffModule } from '../account/staff/staff.module';
+import { OutboxModule } from '../outbox/outbox.module';
 import { Waitlist, WaitlistSchema } from '../schemas/waitlist.schema';
 import {
   AccountWaitlistController,
@@ -12,6 +13,7 @@ import { WaitlistWorker } from './waitlist.worker';
 @Module({
   imports: [
     StaffModule,
+    OutboxModule,
     MongooseModule.forFeature([
       { name: Waitlist.name, schema: WaitlistSchema },
     ]),

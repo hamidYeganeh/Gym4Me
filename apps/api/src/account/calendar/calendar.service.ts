@@ -5,21 +5,31 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types, type QueryFilter } from 'mongoose';
+import { Model, Types, type ClientSession, type QueryFilter } from 'mongoose';
 import type { Request } from 'express';
 import { AuditService } from '../../audit/audit.service';
 import { StaffService } from '../staff/staff.service';
 import {
   AuditAction,
   CalendarResourceType,
+  BookingStatus,
   EntityStatus,
   StaffPermissionKey,
 } from '../../common/enums';
+import { MongoTransactionService } from '../../common/mongo/mongo-transaction.service';
 import {
   paginatedResult,
   resolvePageSize,
 } from '../../common/utils/pagination.util';
 import { Club, ClubDocument } from '../../schemas/club.schema';
+import { Booking, BookingDocument } from '../../schemas/booking.schema';
+import { ClubClass, ClubClassDocument } from '../../schemas/club-class.schema';
+import { ClubSlot, ClubSlotDocument } from '../../schemas/club-slot.schema';
+import { ClubSpace, ClubSpaceDocument } from '../../schemas/club-space.schema';
+import {
+  CoachProfile,
+  CoachProfileDocument,
+} from '../../schemas/coach-profile.schema';
 import {
   ResourceCalendarBlock,
   ResourceCalendarBlockDocument,
@@ -36,8 +46,19 @@ export class CalendarService {
     private readonly blockModel: Model<ResourceCalendarBlockDocument>,
     @InjectModel(Club.name)
     private readonly clubModel: Model<ClubDocument>,
+    @InjectModel(Booking.name)
+    private readonly bookingModel: Model<BookingDocument>,
+    @InjectModel(ClubClass.name)
+    private readonly classModel: Model<ClubClassDocument>,
+    @InjectModel(ClubSlot.name)
+    private readonly slotModel: Model<ClubSlotDocument>,
+    @InjectModel(ClubSpace.name)
+    private readonly spaceModel: Model<ClubSpaceDocument>,
+    @InjectModel(CoachProfile.name)
+    private readonly coachModel: Model<CoachProfileDocument>,
     private readonly staff: StaffService,
     private readonly audit: AuditService,
+    private readonly transactions: MongoTransactionService,
   ) {}
 
   async upsertForClub(
@@ -152,22 +173,47 @@ export class CalendarService {
       throw new BadRequestException('window.from must be before window.to');
     }
 
-    let block: ResourceCalendarBlockDocument | null = null;
-    if (dto.id) {
-      block = await this.findOrFail(dto.id);
-      if (
-        block.resource.type !== dto.resource.type ||
-        block.resource.id.toString() !== dto.resource.id
-      ) {
-        throw new BadRequestException('Cannot change block resource on upsert');
+    const block = await this.transactions.run(async (session) => {
+      await this.lockResource(dto.resource.type, dto.resource.id, session);
+      let current: ResourceCalendarBlockDocument | null = null;
+      if (dto.id) {
+        if (!Types.ObjectId.isValid(dto.id)) {
+          throw new NotFoundException('Calendar block not found');
+        }
+        current = await this.blockModel.findById(dto.id).session(session);
+        if (!current) throw new NotFoundException('Calendar block not found');
+        if (
+          current.resource.type !== dto.resource.type ||
+          current.resource.id.toString() !== dto.resource.id
+        ) {
+          throw new BadRequestException(
+            'Cannot change block resource on upsert',
+          );
+        }
       }
-      block.reason = dto.reason;
-      block.window = { from, to };
-      if (dto.note !== undefined) block.note = dto.note;
-      if (dto.status !== undefined) block.status = dto.status;
-      await block.save();
-    } else {
-      block = await this.blockModel.create({
+
+      const effectiveStatus =
+        dto.status ?? current?.status ?? EntityStatus.ACTIVE;
+      if (effectiveStatus === EntityStatus.ACTIVE) {
+        await this.assertNoActiveBooking(
+          dto.resource.type,
+          dto.resource.id,
+          from,
+          to,
+          session,
+        );
+      }
+
+      if (current) {
+        current.reason = dto.reason;
+        current.window = { from, to };
+        if (dto.note !== undefined) current.note = dto.note;
+        if (dto.status !== undefined) current.status = dto.status;
+        await current.save({ session });
+        return current;
+      }
+
+      const created = new this.blockModel({
         resource: {
           type: dto.resource.type,
           id: new Types.ObjectId(dto.resource.id),
@@ -178,7 +224,9 @@ export class CalendarService {
         createdBy: new Types.ObjectId(actorId),
         status: dto.status ?? EntityStatus.ACTIVE,
       });
-    }
+      await created.save({ session });
+      return created;
+    });
 
     this.audit.log({
       action: AuditAction.CALENDAR_BLOCK_UPSERTED,
@@ -262,6 +310,113 @@ export class CalendarService {
     return filter;
   }
 
+  private async lockResource(
+    type: CalendarResourceType,
+    resourceId: string,
+    session: ClientSession,
+  ): Promise<void> {
+    const id = new Types.ObjectId(resourceId);
+    const options = { session };
+    let matchedCount = 0;
+    switch (type) {
+      case CalendarResourceType.CLUB:
+        matchedCount = (
+          await this.clubModel.updateOne(
+            { _id: id },
+            { $inc: { calendarRevision: 1 } },
+            options,
+          )
+        ).matchedCount;
+        break;
+      case CalendarResourceType.CLASS:
+        matchedCount = (
+          await this.classModel.updateOne(
+            { _id: id },
+            { $inc: { calendarRevision: 1 } },
+            options,
+          )
+        ).matchedCount;
+        break;
+      case CalendarResourceType.SLOT:
+        matchedCount = (
+          await this.slotModel.updateOne(
+            { _id: id },
+            { $inc: { calendarRevision: 1 } },
+            options,
+          )
+        ).matchedCount;
+        break;
+      case CalendarResourceType.SPACE:
+        matchedCount = (
+          await this.spaceModel.updateOne(
+            { _id: id },
+            { $inc: { calendarRevision: 1 } },
+            options,
+          )
+        ).matchedCount;
+        break;
+      case CalendarResourceType.COACH:
+        matchedCount = (
+          await this.coachModel.updateOne(
+            { userId: id },
+            { $inc: { calendarRevision: 1 } },
+            options,
+          )
+        ).matchedCount;
+        break;
+    }
+    if (matchedCount !== 1) {
+      throw new NotFoundException('Calendar resource not found');
+    }
+  }
+
+  private async assertNoActiveBooking(
+    type: CalendarResourceType,
+    resourceId: string,
+    from: Date,
+    to: Date,
+    session: ClientSession,
+  ): Promise<void> {
+    const id = new Types.ObjectId(resourceId);
+    const identity: Record<CalendarResourceType, Record<string, unknown>> = {
+      [CalendarResourceType.CLUB]: { clubId: id },
+      [CalendarResourceType.CLASS]: { classId: id },
+      [CalendarResourceType.SLOT]: { 'resource.refId': id },
+      [CalendarResourceType.SPACE]: { spaceId: id },
+      [CalendarResourceType.COACH]: { coachUserId: id },
+    };
+    const booking = await this.bookingModel
+      .findOne({
+        ...identity[type],
+        status: {
+          $in: [
+            BookingStatus.PENDING,
+            BookingStatus.AWAITING_PAYMENT,
+            BookingStatus.CONFIRMED,
+            BookingStatus.CHECKED_IN,
+          ],
+        },
+        $or: [
+          {
+            calendarStartsAt: { $lt: to },
+            calendarEndsAt: { $gt: from },
+          },
+          {
+            calendarStartsAt: { $exists: false },
+            startsAt: { $lt: to },
+            endsAt: { $gt: from },
+          },
+        ],
+      })
+      .select({ _id: 1 })
+      .session(session);
+    if (booking) {
+      throw new BadRequestException(
+        'Calendar block overlaps an active booking',
+      );
+    }
+  }
+
   private async assertClubExists(clubId: string) {
     if (!Types.ObjectId.isValid(clubId)) {
       throw new NotFoundException('Club not found');
@@ -280,10 +435,25 @@ export class CalendarService {
         'Use coach calendar endpoints for coach blocks',
       );
     }
-    if (type === CalendarResourceType.CLUB && resourceId !== clubId) {
-      throw new ForbiddenException('Club resource id must match path clubId');
+    if (!Types.ObjectId.isValid(resourceId)) {
+      throw new NotFoundException('Calendar resource not found');
     }
-    await this.assertClubExists(clubId);
+    const clubOid = new Types.ObjectId(clubId);
+    const resourceOid = new Types.ObjectId(resourceId);
+    if (type === CalendarResourceType.CLUB) {
+      if (resourceId !== clubId) {
+        throw new ForbiddenException('Club resource id must match path clubId');
+      }
+      await this.assertClubExists(clubId);
+      return;
+    }
+    const exists =
+      type === CalendarResourceType.CLASS
+        ? await this.classModel.exists({ _id: resourceOid, clubId: clubOid })
+        : type === CalendarResourceType.SPACE
+          ? await this.spaceModel.exists({ _id: resourceOid, clubId: clubOid })
+          : await this.slotModel.exists({ _id: resourceOid, clubId: clubOid });
+    if (!exists) throw new NotFoundException('Calendar resource not found');
   }
 
   private async findOrFail(id: string) {

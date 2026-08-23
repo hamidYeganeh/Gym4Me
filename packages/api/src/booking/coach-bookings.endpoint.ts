@@ -6,6 +6,7 @@ export const coachBookingsEndpoints = {
     `/coach/bookings/${id}/cancellation-preview`,
   accept: (id: string) => `/coach/bookings/${id}/accept`,
   cancel: (id: string) => `/coach/bookings/${id}/cancel`,
+  reschedule: (id: string) => `/coach/bookings/${id}/reschedule`,
   checkIn: (id: string) => `/coach/bookings/${id}/checkin`,
   complete: (id: string) => `/coach/bookings/${id}/complete`,
   noShow: (id: string) => `/coach/bookings/${id}/no-show`,

@@ -1,7 +1,5 @@
 "use client";
 
-import { Button } from "@heroui/react/button";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useRouter } from "@/shared/lib/app-router";
@@ -18,6 +16,8 @@ import { CoachSlotsManageWeekNavSection } from "@/modules/coach/sections/CoachSl
 import { faDigits, formatTimeFa } from "@/shared/lib/booking-view";
 import { addDaysIso, formatJalaliRangeLabel } from "@/shared/lib/week-calendar";
 import { coachSlotsManageScreenStyles as styles } from "./CoachSlotsManageScreen.styles";
+
+const BUFFER_OPTIONS_MINUTES = [0, 15, 30, 45, 60] as const;
 
 export function CoachSlotsManageScreen() {
   const router = useRouter();
@@ -41,6 +41,9 @@ export function CoachSlotsManageScreen() {
 
         <CoachSlotsManageCreateFormSection
           clubs={slots.clubs}
+          bufferAfterLabel={slots.t("bufferAfterLabel")}
+          bufferBeforeLabel={slots.t("bufferBeforeLabel")}
+          bufferOptions={BUFFER_OPTIONS_MINUTES}
           createSlotLabel={slots.t("createSlot")}
           dayLabel={slots.t("dayLabel")}
           days={slots.days.map((day) => ({
@@ -50,6 +53,9 @@ export function CoachSlotsManageScreen() {
           draftClubId={slots.draftClubId}
           draftDate={slots.draftDate}
           draftDuration={slots.draftDuration}
+          draftBufferAfter={slots.draftBufferAfter}
+          draftBufferBefore={slots.draftBufferBefore}
+          draftTravelBuffer={slots.draftTravelBuffer}
           draftTime={slots.draftTime}
           durations={COACH_SLOT_DURATIONS_MINUTES}
           error={slots.error}
@@ -61,10 +67,14 @@ export function CoachSlotsManageScreen() {
           onDraftClubIdChange={slots.setDraftClubId}
           onDraftDateChange={slots.setDraftDate}
           onDraftDurationChange={slots.setDraftDuration}
+          onDraftBufferAfterChange={slots.setDraftBufferAfter}
+          onDraftBufferBeforeChange={slots.setDraftBufferBefore}
+          onDraftTravelBufferChange={slots.setDraftTravelBuffer}
           onDraftTimeChange={slots.setDraftTime}
           startTimes={COACH_SLOT_START_TIMES}
           timeLabel={slots.t("timeLabel")}
           title={slots.t("newSlotTitle")}
+          travelBufferLabel={slots.t("travelBufferLabel")}
           venueLabel={slots.t("venueLabel")}
           venueRemoteLabel={slots.t("venueRemote")}
           durationLabel={slots.t("durationLabel")}

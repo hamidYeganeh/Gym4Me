@@ -1,4 +1,5 @@
 import { Transform, Type } from 'class-transformer';
+import { OmitType } from '@nestjs/swagger';
 import {
   ArrayMaxSize,
   ArrayMinSize,
@@ -14,8 +15,10 @@ import {
   Matches,
   Max,
   MaxLength,
+  MinLength,
   Min,
   ValidateNested,
+  ValidateIf,
 } from 'class-validator';
 import {
   BookingResourceType,
@@ -24,6 +27,7 @@ import {
 } from '../../../common/enums';
 import { PaginationQueryDto } from '../../../basics/dto/common.dto';
 import { toStringArray } from '../../../common/utils/list-query.util';
+import { IR_PHONE, normalizeIranPhone } from '../../../common/utils/phone.util';
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -64,10 +68,10 @@ export class CreateBookingDto {
   @MaxLength(40)
   couponCode?: string;
 
-  @IsOptional()
   @IsString()
+  @MinLength(8)
   @MaxLength(200)
-  idempotencyKey?: string;
+  idempotencyKey!: string;
 }
 
 export class CreateClubBookingDto {
@@ -107,10 +111,55 @@ export class CreateClubBookingDto {
   @MaxLength(40)
   couponCode?: string;
 
-  @IsOptional()
   @IsString()
+  @MinLength(8)
   @MaxLength(200)
-  idempotencyKey?: string;
+  idempotencyKey!: string;
+}
+
+export class DeskBookingGuestDto {
+  @IsString()
+  @MaxLength(120)
+  name!: string;
+
+  @Transform(({ value }) => normalizeIranPhone(value))
+  @IsString()
+  @Matches(IR_PHONE)
+  phone!: string;
+}
+
+export class DeskBookingHolderDto {
+  @ValidateIf(
+    (holder: DeskBookingHolderDto) => !holder.guest && !holder.memberPhone,
+  )
+  @IsMongoId()
+  userId?: string;
+
+  @ValidateIf(
+    (holder: DeskBookingHolderDto) => !holder.userId && !holder.memberPhone,
+  )
+  @ValidateNested()
+  @Type(() => DeskBookingGuestDto)
+  guest?: DeskBookingGuestDto;
+
+  @ValidateIf((holder: DeskBookingHolderDto) => !holder.userId && !holder.guest)
+  @Transform(({ value }) => normalizeIranPhone(value))
+  @IsString()
+  @Matches(IR_PHONE)
+  memberPhone?: string;
+}
+
+export class CreateDeskClubBookingDto extends OmitType(CreateClubBookingDto, [
+  'clubId',
+] as const) {
+  @ValidateNested()
+  @Type(() => DeskBookingHolderDto)
+  holder!: DeskBookingHolderDto;
+
+  @IsString()
+  @MinLength(8)
+  @MaxLength(200)
+  idempotencyKey!: string;
 }
 
 export class CancelBookingSeriesDto {

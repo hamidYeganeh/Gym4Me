@@ -10,6 +10,8 @@ export type BookingUserRef = {
   name: { first: string | null; last: string | null };
   avatar: { mediaId: string | null };
   code: string | null;
+  /** Provider audiences only. */
+  phone?: string;
 };
 
 export type BookingClubRef = {
@@ -64,6 +66,10 @@ export type Booking = {
   id: string;
   code: string;
   status: BookingStatus;
+  /** Provider-only creation context. */
+  source?: "athlete" | "desk";
+  holderType?: "member" | "guest";
+  createdBy?: string;
   /** Unpaid-booking auto-cancel deadline (SYS-D13); null once paid/free. */
   paymentExpiresAt: string | null;
   /** Coach decision deadline for pending consultation requests. */
@@ -117,7 +123,7 @@ export type CreateBookingInput = {
     supplementKeys?: string[];
   };
   couponCode?: string;
-  idempotencyKey?: string;
+  idempotencyKey: string;
 };
 
 export type CreateClubBookingInput = {
@@ -133,7 +139,21 @@ export type CreateClubBookingInput = {
     supplementKeys?: string[];
   };
   couponCode?: string;
-  idempotencyKey?: string;
+  idempotencyKey: string;
+};
+
+export type CreateDeskClubBookingInput = Omit<
+  CreateClubBookingInput,
+  "clubId"
+> & {
+  holder:
+    | { userId: string; memberPhone?: never; guest?: never }
+    | { memberPhone: string; userId?: never; guest?: never }
+    | {
+        userId?: never;
+        memberPhone?: never;
+        guest: { name: string; phone: string };
+      };
 };
 
 export type BookingCancellationPreview = {

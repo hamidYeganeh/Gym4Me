@@ -1,6 +1,12 @@
 export type OwnerWalkInMemberType = "member" | "guest";
 
-export type OwnerWalkInResourceType = "class" | "slot" | "coach";
+export type OwnerWalkInResourceType = "class" | "slot" | "space" | "coach";
+
+export type OwnerWalkInOccurrenceOption = {
+  value: string;
+  label: string;
+  resourceType: Exclude<OwnerWalkInResourceType, "coach">;
+};
 
 export type OwnerWalkInBooking = {
   id: string;

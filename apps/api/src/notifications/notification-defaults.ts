@@ -67,6 +67,12 @@ export const DEFAULT_NOTIFICATION_TEMPLATES: DefaultNotificationTemplate[] = [
     channels: { push, inbox, sms: NotificationSmsSetting.ALWAYS },
   },
   {
+    key: NotificationTemplateKey.BOOKING_RESCHEDULED,
+    title: 'زمان رزرو تغییر کرد',
+    body: 'رزرو {subject} به {date} ساعت {time} منتقل شد.',
+    channels: { push, inbox, sms: NotificationSmsSetting.ALWAYS },
+  },
+  {
     key: NotificationTemplateKey.WAITLIST_OFFER,
     title: 'ظرفیت آزاد شد',
     body: 'ظرفیت {subject} آزاد شد! تا {deadline} فرصت دارید رزرو را نهایی کنید.',

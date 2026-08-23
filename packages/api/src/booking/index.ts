@@ -20,6 +20,7 @@ export type {
   CancelBookingSeriesResult,
   CreateBookingInput,
   CreateClubBookingInput,
+  CreateDeskClubBookingInput,
   CreateClubBookingResult,
   PayBookingResult,
   RescheduleBookingInput,

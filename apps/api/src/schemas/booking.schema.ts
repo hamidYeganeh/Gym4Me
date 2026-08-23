@@ -131,6 +131,19 @@ export class Booking {
   @Prop({ trim: true, maxlength: 240 })
   idempotencyKey?: string;
 
+  /** SHA-256 of the canonical create payload; prevents key reuse drift. */
+  @Prop({ trim: true, minlength: 64, maxlength: 64, select: false })
+  idempotencyFingerprint?: string;
+
+  @Prop({ type: String, enum: ['athlete', 'desk'], default: 'athlete' })
+  source!: 'athlete' | 'desk';
+
+  @Prop({ type: String, enum: ['member', 'guest'], default: 'member' })
+  holderType!: 'member' | 'guest';
+
+  @Prop({ type: Types.ObjectId, ref: User.name })
+  createdBy?: Types.ObjectId;
+
   @Prop({ type: Types.ObjectId, ref: User.name, required: true, index: true })
   athleteId!: Types.ObjectId;
 
@@ -148,6 +161,13 @@ export class Booking {
   /** Venue: coach in-person slot club, or the club owning the resource. */
   @Prop({ type: Types.ObjectId, ref: Club.name, index: true })
   clubId?: Types.ObjectId;
+
+  /** Club resource snapshots used for cross-slot overlap protection. */
+  @Prop({ type: Types.ObjectId, ref: 'ClubClass', index: true })
+  classId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'ClubSpace', index: true })
+  spaceId?: Types.ObjectId;
 
   /** Coach bookings only. */
   @Prop({ type: String, enum: ConsultationKind })
@@ -171,6 +191,13 @@ export class Booking {
 
   @Prop({ required: true })
   endsAt!: Date;
+
+  /** Effective calendar window; coach bookings include travel/rest buffers. */
+  @Prop()
+  calendarStartsAt?: Date;
+
+  @Prop()
+  calendarEndsAt?: Date;
 
   @Prop({ type: BookingIntakeSchema, default: () => ({}) })
   intake!: BookingIntake;
@@ -202,6 +229,10 @@ export class Booking {
 
   @Prop({ type: Types.ObjectId, ref: CoachSlot.name })
   rescheduledFromSlotId?: Types.ObjectId;
+
+  /** Monotonic sequence for idempotent reschedule side effects. */
+  @Prop({ min: 0, default: 0 })
+  rescheduleRevision!: number;
 
   createdAt!: Date;
   updatedAt!: Date;

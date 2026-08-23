@@ -48,7 +48,11 @@ export class WaitlistEntry {
 
 export const WaitlistEntrySchema = SchemaFactory.createForClass(WaitlistEntry);
 
-@Schema({ timestamps: true, collection: 'waitlists' })
+@Schema({
+  timestamps: true,
+  collection: 'waitlists',
+  optimisticConcurrency: true,
+})
 export class Waitlist {
   @Prop({ type: WaitlistResourceSchema, required: true })
   resource!: WaitlistResource;

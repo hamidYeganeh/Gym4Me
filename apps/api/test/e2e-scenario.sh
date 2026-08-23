@@ -169,7 +169,7 @@ book_occurrence() {
     if echo "$skip_json" | jq -e --arg s "$slot" --arg d "$date" '.[] | select(.slotId == $s and .date == $d)' >/dev/null 2>&1; then
       continue
     fi
-    res=$(jpost_auth /account/bookings/club "$token" "{\"clubId\":\"$CLUB_ID\",\"slotId\":\"$slot\",\"dates\":[\"$date\"]}")
+    res=$(jpost_auth /account/bookings/club "$token" "{\"clubId\":\"$CLUB_ID\",\"slotId\":\"$slot\",\"dates\":[\"$date\"],\"idempotencyKey\":\"e2e-club-$slot-$date-$(date +%s%N)\"}")
     # createClubBooking returns { recurringGroupId, bookings: [...] }
     id=$(echo "$res" | jq -r '(.bookings // [])[0].id // (.id // ._id) // empty')
     if [ -n "$id" ]; then
@@ -286,7 +286,7 @@ if [ -z "$CSLOT_ID" ]; then
 fi
 check "S9.3 coach slot available" "true" "$([ -n "$CSLOT_ID" ] && echo true || echo false)"
 
-CBOOKING=$(jpost_auth /account/bookings "$ATH_TOKEN" "{\"coachUserId\":\"$COACH_USER_ID\",\"slotId\":\"$CSLOT_ID\",\"consultationKind\":\"remote\"}")
+CBOOKING=$(jpost_auth /account/bookings "$ATH_TOKEN" "{\"coachUserId\":\"$COACH_USER_ID\",\"slotId\":\"$CSLOT_ID\",\"consultationKind\":\"remote\",\"idempotencyKey\":\"e2e-coach-$CSLOT_ID-$(date +%s%N)\"}")
 CBOOKING_ID=$(echo "$CBOOKING" | jq -r '.id // ._id // empty')
 CBOOKING_STATUS=$(echo "$CBOOKING" | jq -r '.status // empty')
 check "S9.4 consult booking created" "true" "$([ -n "$CBOOKING_ID" ] && echo true || echo false)"

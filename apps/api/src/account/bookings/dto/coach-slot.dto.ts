@@ -5,6 +5,9 @@ import {
   IsArray,
   IsDateString,
   IsMongoId,
+  IsInt,
+  Max,
+  Min,
   IsOptional,
   ValidateNested,
 } from 'class-validator';
@@ -20,6 +23,27 @@ export class CoachSlotInputDto {
   @IsOptional()
   @IsMongoId()
   clubId?: string | null;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(240)
+  bufferBeforeMinutes?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(240)
+  bufferAfterMinutes?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(240)
+  travelBufferMinutes?: number;
 }
 
 export class CreateCoachSlotsDto {

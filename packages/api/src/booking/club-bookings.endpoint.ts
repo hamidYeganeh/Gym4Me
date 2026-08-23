@@ -1,6 +1,7 @@
 /** Club-owner venue bookings (`/club_owner/clubs/:clubId/bookings`). */
 export const clubBookingsEndpoints = {
   root: (clubId: string) => `/club_owner/clubs/${clubId}/bookings`,
+  desk: (clubId: string) => `/club_owner/clubs/${clubId}/bookings/desk`,
   byId: (clubId: string, id: string) =>
     `/club_owner/clubs/${clubId}/bookings/${id}`,
   checkIn: (clubId: string, id: string) =>
@@ -11,4 +12,6 @@ export const clubBookingsEndpoints = {
     `/club_owner/clubs/${clubId}/bookings/${id}/no-show`,
   cancel: (clubId: string, id: string) =>
     `/club_owner/clubs/${clubId}/bookings/${id}/cancel`,
+  reschedule: (clubId: string, id: string) =>
+    `/club_owner/clubs/${clubId}/bookings/${id}/reschedule`,
 } as const;

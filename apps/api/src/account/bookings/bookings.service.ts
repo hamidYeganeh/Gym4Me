@@ -13,9 +13,11 @@ import {
   BookingActor,
   BookingResourceType,
   BookingStatus,
+  CalendarResourceType,
   CoachSlotStatus,
   ConsultationKind,
   NotificationTemplateKey,
+  Role,
   SlotKind,
 } from '../../common/enums';
 import { PaymentGatewayService } from '../../common/payment';
@@ -35,10 +37,13 @@ import {
 import { Booking, BookingDocument } from '../../schemas/booking.schema';
 import { Club, ClubDocument } from '../../schemas/club.schema';
 import { CoachSlot, CoachSlotDocument } from '../../schemas/coach-slot.schema';
+import { UsersService } from '../../users/users.service';
 import { ClubSlotsService } from '../club-slots/club-slots.service';
+import { CalendarAvailabilityService } from '../calendar/calendar-availability.service';
 import { CreateClubBookingCommand } from './application/commands/create-club-booking.command';
 import { CreateCoachBookingCommand } from './application/commands/create-coach-booking.command';
 import { VerifyBookingPaymentCommand } from './application/commands/verify-booking-payment.command';
+import { BookingCalendarGuard } from './application/services/booking-calendar-guard.service';
 import {
   BookingProjector,
   type BookingAudience,
@@ -49,6 +54,7 @@ import {
   CancelBookingSeriesDto,
   CreateBookingDto,
   CreateClubBookingDto,
+  CreateDeskClubBookingDto,
   ListBookingsQueryDto,
   RescheduleBookingDto,
   VerifyBookingPaymentDto,
@@ -110,11 +116,14 @@ export class BookingsService {
     private readonly slotModel: Model<CoachSlotDocument>,
     @InjectModel(Club.name)
     private readonly clubModel: Model<ClubDocument>,
+    private readonly users: UsersService,
     private readonly clubSlots: ClubSlotsService,
     private readonly gateway: PaymentGatewayService,
     private readonly config: ConfigService,
     private readonly outbox: OutboxService,
     private readonly transactions: MongoTransactionService,
+    private readonly calendarAvailability: CalendarAvailabilityService,
+    private readonly calendarGuard: BookingCalendarGuard,
     private readonly createClubBookingCommand: CreateClubBookingCommand,
     private readonly createCoachBooking: CreateCoachBookingCommand,
     private readonly verifyBookingPayment: VerifyBookingPaymentCommand,
@@ -193,6 +202,77 @@ export class BookingsService {
       recurringGroupId: result.recurringGroupId?.toString() ?? null,
       bookings: await this.projectMany(result.bookings, 'athlete'),
     };
+  }
+
+  async createDeskClubBooking(
+    actorId: string,
+    clubId: string,
+    dto: CreateDeskClubBookingDto,
+  ) {
+    const holderModes = [
+      dto.holder.userId,
+      dto.holder.memberPhone,
+      dto.holder.guest,
+    ].filter(Boolean);
+    if (holderModes.length !== 1) {
+      throw new BadRequestException(
+        'holder must contain exactly one of userId, memberPhone or guest',
+      );
+    }
+    const athlete = await this.resolveDeskBookingAthlete(dto);
+    const { holder: _holder, ...bookingInput } = dto;
+    const result = await this.createClubBookingCommand.execute(
+      athlete._id.toString(),
+      {
+        ...bookingInput,
+        clubId,
+        idempotencyKey: `desk:${clubId}:${dto.idempotencyKey}`,
+      },
+      {
+        source: 'desk',
+        holderType: dto.holder.guest ? 'guest' : 'member',
+        createdBy: new Types.ObjectId(actorId),
+      },
+    );
+    return {
+      recurringGroupId: result.recurringGroupId?.toString() ?? null,
+      bookings: await this.projectMany(result.bookings, 'club'),
+    };
+  }
+
+  private async resolveDeskBookingAthlete(dto: CreateDeskClubBookingDto) {
+    if (dto.holder.userId) {
+      return this.users.ensureAthlete(
+        await this.users.findById(dto.holder.userId),
+      );
+    }
+    if (dto.holder.memberPhone) {
+      const member = await this.users.findByPhone(dto.holder.memberPhone);
+      if (!member || !member.roles.includes(Role.ATHLETE)) {
+        throw new NotFoundException('Athlete member not found');
+      }
+      return this.users.ensureAthlete(member);
+    }
+    const guest = dto.holder.guest!;
+    const existing = await this.users.findByPhone(guest.phone);
+    if (existing) return this.users.ensureAthlete(existing);
+    const [first, ...rest] = guest.name.trim().split(/\s+/);
+    try {
+      return await this.users.create({
+        phone: guest.phone,
+        firstName: first,
+        lastName: rest.join(' ') || undefined,
+        roles: [Role.ATHLETE],
+      });
+    } catch (error: unknown) {
+      const isCreateRace =
+        error instanceof ConflictException ||
+        (error as { code?: number }).code === 11000;
+      if (!isCreateRace) throw error;
+      const winner = await this.users.findByPhone(guest.phone);
+      if (!winner) throw error;
+      return this.users.ensureAthlete(winner);
+    }
   }
 
   async listForAthlete(athleteId: string, query: ListBookingsQueryDto) {
@@ -276,6 +356,7 @@ export class BookingsService {
   private async rescheduleCoachBooking(
     booking: BookingDocument,
     dto: RescheduleBookingDto,
+    audience: BookingAudience = 'athlete',
   ) {
     if (!dto.slotId) {
       throw new BadRequestException('slotId is required');
@@ -308,6 +389,46 @@ export class BookingsService {
       if (!newSlot) {
         throw new ConflictException('Selected slot is no longer available');
       }
+      const isInPersonSlot = Boolean(newSlot.clubId);
+      if (
+        isInPersonSlot !==
+        (current.consultationKind === ConsultationKind.IN_PERSON)
+      ) {
+        throw new BadRequestException(
+          'Consultation type does not match the selected slot venue',
+        );
+      }
+      const calendarStartsAt = newSlot.blockedStartsAt ?? newSlot.startsAt;
+      const calendarEndsAt = newSlot.blockedEndsAt ?? newSlot.endsAt;
+
+      await this.calendarAvailability.assertAvailable(
+        [
+          {
+            type: CalendarResourceType.COACH,
+            id: current.coachUserId!,
+          },
+          ...(current.consultationKind === ConsultationKind.IN_PERSON &&
+          newSlot.clubId
+            ? [{ type: CalendarResourceType.CLUB, id: newSlot.clubId }]
+            : []),
+        ],
+        calendarStartsAt,
+        calendarEndsAt,
+        session,
+      );
+      if (
+        current.consultationKind === ConsultationKind.IN_PERSON &&
+        newSlot.clubId
+      ) {
+        await this.calendarGuard.lockClubCalendar(newSlot.clubId, session);
+      }
+      await this.calendarGuard.lockAndAssertCoachAvailable(
+        current.coachUserId!,
+        calendarStartsAt,
+        calendarEndsAt,
+        session,
+        { excludeBookingId: current._id },
+      );
 
       const previousSlotId = current.slotId;
       if (!previousSlotId) {
@@ -321,20 +442,25 @@ export class BookingsService {
       };
       current.startsAt = newSlot.startsAt;
       current.endsAt = newSlot.endsAt;
+      current.calendarStartsAt = calendarStartsAt;
+      current.calendarEndsAt = calendarEndsAt;
+      current.rescheduleRevision = (current.rescheduleRevision ?? 0) + 1;
       if (current.consultationKind === ConsultationKind.IN_PERSON) {
         current.clubId = newSlot.clubId;
       }
       current.markModified('resource');
       await current.save({ session });
       await this.releaseCoachSlot(previousSlotId, session);
+      await this.enqueueRescheduled(current, session);
       return current;
     });
-    return this.project(updated, 'athlete');
+    return this.project(updated, audience);
   }
 
   private async rescheduleClubBooking(
     booking: BookingDocument,
     dto: RescheduleBookingDto,
+    audience: BookingAudience = 'athlete',
   ) {
     if (!dto.date) {
       throw new BadRequestException('date is required');
@@ -360,7 +486,7 @@ export class BookingsService {
         throw new BadRequestException('Booking already uses this occurrence');
       }
 
-      const { slot, occurrence } =
+      const { slot, occurrence, companionCoachId } =
         await this.clubSlots.resolveBookableOccurrence(
           targetSlotId,
           targetDate,
@@ -379,6 +505,36 @@ export class BookingsService {
       if (current.attendeeCount > slot.capacity) {
         throw new BadRequestException(
           'attendeeCount exceeds the occurrence capacity',
+        );
+      }
+
+      await this.calendarGuard.lockAndAssertClubResourceAvailable(
+        {
+          clubId: slot.clubId,
+          slotId: slot._id,
+          classId: slot.classId,
+          spaceId: slot.spaceId,
+        },
+        occurrence.date,
+        startsAt,
+        occurrenceDate(occurrence.date, occurrence.endTime),
+        session,
+        current._id,
+      );
+
+      if (companionCoachId) {
+        await this.calendarGuard.lockAndAssertCoachAvailable(
+          companionCoachId,
+          startsAt,
+          occurrenceDate(occurrence.date, occurrence.endTime),
+          session,
+          {
+            excludeBookingId: current._id,
+            allowedSharedOccurrence: {
+              resourceRefId: slot._id,
+              occurrenceDate: occurrence.date,
+            },
+          },
         );
       }
 
@@ -404,8 +560,14 @@ export class BookingsService {
         refId: slot._id,
       };
       current.occurrence = occurrence;
+      current.classId = slot.classId;
+      current.spaceId = slot.spaceId;
+      current.coachUserId = companionCoachId;
       current.startsAt = startsAt;
       current.endsAt = occurrenceDate(occurrence.date, occurrence.endTime);
+      current.calendarStartsAt = undefined;
+      current.calendarEndsAt = undefined;
+      current.rescheduleRevision = (current.rescheduleRevision ?? 0) + 1;
       current.markModified('resource');
       current.markModified('occurrence');
       await current.save({ session });
@@ -415,9 +577,10 @@ export class BookingsService {
         current.attendeeCount,
         session,
       );
+      await this.enqueueRescheduled(current, session);
       return current;
     });
-    return this.project(updated, 'athlete');
+    return this.project(updated, audience);
   }
 
   async cancelByAthlete(athleteId: string, id: string, dto: CancelBookingDto) {
@@ -449,22 +612,33 @@ export class BookingsService {
     const fromDate = dto.fromDate
       ? occurrenceDate(dto.fromDate, '00:00')
       : new Date();
-    const bookings = await this.bookingModel.find({
-      athleteId: new Types.ObjectId(athleteId),
-      recurringGroupId: new Types.ObjectId(groupId),
-      status: { $in: [...ACTIVE_STATUSES] },
-      startsAt: { $gte: fromDate },
+    const cancelled = await this.transactions.run(async (session) => {
+      const bookings = await this.bookingModel
+        .find({
+          athleteId: new Types.ObjectId(athleteId),
+          recurringGroupId: new Types.ObjectId(groupId),
+          status: { $in: [...ACTIVE_STATUSES] },
+          startsAt: { $gte: fromDate },
+        })
+        .sort({ startsAt: 1 })
+        .session(session);
+      if (!bookings.length) {
+        throw new NotFoundException('No cancellable bookings in this series');
+      }
+      for (const booking of bookings) {
+        await this.cancelCurrentInSession(
+          booking,
+          dto,
+          BookingActor.ATHLETE,
+          session,
+        );
+      }
+      return bookings;
     });
-    if (!bookings.length) {
-      throw new NotFoundException('No cancellable bookings in this series');
-    }
-    const results: Awaited<ReturnType<BookingsService['cancel']>>[] = [];
-    for (const booking of bookings) {
-      results.push(
-        await this.cancel(booking, dto, BookingActor.ATHLETE, 'athlete'),
-      );
-    }
-    return { cancelled: results.length, bookings: results };
+    return {
+      cancelled: cancelled.length,
+      bookings: await this.projectMany(cancelled, 'athlete'),
+    };
   }
 
   // ── Coach ──────────────────────────────────────────────────────────────
@@ -590,6 +764,18 @@ export class BookingsService {
     return this.cancel(booking, dto, BookingActor.COACH, 'coach');
   }
 
+  async rescheduleByCoach(
+    coachUserId: string,
+    id: string,
+    dto: RescheduleBookingDto,
+  ) {
+    const booking = await this.findOwned(id, {
+      coachUserId: new Types.ObjectId(coachUserId),
+      'resource.type': BookingResourceType.COACH,
+    });
+    return this.rescheduleCoachBooking(booking, dto, 'coach');
+  }
+
   async checkIn(coachUserId: string, id: string) {
     return this.transition(
       { coachUserId: new Types.ObjectId(coachUserId) },
@@ -682,6 +868,18 @@ export class BookingsService {
     return this.cancel(booking, dto, BookingActor.CLUB, 'club');
   }
 
+  async rescheduleByClub(
+    clubId: string,
+    id: string,
+    dto: RescheduleBookingDto,
+  ) {
+    const booking = await this.findOwned(id, {
+      clubId: new Types.ObjectId(clubId),
+      'resource.type': { $ne: BookingResourceType.COACH },
+    });
+    return this.rescheduleClubBooking(booking, dto, 'club');
+  }
+
   // ── Admin ──────────────────────────────────────────────────────────────
 
   async listForAdmin(query: AdminListBookingsQueryDto) {
@@ -722,6 +920,46 @@ export class BookingsService {
 
   // ── Shared internals ───────────────────────────────────────────────────
 
+  private async enqueueRescheduled(
+    booking: BookingDocument,
+    session: ClientSession,
+  ): Promise<void> {
+    await this.outbox.enqueue(
+      {
+        eventName: 'booking.rescheduled',
+        payload: {
+          bookingId: booking._id.toString(),
+          athleteId: booking.athleteId.toString(),
+          coachUserId: booking.coachUserId?.toString(),
+          clubId: booking.clubId?.toString(),
+          startsAt: booking.startsAt.toISOString(),
+          endsAt: booking.endsAt.toISOString(),
+          revision: booking.rescheduleRevision,
+          notification: {
+            userId: booking.athleteId.toString(),
+            templateKey: NotificationTemplateKey.BOOKING_RESCHEDULED,
+            params: {
+              subject: booking.code,
+              date:
+                booking.occurrence?.date ??
+                booking.startsAt.toISOString().slice(0, 10),
+              time:
+                booking.occurrence?.startTime ??
+                formatTimeTehran(booking.startsAt),
+            },
+            payload: {
+              bookingId: booking._id.toString(),
+              action: 'view_booking',
+            },
+            critical: true,
+          },
+        },
+        idempotencyKey: `outbox:booking.rescheduled:${booking._id.toString()}:${booking.rescheduleRevision}`,
+      },
+      session,
+    );
+  }
+
   private async transition(
     ownerFilter: QueryFilter<BookingDocument>,
     id: string,
@@ -729,14 +967,23 @@ export class BookingsService {
     toStatus: BookingStatus,
     audience: BookingAudience,
   ) {
-    const booking = await this.findOwned(id, ownerFilter);
-    if (!fromStatuses.includes(booking.status)) {
-      throw new ConflictException(
-        `Booking must be ${fromStatuses.join(' or ')} to become ${toStatus}`,
-      );
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundException('Booking not found');
     }
-    booking.status = toStatus;
-    await booking.save();
+    const booking = await this.transactions.run(async (session) => {
+      const current = await this.bookingModel
+        .findOne({ _id: new Types.ObjectId(id), ...ownerFilter })
+        .session(session);
+      if (!current) throw new NotFoundException('Booking not found');
+      if (!fromStatuses.includes(current.status)) {
+        throw new ConflictException(
+          `Booking must be ${fromStatuses.join(' or ')} to become ${toStatus}`,
+        );
+      }
+      current.status = toStatus;
+      await current.save({ session });
+      return current;
+    });
     return this.project(booking, audience);
   }
 
@@ -746,6 +993,24 @@ export class BookingsService {
     actor: BookingActor,
     audience: BookingAudience,
   ) {
+    const cancelled = await this.transactions.run(async (session) => {
+      const current = await this.bookingModel
+        .findById(booking._id)
+        .session(session);
+      if (!current) throw new NotFoundException('Booking not found');
+      await this.cancelCurrentInSession(current, dto, actor, session);
+      return current;
+    });
+
+    return this.project(cancelled, audience);
+  }
+
+  private async cancelCurrentInSession(
+    current: BookingDocument,
+    dto: CancelBookingDto,
+    actor: BookingActor,
+    session: ClientSession,
+  ): Promise<void> {
     const providerCancel =
       actor === BookingActor.COACH || actor === BookingActor.CLUB;
     const systemExpire =
@@ -755,87 +1020,88 @@ export class BookingsService {
       providerCancel ||
       actor === BookingActor.ADMIN ||
       actor === BookingActor.SYSTEM;
-
-    const cancelled = await this.transactions.run(async (session) => {
-      const current = await this.bookingModel
-        .findById(booking._id)
-        .session(session);
-      if (!current) throw new NotFoundException('Booking not found');
-
-      const cancellable: BookingStatus[] = [
-        BookingStatus.PENDING,
-        BookingStatus.AWAITING_PAYMENT,
-        BookingStatus.CONFIRMED,
-      ];
-      if (!cancellable.includes(current.status)) {
-        throw new ConflictException('Booking can no longer be cancelled');
+    const cancellable: BookingStatus[] = [
+      BookingStatus.PENDING,
+      BookingStatus.AWAITING_PAYMENT,
+      BookingStatus.CONFIRMED,
+    ];
+    if (!cancellable.includes(current.status)) {
+      throw new ConflictException('Booking can no longer be cancelled');
+    }
+    if (systemExpire) {
+      const deadline =
+        current.status === BookingStatus.PENDING
+          ? current.approvalExpiresAt
+          : current.paymentExpiresAt;
+      if (!deadline || deadline.getTime() > Date.now()) {
+        throw new ConflictException('Booking expiry deadline has not elapsed');
       }
+    }
+    if (current.coachUserId) {
+      await this.calendarGuard.lockCoachCalendar(current.coachUserId, session);
+    }
 
-      const wasPaid = Boolean(current.payment?.paidAt);
-      let nextStatus: BookingStatus;
-      if (systemExpire || current.status === BookingStatus.AWAITING_PAYMENT) {
-        nextStatus = BookingStatus.CANCELLED;
-      } else if (providerCancel && wasPaid) {
-        nextStatus = BookingStatus.REFUND_REQUESTED;
-      } else if (wasPaid) {
-        const refundEligible = await this.isRefundEligible(current, session);
-        nextStatus = refundEligible
-          ? BookingStatus.REFUND_REQUESTED
-          : BookingStatus.CANCELLED;
-      } else if (providerCancel) {
-        nextStatus = BookingStatus.REJECTED;
-      } else {
-        nextStatus = BookingStatus.CANCELLED;
-      }
+    const wasPaid = Boolean(current.payment?.paidAt);
+    let nextStatus: BookingStatus;
+    if (systemExpire || current.status === BookingStatus.AWAITING_PAYMENT) {
+      nextStatus = BookingStatus.CANCELLED;
+    } else if (providerCancel && wasPaid) {
+      nextStatus = BookingStatus.REFUND_REQUESTED;
+    } else if (wasPaid) {
+      const refundEligible = await this.isRefundEligible(current, session);
+      nextStatus = refundEligible
+        ? BookingStatus.REFUND_REQUESTED
+        : BookingStatus.CANCELLED;
+    } else if (providerCancel) {
+      nextStatus = BookingStatus.REJECTED;
+    } else {
+      nextStatus = BookingStatus.CANCELLED;
+    }
 
-      current.status = nextStatus;
-      current.paymentExpiresAt = undefined;
-      current.approvalExpiresAt = undefined;
-      current.cancellation = {
-        reasonKey: dto.reasonKey,
-        note: dto.note,
-        cancelledAt: new Date(),
-        cancelledBy: actor === BookingActor.SYSTEM ? BookingActor.ADMIN : actor,
-      };
-      current.markModified('cancellation');
-      await current.save({ session });
-      await this.releaseResource(current, session);
+    current.status = nextStatus;
+    current.paymentExpiresAt = undefined;
+    current.approvalExpiresAt = undefined;
+    current.cancellation = {
+      reasonKey: dto.reasonKey,
+      note: dto.note,
+      cancelledAt: new Date(),
+      cancelledBy: actor === BookingActor.SYSTEM ? BookingActor.ADMIN : actor,
+    };
+    current.markModified('cancellation');
+    await current.save({ session });
+    await this.releaseResource(current, session);
 
-      if (shouldNotifyAthlete) {
-        await this.outbox.enqueue(
-          {
-            eventName: 'booking.cancelled_by_provider',
-            payload: {
-              bookingId: current._id.toString(),
-              code: current.code,
-              athleteId: current.athleteId.toString(),
-              clubId: current.clubId?.toString() ?? null,
-              notification: {
-                userId: current.athleteId.toString(),
-                templateKey:
-                  NotificationTemplateKey.BOOKING_CANCELLED_BY_PROVIDER,
-                params: {
-                  subject: `رزرو ${current.code}`,
-                  date:
-                    current.occurrence?.date ??
-                    current.startsAt.toISOString().slice(0, 10),
-                },
-                payload: {
-                  bookingId: current._id.toString(),
-                  code: current.code,
-                },
-                critical: true,
+    if (shouldNotifyAthlete) {
+      await this.outbox.enqueue(
+        {
+          eventName: 'booking.cancelled_by_provider',
+          payload: {
+            bookingId: current._id.toString(),
+            code: current.code,
+            athleteId: current.athleteId.toString(),
+            clubId: current.clubId?.toString() ?? null,
+            notification: {
+              userId: current.athleteId.toString(),
+              templateKey:
+                NotificationTemplateKey.BOOKING_CANCELLED_BY_PROVIDER,
+              params: {
+                subject: `رزرو ${current.code}`,
+                date:
+                  current.occurrence?.date ??
+                  current.startsAt.toISOString().slice(0, 10),
               },
+              payload: {
+                bookingId: current._id.toString(),
+                code: current.code,
+              },
+              critical: true,
             },
-            idempotencyKey: `outbox:booking.provider_cancelled:${current._id.toString()}`,
           },
-          session,
-        );
-      }
-      return current;
-    });
-
-    return this.project(cancelled, audience);
+          idempotencyKey: `outbox:booking.provider_cancelled:${current._id.toString()}`,
+        },
+        session,
+      );
+    }
   }
 
   /** Apply club.cancellation rules: refund if hours remaining >= matching rule with feePercent < 100. */

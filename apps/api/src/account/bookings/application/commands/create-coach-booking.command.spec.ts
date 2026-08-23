@@ -19,8 +19,10 @@ import { CreateCoachBookingCommand } from './create-coach-booking.command';
 function queryResult<T>(value: T) {
   const query = Promise.resolve(value) as Promise<T> & {
     session: jest.Mock<Promise<T>, [ClientSession]>;
+    select: jest.Mock;
   };
   query.session = jest.fn().mockResolvedValue(value);
+  query.select = jest.fn().mockReturnValue(query);
   return query;
 }
 
@@ -39,6 +41,7 @@ describe('CreateCoachBookingCommand', () => {
       supplementKeys: ['creatine'],
     },
     couponCode: 'LATER',
+    idempotencyKey: 'coach-test-request',
   };
 
   function setup(options?: {
@@ -53,7 +56,7 @@ describe('CreateCoachBookingCommand', () => {
         code: 'BK-TEST',
       } as BookingDocument);
     const bookingModel = {
-      findOne: jest.fn(),
+      findOne: jest.fn().mockReturnValue(queryResult(null)),
       create: jest.fn().mockResolvedValue([created]),
     };
     const slotModel = {
@@ -70,12 +73,21 @@ describe('CreateCoachBookingCommand', () => {
     const coachModel = {
       findOne: jest
         .fn()
-        .mockResolvedValue(
-          options && 'profile' in options
-            ? options.profile
-            : { pricing: { consultation: { remote: 250_000 } } },
+        .mockReturnValue(
+          queryResult(
+            options && 'profile' in options
+              ? options.profile
+              : { pricing: { consultation: { remote: 250_000 } } },
+          ),
         ),
     };
+    const calendarAvailability = {
+      assertAvailable: jest.fn().mockResolvedValue(undefined),
+    };
+    const calendarGuard = {
+      lockAndAssertCoachAvailable: jest.fn().mockResolvedValue(undefined),
+    };
+    const outbox = { enqueue: jest.fn().mockResolvedValue(undefined) };
     const transactions = {
       run: jest.fn(
         async (work: (transactionSession: ClientSession) => unknown) =>
@@ -88,13 +100,19 @@ describe('CreateCoachBookingCommand', () => {
       coachModel as never,
       new ConfigService({ BOOKING_COACH_APPROVAL_TTL_MINUTES: '30' }),
       transactions as unknown as MongoTransactionService,
+      calendarAvailability as never,
+      calendarGuard as never,
+      outbox as never,
     );
     return {
       bookingModel,
+      calendarAvailability,
+      calendarGuard,
       coachModel,
       command,
       created,
       slotModel,
+      outbox,
       transactions,
     };
   }
@@ -165,6 +183,20 @@ describe('CreateCoachBookingCommand', () => {
     await expect(
       command.execute(athleteId, { ...dto, idempotencyKey: 'retry-2' }),
     ).resolves.toBe(existing);
+  });
+
+  it('rejects an idempotency key reused for a different coach request', async () => {
+    const existing = {
+      _id: new Types.ObjectId(),
+      idempotencyFingerprint: '0'.repeat(64),
+    } as BookingDocument;
+    const { bookingModel, command, transactions } = setup();
+    bookingModel.findOne.mockReturnValue(queryResult(existing));
+
+    await expect(
+      command.execute(athleteId, { ...dto, idempotencyKey: 'reused-key' }),
+    ).rejects.toThrow('different booking payload');
+    expect(transactions.run).not.toHaveBeenCalled();
   });
 
   it('preserves validation failures before opening a transaction', async () => {

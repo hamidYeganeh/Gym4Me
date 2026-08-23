@@ -102,7 +102,7 @@ G4M-002 → G4M-010 ┬→ G4M-011 ─┐                                ├→ 
 | G4M-013    | P1     | BLOCKED | observability و امنیت دادهٔ سلامت                     | G4M-011, G4M-012             |
 | G4M-020    | P0     | DONE    | حذف mock از مسیرهای production و demo isolation       | G4M-002                      |
 | G4M-021    | P0     | BLOCKED | discovery واقعی کامل و supply integrity               | G4M-020                      |
-| G4M-030    | P0     | READY   | رزرو اتمیک، ظرفیت و idempotency سراسری                | G4M-003                      |
+| G4M-030    | P0     | IN_PROGRESS | رزرو اتمیک، ظرفیت و idempotency سراسری             | G4M-003                      |
 | G4M-031    | P0     | BLOCKED | پرداخت، coupon، wallet، refund و reconciliation واقعی | G4M-030                      |
 | G4M-040    | P0     | BLOCKED | workerهای چند-instance و outbox قابل اتکا             | G4M-003                      |
 | G4M-050    | P0     | BLOCKED | عضویت، subscription enforcement و عملیات پذیرش        | G4M-021, G4M-031, G4M-040    |
@@ -250,6 +250,7 @@ G4M-002 → G4M-010 ┬→ G4M-011 ─┐                                ├→ 
 
 ### G4M-030 — رزرو اتمیک، ظرفیت و idempotency سراسری
 
+- **وضعیت:** IN_PROGRESS (۲۰۲۶-۰۸-۲۳)
 - **Persona/value:** ATH/CCH/OWN/STF؛ جلوگیری از overbooking و رزرو نیمه‌کاره.
 - **استوری/سناریو:** D1–D13، O5–O7، P3/P4/P6، S2–S5/S14.
 - **مدل‌ها:** `Booking`، `ClubSlotOccupancy`، `CoachSlot`، `Waitlist`, `ResourceCalendarBlock`.

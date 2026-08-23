@@ -19,6 +19,9 @@ export type CoachSlot = {
   coachUserId: string;
   startsAt: string;
   endsAt: string;
+  bufferBeforeMinutes: number;
+  bufferAfterMinutes: number;
+  travelBufferMinutes: number;
   status: CoachSlotStatus;
   club: CoachSlotClub | null;
 };

@@ -12,12 +12,16 @@ import type { BookingDocument } from '../../../../schemas/booking.schema';
 import { CreateClubBookingCommand } from './create-club-booking.command';
 
 function listQuery<T>(value: T[]) {
-  return {
+  const sorted = {
+    session: jest.fn().mockResolvedValue(value),
+    then: Promise.resolve(value).then.bind(Promise.resolve(value)),
+  };
+  const selected = {
     sort: jest.fn().mockReturnValue({
-      session: jest.fn().mockResolvedValue(value),
-      then: Promise.resolve(value).then.bind(Promise.resolve(value)),
+      ...sorted,
     }),
   };
+  return { select: jest.fn().mockReturnValue(selected) };
 }
 
 function sessionQuery<T>(value: T) {
@@ -39,11 +43,12 @@ describe('CreateClubBookingCommand', () => {
     slotId: slotId.toString(),
     dates: [occurrence.date],
     attendeeCount: 1,
+    idempotencyKey: 'club-test-request',
   };
 
   function setup(price = 0) {
     const bookingModel = {
-      find: jest.fn(),
+      find: jest.fn().mockReturnValue(listQuery([])),
       findOne: jest.fn().mockReturnValue(sessionQuery(null)),
       create: jest.fn().mockImplementation(async ([input]) => [
         {
@@ -71,6 +76,12 @@ describe('CreateClubBookingCommand', () => {
       occupyOccurrence: jest.fn().mockResolvedValue(true),
     };
     const outbox = { enqueue: jest.fn().mockResolvedValue(undefined) };
+    const calendarGuard = {
+      lockAndAssertCoachAvailable: jest.fn().mockResolvedValue(undefined),
+      lockAndAssertClubResourceAvailable: jest
+        .fn()
+        .mockResolvedValue(undefined),
+    };
     const transactions = {
       run: jest.fn(
         async (work: (transactionSession: ClientSession) => unknown) =>
@@ -84,12 +95,14 @@ describe('CreateClubBookingCommand', () => {
       new ConfigService({ BOOKING_PAYMENT_TTL_MINUTES: '20' }),
       outbox as never,
       transactions as unknown as MongoTransactionService,
+      calendarGuard as never,
     );
     return {
       bookingModel,
       clubModel,
       clubSlots,
       command,
+      calendarGuard,
       outbox,
       transactions,
     };
@@ -200,6 +213,26 @@ describe('CreateClubBookingCommand', () => {
         idempotencyKey: 'series-2',
       }),
     ).rejects.toThrow(ConflictException);
+    expect(clubSlots.occupyOccurrence).not.toHaveBeenCalled();
+    expect(transactions.run).not.toHaveBeenCalled();
+  });
+
+  it('rejects reuse of a booking key with a different request payload', async () => {
+    const { bookingModel, clubSlots, command, transactions } = setup();
+    bookingModel.find.mockReturnValue(
+      listQuery([
+        {
+          idempotencyFingerprint: '0'.repeat(64),
+        } as BookingDocument,
+      ]),
+    );
+
+    await expect(
+      command.execute(athleteId, {
+        ...dto,
+        idempotencyKey: 'same-key-different-payload',
+      }),
+    ).rejects.toThrow('different booking payload');
     expect(clubSlots.occupyOccurrence).not.toHaveBeenCalled();
     expect(transactions.run).not.toHaveBeenCalled();
   });
