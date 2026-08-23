@@ -5,7 +5,11 @@ import type { Booking } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { accountBookings, isDiscoveryApiId } from "@/shared/lib/api";
+import {
+  accountBookings,
+  isDiscoveryApiId,
+  isDiscoveryDemoId,
+} from "@/shared/lib/api";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { AthleteBookingDetailScreen } from "../screens/AthleteBookingDetailScreen";
 import {
@@ -20,8 +24,8 @@ type Props = {
 };
 
 /**
- * Client gate for one booking: demo fixtures render immediately; API ids are
- * fetched live. Also completes the payment gateway callback
+ * Client gate for one booking: explicit local demos may render fixtures; API
+ * ids are fetched live. Also completes the payment gateway callback
  * (`?Authority=…&Status=OK|NOK`) before showing the result.
  */
 export function AthleteBookingDetailGate({ bookingId }: Props) {
@@ -31,9 +35,10 @@ export function AthleteBookingDetailGate({ bookingId }: Props) {
   const { isAuthenticated, isReady } = useAuth();
 
   const isApi = isDiscoveryApiId(bookingId);
+  const isDemo = isDiscoveryDemoId(bookingId);
   const mockBooking = useMemo(
-    () => (isApi ? undefined : getBooking(bookingId)),
-    [bookingId, isApi],
+    () => (isDemo ? getBooking(bookingId) : undefined),
+    [bookingId, isDemo],
   );
 
   const copy = useMemo<AthleteBookingCopy>(

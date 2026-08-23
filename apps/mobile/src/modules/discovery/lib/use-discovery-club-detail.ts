@@ -5,6 +5,7 @@ import {
   discoveryClubSlots,
   discoveryClubs,
   isDiscoveryApiId,
+  isDiscoveryDemoId,
 } from "@/shared/lib/api";
 import { addDaysIso, todayIso } from "./club-calendar-data";
 import { getClubDetail, type ClubDetail } from "./club-detail-data";
@@ -17,9 +18,11 @@ type DiscoveryClubDetailState = {
   source: "api" | "mock";
 };
 
-export function useDiscoveryClubDetail(clubId: string): DiscoveryClubDetailState {
+export function useDiscoveryClubDetail(
+  clubId: string,
+): DiscoveryClubDetailState & { retry: () => void } {
   const [state, setState] = useState<DiscoveryClubDetailState>(() => {
-    if (!isDiscoveryApiId(clubId)) {
+    if (isDiscoveryDemoId(clubId)) {
       return {
         club: getClubDetail(clubId) ?? null,
         isLoading: false,
@@ -34,14 +37,25 @@ export function useDiscoveryClubDetail(clubId: string): DiscoveryClubDetailState
       source: "api",
     };
   });
+  const [refreshToken, setRefreshToken] = useState(0);
 
   useEffect(() => {
-    if (!isDiscoveryApiId(clubId)) {
+    if (isDiscoveryDemoId(clubId)) {
       setState({
         club: getClubDetail(clubId) ?? null,
         isLoading: false,
         isError: false,
         source: "mock",
+      });
+      return;
+    }
+
+    if (!isDiscoveryApiId(clubId)) {
+      setState({
+        club: null,
+        isLoading: false,
+        isError: false,
+        source: "api",
       });
       return;
     }
@@ -100,7 +114,10 @@ export function useDiscoveryClubDetail(clubId: string): DiscoveryClubDetailState
     return () => {
       cancelled = true;
     };
-  }, [clubId]);
+  }, [clubId, refreshToken]);
 
-  return state;
+  return {
+    ...state,
+    retry: () => setRefreshToken((token) => token + 1),
+  };
 }

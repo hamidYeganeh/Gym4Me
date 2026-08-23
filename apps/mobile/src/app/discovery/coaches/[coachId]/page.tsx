@@ -5,20 +5,30 @@ import {
   getAllCoachIds,
   getCoachDetail,
 } from "@/modules/discovery/lib/coach-detail-data";
+import {
+  buildDemoStaticParams,
+  canUseDemoFixtureId,
+  STATIC_EXPORT_PLACEHOLDER_ID,
+} from "@/shared/lib/runtime-mode";
 
 type CoachDetailPageProps = {
   params: Promise<{ coachId: string }>;
 };
 
 export function generateStaticParams() {
-  return getAllCoachIds().map((coachId) => ({ coachId }));
+  return buildDemoStaticParams(
+    () => getAllCoachIds().map((coachId) => ({ coachId })),
+    [{ coachId: STATIC_EXPORT_PLACEHOLDER_ID }],
+  );
 }
 
 export async function generateMetadata({
   params,
 }: CoachDetailPageProps): Promise<Metadata> {
   const { coachId } = await params;
-  const coach = getCoachDetail(coachId);
+  const coach = canUseDemoFixtureId(coachId)
+    ? getCoachDetail(coachId)
+    : undefined;
   const t = await getTranslations("CoachDetail");
 
   if (!coach) {
@@ -28,7 +38,9 @@ export async function generateMetadata({
   return { title: coach.name };
 }
 
-export default async function CoachDetailPage({ params }: CoachDetailPageProps) {
+export default async function CoachDetailPage({
+  params,
+}: CoachDetailPageProps) {
   const { coachId } = await params;
 
   return <DiscoveryCoachDetailGate coachId={coachId} />;

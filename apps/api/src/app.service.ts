@@ -20,6 +20,7 @@ export class AppService {
       sms: this.config.get<string>('SMS_PROVIDER', 'mock'),
       payment: this.config.get<string>('PAYMENT_PROVIDER', 'mock'),
       push: this.config.get<string>('PUSH_PROVIDER', 'mock'),
+      kyc: this.config.get<string>('KYC_PROVIDER', 'mock'),
     };
     const production =
       this.config.get<string>('NODE_ENV', 'development') === 'production';
@@ -27,7 +28,8 @@ export class AppService {
       !production ||
       (providers.sms === 'kavenegar' &&
         providers.payment === 'zarinpal' &&
-        providers.push === 'fcm');
+        providers.push === 'fcm' &&
+        ['api_ir', 'api.ir', 'finnotech'].includes(providers.kyc ?? ''));
     return {
       ready: database && providersReady,
       database,

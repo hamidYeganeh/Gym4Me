@@ -3,6 +3,7 @@
 import { Button } from "@heroui/react/button";
 import { Calendar1 } from "@repo/icons/Calendar1";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
+import { EMPTY_STATE_ILLUSTRATIONS, EmptyState } from "@repo/ui/kit/EmptyState";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
@@ -36,7 +37,10 @@ export function DiscoveryCoachesSlotsScreen({
   const [anchor, setAnchor] = useState(today);
 
   const range = weekRangeContaining(anchor);
-  const { days } = useDiscoveryCoachSlotsWeek(coach.id, range.from);
+  const { days, error, refresh } = useDiscoveryCoachSlotsWeek(
+    coach.id,
+    range.from,
+  );
 
   const firstAvailableId = useMemo(() => {
     for (const day of days) {
@@ -108,15 +112,27 @@ export function DiscoveryCoachesSlotsScreen({
     >
       <div className={styles.main()}>
         <DiscoveryCoachesSlotsCoachSection coach={coach} />
-        <DiscoveryCoachesSlotsScheduleSection
-          days={days}
-          onNextWeek={() => goWeek(1)}
-          onPrevWeek={() => goWeek(-1)}
-          onSlotPress={onSlotPress}
-          selectedSlotId={selectedSlotId}
-          today={today}
-          weekLabel={formatJalaliRangeLabel(range.from, range.to)}
-        />
+        {error ? (
+          <EmptyState
+            description={t("slotsLoadErrorBody")}
+            illustration={EMPTY_STATE_ILLUSTRATIONS.warning}
+            illustrationAlt=""
+            layout="media"
+            primaryAction={{ label: t("retry"), onPress: refresh }}
+            status="danger"
+            title={t("slotsLoadErrorTitle")}
+          />
+        ) : (
+          <DiscoveryCoachesSlotsScheduleSection
+            days={days}
+            onNextWeek={() => goWeek(1)}
+            onPrevWeek={() => goWeek(-1)}
+            onSlotPress={onSlotPress}
+            selectedSlotId={selectedSlotId}
+            today={today}
+            weekLabel={formatJalaliRangeLabel(range.from, range.to)}
+          />
+        )}
       </div>
 
       <DiscoveryCoachesSlotsFooterSection

@@ -3,6 +3,7 @@
 import type { ComponentType } from "react";
 import { Spinner } from "@heroui/react/spinner";
 import { Typography } from "@heroui/react/typography";
+import { EMPTY_STATE_ILLUSTRATIONS, EmptyState } from "@repo/ui/kit/EmptyState";
 import { useTranslations } from "next-intl";
 import { DiscoveryCoachesDetailScreen } from "../screens/DiscoveryCoachesDetailScreen";
 import { DiscoveryCoachesReserveScreen } from "../screens/DiscoveryCoachesReserveScreen";
@@ -26,17 +27,30 @@ type Props = {
 };
 
 /** Client gate: server pages pass only the id (render props are not RSC-serializable). */
-export function DiscoveryCoachDetailGate({
-  coachId,
-  view = "detail",
-}: Props) {
+export function DiscoveryCoachDetailGate({ coachId, view = "detail" }: Props) {
   const t = useTranslations("CoachDetail");
-  const { coach, isLoading } = useDiscoveryCoachDetail(coachId);
+  const { coach, isLoading, isError, retry } = useDiscoveryCoachDetail(coachId);
 
   if (isLoading) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
         <Spinner size="lg" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center px-6">
+        <EmptyState
+          description={t("loadErrorBody")}
+          illustration={EMPTY_STATE_ILLUSTRATIONS.warning}
+          illustrationAlt=""
+          layout="media"
+          primaryAction={{ label: t("retry"), onPress: retry }}
+          status="danger"
+          title={t("loadErrorTitle")}
+        />
       </div>
     );
   }

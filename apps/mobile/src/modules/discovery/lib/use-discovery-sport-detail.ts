@@ -2,14 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
-import { basicsSports, mediaFileUrl } from "@/shared/lib/api";
 import {
-  BROWSE_CLUBS,
-  type BrowseClub,
-} from "./clubs-browse-data";
+  basicsSports,
+  discoveryClubs,
+  isDiscoveryApiId,
+  isDiscoveryDemoId,
+  mediaFileUrl,
+} from "@/shared/lib/api";
+import type { BrowseClub } from "./clubs-browse-data";
+import { mapDiscoveryClubToBrowse } from "./map-discovery-club-browse";
 import { mapSportToHomeItem } from "./home-browse-data";
 import {
-  BROWSE_SPORTS,
   clubsForSport,
   getBrowseSport,
   type BrowseSport,
@@ -25,61 +28,84 @@ type State = {
   source: "api" | "mock";
 };
 
-function toSportDetail(sport: BrowseSport): SportDetail {
+function toSportDetail(
+  sport: BrowseSport,
+  clubs: BrowseClub[] = clubsForSport(sport),
+): SportDetail {
   return {
     ...sport,
-    clubs: clubsForSport(sport, BROWSE_CLUBS),
+    clubs,
   };
 }
 
 export function useDiscoverySportDetail(sportId: string): State {
+  const useApi = isDiscoveryApiId(sportId);
+  const useDemo = isDiscoveryDemoId(sportId);
   const [state, setState] = useState<State>(() => {
-    const mock = getBrowseSport(sportId);
+    const mock = useDemo ? getBrowseSport(sportId) : undefined;
     return {
       sport: mock ? toSportDetail(mock) : null,
-      isLoading: true,
-      source: "mock",
+      isLoading: useApi,
+      source: useDemo ? "mock" : "api",
     };
   });
 
   useEffect(() => {
     let cancelled = false;
-    const mock = getBrowseSport(sportId);
+    const mock = useDemo ? getBrowseSport(sportId) : undefined;
+
+    if (useDemo) {
+      setState({
+        sport: mock ? toSportDetail(mock) : null,
+        isLoading: false,
+        source: "mock",
+      });
+      return;
+    }
+
+    if (!useApi) {
+      setState({ sport: null, isLoading: false, source: "api" });
+      return;
+    }
 
     setState((prev) => ({
       ...prev,
-      sport: mock ? toSportDetail(mock) : prev.sport,
       isLoading: true,
+      source: "api",
     }));
 
     void (async () => {
       try {
-        const node = await basicsSports.getSport(sportId);
+        const [node, clubsPage] = await Promise.all([
+          basicsSports.getSport(sportId),
+          discoveryClubs.list({ sportId, page_size: 12 }),
+        ]);
         if (cancelled) return;
         const mapped = mapSportToHomeItem(
           node,
           mediaFileUrl(node.coverMediaId) ?? PLACEHOLDER_IMAGE,
         );
-        const colorMatch =
-          BROWSE_SPORTS.find(
-            (item) => item.slug === mapped.slug || item.id === mapped.id,
-          ) ?? mock;
         const sport: BrowseSport = {
           ...mapped,
-          color: colorMatch?.color ?? "var(--stats-blue)",
-          clubSportKey: colorMatch?.clubSportKey,
+          color: "var(--stats-blue)",
+          clubSportKey: node.id,
         };
         setState({
-          sport: toSportDetail(sport),
+          sport: toSportDetail(
+            sport,
+            clubsPage.result.map((club) =>
+              mapDiscoveryClubToBrowse(club as never),
+            ),
+          ),
           isLoading: false,
           source: "api",
         });
       } catch {
         if (cancelled) return;
         setState({
-          sport: mock ? toSportDetail(mock) : null,
+          sport: null,
           isLoading: false,
-          source: "mock",
+          source: "api",
         });
       }
     })();
@@ -87,7 +113,7 @@ export function useDiscoverySportDetail(sportId: string): State {
     return () => {
       cancelled = true;
     };
-  }, [sportId]);
+  }, [sportId, useApi, useDemo]);
 
   return state;
 }

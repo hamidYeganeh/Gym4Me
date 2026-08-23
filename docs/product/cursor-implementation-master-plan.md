@@ -100,7 +100,7 @@ G4M-002 → G4M-010 ┬→ G4M-011 ─┐                                ├→ 
 | G4M-011    | P0     | BLOCKED | incremental Health Sync، cursor و offline queue واقعی | G4M-010                      |
 | G4M-012    | P1     | BLOCKED | حقوق داده و حذف حساب با retention روشن                | G4M-010                      |
 | G4M-013    | P1     | BLOCKED | observability و امنیت دادهٔ سلامت                     | G4M-011, G4M-012             |
-| G4M-020    | P0     | READY   | حذف mock از مسیرهای production و demo isolation       | G4M-002                      |
+| G4M-020    | P0     | IN_PROGRESS | حذف mock از مسیرهای production و demo isolation    | G4M-002                      |
 | G4M-021    | P0     | BLOCKED | discovery واقعی کامل و supply integrity               | G4M-020                      |
 | G4M-030    | P0     | BLOCKED | رزرو اتمیک، ظرفیت و idempotency سراسری                | G4M-003                      |
 | G4M-031    | P0     | BLOCKED | پرداخت، coupon، wallet، refund و reconciliation واقعی | G4M-030                      |
@@ -223,6 +223,7 @@ G4M-002 → G4M-010 ┬→ G4M-011 ─┐                                ├→ 
 
 ### G4M-020 — حذف mock از مسیرهای production و demo isolation
 
+- **وضعیت:** IN_PROGRESS (۲۰۲۶-۰۸-۲۳)
 - **Persona/value:** GST/ATH/OWN؛ اعتماد به اطلاعات و جلوگیری از اقدام روی داده جعلی.
 - **استوری:** C1–C4، K1، N3.
 - **شواهد:** sports/classes/coach slots و notification inbox در error یا empty از fixtures استفاده می‌کنند.
@@ -233,6 +234,7 @@ G4M-002 → G4M-010 ┬→ G4M-011 ─┐                                ├→ 
   - admin club form owner/category/sport را از API واقعی بگیرد.
 - **معیار پذیرش:** جست‌وجوی production و inbox هیچ fixture نمایش ندهند؛ API outage قابل تشخیص باشد؛ demo route از analytics production جدا باشد.
 - **تست:** empty 200، 404، 401، timeout، offline cache، mock-id navigation guard.
+- **شواهد فعلی:** demo flag از phase خود Next مشتق و در export تولیدی حتی با env اشتباه `false` می‌شود؛ مسیرهای discovery/payment در production فقط shell با ObjectId خنثی می‌سازند و metadata یا HTML fixture ندارند. sports/classes/inbox و جزئیات club/coach/class/slot، empty واقعی را empty و outage را error با retry نشان می‌دهند؛ cache آخرین پاسخ واقعی discovery فقط با برچسب stale نمایش داده می‌شود. mock id به reserve/payment راه ندارد و فرم ساخت club ادمین owner/category/sport را از API واقعی می‌گیرد. تست‌های policy برای empty 200، خطاهای 404/401/timeout، offline stale cache و mock-id guard اضافه شده‌اند؛ suite موبایل `70/70`، type-check، lint و production build با `NEXT_PUBLIC_DEMO_MODE=true` سبزند و artifact نهایی همچنان flag را `false` ثبت می‌کند.
 
 ### G4M-021 — discovery واقعی کامل و supply integrity
 

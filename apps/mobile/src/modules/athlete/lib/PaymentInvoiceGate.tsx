@@ -7,15 +7,15 @@ import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { accountFinance, isDiscoveryApiId } from "@/shared/lib/api";
+import {
+  accountFinance,
+  isDiscoveryApiId,
+  isDiscoveryDemoId,
+} from "@/shared/lib/api";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { PaymentInvoiceScreen } from "../screens/PaymentInvoiceScreen";
 import type { PaymentMethodId } from "../screens/PaymentInvoiceScreen";
-import {
-  getInvoice,
-  WALLET_BALANCE_LABEL,
-  type Invoice,
-} from "./payment-data";
+import { getInvoice, WALLET_BALANCE_LABEL, type Invoice } from "./payment-data";
 import { useRouter } from "@/shared/lib/app-router";
 
 function formatAmount(value: number): string {
@@ -32,9 +32,7 @@ function mapInvoice(api: ApiInvoice): Invoice {
       amountLabel: formatAmount(line.total),
     })),
     discountLabel:
-      api.amounts.discount > 0
-        ? formatAmount(api.amounts.discount)
-        : undefined,
+      api.amounts.discount > 0 ? formatAmount(api.amounts.discount) : undefined,
     taxLabel: formatAmount(api.amounts.tax),
     totalLabel: formatAmount(api.amounts.payable),
     payable: api.amounts.payable,
@@ -55,6 +53,7 @@ export function PaymentInvoiceGate({ invoiceId }: PaymentInvoiceGateProps) {
   const [fromApi, setFromApi] = useState(false);
   const [pending, setPending] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const successFlag = searchParams.get("status") === "success";
   const alreadyPaid = fromApi || successFlag;
@@ -62,11 +61,14 @@ export function PaymentInvoiceGate({ invoiceId }: PaymentInvoiceGateProps) {
   useEffect(() => {
     if (!isReady) return;
 
-    const demo = getInvoice(invoiceId) ?? null;
+    const demo = isDiscoveryDemoId(invoiceId)
+      ? (getInvoice(invoiceId) ?? null)
+      : null;
     if (!isAuthenticated) {
       setInvoice(demo);
       setFromApi(false);
       setBalanceLabel(WALLET_BALANCE_LABEL);
+      setIsLoading(false);
       return;
     }
 
@@ -90,6 +92,7 @@ export function PaymentInvoiceGate({ invoiceId }: PaymentInvoiceGateProps) {
           `${new Intl.NumberFormat("fa-IR").format(wallet.balance)} تومان`,
         );
       }
+      setIsLoading(false);
     });
 
     return () => {
@@ -102,9 +105,7 @@ export function PaymentInvoiceGate({ invoiceId }: PaymentInvoiceGateProps) {
       if (!invoice) return;
       // Demo fixtures keep the local success path.
       if (!fromApi) {
-        router.push(
-          `/athlete/payment/result?status=success&invoice=${invoice.id}`,
-        );
+        setActionError(t("payError"));
         return;
       }
       // Live invoices are issued after capture — nothing left to charge.
@@ -130,10 +131,20 @@ export function PaymentInvoiceGate({ invoiceId }: PaymentInvoiceGateProps) {
     [fromApi, invoice, router, t],
   );
 
-  if (!invoice) {
+  if (isLoading) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
         <Spinner size="lg" />
+      </div>
+    );
+  }
+
+  if (!invoice) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center px-6 text-center">
+        <Typography className="text-muted" type="body">
+          {t("payError")}
+        </Typography>
       </div>
     );
   }

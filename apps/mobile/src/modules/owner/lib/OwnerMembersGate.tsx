@@ -20,21 +20,17 @@ import {
   buildOwnerMembersStats,
   mapApiMembershipToOwnerMember,
 } from "./api-owner-members";
-import {
-  OWNER_MEMBERS,
-  OWNER_MEMBERS_STATS,
-  type OwnerMember,
-  type OwnerMembersStats,
-} from "./owner-members-data";
+import { type OwnerMember, type OwnerMembersStats } from "./owner-members-data";
 
 /**
  * Client gate: live club memberships for the owner's first club.
- * Falls back to demo fixtures when unauthenticated.
  */
 export function OwnerMembersGate() {
   const { isAuthenticated, isReady } = useAuth();
   const [members, setMembers] = useState<OwnerMember[] | null>(null);
-  const [stats, setStats] = useState<OwnerMembersStats>(OWNER_MEMBERS_STATS);
+  const [stats, setStats] = useState<OwnerMembersStats>(() =>
+    buildOwnerMembersStats([]),
+  );
   const [plans, setPlans] = useState<ClubMembershipPlan[]>([]);
   const [clubId, setClubId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -64,8 +60,8 @@ export function OwnerMembersGate() {
   useEffect(() => {
     if (!isReady) return;
     if (!isAuthenticated) {
-      setMembers(OWNER_MEMBERS);
-      setStats(OWNER_MEMBERS_STATS);
+      setMembers([]);
+      setStats(buildOwnerMembersStats([]));
       setPlans([]);
       setClubId(null);
       return;

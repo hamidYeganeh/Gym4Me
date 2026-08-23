@@ -5,20 +5,30 @@ import {
   getAllSportIds,
   getBrowseSport,
 } from "@/modules/discovery/lib/sports-browse-data";
+import {
+  buildDemoStaticParams,
+  canUseDemoFixtureId,
+  STATIC_EXPORT_PLACEHOLDER_ID,
+} from "@/shared/lib/runtime-mode";
 
 type SportDetailPageProps = {
   params: Promise<{ sportId: string }>;
 };
 
 export function generateStaticParams() {
-  return getAllSportIds().map((sportId) => ({ sportId }));
+  return buildDemoStaticParams(
+    () => getAllSportIds().map((sportId) => ({ sportId })),
+    [{ sportId: STATIC_EXPORT_PLACEHOLDER_ID }],
+  );
 }
 
 export async function generateMetadata({
   params,
 }: SportDetailPageProps): Promise<Metadata> {
   const { sportId } = await params;
-  const sport = getBrowseSport(sportId);
+  const sport = canUseDemoFixtureId(sportId)
+    ? getBrowseSport(sportId)
+    : undefined;
   const t = await getTranslations("DiscoverySportDetail");
 
   if (!sport) {

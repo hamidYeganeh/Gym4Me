@@ -7,13 +7,8 @@ import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { Megaphone } from "@repo/icons/Megaphone";
 import { Ticket } from "@repo/icons/Ticket";
 import { Wallet } from "@repo/icons/Wallet";
-import {
-  NotificationCard,
-} from "@repo/ui/cards/NotificationCard";
-import {
-  EMPTY_STATE_ILLUSTRATIONS,
-  EmptyState,
-} from "@repo/ui/kit/EmptyState";
+import { NotificationCard } from "@repo/ui/cards/NotificationCard";
+import { EMPTY_STATE_ILLUSTRATIONS, EmptyState } from "@repo/ui/kit/EmptyState";
 import { FilterChip, FilterChipBar } from "@repo/ui/kit/FilterChip";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
@@ -27,7 +22,6 @@ import {
   type InboxGroup,
   type NotificationKind,
 } from "../../lib/notifications-adapter";
-import { getMockNotificationInbox } from "../../lib/notifications-data";
 import { notificationsScreenStyles as styles } from "./NotificationsScreen.styles";
 import type {
   NotificationsFilterId,
@@ -75,39 +69,39 @@ export function NotificationsScreen({
 }: NotificationsScreenProps) {
   const t = useTranslations("Notifications");
   const router = useRouter();
-  const [activeFilter, setActiveFilter] = useState<NotificationsFilterId>("all");
+  const [activeFilter, setActiveFilter] =
+    useState<NotificationsFilterId>("all");
   const [groups, setGroups] = useState<InboxGroup[] | null>(null);
+  const [loadError, setLoadError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
 
-    async function load() {
+    void (async () => {
       setGroups(null);
+      setLoadError(false);
       try {
         const inbox = await accountNotifications.list({ limit: 50 });
         if (cancelled) return;
-        const items =
-          inbox.items.length > 0
-            ? inbox.items
-            : getMockNotificationInbox(roleSegment).items;
-        setGroups(groupNotifications(items));
+        setGroups(groupNotifications(inbox.items));
         if (inbox.items.length > 0 && inbox.meta.unreadCount > 0) {
           void accountNotifications.markAllRead().catch(() => undefined);
         }
       } catch {
         if (cancelled) return;
-        // Demo fallback when the inbox API is unavailable.
-        setGroups(
-          groupNotifications(getMockNotificationInbox(roleSegment).items),
-        );
+        setGroups([]);
+        setLoadError(true);
       }
-    }
-
-    void load();
+    })();
     return () => {
       cancelled = true;
     };
-  }, [roleSegment]);
+  }, [reloadKey]);
+
+  const retry = () => {
+    setReloadKey((value) => value + 1);
+  };
 
   const visibleGroups = (groups ?? [])
     .map((group) => ({
@@ -142,7 +136,17 @@ export function NotificationsScreen({
           ))}
         </FilterChipBar>
 
-        {groups === null ? null : visibleGroups.length > 0 ? (
+        {groups === null ? null : loadError ? (
+          <EmptyState
+            description={t("loadError")}
+            illustration={EMPTY_STATE_ILLUSTRATIONS.warning}
+            illustrationAlt=""
+            layout="media"
+            primaryAction={{ label: t("retry"), onPress: retry }}
+            status="danger"
+            title={t("loadErrorTitle")}
+          />
+        ) : visibleGroups.length > 0 ? (
           <div className={styles.groups}>
             {visibleGroups.map((group) => (
               <section className={styles.group} key={group.id}>

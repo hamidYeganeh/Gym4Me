@@ -6,6 +6,7 @@ import type { ArticleSummary } from "@repo/api";
 import {
   articlesApi,
   basicsLocations,
+  basicsRefs,
   basicsSports,
   discoveryClasses,
   discoveryClubs,
@@ -18,14 +19,10 @@ import {
   sortClubsByRating,
   type BrowseClub,
 } from "./clubs-browse-data";
-import {
-  type FeaturedCoach,
-} from "./coaches-browse-data";
+import { type FeaturedCoach } from "./coaches-browse-data";
 import {
   DEFAULT_COACH_CITY_NAME,
   HOME_FEATURE_ITEMS,
-  MOCK_AMENITIES,
-  MOCK_EQUIPMENT,
   galleryItemsFromClubs,
   mapLocationToHomeItem,
   mapSportToHomeItem,
@@ -66,6 +63,16 @@ const ARTICLE_KIND_LABELS: Record<string, string> = {
   tip: "نکته",
   story: "داستان",
   workout: "تمرین",
+};
+
+const AMENITY_ICON_KEYS: Record<string, HomeAmenityItem["iconKey"]> = {
+  parking: "parking",
+  shower: "shower",
+  locker: "locker",
+  sauna: "sauna",
+  wifi: "wifi",
+  cafe: "cafe",
+  "24h": "open24",
 };
 
 function formatArticleCount(value: number): string {
@@ -115,7 +122,9 @@ function mapArticleToHomeItem(article: ArticleSummary): HomeArticleItem {
   };
 }
 
-function buildSlices(clubs: BrowseClub[]): Pick<
+function buildSlices(
+  clubs: BrowseClub[],
+): Pick<
   DiscoveryHomeState,
   "nearbyClubs" | "topClubs" | "open24Clubs" | "galleryItems"
 > {
@@ -146,7 +155,7 @@ export function useDiscoveryHome(): DiscoveryHomeState {
     coachCityName: DEFAULT_COACH_CITY_NAME,
     classes: [],
     amenities: [],
-    equipment: MOCK_EQUIPMENT,
+    equipment: [],
     sports: [],
     articles: [],
     galleryItems: [],
@@ -159,15 +168,23 @@ export function useDiscoveryHome(): DiscoveryHomeState {
 
     void (async () => {
       try {
-        const [countriesPage, sportsPage, clubsPage, coachesPage, articlesPage, classesPage] =
-          await Promise.all([
-            basicsLocations.listCountries(),
-            basicsSports.listSports(),
-            discoveryClubs.list({ page_size: 16 }),
-            discoveryCoaches.list({ page_size: 8 }),
-            articlesApi.list({ page_size: 8 }).catch(() => null),
-            discoveryClasses.list({ page_size: 10 }).catch(() => null),
-          ]);
+        const [
+          countriesPage,
+          sportsPage,
+          clubsPage,
+          coachesPage,
+          articlesPage,
+          classesPage,
+          amenitiesPage,
+        ] = await Promise.all([
+          basicsLocations.listCountries(),
+          basicsSports.listSports(),
+          discoveryClubs.list({ page_size: 16 }),
+          discoveryCoaches.list({ page_size: 8 }),
+          articlesApi.list({ page_size: 8 }).catch(() => null),
+          discoveryClasses.list({ page_size: 10 }).catch(() => null),
+          basicsRefs.list("amenity").catch(() => null),
+        ]);
 
         if (cancelled) return;
 
@@ -183,9 +200,9 @@ export function useDiscoveryHome(): DiscoveryHomeState {
           if (cancelled) return;
 
           const cityBatches = await Promise.all(
-            provincesRes.result.slice(0, 4).map((p) =>
-              basicsLocations.listCities(p.id).catch(() => null),
-            ),
+            provincesRes.result
+              .slice(0, 4)
+              .map((p) => basicsLocations.listCities(p.id).catch(() => null)),
           );
           if (cancelled) return;
 
@@ -218,8 +235,7 @@ export function useDiscoveryHome(): DiscoveryHomeState {
           .map(mapDiscoveryClassToHomeItem);
 
         const slices = buildSlices(clubs);
-        const articles =
-          articlesPage?.result.map(mapArticleToHomeItem) ?? [];
+        const articles = articlesPage?.result.map(mapArticleToHomeItem) ?? [];
 
         setState({
           features: HOME_FEATURE_ITEMS,
@@ -228,11 +244,20 @@ export function useDiscoveryHome(): DiscoveryHomeState {
           coaches,
           coachCityName,
           classes,
-          amenities: MOCK_AMENITIES,
-          equipment: MOCK_EQUIPMENT,
-          sports: sportsPage.result.slice(0, 12).map((s) =>
-            mapSportToHomeItem(s, sportImage(s)),
-          ),
+          amenities: (amenitiesPage?.result ?? [])
+            .filter((item) => item.isActive && AMENITY_ICON_KEYS[item.slug])
+            .slice(0, 8)
+            .map((item) => ({
+              id: item.id,
+              slug: item.slug,
+              name: item.name,
+              subtitle: item.description ?? "",
+              iconKey: AMENITY_ICON_KEYS[item.slug]!,
+            })),
+          equipment: [],
+          sports: sportsPage.result
+            .slice(0, 12)
+            .map((s) => mapSportToHomeItem(s, sportImage(s))),
           articles,
           galleryItems: galleryItemsFromClubs(clubs),
           isLoading: false,

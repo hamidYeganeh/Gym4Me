@@ -17,8 +17,11 @@ export function DiscoveryClassesScreenLoader() {
       activeFilter={browse.activeFilter}
       classes={browse.classes}
       filters={browse.filters}
+      isError={browse.isError}
       isLoading={browse.isLoading}
+      isStale={browse.isStale}
       onFilterChange={browse.setActiveFilter}
+      onRetry={browse.retry}
     />
   );
 }

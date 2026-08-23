@@ -6,6 +6,7 @@ import {
   discoveryClubSlots,
   discoveryClubs,
   isDiscoveryApiId,
+  isDiscoveryDemoId,
 } from "@/shared/lib/api";
 import { mapDiscoverySlotToDetail } from "./map-discovery-slot";
 import { getSlotDetail, type SlotDetail } from "./slot-detail-data";
@@ -20,10 +21,11 @@ type State = {
 export function useDiscoverySlotDetail(
   clubId: string,
   slotId: string,
-): State {
+): State & { retry: () => void } {
   const useApi = isDiscoveryApiId(clubId) && isDiscoveryApiId(slotId);
+  const useDemo = isDiscoveryDemoId(clubId) && isDiscoveryDemoId(slotId);
   const [state, setState] = useState<State>(() => {
-    if (!useApi) {
+    if (useDemo) {
       return {
         slotDetail: getSlotDetail(clubId, slotId) ?? null,
         isLoading: false,
@@ -38,14 +40,25 @@ export function useDiscoverySlotDetail(
       source: "api",
     };
   });
+  const [refreshToken, setRefreshToken] = useState(0);
 
   useEffect(() => {
-    if (!useApi) {
+    if (useDemo) {
       setState({
         slotDetail: getSlotDetail(clubId, slotId) ?? null,
         isLoading: false,
         isError: false,
         source: "mock",
+      });
+      return;
+    }
+
+    if (!useApi) {
+      setState({
+        slotDetail: null,
+        isLoading: false,
+        isError: false,
+        source: "api",
       });
       return;
     }
@@ -89,7 +102,10 @@ export function useDiscoverySlotDetail(
     return () => {
       cancelled = true;
     };
-  }, [clubId, slotId, useApi]);
+  }, [clubId, refreshToken, slotId, useApi, useDemo]);
 
-  return state;
+  return {
+    ...state,
+    retry: () => setRefreshToken((token) => token + 1),
+  };
 }

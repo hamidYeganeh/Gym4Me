@@ -1,12 +1,6 @@
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 
-export type ClubSportFilterId =
-  | "all"
-  | "fitness"
-  | "crossfit"
-  | "yoga"
-  | "swimming"
-  | "martial-arts";
+export type ClubSportFilterId = string;
 
 export type ClubSportFilter = {
   id: ClubSportFilterId;
@@ -157,8 +151,12 @@ export function clubsOpenNow(clubs: BrowseClub[]): BrowseClub[] {
 
 export function clubsNearby(clubs: BrowseClub[]): BrowseClub[] {
   return [...clubs].sort((a, b) => {
-    const da = Number.parseFloat(a.distanceLabel.replace(/[^\d./]/g, "").replace("/", "."));
-    const db = Number.parseFloat(b.distanceLabel.replace(/[^\d./]/g, "").replace("/", "."));
+    const da = Number.parseFloat(
+      a.distanceLabel.replace(/[^\d./]/g, "").replace("/", "."),
+    );
+    const db = Number.parseFloat(
+      b.distanceLabel.replace(/[^\d./]/g, "").replace("/", "."),
+    );
     return (Number.isFinite(da) ? da : 99) - (Number.isFinite(db) ? db : 99);
   });
 }

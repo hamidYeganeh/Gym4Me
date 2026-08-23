@@ -12,6 +12,7 @@ import {
   accountBookings,
   discoveryClubSlots,
   isDiscoveryApiId,
+  isDiscoveryDemoId,
 } from "@/shared/lib/api";
 import {
   addDaysIso,
@@ -94,14 +95,15 @@ type Props = {
 };
 
 /**
- * Client gate: live club calendar + booking for API clubs, demo fixtures for
- * static demo clubs (screen keeps pure props per the mocks-replaceable rule).
+ * Client gate: live club calendar + booking for API clubs. Static fixtures are
+ * display-only and available solely in explicit non-production demo mode.
  */
 export function DiscoveryClubReserveGate({ clubId }: Props) {
   const bookingAttemptKey = useRef<string | null>(null);
   const t = useTranslations("ReserveFlow");
   const router = useRouter();
   const isApi = isDiscoveryApiId(clubId);
+  const isDemo = isDiscoveryDemoId(clubId);
   const { club, isLoading: isClubLoading } = useDiscoveryClubDetail(clubId);
 
   const [calendar, setCalendar] = useState<ClubCalendarResponse | null>(null);
@@ -155,7 +157,7 @@ export function DiscoveryClubReserveGate({ clubId }: Props) {
     [calendar],
   );
 
-  if (!isApi) {
+  if (isDemo) {
     return (
       <DiscoveryClubsReserveScreen
         clubImage={club?.images[0] ?? PLACEHOLDER_IMAGE}

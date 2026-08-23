@@ -14,8 +14,11 @@ export function DiscoverySportsScreenLoader() {
     <DiscoverySportsScreen
       activeFilter={browse.activeFilter}
       filters={browse.filters}
+      isError={browse.isError}
       isLoading={browse.isLoading}
+      isStale={browse.isStale}
       onFilterChange={browse.setActiveFilter}
+      onRetry={browse.retry}
       sports={browse.sports}
     />
   );

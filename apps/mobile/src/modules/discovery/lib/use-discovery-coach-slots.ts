@@ -2,7 +2,7 @@
 
 import type { CoachConsultationPricing } from "@repo/api/discovery";
 import { useMemo } from "react";
-import { isDiscoveryApiId } from "@/shared/lib/api";
+import { isDiscoveryApiId, isDiscoveryDemoId } from "@/shared/lib/api";
 import {
   useCoachSlotsWeek,
   type CoachSlotDayView,
@@ -16,6 +16,7 @@ export type DiscoveryCoachSlotsWeek = {
   days: CoachSlotDayView[];
   pricing: CoachConsultationPricing | null;
   isLoading: boolean;
+  error: Error | null;
   source: "api" | "mock";
   refresh: () => void;
 };
@@ -57,20 +58,22 @@ export function useDiscoveryCoachSlotsWeek(
   anchorIso: string,
 ): DiscoveryCoachSlotsWeek {
   const isApi = isDiscoveryApiId(coachId);
+  const isDemo = isDiscoveryDemoId(coachId);
   const { from } = weekRangeContaining(anchorIso);
   const api = useCoachSlotsWeek(coachId, from, { enabled: isApi });
 
   const mockDays = useMemo(
     () =>
-      isApi ? [] : getCoachSlotsWeek(coachId, anchorIso).map(mockDayToView),
-    [anchorIso, coachId, isApi],
+      isDemo ? getCoachSlotsWeek(coachId, anchorIso).map(mockDayToView) : [],
+    [anchorIso, coachId, isDemo],
   );
 
-  if (!isApi) {
+  if (isDemo) {
     return {
       days: mockDays,
       pricing: MOCK_PRICING,
       isLoading: false,
+      error: null,
       source: "mock",
       refresh: () => undefined,
     };
@@ -80,6 +83,7 @@ export function useDiscoveryCoachSlotsWeek(
     days: api.days,
     pricing: api.pricing,
     isLoading: api.isLoading,
+    error: api.error,
     source: "api",
     refresh: api.refresh,
   };

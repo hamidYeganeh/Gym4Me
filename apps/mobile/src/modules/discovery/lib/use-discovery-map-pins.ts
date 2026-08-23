@@ -10,8 +10,6 @@ import {
 } from "@/shared/lib/device-permissions";
 import { useDevicePermissions } from "@/shared/providers/DevicePermissionsProvider";
 import {
-  DEFAULT_SELECTED_COACH_ID,
-  MAP_COACHES,
   pickNearestMapCoachId,
   withMapDistances,
   type MapCoach,
@@ -83,11 +81,11 @@ function toPins(
 export function useDiscoveryMapPins(): State {
   const { ensurePermission } = useDevicePermissions();
   const [state, setState] = useState<State>({
-    coaches: MAP_COACHES,
-    initialSelectedId: DEFAULT_SELECTED_COACH_ID,
-    nearestId: DEFAULT_SELECTED_COACH_ID,
+    coaches: [],
+    initialSelectedId: "",
+    nearestId: "",
     isLoading: true,
-    source: "mock",
+    source: "api",
   });
 
   useEffect(() => {
@@ -127,15 +125,12 @@ export function useDiscoveryMapPins(): State {
         }
 
         if (pins.length === 0) {
-          const mock = withMapDistances(MAP_COACHES, origin);
-          const nearestId =
-            pickNearestMapCoachId(mock) ?? DEFAULT_SELECTED_COACH_ID;
           setState({
-            coaches: mock,
-            initialSelectedId: nearestId,
-            nearestId,
+            coaches: [],
+            initialSelectedId: "",
+            nearestId: "",
             isLoading: false,
-            source: "mock",
+            source: "api",
           });
           return;
         }
@@ -151,15 +146,12 @@ export function useDiscoveryMapPins(): State {
         });
       } catch {
         if (cancelled) return;
-        const mock = withMapDistances(MAP_COACHES, TEHRAN);
-        const nearestId =
-          pickNearestMapCoachId(mock) ?? DEFAULT_SELECTED_COACH_ID;
         setState({
-          coaches: mock,
-          initialSelectedId: nearestId,
-          nearestId,
+          coaches: [],
+          initialSelectedId: "",
+          nearestId: "",
           isLoading: false,
-          source: "mock",
+          source: "api",
         });
       }
     })();

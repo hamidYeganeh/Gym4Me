@@ -1,6 +1,4 @@
-import {
-  createAccountCheckinApi,
-} from "@repo/api/checkin";
+import { createAccountCheckinApi } from "@repo/api/checkin";
 import {
   createAccountClubsApi,
   createAccountClubSlotsApi,
@@ -14,39 +12,17 @@ import {
   createClubOwnerClubsApi,
   createClubOwnerClubSlotsApi,
 } from "@repo/api/account";
-import {
-  createAccountCoachingApi,
-} from "@repo/api/coaching";
-import {
-  createAccountFinanceApi,
-} from "@repo/api/finance";
-import {
-  createAccountMembershipsApi,
-} from "@repo/api/memberships";
-import {
-  createAccountNutritionApi,
-} from "@repo/api/nutrition";
-import {
-  createAccountOpsApi,
-} from "@repo/api/ops";
-import {
-  createAccountProgressApi,
-} from "@repo/api/progress";
-import {
-  createAccountSocialApi,
-} from "@repo/api/social";
-import {
-  createClubStaffApi,
-} from "@repo/api/staff";
-import {
-  createAccountWaitlistApi,
-} from "@repo/api/waitlist";
-import {
-  createAccountLifecycleApi,
-} from "@repo/api/lifecycle";
-import {
-  createAccountCalendarApi,
-} from "@repo/api/calendar";
+import { createAccountCoachingApi } from "@repo/api/coaching";
+import { createAccountFinanceApi } from "@repo/api/finance";
+import { createAccountMembershipsApi } from "@repo/api/memberships";
+import { createAccountNutritionApi } from "@repo/api/nutrition";
+import { createAccountOpsApi } from "@repo/api/ops";
+import { createAccountProgressApi } from "@repo/api/progress";
+import { createAccountSocialApi } from "@repo/api/social";
+import { createClubStaffApi } from "@repo/api/staff";
+import { createAccountWaitlistApi } from "@repo/api/waitlist";
+import { createAccountLifecycleApi } from "@repo/api/lifecycle";
+import { createAccountCalendarApi } from "@repo/api/calendar";
 import {
   createBasicsLocationsApi,
   createBasicsRefsApi,
@@ -71,6 +47,7 @@ import { createMediaApi } from "@repo/api/media";
 import { createArticlesApi } from "@repo/api/articles";
 import { createBannersApi } from "@repo/api/banners";
 import { apiClient, accountAuth } from "./api-client";
+import { canUseDemoFixtureId } from "./runtime-mode";
 
 export { apiClient, accountAuth };
 
@@ -115,7 +92,9 @@ export const mediaApi = createMediaApi(apiClient);
 export const articlesApi = createArticlesApi(apiClient);
 export const bannersApi = createBannersApi(apiClient);
 
-export function mediaFileUrl(mediaId: string | null | undefined): string | null {
+export function mediaFileUrl(
+  mediaId: string | null | undefined,
+): string | null {
   if (!mediaId) return null;
   return mediaApi.fileUrl(mediaId);
 }
@@ -123,4 +102,9 @@ export function mediaFileUrl(mediaId: string | null | undefined): string | null 
 /** Mongo ObjectId used by live discovery APIs (vs static demo slugs). */
 export function isDiscoveryApiId(id: string): boolean {
   return /^[a-f\d]{24}$/i.test(id);
+}
+
+/** Static discovery fixtures are addressable only in explicit non-production demos. */
+export function isDiscoveryDemoId(id: string): boolean {
+  return canUseDemoFixtureId(id);
 }

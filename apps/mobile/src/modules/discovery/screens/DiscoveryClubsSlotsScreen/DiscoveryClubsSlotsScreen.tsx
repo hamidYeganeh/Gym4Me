@@ -4,6 +4,7 @@ import { Spinner } from "@heroui/react/spinner";
 import { Typography } from "@heroui/react/typography";
 import { ScheduleWorkoutCard } from "@repo/ui/cards/ScheduleWorkoutCard";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
+import { EMPTY_STATE_ILLUSTRATIONS, EmptyState } from "@repo/ui/kit/EmptyState";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
@@ -24,7 +25,7 @@ export function DiscoveryClubsSlotsScreen({
 }: DiscoveryClubsSlotsScreenProps) {
   const t = useTranslations("ClubDetail");
   const router = useRouter();
-  const { slots, isLoading } = useDiscoveryClubSlots(club.id);
+  const { slots, isLoading, isError, retry } = useDiscoveryClubSlots(club.id);
 
   return (
     <AppLayout
@@ -55,9 +56,26 @@ export function DiscoveryClubsSlotsScreen({
           </div>
         ) : null}
 
-        {!isLoading && slots.length === 0 ? (
+        {!isLoading && isError ? (
+          <EmptyState
+            className={styles.empty}
+            description={t("slotsLoadErrorBody")}
+            illustration={EMPTY_STATE_ILLUSTRATIONS.warning}
+            illustrationAlt=""
+            layout="media"
+            primaryAction={{ label: t("retry"), onPress: retry }}
+            status="danger"
+            title={t("slotsLoadErrorTitle")}
+          />
+        ) : null}
+
+        {!isLoading && !isError && slots.length === 0 ? (
           <div className={styles.empty}>
-            <Typography className={styles.emptyTitle} type="h4" weight="semibold">
+            <Typography
+              className={styles.emptyTitle}
+              type="h4"
+              weight="semibold"
+            >
               {t("slotsEmptyTitle")}
             </Typography>
             <Typography className={styles.emptyBody} type="body-sm">
@@ -66,7 +84,7 @@ export function DiscoveryClubsSlotsScreen({
           </div>
         ) : null}
 
-        {!isLoading && slots.length > 0 ? (
+        {!isLoading && !isError && slots.length > 0 ? (
           <div className={styles.list}>
             {slots.map((item) => {
               const href = `/discovery/clubs/${club.id}/slots/${item.id}`;

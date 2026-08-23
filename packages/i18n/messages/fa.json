@@ -4164,6 +4164,9 @@
     "closedNow": "بسته است",
     "hoursLabel": "ساعات کاری",
     "notFound": "این باشگاه پیدا نشد.",
+    "loadErrorTitle": "بارگذاری باشگاه ناموفق بود",
+    "loadErrorBody": "اتصال را بررسی کنید و دوباره تلاش کنید.",
+    "retry": "تلاش دوباره",
     "description": "توضیحات",
     "statDistance": "فاصله",
     "statScore": "امتیاز",
@@ -4252,7 +4255,7 @@
     "calendarEmptyCoach": "در این روز جلسه‌ای برای این مربی نیست.",
     "calendarEmptyLive": "برای این روز برنامه‌ای در سیستم ثبت نشده.",
     "calendarLoading": "در حال بارگذاری برنامه…",
-    "calendarError": "بارگذاری برنامه ممکن نشد؛ دادهٔ نمونه نمایش داده شد.",
+    "calendarError": "بارگذاری برنامه ممکن نشد. دوباره تلاش کنید.",
     "calendarCancelled": "لغو شده",
     "calendarIntensityIntense": "شدید",
     "calendarIntensityNormal": "عادی",
@@ -4278,6 +4281,9 @@
     "slotsCount": "{count} نوبت",
     "slotsEmptyTitle": "نوبتی ثبت نشده",
     "slotsEmptyBody": "هنوز نوبتی برای این باشگاه تعریف نشده است.",
+    "slotsLoadErrorTitle": "بارگذاری نوبت‌ها ناموفق بود",
+    "slotsLoadErrorBody": "اتصال را بررسی کنید و دوباره تلاش کنید.",
+    "retry": "تلاش دوباره",
     "classesCount": "{count} کلاس",
     "classesEmptyTitle": "کلاسی ثبت نشده",
     "classesEmptyBody": "هنوز کلاسی برای این باشگاه منتشر نشده است.",
@@ -4328,6 +4334,9 @@
     "pageTitle": "جزئیات نوبت",
     "back": "بازگشت",
     "notFound": "این نوبت پیدا نشد.",
+    "loadErrorTitle": "بارگذاری نوبت ناموفق بود",
+    "loadErrorBody": "اتصال را بررسی کنید و دوباره تلاش کنید.",
+    "retry": "تلاش دوباره",
     "time": "ساعت",
     "duration": "مدت",
     "schedule": "زمان‌بندی",
@@ -4348,6 +4357,9 @@
     "pageTitle": "جزئیات کلاس",
     "back": "بازگشت",
     "notFound": "این کلاس پیدا نشد.",
+    "loadErrorTitle": "بارگذاری کلاس ناموفق بود",
+    "loadErrorBody": "اتصال را بررسی کنید و دوباره تلاش کنید.",
+    "retry": "تلاش دوباره",
     "bookmark": "نشان‌گذاری",
     "favorite": "علاقه‌مندی",
     "share": "اشتراک‌گذاری",
@@ -5059,7 +5071,11 @@
     "sportLabel": "ورزش",
     "viewSport": "مشاهده باشگاه‌ها",
     "emptyTitle": "رشته‌ای پیدا نشد",
-    "emptyBody": "فیلتر دیگری را امتحان کنید."
+    "emptyBody": "فیلتر دیگری را امتحان کنید.",
+    "errorTitle": "بارگذاری رشته‌ها ناموفق بود",
+    "errorBody": "اتصال را بررسی کنید و دوباره تلاش کنید.",
+    "retry": "تلاش دوباره",
+    "staleData": "در حال نمایش آخرین دادهٔ ذخیره‌شده"
   },
   "DiscoveryArticles": {
     "pageTitle": "مقالات",
@@ -5077,7 +5093,8 @@
     "emptyBody": "فیلتر دیگری را امتحان کنید.",
     "errorTitle": "بارگذاری مقالات ناموفق بود",
     "errorBody": "اتصال را بررسی کنید و دوباره تلاش کنید.",
-    "retry": "تلاش دوباره"
+    "retry": "تلاش دوباره",
+    "staleData": "در حال نمایش آخرین دادهٔ ذخیره‌شده"
   },
   "DiscoverySportDetail": {
     "notFound": "این رشته پیدا نشد.",
@@ -5105,7 +5122,10 @@
     "loading": "در حال بارگذاری…",
     "viewClass": "مشاهده کلاس",
     "emptyTitle": "کلاسی پیدا نشد",
-    "emptyBody": "فیلتر دیگری را امتحان کنید."
+    "emptyBody": "فیلتر دیگری را امتحان کنید.",
+    "errorTitle": "بارگذاری کلاس‌ها ناموفق بود",
+    "errorBody": "اتصال را بررسی کنید و دوباره تلاش کنید.",
+    "retry": "تلاش دوباره"
   },
   "DiscoveryClubs": {
     "pageTitle": "باشگاه‌ها",
@@ -5165,6 +5185,9 @@
     "favorite": "علاقه‌مندی",
     "share": "اشتراک‌گذاری",
     "notFound": "این مربی پیدا نشد.",
+    "loadErrorTitle": "بارگذاری مربی ناموفق بود",
+    "loadErrorBody": "اتصال را بررسی کنید و دوباره تلاش کنید.",
+    "retry": "تلاش دوباره",
     "selectImage": "انتخاب تصویر {index}",
     "pullGallery": "برای گالری بکشید",
     "releaseGallery": "رها کنید",
@@ -5228,6 +5251,9 @@
     "slotsOpenCalendar": "باز کردن تقویم",
     "slotsYouSelected": "شما {date}، ساعت {time} را انتخاب کردید",
     "slotsSelectPrompt": "یک نوبت را انتخاب کنید",
+    "slotsLoadErrorTitle": "بارگذاری نوبت‌ها ناموفق بود",
+    "slotsLoadErrorBody": "اتصال را بررسی کنید و دوباره تلاش کنید.",
+    "retry": "تلاش دوباره",
     "bookConsultation": "رزرو مشاوره",
     "slotsWeekday": {
       "saturday": "شنبه",

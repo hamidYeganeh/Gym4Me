@@ -1,6 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { KavenegarSmsService, MockSmsService, SmsService } from './sms.service';
+import { assertProductionProvider } from '../providers/provider-mode';
 
 @Global()
 @Module({
@@ -19,12 +20,20 @@ import { KavenegarSmsService, MockSmsService, SmsService } from './sms.service';
         const provider = (
           config.get<string>('SMS_PROVIDER', 'mock') ?? 'mock'
         ).toLowerCase();
+        assertProductionProvider({
+          nodeEnv: config.get<string>('NODE_ENV', 'development'),
+          provider,
+          allowed: ['kavenegar'],
+          configKey: 'SMS_PROVIDER',
+        });
 
-        // Production-like: never mock SMS when DEBUG_MODE is off.
-        if (!debugMode || provider === 'kavenegar') {
+        if (provider === 'kavenegar') {
           return new KavenegarSmsService(config);
         }
-        return new MockSmsService();
+        if (provider === 'mock' && debugMode) return new MockSmsService();
+        throw new Error(
+          `SMS_PROVIDER=${provider} requires DEBUG_MODE=true outside production`,
+        );
       },
     },
   ],

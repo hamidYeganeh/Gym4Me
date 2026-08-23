@@ -5,6 +5,7 @@ import { ApiError } from "@repo/api";
 import {
   discoveryCoaches,
   isDiscoveryApiId,
+  isDiscoveryDemoId,
 } from "@/shared/lib/api";
 import { addDaysIso, todayIso } from "./club-calendar-data";
 import { formatJalaliDateShort } from "./club-calendar-data";
@@ -28,9 +29,9 @@ type DiscoveryCoachDetailState = {
 
 export function useDiscoveryCoachDetail(
   coachId: string,
-): DiscoveryCoachDetailState {
+): DiscoveryCoachDetailState & { retry: () => void } {
   const [state, setState] = useState<DiscoveryCoachDetailState>(() => {
-    if (!isDiscoveryApiId(coachId)) {
+    if (isDiscoveryDemoId(coachId)) {
       return {
         coach: getCoachDetail(coachId) ?? null,
         isLoading: false,
@@ -45,14 +46,25 @@ export function useDiscoveryCoachDetail(
       source: "api",
     };
   });
+  const [refreshToken, setRefreshToken] = useState(0);
 
   useEffect(() => {
-    if (!isDiscoveryApiId(coachId)) {
+    if (isDiscoveryDemoId(coachId)) {
       setState({
         coach: getCoachDetail(coachId) ?? null,
         isLoading: false,
         isError: false,
         source: "mock",
+      });
+      return;
+    }
+
+    if (!isDiscoveryApiId(coachId)) {
+      setState({
+        coach: null,
+        isLoading: false,
+        isError: false,
+        source: "api",
       });
       return;
     }
@@ -89,7 +101,7 @@ export function useDiscoveryCoachDetail(
     return () => {
       cancelled = true;
     };
-  }, [coachId]);
+  }, [coachId, refreshToken]);
 
   // Live availability + pricing enrich the API-backed detail page.
   const today = useMemo(() => todayIso(), []);
@@ -130,5 +142,9 @@ export function useDiscoveryCoachDetail(
     };
   }, [slotsWeek.days, slotsWeek.pricing, state.coach, state.source, today]);
 
-  return { ...state, coach };
+  return {
+    ...state,
+    coach,
+    retry: () => setRefreshToken((token) => token + 1),
+  };
 }

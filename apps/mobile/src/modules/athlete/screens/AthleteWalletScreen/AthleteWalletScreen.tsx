@@ -17,7 +17,6 @@ import { athleteWalletScreenStyles as styles } from "./AthleteWalletScreen.style
 import type { AthleteWalletScreenProps } from "./AthleteWalletScreen.types";
 
 const ROW_ICON_SIZE = 18;
-const DEMO_INVOICE_ID = "inv-demo";
 
 export function AthleteWalletScreen({
   balanceLabel,
@@ -61,11 +60,7 @@ export function AthleteWalletScreen({
           fullWidth
           isDisabled={topUpPending}
           onPress={() => {
-            if (onTopUp) {
-              onTopUp();
-              return;
-            }
-            router.push(`/athlete/payment/${DEMO_INVOICE_ID}`);
+            onTopUp?.();
           }}
           size="lg"
           variant="primary"
@@ -139,7 +134,10 @@ export function AthleteWalletScreen({
                             >
                               {transaction.title}
                             </Typography>
-                            <Typography className={styles.rowMeta} type="body-sm">
+                            <Typography
+                              className={styles.rowMeta}
+                              type="body-sm"
+                            >
                               {transaction.timeLabel}
                             </Typography>
                           </span>

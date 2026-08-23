@@ -6,20 +6,30 @@ import {
   getAllClassIds,
   getClassDetailById,
 } from "@/modules/discovery/lib/class-detail-data";
+import {
+  buildDemoStaticParams,
+  canUseDemoFixtureId,
+  STATIC_EXPORT_PLACEHOLDER_ID,
+} from "@/shared/lib/runtime-mode";
 
 type ClassDetailPageProps = {
   params: Promise<{ classId: string }>;
 };
 
 export function generateStaticParams() {
-  return getAllClassIds().map((classId) => ({ classId }));
+  return buildDemoStaticParams(
+    () => getAllClassIds().map((classId) => ({ classId })),
+    [{ classId: STATIC_EXPORT_PLACEHOLDER_ID }],
+  );
 }
 
 export async function generateMetadata({
   params,
 }: ClassDetailPageProps): Promise<Metadata> {
   const { classId } = await params;
-  const detail = getClassDetailById(classId);
+  const detail = canUseDemoFixtureId(classId)
+    ? getClassDetailById(classId)
+    : undefined;
   const t = await getTranslations("ClubClassDetail");
   return { title: detail?.title ?? t("notFound") };
 }

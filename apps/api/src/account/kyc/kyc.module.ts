@@ -11,6 +11,7 @@ import {
   MockKycProviderService,
 } from './kyc-provider.service';
 import { KycService } from './kyc.service';
+import { assertProductionProvider } from '../../common/providers/provider-mode';
 
 @Module({
   imports: [
@@ -29,13 +30,20 @@ import { KycService } from './kyc.service';
         const provider = (
           config.get<string>('KYC_PROVIDER', 'mock') ?? 'mock'
         ).toLowerCase();
+        assertProductionProvider({
+          nodeEnv: config.get<string>('NODE_ENV', 'development'),
+          provider,
+          allowed: ['api_ir', 'api.ir', 'finnotech'],
+          configKey: 'KYC_PROVIDER',
+        });
         if (provider === 'api_ir' || provider === 'api.ir') {
           return new ApiIrKycProviderService(config);
         }
         if (provider === 'finnotech') {
           return new FinnotechKycProviderService(config);
         }
-        return new MockKycProviderService();
+        if (provider === 'mock') return new MockKycProviderService();
+        throw new Error(`Unsupported KYC_PROVIDER=${provider}`);
       },
     },
   ],

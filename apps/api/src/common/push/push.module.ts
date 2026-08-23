@@ -2,6 +2,7 @@ import { Global, Logger, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { FcmPushService } from './fcm-push.service';
 import { MockPushService, PushService } from './push.service';
+import { assertProductionProvider } from '../providers/provider-mode';
 
 @Global()
 @Module({
@@ -17,6 +18,12 @@ import { MockPushService, PushService } from './push.service';
         const isProduction =
           (config.get<string>('NODE_ENV', 'development') ?? 'development') ===
           'production';
+        assertProductionProvider({
+          nodeEnv: isProduction ? 'production' : 'development',
+          provider,
+          allowed: ['fcm'],
+          configKey: 'PUSH_PROVIDER',
+        });
 
         if (provider === 'fcm') {
           const serviceAccount = config.get<string>('FCM_SERVICE_ACCOUNT');

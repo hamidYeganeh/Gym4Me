@@ -8,13 +8,10 @@ import { useRouter } from "@/shared/lib/app-router";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { AthleteMembershipsScreen } from "../screens/AthleteMembershipsScreen";
 import { mapApiMembershipToAthlete } from "./api-memberships";
-import {
-  ATHLETE_MEMBERSHIPS,
-  type AthleteMembership,
-} from "./memberships-data";
+import type { AthleteMembership } from "./memberships-data";
 
 /**
- * Client gate: live memberships for signed-in athletes, demo fixtures otherwise.
+ * Client gate: live memberships for signed-in athletes.
  */
 export function AthleteMembershipsGate() {
   const router = useRouter();
@@ -33,7 +30,7 @@ export function AthleteMembershipsGate() {
   useEffect(() => {
     if (!isReady) return;
     if (!isAuthenticated) {
-      setMemberships(ATHLETE_MEMBERSHIPS);
+      setMemberships([]);
       return;
     }
     let cancelled = false;

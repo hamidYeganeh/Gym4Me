@@ -6,10 +6,11 @@ import type {
   Paginated,
 } from "@repo/api";
 
-/** Live `/admin/clubs` by default; flip via `VITE_CLUBS_USE_MOCK=true` for offline demos. */
+/** Explicit local demo only; production builds can never activate fixtures. */
 export const CLUBS_USE_MOCK =
+  !import.meta.env.PROD &&
   String(import.meta.env.VITE_CLUBS_USE_MOCK ?? "false").toLowerCase() ===
-  "true";
+    "true";
 
 export type MockClubOwner = {
   id: string;
@@ -76,10 +77,7 @@ export const clubsCreateFormMockDefaults: ClubsCreateFormMockDefaults = {
   website: "https://asemani.example.com",
   address: "تهران، سعادت‌آباد، خیابان سرو غربی، پلاک ۱۲",
   direction: "north",
-  categoryIds: [
-    MOCK_CLUB_CATEGORIES[0].id,
-    MOCK_CLUB_CATEGORIES[3].id,
-  ],
+  categoryIds: [MOCK_CLUB_CATEGORIES[0].id, MOCK_CLUB_CATEGORIES[3].id],
   sportIds: [MOCK_CLUB_SPORTS[0].id, MOCK_CLUB_SPORTS[1].id],
 };
 
@@ -158,7 +156,9 @@ export const MOCK_CLUBS: Club[] = [
         { number: "09121234567", label: "مدیریت" },
       ],
     },
-    categories: [{ id: MOCK_CLUB_CATEGORIES[0].id, name: MOCK_CLUB_CATEGORIES[0].name }],
+    categories: [
+      { id: MOCK_CLUB_CATEGORIES[0].id, name: MOCK_CLUB_CATEGORIES[0].name },
+    ],
     sports: [{ id: MOCK_CLUB_SPORTS[0].id, name: MOCK_CLUB_SPORTS[0].name }],
     coaches: [{ coachId: "665f0coach00000000000001" }],
     location: {
@@ -229,7 +229,9 @@ export const MOCK_CLUBS: Club[] = [
     contact: {
       phones: [{ number: "02144556677", label: "پذیرش" }],
     },
-    categories: [{ id: MOCK_CLUB_CATEGORIES[1].id, name: MOCK_CLUB_CATEGORIES[1].name }],
+    categories: [
+      { id: MOCK_CLUB_CATEGORIES[1].id, name: MOCK_CLUB_CATEGORIES[1].name },
+    ],
     sports: [{ id: MOCK_CLUB_SPORTS[1].id, name: MOCK_CLUB_SPORTS[1].name }],
     location: {
       address: "تهران، ونک، خیابان ملاصدرا",
@@ -272,7 +274,9 @@ export const MOCK_CLUBS: Club[] = [
     contact: {
       phones: [{ number: "09351234567", label: null }],
     },
-    categories: [{ id: MOCK_CLUB_CATEGORIES[2].id, name: MOCK_CLUB_CATEGORIES[2].name }],
+    categories: [
+      { id: MOCK_CLUB_CATEGORIES[2].id, name: MOCK_CLUB_CATEGORIES[2].name },
+    ],
     sports: [{ id: MOCK_CLUB_SPORTS[2].id, name: MOCK_CLUB_SPORTS[2].name }],
     location: {
       address: "تهران، تجریش، میدان قدس",
@@ -425,8 +429,8 @@ export function filterMockClubs(
       : [query.lifecycleStatus]
     : [];
   if (lifecycleStatuses.length > 0) {
-    filtered = filtered.filter(
-      (c) => lifecycleStatuses.includes(c.review.status),
+    filtered = filtered.filter((c) =>
+      lifecycleStatuses.includes(c.review.status),
     );
   }
   const operationalStatuses = query.operationalStatus
@@ -435,8 +439,8 @@ export function filterMockClubs(
       : [query.operationalStatus]
     : [];
   if (operationalStatuses.length > 0) {
-    filtered = filtered.filter(
-      (c) => operationalStatuses.includes(c.operationalStatus),
+    filtered = filtered.filter((c) =>
+      operationalStatuses.includes(c.operationalStatus),
     );
   }
 
@@ -450,14 +454,8 @@ export function filterMockClubs(
       name: [first.identity.name, second.identity.name],
       ownerId: [first.ownerId, second.ownerId],
       lifecycleStatus: [first.review.status, second.review.status],
-      operationalStatus: [
-        first.operationalStatus,
-        second.operationalStatus,
-      ],
-      rating: [
-        first.reviewsSummary.average,
-        second.reviewsSummary.average,
-      ],
+      operationalStatus: [first.operationalStatus, second.operationalStatus],
+      rating: [first.reviewsSummary.average, second.reviewsSummary.average],
       createdAt: [first.createdAt, second.createdAt],
     };
     const [left, right] = values[sortBy];

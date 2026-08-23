@@ -164,7 +164,7 @@ export function useDiscoveryCoachesReserve(coach: CoachDetail) {
   const submitBooking = async () => {
     if (!selectedSlot || !selectedConsultation) return;
     if (!isApi) {
-      router.push("/athlete/payment/inv-demo");
+      setError(t("submitError"));
       return;
     }
     setIsSubmitting(true);

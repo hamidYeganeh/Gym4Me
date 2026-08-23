@@ -10,11 +10,10 @@ import {
   mapApiBookingToAthleteBooking,
   type AthleteBookingCopy,
 } from "./api-bookings";
-import { ATHLETE_BOOKINGS, type AthleteBooking } from "./bookings-data";
+import type { AthleteBooking } from "./bookings-data";
 
 /**
- * Client gate: live bookings for signed-in athletes, demo fixtures otherwise
- * (screens keep pure props per the mocks-replaceable rule).
+ * Client gate: live bookings for signed-in athletes.
  */
 export function AthleteBookingsGate() {
   const t = useTranslations("AthleteBookings");
@@ -33,7 +32,7 @@ export function AthleteBookingsGate() {
   useEffect(() => {
     if (!isReady) return;
     if (!isAuthenticated) {
-      setBookings(ATHLETE_BOOKINGS);
+      setBookings([]);
       return;
     }
     let cancelled = false;

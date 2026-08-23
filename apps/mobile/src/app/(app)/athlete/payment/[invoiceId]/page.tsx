@@ -1,12 +1,19 @@
 import { PaymentInvoiceGate } from "@/modules/athlete/lib/PaymentInvoiceGate";
 import { getAllInvoiceIds } from "@/modules/athlete/lib/payment-data";
+import {
+  buildDemoStaticParams,
+  STATIC_EXPORT_PLACEHOLDER_ID,
+} from "@/shared/lib/runtime-mode";
 
 type PaymentInvoicePageProps = {
   params: Promise<{ invoiceId: string }>;
 };
 
 export function generateStaticParams() {
-  return getAllInvoiceIds().map((invoiceId) => ({ invoiceId }));
+  return buildDemoStaticParams(
+    () => getAllInvoiceIds().map((invoiceId) => ({ invoiceId })),
+    [{ invoiceId: STATIC_EXPORT_PLACEHOLDER_ID }],
+  );
 }
 
 export default async function PaymentInvoicePage({

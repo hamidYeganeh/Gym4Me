@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { statsPalette } from "@repo/theme/stats-colors";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { basicsSports, mediaFileUrl } from "@/shared/lib/api";
+import { loadRemoteData } from "@/shared/lib/remote-data";
 import {
-  BROWSE_SPORTS,
   buildSportCategoryFilters,
   filterBrowseSports,
   type BrowseSport,
@@ -24,11 +24,45 @@ export type DiscoverySportsBrowseState = {
   filters: SportCategoryFilter[];
   activeFilter: SportCategoryFilterId;
   isLoading: boolean;
+  isError: boolean;
+  isStale: boolean;
   source: "api" | "mock";
+  retry: () => void;
   setActiveFilter: (id: SportCategoryFilterId) => void;
 };
 
 const SPORT_COLORS = ["var(--accent)", ...statsPalette] as const;
+
+type SportsBrowsePayload = {
+  sports: BrowseSport[];
+  categories: BrowseSportCategory[];
+};
+
+let lastRealSportsPayload: SportsBrowsePayload | null = null;
+
+async function fetchSportsBrowsePayload(): Promise<SportsBrowsePayload> {
+  const [page, categoriesPage] = await Promise.all([
+    basicsSports.listSports(),
+    basicsSports.listCategories().catch(() => null),
+  ]);
+
+  return {
+    categories: (categoriesPage?.result ?? [])
+      .filter((node) => node.isActive)
+      .map((node) => ({ id: node.id, name: node.name })),
+    sports: page.result.slice(0, 48).map((node, index) => {
+      const mapped = mapSportToHomeItem(
+        node,
+        mediaFileUrl(node.coverMediaId) ?? PLACEHOLDER_IMAGE,
+      );
+      return {
+        ...mapped,
+        color: SPORT_COLORS[index % SPORT_COLORS.length]!,
+        clubSportKey: node.id,
+      };
+    }),
+  };
+}
 
 export function useDiscoverySportsBrowse(
   options: DiscoverySportsBrowseOptions = {},
@@ -36,70 +70,49 @@ export function useDiscoverySportsBrowse(
   const categoryFromQuery = options.category?.trim() || "all";
   const [activeFilter, setActiveFilter] =
     useState<SportCategoryFilterId>(categoryFromQuery);
-  const [sports, setSports] = useState<BrowseSport[]>(BROWSE_SPORTS);
+  const [sports, setSports] = useState<BrowseSport[]>([]);
   const [categories, setCategories] = useState<BrowseSportCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [source, setSource] = useState<"api" | "mock">("mock");
+  const [isError, setIsError] = useState(false);
+  const [isStale, setIsStale] = useState(false);
+  const [source, setSource] = useState<"api" | "mock">("api");
 
   useEffect(() => {
     setActiveFilter(categoryFromQuery);
   }, [categoryFromQuery]);
 
-  useEffect(() => {
-    let cancelled = false;
+  const loadSports = useCallback(async () => {
+    setIsLoading(true);
+    setIsError(false);
+    setIsStale(false);
+    const result = await loadRemoteData({
+      load: fetchSportsBrowsePayload,
+      isEmpty: (payload) => payload.sports.length === 0,
+      readCache: () => lastRealSportsPayload,
+      writeCache: (payload) => {
+        lastRealSportsPayload = payload;
+      },
+    });
 
-    void (async () => {
-      try {
-        const [page, categoriesPage] = await Promise.all([
-          basicsSports.listSports(),
-          basicsSports.listCategories().catch(() => null),
-        ]);
-        if (cancelled) return;
-        if (page.result.length === 0) {
-          setSports(BROWSE_SPORTS);
-          setCategories([]);
-          setSource("mock");
-          setIsLoading(false);
-          return;
-        }
-        setCategories(
-          (categoriesPage?.result ?? [])
-            .filter((node) => node.isActive)
-            .map((node) => ({ id: node.id, name: node.name })),
-        );
-        setSports(
-          page.result.slice(0, 48).map((node, index) => {
-            const mapped = mapSportToHomeItem(
-              node,
-              mediaFileUrl(node.coverMediaId) ?? PLACEHOLDER_IMAGE,
-            );
-            const mock = BROWSE_SPORTS.find(
-              (item) => item.slug === mapped.slug || item.id === mapped.id,
-            );
-            return {
-              ...mapped,
-              color:
-                mock?.color ??
-                SPORT_COLORS[index % SPORT_COLORS.length]!,
-              clubSportKey: mock?.clubSportKey,
-            };
-          }),
-        );
-        setSource("api");
-        setIsLoading(false);
-      } catch {
-        if (cancelled) return;
-        setSports(BROWSE_SPORTS);
-        setCategories([]);
-        setSource("mock");
-        setIsLoading(false);
-      }
-    })();
+    if (result.status === "error") {
+      setSports([]);
+      setCategories([]);
+      setSource("api");
+      setIsError(true);
+      setIsLoading(false);
+      return;
+    }
 
-    return () => {
-      cancelled = true;
-    };
+    setSports(result.data.sports);
+    setCategories(result.data.categories);
+    setSource("api");
+    setIsStale(result.status === "stale");
+    setIsLoading(false);
   }, []);
+
+  useEffect(() => {
+    void loadSports();
+  }, [loadSports]);
 
   const filters = useMemo(
     () => buildSportCategoryFilters(sports, categories),
@@ -116,7 +129,10 @@ export function useDiscoverySportsBrowse(
     filters,
     activeFilter,
     isLoading,
+    isError,
+    isStale,
     source,
+    retry: loadSports,
     setActiveFilter,
   };
 }

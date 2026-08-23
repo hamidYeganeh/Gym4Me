@@ -10,4 +10,7 @@ export type DiscoveryClassesScreenProps = {
   activeFilter: ClassCategoryFilterId;
   onFilterChange: (id: ClassCategoryFilterId) => void;
   isLoading?: boolean;
+  isError?: boolean;
+  isStale?: boolean;
+  onRetry?: () => void;
 };

@@ -10,4 +10,7 @@ export type DiscoverySportsScreenProps = {
   activeFilter: SportCategoryFilterId;
   onFilterChange: (id: SportCategoryFilterId) => void;
   isLoading?: boolean;
+  isError?: boolean;
+  isStale?: boolean;
+  onRetry?: () => void;
 };

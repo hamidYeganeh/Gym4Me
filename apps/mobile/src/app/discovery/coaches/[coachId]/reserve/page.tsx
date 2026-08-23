@@ -6,23 +6,35 @@ import {
   getAllCoachIds,
   getCoachDetail,
 } from "@/modules/discovery/lib/coach-detail-data";
+import {
+  buildDemoStaticParams,
+  canUseDemoFixtureId,
+  STATIC_EXPORT_PLACEHOLDER_ID,
+} from "@/shared/lib/runtime-mode";
 
 type CoachReservePageProps = {
   params: Promise<{ coachId: string }>;
 };
 
 export function generateStaticParams() {
-  return getAllCoachIds().map((coachId) => ({ coachId }));
+  return buildDemoStaticParams(
+    () => getAllCoachIds().map((coachId) => ({ coachId })),
+    [{ coachId: STATIC_EXPORT_PLACEHOLDER_ID }],
+  );
 }
 
 export async function generateMetadata({
   params,
 }: CoachReservePageProps): Promise<Metadata> {
   const { coachId } = await params;
-  const coach = getCoachDetail(coachId);
+  const coach = canUseDemoFixtureId(coachId)
+    ? getCoachDetail(coachId)
+    : undefined;
   const t = await getTranslations("CoachReserve");
 
-  return { title: coach ? `${coach.name} — ${t("pageTitle")}` : t("pageTitle") };
+  return {
+    title: coach ? `${coach.name} — ${t("pageTitle")}` : t("pageTitle"),
+  };
 }
 
 export default async function CoachReservePage({

@@ -6,15 +6,10 @@ import {
   discoveryClasses,
   discoveryClubSlots,
   isDiscoveryApiId,
+  isDiscoveryDemoId,
 } from "@/shared/lib/api";
-import {
-  addDaysIso,
-  todayIso,
-} from "./club-calendar-data";
-import {
-  getClassDetailById,
-  type ClassDetail,
-} from "./class-detail-data";
+import { addDaysIso, todayIso } from "./club-calendar-data";
+import { getClassDetailById, type ClassDetail } from "./class-detail-data";
 import { mapDiscoveryClassToDetail } from "./map-discovery-class";
 
 type State = {
@@ -28,15 +23,14 @@ type State = {
 export function useDiscoveryClassDetailById(
   classId: string,
   clubIdHint?: string,
-): State {
+): State & { retry: () => void } {
   const useApi = isDiscoveryApiId(classId);
+  const useDemo = isDiscoveryDemoId(classId);
 
   const [state, setState] = useState<State>(() => {
-    if (!useApi) {
+    if (useDemo) {
       return {
-        classDetail:
-          getClassDetailById(classId, clubIdHint) ??
-          null,
+        classDetail: getClassDetailById(classId, clubIdHint) ?? null,
         isLoading: false,
         isError: false,
         source: "mock",
@@ -49,16 +43,25 @@ export function useDiscoveryClassDetailById(
       source: "api",
     };
   });
+  const [refreshToken, setRefreshToken] = useState(0);
 
   useEffect(() => {
-    if (!useApi) {
+    if (useDemo) {
       setState({
-        classDetail:
-          getClassDetailById(classId, clubIdHint) ??
-          null,
+        classDetail: getClassDetailById(classId, clubIdHint) ?? null,
         isLoading: false,
         isError: false,
         source: "mock",
+      });
+      return;
+    }
+
+    if (!useApi) {
+      setState({
+        classDetail: null,
+        isLoading: false,
+        isError: false,
+        source: "api",
       });
       return;
     }
@@ -104,7 +107,10 @@ export function useDiscoveryClassDetailById(
     return () => {
       cancelled = true;
     };
-  }, [classId, clubIdHint, useApi]);
+  }, [classId, clubIdHint, refreshToken, useApi, useDemo]);
 
-  return state;
+  return {
+    ...state,
+    retry: () => setRefreshToken((token) => token + 1),
+  };
 }

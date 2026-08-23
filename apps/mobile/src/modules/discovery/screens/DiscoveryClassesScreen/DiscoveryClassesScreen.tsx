@@ -18,6 +18,9 @@ export function DiscoveryClassesScreen({
   activeFilter,
   onFilterChange,
   isLoading,
+  isError,
+  isStale,
+  onRetry,
 }: DiscoveryClassesScreenProps) {
   const t = useTranslations("DiscoveryClasses");
   const router = useRouter();
@@ -59,7 +62,26 @@ export function DiscoveryClassesScreen({
             : t("resultsCount", { count: classes.length })}
         </Typography>
 
-        {isLoading && classes.length === 0 ? null : classes.length === 0 ? (
+        {isStale ? (
+          <Typography className={styles.meta} type="body-sm">
+            {t("staleData")}
+          </Typography>
+        ) : null}
+
+        {isLoading && classes.length === 0 ? null : isError ? (
+          <EmptyState
+            className={styles.empty}
+            description={t("errorBody")}
+            illustration={EMPTY_STATE_ILLUSTRATIONS.warning}
+            illustrationAlt=""
+            layout="media"
+            primaryAction={
+              onRetry ? { label: t("retry"), onPress: onRetry } : undefined
+            }
+            status="danger"
+            title={t("errorTitle")}
+          />
+        ) : classes.length === 0 ? (
           <EmptyState
             className={styles.empty}
             description={t("emptyBody")}

@@ -5,20 +5,28 @@ import {
   getAllClubIds,
   getClubDetail,
 } from "@/modules/discovery/lib/club-detail-data";
+import {
+  buildDemoStaticParams,
+  canUseDemoFixtureId,
+  STATIC_EXPORT_PLACEHOLDER_ID,
+} from "@/shared/lib/runtime-mode";
 
 type ReservePageProps = {
   params: Promise<{ clubId: string }>;
 };
 
 export function generateStaticParams() {
-  return getAllClubIds().map((clubId) => ({ clubId }));
+  return buildDemoStaticParams(
+    () => getAllClubIds().map((clubId) => ({ clubId })),
+    [{ clubId: STATIC_EXPORT_PLACEHOLDER_ID }],
+  );
 }
 
 export async function generateMetadata({
   params,
 }: ReservePageProps): Promise<Metadata> {
   const { clubId } = await params;
-  const club = getClubDetail(clubId);
+  const club = canUseDemoFixtureId(clubId) ? getClubDetail(clubId) : undefined;
   const t = await getTranslations("ReserveFlow");
 
   return { title: t("pageTitle", { club: club?.title ?? "" }) };

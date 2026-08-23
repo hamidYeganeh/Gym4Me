@@ -3,6 +3,7 @@
 import type { ComponentType } from "react";
 import { Spinner } from "@heroui/react/spinner";
 import { Typography } from "@heroui/react/typography";
+import { EMPTY_STATE_ILLUSTRATIONS, EmptyState } from "@repo/ui/kit/EmptyState";
 import { useTranslations } from "next-intl";
 import { DiscoveryClubsBranchesScreen } from "../screens/DiscoveryClubsBranchesScreen";
 import { DiscoveryClubsClassesScreen } from "../screens/DiscoveryClubsClassesScreen";
@@ -35,12 +36,28 @@ type Props = {
 
 export function DiscoveryClubDetailGate({ clubId, view }: Props) {
   const t = useTranslations("ClubDetail");
-  const { club, isLoading } = useDiscoveryClubDetail(clubId);
+  const { club, isLoading, isError, retry } = useDiscoveryClubDetail(clubId);
 
   if (isLoading) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
         <Spinner size="lg" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center px-6">
+        <EmptyState
+          description={t("loadErrorBody")}
+          illustration={EMPTY_STATE_ILLUSTRATIONS.warning}
+          illustrationAlt=""
+          layout="media"
+          primaryAction={{ label: t("retry"), onPress: retry }}
+          status="danger"
+          title={t("loadErrorTitle")}
+        />
       </div>
     );
   }

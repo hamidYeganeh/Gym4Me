@@ -5,11 +5,9 @@ import { ApiError } from "@repo/api";
 import {
   discoveryClubSlots,
   isDiscoveryApiId,
+  isDiscoveryDemoId,
 } from "@/shared/lib/api";
-import {
-  addDaysIso,
-  todayIso,
-} from "./club-calendar-data";
+import { addDaysIso, todayIso } from "./club-calendar-data";
 import { getClassDetail, type ClassDetail } from "./class-detail-data";
 import { mapDiscoveryClassToDetail } from "./map-discovery-class";
 
@@ -23,10 +21,11 @@ type State = {
 export function useDiscoveryClassDetail(
   clubId: string,
   classId: string,
-): State {
+): State & { retry: () => void } {
   const useApi = isDiscoveryApiId(clubId) && isDiscoveryApiId(classId);
+  const useDemo = isDiscoveryDemoId(clubId) && isDiscoveryDemoId(classId);
   const [state, setState] = useState<State>(() => {
-    if (!useApi) {
+    if (useDemo) {
       return {
         classDetail: getClassDetail(clubId, classId) ?? null,
         isLoading: false,
@@ -41,14 +40,25 @@ export function useDiscoveryClassDetail(
       source: "api",
     };
   });
+  const [refreshToken, setRefreshToken] = useState(0);
 
   useEffect(() => {
-    if (!useApi) {
+    if (useDemo) {
       setState({
         classDetail: getClassDetail(clubId, classId) ?? null,
         isLoading: false,
         isError: false,
         source: "mock",
+      });
+      return;
+    }
+
+    if (!useApi) {
+      setState({
+        classDetail: null,
+        isLoading: false,
+        isError: false,
+        source: "api",
       });
       return;
     }
@@ -69,7 +79,9 @@ export function useDiscoveryClassDetail(
         const to = addDaysIso(today, 13);
         const [cls, calendar] = await Promise.all([
           discoveryClubSlots.getClass(clubId, classId),
-          discoveryClubSlots.getCalendar(clubId, { from, to }).catch(() => null),
+          discoveryClubSlots
+            .getCalendar(clubId, { from, to })
+            .catch(() => null),
         ]);
         if (cancelled) return;
         setState({
@@ -92,7 +104,10 @@ export function useDiscoveryClassDetail(
     return () => {
       cancelled = true;
     };
-  }, [clubId, classId, useApi]);
+  }, [classId, clubId, refreshToken, useApi, useDemo]);
 
-  return state;
+  return {
+    ...state,
+    retry: () => setRefreshToken((token) => token + 1),
+  };
 }

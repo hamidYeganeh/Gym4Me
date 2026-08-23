@@ -5,14 +5,8 @@ import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRequireAuthAction } from "@/shared/hooks/useRequireAuthAction";
-import type {
-  ReserveDay,
-  ReservePlan,
-  ReserveSlot,
-} from "./reserve-data";
+import type { ReserveDay, ReservePlan, ReserveSlot } from "./reserve-data";
 import { useRouter } from "@/shared/lib/app-router";
-
-const DEMO_INVOICE_ID = "inv-demo";
 
 export type ClubsReserveStep = 0 | 1 | 2;
 
@@ -80,12 +74,10 @@ export function useDiscoveryClubsReserve({
         ? Boolean(selectedPlan)
         : !isSubmitting;
 
-  const paymentHref = `/athlete/payment/${DEMO_INVOICE_ID}`;
-
   const submitReservation = async () => {
     if (!selectedSlot || !selectedPlan) return;
     if (!onConfirm) {
-      router.push(paymentHref);
+      setSubmitError(t("submitError"));
       return;
     }
     setIsSubmitting(true);

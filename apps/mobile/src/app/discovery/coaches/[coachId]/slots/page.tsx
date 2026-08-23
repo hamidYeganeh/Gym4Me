@@ -5,20 +5,30 @@ import {
   getAllCoachIds,
   getCoachDetail,
 } from "@/modules/discovery/lib/coach-detail-data";
+import {
+  buildDemoStaticParams,
+  canUseDemoFixtureId,
+  STATIC_EXPORT_PLACEHOLDER_ID,
+} from "@/shared/lib/runtime-mode";
 
 type CoachSlotsPageProps = {
   params: Promise<{ coachId: string }>;
 };
 
 export function generateStaticParams() {
-  return getAllCoachIds().map((coachId) => ({ coachId }));
+  return buildDemoStaticParams(
+    () => getAllCoachIds().map((coachId) => ({ coachId })),
+    [{ coachId: STATIC_EXPORT_PLACEHOLDER_ID }],
+  );
 }
 
 export async function generateMetadata({
   params,
 }: CoachSlotsPageProps): Promise<Metadata> {
   const { coachId } = await params;
-  const coach = getCoachDetail(coachId);
+  const coach = canUseDemoFixtureId(coachId)
+    ? getCoachDetail(coachId)
+    : undefined;
   const t = await getTranslations("CoachDetail");
 
   if (!coach) {

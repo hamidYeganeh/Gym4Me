@@ -29,11 +29,9 @@ export class MockKycProviderService extends KycProviderService {
   private readonly logger = new Logger('MockKycProvider');
 
   async verifyIdentity(
-    input: IdentityCheckInput,
+    _input: IdentityCheckInput,
   ): Promise<IdentityCheckResult> {
-    this.logger.log(
-      `[IDENTITY] phone=${input.phone} nationalId=${input.nationalId} → approved`,
-    );
+    this.logger.log('[IDENTITY] mock verification completed → approved');
     return {
       approved: true,
       raw: {
