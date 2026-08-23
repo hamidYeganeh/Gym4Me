@@ -1,13 +1,10 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ReferralModule } from '../account/referral/referral.module';
+import { MembershipAnalyticsModule } from '../account/memberships/application/queries/membership-analytics.module';
 import { AuditModule } from '../audit/audit.module';
 import { CashShift, CashShiftSchema } from '../schemas/cash-shift.schema';
 import { Club, ClubSchema } from '../schemas/club.schema';
-import {
-  ClubMembership,
-  ClubMembershipSchema,
-} from '../schemas/club-membership.schema';
 import {
   CompensationRule,
   CompensationRuleSchema,
@@ -34,6 +31,7 @@ import { OwnerFinanceController } from './owner-finance.controller';
   imports: [
     AuditModule,
     forwardRef(() => ReferralModule),
+    MembershipAnalyticsModule,
     MongooseModule.forFeature([
       { name: Wallet.name, schema: WalletSchema },
       { name: Payment.name, schema: PaymentSchema },
@@ -45,7 +43,6 @@ import { OwnerFinanceController } from './owner-finance.controller';
       { name: CompensationRule.name, schema: CompensationRuleSchema },
       { name: Club.name, schema: ClubSchema },
       { name: Invoice.name, schema: InvoiceSchema },
-      { name: ClubMembership.name, schema: ClubMembershipSchema },
       { name: User.name, schema: UserSchema },
     ]),
   ],

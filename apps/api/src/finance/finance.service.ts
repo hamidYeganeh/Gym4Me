@@ -22,7 +22,6 @@ import {
   InvoiceStatus,
   LedgerAccount,
   LedgerEntryKind,
-  MembershipStatus,
   AnalyticsPeriod,
   PaymentChannel,
   PaymentPurpose,
@@ -50,10 +49,7 @@ import {
   CashShiftTotals,
 } from '../schemas/cash-shift.schema';
 import { Club, ClubDocument } from '../schemas/club.schema';
-import {
-  ClubMembership,
-  ClubMembershipDocument,
-} from '../schemas/club-membership.schema';
+import { MembershipAnalyticsQuery } from '../account/memberships/application/queries/membership-analytics.query';
 import {
   CompensationRule,
   CompensationRuleDocument,
@@ -137,8 +133,6 @@ export class FinanceService {
     private readonly clubModel: Model<ClubDocument>,
     @InjectModel(Invoice.name)
     private readonly invoiceModel: Model<InvoiceDocument>,
-    @InjectModel(ClubMembership.name)
-    private readonly membershipModel: Model<ClubMembershipDocument>,
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
     private readonly audit: AuditService,
@@ -146,6 +140,7 @@ export class FinanceService {
     private readonly referral: ReferralService,
     private readonly transactions: MongoTransactionService,
     private readonly financeReadQuery: FinanceReadQuery,
+    private readonly membershipAnalytics: MembershipAnalyticsQuery,
   ) {}
 
   // ── Club scope ──────────────────────────────────────────────────────────
@@ -674,30 +669,18 @@ export class FinanceService {
     const clubOid = this.toObjectId(clubId, 'clubId');
     const since = this.analyticsSince(period);
 
-    const [newMembers, activeMembers, cancelledMembers, payments] =
-      await Promise.all([
-        this.membershipModel.countDocuments({
-          clubId: clubOid,
-          createdAt: { $gte: since },
-        }),
-        this.membershipModel.countDocuments({
-          clubId: clubOid,
-          status: MembershipStatus.ACTIVE,
-        }),
-        this.membershipModel.countDocuments({
-          clubId: clubOid,
-          status: MembershipStatus.CANCELLED,
-          updatedAt: { $gte: since },
-        }),
-        this.paymentModel
-          .find({
-            'related.clubId': clubOid,
-            status: PaymentStatus.CAPTURED,
-            capturedAt: { $gte: since },
-          })
-          .select({ amount: 1, capturedAt: 1, createdAt: 1 })
-          .lean(),
-      ]);
+    const [membershipCounts, payments] = await Promise.all([
+      this.membershipAnalytics.getFinanceCounts(clubOid, since),
+      this.paymentModel
+        .find({
+          'related.clubId': clubOid,
+          status: PaymentStatus.CAPTURED,
+          capturedAt: { $gte: since },
+        })
+        .select({ amount: 1, capturedAt: 1, createdAt: 1 })
+        .lean(),
+    ]);
+    const { newMembers, activeMembers, cancelledMembers } = membershipCounts;
 
     const totalGross = payments.reduce(
       (sum, p) => sum + (p.amount?.gross ?? 0),

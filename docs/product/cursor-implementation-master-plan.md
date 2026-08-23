@@ -91,31 +91,31 @@ G4M-002 → G4M-010 ┬→ G4M-011 ─┐                                ├→ 
 
 ## خلاصهٔ backlog
 
-| ID         | اولویت | وضعیت       | عنوان                                                 | وابستگی                      |
-| ---------- | ------ | ----------- | ----------------------------------------------------- | ---------------------------- |
-| G4M-001    | P0     | DONE        | برگرداندن quality gate و build پایدار                 | —                            |
-| G4M-002    | P0     | DONE        | CI کامل، test pyramid و محیط integration              | G4M-001                      |
-| G4M-003    | P0     | IN_PROGRESS | شکستن God Serviceها و تعریف transaction boundary      | G4M-002                      |
-| G4M-010    | P0     | BLOCKED     | اصلاح permission و failure semantics در Health Sync   | G4M-002                      |
-| G4M-011    | P0     | BLOCKED     | incremental Health Sync، cursor و offline queue واقعی | G4M-010                      |
-| G4M-012    | P1     | BLOCKED     | حقوق داده و حذف حساب با retention روشن                | G4M-010                      |
-| G4M-013    | P1     | BLOCKED     | observability و امنیت دادهٔ سلامت                     | G4M-011, G4M-012             |
-| G4M-020    | P0     | BLOCKED     | حذف mock از مسیرهای production و demo isolation       | G4M-002                      |
-| G4M-021    | P0     | BLOCKED     | discovery واقعی کامل و supply integrity               | G4M-020                      |
-| G4M-030    | P0     | BLOCKED     | رزرو اتمیک، ظرفیت و idempotency سراسری                | G4M-003                      |
-| G4M-031    | P0     | BLOCKED     | پرداخت، coupon، wallet، refund و reconciliation واقعی | G4M-030                      |
-| G4M-040    | P0     | BLOCKED     | workerهای چند-instance و outbox قابل اتکا             | G4M-003                      |
-| G4M-050    | P0     | BLOCKED     | عضویت، subscription enforcement و عملیات پذیرش        | G4M-021, G4M-031, G4M-040    |
-| G4M-051    | P0     | BLOCKED     | check-in آفلاین امن و reconciliation                  | G4M-050                      |
-| G4M-060    | P1     | BLOCKED     | مربیگری و اجرای تمرین end-to-end                      | G4M-013, G4M-051             |
-| G4M-061    | P1     | BLOCKED     | رسانه، اجتماعی و تغذیه بدون placeholder               | G4M-060                      |
-| G4M-070    | P1     | BLOCKED     | تکمیل ادمین، وب‌سایت و certification نهایی            | G4M-013, G4M-061 و همهٔ P0ها |
-| G4M-MKT-01 | P0*    | BLOCKED     | Role Action Center واقعی (*پس از هسته)                | G4M-020, 021, 030, 050       |
-| G4M-MKT-02 | P0*    | BLOCKED     | Recovery loop رزرو و ظرفیت (*پس از هسته؛ بدون ICS)    | G4M-030, 031, 040            |
-| G4M-MKT-03 | P1     | BLOCKED     | Trial، family و corporate membership                  | G4M-012, 031, 050            |
-| G4M-MKT-04 | P1     | BLOCKED     | Occupancy guidance و front-desk fast mode             | G4M-050, 051                 |
-| G4M-MKT-05 | P1     | BLOCKED     | Coach Follow-up Queue                                 | G4M-060, 061                 |
-| G4M-MKT-06 | P2     | BLOCKED     | Public club surface و hardware adapter pilot          | G4M-051, 070، تصویب pilot    |
+| ID         | اولویت | وضعیت   | عنوان                                                 | وابستگی                      |
+| ---------- | ------ | ------- | ----------------------------------------------------- | ---------------------------- |
+| G4M-001    | P0     | DONE    | برگرداندن quality gate و build پایدار                 | —                            |
+| G4M-002    | P0     | DONE    | CI کامل، test pyramid و محیط integration              | G4M-001                      |
+| G4M-003    | P0     | VERIFY  | شکستن God Serviceها و تعریف transaction boundary      | G4M-002                      |
+| G4M-010    | P0     | BLOCKED | اصلاح permission و failure semantics در Health Sync   | G4M-002                      |
+| G4M-011    | P0     | BLOCKED | incremental Health Sync، cursor و offline queue واقعی | G4M-010                      |
+| G4M-012    | P1     | BLOCKED | حقوق داده و حذف حساب با retention روشن                | G4M-010                      |
+| G4M-013    | P1     | BLOCKED | observability و امنیت دادهٔ سلامت                     | G4M-011, G4M-012             |
+| G4M-020    | P0     | BLOCKED | حذف mock از مسیرهای production و demo isolation       | G4M-002                      |
+| G4M-021    | P0     | BLOCKED | discovery واقعی کامل و supply integrity               | G4M-020                      |
+| G4M-030    | P0     | BLOCKED | رزرو اتمیک، ظرفیت و idempotency سراسری                | G4M-003                      |
+| G4M-031    | P0     | BLOCKED | پرداخت، coupon، wallet، refund و reconciliation واقعی | G4M-030                      |
+| G4M-040    | P0     | BLOCKED | workerهای چند-instance و outbox قابل اتکا             | G4M-003                      |
+| G4M-050    | P0     | BLOCKED | عضویت، subscription enforcement و عملیات پذیرش        | G4M-021, G4M-031, G4M-040    |
+| G4M-051    | P0     | BLOCKED | check-in آفلاین امن و reconciliation                  | G4M-050                      |
+| G4M-060    | P1     | BLOCKED | مربیگری و اجرای تمرین end-to-end                      | G4M-013, G4M-051             |
+| G4M-061    | P1     | BLOCKED | رسانه، اجتماعی و تغذیه بدون placeholder               | G4M-060                      |
+| G4M-070    | P1     | BLOCKED | تکمیل ادمین، وب‌سایت و certification نهایی            | G4M-013, G4M-061 و همهٔ P0ها |
+| G4M-MKT-01 | P0*    | BLOCKED | Role Action Center واقعی (*پس از هسته)                | G4M-020, 021, 030, 050       |
+| G4M-MKT-02 | P0*    | BLOCKED | Recovery loop رزرو و ظرفیت (*پس از هسته؛ بدون ICS)    | G4M-030, 031, 040            |
+| G4M-MKT-03 | P1     | BLOCKED | Trial، family و corporate membership                  | G4M-012, 031, 050            |
+| G4M-MKT-04 | P1     | BLOCKED | Occupancy guidance و front-desk fast mode             | G4M-050, 051                 |
+| G4M-MKT-05 | P1     | BLOCKED | Coach Follow-up Queue                                 | G4M-060, 061                 |
+| G4M-MKT-06 | P2     | BLOCKED | Public club surface و hardware adapter pilot          | G4M-051, 070، تصویب pilot    |
 
 جزئیات پذیرش، مرز هسته، KPI و خارج‌ازمحدودهٔ تقویم برای `G4M-MKT-*` در [`competitive-product-review-2026-08.md`](./competitive-product-review-2026-08.md) است؛ این جدول فقط وضعیت اجرایی را نگه می‌دارد.
 
@@ -157,7 +157,7 @@ G4M-002 → G4M-010 ┬→ G4M-011 ─┐                                ├→ 
 ### G4M-003 — شکستن God Serviceها و تعریف transaction boundary
 
 - **Persona/value:** توسعه‌دهنده و عملیات؛ کاهش ریسک تغییر و قابلیت رشد تیم.
-- **وضعیت:** IN_PROGRESS (۲۰۲۶-۰۸-۲۳)؛ refactor تدریجی، نه rewrite.
+- **وضعیت:** VERIFY (۲۰۲۶-۰۸-۲۳)؛ gateهای محلی سبز و در انتظار تأیید آخرین CI رسمی.
 - **دامنه:** `ProgressService`، `FinanceService`، `CoachingService`، `MembershipsService`، `ClubsService`، `BookingsService`.
 - **کار:**
   - facade عمومی را حفظ و use caseها را به command/query/policy/projector کوچک منتقل کن.
@@ -166,7 +166,7 @@ G4M-002 → G4M-010 ┬→ G4M-011 ─┐                                ├→ 
   - queryها projection و pagination محدود داشته باشند؛ no unbounded list.
 - **معیار پذیرش:** هیچ رفتار API شکسته نشود؛ contract tests قبل/بعد یکسان؛ فایل جدید application service ترجیحاً زیر ۴۰۰ خط و یک مسئولیت داشته باشد.
 - **ریسک:** refactor گسترده همراه feature ممنوع؛ هر استخراج باید characterization test داشته باشد.
-- **پیشرفت فعلی:** هر شش facade هدف حداقل یک مرز application مستقل دارند. ایجاد رزرو مربی/باشگاه و verify پرداخت به commandهای زیر ۴۰۰ خط منتقل شده‌اند؛ gateway بیرون transaction و Booking + Finance/Ledger + Outbox در session مشترک مانده است. فروش عضویت نیز Membership + Coupon + Payment/Ledger + Debt + MembershipEvent را اتمیک و effect/audit را post-commit نگه می‌دارد. `BookingProjector`، `FinanceReadQuery`، `ListProgressMetricsQuery` و projector آن، `CoachingStudentsQuery` و projector آن، و `ClubsListQuery` read modelهای نقش‌محور را از facade جدا و همهٔ listها را با سقف page size برابر ۲۰۰ محدود کرده‌اند. مجموعاً ۳۹ characterization test جدید برای transaction/idempotency/race، ظرفیت و پرداخت، فروش عضویت، projection نقش‌ها، فیلتر و pagination اضافه شده است. refactor mutationهای باقی‌مانده در سرویس‌های بزرگ‌تر ادامه دارد و تسک هنوز DONE نیست.
+- **پیشرفت فعلی:** هر شش facade هدف حداقل یک مرز application مستقل دارند. ایجاد رزرو مربی/باشگاه و verify پرداخت به commandهای زیر ۴۰۰ خط منتقل شده‌اند؛ gateway بیرون transaction و Booking + Finance/Ledger + Outbox در session مشترک مانده است. فروش عضویت نیز Membership + Coupon + Payment/Ledger + Debt + MembershipEvent را اتمیک و effect/audit را post-commit نگه می‌دارد. `BookingProjector`، `FinanceReadQuery`، `ListProgressMetricsQuery` و projector آن، `CoachingStudentsQuery` و projector آن، و `ClubsListQuery` read modelهای نقش‌محور را از facade جدا و همهٔ listها را با سقف page size برابر ۲۰۰ محدود کرده‌اند. مدل `ClubMembership` نیز از `FinanceService` حذف و شمارش مالی از API خواندنی دامنهٔ Membership انجام می‌شود. مجموعاً ۴۰ characterization test جدید اضافه شده و مجموعهٔ API `111/111` تست سبز دارد؛ همهٔ application serviceهای جدید زیر ۴۰۰ خط‌اند. `check-types` ده package، lint کامل monorepo و build API محلی سبزند؛ CI commit `1b46076e` نیز هر ۹ job را پاس کرده و فقط CI آخرین اصلاح cross-domain باقی مانده است.
 
 ---
 
