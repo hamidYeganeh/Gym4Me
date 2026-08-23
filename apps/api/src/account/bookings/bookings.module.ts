@@ -19,6 +19,7 @@ import { AdminBookingsController } from './admin-bookings.controller';
 import { CreateClubBookingCommand } from './application/commands/create-club-booking.command';
 import { CreateCoachBookingCommand } from './application/commands/create-coach-booking.command';
 import { VerifyBookingPaymentCommand } from './application/commands/verify-booking-payment.command';
+import { BookingProjector } from './application/projectors/booking.projector';
 import { AthleteBookingsController } from './athlete-bookings.controller';
 import { BookingsExpireService } from './bookings-expire.service';
 import { BookingsService } from './bookings.service';
@@ -58,6 +59,7 @@ import { OwnerClubBookingsController } from './owner-club-bookings.controller';
     CreateClubBookingCommand,
     CreateCoachBookingCommand,
     VerifyBookingPaymentCommand,
+    BookingProjector,
     BookingsService,
     BookingsExpireService,
   ],

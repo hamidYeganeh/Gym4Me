@@ -168,7 +168,7 @@ describe('VerifyBookingPaymentCommand', () => {
       amount: 1_800_000,
     });
     expect(gateway.verifyPayment.mock.invocationCallOrder[0]).toBeLessThan(
-      transactions.run.mock.invocationCallOrder[0]!,
+      transactions.run.mock.invocationCallOrder[0],
     );
     expect(current.status).toBe(BookingStatus.CONFIRMED);
     expect(current.payment).toEqual({
@@ -209,7 +209,7 @@ describe('VerifyBookingPaymentCommand', () => {
     );
     expect(
       finance.runPaymentPostCommitEffects.mock.invocationCallOrder[0],
-    ).toBeGreaterThan(transactions.run.mock.invocationCallOrder[0]!);
+    ).toBeGreaterThan(transactions.run.mock.invocationCallOrder[0]);
     jest.useRealTimers();
   });
 });

@@ -33,15 +33,16 @@ import {
   type OutboxNotification,
 } from '../../outbox/outbox.service';
 import { Booking, BookingDocument } from '../../schemas/booking.schema';
-import { ClubClass, ClubClassDocument } from '../../schemas/club-class.schema';
 import { Club, ClubDocument } from '../../schemas/club.schema';
-import { ClubSpace, ClubSpaceDocument } from '../../schemas/club-space.schema';
 import { CoachSlot, CoachSlotDocument } from '../../schemas/coach-slot.schema';
-import { User, UserDocument } from '../../schemas/user.schema';
 import { ClubSlotsService } from '../club-slots/club-slots.service';
 import { CreateClubBookingCommand } from './application/commands/create-club-booking.command';
 import { CreateCoachBookingCommand } from './application/commands/create-coach-booking.command';
 import { VerifyBookingPaymentCommand } from './application/commands/verify-booking-payment.command';
+import {
+  BookingProjector,
+  type BookingAudience,
+} from './application/projectors/booking.projector';
 import {
   AdminListBookingsQueryDto,
   CancelBookingDto,
@@ -66,8 +67,6 @@ const SLOT_KIND_TO_RESOURCE: Record<SlotKind, BookingResourceType> = {
   [SlotKind.SESSION]: BookingResourceType.SESSION,
   [SlotKind.SPACE]: BookingResourceType.SPACE,
 };
-
-type Audience = 'athlete' | 'coach' | 'club' | 'admin';
 
 type BookingListQuery = {
   page?: number;
@@ -111,12 +110,6 @@ export class BookingsService {
     private readonly slotModel: Model<CoachSlotDocument>,
     @InjectModel(Club.name)
     private readonly clubModel: Model<ClubDocument>,
-    @InjectModel(ClubClass.name)
-    private readonly classModel: Model<ClubClassDocument>,
-    @InjectModel(ClubSpace.name)
-    private readonly spaceModel: Model<ClubSpaceDocument>,
-    @InjectModel(User.name)
-    private readonly userModel: Model<UserDocument>,
     private readonly clubSlots: ClubSlotsService,
     private readonly gateway: PaymentGatewayService,
     private readonly config: ConfigService,
@@ -125,6 +118,7 @@ export class BookingsService {
     private readonly createClubBookingCommand: CreateClubBookingCommand,
     private readonly createCoachBooking: CreateCoachBookingCommand,
     private readonly verifyBookingPayment: VerifyBookingPaymentCommand,
+    private readonly projector: BookingProjector,
   ) {}
 
   private paymentTtlMs() {
@@ -733,7 +727,7 @@ export class BookingsService {
     id: string,
     fromStatuses: BookingStatus[],
     toStatus: BookingStatus,
-    audience: Audience,
+    audience: BookingAudience,
   ) {
     const booking = await this.findOwned(id, ownerFilter);
     if (!fromStatuses.includes(booking.status)) {
@@ -750,7 +744,7 @@ export class BookingsService {
     booking: BookingDocument,
     dto: CancelBookingDto,
     actor: BookingActor,
-    audience: Audience,
+    audience: BookingAudience,
   ) {
     const providerCancel =
       actor === BookingActor.COACH || actor === BookingActor.CLUB;
@@ -911,7 +905,7 @@ export class BookingsService {
   private async list(
     ownerFilter: QueryFilter<BookingDocument>,
     query: BookingListQuery,
-    audience: Audience,
+    audience: BookingAudience,
   ) {
     const { page, pageSize } = resolvePageSize(query);
     const filter: QueryFilter<BookingDocument> = { ...ownerFilter };
@@ -1009,219 +1003,15 @@ export class BookingsService {
 
   // ── Projection ─────────────────────────────────────────────────────────
 
-  private async project(booking: BookingDocument, audience: Audience) {
-    const [projected] = await this.projectMany([booking], audience);
-    return projected;
+  private async project(booking: BookingDocument, audience: BookingAudience) {
+    return this.projector.project(booking, audience);
   }
 
-  private async projectMany(bookings: BookingDocument[], audience: Audience) {
-    const userIds = new Set<string>();
-    for (const booking of bookings) {
-      // Athlete audience sees the coach; provider audiences see the athlete.
-      if (audience === 'athlete') {
-        if (booking.coachUserId) userIds.add(booking.coachUserId.toString());
-      } else {
-        userIds.add(booking.athleteId.toString());
-      }
-    }
-    const clubIds = [
-      ...new Set(
-        bookings
-          .map((booking) => booking.clubId?.toString())
-          .filter((id): id is string => Boolean(id)),
-      ),
-    ];
-
-    // Resolve club-slot targets (class / space titles) for club bookings.
-    const clubSlotIds = [
-      ...new Set(
-        bookings
-          .filter(
-            (booking) => booking.resource.type !== BookingResourceType.COACH,
-          )
-          .map((booking) => booking.resource.refId.toString()),
-      ),
-    ];
-
-    const usersPromise: Promise<UserDocument[]> = userIds.size
-      ? this.userModel
-          .find({
-            _id: { $in: [...userIds].map((id) => new Types.ObjectId(id)) },
-          })
-          .select({ name: 1, avatar: 1, code: 1 })
-      : Promise.resolve([]);
-    const clubsPromise: Promise<ClubDocument[]> = clubIds.length
-      ? this.clubModel
-          .find({ _id: { $in: clubIds.map((id) => new Types.ObjectId(id)) } })
-          .select({ identity: 1, location: 1 })
-      : Promise.resolve([]);
-    const [users, clubs, targetBySlotId] = await Promise.all([
-      usersPromise,
-      clubsPromise,
-      this.resolveClubSlotTargets(clubSlotIds),
-    ]);
-
-    const userById = new Map(users.map((user) => [user._id.toString(), user]));
-    const clubById = new Map(clubs.map((club) => [club._id.toString(), club]));
-
-    return bookings.map((booking) => {
-      const isCoachBooking =
-        booking.resource.type === BookingResourceType.COACH;
-      const counterpartId =
-        audience === 'athlete'
-          ? booking.coachUserId?.toString()
-          : booking.athleteId.toString();
-      const counterpart = counterpartId
-        ? userById.get(counterpartId)
-        : undefined;
-      const club = booking.clubId
-        ? clubById.get(booking.clubId.toString())
-        : undefined;
-      const target = !isCoachBooking
-        ? targetBySlotId.get(booking.resource.refId.toString())
-        : undefined;
-
-      const counterpartProjection = counterpart
-        ? {
-            id: counterpart._id.toString(),
-            name: {
-              first: counterpart.name?.first ?? null,
-              last: counterpart.name?.last ?? null,
-            },
-            avatar: {
-              mediaId: counterpart.avatar?.mediaId?.toString() ?? null,
-            },
-            code: counterpart.code ?? null,
-          }
-        : null;
-
-      return {
-        id: booking._id.toString(),
-        code: booking.code,
-        status: booking.status,
-        /** Unpaid-booking auto-cancel deadline (SYS-D13); null once paid/free. */
-        paymentExpiresAt: booking.paymentExpiresAt ?? null,
-        approvalExpiresAt: booking.approvalExpiresAt ?? null,
-        resource: {
-          type: booking.resource.type,
-          refId: booking.resource.refId.toString(),
-          title: target?.title ?? null,
-          coverMediaId: target?.coverMediaId ?? null,
-        },
-        consultationKind: booking.consultationKind ?? null,
-        occurrence: booking.occurrence
-          ? {
-              date: booking.occurrence.date,
-              startTime: booking.occurrence.startTime,
-              endTime: booking.occurrence.endTime,
-            }
-          : null,
-        recurringGroupId: booking.recurringGroupId?.toString() ?? null,
-        attendeeCount: booking.attendeeCount ?? 1,
-        startsAt: booking.startsAt,
-        endsAt: booking.endsAt,
-        coach: audience === 'athlete' ? counterpartProjection : undefined,
-        athlete: audience !== 'athlete' ? counterpartProjection : undefined,
-        coachUserId: booking.coachUserId?.toString() ?? null,
-        athleteId: booking.athleteId.toString(),
-        slotId: booking.slotId?.toString() ?? booking.resource.refId.toString(),
-        club: club
-          ? {
-              id: club._id.toString(),
-              name: club.identity?.name ?? '',
-              address: club.location?.address ?? null,
-            }
-          : null,
-        intake: {
-          note: booking.intake?.note ?? null,
-          medicalConditionKeys: booking.intake?.medicalConditionKeys ?? [],
-          supplementKeys: booking.intake?.supplementKeys ?? [],
-        },
-        pricing: {
-          amount: booking.pricing.amount,
-          discount: booking.pricing.discount,
-          couponCode: booking.pricing.couponCode ?? null,
-          total: booking.pricing.total,
-        },
-        payment: booking.payment
-          ? {
-              refId: booking.payment.refId ?? null,
-              paidAt: booking.payment.paidAt ?? null,
-            }
-          : null,
-        cancellation: booking.cancellation
-          ? {
-              reasonKey: booking.cancellation.reasonKey ?? null,
-              note: booking.cancellation.note ?? null,
-              cancelledAt: booking.cancellation.cancelledAt,
-              cancelledBy: booking.cancellation.cancelledBy,
-            }
-          : null,
-        createdAt: booking.createdAt,
-        updatedAt: booking.updatedAt,
-      };
-    });
-  }
-
-  /** Map ClubSlot id → display target (class / space title, cover). */
-  private async resolveClubSlotTargets(
-    slotIds: string[],
-  ): Promise<
-    Map<string, { title: string | null; coverMediaId: string | null }>
-  > {
-    const out = new Map<
-      string,
-      { title: string | null; coverMediaId: string | null }
-    >();
-    if (!slotIds.length) return out;
-
-    const slots = await this.clubSlots.findSlotsByIds(slotIds);
-    const classIds = [
-      ...new Set(
-        slots
-          .map((slot) => slot.classId?.toString())
-          .filter((id): id is string => Boolean(id)),
-      ),
-    ];
-    const spaceIds = [
-      ...new Set(
-        slots
-          .map((slot) => slot.spaceId?.toString())
-          .filter((id): id is string => Boolean(id)),
-      ),
-    ];
-
-    const [classes, spaces] = await Promise.all([
-      classIds.length
-        ? this.classModel.find({
-            _id: { $in: classIds.map((id) => new Types.ObjectId(id)) },
-          })
-        : Promise.resolve([] as ClubClassDocument[]),
-      spaceIds.length
-        ? this.spaceModel.find({
-            _id: { $in: spaceIds.map((id) => new Types.ObjectId(id)) },
-          })
-        : Promise.resolve([] as ClubSpaceDocument[]),
-    ]);
-    const classById = new Map(classes.map((c) => [c._id.toString(), c]));
-    const spaceById = new Map(spaces.map((s) => [s._id.toString(), s]));
-
-    for (const slot of slots) {
-      const classDoc = slot.classId
-        ? classById.get(slot.classId.toString())
-        : undefined;
-      const spaceDoc = slot.spaceId
-        ? spaceById.get(slot.spaceId.toString())
-        : undefined;
-      out.set(slot._id.toString(), {
-        title: classDoc?.title ?? spaceDoc?.title ?? null,
-        coverMediaId:
-          classDoc?.media?.coverMediaId?.toString() ??
-          spaceDoc?.media?.coverMediaId?.toString() ??
-          null,
-      });
-    }
-    return out;
+  private async projectMany(
+    bookings: BookingDocument[],
+    audience: BookingAudience,
+  ) {
+    return this.projector.projectMany(bookings, audience);
   }
 }
 
