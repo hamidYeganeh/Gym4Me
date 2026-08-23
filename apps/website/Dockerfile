@@ -19,7 +19,7 @@ COPY packages/typescript-config/package.json packages/typescript-config/
 COPY packages/ui/package.json packages/ui/
 
 # Production can select a reachable trusted registry without changing source.
-RUN printf '%s\n' \
+RUN --mount=type=cache,target=/root/.npm printf '%s\n' \
   "registry=${NPM_CONFIG_REGISTRY}" \
   'replace-registry-host=always' \
   'fetch-retries=8' \
