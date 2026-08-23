@@ -37,6 +37,7 @@ import { LifecycleModule } from './lifecycle/lifecycle.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { KycGuard } from './common/guards/kyc.guard';
 import { MongoTransactionModule } from './common/mongo/mongo-transaction.module';
+import { WorkerRuntimeModule } from './common/jobs/worker-runtime.module';
 import { RolesGuard } from './common/guards/roles.guard';
 import { REDIS, RedisModule } from './common/redis/redis.module';
 import { SmsModule } from './common/sms/sms.module';
@@ -74,6 +75,7 @@ import { WaitlistModule } from './waitlist/waitlist.module';
       }),
     }),
     MongoTransactionModule,
+    WorkerRuntimeModule,
     RedisModule,
     ThrottlerModule.forRootAsync({
       inject: [REDIS, ConfigService],

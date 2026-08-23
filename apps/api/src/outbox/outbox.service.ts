@@ -1,7 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, type ClientSession } from 'mongoose';
+import { Model, Types, type ClientSession } from 'mongoose';
 import { OutboxMessageStatus } from '../common/enums';
+import { WorkerLeaseService } from '../common/jobs/worker-lease.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import {
   OutboxMessage,
@@ -30,11 +31,14 @@ export type EnqueueOutboxInput = {
 @Injectable()
 export class OutboxService {
   private readonly logger = new Logger(OutboxService.name);
+  private readonly processingLeaseMs = 60_000;
+  private readonly maxAttempts = 5;
 
   constructor(
     @InjectModel(OutboxMessage.name)
     private readonly outboxModel: Model<OutboxMessageDocument>,
     private readonly notifications: NotificationsService,
+    private readonly workerLeases: WorkerLeaseService,
   ) {}
 
   async enqueue(input: EnqueueOutboxInput, session?: ClientSession) {
@@ -78,48 +82,214 @@ export class OutboxService {
     }
   }
 
-  /** Claim and mark a batch as published (minimal R3 worker step). */
+  /** Atomically claim due messages; expired PROCESSING leases are reclaimable. */
   async publishPending(limit = 50) {
-    const now = new Date();
-    const pending = await this.outboxModel
-      .find({
-        status: OutboxMessageStatus.PENDING,
-        $or: [
-          { nextAttemptAt: { $lte: now } },
-          { nextAttemptAt: { $exists: false } },
-        ],
-      })
-      .sort({ createdAt: 1 })
-      .limit(limit);
-
+    let scanned = 0;
     let published = 0;
-    for (const message of pending) {
-      message.status = OutboxMessageStatus.PROCESSING;
-      message.attempts += 1;
-      await message.save();
-
+    for (let index = 0; index < limit; index += 1) {
+      const message = await this.claimNext();
+      if (!message) break;
+      scanned += 1;
       try {
-        await this.deliver(message);
+        await this.deliverWithHeartbeat(message);
         this.logger.log(
           `Outbox publish ${message.eventName} id=${message._id.toString()}`,
         );
-        message.status = OutboxMessageStatus.PUBLISHED;
-        message.lastError = undefined;
-        await message.save();
-        published += 1;
+        const completed = await this.outboxModel.updateOne(
+          {
+            _id: message._id,
+            status: OutboxMessageStatus.PROCESSING,
+            claimedBy: this.workerLeases.instanceId,
+          },
+          {
+            $set: {
+              status: OutboxMessageStatus.PUBLISHED,
+              publishedAt: new Date(),
+            },
+            $unset: {
+              claimedBy: 1,
+              leaseUntil: 1,
+              heartbeatAt: 1,
+              lastError: 1,
+            },
+          },
+        );
+        if (completed.modifiedCount === 1) published += 1;
       } catch (err) {
-        message.status = OutboxMessageStatus.FAILED;
-        message.lastError = err instanceof Error ? err.message : String(err);
-        message.nextAttemptAt = new Date(Date.now() + 60_000);
-        // Allow retry by flipping back to pending after backoff.
-        if (message.attempts < 5) {
-          message.status = OutboxMessageStatus.PENDING;
-        }
-        await message.save();
+        await this.failClaim(message, err);
       }
     }
 
-    return { scanned: pending.length, published };
+    return { scanned, published };
+  }
+
+  async replayDeadLetter(id: string) {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundException('Outbox message not found');
+    }
+    const replayed = await this.outboxModel.findOneAndUpdate(
+      {
+        _id: new Types.ObjectId(id),
+        status: {
+          $in: [OutboxMessageStatus.DEAD_LETTER, OutboxMessageStatus.FAILED],
+        },
+      },
+      {
+        $set: {
+          status: OutboxMessageStatus.PENDING,
+          attempts: 0,
+          nextAttemptAt: new Date(),
+        },
+        $unset: {
+          claimedBy: 1,
+          leaseUntil: 1,
+          heartbeatAt: 1,
+          deadLetteredAt: 1,
+          lastError: 1,
+        },
+        $inc: { replayCount: 1 },
+      },
+      { new: true },
+    );
+    if (!replayed) {
+      throw new NotFoundException('Dead-letter outbox message not found');
+    }
+    return this.toOperationalView(replayed);
+  }
+
+  async listOperational(status = OutboxMessageStatus.DEAD_LETTER, limit = 50) {
+    const safeLimit = Math.max(1, Math.min(limit, 200));
+    const messages = await this.outboxModel
+      .find({ status })
+      .sort({ updatedAt: -1 })
+      .limit(safeLimit);
+    return {
+      result: messages.map((message) => this.toOperationalView(message)),
+    };
+  }
+
+  private async claimNext(): Promise<OutboxMessageDocument | null> {
+    const now = new Date();
+    return this.outboxModel.findOneAndUpdate(
+      {
+        $or: [
+          {
+            status: OutboxMessageStatus.PENDING,
+            $or: [
+              { nextAttemptAt: { $lte: now } },
+              { nextAttemptAt: { $exists: false } },
+            ],
+          },
+          {
+            status: OutboxMessageStatus.PROCESSING,
+            $or: [
+              { leaseUntil: { $lte: now } },
+              { leaseUntil: { $exists: false } },
+            ],
+          },
+        ],
+      },
+      {
+        $set: {
+          status: OutboxMessageStatus.PROCESSING,
+          claimedBy: this.workerLeases.instanceId,
+          heartbeatAt: now,
+          leaseUntil: new Date(now.getTime() + this.processingLeaseMs),
+        },
+        $inc: { attempts: 1 },
+      },
+      { new: true, sort: { createdAt: 1 } },
+    );
+  }
+
+  private async deliverWithHeartbeat(message: OutboxMessageDocument) {
+    const timer = setInterval(
+      () => {
+        const now = new Date();
+        void this.outboxModel
+          .updateOne(
+            {
+              _id: message._id,
+              status: OutboxMessageStatus.PROCESSING,
+              claimedBy: this.workerLeases.instanceId,
+            },
+            {
+              $set: {
+                heartbeatAt: now,
+                leaseUntil: new Date(now.getTime() + this.processingLeaseMs),
+              },
+            },
+          )
+          .catch((error: unknown) => {
+            this.logger.warn(
+              `Outbox heartbeat failed id=${message._id.toString()}: ${String(error)}`,
+            );
+          });
+      },
+      Math.floor(this.processingLeaseMs / 3),
+    );
+    timer.unref?.();
+    try {
+      await this.deliver(message);
+    } finally {
+      clearInterval(timer);
+    }
+  }
+
+  private async failClaim(message: OutboxMessageDocument, error: unknown) {
+    const deadLetter = message.attempts >= this.maxAttempts;
+    const now = new Date();
+    await this.outboxModel.updateOne(
+      {
+        _id: message._id,
+        status: OutboxMessageStatus.PROCESSING,
+        claimedBy: this.workerLeases.instanceId,
+      },
+      {
+        $set: {
+          status: deadLetter
+            ? OutboxMessageStatus.DEAD_LETTER
+            : OutboxMessageStatus.PENDING,
+          lastError: (error instanceof Error
+            ? error.message
+            : String(error)
+          ).slice(0, 1000),
+          nextAttemptAt: deadLetter
+            ? now
+            : new Date(now.getTime() + this.retryDelayMs(message)),
+          ...(deadLetter ? { deadLetteredAt: now } : {}),
+        },
+        $unset: { claimedBy: 1, leaseUntil: 1, heartbeatAt: 1 },
+      },
+    );
+  }
+
+  private retryDelayMs(message: OutboxMessageDocument): number {
+    const exponential = Math.min(
+      60 * 60_000,
+      30_000 * 2 ** Math.max(0, message.attempts - 1),
+    );
+    const deterministicJitter =
+      Number.parseInt(message._id.toString().slice(-4), 16) % 5_000;
+    return exponential + deterministicJitter;
+  }
+
+  private toOperationalView(message: OutboxMessageDocument) {
+    return {
+      id: message._id.toString(),
+      eventName: message.eventName,
+      status: message.status,
+      attempts: message.attempts,
+      replayCount: message.replayCount ?? 0,
+      nextAttemptAt: message.nextAttemptAt ?? null,
+      leaseUntil: message.leaseUntil ?? null,
+      heartbeatAt: message.heartbeatAt ?? null,
+      publishedAt: message.publishedAt ?? null,
+      deadLetteredAt: message.deadLetteredAt ?? null,
+      lastError: message.lastError ?? null,
+      createdAt: message.createdAt,
+      updatedAt: message.updatedAt,
+    };
   }
 
   /**
@@ -131,7 +301,7 @@ export class OutboxService {
       OutboxNotification | undefined;
     if (!notification?.userId || !notification.templateKey) return;
 
-    await this.notifications.dispatch({
+    const delivery = await this.notifications.dispatch({
       userId: notification.userId,
       templateKey: notification.templateKey,
       params: notification.params,
@@ -139,5 +309,10 @@ export class OutboxService {
       critical: notification.critical,
       idempotencyKey: `outbox:${message._id.toString()}`,
     });
+    if (!delivery.notificationId) {
+      throw new Error(
+        `Notification dispatch was not persisted for ${notification.templateKey}`,
+      );
+    }
   }
 }

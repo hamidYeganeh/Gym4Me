@@ -600,6 +600,7 @@ export enum ArticleAudience {
 }
 
 export enum AuditAction {
+  OUTBOX_REPLAYED = 'outbox.replayed',
   APP_CONFIG_UPDATED = 'app_config.updated',
   USER_REGISTERED = 'user.registered',
   USER_LOGIN = 'user.login',
@@ -968,6 +969,7 @@ export enum OutboxMessageStatus {
   PROCESSING = 'processing',
   PUBLISHED = 'published',
   FAILED = 'failed',
+  DEAD_LETTER = 'dead_letter',
 }
 
 /** Referral dual-reward lifecycle (R8–R9). */

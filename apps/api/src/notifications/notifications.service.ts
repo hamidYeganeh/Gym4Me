@@ -187,10 +187,15 @@ export class NotificationsService implements OnModuleInit {
     } catch (error) {
       // Duplicate idempotencyKey inserted by a concurrent trigger — treat as dedup.
       if ((error as { code?: number }).code === 11000 && input.idempotencyKey) {
+        const existing = await this.notificationModel
+          .findOne({ idempotencyKey: input.idempotencyKey })
+          .select('_id delivery')
+          .lean();
+        if (!existing) throw error;
         return {
-          notificationId: null,
-          push: null,
-          sms: null,
+          notificationId: existing._id.toString(),
+          push: existing.delivery?.push?.status ?? null,
+          sms: existing.delivery?.sms?.status ?? null,
           deduplicated: true,
         };
       }

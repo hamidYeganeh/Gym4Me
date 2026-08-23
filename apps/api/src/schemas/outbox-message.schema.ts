@@ -32,6 +32,25 @@ export class OutboxMessage {
   @Prop({ trim: true, maxlength: 1000 })
   lastError?: string;
 
+  /** Instance owning a PROCESSING message until leaseUntil. */
+  @Prop({ trim: true, index: true })
+  claimedBy?: string;
+
+  @Prop({ type: Date, index: true })
+  leaseUntil?: Date;
+
+  @Prop()
+  heartbeatAt?: Date;
+
+  @Prop()
+  publishedAt?: Date;
+
+  @Prop()
+  deadLetteredAt?: Date;
+
+  @Prop({ min: 0, default: 0 })
+  replayCount!: number;
+
   createdAt!: Date;
   updatedAt!: Date;
 }
@@ -49,3 +68,4 @@ OutboxMessageSchema.index(
   },
 );
 OutboxMessageSchema.index({ status: 1, nextAttemptAt: 1 });
+OutboxMessageSchema.index({ status: 1, leaseUntil: 1, createdAt: 1 });
