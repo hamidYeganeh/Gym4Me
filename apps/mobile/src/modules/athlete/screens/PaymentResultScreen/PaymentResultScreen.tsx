@@ -16,9 +16,9 @@ import type {
   PaymentResultStatus,
 } from "./PaymentResultScreen.types";
 import { useRouter } from "@/shared/lib/app-router";
+import { isDiscoveryDemoId } from "@/shared/lib/api";
 
 const RESULT_ICON_SIZE = 48;
-const DEMO_REFERENCE = "۱۴۰۵۰۸۱۶-۴۸۲۹";
 
 export function PaymentResultScreen({
   defaultStatus = "success",
@@ -30,7 +30,11 @@ export function PaymentResultScreen({
   const status: PaymentResultStatus =
     searchParams.get("status") === "failed" ? "failed" : defaultStatus;
   const invoiceId = searchParams.get("invoice");
-  const invoice = invoiceId ? getInvoice(invoiceId) : undefined;
+  const invoice =
+    invoiceId && isDiscoveryDemoId(invoiceId)
+      ? getInvoice(invoiceId)
+      : undefined;
+  const reference = searchParams.get("reference") ?? invoiceId ?? "—";
   const isSuccess = status === "success";
 
   return (
@@ -98,7 +102,7 @@ export function PaymentResultScreen({
                 type="body"
                 weight="medium"
               >
-                {DEMO_REFERENCE}
+                {reference}
               </Typography>
             </div>
           </div>

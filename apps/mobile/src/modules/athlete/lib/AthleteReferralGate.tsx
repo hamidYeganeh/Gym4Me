@@ -1,10 +1,12 @@
 "use client";
 
+import { Button } from "@heroui/react/button";
 import { Spinner } from "@heroui/react/spinner";
 import { Typography } from "@heroui/react/typography";
 import type { ReferralInvite } from "@repo/api";
 import { useCallback, useEffect, useState } from "react";
 import { accountReferral } from "@/shared/lib/api";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { AthleteReferralScreen } from "../screens/AthleteReferralScreen";
 import {
@@ -38,6 +40,7 @@ export function AthleteReferralGate() {
   const [error, setError] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
+    setError(null);
     const [me, invites] = await Promise.all([
       accountReferral.me(),
       accountReferral.listInvites(),
@@ -53,13 +56,17 @@ export function AthleteReferralGate() {
   useEffect(() => {
     if (!isReady) return;
     if (!isAuthenticated) {
-      setView(DEMO_REFERRAL);
+      setView(DEMO_MODE ? DEMO_REFERRAL : null);
+      setError(DEMO_MODE ? null : "auth");
       return;
     }
 
     let cancelled = false;
     reload().catch(() => {
-      if (!cancelled) setView(DEMO_REFERRAL);
+      if (!cancelled) {
+        setView(DEMO_MODE ? DEMO_REFERRAL : null);
+        setError(DEMO_MODE ? null : "load");
+      }
     });
 
     return () => {
@@ -83,6 +90,23 @@ export function AthleteReferralGate() {
     },
     [isAuthenticated, reload],
   );
+
+  if (!view && error) {
+    return (
+      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3 px-6 text-center">
+        <Typography className="text-danger" type="body">
+          {error === "auth"
+            ? "برای مشاهده دعوت‌ها وارد حساب شوید."
+            : "بارگذاری دعوت‌ها ناموفق بود."}
+        </Typography>
+        {error === "load" ? (
+          <Button onPress={() => void reload()} variant="secondary">
+            تلاش دوباره
+          </Button>
+        ) : null}
+      </div>
+    );
+  }
 
   if (!view) {
     return (

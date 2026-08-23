@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { AthleteHealthAssessmentScreen } from "../screens/AthleteHealthAssessmentScreen";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import {
   DEFAULT_HEALTH_ASSESSMENT,
   HEALTH_ASSESSMENT_QUESTIONS,
@@ -11,7 +12,14 @@ import {
 
 export function AthleteHealthAssessmentGate() {
   const [state, setState] = useState<HealthAssessmentState>(
-    DEFAULT_HEALTH_ASSESSMENT,
+    DEMO_MODE
+      ? DEFAULT_HEALTH_ASSESSMENT
+      : {
+          status: "unsubmitted",
+          answers: Object.fromEntries(
+            HEALTH_ASSESSMENT_QUESTIONS.map((question) => [question.id, null]),
+          ),
+        },
   );
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -21,7 +29,8 @@ export function AthleteHealthAssessmentGate() {
     (questionId: string, answer: HealthAssessmentAnswer) => {
       setState((current) => ({
         ...current,
-        status: current.status === "unsubmitted" ? "in_progress" : current.status,
+        status:
+          current.status === "unsubmitted" ? "in_progress" : current.status,
         answers: { ...current.answers, [questionId]: answer },
       }));
     },
@@ -33,6 +42,10 @@ export function AthleteHealthAssessmentGate() {
     setMessage(null);
     setError(null);
     try {
+      if (!DEMO_MODE) {
+        setError("ذخیره پرسشنامه هنوز به سرویس حساب متصل نشده است.");
+        return;
+      }
       await new Promise((resolve) => setTimeout(resolve, 400));
       const unanswered = HEALTH_ASSESSMENT_QUESTIONS.some(
         (question) => state.answers[question.id] == null,

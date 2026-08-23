@@ -3,6 +3,7 @@
 import { Spinner } from "@heroui/react/spinner";
 import { Typography } from "@heroui/react/typography";
 import { useEffect, useState } from "react";
+import { canUseDemoFixtureId } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { CoachNutritionPlanScreen } from "../screens/CoachNutritionPlanScreen";
 import {
@@ -18,7 +19,7 @@ export function CoachNutritionPlanGate({ planId }: { planId: string }) {
 
   useEffect(() => {
     if (!isReady) return;
-    setPlan(getCoachNutritionPlan(planId));
+    setPlan(canUseDemoFixtureId(planId) ? getCoachNutritionPlan(planId) : null);
   }, [isReady, planId]);
 
   if (plan === undefined) {

@@ -4,6 +4,7 @@ import { Spinner } from "@heroui/react/spinner";
 import type { CoachAnalyticsOverview } from "@repo/api";
 import { useEffect, useState } from "react";
 import { accountCoaching } from "@/shared/lib/api";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { CoachAnalyticsScreen } from "../screens/CoachAnalyticsScreen";
 import {
@@ -12,21 +13,52 @@ import {
   type CoachAnalyticsPeriod,
 } from "./coach-analytics-data";
 
+const EMPTY_DATASET: CoachAnalyticsData["periods"][CoachAnalyticsPeriod] = {
+  kpis: {
+    sessionsSeries: [],
+    sessionsValue: "۰",
+    activeClientsSeries: [],
+    activeClientsValue: "۰",
+    retentionSeries: [],
+    retentionComparisonSeries: [],
+    retentionValue: "۰",
+    cancellationsSeries: [],
+    cancellationsValue: "۰",
+  },
+  sessionsTrend: [],
+  busiestHours: [],
+};
+
+function emptyAnalytics(): CoachAnalyticsData {
+  return {
+    periods: {
+      week: EMPTY_DATASET,
+      month: EMPTY_DATASET,
+      quarter: EMPTY_DATASET,
+    },
+    ratingAverage: "—",
+    ratingCountLabel: "—",
+    starDistribution: [],
+    recentReviews: [],
+  };
+}
+
 function mapOverview(
   overview: CoachAnalyticsOverview,
   period: CoachAnalyticsPeriod,
 ): CoachAnalyticsData {
+  const empty = emptyAnalytics();
   return {
-    ...COACH_ANALYTICS,
+    ...empty,
     periods: {
-      ...COACH_ANALYTICS.periods,
+      ...empty.periods,
       [period]: {
         kpis: overview.kpis,
         sessionsTrend: overview.kpis.sessionsSeries.map((value, index) => ({
           label: String(index + 1),
           value,
         })),
-        busiestHours: COACH_ANALYTICS.periods[period].busiestHours,
+        busiestHours: [],
       },
     },
   };
@@ -39,7 +71,7 @@ export function CoachAnalyticsGate() {
   useEffect(() => {
     if (!isReady) return;
     if (!isAuthenticated) {
-      setAnalytics(COACH_ANALYTICS);
+      setAnalytics(DEMO_MODE ? COACH_ANALYTICS : emptyAnalytics());
       return;
     }
 
@@ -51,7 +83,9 @@ export function CoachAnalyticsGate() {
         setAnalytics(mapOverview(overview, "week"));
       })
       .catch(() => {
-        if (!cancelled) setAnalytics(COACH_ANALYTICS);
+        if (!cancelled) {
+          setAnalytics(DEMO_MODE ? COACH_ANALYTICS : emptyAnalytics());
+        }
       });
 
     return () => {

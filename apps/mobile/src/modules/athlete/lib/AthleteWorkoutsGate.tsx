@@ -3,6 +3,7 @@
 import { Spinner } from "@heroui/react/spinner";
 import { useEffect, useState } from "react";
 import { accountProgress } from "@/shared/lib/api";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { AthleteWorkoutsScreen } from "../screens/AthleteWorkoutsScreen";
 import { mapWorkoutPlan } from "./map-workout-plans";
@@ -18,7 +19,7 @@ export function AthleteWorkoutsGate() {
   useEffect(() => {
     if (!isReady) return;
     if (!isAuthenticated) {
-      setPlans(DEMO_WORKOUT_PLANS);
+      setPlans(DEMO_MODE ? DEMO_WORKOUT_PLANS : []);
       return;
     }
 
@@ -27,14 +28,10 @@ export function AthleteWorkoutsGate() {
       .listWorkoutPlans({ page_size: 100 })
       .then((page) => {
         if (cancelled) return;
-        setPlans(
-          page.result.length > 0
-            ? page.result.map(mapWorkoutPlan)
-            : DEMO_WORKOUT_PLANS,
-        );
+        setPlans(page.result.map(mapWorkoutPlan));
       })
       .catch(() => {
-        if (!cancelled) setPlans(DEMO_WORKOUT_PLANS);
+        if (!cancelled) setPlans(DEMO_MODE ? DEMO_WORKOUT_PLANS : []);
       });
 
     return () => {

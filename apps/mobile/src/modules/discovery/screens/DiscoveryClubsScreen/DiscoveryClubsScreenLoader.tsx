@@ -33,13 +33,13 @@ export function DiscoveryClubsScreenLoader() {
   const levelKey = searchParams.get("levelKey");
   const hasScopeFilter = Boolean(
     locationId ||
-      sportId ||
-      categoryId ||
-      genderPolicy ||
-      amenitySlug ||
-      accessibility ||
-      ageGroupKey ||
-      levelKey,
+    sportId ||
+    categoryId ||
+    genderPolicy ||
+    amenitySlug ||
+    accessibility ||
+    ageGroupKey ||
+    levelKey,
   );
 
   const banners = usePlacementBanners("discovery_clubs");
@@ -66,7 +66,9 @@ export function DiscoveryClubsScreenLoader() {
   const nearbyClubs = hasScopeFilter
     ? clubsNearby(scopedClubs).slice(0, 8)
     : nearby.clubs;
-  const nearbyClubsLoading = hasScopeFilter ? browse.isLoading : nearby.isLoading;
+  const nearbyClubsLoading = hasScopeFilter
+    ? browse.isLoading
+    : nearby.isLoading;
 
   return (
     <DiscoveryClubsScreen
@@ -81,6 +83,7 @@ export function DiscoveryClubsScreenLoader() {
       cities={cities.cities}
       citiesLoading={cities.isLoading}
       clubsCount={scopedClubs.length}
+      clubsError={browse.isError}
       clubsLoading={browse.isLoading}
       districtClubs={district.clubs}
       districtClubsLoading={district.isLoading}
@@ -90,6 +93,7 @@ export function DiscoveryClubsScreenLoader() {
       nearbyClubs={nearbyClubs}
       nearbyClubsLoading={nearbyClubsLoading}
       onClearFilters={() => router.push("/discovery/clubs")}
+      onClubsRetry={browse.retry}
       openNowClubs={clubsOpenNow(scopedClubs).slice(0, 8)}
       sportCategories={sportCategories.categories}
       sportCategoriesLoading={sportCategories.isLoading}

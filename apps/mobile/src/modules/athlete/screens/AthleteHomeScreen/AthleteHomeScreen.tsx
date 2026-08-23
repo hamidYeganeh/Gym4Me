@@ -24,6 +24,7 @@ import { AthleteRoleUpgradeSection } from "@/modules/athlete/sections/AthleteRol
 import { mediaFileUrl } from "@/shared/lib/api";
 import { useRoleNavActions } from "@/shared/components/RoleAppNavigation";
 import { useAuth } from "@/shared/providers/AuthProvider";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { athleteHomeScreenStyles as styles } from "./AthleteHomeScreen.styles";
 
 const ICON_SIZE = 22;
@@ -63,7 +64,7 @@ export function AthleteHomeScreen() {
           avatarAlt={firstName}
           avatarSrc={mediaFileUrl(user?.avatar.mediaId) ?? undefined}
           bio={t("subtitle")}
-          hasNotification
+          hasNotification={DEMO_MODE}
           name={firstName}
           notificationLabel={t("notifications")}
           onNotificationPress={() => router.push("/athlete/notifications")}
@@ -76,20 +77,22 @@ export function AthleteHomeScreen() {
         initial={reduceMotion ? false : "hidden"}
         variants={contentVariants}
       >
-        <StaggerSection>
-          <SpotlightCard
-            actionAriaLabel={t("heroAction")}
-            actionLabel={t("heroAction")}
-            description={t("heroDescription")}
-            eyebrow={t("heroEyebrow")}
-            onAction={() => router.push("/athlete/workouts")}
-            progress={72}
-            progressLabel={t("heroProgressLabel")}
-            title={t("heroTitle")}
-            unit={t("heroUnit")}
-            value={t("heroValue")}
-          />
-        </StaggerSection>
+        {DEMO_MODE ? (
+          <StaggerSection>
+            <SpotlightCard
+              actionAriaLabel={t("heroAction")}
+              actionLabel={t("heroAction")}
+              description={t("heroDescription")}
+              eyebrow={t("heroEyebrow")}
+              onAction={() => router.push("/athlete/workouts")}
+              progress={72}
+              progressLabel={t("heroProgressLabel")}
+              title={t("heroTitle")}
+              unit={t("heroUnit")}
+              value={t("heroValue")}
+            />
+          </StaggerSection>
+        ) : null}
 
         <StaggerSection>
           <AthleteRoleUpgradeSection />

@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { accountFinance } from "@/shared/lib/api";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { AthleteWalletScreen } from "../screens/AthleteWalletScreen";
 import { mapPaymentsToWalletGroups } from "./api-wallet";
@@ -36,6 +37,22 @@ type WalletView = {
   transactionGroups: WalletTransactionGroup[];
 };
 
+const EMPTY_WALLET: WalletView = {
+  balanceLabel: "۰ تومان",
+  balancePoints: [],
+  incomeSeries: [],
+  spendSeries: [],
+  transactionGroups: [],
+};
+
+const DEMO_WALLET: WalletView = {
+  balanceLabel: WALLET_BALANCE_LABEL,
+  balancePoints: WALLET_BALANCE_POINTS,
+  incomeSeries: WALLET_INCOME_SERIES,
+  spendSeries: WALLET_SPEND_SERIES,
+  transactionGroups: WALLET_TRANSACTION_GROUPS,
+};
+
 export function AthleteWalletGate() {
   const t = useTranslations("AthleteWallet");
   const { isAuthenticated, isReady } = useAuth();
@@ -53,18 +70,9 @@ export function AthleteWalletGate() {
       : [];
     setView({
       balanceLabel: formatBalance(overview.balance, overview.currency),
-      balancePoints:
-        overview.balancePoints.length > 0
-          ? overview.balancePoints
-          : WALLET_BALANCE_POINTS,
-      incomeSeries:
-        overview.incomeSeries.length > 0
-          ? overview.incomeSeries
-          : WALLET_INCOME_SERIES,
-      spendSeries:
-        overview.spendSeries.length > 0
-          ? overview.spendSeries
-          : WALLET_SPEND_SERIES,
+      balancePoints: overview.balancePoints,
+      incomeSeries: overview.incomeSeries,
+      spendSeries: overview.spendSeries,
       transactionGroups,
     });
   }, []);
@@ -72,26 +80,14 @@ export function AthleteWalletGate() {
   useEffect(() => {
     if (!isReady) return;
     if (!isAuthenticated) {
-      setView({
-        balanceLabel: WALLET_BALANCE_LABEL,
-        balancePoints: WALLET_BALANCE_POINTS,
-        incomeSeries: WALLET_INCOME_SERIES,
-        spendSeries: WALLET_SPEND_SERIES,
-        transactionGroups: WALLET_TRANSACTION_GROUPS,
-      });
+      setView(DEMO_MODE ? DEMO_WALLET : EMPTY_WALLET);
       return;
     }
 
     let cancelled = false;
     load().catch(() => {
       if (!cancelled) {
-        setView({
-          balanceLabel: WALLET_BALANCE_LABEL,
-          balancePoints: WALLET_BALANCE_POINTS,
-          incomeSeries: WALLET_INCOME_SERIES,
-          spendSeries: WALLET_SPEND_SERIES,
-          transactionGroups: WALLET_TRANSACTION_GROUPS,
-        });
+        setView(DEMO_MODE ? DEMO_WALLET : EMPTY_WALLET);
       }
     });
 

@@ -18,6 +18,7 @@ import { useRouter } from "@/shared/lib/app-router";
 
 import { mediaFileUrl } from "@/shared/lib/api";
 import { useAuth } from "@/shared/providers/AuthProvider";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { coachHomeScreenStyles as styles } from "./CoachHomeScreen.styles";
 
 const ICON_SIZE = 22;
@@ -63,7 +64,7 @@ export function CoachHomeScreen() {
           avatarAlt={firstName}
           avatarSrc={mediaFileUrl(user?.avatar.mediaId) ?? undefined}
           bio={t("subtitle")}
-          hasNotification
+          hasNotification={DEMO_MODE}
           name={firstName}
           notificationLabel={t("notifications")}
           onNotificationPress={() => router.push("/coach/notifications")}
@@ -71,15 +72,17 @@ export function CoachHomeScreen() {
       }
     >
       <div className={styles.content}>
-        <TodoCard
-          items={setupItems}
-          progressLabel={t("todoProgressLabel")}
-          stepLabel={t("todoStepLabel", {
-            current: completedCount,
-            total: setupItems.length,
-          })}
-          title={t("todoTitle")}
-        />
+        {DEMO_MODE ? (
+          <TodoCard
+            items={setupItems}
+            progressLabel={t("todoProgressLabel")}
+            stepLabel={t("todoStepLabel", {
+              current: completedCount,
+              total: setupItems.length,
+            })}
+            title={t("todoTitle")}
+          />
+        ) : null}
 
         <section
           aria-labelledby="coach-overview-title"

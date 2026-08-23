@@ -14,4 +14,6 @@ export type DiscoveryCoachesScreenProps = {
   cities: HomeLocationItem[];
   districts: HomeLocationItem[];
   isLoading?: boolean;
+  isError?: boolean;
+  onRetry?: () => void;
 };

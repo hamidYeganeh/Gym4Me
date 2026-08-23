@@ -5,6 +5,7 @@ import type { Club } from "@repo/api";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { useEffect, useState } from "react";
 import { accountClubs, mediaFileUrl } from "@/shared/lib/api";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { OwnerClubsScreen } from "../screens/OwnerClubsScreen";
 import {
@@ -32,9 +33,7 @@ function mapClubState(club: Club): OwnerClubState {
 
 function mapClub(club: Club): OwnerClub {
   const city =
-    club.location?.node?.name ??
-    club.location?.address?.split("،")[0] ??
-    "—";
+    club.location?.node?.name ?? club.location?.address?.split("،")[0] ?? "—";
   return {
     id: club.id,
     name: club.identity.name,
@@ -45,9 +44,7 @@ function mapClub(club: Club): OwnerClub {
     occupancyPercent: 0,
     state: mapClubState(club),
     revenueMonthLabel:
-      club.review.status === "approved"
-        ? "باشگاه فعال"
-        : "در انتظار تأیید",
+      club.review.status === "approved" ? "باشگاه فعال" : "در انتظار تأیید",
   };
 }
 
@@ -58,7 +55,7 @@ export function OwnerClubsGate() {
   useEffect(() => {
     if (!isReady) return;
     if (!isAuthenticated) {
-      setClubs(OWNER_CLUBS);
+      setClubs(DEMO_MODE ? OWNER_CLUBS : []);
       return;
     }
 

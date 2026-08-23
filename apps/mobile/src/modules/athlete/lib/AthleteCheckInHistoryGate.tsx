@@ -4,6 +4,7 @@ import { Spinner } from "@heroui/react/spinner";
 import type { CheckIn } from "@repo/api";
 import { useEffect, useState } from "react";
 import { accountCheckin, discoveryClubs } from "@/shared/lib/api";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { AthleteCheckInHistoryScreen } from "../screens/AthleteCheckInHistoryScreen";
 import {
@@ -81,7 +82,7 @@ export function AthleteCheckInHistoryGate() {
   useEffect(() => {
     if (!isReady) return;
     if (!isAuthenticated) {
-      setItems(DEMO_CHECK_INS);
+      setItems(DEMO_MODE ? DEMO_CHECK_INS : []);
       return;
     }
 
@@ -101,7 +102,7 @@ export function AthleteCheckInHistoryGate() {
         setItems(page.result.map((row) => mapCheckIn(row, clubNames)));
       })
       .catch(() => {
-        if (!cancelled) setItems(DEMO_CHECK_INS);
+        if (!cancelled) setItems(DEMO_MODE ? DEMO_CHECK_INS : []);
       });
 
     return () => {

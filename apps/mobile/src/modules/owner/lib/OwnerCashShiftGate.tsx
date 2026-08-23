@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { OwnerCashShiftScreen } from "../screens/OwnerCashShiftScreen";
 import {
   OWNER_CASH_SHIFT,
@@ -8,14 +9,22 @@ import {
 } from "./owner-cash-shift-data";
 
 export function OwnerCashShiftGate() {
-  const [shift, setShift] = useState<OwnerCashShiftData>(OWNER_CASH_SHIFT);
+  const [shift, setShift] = useState<OwnerCashShiftData>(
+    DEMO_MODE
+      ? OWNER_CASH_SHIFT
+      : {
+          id: "unavailable",
+          status: "closed",
+          openedAtLabel: "—",
+          openedByLabel: "—",
+          channels: [],
+          totalExpectedLabel: "—",
+          totalCountedLabel: "—",
+        },
+  );
   const [countedByChannel, setCountedByChannel] = useState<
     Record<string, string>
-  >(() =>
-    Object.fromEntries(
-      OWNER_CASH_SHIFT.channels.map((row) => [row.channel, ""]),
-    ),
-  );
+  >(() => Object.fromEntries(shift.channels.map((row) => [row.channel, ""])));
   const [discrepancyReason, setDiscrepancyReason] = useState("");
   const [pending, setPending] = useState(false);
 
@@ -38,8 +47,7 @@ export function OwnerCashShiftGate() {
         channels: previous.channels.map((row) => ({
           ...row,
           countedLabel:
-            countedByChannel[row.channel]?.trim() ||
-            row.expectedLabel,
+            countedByChannel[row.channel]?.trim() || row.expectedLabel,
         })),
       }));
       setPending(false);
@@ -50,7 +58,7 @@ export function OwnerCashShiftGate() {
     <OwnerCashShiftScreen
       countedByChannel={countedByChannel}
       discrepancyReason={discrepancyReason}
-      onClose={shift.status === "open" ? handleClose : undefined}
+      onClose={DEMO_MODE && shift.status === "open" ? handleClose : undefined}
       onCountedChange={(channel, value) =>
         setCountedByChannel((previous) => ({ ...previous, [channel]: value }))
       }

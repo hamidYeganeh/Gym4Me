@@ -1,4 +1,5 @@
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 
 export type GalleryMediaKind = "video" | "image" | "document";
 
@@ -123,6 +124,14 @@ export function withGalleryCardDefaults(
   item: GalleryMediaItem,
   index: number,
 ): GalleryMediaItem {
+  if (!DEMO_MODE) {
+    return {
+      ...item,
+      id: item.id ?? `gallery-${index}`,
+      mediaKind: item.mediaKind ?? "image",
+    };
+  }
+
   const seed = DEFAULT_GALLERY_SEEDS[index % DEFAULT_GALLERY_SEEDS.length];
   return {
     id: item.id ?? seed?.id ?? `gallery-${index}`,

@@ -5,7 +5,11 @@ import { Typography } from "@heroui/react/typography";
 import type { CoachMessage } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
-import { accountCoaching, isDiscoveryApiId } from "@/shared/lib/api";
+import {
+  accountCoaching,
+  isDiscoveryApiId,
+  isDiscoveryDemoId,
+} from "@/shared/lib/api";
 import { formatTimeFa } from "@/shared/lib/booking-view";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { AthleteThreadScreen } from "../screens/AthleteThreadScreen";
@@ -52,10 +56,11 @@ export function AthleteThreadGate({ threadId }: { threadId: string }) {
   useEffect(() => {
     if (!isReady) return;
 
-    const demoThread = getAthleteThread(threadId);
+    const isDemo = isDiscoveryDemoId(threadId);
+    const demoThread = isDemo ? getAthleteThread(threadId) : null;
     if (!isAuthenticated || !isDiscoveryApiId(threadId)) {
       setThread(demoThread ?? null);
-      setMessages(getAthleteThreadMessages(threadId));
+      setMessages(isDemo ? getAthleteThreadMessages(threadId) : []);
       return;
     }
 
@@ -66,8 +71,8 @@ export function AthleteThreadGate({ threadId }: { threadId: string }) {
         if (cancelled) return;
         const match = page.result.find((entry) => entry.id === threadId);
         if (!match) {
-          setThread(demoThread ?? null);
-          setMessages(getAthleteThreadMessages(threadId));
+          setThread(null);
+          setMessages([]);
           return;
         }
         setThread({
@@ -81,8 +86,8 @@ export function AthleteThreadGate({ threadId }: { threadId: string }) {
       })
       .catch(() => {
         if (!cancelled) {
-          setThread(demoThread ?? null);
-          setMessages(getAthleteThreadMessages(threadId));
+          setThread(null);
+          setMessages([]);
         }
       });
 
@@ -94,6 +99,10 @@ export function AthleteThreadGate({ threadId }: { threadId: string }) {
   const onSend = useCallback(
     async (body: string) => {
       if (!isAuthenticated || !isDiscoveryApiId(threadId)) {
+        if (!isDiscoveryDemoId(threadId)) {
+          setError("sendError");
+          return;
+        }
         setMessages((current) => [
           ...current,
           {

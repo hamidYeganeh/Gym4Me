@@ -1,11 +1,9 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { AthletePassesScreen } from "../screens/AthletePassesScreen";
-import {
-  DEFAULT_ATHLETE_PASSES,
-  type PassKind,
-} from "./athlete-passes-data";
+import { DEFAULT_ATHLETE_PASSES, type PassKind } from "./athlete-passes-data";
 
 export function AthletePassesGate() {
   const [activeKind, setActiveKind] = useState<PassKind>("trial");
@@ -13,6 +11,7 @@ export function AthletePassesGate() {
   const [message, setMessage] = useState<string | null>(null);
 
   const onClaim = useCallback(async (offerId: string) => {
+    if (!DEMO_MODE) return;
     setPending(true);
     setMessage(null);
     try {
@@ -27,10 +26,10 @@ export function AthletePassesGate() {
     <AthletePassesScreen
       activeKind={activeKind}
       message={message}
-      offers={DEFAULT_ATHLETE_PASSES.offers}
-      onClaim={onClaim}
+      offers={DEMO_MODE ? DEFAULT_ATHLETE_PASSES.offers : []}
+      onClaim={DEMO_MODE ? onClaim : undefined}
       onKindChange={setActiveKind}
-      owned={DEFAULT_ATHLETE_PASSES.owned}
+      owned={DEMO_MODE ? DEFAULT_ATHLETE_PASSES.owned : []}
       pending={pending}
     />
   );

@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { DEMO_REFERRAL } from "@/modules/athlete/lib/referral-data";
 import { toPersianDigits } from "@/modules/athlete/lib/weight/format";
 import { accountReferral } from "@/shared/lib/api";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { athleteReferralInviteSectionVariants } from "./AthleteReferralInviteSection.styles";
 import type { AthleteReferralInviteSectionProps } from "./AthleteReferralInviteSection.types";
@@ -30,10 +31,14 @@ export function AthleteReferralInviteSection({
     if (!isReady) return;
 
     if (!isAuthenticated) {
-      setSummary({
-        referralCode: DEMO_REFERRAL.referralCode,
-        invitesJoined: DEMO_REFERRAL.stats.invitesJoined,
-      });
+      setSummary(
+        DEMO_MODE
+          ? {
+              referralCode: DEMO_REFERRAL.referralCode,
+              invitesJoined: DEMO_REFERRAL.stats.invitesJoined,
+            }
+          : null,
+      );
       return;
     }
 
@@ -49,10 +54,14 @@ export function AthleteReferralInviteSection({
       })
       .catch(() => {
         if (cancelled) return;
-        setSummary({
-          referralCode: DEMO_REFERRAL.referralCode,
-          invitesJoined: DEMO_REFERRAL.stats.invitesJoined,
-        });
+        setSummary(
+          DEMO_MODE
+            ? {
+                referralCode: DEMO_REFERRAL.referralCode,
+                invitesJoined: DEMO_REFERRAL.stats.invitesJoined,
+              }
+            : null,
+        );
       });
 
     return () => {

@@ -8,7 +8,11 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/shared/lib/app-router";
 
 import { useCallback, useEffect, useState } from "react";
-import { accountCoaching, isDiscoveryApiId } from "@/shared/lib/api";
+import {
+  accountCoaching,
+  isDiscoveryApiId,
+  isDiscoveryDemoId,
+} from "@/shared/lib/api";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { CoachClientDetailScreen } from "../screens/CoachClientDetailScreen";
 import {
@@ -26,9 +30,6 @@ function mapEngagement(student: CoachStudent): CoachClientEngagement {
 
 function mapStudentDetail(student: CoachStudent): CoachClientDetail {
   const progress = student.engagement.progressPercent ?? 0;
-  const seriesSeed = [0.55, 0.62, 0.7, 0.74, 0.82, 1].map((factor) =>
-    Math.round(progress * factor),
-  );
   return {
     id: student.id,
     athleteUserId: student.athleteUserId,
@@ -41,13 +42,10 @@ function mapStudentDetail(student: CoachStudent): CoachClientDetail {
       : "—",
     progressPercent: progress,
     engagement: mapEngagement(student),
-    trendPoints: seriesSeed.map((value, index) => ({
-      label: String(index + 1),
-      value,
-    })),
-    monthlySessionsSeries: seriesSeed,
-    adherenceSeries: seriesSeed,
-    monthlySessionsValue: String(Math.max(0, Math.round(progress / 10))),
+    trendPoints: [],
+    monthlySessionsSeries: [],
+    adherenceSeries: [],
+    monthlySessionsValue: "—",
     adherenceValue: String(progress),
     upcomingSessions: [],
     sessionHistory: [],
@@ -67,14 +65,16 @@ export function CoachClientDetailGate({ clientId }: { clientId: string }) {
   useEffect(() => {
     if (!isReady) return;
 
-    const demo = getCoachClientDetail(clientId);
+    const demo = isDiscoveryDemoId(clientId)
+      ? getCoachClientDetail(clientId)
+      : null;
     if (!isAuthenticated) {
       setClient(demo ?? null);
       return;
     }
 
-    if (!isDiscoveryApiId(clientId) && demo) {
-      setClient(demo);
+    if (!isDiscoveryApiId(clientId)) {
+      setClient(demo ?? null);
       return;
     }
 
@@ -90,10 +90,10 @@ export function CoachClientDetailGate({ clientId }: { clientId: string }) {
           setClient(mapStudentDetail(match));
           return;
         }
-        setClient(demo ?? null);
+        setClient(null);
       })
       .catch(() => {
-        if (!cancelled) setClient(demo ?? null);
+        if (!cancelled) setClient(null);
       });
 
     return () => {

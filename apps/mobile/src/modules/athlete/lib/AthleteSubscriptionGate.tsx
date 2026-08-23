@@ -1,12 +1,13 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { AthleteSubscriptionScreen } from "../screens/AthleteSubscriptionScreen";
 import { DEFAULT_ATHLETE_SUBSCRIPTION } from "./athlete-subscription-data";
 
 export function AthleteSubscriptionGate() {
   const [currentPlanId, setCurrentPlanId] = useState(
-    DEFAULT_ATHLETE_SUBSCRIPTION.currentPlanId,
+    DEMO_MODE ? DEFAULT_ATHLETE_SUBSCRIPTION.currentPlanId : "",
   );
   const [pending, setPending] = useState(false);
 
@@ -23,9 +24,9 @@ export function AthleteSubscriptionGate() {
   return (
     <AthleteSubscriptionScreen
       currentPlanId={currentPlanId}
-      onUpgrade={onUpgrade}
+      onUpgrade={DEMO_MODE ? onUpgrade : undefined}
       pending={pending}
-      plans={DEFAULT_ATHLETE_SUBSCRIPTION.plans}
+      plans={DEMO_MODE ? DEFAULT_ATHLETE_SUBSCRIPTION.plans : []}
     />
   );
 }

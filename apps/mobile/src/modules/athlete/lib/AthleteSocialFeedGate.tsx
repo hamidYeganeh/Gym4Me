@@ -3,6 +3,7 @@
 import { Spinner } from "@heroui/react/spinner";
 import { useCallback, useEffect, useState } from "react";
 import { accountSocial } from "@/shared/lib/api";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { AthleteSocialFeedScreen } from "../screens/AthleteSocialFeedScreen";
 import {
@@ -24,7 +25,7 @@ export function AthleteSocialFeedGate() {
   useEffect(() => {
     if (!isReady) return;
     if (!isAuthenticated) {
-      setPosts(DEMO_SOCIAL_POSTS);
+      setPosts(DEMO_MODE ? DEMO_SOCIAL_POSTS : []);
       return;
     }
 
@@ -32,7 +33,7 @@ export function AthleteSocialFeedGate() {
     reload()
       .then(() => undefined)
       .catch(() => {
-        if (!cancelled) setPosts(DEMO_SOCIAL_POSTS);
+        if (!cancelled) setPosts(DEMO_MODE ? DEMO_SOCIAL_POSTS : []);
       });
 
     return () => {
@@ -43,6 +44,7 @@ export function AthleteSocialFeedGate() {
   const handleLike = useCallback(
     async (postId: string) => {
       if (!isAuthenticated) {
+        if (!DEMO_MODE) return;
         setPosts((prev) =>
           (prev ?? []).map((post) =>
             post.id === postId
@@ -79,6 +81,7 @@ export function AthleteSocialFeedGate() {
   const handleSave = useCallback(
     async (postId: string) => {
       if (!isAuthenticated) {
+        if (!DEMO_MODE) return;
         setPosts((prev) =>
           (prev ?? []).map((post) =>
             post.id === postId ? { ...post, saved: !post.saved } : post,

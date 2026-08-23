@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { OwnerShiftsScreen } from "../screens/OwnerShiftsScreen";
 import {
   OWNER_LEAVE_REQUESTS,
@@ -9,10 +10,15 @@ import {
 } from "./owner-shifts-data";
 
 export function OwnerShiftsGate() {
-  const [leaveRequests, setLeaveRequests] = useState(OWNER_LEAVE_REQUESTS);
+  const [leaveRequests, setLeaveRequests] = useState(
+    DEMO_MODE ? OWNER_LEAVE_REQUESTS : [],
+  );
   const [pendingId, setPendingId] = useState<string | null>(null);
 
-  const updateLeave = (request: OwnerLeaveRequest, status: "approved" | "rejected") => {
+  const updateLeave = (
+    request: OwnerLeaveRequest,
+    status: "approved" | "rejected",
+  ) => {
     setPendingId(request.id);
     setTimeout(() => {
       setLeaveRequests((previous) =>
@@ -27,10 +33,14 @@ export function OwnerShiftsGate() {
   return (
     <OwnerShiftsScreen
       leaveRequests={leaveRequests}
-      onApprove={(request) => updateLeave(request, "approved")}
-      onReject={(request) => updateLeave(request, "rejected")}
+      onApprove={
+        DEMO_MODE ? (request) => updateLeave(request, "approved") : undefined
+      }
+      onReject={
+        DEMO_MODE ? (request) => updateLeave(request, "rejected") : undefined
+      }
       pendingId={pendingId}
-      shifts={OWNER_SHIFTS}
+      shifts={DEMO_MODE ? OWNER_SHIFTS : []}
     />
   );
 }

@@ -4,20 +4,30 @@ import {
   getAllCoachClientIds,
   getCoachClientDetail,
 } from "@/modules/coach/lib/coach-clients-data";
+import {
+  buildDemoStaticParams,
+  canUseDemoFixtureId,
+  STATIC_EXPORT_PLACEHOLDER_ID,
+} from "@/shared/lib/runtime-mode";
 
 type CoachClientDetailPageProps = {
   params: Promise<{ clientId: string }>;
 };
 
 export function generateStaticParams() {
-  return getAllCoachClientIds().map((clientId) => ({ clientId }));
+  return buildDemoStaticParams(
+    () => getAllCoachClientIds().map((clientId) => ({ clientId })),
+    [{ clientId: STATIC_EXPORT_PLACEHOLDER_ID }],
+  );
 }
 
 export async function generateMetadata({
   params,
 }: CoachClientDetailPageProps): Promise<Metadata> {
   const { clientId } = await params;
-  const client = getCoachClientDetail(clientId);
+  const client = canUseDemoFixtureId(clientId)
+    ? getCoachClientDetail(clientId)
+    : undefined;
   return { title: client?.name ?? "Client" };
 }
 

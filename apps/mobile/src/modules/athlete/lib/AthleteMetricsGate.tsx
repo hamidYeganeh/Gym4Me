@@ -5,6 +5,7 @@ import { statsColors } from "@repo/theme/stats-colors";
 import type { MetricType, ProgressMetric } from "@repo/api";
 import { useEffect, useState } from "react";
 import { accountProfile, accountProgress } from "@/shared/lib/api";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { AthleteMetricsScreen } from "../screens/AthleteMetricsScreen";
 import {
@@ -147,7 +148,7 @@ function mapCatalog(
       status: latest ? "آخرین ثبت" : undefined,
     });
   }
-  return mapped.length > 0 ? mapped : ATHLETE_METRICS;
+  return mapped.length > 0 ? mapped : DEMO_MODE ? ATHLETE_METRICS : [];
 }
 
 export function AthleteMetricsGate() {
@@ -159,7 +160,7 @@ export function AthleteMetricsGate() {
   useEffect(() => {
     if (!isReady) return;
     if (!isAuthenticated) {
-      setMetrics(ATHLETE_METRICS);
+      setMetrics(DEMO_MODE ? ATHLETE_METRICS : []);
       return;
     }
 
@@ -180,7 +181,7 @@ export function AthleteMetricsGate() {
         );
       })
       .catch(() => {
-        if (!cancelled) setMetrics(ATHLETE_METRICS);
+        if (!cancelled) setMetrics(DEMO_MODE ? ATHLETE_METRICS : []);
       });
 
     return () => {

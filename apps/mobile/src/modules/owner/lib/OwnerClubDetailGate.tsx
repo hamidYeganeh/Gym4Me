@@ -8,6 +8,7 @@ import {
   accountClubs,
   clubOwnerClubSlots,
   isDiscoveryApiId,
+  isDiscoveryDemoId,
 } from "@/shared/lib/api";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { OwnerClubDetailScreen } from "../screens/OwnerClubDetailScreen";
@@ -30,33 +31,29 @@ function mapClasses(classes: ClubClass[]): OwnerClubDetailClass[] {
 }
 
 function mapClubDetail(club: Club, classes: ClubClass[]): OwnerClubDetail {
-  const demo = getOwnerClubDetail("heavenly");
   return {
     id: club.id,
     name: club.identity.name,
     city:
-      club.location?.node?.name ??
-      club.location?.address?.split("،")[0] ??
-      "—",
-    revenueValue: demo?.revenueValue ?? 0,
-    revenueSeries: demo?.revenueSeries ?? [],
-    revenueComparisonSeries: demo?.revenueComparisonSeries ?? [],
-    attendanceValue: demo?.attendanceValue ?? 0,
-    attendanceSeries: demo?.attendanceSeries ?? [],
-    occupancyTrend: demo?.occupancyTrend ?? [],
-    today: demo?.today ?? [],
+      club.location?.node?.name ?? club.location?.address?.split("،")[0] ?? "—",
+    revenueValue: 0,
+    revenueSeries: [],
+    revenueComparisonSeries: [],
+    attendanceValue: 0,
+    attendanceSeries: [],
+    occupancyTrend: [],
+    today: [],
     branches: [
       {
         id: club.id,
         name: club.identity.name,
         address: club.location?.address ?? "—",
         capacityLabel: "—",
-        state:
-          club.operationalStatus === "inactive" ? "maintenance" : "active",
+        state: club.operationalStatus === "inactive" ? "maintenance" : "active",
       },
     ],
     classes: mapClasses(classes),
-    slotDays: demo?.slotDays ?? [],
+    slotDays: [],
   };
 }
 
@@ -71,7 +68,9 @@ export function OwnerClubDetailGate({ clubId }: Props) {
     if (!isReady) return;
 
     if (!isDiscoveryApiId(clubId)) {
-      const demo = getOwnerClubDetail(clubId) ?? null;
+      const demo = isDiscoveryDemoId(clubId)
+        ? (getOwnerClubDetail(clubId) ?? null)
+        : null;
       setClub(demo);
       setMissing(!demo);
       return;
@@ -85,7 +84,9 @@ export function OwnerClubDetailGate({ clubId }: Props) {
     let cancelled = false;
     Promise.all([
       accountClubs.get(clubId),
-      clubOwnerClubSlots.listClasses(clubId).catch(() => ({ result: [] as ClubClass[] })),
+      clubOwnerClubSlots
+        .listClasses(clubId)
+        .catch(() => ({ result: [] as ClubClass[] })),
     ])
       .then(([apiClub, classesPage]) => {
         if (cancelled) return;

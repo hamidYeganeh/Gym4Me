@@ -12,6 +12,7 @@ import { useRouter } from "@/shared/lib/app-router";
 
 import { useMemo, useState } from "react";
 import { roleAppPath } from "@/shared/lib/role-routes";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import {
   DISCOVERY_SEARCH_TOPICS,
@@ -26,6 +27,9 @@ import { DiscoverySearchTopicsSection } from "../../sections/DiscoverySearchTopi
 import { DiscoverySearchUsersSection } from "../../sections/DiscoverySearchUsersSection";
 import { discoverySearchScreenVariants } from "./DiscoverySearchScreen.styles";
 import type { DiscoverySearchScreenProps } from "./DiscoverySearchScreen.types";
+
+const SEARCH_TOPICS = DEMO_MODE ? DISCOVERY_SEARCH_TOPICS : [];
+const SEARCH_USERS = DEMO_MODE ? DISCOVERY_SEARCH_USERS : [];
 
 export function DiscoverySearchScreen({
   className,
@@ -42,28 +46,18 @@ export function DiscoverySearchScreen({
   );
 
   const topics = useMemo(
-    () =>
-      filterDiscoverySearchTopics(
-        DISCOVERY_SEARCH_TOPICS,
-        query,
-        selectedTopicId,
-      ),
+    () => filterDiscoverySearchTopics(SEARCH_TOPICS, query, selectedTopicId),
     [query, selectedTopicId],
   );
 
   const users = useMemo(
-    () =>
-      filterDiscoverySearchUsers(
-        DISCOVERY_SEARCH_USERS,
-        query,
-        selectedTopicId,
-      ),
+    () => filterDiscoverySearchUsers(SEARCH_USERS, query, selectedTopicId),
     [query, selectedTopicId],
   );
 
   const updateQuery = (value: string) => {
     setQuery(value);
-    setSelectedTopicId(topicIdForQuery(DISCOVERY_SEARCH_TOPICS, value));
+    setSelectedTopicId(topicIdForQuery(SEARCH_TOPICS, value));
   };
 
   const openFilters = () => {

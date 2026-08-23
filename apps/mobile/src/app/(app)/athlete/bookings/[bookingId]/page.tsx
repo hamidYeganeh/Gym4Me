@@ -3,13 +3,20 @@ import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { AthleteBookingDetailGate } from "@/modules/athlete/lib/AthleteBookingDetailGate";
 import { getAllBookingIds } from "@/modules/athlete/lib/bookings-data";
+import {
+  buildDemoStaticParams,
+  STATIC_EXPORT_PLACEHOLDER_ID,
+} from "@/shared/lib/runtime-mode";
 
 type BookingDetailPageProps = {
   params: Promise<{ bookingId: string }>;
 };
 
 export function generateStaticParams() {
-  return getAllBookingIds().map((bookingId) => ({ bookingId }));
+  return buildDemoStaticParams(
+    () => getAllBookingIds().map((bookingId) => ({ bookingId })),
+    [{ bookingId: STATIC_EXPORT_PLACEHOLDER_ID }],
+  );
 }
 
 export async function generateMetadata(): Promise<Metadata> {

@@ -38,6 +38,7 @@ import {
 import { mapDiscoveryClassToHomeItem } from "./map-discovery-class";
 import { mapDiscoveryClubToBrowse } from "./map-discovery-club-browse";
 import { mapDiscoveryCoachToFeatured } from "./map-discovery-coach";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 
 export type DiscoveryHomeState = {
   features: HomeFeatureItem[];
@@ -152,7 +153,7 @@ export function useDiscoveryHome(): DiscoveryHomeState {
     topClubs: [],
     open24Clubs: [],
     coaches: [],
-    coachCityName: DEFAULT_COACH_CITY_NAME,
+    coachCityName: DEMO_MODE ? DEFAULT_COACH_CITY_NAME : "—",
     classes: [],
     amenities: [],
     equipment: [],
@@ -193,7 +194,7 @@ export function useDiscoveryHome(): DiscoveryHomeState {
           countriesPage.result[0];
 
         let cities: HomeLocationItem[] = [];
-        let coachCityName = DEFAULT_COACH_CITY_NAME;
+        let coachCityName = DEMO_MODE ? DEFAULT_COACH_CITY_NAME : "—";
 
         if (iran) {
           const provincesRes = await basicsLocations.listProvinces(iran.id);

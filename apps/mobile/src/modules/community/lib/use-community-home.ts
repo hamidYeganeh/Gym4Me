@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { accountMemberships, accountSocial } from "@/shared/lib/api";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import {
   DEMO_COMMUNITY_MEMBERS,
@@ -11,7 +12,7 @@ import {
 
 export function useCommunityHome() {
   const { isAuthenticated, isReady } = useAuth();
-  const members = DEMO_COMMUNITY_MEMBERS;
+  const members = DEMO_MODE ? DEMO_COMMUNITY_MEMBERS : [];
   const [posts, setPosts] = useState<CommunityPostView[]>([]);
   const [isPro, setIsPro] = useState(false);
   const [isFeedLoading, setIsFeedLoading] = useState(true);

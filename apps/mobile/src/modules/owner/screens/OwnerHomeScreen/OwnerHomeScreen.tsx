@@ -8,7 +8,7 @@ import { useRouter } from "@/shared/lib/app-router";
 
 import { mediaFileUrl } from "@/shared/lib/api";
 import { useAuth } from "@/shared/providers/AuthProvider";
-import { OWNER_HOME_TASKS_NEW_COUNT } from "../../lib/owner-home-data";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { OwnerHomeClubsSection } from "../../sections/OwnerHomeClubsSection";
 import { OwnerHomeCreateClubSection } from "../../sections/OwnerHomeCreateClubSection";
 import { OwnerHomeQuickLinksSection } from "../../sections/OwnerHomeQuickLinksSection";
@@ -25,7 +25,7 @@ import type { OwnerHomeScreenProps } from "./OwnerHomeScreen.types";
 export function OwnerHomeScreen({
   stats,
   clubs,
-  tasksNewCount = OWNER_HOME_TASKS_NEW_COUNT,
+  tasksNewCount = 0,
 }: OwnerHomeScreenProps) {
   const t = useTranslations("OwnerHome");
   const router = useRouter();
@@ -41,7 +41,7 @@ export function OwnerHomeScreen({
           avatarAlt={firstName}
           avatarSrc={mediaFileUrl(user?.avatar.mediaId) ?? undefined}
           bio={t("subtitle")}
-          hasNotification
+          hasNotification={DEMO_MODE}
           name={firstName}
           notificationLabel={t("notifications")}
           onNotificationPress={() => router.push("/owner/notifications")}
@@ -49,11 +49,13 @@ export function OwnerHomeScreen({
       }
     >
       <OwnerHomeStaggerSection reduceMotion={reduceMotion}>
-        <OwnerHomeStaggerItem>
-          <OwnerHomeSetupTodoSection
-            onFirstClassPress={() => router.push("/owner/clubs")}
-          />
-        </OwnerHomeStaggerItem>
+        {DEMO_MODE ? (
+          <OwnerHomeStaggerItem>
+            <OwnerHomeSetupTodoSection
+              onFirstClassPress={() => router.push("/owner/clubs")}
+            />
+          </OwnerHomeStaggerItem>
+        ) : null}
 
         <OwnerHomeStaggerItem>
           <OwnerHomeQuickLinksSection
@@ -64,39 +66,41 @@ export function OwnerHomeScreen({
           />
         </OwnerHomeStaggerItem>
 
-        <OwnerHomeStaggerItem>
-          <OwnerHomeTasksOverviewSection
-            assigned={{
-              id: "assigned",
-              title: t("tasksAssignedTitle"),
-              value: t("tasksAssignedValue"),
-              description: t("tasksAssignedDescription"),
-              actionLabel: t("tasksAssignedAction"),
-            }}
-            primary={{
-              id: "primary",
-              title: t("tasksPrimaryTitle"),
-              value: t("tasksPrimaryValue"),
-              description: t("tasksPrimaryDescription"),
-              actionLabel: t("tasksPrimaryAction"),
-            }}
-            seeAllLabel={t("tasksOverviewSeeAll")}
-            summary={t.rich("tasksOverviewSummary", {
-              count: tasksNewCount,
-              bold: (chunks) => (
-                <span className="font-bold text-foreground">{chunks}</span>
-              ),
-            })}
-            title={t("tasksOverviewTitle")}
-            upcoming={{
-              id: "upcoming",
-              title: t("tasksUpcomingTitle"),
-              value: t("tasksUpcomingValue"),
-              description: t("tasksUpcomingDescription"),
-              actionLabel: t("tasksUpcomingAction"),
-            }}
-          />
-        </OwnerHomeStaggerItem>
+        {DEMO_MODE ? (
+          <OwnerHomeStaggerItem>
+            <OwnerHomeTasksOverviewSection
+              assigned={{
+                id: "assigned",
+                title: t("tasksAssignedTitle"),
+                value: t("tasksAssignedValue"),
+                description: t("tasksAssignedDescription"),
+                actionLabel: t("tasksAssignedAction"),
+              }}
+              primary={{
+                id: "primary",
+                title: t("tasksPrimaryTitle"),
+                value: t("tasksPrimaryValue"),
+                description: t("tasksPrimaryDescription"),
+                actionLabel: t("tasksPrimaryAction"),
+              }}
+              seeAllLabel={t("tasksOverviewSeeAll")}
+              summary={t.rich("tasksOverviewSummary", {
+                count: tasksNewCount,
+                bold: (chunks) => (
+                  <span className="font-bold text-foreground">{chunks}</span>
+                ),
+              })}
+              title={t("tasksOverviewTitle")}
+              upcoming={{
+                id: "upcoming",
+                title: t("tasksUpcomingTitle"),
+                value: t("tasksUpcomingValue"),
+                description: t("tasksUpcomingDescription"),
+                actionLabel: t("tasksUpcomingAction"),
+              }}
+            />
+          </OwnerHomeStaggerItem>
+        ) : null}
 
         <OwnerHomeStaggerItem>
           <OwnerHomeCreateClubSection

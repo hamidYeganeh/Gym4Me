@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { AthleteDisputeScreen } from "../screens/AthleteDisputeScreen";
 import {
   DEFAULT_ATHLETE_DISPUTES,
@@ -10,13 +11,17 @@ import {
 
 export function AthleteDisputeGate() {
   const [disputes, setDisputes] = useState<AthleteDispute[]>(
-    DEFAULT_ATHLETE_DISPUTES,
+    DEMO_MODE ? DEFAULT_ATHLETE_DISPUTES : [],
   );
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const onSubmit = useCallback(async (input: CreateDisputeInput) => {
+    if (!DEMO_MODE) {
+      setError("ثبت اعتراض هنوز به سرویس واقعی متصل نیست.");
+      return;
+    }
     setPending(true);
     setMessage(null);
     setError(null);

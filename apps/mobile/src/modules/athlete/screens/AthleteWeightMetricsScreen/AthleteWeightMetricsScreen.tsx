@@ -6,9 +6,11 @@ import { ChartBar1 } from "@repo/icons/ChartBar1";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { WeightScale } from "@repo/icons/WeightScale";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
+import { EmptyState } from "@repo/ui/kit/EmptyState";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/shared/lib/app-router";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 
 import { AthleteWeightMetricsChartSection } from "../../sections/AthleteWeightMetricsChartSection";
 import { AthleteWeightMetricsGoalSection } from "../../sections/AthleteWeightMetricsGoalSection";
@@ -17,8 +19,11 @@ import { AthleteWeightMetricsInsightSection } from "../../sections/AthleteWeight
 import { athleteWeightMetricsScreenVariants } from "./AthleteWeightMetricsScreen.styles";
 import type { AthleteWeightMetricsScreenProps } from "./AthleteWeightMetricsScreen.types";
 
-export function AthleteWeightMetricsScreen({ metric }: AthleteWeightMetricsScreenProps) {
+export function AthleteWeightMetricsScreen({
+  metric,
+}: AthleteWeightMetricsScreenProps) {
   const t = useTranslations("WeightMetrics");
+  const tHistory = useTranslations("WeightHistory");
   const router = useRouter();
   const styles = athleteWeightMetricsScreenVariants();
   const historyHref = `/athlete/metrics/${metric}/history`;
@@ -54,24 +59,39 @@ export function AthleteWeightMetricsScreen({ metric }: AthleteWeightMetricsScree
             </span>
             <div className={styles.summaryValueRow()}>
               <Typography className={styles.summaryValue()} weight="bold">
-                {t("currentWeight")}
+                {DEMO_MODE ? t("currentWeight") : "—"}
               </Typography>
               <Typography className={styles.summaryUnit()} weight="medium">
                 {unit}
               </Typography>
             </div>
           </div>
-          <Typography className={styles.summaryCaption()} type="body-sm">
-            {t("rangeCaption")}
-          </Typography>
+          {DEMO_MODE ? (
+            <Typography className={styles.summaryCaption()} type="body-sm">
+              {t("rangeCaption")}
+            </Typography>
+          ) : null}
         </section>
 
-        <AthleteWeightMetricsChartSection />
-        <AthleteWeightMetricsInsightSection />
-        <AthleteWeightMetricsHistorySection
-          onSeeAll={() => router.push(historyHref)}
-        />
-        <AthleteWeightMetricsGoalSection />
+        {DEMO_MODE ? (
+          <>
+            <AthleteWeightMetricsChartSection />
+            <AthleteWeightMetricsInsightSection />
+            <AthleteWeightMetricsHistorySection
+              onSeeAll={() => router.push(historyHref)}
+            />
+            <AthleteWeightMetricsGoalSection />
+          </>
+        ) : (
+          <EmptyState
+            description={tHistory("emptyBody")}
+            primaryAction={{
+              label: t("seeAll"),
+              onPress: () => router.push(historyHref),
+            }}
+            title={tHistory("emptyTitle")}
+          />
+        )}
       </div>
     </AppLayout>
   );

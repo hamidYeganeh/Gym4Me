@@ -5,6 +5,7 @@ import type { OwnerFinanceAnalytics } from "@repo/api";
 import { statsColors } from "@repo/theme/stats-colors";
 import { useEffect, useState } from "react";
 import { accountClubs, accountFinance } from "@/shared/lib/api";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { OwnerAnalyticsScreen } from "../screens/OwnerAnalyticsScreen";
 import {
@@ -13,6 +14,25 @@ import {
   type OwnerAnalyticsDataset,
   type OwnerAnalyticsPeriodId,
 } from "./owner-analytics-data";
+
+const EMPTY_DATASET: OwnerAnalyticsDataset = {
+  kpis: [],
+  membershipTrend: [],
+  busyHours: [],
+  classPopularity: [],
+  funnel: [],
+};
+
+function emptyAnalytics(): Record<
+  OwnerAnalyticsPeriodId,
+  OwnerAnalyticsDataset
+> {
+  return {
+    week: EMPTY_DATASET,
+    month: EMPTY_DATASET,
+    quarter: EMPTY_DATASET,
+  };
+}
 
 function mapAnalytics(
   overview: OwnerFinanceAnalytics,
@@ -33,13 +53,14 @@ function mapAnalytics(
       series: kpi.series,
       comparisonSeries: kpi.comparisonSeries,
     })),
-    membershipTrend: overview.kpis[0]?.series.map((value, index) => ({
-      label: String(index + 1),
-      value,
-    })) ?? [],
-    busyHours: OWNER_ANALYTICS.week.busyHours,
-    classPopularity: OWNER_ANALYTICS.week.classPopularity,
-    funnel: OWNER_ANALYTICS.week.funnel,
+    membershipTrend:
+      overview.kpis[0]?.series.map((value, index) => ({
+        label: String(index + 1),
+        value,
+      })) ?? [],
+    busyHours: [],
+    classPopularity: [],
+    funnel: [],
   };
 
   return {
@@ -59,7 +80,7 @@ export function OwnerAnalyticsGate() {
   useEffect(() => {
     if (!isReady) return;
     if (!isAuthenticated) {
-      setDatasets(OWNER_ANALYTICS);
+      setDatasets(DEMO_MODE ? OWNER_ANALYTICS : emptyAnalytics());
       return;
     }
 
@@ -69,14 +90,16 @@ export function OwnerAnalyticsGate() {
       .then(async (clubs) => {
         const clubId = clubs.result[0]?.id;
         if (!clubId) {
-          if (!cancelled) setDatasets(OWNER_ANALYTICS);
+          if (!cancelled) setDatasets(emptyAnalytics());
           return;
         }
         const overview = await accountFinance.ownerAnalytics(clubId, "week");
         if (!cancelled) setDatasets(mapAnalytics(overview));
       })
       .catch(() => {
-        if (!cancelled) setDatasets(OWNER_ANALYTICS);
+        if (!cancelled) {
+          setDatasets(DEMO_MODE ? OWNER_ANALYTICS : emptyAnalytics());
+        }
       });
 
     return () => {

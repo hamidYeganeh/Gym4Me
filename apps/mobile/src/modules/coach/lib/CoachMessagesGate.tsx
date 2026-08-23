@@ -5,6 +5,7 @@ import type { CoachThread } from "@repo/api";
 import { useEffect, useState } from "react";
 import { accountCoaching } from "@/shared/lib/api";
 import { formatJalaliDateTime } from "@/shared/lib/booking-view";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { CoachMessagesScreen } from "../screens/CoachMessagesScreen";
 import {
@@ -33,7 +34,7 @@ export function CoachMessagesGate() {
   useEffect(() => {
     if (!isReady) return;
     if (!isAuthenticated) {
-      setThreads(COACH_MESSAGE_THREADS);
+      setThreads(DEMO_MODE ? COACH_MESSAGE_THREADS : []);
       return;
     }
 
@@ -42,14 +43,10 @@ export function CoachMessagesGate() {
       .listCoachThreads({ page_size: 50 })
       .then((page) => {
         if (cancelled) return;
-        setThreads(
-          page.result.length > 0
-            ? page.result.map(mapThread)
-            : COACH_MESSAGE_THREADS,
-        );
+        setThreads(page.result.map(mapThread));
       })
       .catch(() => {
-        if (!cancelled) setThreads(COACH_MESSAGE_THREADS);
+        if (!cancelled) setThreads(DEMO_MODE ? COACH_MESSAGE_THREADS : []);
       });
 
     return () => {

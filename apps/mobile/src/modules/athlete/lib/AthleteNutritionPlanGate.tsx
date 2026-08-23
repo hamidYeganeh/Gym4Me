@@ -3,6 +3,7 @@
 import { Spinner } from "@heroui/react/spinner";
 import { useCallback, useEffect, useState } from "react";
 import { accountNutrition } from "@/shared/lib/api";
+import { canUseDemoFixtureId } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { AthleteNutritionPlanScreen } from "../screens/AthleteNutritionPlanScreen";
 import type { MealAdherenceStatus } from "@repo/api/nutrition";
@@ -19,10 +20,18 @@ export function AthleteNutritionPlanGate({ planId }: { planId: string }) {
   const [pendingSlot, setPendingSlot] = useState<string | null>(null);
 
   const loadDemo = useCallback(() => {
+    if (!canUseDemoFixtureId(planId)) {
+      setDetail(null);
+      return;
+    }
     const demo = DEMO_MEAL_PLANS.find((plan) => plan.id === planId);
     setDetail(
       demo
-        ? { ...DEMO_MEAL_PLAN_DETAIL, ...demo, days: DEMO_MEAL_PLAN_DETAIL.days }
+        ? {
+            ...DEMO_MEAL_PLAN_DETAIL,
+            ...demo,
+            days: DEMO_MEAL_PLAN_DETAIL.days,
+          }
         : { ...DEMO_MEAL_PLAN_DETAIL, id: planId },
     );
   }, [planId]);
@@ -57,6 +66,7 @@ export function AthleteNutritionPlanGate({ planId }: { planId: string }) {
     ) => {
       const key = `${dayIndex}:${mealIndex}`;
       if (!isAuthenticated) {
+        if (!canUseDemoFixtureId(planId)) return;
         setPendingSlot(key);
         setTimeout(() => setPendingSlot(null), 400);
         return;

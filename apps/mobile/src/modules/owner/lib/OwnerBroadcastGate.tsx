@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { OwnerBroadcastScreen } from "../screens/OwnerBroadcastScreen";
 import type { OwnerBroadcastForm } from "../screens/OwnerBroadcastScreen/OwnerBroadcastScreen.types";
 import {
@@ -9,7 +10,9 @@ import {
 } from "./owner-broadcast-data";
 
 export function OwnerBroadcastGate() {
-  const [broadcasts, setBroadcasts] = useState(OWNER_BROADCASTS);
+  const [broadcasts, setBroadcasts] = useState(
+    DEMO_MODE ? OWNER_BROADCASTS : [],
+  );
   const [form, setForm] = useState<OwnerBroadcastForm>({
     title: "",
     body: "",
@@ -26,7 +29,12 @@ export function OwnerBroadcastGate() {
         body: form.body.trim(),
         audience: form.audience,
         sentAtLabel: "همین الان",
-        recipientCount: form.audience === "all" ? 890 : form.audience === "active_members" ? 312 : 48,
+        recipientCount:
+          form.audience === "all"
+            ? 890
+            : form.audience === "active_members"
+              ? 312
+              : 48,
       };
       setBroadcasts((previous) => [next, ...previous]);
       setForm({ title: "", body: "", audience: "all" });
@@ -38,8 +46,10 @@ export function OwnerBroadcastGate() {
     <OwnerBroadcastScreen
       broadcasts={broadcasts}
       form={form}
-      onFormChange={(patch) => setForm((previous) => ({ ...previous, ...patch }))}
-      onSend={handleSend}
+      onFormChange={(patch) =>
+        setForm((previous) => ({ ...previous, ...patch }))
+      }
+      onSend={DEMO_MODE ? handleSend : undefined}
       pending={pending}
     />
   );

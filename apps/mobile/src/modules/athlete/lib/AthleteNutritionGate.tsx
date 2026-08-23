@@ -3,6 +3,7 @@
 import { Spinner } from "@heroui/react/spinner";
 import { useEffect, useState } from "react";
 import { accountNutrition } from "@/shared/lib/api";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { AthleteNutritionScreen } from "../screens/AthleteNutritionScreen";
 import {
@@ -18,7 +19,7 @@ export function AthleteNutritionGate() {
   useEffect(() => {
     if (!isReady) return;
     if (!isAuthenticated) {
-      setPlans(DEMO_MEAL_PLANS);
+      setPlans(DEMO_MODE ? DEMO_MEAL_PLANS : []);
       return;
     }
 
@@ -27,14 +28,10 @@ export function AthleteNutritionGate() {
       .listMealPlans({ page_size: 100 })
       .then((page) => {
         if (cancelled) return;
-        setPlans(
-          page.result.length > 0
-            ? page.result.map(mapMealPlan)
-            : DEMO_MEAL_PLANS,
-        );
+        setPlans(page.result.map(mapMealPlan));
       })
       .catch(() => {
-        if (!cancelled) setPlans(DEMO_MEAL_PLANS);
+        if (!cancelled) setPlans(DEMO_MODE ? DEMO_MEAL_PLANS : []);
       });
 
     return () => {

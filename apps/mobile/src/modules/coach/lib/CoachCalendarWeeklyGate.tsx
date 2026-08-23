@@ -4,6 +4,7 @@ import { Spinner } from "@heroui/react/spinner";
 import { useCallback, useEffect, useState } from "react";
 import { coachBookings, coachSlots } from "@/shared/lib/api";
 import { todayIso } from "@/shared/lib/week-calendar";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { CoachCalendarWeeklyScreen } from "../screens/CoachCalendarWeeklyScreen";
 import {
@@ -44,13 +45,13 @@ export function CoachCalendarWeeklyGate() {
   useEffect(() => {
     if (!isReady) return;
     if (!isLive) {
-      setWeeks(COACH_CALENDAR_WEEKS);
-      setDefaultWeekIndex(COACH_CALENDAR_DEFAULT_WEEK_INDEX);
+      setWeeks(DEMO_MODE ? COACH_CALENDAR_WEEKS : []);
+      setDefaultWeekIndex(DEMO_MODE ? COACH_CALENDAR_DEFAULT_WEEK_INDEX : 0);
       return;
     }
     load().catch(() => {
-      setWeeks(COACH_CALENDAR_WEEKS);
-      setDefaultWeekIndex(COACH_CALENDAR_DEFAULT_WEEK_INDEX);
+      setWeeks(DEMO_MODE ? COACH_CALENDAR_WEEKS : []);
+      setDefaultWeekIndex(DEMO_MODE ? COACH_CALENDAR_DEFAULT_WEEK_INDEX : 0);
     });
   }, [isLive, isReady, load]);
 

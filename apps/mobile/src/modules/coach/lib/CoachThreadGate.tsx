@@ -5,7 +5,11 @@ import { Typography } from "@heroui/react/typography";
 import type { CoachMessage } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
-import { accountCoaching, isDiscoveryApiId } from "@/shared/lib/api";
+import {
+  accountCoaching,
+  isDiscoveryApiId,
+  isDiscoveryDemoId,
+} from "@/shared/lib/api";
 import { formatTimeFa } from "@/shared/lib/booking-view";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { CoachThreadScreen } from "../screens/CoachThreadScreen";
@@ -52,10 +56,11 @@ export function CoachThreadGate({ threadId }: { threadId: string }) {
   useEffect(() => {
     if (!isReady) return;
 
-    const demoThread = getCoachThread(threadId);
+    const isDemo = isDiscoveryDemoId(threadId);
+    const demoThread = isDemo ? getCoachThread(threadId) : null;
     if (!isAuthenticated || !isDiscoveryApiId(threadId)) {
       setThread(demoThread ?? null);
-      setMessages(getCoachThreadMessages(threadId));
+      setMessages(isDemo ? getCoachThreadMessages(threadId) : []);
       return;
     }
 
@@ -66,8 +71,8 @@ export function CoachThreadGate({ threadId }: { threadId: string }) {
         if (cancelled) return;
         const match = page.result.find((entry) => entry.id === threadId);
         if (!match) {
-          setThread(demoThread ?? null);
-          setMessages(getCoachThreadMessages(threadId));
+          setThread(null);
+          setMessages([]);
           return;
         }
         setThread({
@@ -81,8 +86,8 @@ export function CoachThreadGate({ threadId }: { threadId: string }) {
       })
       .catch(() => {
         if (!cancelled) {
-          setThread(demoThread ?? null);
-          setMessages(getCoachThreadMessages(threadId));
+          setThread(null);
+          setMessages([]);
         }
       });
 
@@ -94,6 +99,10 @@ export function CoachThreadGate({ threadId }: { threadId: string }) {
   const onSend = useCallback(
     async (body: string) => {
       if (!isAuthenticated || !isDiscoveryApiId(threadId)) {
+        if (!isDiscoveryDemoId(threadId)) {
+          setError("sendError");
+          return;
+        }
         setMessages((current) => [
           ...current,
           {

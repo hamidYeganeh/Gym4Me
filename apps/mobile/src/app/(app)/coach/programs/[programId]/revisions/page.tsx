@@ -2,13 +2,20 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { CoachProgramRevisionsGate } from "@/modules/coach/lib/CoachProgramRevisionsGate";
 import { getAllCoachProgramIds } from "@/modules/coach/lib/coach-program-editor-data";
+import {
+  buildDemoStaticParams,
+  STATIC_EXPORT_PLACEHOLDER_ID,
+} from "@/shared/lib/runtime-mode";
 
 type CoachProgramRevisionsPageProps = {
   params: Promise<{ programId: string }>;
 };
 
 export function generateStaticParams() {
-  return getAllCoachProgramIds().map((programId) => ({ programId }));
+  return buildDemoStaticParams(
+    () => getAllCoachProgramIds().map((programId) => ({ programId })),
+    [{ programId: STATIC_EXPORT_PLACEHOLDER_ID }],
+  );
 }
 
 export async function generateMetadata(): Promise<Metadata> {

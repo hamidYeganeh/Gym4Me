@@ -5,6 +5,7 @@ import type { WorkoutLogSetInput } from "@repo/api";
 import { useCallback, useEffect, useState } from "react";
 import { accountProgress } from "@/shared/lib/api";
 import { createClientMutationId } from "@/shared/lib/offline-queue";
+import { canUseDemoFixtureId } from "@/shared/lib/runtime-mode";
 import { useFeatureFlag } from "@/shared/providers/AppConfigProvider";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { AthleteWorkoutDetailScreen } from "../screens/AthleteWorkoutDetailScreen";
@@ -28,11 +29,10 @@ export function AthleteWorkoutDetailGate({ planId }: { planId: string }) {
 
   const load = useCallback(async () => {
     if (!isAuthenticated) {
-      setDetail(
-        planId === DEMO_WORKOUT_DETAIL.id
-          ? DEMO_WORKOUT_DETAIL
-          : { ...DEMO_WORKOUT_DETAIL, id: planId },
-      );
+      setDetail(canUseDemoFixtureId(planId) ? DEMO_WORKOUT_DETAIL : null);
+      if (!canUseDemoFixtureId(planId)) {
+        setError("برای دریافت برنامه تمرینی وارد حساب شوید.");
+      }
       return;
     }
 
@@ -67,19 +67,26 @@ export function AthleteWorkoutDetailGate({ planId }: { planId: string }) {
   useEffect(() => {
     if (!isReady) return;
     let cancelled = false;
-    void load()
-      .catch(() => {
-        if (!cancelled) {
-          setDetail({
-            ...DEMO_WORKOUT_DETAIL,
-            id: planId,
-          });
+    void load().catch(() => {
+      if (!cancelled) {
+        setDetail(canUseDemoFixtureId(planId) ? DEMO_WORKOUT_DETAIL : null);
+        if (!canUseDemoFixtureId(planId)) {
+          setError("بارگذاری برنامه تمرینی ناموفق بود.");
         }
-      });
+      }
+    });
     return () => {
       cancelled = true;
     };
   }, [isReady, load, planId]);
+
+  if (!detail && error) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center px-6 text-center text-danger">
+        {error}
+      </div>
+    );
+  }
 
   if (!detail) {
     return (
@@ -101,9 +108,7 @@ export function AthleteWorkoutDetailGate({ planId }: { planId: string }) {
       await action();
       await load();
     } catch (caught) {
-      setError(
-        caught instanceof Error ? caught.message : "عملیات ناموفق بود.",
-      );
+      setError(caught instanceof Error ? caught.message : "عملیات ناموفق بود.");
     } finally {
       setPending(false);
     }

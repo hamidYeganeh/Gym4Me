@@ -1,6 +1,7 @@
 "use client";
 
 import { Typography } from "@heroui/react/typography";
+import { EMPTY_STATE_ILLUSTRATIONS, EmptyState } from "@repo/ui/kit/EmptyState";
 import { FilterChip, FilterChipBar } from "@repo/ui/kit/FilterChip";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
@@ -24,6 +25,8 @@ export function DiscoveryCoachesScreen({
   cities,
   districts,
   isLoading,
+  isError,
+  onRetry,
 }: DiscoveryCoachesScreenProps) {
   const t = useTranslations("DiscoveryCoaches");
   const router = useRouter();
@@ -64,32 +67,69 @@ export function DiscoveryCoachesScreen({
             : t("resultsCount", { count: coaches.length })}
         </Typography>
 
-        <DiscoveryBrowseCoachesLoadingSection
-          coachesCount={coaches.length}
-          isLoading={isLoading}
-        />
-
-        <DiscoveryBrowseCoachesRailSection coaches={coaches} variant="featured" />
-        <DiscoveryBrowseCoachesLocationsSection
-          items={provinces}
-          variant="provinces"
-        />
-        <DiscoveryBrowseCoachesRailSection coaches={coaches} variant="nearby" />
-        <DiscoveryBrowseCoachesLocationsSection items={cities} variant="cities" />
-        <DiscoveryBrowseCoachesRailSection coaches={coaches} variant="remote" />
-        <DiscoveryBrowseCoachesLocationsSection
-          items={districts}
-          variant="districts"
-        />
-        <DiscoveryBrowseCoachesRailSection coaches={coaches} variant="inPerson" />
-        <DiscoveryBrowseCoachesRailSection coaches={coaches} variant="topRated" />
-        <DiscoveryBrowseCoachesRailSection coaches={coaches} variant="picks" />
-        <DiscoveryBrowseCoachesAllSection coaches={coaches} />
-        <DiscoveryBrowseCoachesEmptySection
-          coachesCount={coaches.length}
-          isLoading={isLoading}
-          onViewAll={() => onFilterChange("all")}
-        />
+        {isLoading && coaches.length === 0 ? (
+          <DiscoveryBrowseCoachesLoadingSection
+            coachesCount={coaches.length}
+            isLoading={isLoading}
+          />
+        ) : isError ? (
+          <EmptyState
+            description={t("errorBody")}
+            illustration={EMPTY_STATE_ILLUSTRATIONS.warning}
+            illustrationAlt=""
+            layout="media"
+            primaryAction={
+              onRetry ? { label: t("retry"), onPress: onRetry } : undefined
+            }
+            status="danger"
+            title={t("errorTitle")}
+          />
+        ) : (
+          <>
+            <DiscoveryBrowseCoachesRailSection
+              coaches={coaches}
+              variant="featured"
+            />
+            <DiscoveryBrowseCoachesLocationsSection
+              items={provinces}
+              variant="provinces"
+            />
+            <DiscoveryBrowseCoachesRailSection
+              coaches={coaches}
+              variant="nearby"
+            />
+            <DiscoveryBrowseCoachesLocationsSection
+              items={cities}
+              variant="cities"
+            />
+            <DiscoveryBrowseCoachesRailSection
+              coaches={coaches}
+              variant="remote"
+            />
+            <DiscoveryBrowseCoachesLocationsSection
+              items={districts}
+              variant="districts"
+            />
+            <DiscoveryBrowseCoachesRailSection
+              coaches={coaches}
+              variant="inPerson"
+            />
+            <DiscoveryBrowseCoachesRailSection
+              coaches={coaches}
+              variant="topRated"
+            />
+            <DiscoveryBrowseCoachesRailSection
+              coaches={coaches}
+              variant="picks"
+            />
+            <DiscoveryBrowseCoachesAllSection coaches={coaches} />
+            <DiscoveryBrowseCoachesEmptySection
+              coachesCount={coaches.length}
+              isLoading={isLoading}
+              onViewAll={() => onFilterChange("all")}
+            />
+          </>
+        )}
       </div>
     </AppLayout>
   );

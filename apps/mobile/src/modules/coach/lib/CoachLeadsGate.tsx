@@ -2,6 +2,7 @@
 
 import { Spinner } from "@heroui/react/spinner";
 import { useCallback, useEffect, useState } from "react";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { CoachLeadsScreen } from "../screens/CoachLeadsScreen";
 import {
@@ -17,7 +18,7 @@ export function CoachLeadsGate() {
 
   useEffect(() => {
     if (!isReady) return;
-    setLeads(COACH_LEADS);
+    setLeads(DEMO_MODE ? COACH_LEADS : []);
   }, [isReady]);
 
   const onChangeStage = useCallback(
@@ -49,7 +50,7 @@ export function CoachLeadsGate() {
   return (
     <CoachLeadsScreen
       leads={leads}
-      onChangeStage={onChangeStage}
+      onChangeStage={DEMO_MODE ? onChangeStage : undefined}
       updatingId={updatingId}
     />
   );

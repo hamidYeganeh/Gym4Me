@@ -4,6 +4,7 @@ import { Spinner } from "@heroui/react/spinner";
 import type { MealAdherenceStatus } from "@repo/api/nutrition";
 import { useCallback, useEffect, useState } from "react";
 import { accountNutrition } from "@/shared/lib/api";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { AthleteNutritionLogScreen } from "../screens/AthleteNutritionLogScreen";
 import {
@@ -39,13 +40,13 @@ export function AthleteNutritionLogGate() {
   useEffect(() => {
     if (!isReady) return;
     if (!isAuthenticated) {
-      setLogs(DEMO_MEAL_LOGS);
+      setLogs(DEMO_MODE ? DEMO_MEAL_LOGS : []);
       return;
     }
 
     let cancelled = false;
     reload().catch(() => {
-      if (!cancelled) setLogs(DEMO_MEAL_LOGS);
+      if (!cancelled) setLogs(DEMO_MODE ? DEMO_MEAL_LOGS : []);
     });
 
     return () => {
@@ -55,10 +56,10 @@ export function AthleteNutritionLogGate() {
 
   const handleQuickLog = useCallback(
     async (status: MealAdherenceStatus) => {
-      const planId = DEMO_MEAL_PLANS[0]?.id;
-      if (!planId) return;
-
       if (!isAuthenticated) {
+        if (!DEMO_MODE) return;
+        const planId = DEMO_MEAL_PLANS[0]?.id;
+        if (!planId) return;
         setLogs((prev) => [
           {
             id: `demo-local-${Date.now()}`,

@@ -24,8 +24,10 @@ export function DiscoveryCoachesScreenLoader() {
       coaches={browse.coaches}
       discoveryFilters={browse.filters}
       districts={browse.districts}
+      isError={browse.isError}
       isLoading={browse.isLoading}
       onFilterChange={browse.setActiveFilter}
+      onRetry={browse.retry}
       provinces={browse.provinces}
     />
   );

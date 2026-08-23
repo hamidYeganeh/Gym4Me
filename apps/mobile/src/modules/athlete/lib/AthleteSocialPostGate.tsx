@@ -3,6 +3,7 @@
 import { Spinner } from "@heroui/react/spinner";
 import { useCallback, useEffect, useState } from "react";
 import { accountSocial } from "@/shared/lib/api";
+import { canUseDemoFixtureId } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { AthleteSocialPostScreen } from "../screens/AthleteSocialPostScreen";
 import {
@@ -20,10 +21,18 @@ export function AthleteSocialPostGate({ postId }: { postId: string }) {
   const [commentPending, setCommentPending] = useState(false);
 
   const loadDemo = useCallback(() => {
+    if (!canUseDemoFixtureId(postId)) {
+      setDetail(null);
+      return;
+    }
     const demo = DEMO_SOCIAL_POSTS.find((post) => post.id === postId);
     setDetail(
       demo
-        ? { ...DEMO_SOCIAL_DETAIL, ...demo, comments: DEMO_SOCIAL_DETAIL.comments }
+        ? {
+            ...DEMO_SOCIAL_DETAIL,
+            ...demo,
+            comments: DEMO_SOCIAL_DETAIL.comments,
+          }
         : { ...DEMO_SOCIAL_DETAIL, id: postId },
     );
   }, [postId]);
@@ -59,6 +68,7 @@ export function AthleteSocialPostGate({ postId }: { postId: string }) {
   const handleLike = useCallback(async () => {
     if (!detail) return;
     if (!isAuthenticated) {
+      if (!canUseDemoFixtureId(postId)) return;
       setDetail({
         ...detail,
         liked: !detail.liked,
@@ -87,6 +97,7 @@ export function AthleteSocialPostGate({ postId }: { postId: string }) {
   const handleSave = useCallback(async () => {
     if (!detail) return;
     if (!isAuthenticated) {
+      if (!canUseDemoFixtureId(postId)) return;
       setDetail({ ...detail, saved: !detail.saved });
       return;
     }
@@ -108,6 +119,7 @@ export function AthleteSocialPostGate({ postId }: { postId: string }) {
       if (!trimmed) return;
 
       if (!isAuthenticated) {
+        if (!canUseDemoFixtureId(postId)) return;
         setDetail((prev) =>
           prev
             ? {

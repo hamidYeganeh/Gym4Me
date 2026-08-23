@@ -2,6 +2,7 @@
 
 import { Spinner } from "@heroui/react/spinner";
 import { useCallback, useEffect, useState } from "react";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { CoachVideoFeedbackScreen } from "../screens/CoachVideoFeedbackScreen";
 import {
@@ -18,7 +19,7 @@ export function CoachVideoFeedbackGate() {
 
   useEffect(() => {
     if (!isReady) return;
-    setSubmissions(COACH_VIDEO_SUBMISSIONS);
+    setSubmissions(DEMO_MODE ? COACH_VIDEO_SUBMISSIONS : []);
   }, [isReady]);
 
   const onSubmitReview = useCallback(
@@ -53,7 +54,7 @@ export function CoachVideoFeedbackGate() {
 
   return (
     <CoachVideoFeedbackScreen
-      onSubmitReview={onSubmitReview}
+      onSubmitReview={DEMO_MODE ? onSubmitReview : undefined}
       reviewingId={reviewingId}
       submissions={submissions}
     />

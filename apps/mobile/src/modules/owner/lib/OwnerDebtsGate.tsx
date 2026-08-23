@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { OwnerDebtsScreen } from "../screens/OwnerDebtsScreen";
 import { OWNER_DEBTS, type OwnerDebtEntry } from "./owner-debts-data";
 
 export function OwnerDebtsGate() {
-  const [debts, setDebts] = useState(OWNER_DEBTS);
+  const [debts, setDebts] = useState(DEMO_MODE ? OWNER_DEBTS : []);
   const [pendingId, setPendingId] = useState<string | null>(null);
 
   const handleRecordPayment = (debt: OwnerDebtEntry) => {
@@ -29,7 +30,7 @@ export function OwnerDebtsGate() {
   return (
     <OwnerDebtsScreen
       debts={debts}
-      onRecordPayment={handleRecordPayment}
+      onRecordPayment={DEMO_MODE ? handleRecordPayment : undefined}
       pendingId={pendingId}
     />
   );

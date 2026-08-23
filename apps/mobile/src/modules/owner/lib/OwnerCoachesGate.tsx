@@ -1,12 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { OwnerCoachesScreen } from "../screens/OwnerCoachesScreen";
 import type { OwnerCoachInviteForm } from "../screens/OwnerCoachesScreen/OwnerCoachesScreen.types";
-import { OWNER_COACHES, type OwnerCoachAffiliation } from "./owner-coaches-data";
+import {
+  OWNER_COACHES,
+  type OwnerCoachAffiliation,
+} from "./owner-coaches-data";
 
 export function OwnerCoachesGate() {
-  const [coaches, setCoaches] = useState(OWNER_COACHES);
+  const [coaches, setCoaches] = useState(DEMO_MODE ? OWNER_COACHES : []);
   const [form, setForm] = useState<OwnerCoachInviteForm>({
     name: "",
     branchLabel: "",
@@ -35,8 +39,10 @@ export function OwnerCoachesGate() {
     <OwnerCoachesScreen
       coaches={coaches}
       form={form}
-      onFormChange={(patch) => setForm((previous) => ({ ...previous, ...patch }))}
-      onInvite={handleInvite}
+      onFormChange={(patch) =>
+        setForm((previous) => ({ ...previous, ...patch }))
+      }
+      onInvite={DEMO_MODE ? handleInvite : undefined}
       pending={pending}
     />
   );

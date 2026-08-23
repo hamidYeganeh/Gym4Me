@@ -1,6 +1,7 @@
 "use client";
 
 import { AppLayout } from "@repo/ui/layout/AppLayout";
+import { EMPTY_STATE_ILLUSTRATIONS, EmptyState } from "@repo/ui/kit/EmptyState";
 import { useTranslations } from "next-intl";
 
 import { districtClubsSeeAllHref } from "../../lib/district-clubs-home";
@@ -37,9 +38,11 @@ export function DiscoveryClubsScreen({
   openNowClubs = [],
   topRatedClubs = [],
   clubsLoading = false,
+  clubsError = false,
   clubsCount = 0,
   hideDistrictRail = false,
   onClearFilters,
+  onClubsRetry,
   articles = [],
   articlesLoading = false,
   classes = [],
@@ -111,26 +114,44 @@ export function DiscoveryClubsScreen({
             title={tHome("nearbyTitle")}
             tone="surface"
           />
-          <DiscoveryHomeClubsRailSection
-            ariaLabel={tClubs("topRatedTitle")}
-            clubs={topRatedClubs}
-            hint={tClubs("topRatedHint")}
-            isLoading={clubsLoading}
-            keyPrefix="top"
-            title={tClubs("topRatedTitle")}
-            tone="warning"
-          />
-          <DiscoveryHomeClubsRailSection
-            ariaLabel={tClubs("openNowTitle")}
-            clubs={openNowClubs}
-            hint={tClubs("openNowHint")}
-            isLoading={clubsLoading}
-            keyPrefix="open"
-            orientation="horizontal"
-            pattern
-            title={tClubs("openNowTitle")}
-            tone="accent"
-          />
+          {clubsError ? (
+            <EmptyState
+              description={tClubs("errorBody")}
+              illustration={EMPTY_STATE_ILLUSTRATIONS.warning}
+              illustrationAlt=""
+              layout="media"
+              primaryAction={
+                onClubsRetry
+                  ? { label: tClubs("retry"), onPress: onClubsRetry }
+                  : undefined
+              }
+              status="danger"
+              title={tClubs("errorTitle")}
+            />
+          ) : (
+            <>
+              <DiscoveryHomeClubsRailSection
+                ariaLabel={tClubs("topRatedTitle")}
+                clubs={topRatedClubs}
+                hint={tClubs("topRatedHint")}
+                isLoading={clubsLoading}
+                keyPrefix="top"
+                title={tClubs("topRatedTitle")}
+                tone="warning"
+              />
+              <DiscoveryHomeClubsRailSection
+                ariaLabel={tClubs("openNowTitle")}
+                clubs={openNowClubs}
+                hint={tClubs("openNowHint")}
+                isLoading={clubsLoading}
+                keyPrefix="open"
+                orientation="horizontal"
+                pattern
+                title={tClubs("openNowTitle")}
+                tone="accent"
+              />
+            </>
+          )}
           {classesLoading && classes.length === 0 ? null : (
             <DiscoveryHomeClassesSection classes={classes} />
           )}

@@ -5,6 +5,7 @@ import type { CoachStudent } from "@repo/api";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { useEffect, useState } from "react";
 import { accountCoaching } from "@/shared/lib/api";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { CoachClientsScreen } from "../screens/CoachClientsScreen";
 import {
@@ -13,9 +14,7 @@ import {
   type CoachClientEngagement,
 } from "./coach-clients-data";
 
-function mapEngagement(
-  student: CoachStudent,
-): CoachClientEngagement {
+function mapEngagement(student: CoachStudent): CoachClientEngagement {
   if (student.status === "paused") return "paused";
   if (student.engagement.level === "at_risk") return "at-risk";
   if (student.engagement.level === "quiet") return "paused";
@@ -45,7 +44,7 @@ export function CoachClientsGate() {
   useEffect(() => {
     if (!isReady) return;
     if (!isAuthenticated) {
-      setClients(COACH_CLIENTS);
+      setClients(DEMO_MODE ? COACH_CLIENTS : []);
       return;
     }
 
@@ -54,14 +53,10 @@ export function CoachClientsGate() {
       .listStudents({ page_size: 100 })
       .then((page) => {
         if (cancelled) return;
-        setClients(
-          page.result.length > 0
-            ? page.result.map(mapStudent)
-            : COACH_CLIENTS,
-        );
+        setClients(page.result.map(mapStudent));
       })
       .catch(() => {
-        if (!cancelled) setClients(COACH_CLIENTS);
+        if (!cancelled) setClients(DEMO_MODE ? COACH_CLIENTS : []);
       });
 
     return () => {

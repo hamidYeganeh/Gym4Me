@@ -3,6 +3,7 @@
 import { Spinner } from "@heroui/react/spinner";
 import { useEffect, useState } from "react";
 import { accountProfile, accountProgress } from "@/shared/lib/api";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { AthleteMetricsReorderScreen } from "../screens/AthleteMetricsReorderScreen";
 import {
@@ -10,10 +11,7 @@ import {
   type ReorderableMetric,
   type ReorderableMetricId,
 } from "./metrics-reorder-data";
-import {
-  metricKeyToUiId,
-  uiIdToMetricKey,
-} from "./AthleteMetricsGate";
+import { metricKeyToUiId, uiIdToMetricKey } from "./AthleteMetricsGate";
 
 export function AthleteMetricsReorderGate() {
   const { isAuthenticated, isReady } = useAuth();
@@ -22,7 +20,7 @@ export function AthleteMetricsReorderGate() {
   useEffect(() => {
     if (!isReady) return;
     if (!isAuthenticated) {
-      setMetrics(DEFAULT_REORDERABLE_METRICS);
+      setMetrics(DEMO_MODE ? DEFAULT_REORDERABLE_METRICS : []);
       return;
     }
 
@@ -41,12 +39,12 @@ export function AthleteMetricsReorderGate() {
         const mapped: ReorderableMetric[] = keys.map((key) => ({
           id: metricKeyToUiId(key) as ReorderableMetricId,
         }));
-        setMetrics(
-          mapped.length > 0 ? mapped : DEFAULT_REORDERABLE_METRICS,
-        );
+        setMetrics(mapped);
       })
       .catch(() => {
-        if (!cancelled) setMetrics(DEFAULT_REORDERABLE_METRICS);
+        if (!cancelled) {
+          setMetrics(DEMO_MODE ? DEFAULT_REORDERABLE_METRICS : []);
+        }
       });
 
     return () => {

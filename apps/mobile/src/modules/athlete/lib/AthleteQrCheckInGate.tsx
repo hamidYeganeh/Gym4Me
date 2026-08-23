@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { AthleteQrCheckInScreen } from "../screens/AthleteQrCheckInScreen";
 import {
   DEFAULT_QR_CHECKIN,
@@ -9,7 +10,11 @@ import {
 } from "./athlete-qr-checkin-data";
 
 export function AthleteQrCheckInGate() {
-  const [state, setState] = useState<QrCheckInState>(DEFAULT_QR_CHECKIN);
+  const [state, setState] = useState<QrCheckInState>(
+    DEMO_MODE
+      ? DEFAULT_QR_CHECKIN
+      : { code: "—", expiresAtLabel: "در دسترس نیست", recentCheckIns: [] },
+  );
   const [pending, setPending] = useState(false);
 
   const onRefresh = useCallback(async () => {
@@ -26,7 +31,7 @@ export function AthleteQrCheckInGate() {
     <AthleteQrCheckInScreen
       code={state.code}
       expiresAtLabel={state.expiresAtLabel}
-      onRefresh={onRefresh}
+      onRefresh={DEMO_MODE ? onRefresh : undefined}
       pending={pending}
       recentCheckIns={state.recentCheckIns}
     />

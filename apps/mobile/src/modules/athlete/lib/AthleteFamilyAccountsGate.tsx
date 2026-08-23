@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { AthleteFamilyAccountsScreen } from "../screens/AthleteFamilyAccountsScreen";
 import {
   DEFAULT_CHILD_PROFILES,
@@ -9,12 +10,18 @@ import {
 } from "./athlete-family-data";
 
 export function AthleteFamilyAccountsGate() {
-  const [childProfiles, setChildProfiles] = useState<ChildProfile[]>(DEFAULT_CHILD_PROFILES);
+  const [childProfiles, setChildProfiles] = useState<ChildProfile[]>(
+    DEMO_MODE ? DEFAULT_CHILD_PROFILES : [],
+  );
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const onAddChild = useCallback(async (input: AddChildInput) => {
+    if (!DEMO_MODE) {
+      setError("ثبت پروفایل فرزند هنوز به سرویس واقعی متصل نیست.");
+      return;
+    }
     setPending(true);
     setMessage(null);
     setError(null);

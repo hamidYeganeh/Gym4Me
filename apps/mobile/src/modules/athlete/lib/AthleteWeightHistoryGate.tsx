@@ -4,6 +4,7 @@ import { Spinner } from "@heroui/react/spinner";
 import type { ProgressMetric } from "@repo/api";
 import { useCallback, useEffect, useState } from "react";
 import { accountProgress } from "@/shared/lib/api";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { AthleteWeightHistoryScreen } from "../screens/AthleteWeightHistoryScreen";
 import type { MetricSlug } from "./weight/metrics";
@@ -45,8 +46,7 @@ function mapMetrics(items: ProgressMetric[]): WeightHistoryEntry[] {
   return sorted.map((item, index) => {
     const recorded = new Date(item.recordedAt);
     const previous = sorted[index + 1];
-    const showAlert =
-      previous != null && item.value > previous.value + 0.4;
+    const showAlert = previous != null && item.value > previous.value + 0.4;
 
     return {
       id: item.id,
@@ -70,20 +70,24 @@ export function AthleteWeightHistoryGate({ metric }: { metric: MetricSlug }) {
       metricKey: metricKeyForSlug(metric),
     });
     setEntries(
-      page.result.length > 0 ? mapMetrics(page.result) : WEIGHT_HISTORY,
+      page.result.length > 0
+        ? mapMetrics(page.result)
+        : DEMO_MODE
+          ? WEIGHT_HISTORY
+          : [],
     );
   }, [metric]);
 
   useEffect(() => {
     if (!isReady) return;
     if (!isAuthenticated) {
-      setEntries(WEIGHT_HISTORY);
+      setEntries(DEMO_MODE ? WEIGHT_HISTORY : []);
       return;
     }
 
     let cancelled = false;
     reload().catch(() => {
-      if (!cancelled) setEntries(WEIGHT_HISTORY);
+      if (!cancelled) setEntries(DEMO_MODE ? WEIGHT_HISTORY : []);
     });
 
     return () => {

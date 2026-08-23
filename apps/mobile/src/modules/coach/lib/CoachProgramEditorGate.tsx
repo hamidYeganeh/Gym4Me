@@ -3,6 +3,7 @@
 import { Spinner } from "@heroui/react/spinner";
 import { Typography } from "@heroui/react/typography";
 import { useCallback, useEffect, useState } from "react";
+import { canUseDemoFixtureId } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { CoachProgramEditorScreen } from "../screens/CoachProgramEditorScreen";
 import {
@@ -18,14 +19,18 @@ export function CoachProgramEditorGate({
   mode: "view" | "edit";
 }) {
   const { isReady } = useAuth();
-  const [program, setProgram] = useState<CoachProgramEditorDetail | null | undefined>(
-    undefined,
-  );
+  const [program, setProgram] = useState<
+    CoachProgramEditorDetail | null | undefined
+  >(undefined);
   const [publishing, setPublishing] = useState(false);
 
   useEffect(() => {
     if (!isReady) return;
-    setProgram(getCoachProgramEditorDetail(programId));
+    setProgram(
+      canUseDemoFixtureId(programId)
+        ? getCoachProgramEditorDetail(programId)
+        : null,
+    );
   }, [isReady, programId]);
 
   const onPublish = useCallback(async () => {
@@ -91,8 +96,16 @@ export function CoachProgramEditorGate({
   return (
     <CoachProgramEditorScreen
       mode={mode}
-      onAddExercise={mode === "edit" ? onAddExercise : undefined}
-      onPublish={program.state === "draft" ? onPublish : undefined}
+      onAddExercise={
+        canUseDemoFixtureId(programId) && mode === "edit"
+          ? onAddExercise
+          : undefined
+      }
+      onPublish={
+        canUseDemoFixtureId(programId) && program.state === "draft"
+          ? onPublish
+          : undefined
+      }
       program={program}
       publishing={publishing}
     />

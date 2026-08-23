@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { OwnerWalkInBookingScreen } from "../screens/OwnerWalkInBookingScreen";
 import type { OwnerWalkInBookingForm } from "../screens/OwnerWalkInBookingScreen/OwnerWalkInBookingScreen.types";
 import {
@@ -15,7 +16,9 @@ const RESOURCE_LABELS = {
 } as const;
 
 export function OwnerWalkInBookingGate() {
-  const [bookings, setBookings] = useState(OWNER_WALK_IN_BOOKINGS);
+  const [bookings, setBookings] = useState(
+    DEMO_MODE ? OWNER_WALK_IN_BOOKINGS : [],
+  );
   const [form, setForm] = useState<OwnerWalkInBookingForm>({
     memberOrGuest: "guest",
     name: "",
@@ -57,8 +60,10 @@ export function OwnerWalkInBookingGate() {
     <OwnerWalkInBookingScreen
       bookings={bookings}
       form={form}
-      onFormChange={(patch) => setForm((previous) => ({ ...previous, ...patch }))}
-      onSubmit={handleSubmit}
+      onFormChange={(patch) =>
+        setForm((previous) => ({ ...previous, ...patch }))
+      }
+      onSubmit={DEMO_MODE ? handleSubmit : undefined}
       pending={pending}
     />
   );

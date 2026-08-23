@@ -34,11 +34,13 @@ export type DiscoveryCoachesBrowseState = {
   filters: CoachDiscoveryFilter[];
   activeFilter: CoachDiscoveryFilterId;
   isLoading: boolean;
+  isError: boolean;
   source: "api" | "mock";
   provinces: HomeLocationItem[];
   cities: HomeLocationItem[];
   districts: HomeLocationItem[];
   setActiveFilter: (id: CoachDiscoveryFilterId) => void;
+  retry: () => void;
 };
 
 function locationImage(node: { coverMediaId: string | null }) {
@@ -65,6 +67,7 @@ export function useDiscoveryCoachesBrowse(
     useState<CoachDiscoveryFilterId>(initialFilter);
   const [coaches, setCoaches] = useState<BrowseCoach[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
   const [source, setSource] = useState<"api" | "mock">("api");
   const [provinces, setProvinces] = useState<HomeLocationItem[]>([]);
   const [cities, setCities] = useState<HomeLocationItem[]>([]);
@@ -125,6 +128,7 @@ export function useDiscoveryCoachesBrowse(
   const loadCoaches = useCallback(
     async (filterId: CoachDiscoveryFilterId) => {
       setIsLoading(true);
+      setIsError(false);
       const filter = COACH_DISCOVERY_FILTERS.find((f) => f.id === filterId);
       const scopedFromUrl = {
         ...(cityId ? { cityId } : {}),
@@ -136,7 +140,10 @@ export function useDiscoveryCoachesBrowse(
         page_size: 40,
         ...scopedFromUrl,
         ...(filter?.query?.coachType
-          ? { coachType: filter.query.coachType as DiscoveryCoachesQuery["coachType"] }
+          ? {
+              coachType: filter.query
+                .coachType as DiscoveryCoachesQuery["coachType"],
+            }
           : {}),
       };
 
@@ -147,12 +154,13 @@ export function useDiscoveryCoachesBrowse(
         setSource("api");
       } catch {
         setCoaches([]);
+        setIsError(true);
         setSource("api");
       } finally {
         setIsLoading(false);
       }
     },
-    [availability, cityId, fresh, coachType, verified],
+    [cityId, coachType],
   );
 
   useEffect(() => {
@@ -172,10 +180,12 @@ export function useDiscoveryCoachesBrowse(
     filters: COACH_DISCOVERY_FILTERS,
     activeFilter,
     isLoading,
+    isError,
     source,
     provinces,
     cities,
     districts,
     setActiveFilter,
+    retry: () => void loadCoaches(activeFilter),
   };
 }

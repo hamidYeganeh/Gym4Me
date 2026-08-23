@@ -11,20 +11,33 @@ import {
   getWeightDetail,
 } from "@/modules/athlete/lib/weight/weight-detail-data";
 import { AthleteWeightDetailScreen } from "@/modules/athlete/screens/AthleteWeightDetailScreen";
+import {
+  buildDemoStaticParams,
+  canUseDemoFixtureId,
+  STATIC_EXPORT_PLACEHOLDER_ID,
+} from "@/shared/lib/runtime-mode";
 
 type WeightDetailPageProps = {
   params: Promise<{ weight: string; metricId: string }>;
 };
 
 export function generateStaticParams() {
-  return SUPPORTED_METRICS.flatMap((weight) => getAllWeightDetailParams(weight));
+  return buildDemoStaticParams(
+    () =>
+      SUPPORTED_METRICS.flatMap((weight) => getAllWeightDetailParams(weight)),
+    [{ weight: "weight", metricId: STATIC_EXPORT_PLACEHOLDER_ID }],
+  );
 }
 
 export async function generateMetadata({
   params,
 }: WeightDetailPageProps): Promise<Metadata> {
   const { weight, metricId } = await params;
-  if (!isSupportedMetric(weight) || !getWeightDetail(metricId)) {
+  if (
+    !isSupportedMetric(weight) ||
+    !canUseDemoFixtureId(metricId) ||
+    !getWeightDetail(metricId)
+  ) {
     return { title: "Detail" };
   }
 
@@ -42,7 +55,9 @@ export default async function WeightDetailPage({
     notFound();
   }
 
-  const detail = getWeightDetail(metricId);
+  const detail = canUseDemoFixtureId(metricId)
+    ? getWeightDetail(metricId)
+    : null;
   if (!detail) {
     notFound();
   }

@@ -5,6 +5,7 @@ import type { ClubStaffMember } from "@repo/api";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { useEffect, useState } from "react";
 import { accountClubs, accountStaff } from "@/shared/lib/api";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { OwnerStaffScreen } from "../screens/OwnerStaffScreen";
 import {
@@ -48,7 +49,7 @@ export function OwnerStaffGate() {
   useEffect(() => {
     if (!isReady) return;
     if (!isAuthenticated) {
-      setStaff(OWNER_STAFF);
+      setStaff(DEMO_MODE ? OWNER_STAFF : []);
       return;
     }
 
@@ -82,9 +83,6 @@ export function OwnerStaffGate() {
   }
 
   return (
-    <OwnerStaffScreen
-      grantLabels={OWNER_STAFF_GRANT_LABELS}
-      staff={staff}
-    />
+    <OwnerStaffScreen grantLabels={OWNER_STAFF_GRANT_LABELS} staff={staff} />
   );
 }

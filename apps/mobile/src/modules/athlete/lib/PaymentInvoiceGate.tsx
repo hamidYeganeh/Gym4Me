@@ -13,6 +13,7 @@ import {
   isDiscoveryDemoId,
 } from "@/shared/lib/api";
 import { useAuth } from "@/shared/providers/AuthProvider";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { PaymentInvoiceScreen } from "../screens/PaymentInvoiceScreen";
 import type { PaymentMethodId } from "../screens/PaymentInvoiceScreen";
 import { getInvoice, WALLET_BALANCE_LABEL, type Invoice } from "./payment-data";
@@ -49,7 +50,9 @@ export function PaymentInvoiceGate({ invoiceId }: PaymentInvoiceGateProps) {
   const searchParams = useSearchParams();
   const { isAuthenticated, isReady } = useAuth();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
-  const [balanceLabel, setBalanceLabel] = useState(WALLET_BALANCE_LABEL);
+  const [balanceLabel, setBalanceLabel] = useState(
+    DEMO_MODE ? WALLET_BALANCE_LABEL : "۰ تومان",
+  );
   const [fromApi, setFromApi] = useState(false);
   const [pending, setPending] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -67,7 +70,7 @@ export function PaymentInvoiceGate({ invoiceId }: PaymentInvoiceGateProps) {
     if (!isAuthenticated) {
       setInvoice(demo);
       setFromApi(false);
-      setBalanceLabel(WALLET_BALANCE_LABEL);
+      setBalanceLabel(DEMO_MODE ? WALLET_BALANCE_LABEL : "۰ تومان");
       setIsLoading(false);
       return;
     }

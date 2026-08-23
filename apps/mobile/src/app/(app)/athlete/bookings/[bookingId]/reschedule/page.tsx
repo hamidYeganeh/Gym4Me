@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { getAllBookingIds } from "@/modules/athlete/lib/bookings-data";
+import {
+  buildDemoStaticParams,
+  STATIC_EXPORT_PLACEHOLDER_ID,
+} from "@/shared/lib/runtime-mode";
 import { AthleteBookingRescheduleScreen } from "@/modules/athlete/screens/AthleteBookingRescheduleScreen";
 
 type BookingReschedulePageProps = {
@@ -8,7 +12,10 @@ type BookingReschedulePageProps = {
 };
 
 export function generateStaticParams() {
-  return getAllBookingIds().map((bookingId) => ({ bookingId }));
+  return buildDemoStaticParams(
+    () => getAllBookingIds().map((bookingId) => ({ bookingId })),
+    [{ bookingId: STATIC_EXPORT_PLACEHOLDER_ID }],
+  );
 }
 
 export async function generateMetadata(): Promise<Metadata> {

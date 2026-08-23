@@ -1,4 +1,5 @@
 import type { CoachDetailReview } from "./coach-detail-data";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 
 export type CoachRatingBucket = {
   stars: 1 | 2 | 3 | 4 | 5;
@@ -55,10 +56,8 @@ export function buildCoachReviewSummary(
   };
 
   for (const review of reviews) {
-    const stars = Math.min(
-      5,
-      Math.max(1, Math.round(review.rating)),
-    ) as 1 | 2 | 3 | 4 | 5;
+    const stars = Math.min(5, Math.max(1, Math.round(review.rating))) as
+      1 | 2 | 3 | 4 | 5;
     counts[stars] += 1;
   }
 
@@ -79,6 +78,7 @@ export function buildCoachReviewSummary(
         : (fallbackTotal ?? 0);
 
   const useDemoDistribution =
+    DEMO_MODE &&
     sampleTotal > 0 &&
     typeof fallbackTotal === "number" &&
     fallbackTotal > sampleTotal * 3;

@@ -2,6 +2,7 @@
 
 import { Spinner } from "@heroui/react/spinner";
 import { useCallback, useEffect, useState } from "react";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { CoachPackagesScreen } from "../screens/CoachPackagesScreen";
 import type { CoachPackageCreateInput } from "../screens/CoachPackagesScreen/CoachPackagesScreen.types";
@@ -22,29 +23,32 @@ export function CoachPackagesGate() {
 
   useEffect(() => {
     if (!isReady) return;
-    setPackages(COACH_SESSION_PACKAGES);
-    setSoldPackages(COACH_SOLD_PACKAGES);
+    setPackages(DEMO_MODE ? COACH_SESSION_PACKAGES : []);
+    setSoldPackages(DEMO_MODE ? COACH_SOLD_PACKAGES : []);
   }, [isReady]);
 
-  const onCreatePackage = useCallback(async (input: CoachPackageCreateInput) => {
-    setCreating(true);
-    try {
-      setPackages((current) => [
-        {
-          id: `pkg-new-${Date.now()}`,
-          title: input.title,
-          sessionCount: input.sessionCount,
-          priceLabel: input.priceLabel,
-          status: "active",
-          soldCount: 0,
-          updatedLabel: "ایجاد همین الان",
-        },
-        ...(current ?? []),
-      ]);
-    } finally {
-      setCreating(false);
-    }
-  }, []);
+  const onCreatePackage = useCallback(
+    async (input: CoachPackageCreateInput) => {
+      setCreating(true);
+      try {
+        setPackages((current) => [
+          {
+            id: `pkg-new-${Date.now()}`,
+            title: input.title,
+            sessionCount: input.sessionCount,
+            priceLabel: input.priceLabel,
+            status: "active",
+            soldCount: 0,
+            updatedLabel: "ایجاد همین الان",
+          },
+          ...(current ?? []),
+        ]);
+      } finally {
+        setCreating(false);
+      }
+    },
+    [],
+  );
 
   if (!packages || !soldPackages) {
     return (
@@ -57,7 +61,7 @@ export function CoachPackagesGate() {
   return (
     <CoachPackagesScreen
       creating={creating}
-      onCreatePackage={onCreatePackage}
+      onCreatePackage={DEMO_MODE ? onCreatePackage : undefined}
       packages={packages}
       soldPackages={soldPackages}
     />

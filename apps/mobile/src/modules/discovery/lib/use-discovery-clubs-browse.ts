@@ -37,11 +37,13 @@ export type DiscoveryClubsBrowseState = {
   filters: ClubDiscoveryFilter[];
   activeFilter: ClubDiscoveryFilterId;
   isLoading: boolean;
+  isError: boolean;
   source: "api" | "mock";
   provinces: HomeLocationItem[];
   cities: HomeLocationItem[];
   districts: HomeLocationItem[];
   setActiveFilter: (id: ClubDiscoveryFilterId) => void;
+  retry: () => void;
 };
 
 function locationImage(node: { coverMediaId: string | null }) {
@@ -70,6 +72,7 @@ export function useDiscoveryClubsBrowse(
     useState<ClubDiscoveryFilterId>(initialFilter);
   const [clubs, setClubs] = useState<BrowseClub[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
   const [source, setSource] = useState<"api" | "mock">("api");
   const [provinces, setProvinces] = useState<HomeLocationItem[]>([]);
   const [cities, setCities] = useState<HomeLocationItem[]>([]);
@@ -86,9 +89,7 @@ export function useDiscoveryClubsBrowse(
       const provincesRes = await basicsLocations.listProvinces(iran.id);
       const nextProvinces = provincesRes.result
         .slice(0, 12)
-        .map((p) =>
-          mapLocationToHomeItem(p, locationImage(p), "استان"),
-        );
+        .map((p) => mapLocationToHomeItem(p, locationImage(p), "استان"));
       if (nextProvinces.length > 0) setProvinces(nextProvinces);
 
       const cityMap = new Map<string, HomeLocationItem>();
@@ -132,6 +133,7 @@ export function useDiscoveryClubsBrowse(
   const loadClubs = useCallback(
     async (filterId: ClubDiscoveryFilterId) => {
       setIsLoading(true);
+      setIsError(false);
       const filter = CLUB_DISCOVERY_FILTERS.find((f) => f.id === filterId);
       const scopedFromUrl = {
         ...(locationId ? { locationId } : {}),
@@ -157,6 +159,7 @@ export function useDiscoveryClubsBrowse(
         setSource("api");
       } catch {
         setClubs([]);
+        setIsError(true);
         setSource("api");
       } finally {
         setIsLoading(false);
@@ -191,10 +194,12 @@ export function useDiscoveryClubsBrowse(
     filters: CLUB_DISCOVERY_FILTERS,
     activeFilter,
     isLoading,
+    isError,
     source,
     provinces,
     cities,
     districts,
     setActiveFilter,
+    retry: () => void loadClubs(activeFilter),
   };
 }

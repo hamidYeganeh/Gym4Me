@@ -58,15 +58,12 @@ export function OwnerLifecycleGate() {
             : row.remainingEntries != null
               ? `${row.remainingEntries} ورود`
               : "—",
-        expiresLabel: row.expiresAt
-          ? formatJalaliFullDate(row.expiresAt)
-          : "—",
+        expiresLabel: row.expiresAt ? formatJalaliFullDate(row.expiresAt) : "—",
       })),
       journeys: journeys.result.map((journey) => ({
         id: journey.id,
         userLabel: journey.userId.slice(-6),
-        segmentLabel:
-          SEGMENT_LABEL[journey.segmentKind] ?? journey.segmentKind,
+        segmentLabel: SEGMENT_LABEL[journey.segmentKind] ?? journey.segmentKind,
         status: journey.status,
         stepLabel: `گام ${journey.step + 1}`,
         nextActionLabel: journey.nextActionAt
@@ -86,7 +83,7 @@ export function OwnerLifecycleGate() {
     if (!isReady) return;
     if (!isAuthenticated) {
       setView({
-        clubName: "باشگاه نمونه",
+        clubName: "—",
         atRisk: [],
         journeys: [],
         segments: [],

@@ -4,6 +4,7 @@ import { Spinner } from "@heroui/react/spinner";
 import type { WorkoutProgram } from "@repo/api";
 import { useCallback, useEffect, useState } from "react";
 import { accountProgress } from "@/shared/lib/api";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { CoachProgramsScreen } from "../screens/CoachProgramsScreen";
 import {
@@ -18,7 +19,8 @@ function mapProgram(program: WorkoutProgram): CoachProgram {
     id: program.id,
     title: program.title,
     focusLabel: program.meta.focusLabel ?? "—",
-    weeks: program.meta.weekCount != null ? String(program.meta.weekCount) : "—",
+    weeks:
+      program.meta.weekCount != null ? String(program.meta.weekCount) : "—",
     sessionsPerWeek:
       program.meta.sessionsPerWeek != null
         ? String(program.meta.sessionsPerWeek)
@@ -37,21 +39,19 @@ export function CoachProgramsGate() {
 
   const load = useCallback(async () => {
     const page = await accountProgress.listWorkoutPrograms({ page_size: 100 });
-    setPrograms(
-      page.result.length > 0 ? page.result.map(mapProgram) : COACH_PROGRAMS,
-    );
+    setPrograms(page.result.map(mapProgram));
   }, []);
 
   useEffect(() => {
     if (!isReady) return;
     if (!isAuthenticated) {
-      setPrograms(COACH_PROGRAMS);
+      setPrograms(DEMO_MODE ? COACH_PROGRAMS : []);
       return;
     }
 
     let cancelled = false;
     load().catch(() => {
-      if (!cancelled) setPrograms(COACH_PROGRAMS);
+      if (!cancelled) setPrograms(DEMO_MODE ? COACH_PROGRAMS : []);
     });
 
     return () => {

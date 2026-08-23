@@ -5,6 +5,7 @@ import type { Booking, CoachSlot } from "@repo/api";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { coachBookings, coachSlots } from "@/shared/lib/api";
 import { todayIso } from "@/shared/lib/week-calendar";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { CoachCalendarDailyScreen } from "../screens/CoachCalendarDailyScreen";
 import {
@@ -47,6 +48,17 @@ export function CoachCalendarDailyGate() {
     [],
   );
 
+  const emptyState = useMemo<DailyState>(() => {
+    const built = buildDailyDays(todayIso());
+    return {
+      days: built.days,
+      defaultDayId: built.defaultDayId,
+      workoutsByDayId: Object.fromEntries(
+        built.days.map((day) => [day.id, []]),
+      ),
+    };
+  }, []);
+
   const load = useCallback(async () => {
     const built = buildDailyDays(todayIso());
     const [slotsResponse, bookingsPage] = await Promise.all([
@@ -78,11 +90,11 @@ export function CoachCalendarDailyGate() {
   useEffect(() => {
     if (!isReady) return;
     if (!isLive) {
-      setState(demoState);
+      setState(DEMO_MODE ? demoState : emptyState);
       return;
     }
-    load().catch(() => setState(demoState));
-  }, [demoState, isLive, isReady, load]);
+    load().catch(() => setState(DEMO_MODE ? demoState : emptyState));
+  }, [demoState, emptyState, isLive, isReady, load]);
 
   if (!state) {
     return (
@@ -96,7 +108,9 @@ export function CoachCalendarDailyGate() {
     <CoachCalendarDailyScreen
       days={state.days}
       defaultDayId={state.defaultDayId}
-      slots={isLive ? dailyTimeSlots() : COACH_CALENDAR_TIME_SLOTS}
+      slots={
+        DEMO_MODE && !isLive ? COACH_CALENDAR_TIME_SLOTS : dailyTimeSlots()
+      }
       workouts={
         state.workoutsByDayId[state.defaultDayId] ??
         Object.values(state.workoutsByDayId)[0] ??

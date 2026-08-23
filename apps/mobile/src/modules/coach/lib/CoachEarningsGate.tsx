@@ -5,6 +5,7 @@ import type { CoachAnalyticsOverview, PaymentRecord } from "@repo/api";
 import { useEffect, useState } from "react";
 import { accountCoaching, accountFinance } from "@/shared/lib/api";
 import { faDigits, formatTomans } from "@/shared/lib/booking-view";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { CoachEarningsScreen } from "../screens/CoachEarningsScreen";
 import {
@@ -12,6 +13,19 @@ import {
   type CoachEarningsData,
   type CoachSettlement,
 } from "./coach-earnings-data";
+
+const EMPTY_COACH_EARNINGS: CoachEarningsData = {
+  pendingPayoutLabel: formatTomans(0),
+  pendingPayoutHint: "تسویه ثبت‌شده‌ای نیست",
+  revenueTrend: [],
+  monthRevenueSeries: [],
+  monthRevenueComparisonSeries: [],
+  monthRevenueValue: "۰",
+  sessionsSeries: [],
+  sessionsValue: "۰",
+  breakdown: [],
+  settlements: [],
+};
 
 function sumAmount(
   payments: PaymentRecord[],
@@ -45,14 +59,16 @@ function mapEarnings(
         )
       : [grossMillions];
 
-  const settlements: CoachSettlement[] = captured.slice(0, 6).map((payment, index) => ({
-    id: payment._id,
-    periodLabel: new Date(payment.capturedAt ?? payment.createdAt).toLocaleDateString(
-      "fa-IR",
-    ),
-    amountLabel: formatTomans(payment.amount.net ?? payment.amount.gross),
-    state: index === 0 ? "processing" : "paid",
-  }));
+  const settlements: CoachSettlement[] = captured
+    .slice(0, 6)
+    .map((payment, index) => ({
+      id: payment._id,
+      periodLabel: new Date(
+        payment.capturedAt ?? payment.createdAt,
+      ).toLocaleDateString("fa-IR"),
+      amountLabel: formatTomans(payment.amount.net ?? payment.amount.gross),
+      state: index === 0 ? "processing" : "paid",
+    }));
 
   return {
     pendingPayoutLabel: faDigits(net.toLocaleString("en-US")),
@@ -108,7 +124,7 @@ export function CoachEarningsGate() {
   useEffect(() => {
     if (!isReady) return;
     if (!isAuthenticated) {
-      setEarnings(COACH_EARNINGS);
+      setEarnings(DEMO_MODE ? COACH_EARNINGS : EMPTY_COACH_EARNINGS);
       return;
     }
 
@@ -133,7 +149,9 @@ export function CoachEarningsGate() {
         setEarnings(mapEarnings(overview, paymentsPage.result));
       })
       .catch(() => {
-        if (!cancelled) setEarnings(COACH_EARNINGS);
+        if (!cancelled) {
+          setEarnings(DEMO_MODE ? COACH_EARNINGS : EMPTY_COACH_EARNINGS);
+        }
       });
 
     return () => {

@@ -1,9 +1,13 @@
 import { Logo } from "@repo/ui/common/Logo";
 import { getTranslations } from "next-intl/server";
+import { notFound } from "next/navigation";
 import { BiometricAuthButton } from "@/shared/components/biometric-auth-button";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { ThemeDemo } from "./theme-demo";
 
 export default async function Home() {
+  if (!DEMO_MODE) notFound();
+
   const t = await getTranslations("HomePage");
 
   return (

@@ -5,11 +5,9 @@ import { Typography } from "@heroui/react/typography";
 import type { Invoice, OwnerFinanceAnalytics } from "@repo/api";
 import { statsColors } from "@repo/theme/stats-colors";
 import { useEffect, useState } from "react";
-import {
-  formatJalaliDateTime,
-  formatTomans,
-} from "@/shared/lib/booking-view";
+import { formatJalaliDateTime, formatTomans } from "@/shared/lib/booking-view";
 import { accountClubs, accountFinance } from "@/shared/lib/api";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { OwnerFinanceScreen } from "../screens/OwnerFinanceScreen";
 import {
@@ -18,6 +16,22 @@ import {
   type OwnerTransaction,
   type OwnerTransactionKind,
 } from "./owner-finance-data";
+
+const EMPTY_OWNER_FINANCE: OwnerFinanceData = {
+  pendingAmountLabel: formatTomans(0),
+  nextPayoutLabel: "—",
+  revenueValue: 0,
+  revenueSeries: [],
+  revenueComparisonSeries: [],
+  revenueColor: statsColors.blue,
+  refundValue: 0,
+  refundSeries: [],
+  refundColor: statsColors.red,
+  revenueTrend: [],
+  splitRows: [],
+  settlements: [],
+  transactions: [],
+};
 
 function mapInvoiceKind(title: string): OwnerTransactionKind {
   const lower = title.toLowerCase();
@@ -75,7 +89,7 @@ export function OwnerFinanceGate() {
   useEffect(() => {
     if (!isReady) return;
     if (!isAuthenticated) {
-      setFinance(OWNER_FINANCE);
+      setFinance(DEMO_MODE ? OWNER_FINANCE : EMPTY_OWNER_FINANCE);
       return;
     }
 
@@ -86,20 +100,7 @@ export function OwnerFinanceGate() {
         const clubId = clubs.result[0]?.id;
         if (!clubId) {
           if (!cancelled) {
-            setFinance({
-              ...OWNER_FINANCE,
-              pendingAmountLabel: formatTomans(0),
-              nextPayoutLabel: "—",
-              revenueValue: 0,
-              revenueSeries: [],
-              revenueComparisonSeries: [],
-              refundValue: 0,
-              refundSeries: [],
-              revenueTrend: [],
-              splitRows: [],
-              settlements: [],
-              transactions: [],
-            });
+            setFinance(EMPTY_OWNER_FINANCE);
           }
           return;
         }
@@ -112,21 +113,7 @@ export function OwnerFinanceGate() {
       .catch(() => {
         if (!cancelled) {
           setError(true);
-          setFinance({
-            pendingAmountLabel: formatTomans(0),
-            nextPayoutLabel: "—",
-            revenueValue: 0,
-            revenueSeries: [],
-            revenueComparisonSeries: [],
-            revenueColor: statsColors.blue,
-            refundValue: 0,
-            refundSeries: [],
-            refundColor: statsColors.red,
-            revenueTrend: [],
-            splitRows: [],
-            settlements: [],
-            transactions: [],
-          });
+          setFinance(EMPTY_OWNER_FINANCE);
         }
       });
 

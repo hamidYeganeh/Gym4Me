@@ -4,6 +4,7 @@ import { Spinner } from "@heroui/react/spinner";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { coachBookings } from "@/shared/lib/api";
+import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { CoachBookingsScreen } from "../screens/CoachBookingsScreen";
 import {
@@ -44,7 +45,7 @@ export function CoachBookingsGate() {
   useEffect(() => {
     if (!isReady) return;
     if (!isLive) {
-      setBookings(COACH_BOOKING_REQUESTS);
+      setBookings(DEMO_MODE ? COACH_BOOKING_REQUESTS : []);
       return;
     }
     load().catch(() => setBookings([]));
