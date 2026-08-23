@@ -3,7 +3,7 @@ import { tv } from "tailwind-variants";
 /** Introduce shell — Swiper image carousel + action sheet overlay. */
 export const welcomeIntroduceScreenVariants = tv({
   slots: {
-    root: "relative flex min-h-dvh flex-col overflow-hidden bg-background text-foreground",
+    root: "relative flex h-dvh max-h-dvh flex-col overflow-hidden bg-background text-foreground",
     header: "pointer-events-none absolute inset-x-0 top-0 z-10",
     headerFade: "pointer-events-none absolute inset-x-0 top-0 h-44",
     headerBlur: "pointer-events-none absolute inset-0",
@@ -16,7 +16,7 @@ export const welcomeIntroduceScreenVariants = tv({
       "pt-[max(1.25rem,env(safe-area-inset-top))] pb-10",
     ],
     content:
-      "pointer-events-none relative z-10 flex min-h-dvh flex-col justify-end",
+      "pointer-events-none absolute inset-0 z-10 flex h-full min-h-0 flex-col justify-end overflow-hidden",
     footerHost: "pointer-events-auto",
   },
 });
