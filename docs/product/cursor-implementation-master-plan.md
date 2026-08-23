@@ -265,7 +265,7 @@ G4M-002 → G4M-010 ┬→ G4M-011 ─┐                                ├→ 
 
 ### G4M-031 — پرداخت، coupon، wallet، refund و reconciliation واقعی
 
-- **وضعیت:** VERIFY (۲۰۲۶-۰۸-۲۳؛ منتظر smoke کنترل‌شدهٔ زرین‌پال staging و CI رسمی)
+- **وضعیت:** VERIFY (۲۰۲۶-۰۸-۲۳؛ منتظر smoke کنترل‌شدهٔ زرین‌پال staging)
 - **Persona/value:** ATH/OWN/CCH/ADM؛ پول قابل اعتماد و قابل تطبیق.
 - **استوری/سناریو:** D8/D9، L1–L8، K4، O1/O3/O4/O15، Q1/Q4، S2/S3/S11/S13.
 - **مدل‌ها:** `Payment`، `LedgerEntry`، `Wallet`، `Coupon`، `Debt`، `Invoice`، `Payout`, `CashShift`.
@@ -278,7 +278,7 @@ G4M-002 → G4M-010 ┬→ G4M-011 ─┐                                ├→ 
   - staging credentials و smoke واقعی کنترل‌شده؛ mock فقط test/dev.
 - **معیار پذیرش:** identity مالی برای هر تراکنش balance شود؛ verify تکراری Ledger دوم نسازد؛ callback گمشده با reconciliation ترمیم شود.
 - **edge:** مبلغ تومان/ریال، timeout بعد capture، refund بعد settlement، mixed tender discrepancy، coupon expiry وسط checkout.
-- **شواهد VERIFY:** آغاز top-up و پرداخت رزرو فقط با intent پایدار و callback مجاز انجام می‌شود؛ verify مبلغ ذخیره‌شدهٔ سرور را مصرف می‌کند و reconciliation برای callback گمشدهٔ رزرو و کیف پول اضافه شده است. coupon در همان transaction رزرو با محدودیت سراسری و per-user مصرف می‌شود. refund کامل/جزئی با intent پایدار، reverse درگاه یا credit کیف پول، وضعیت Payment/Invoice و Ledger دوطرفهٔ متوازن تسویه می‌شود؛ cache کیف پول نیز از Ledger قابل بازسازی است. unit API `156/156`، Nest e2e `2/2`، typecheck و lint بدون error پاس شده‌اند. روی Mongo replica-set و Redis واقعی محلی نیز رقابت ظرفیت `17` برنده/`33` conflict، worker/outbox، bootstrap، رزرو، عضویت، integrity چندنقشی و سناریوی کامل OTP → عضویت → رزرو → پرداخت → check-in → لغو → refund ادمین با تراز Ledger پاس شدند. برای `DONE` هنوز smoke کنترل‌شده با credential واقعی staging زرین‌پال و اجرای CI رسمی روی commit نهایی لازم است.
+- **شواهد VERIFY:** آغاز top-up و پرداخت رزرو فقط با intent پایدار و callback مجاز انجام می‌شود؛ verify مبلغ ذخیره‌شدهٔ سرور را مصرف می‌کند و reconciliation برای callback گمشدهٔ رزرو و کیف پول اضافه شده است. coupon در همان transaction رزرو با محدودیت سراسری و per-user مصرف می‌شود. refund کامل/جزئی با intent پایدار، reverse درگاه یا credit کیف پول، وضعیت Payment/Invoice و Ledger دوطرفهٔ متوازن تسویه می‌شود؛ cache کیف پول نیز از Ledger قابل بازسازی است. unit API `156/156`، Nest e2e `2/2`، typecheck و lint بدون error پاس شده‌اند. روی Mongo replica-set و Redis واقعی محلی نیز رقابت ظرفیت `17` برنده/`33` conflict، worker/outbox، bootstrap، رزرو، عضویت، integrity چندنقشی و سناریوی کامل OTP → عضویت → رزرو → پرداخت → check-in → لغو → refund ادمین با تراز Ledger پاس شدند. [CI رسمی commit `48023e88`](https://github.com/hamidYeganeh/Gym4Me/actions/runs/32633387297) هر ۹ job شامل integration و contract، تست‌های frontend، unit تهران/UTC، lint/type و build API/mobile/admin/website را با وضعیت Success پاس کرده است. برای `DONE` فقط smoke کنترل‌شده با credential واقعی staging زرین‌پال باقی مانده است.
 
 ### G4M-040 — workerهای چند-instance و outbox قابل اتکا
 
