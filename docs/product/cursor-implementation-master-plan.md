@@ -91,31 +91,31 @@ G4M-002 → G4M-010 ┬→ G4M-011 ─┐                                ├→ 
 
 ## خلاصهٔ backlog
 
-| ID         | اولویت | وضعیت       | عنوان                                                 | وابستگی                      |
-| ---------- | ------ | ----------- | ----------------------------------------------------- | ---------------------------- |
-| G4M-001    | P0     | DONE        | برگرداندن quality gate و build پایدار                 | —                            |
-| G4M-002    | P0     | DONE        | CI کامل، test pyramid و محیط integration              | G4M-001                      |
-| G4M-003    | P0     | DONE        | شکستن God Serviceها و تعریف transaction boundary      | G4M-002                      |
-| G4M-010    | P0     | BLOCKED     | اصلاح permission و failure semantics در Health Sync   | G4M-002                      |
-| G4M-011    | P0     | BLOCKED     | incremental Health Sync، cursor و offline queue واقعی | G4M-010                      |
-| G4M-012    | P1     | BLOCKED     | حقوق داده و حذف حساب با retention روشن                | G4M-010                      |
-| G4M-013    | P1     | BLOCKED     | observability و امنیت دادهٔ سلامت                     | G4M-011, G4M-012             |
-| G4M-020    | P0     | DONE        | حذف mock از مسیرهای production و demo isolation       | G4M-002                      |
-| G4M-021    | P0     | BLOCKED     | discovery واقعی کامل و supply integrity               | G4M-020                      |
-| G4M-030    | P0     | DONE        | رزرو اتمیک، ظرفیت و idempotency سراسری                | G4M-003                      |
-| G4M-031    | P0     | BLOCKED     | پرداخت، coupon، wallet، refund و reconciliation واقعی | G4M-030                      |
-| G4M-040    | P0     | IN_PROGRESS | workerهای چند-instance و outbox قابل اتکا             | G4M-003                      |
-| G4M-050    | P0     | BLOCKED     | عضویت، subscription enforcement و عملیات پذیرش        | G4M-021, G4M-031, G4M-040    |
-| G4M-051    | P0     | BLOCKED     | check-in آفلاین امن و reconciliation                  | G4M-050                      |
-| G4M-060    | P1     | BLOCKED     | مربیگری و اجرای تمرین end-to-end                      | G4M-013, G4M-051             |
-| G4M-061    | P1     | BLOCKED     | رسانه، اجتماعی و تغذیه بدون placeholder               | G4M-060                      |
-| G4M-070    | P1     | BLOCKED     | تکمیل ادمین، وب‌سایت و certification نهایی            | G4M-013, G4M-061 و همهٔ P0ها |
-| G4M-MKT-01 | P0*    | BLOCKED     | Role Action Center واقعی (*پس از هسته)                | G4M-020, 021, 030, 050       |
-| G4M-MKT-02 | P0*    | BLOCKED     | Recovery loop رزرو و ظرفیت (*پس از هسته؛ بدون ICS)    | G4M-030, 031, 040            |
-| G4M-MKT-03 | P1     | BLOCKED     | Trial، family و corporate membership                  | G4M-012, 031, 050            |
-| G4M-MKT-04 | P1     | BLOCKED     | Occupancy guidance و front-desk fast mode             | G4M-050, 051                 |
-| G4M-MKT-05 | P1     | BLOCKED     | Coach Follow-up Queue                                 | G4M-060, 061                 |
-| G4M-MKT-06 | P2     | BLOCKED     | Public club surface و hardware adapter pilot          | G4M-051, 070، تصویب pilot    |
+| ID         | اولویت | وضعیت   | عنوان                                                 | وابستگی                      |
+| ---------- | ------ | ------- | ----------------------------------------------------- | ---------------------------- |
+| G4M-001    | P0     | DONE    | برگرداندن quality gate و build پایدار                 | —                            |
+| G4M-002    | P0     | DONE    | CI کامل، test pyramid و محیط integration              | G4M-001                      |
+| G4M-003    | P0     | DONE    | شکستن God Serviceها و تعریف transaction boundary      | G4M-002                      |
+| G4M-010    | P0     | BLOCKED | اصلاح permission و failure semantics در Health Sync   | G4M-002                      |
+| G4M-011    | P0     | BLOCKED | incremental Health Sync، cursor و offline queue واقعی | G4M-010                      |
+| G4M-012    | P1     | BLOCKED | حقوق داده و حذف حساب با retention روشن                | G4M-010                      |
+| G4M-013    | P1     | BLOCKED | observability و امنیت دادهٔ سلامت                     | G4M-011, G4M-012             |
+| G4M-020    | P0     | DONE    | حذف mock از مسیرهای production و demo isolation       | G4M-002                      |
+| G4M-021    | P0     | BLOCKED | discovery واقعی کامل و supply integrity               | G4M-020                      |
+| G4M-030    | P0     | DONE    | رزرو اتمیک، ظرفیت و idempotency سراسری                | G4M-003                      |
+| G4M-031    | P0     | READY   | پرداخت، coupon، wallet، refund و reconciliation واقعی | G4M-030                      |
+| G4M-040    | P0     | DONE    | workerهای چند-instance و outbox قابل اتکا             | G4M-003                      |
+| G4M-050    | P0     | BLOCKED | عضویت، subscription enforcement و عملیات پذیرش        | G4M-021, G4M-031, G4M-040    |
+| G4M-051    | P0     | BLOCKED | check-in آفلاین امن و reconciliation                  | G4M-050                      |
+| G4M-060    | P1     | BLOCKED | مربیگری و اجرای تمرین end-to-end                      | G4M-013, G4M-051             |
+| G4M-061    | P1     | BLOCKED | رسانه، اجتماعی و تغذیه بدون placeholder               | G4M-060                      |
+| G4M-070    | P1     | BLOCKED | تکمیل ادمین، وب‌سایت و certification نهایی            | G4M-013, G4M-061 و همهٔ P0ها |
+| G4M-MKT-01 | P0*    | BLOCKED | Role Action Center واقعی (*پس از هسته)                | G4M-020, 021, 030, 050       |
+| G4M-MKT-02 | P0*    | BLOCKED | Recovery loop رزرو و ظرفیت (*پس از هسته؛ بدون ICS)    | G4M-030, 031, 040            |
+| G4M-MKT-03 | P1     | BLOCKED | Trial، family و corporate membership                  | G4M-012, 031, 050            |
+| G4M-MKT-04 | P1     | BLOCKED | Occupancy guidance و front-desk fast mode             | G4M-050, 051                 |
+| G4M-MKT-05 | P1     | BLOCKED | Coach Follow-up Queue                                 | G4M-060, 061                 |
+| G4M-MKT-06 | P2     | BLOCKED | Public club surface و hardware adapter pilot          | G4M-051, 070، تصویب pilot    |
 
 جزئیات پذیرش، مرز هسته، KPI و خارج‌ازمحدودهٔ تقویم برای `G4M-MKT-*` در [`competitive-product-review-2026-08.md`](./competitive-product-review-2026-08.md) است؛ این جدول فقط وضعیت اجرایی را نگه می‌دارد.
 
@@ -265,6 +265,7 @@ G4M-002 → G4M-010 ┬→ G4M-011 ─┐                                ├→ 
 
 ### G4M-031 — پرداخت، coupon، wallet، refund و reconciliation واقعی
 
+- **وضعیت:** READY (۲۰۲۶-۰۸-۲۳)
 - **Persona/value:** ATH/OWN/CCH/ADM؛ پول قابل اعتماد و قابل تطبیق.
 - **استوری/سناریو:** D8/D9، L1–L8، K4، O1/O3/O4/O15، Q1/Q4، S2/S3/S11/S13.
 - **مدل‌ها:** `Payment`، `LedgerEntry`، `Wallet`، `Coupon`، `Debt`، `Invoice`، `Payout`, `CashShift`.
@@ -280,12 +281,13 @@ G4M-002 → G4M-010 ┬→ G4M-011 ─┐                                ├→ 
 
 ### G4M-040 — workerهای چند-instance و outbox قابل اتکا
 
-- **وضعیت:** IN_PROGRESS (۲۰۲۶-۰۸-۲۳)
+- **وضعیت:** DONE (۲۰۲۶-۰۸-۲۳)
 - **Persona/value:** SYS/OPS؛ اجرای بدون duplicate در scale.
 - **استوری:** SYS-D13، R3–R7، N1.
 - **کار:** lease/claim اتمیک برای jobs، distributed lock یا queue، retry/backoff/dead-letter، heartbeat و admin replay امن.
 - **معیار پذیرش:** اجرای دو instance side effect تکراری نسازد؛ job crashشده reclaim شود؛ poison message بی‌نهایت loop نشود.
 - **تست:** دو worker هم‌زمان برای booking expiry، waitlist expiry، lifecycle و outbox.
+- **شواهد بسته شدن:** booking expiry، waitlist expiry و lifecycle به mutex توزیع‌شدهٔ Mongo با claim اتمیک، lease منقضی‌شونده و heartbeat مجهز شده‌اند؛ در نتیجه فقط یک instance هر tick را اجرا می‌کند و job رهاشده پس از crash قابل reclaim است. outbox هر پیام را جداگانه و اتمیک claim می‌کند، lease پیام را هنگام delivery تمدید می‌کند، پیام‌های `PROCESSING` منقضی یا legacy بدون lease را بازیابی می‌کند و با backoff نمایی و jitter پس از پنج شکست به `DEAD_LETTER` می‌فرستد. ارسال notification با کلید یکتای وابسته به outbox قبل از push/SMS پایدار می‌شود تا retry side effect دوم نسازد؛ dispatch ذخیره‌نشده نیز دیگر published محسوب نمی‌شود. endpointهای فقط-admin برای مشاهدهٔ lease/heartbeat، مشاهدهٔ outbox عملیاتی و replay اتمیک dead-letter بدون payload حساس اضافه شده‌اند و replay در audit log ثبت می‌شود. تست‌های دو worker برای هر سه job دوره‌ای، رقابت دو outbox worker، reclaim پس از crash، توقف poison message و retry اعلان ذخیره‌نشده اضافه شده‌اند. API unit `133/133`، frontend شامل mobile `70/70`، shared API `13/13`، admin `2/2` و website `6/6`، lint/typecheck و build هر چهار اپ محلی سبزند. [CI رسمی commit `b8b557b7`](https://github.com/hamidYeganeh/Gym4Me/actions/runs/32630547847) نیز روی Mongo replica-set واقعی رقابت ۲۰ instance برای lease و claim outbox، stale recovery و عدم claim دوبارهٔ dead-letter را همراه با تمام integration/smokeها و buildها با وضعیت Success پاس کرده است.
 
 ---
 
