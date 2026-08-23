@@ -82,7 +82,7 @@
 5. ~~ثبت attribution کلاینت~~ ✅ (پوشش event سروری جزئی؛ taxonomy کامل later)
 6. ~~تست دستی end-to-end: OTP → عضویت → رزرو → حضور → مربی~~ ✅ (`apps/api/test/e2e-scenario.sh` + smokes؛ صف ادمین پس از `db:seed:all`)
 
-> **ابزار پایه:** CI (lint read-only + check-types با `next typegen` + frontend Jest + unit در تهران/UTC + Mongo/Redis integration + OpenAPI + build چهار app)، `check-types`، و smokeهای فازبندی‌شده (`smoke-flows` / `smoke-booking` / `smoke-membership` / `integrity-flows` / `e2e-scenario`)؛ G4M-001 quality gate بسته شد (۲۰۲۶-۰۸-۱۶). test pyramid محلی G4M-002 سبز است و فقط evidence runner رسمی پس از push باقی مانده.
+> **ابزار پایه:** CI (lint read-only + check-types با `next typegen` + frontend Jest + unit در تهران/UTC + Mongo/Redis integration + OpenAPI + build چهار app)، `check-types`، و smokeهای فازبندی‌شده (`smoke-flows` / `smoke-booking` / `smoke-membership` / `integrity-flows` / `e2e-scenario`)؛ G4M-001 quality gate در ۲۰۲۶-۰۸-۱۶ و G4M-002 test pyramid با اجرای رسمی موفق [GitHub Actions](https://github.com/hamidYeganeh/Gym4Me/actions/runs/32599181368) در ۲۰۲۶-۰۸-۲۳ بسته شدند.
 >
 > دیتابیس: فقط MongoDB — مهاجرت به PostgreSQL در محدوده نیست.
 >

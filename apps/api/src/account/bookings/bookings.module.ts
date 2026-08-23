@@ -16,6 +16,9 @@ import { User, UserSchema } from '../../schemas/user.schema';
 import { ClubSlotsModule } from '../club-slots/club-slots.module';
 import { ReferralModule } from '../referral/referral.module';
 import { AdminBookingsController } from './admin-bookings.controller';
+import { CreateClubBookingCommand } from './application/commands/create-club-booking.command';
+import { CreateCoachBookingCommand } from './application/commands/create-coach-booking.command';
+import { VerifyBookingPaymentCommand } from './application/commands/verify-booking-payment.command';
 import { AthleteBookingsController } from './athlete-bookings.controller';
 import { BookingsExpireService } from './bookings-expire.service';
 import { BookingsService } from './bookings.service';
@@ -50,7 +53,14 @@ import { OwnerClubBookingsController } from './owner-club-bookings.controller';
     OwnerClubBookingsController,
     AdminBookingsController,
   ],
-  providers: [CoachSlotsService, BookingsService, BookingsExpireService],
+  providers: [
+    CoachSlotsService,
+    CreateClubBookingCommand,
+    CreateCoachBookingCommand,
+    VerifyBookingPaymentCommand,
+    BookingsService,
+    BookingsExpireService,
+  ],
   exports: [BookingsService, CoachSlotsService],
 })
 export class BookingsModule {}
