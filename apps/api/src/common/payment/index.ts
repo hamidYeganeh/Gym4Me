@@ -4,6 +4,8 @@ export {
   type CreatePaymentResult,
   type VerifyPaymentRequest,
   type VerifyPaymentResult,
+  type ReversePaymentRequest,
+  type ReversePaymentResult,
   type PaymentCurrency,
 } from './payment-gateway.service';
 export { MockPaymentGatewayService } from './mock-payment.service';

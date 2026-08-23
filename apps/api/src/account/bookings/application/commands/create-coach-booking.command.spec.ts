@@ -88,6 +88,7 @@ describe('CreateCoachBookingCommand', () => {
       lockAndAssertCoachAvailable: jest.fn().mockResolvedValue(undefined),
     };
     const outbox = { enqueue: jest.fn().mockResolvedValue(undefined) };
+    const coupons = { redeem: jest.fn().mockResolvedValue({ discount: 0 }) };
     const transactions = {
       run: jest.fn(
         async (work: (transactionSession: ClientSession) => unknown) =>
@@ -103,6 +104,7 @@ describe('CreateCoachBookingCommand', () => {
       calendarAvailability as never,
       calendarGuard as never,
       outbox as never,
+      coupons as never,
     );
     return {
       bookingModel,
@@ -113,6 +115,7 @@ describe('CreateCoachBookingCommand', () => {
       created,
       slotModel,
       outbox,
+      coupons,
       transactions,
     };
   }
@@ -155,6 +158,34 @@ describe('CreateCoachBookingCommand', () => {
       { session },
     );
     jest.useRealTimers();
+  });
+
+  it('atomically applies a redeemed coupon to the coach price snapshot', async () => {
+    const { bookingModel, command, coupons } = setup();
+    coupons.redeem.mockResolvedValueOnce({ discount: 50_000 });
+
+    await command.execute(athleteId, dto);
+
+    expect(coupons.redeem).toHaveBeenCalledWith(
+      'LATER',
+      expect.objectContaining({
+        userId: athleteId,
+        amount: 250_000,
+        contextKey: `booking:${athleteId}:${dto.idempotencyKey}`,
+      }),
+      session,
+    );
+    expect(bookingModel.create).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({
+          pricing: expect.objectContaining({
+            discount: 50_000,
+            total: 200_000,
+          }),
+        }),
+      ],
+      { session },
+    );
   });
 
   it('returns an idempotent replay before querying coach or slot state', async () => {

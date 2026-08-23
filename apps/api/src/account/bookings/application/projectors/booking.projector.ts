@@ -163,6 +163,7 @@ export class BookingProjector {
           supplementKeys: booking.intake?.supplementKeys ?? [],
         },
         pricing: {
+          version: booking.pricing.version ?? 'booking-pricing-v1',
           amount: booking.pricing.amount,
           discount: booking.pricing.discount,
           couponCode: booking.pricing.couponCode ?? null,
@@ -180,6 +181,9 @@ export class BookingProjector {
               note: booking.cancellation.note ?? null,
               cancelledAt: booking.cancellation.cancelledAt,
               cancelledBy: booking.cancellation.cancelledBy,
+              feePercent: booking.cancellation.feePercent ?? 0,
+              feeAmount: booking.cancellation.feeAmount ?? 0,
+              refundAmount: booking.cancellation.refundAmount ?? 0,
             }
           : null,
         createdAt: booking.createdAt,

@@ -2,6 +2,7 @@ export const accountFinanceEndpoints = {
   wallet: "/account/finance/wallet",
   walletOverview: "/account/finance/wallet/overview",
   walletTopUp: "/account/finance/wallet/topup",
+  walletTopUpVerify: "/account/finance/wallet/topup/verify",
   payments: "/account/finance/payments",
   invoices: "/account/finance/invoices",
   invoice: (id: string) => `/account/finance/invoices/${id}`,

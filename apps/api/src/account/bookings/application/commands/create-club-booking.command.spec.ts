@@ -88,6 +88,7 @@ describe('CreateClubBookingCommand', () => {
           work(session),
       ),
     };
+    const coupons = { redeem: jest.fn().mockResolvedValue({ discount: 0 }) };
     const command = new CreateClubBookingCommand(
       bookingModel as never,
       clubModel as never,
@@ -96,6 +97,7 @@ describe('CreateClubBookingCommand', () => {
       outbox as never,
       transactions as unknown as MongoTransactionService,
       calendarGuard as never,
+      coupons as never,
     );
     return {
       bookingModel,
@@ -105,6 +107,7 @@ describe('CreateClubBookingCommand', () => {
       calendarGuard,
       outbox,
       transactions,
+      coupons,
     };
   }
 
@@ -176,6 +179,36 @@ describe('CreateClubBookingCommand', () => {
       { session },
     );
     expect(outbox.enqueue).not.toHaveBeenCalled();
+  });
+
+  it('redeems a coupon inside the booking transaction and snapshots its discount', async () => {
+    const { bookingModel, command, coupons } = setup(150_000);
+    coupons.redeem.mockResolvedValueOnce({ discount: 35_000 });
+
+    await command.execute(athleteId, { ...dto, couponCode: 'SAVE35' });
+
+    expect(coupons.redeem).toHaveBeenCalledWith(
+      'SAVE35',
+      expect.objectContaining({
+        userId: athleteId,
+        amount: 150_000,
+        contextKey: `booking-series:${athleteId}:${dto.idempotencyKey}`,
+      }),
+      session,
+    );
+    expect(bookingModel.create).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({
+          pricing: {
+            amount: 150_000,
+            discount: 35_000,
+            couponCode: 'SAVE35',
+            total: 115_000,
+          },
+        }),
+      ],
+      { session },
+    );
   });
 
   it('returns a complete idempotent series without reopening capacity', async () => {

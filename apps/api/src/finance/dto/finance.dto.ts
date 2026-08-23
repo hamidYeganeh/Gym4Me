@@ -6,10 +6,12 @@ import {
   IsDateString,
   IsEnum,
   IsInt,
+  IsIn,
   IsMongoId,
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUrl,
   Max,
   MaxLength,
   Min,
@@ -296,29 +298,24 @@ export class TopUpWalletDto {
   @Min(1000)
   amount!: number;
 
-  @IsOptional()
-  @IsEnum(PaymentChannel)
-  channel?: PaymentChannel;
-
   @IsString()
   @IsNotEmpty()
   @MaxLength(200)
   idempotencyKey!: string;
 
-  @IsOptional()
-  @IsString()
-  @MaxLength(120)
-  orderId?: string;
+  /** Exact first-party page/deep link that receives Authority and Status. */
+  @IsUrl({ require_tld: false })
+  @MaxLength(500)
+  callbackUrl!: string;
+}
 
-  @IsOptional()
+export class VerifyWalletTopUpDto {
   @IsString()
   @MaxLength(120)
-  authority?: string;
+  authority!: string;
 
-  @IsOptional()
-  @IsString()
-  @MaxLength(120)
-  gatewayRefId?: string;
+  @IsIn(['OK', 'NOK'])
+  status!: 'OK' | 'NOK';
 }
 
 export class WalletOwnerDto {

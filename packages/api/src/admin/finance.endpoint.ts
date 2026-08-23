@@ -3,6 +3,7 @@ export const adminFinanceEndpoints = {
   ledger: "/admin/finance/ledger",
   payments: "/admin/finance/payments",
   payment: (id: string) => `/admin/finance/payments/${id}`,
+  rebuildWallet: "/admin/finance/wallets/rebuild",
   payouts: "/admin/finance/payouts",
   draftPeriodPayout: "/admin/finance/payouts/draft-period",
   settlePayout: (id: string) => `/admin/finance/payouts/${id}/settle`,

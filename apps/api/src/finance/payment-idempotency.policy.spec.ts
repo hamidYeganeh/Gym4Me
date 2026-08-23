@@ -4,6 +4,7 @@ import type { PaymentAmountSplit } from '../schemas/payment.schema';
 import { assertPaymentIdempotencyMatch } from './payment-idempotency.policy';
 
 const amount: PaymentAmountSplit = {
+  pricingVersion: 'finance-split-v1',
   discount: 10,
   gatewayFee: 5,
   gross: 100,
@@ -32,9 +33,18 @@ const requested = {
 };
 
 describe('assertPaymentIdempotencyMatch', () => {
-  it('accepts the original payload and the default captured status', () => {
+  it('accepts the original immutable payment payload', () => {
     expect(() =>
       assertPaymentIdempotencyMatch(existing, requested),
+    ).not.toThrow();
+  });
+
+  it('ignores lifecycle status changes on an otherwise identical replay', () => {
+    expect(() =>
+      assertPaymentIdempotencyMatch(
+        { ...existing, status: PaymentStatus.REFUNDED },
+        requested,
+      ),
     ).not.toThrow();
   });
 
@@ -50,7 +60,6 @@ describe('assertPaymentIdempotencyMatch', () => {
   it.each([
     ['purpose', { purpose: PaymentPurpose.MEMBERSHIP }],
     ['channel', { channel: PaymentChannel.WALLET }],
-    ['status', { status: PaymentStatus.PENDING }],
     ['order', { reference: { orderId: 'order-2' } }],
     ['payer', { payer: { userId: 'user-2' } }],
     ['guest', { payer: { guest: { phone: '+989121111111' } } }],

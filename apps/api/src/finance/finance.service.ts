@@ -25,6 +25,7 @@ import {
   AnalyticsPeriod,
   PaymentChannel,
   PaymentPurpose,
+  PaymentRefundMethod,
   PaymentStatus,
   PayoutDisputeStatus,
   PayoutRecipientType,
@@ -90,11 +91,11 @@ import {
   RecordDebtPaymentDto,
   RecordManualPaymentDto,
   RecordPaymentDto,
-  TopUpWalletDto,
   UpsertCompensationRuleDto,
 } from './dto/finance.dto';
 import { assertPaymentIdempotencyMatch } from './payment-idempotency.policy';
 import { FinanceReadQuery } from './application/queries/finance-read.query';
+import { buildWalletRefundLines } from './refund-ledger.policy';
 
 export type WalletOwnerRef = {
   type: WalletOwnerType;
@@ -178,6 +179,67 @@ export class FinanceService {
     return wallet;
   }
 
+  /** Rebuild the mutable wallet cache from immutable wallet-liability lines. */
+  async rebuildWalletFromLedger(
+    owner: WalletOwnerRef,
+    actorId: string,
+    request?: Request,
+  ) {
+    const ownerId = this.toObjectId(owner.id, 'owner.id');
+    const result = await this.transactions.run(async (session) => {
+      const [totals] = await this.ledgerModel
+        .aggregate<{ credits: number; debits: number }>([
+          { $unwind: '$lines' },
+          {
+            $match: {
+              'lines.account': LedgerAccount.WALLET_LIABILITY,
+              'lines.party.type': owner.type,
+              'lines.party.id': ownerId,
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              credits: { $sum: '$lines.credit' },
+              debits: { $sum: '$lines.debit' },
+            },
+          },
+        ])
+        .session(session);
+      const calculatedBalance = (totals?.credits ?? 0) - (totals?.debits ?? 0);
+      if (calculatedBalance < 0) {
+        throw new ConflictException(
+          'Ledger-derived wallet balance is negative; manual review required',
+        );
+      }
+      const wallet = await this.getOrCreateWallet(
+        { type: owner.type, id: ownerId },
+        session,
+      );
+      const previousBalance = wallet.balance;
+      await this.walletModel.updateOne(
+        { _id: wallet._id },
+        { $set: { balance: calculatedBalance } },
+        { session },
+      );
+      return {
+        owner: { type: owner.type, id: ownerId.toString() },
+        previousBalance,
+        balance: calculatedBalance,
+        corrected: previousBalance !== calculatedBalance,
+      };
+    });
+    this.audit.log({
+      action: AuditAction.FINANCE_WALLET_REBUILT,
+      actorId,
+      targetUserId:
+        owner.type === WalletOwnerType.USER ? ownerId.toString() : undefined,
+      metadata: result,
+      request,
+    });
+    return result;
+  }
+
   async getWalletBalance(owner: WalletOwnerRef) {
     const wallet = await this.getOrCreateWallet(owner);
     return {
@@ -190,50 +252,517 @@ export class FinanceService {
     };
   }
 
-  async topUpWallet(userId: string, dto: TopUpWalletDto, request?: Request) {
-    const channel = dto.channel ?? PaymentChannel.ZARINPAL;
-    if (
-      channel !== PaymentChannel.ZARINPAL &&
-      channel !== PaymentChannel.CASH &&
-      channel !== PaymentChannel.POS &&
-      channel !== PaymentChannel.CARD_TO_CARD
-    ) {
-      throw new BadRequestException('Unsupported top-up channel');
-    }
+  // ── Payments ────────────────────────────────────────────────────────────
 
-    return this.recordPayment(
+  /** Server-only promotional credit; never exposed as a self-service API. */
+  async grantWalletCredit(
+    userId: string,
+    amount: number,
+    idempotencyKey: string,
+    orderId: string,
+  ) {
+    if (!Number.isInteger(amount) || amount <= 0) {
+      throw new BadRequestException('Wallet credit must be a positive integer');
+    }
+    const ownerId = this.toObjectId(userId, 'userId');
+    return this.transactions.run(async (session) => {
+      const existing = await this.paymentModel
+        .findOne({ idempotencyKey })
+        .session(session);
+      if (existing) {
+        if (
+          existing.payer.userId?.toString() !== userId ||
+          existing.amount.gross !== amount ||
+          existing.reference.orderId !== orderId
+        ) {
+          throw new ConflictException(
+            'Wallet credit idempotency key has different semantics',
+          );
+        }
+        const ledger = await this.ledgerModel
+          .findOne({ paymentId: existing._id })
+          .session(session)
+          .lean();
+        return {
+          payment: existing.toObject(),
+          ledger,
+          idempotent: true as const,
+        };
+      }
+      const now = new Date();
+      const split = this.normalizeSplit({ gross: amount, net: amount });
+      const payment = new this.paymentModel({
+        purpose: PaymentPurpose.WALLET_TOPUP,
+        channel: PaymentChannel.WALLET,
+        status: PaymentStatus.CAPTURED,
+        amount: split,
+        reference: { orderId },
+        payer: { userId: ownerId },
+        related: {},
+        idempotencyKey,
+        capturedAt: now,
+      });
+      await payment.save({ session });
+      const ledger = new this.ledgerModel({
+        kind: LedgerEntryKind.ADJUSTMENT,
+        paymentId: payment._id,
+        lines: [
+          {
+            account: LedgerAccount.DISCOUNT_EXPENSE,
+            debit: amount,
+            credit: 0,
+          },
+          {
+            account: LedgerAccount.WALLET_LIABILITY,
+            debit: 0,
+            credit: amount,
+            party: { type: WalletOwnerType.USER, id: ownerId },
+          },
+        ],
+        split,
+        related: {},
+        dedupeKey: `payment:${idempotencyKey}`,
+        occurredAt: now,
+        note: 'Server-issued promotional wallet credit',
+      });
+      await ledger.save({ session });
+      const wallet = await this.getOrCreateWallet(
+        { type: WalletOwnerType.USER, id: ownerId },
+        session,
+      );
+      await this.walletModel.updateOne(
+        { _id: wallet._id },
+        { $inc: { balance: amount } },
+        { session },
+      );
+      return {
+        payment: payment.toObject(),
+        ledger: ledger.toObject(),
+        idempotent: false as const,
+      };
+    });
+  }
+
+  /** Capture a previously initiated wallet top-up and post its ledger once. */
+  async capturePendingWalletTopUp(
+    userId: string,
+    authority: string,
+    gatewayRefId: string,
+    request?: Request,
+  ) {
+    const walletOwner = { type: WalletOwnerType.USER, id: userId } as const;
+    const committed = await this.transactions.run(async (session) => {
+      const payment = await this.paymentModel
+        .findOne({
+          purpose: PaymentPurpose.WALLET_TOPUP,
+          channel: PaymentChannel.ZARINPAL,
+          'payer.userId': new Types.ObjectId(userId),
+          'reference.authority': authority,
+        })
+        .session(session);
+      if (!payment) throw new NotFoundException('Wallet top-up not found');
+
+      if (payment.status === PaymentStatus.CAPTURED) {
+        const ledger = await this.ledgerModel
+          .findOne({ paymentId: payment._id })
+          .session(session)
+          .lean();
+        return {
+          payment: payment.toObject(),
+          ledger,
+          idempotent: true as const,
+        };
+      }
+      if (
+        payment.status !== PaymentStatus.PENDING &&
+        payment.status !== PaymentStatus.AUTHORIZED
+      ) {
+        throw new ConflictException('Wallet top-up is not payable');
+      }
+
+      const split = payment.amount;
+      const related = payment.related ?? {};
+      const lines = this.buildPaymentLines(
+        payment.channel,
+        split,
+        related,
+        payment.purpose,
+        walletOwner,
+      );
+      this.assertBalanced(lines);
+
+      const now = new Date();
+      payment.status = PaymentStatus.CAPTURED;
+      payment.capturedAt = now;
+      payment.reference.gatewayRefId = gatewayRefId;
+      payment.markModified('reference');
+      await payment.save({ session });
+
+      const ledger = new this.ledgerModel({
+        kind: LedgerEntryKind.WALLET_TOPUP,
+        paymentId: payment._id,
+        lines,
+        split,
+        related,
+        dedupeKey: `payment:${payment.idempotencyKey}`,
+        occurredAt: now,
+      });
+      await ledger.save({ session });
+      await this.applyWalletSideEffects(
+        payment.channel,
+        payment.purpose,
+        split,
+        walletOwner,
+        session,
+      );
+      return {
+        payment: payment.toObject(),
+        ledger: ledger.toObject(),
+        idempotent: false as const,
+      };
+    });
+
+    if (!committed.idempotent && committed.ledger) {
+      const payment = committed.payment;
+      await this.runPaymentPostCommitEffects(
+        {
+          purpose: payment.purpose,
+          channel: payment.channel,
+          status: PaymentStatus.CAPTURED,
+          amount: payment.amount,
+          reference: {
+            orderId: payment.reference.orderId,
+            authority: payment.reference.authority,
+            gatewayRefId: payment.reference.gatewayRefId,
+          },
+          payer: { userId },
+          related: {},
+          idempotencyKey: payment.idempotencyKey,
+        },
+        { actorId: userId, request, walletOwner },
+        committed,
+      );
+    }
+    return committed;
+  }
+
+  async cancelPendingWalletTopUp(userId: string, authority: string) {
+    const cancelled = await this.paymentModel.findOneAndUpdate(
       {
         purpose: PaymentPurpose.WALLET_TOPUP,
-        channel,
-        status: PaymentStatus.CAPTURED,
-        amount: {
-          gross: dto.amount,
-          discount: 0,
-          tax: 0,
-          providerShare: 0,
-          platformFee: 0,
-          gatewayFee: 0,
-          net: dto.amount,
-        },
-        reference: {
-          orderId:
-            dto.orderId ?? `wallet-topup:${userId}:${dto.idempotencyKey}`,
-          authority: dto.authority,
-          gatewayRefId: dto.gatewayRefId,
-        },
-        payer: { userId },
-        related: {},
-        idempotencyKey: dto.idempotencyKey,
+        channel: PaymentChannel.ZARINPAL,
+        'payer.userId': new Types.ObjectId(userId),
+        'reference.authority': authority,
+        status: PaymentStatus.PENDING,
       },
       {
-        actorId: userId,
-        request,
-        walletOwner: { type: WalletOwnerType.USER, id: userId },
+        $set: {
+          status: PaymentStatus.CANCELLED,
+          cancelledAt: new Date(),
+        },
+      },
+      { new: true },
+    );
+    if (cancelled) return cancelled.toObject();
+
+    const existing = await this.paymentModel.findOne({
+      purpose: PaymentPurpose.WALLET_TOPUP,
+      'payer.userId': new Types.ObjectId(userId),
+      'reference.authority': authority,
+    });
+    if (!existing) throw new NotFoundException('Wallet top-up not found');
+    return existing.toObject();
+  }
+
+  async findCapturedBookingPayment(bookingId: string | Types.ObjectId) {
+    const payment = await this.paymentModel
+      .findOne({
+        purpose: PaymentPurpose.BOOKING,
+        'related.bookingId': this.toObjectId(bookingId, 'bookingId'),
+        status: {
+          $in: [
+            PaymentStatus.CAPTURED,
+            PaymentStatus.PARTIALLY_REFUNDED,
+            PaymentStatus.REFUNDED,
+          ],
+        },
+      })
+      .sort({ capturedAt: -1 });
+    if (!payment) {
+      throw new NotFoundException('Captured booking payment not found');
+    }
+    return payment;
+  }
+
+  /** Persist refund intent before any external PSP side effect. */
+  async prepareBookingRefund(input: {
+    paymentId: string | Types.ObjectId;
+    bookingId: string | Types.ObjectId;
+    processedBy: string | Types.ObjectId;
+    amount: number;
+    method: PaymentRefundMethod;
+    idempotencyKey: string;
+  }) {
+    const paymentId = this.toObjectId(input.paymentId, 'paymentId');
+    const bookingId = this.toObjectId(input.bookingId, 'bookingId');
+    const processedBy = this.toObjectId(input.processedBy, 'processedBy');
+    return this.transactions.run(async (session) => {
+      const payment = await this.paymentModel
+        .findById(paymentId)
+        .session(session);
+      if (
+        !payment ||
+        payment.related?.bookingId?.toString() !== bookingId.toString()
+      ) {
+        throw new NotFoundException('Booking payment not found');
+      }
+      const paidAmount = payment.amount.gross - payment.amount.discount;
+      const remaining = paidAmount - (payment.refundedAmount ?? 0);
+      const existing = payment.refunds?.find(
+        (refund) => refund.idempotencyKey === input.idempotencyKey,
+      );
+      if (existing) {
+        if (
+          existing.amount !== input.amount ||
+          existing.method !== input.method
+        ) {
+          throw new ConflictException(
+            'Refund idempotency key is used with different semantics',
+          );
+        }
+        if (existing.status === 'failed') {
+          existing.status = 'pending';
+          existing.lastError = undefined;
+          await payment.save({ session });
+        }
+        return {
+          amount: existing.amount,
+          method: existing.method,
+          idempotencyKey: existing.idempotencyKey,
+          status: existing.status,
+        };
+      }
+      if (input.amount <= 0 || input.amount > remaining) {
+        throw new ConflictException(
+          `Refund exceeds remaining amount (${remaining})`,
+        );
+      }
+      if (
+        input.method === PaymentRefundMethod.GATEWAY_REVERSE &&
+        (input.amount !== paidAmount || (payment.refundedAmount ?? 0) !== 0)
+      ) {
+        throw new ConflictException(
+          'Gateway reverse only supports a full refund',
+        );
+      }
+      payment.refunds.push({
+        amount: input.amount,
+        method: input.method,
+        idempotencyKey: input.idempotencyKey,
+        status: 'pending',
+        processedBy,
+        processedAt: new Date(),
+      });
+      await payment.save({ session });
+      const prepared = payment.refunds.at(-1)!;
+      return {
+        amount: prepared.amount,
+        method: prepared.method,
+        idempotencyKey: prepared.idempotencyKey,
+        status: prepared.status,
+      };
+    });
+  }
+
+  async markBookingRefundFailed(
+    paymentId: string | Types.ObjectId,
+    idempotencyKey: string,
+    error: unknown,
+  ) {
+    await this.paymentModel.updateOne(
+      {
+        _id: this.toObjectId(paymentId, 'paymentId'),
+        refunds: { $elemMatch: { idempotencyKey, status: 'pending' } },
+      },
+      {
+        $set: {
+          'refunds.$.status': 'failed',
+          'refunds.$.lastError': String(
+            error instanceof Error ? error.message : error,
+          ).slice(0, 1000),
+        },
       },
     );
   }
 
-  // ── Payments ────────────────────────────────────────────────────────────
+  /**
+   * Post an immutable refund entry and update the payment/wallet cache in one
+   * transaction. The provider call (when any) must succeed before this method.
+   */
+  async settleBookingRefund(input: {
+    paymentId: string | Types.ObjectId;
+    bookingId: string | Types.ObjectId;
+    payerUserId: string | Types.ObjectId;
+    processedBy: string | Types.ObjectId;
+    amount: number;
+    method: PaymentRefundMethod;
+    idempotencyKey: string;
+    providerResult?: { code: number | string; message?: string };
+  }) {
+    if (!Number.isInteger(input.amount) || input.amount <= 0) {
+      throw new BadRequestException('Refund amount must be a positive integer');
+    }
+    const paymentId = this.toObjectId(input.paymentId, 'paymentId');
+    const bookingId = this.toObjectId(input.bookingId, 'bookingId');
+    const payerUserId = this.toObjectId(input.payerUserId, 'payerUserId');
+    const processedBy = this.toObjectId(input.processedBy, 'processedBy');
+
+    const result = await this.transactions.run(async (session) => {
+      const payment = await this.paymentModel
+        .findById(paymentId)
+        .session(session);
+      if (
+        !payment ||
+        payment.related?.bookingId?.toString() !== bookingId.toString()
+      ) {
+        throw new NotFoundException('Booking payment not found');
+      }
+      const refundOperation = payment.refunds?.find(
+        (refund) => refund.idempotencyKey === input.idempotencyKey,
+      );
+      if (!refundOperation) {
+        throw new ConflictException('Refund intent was not prepared');
+      }
+      if (refundOperation.status === 'succeeded') {
+        const ledger = await this.ledgerModel
+          .findOne({ dedupeKey: `refund:${input.idempotencyKey}` })
+          .session(session)
+          .lean();
+        return {
+          payment: payment.toObject(),
+          ledger,
+          idempotent: true as const,
+        };
+      }
+      if (
+        payment.status !== PaymentStatus.CAPTURED &&
+        payment.status !== PaymentStatus.PARTIALLY_REFUNDED
+      ) {
+        throw new ConflictException('Payment is not refundable');
+      }
+      const paidAmount = payment.amount.gross - payment.amount.discount;
+      const refundedAmount = payment.refundedAmount ?? 0;
+      const remaining = paidAmount - refundedAmount;
+      if (input.amount > remaining) {
+        throw new ConflictException(
+          `Refund exceeds remaining amount (${remaining})`,
+        );
+      }
+
+      const original = await this.ledgerModel
+        .findOne({
+          paymentId,
+          kind: {
+            $in: [LedgerEntryKind.PAYMENT, LedgerEntryKind.WALLET_SPEND],
+          },
+        })
+        .session(session)
+        .lean();
+      if (!original) throw new NotFoundException('Payment ledger not found');
+
+      const lines =
+        input.method === PaymentRefundMethod.GATEWAY_REVERSE
+          ? original.lines.map((line) => ({
+              account: line.account,
+              debit: line.credit,
+              credit: line.debit,
+              party: line.party,
+            }))
+          : buildWalletRefundLines(
+              original.lines,
+              input.amount,
+              paidAmount,
+              payerUserId,
+            );
+      if (
+        input.method === PaymentRefundMethod.GATEWAY_REVERSE &&
+        (input.amount !== paidAmount || refundedAmount !== 0)
+      ) {
+        throw new ConflictException(
+          'Gateway reverse only supports a full refund',
+        );
+      }
+      this.assertBalanced(lines);
+      const now = new Date();
+      const ledger = new this.ledgerModel({
+        kind: LedgerEntryKind.REFUND,
+        paymentId,
+        lines,
+        split: original.split,
+        related: original.related,
+        dedupeKey: `refund:${input.idempotencyKey}`,
+        occurredAt: now,
+        note: `Booking refund via ${input.method}`,
+      });
+      await ledger.save({ session });
+
+      const totalRefunded = refundedAmount + input.amount;
+      payment.refundedAmount = totalRefunded;
+      payment.status =
+        totalRefunded === paidAmount
+          ? PaymentStatus.REFUNDED
+          : PaymentStatus.PARTIALLY_REFUNDED;
+      payment.refundedAt = now;
+      refundOperation.status = 'succeeded';
+      refundOperation.succeededAt = now;
+      refundOperation.lastError = undefined;
+      refundOperation.providerCode = input.providerResult
+        ? String(input.providerResult.code)
+        : undefined;
+      refundOperation.providerMessage = input.providerResult?.message;
+      await payment.save({ session });
+
+      if (input.method === PaymentRefundMethod.WALLET_CREDIT) {
+        const wallet = await this.getOrCreateWallet(
+          { type: WalletOwnerType.USER, id: payerUserId },
+          session,
+        );
+        await this.walletModel.updateOne(
+          { _id: wallet._id },
+          { $inc: { balance: input.amount } },
+          { session },
+        );
+      }
+      if (totalRefunded === paidAmount) {
+        await this.invoiceModel.updateOne(
+          { paymentId },
+          { $set: { status: InvoiceStatus.VOID, voidedAt: now } },
+          { session },
+        );
+      }
+      return {
+        payment: payment.toObject(),
+        ledger: ledger.toObject(),
+        idempotent: false as const,
+      };
+    });
+
+    if (!result.idempotent) {
+      this.audit.log({
+        action: AuditAction.FINANCE_REFUND_SETTLED,
+        actorId: processedBy,
+        targetUserId: payerUserId,
+        metadata: {
+          paymentId: paymentId.toString(),
+          bookingId: bookingId.toString(),
+          amount: input.amount,
+          method: input.method,
+          ledgerEntryId: result.ledger?._id.toString(),
+        },
+      });
+    }
+    return result;
+  }
 
   /**
    * Create a Payment + balanced immutable LedgerEntry.
@@ -1697,6 +2226,7 @@ export class FinanceService {
       input.net ??
       input.gross - discount - tax - providerShare - platformFee - gatewayFee;
     return {
+      pricingVersion: 'finance-split-v1',
       gross: input.gross,
       discount,
       tax,
@@ -1840,26 +2370,33 @@ export class FinanceService {
     originalIdempotencyKey: string,
     opts: { dedupeKey: string; note?: string },
   ): Promise<{ ledgerId: string; idempotent: boolean } | null> {
-    const payment = await this.paymentModel
-      .findOne({ idempotencyKey: originalIdempotencyKey })
-      .lean();
-    if (!payment) return null;
-    const original = await this.ledgerModel
-      .findOne({ paymentId: payment._id })
-      .lean();
-    if (!original) return null;
+    return this.transactions.run(async (session) => {
+      const existing = await this.ledgerModel
+        .findOne({ dedupeKey: opts.dedupeKey })
+        .session(session)
+        .lean();
+      if (existing) {
+        return { ledgerId: existing._id.toString(), idempotent: true };
+      }
+      const payment = await this.paymentModel
+        .findOne({ idempotencyKey: originalIdempotencyKey })
+        .session(session)
+        .lean();
+      if (!payment) return null;
+      const original = await this.ledgerModel
+        .findOne({ paymentId: payment._id })
+        .session(session)
+        .lean();
+      if (!original) return null;
 
-    const reverseLines = original.lines.map((line) => ({
-      account: line.account,
-      debit: line.credit,
-      credit: line.debit,
-      party: line.party,
-    }));
-    this.assertBalanced(reverseLines);
-
-    let reversal: LedgerEntryDocument;
-    try {
-      reversal = await this.ledgerModel.create({
+      const reverseLines = original.lines.map((line) => ({
+        account: line.account,
+        debit: line.credit,
+        credit: line.debit,
+        party: line.party,
+      }));
+      this.assertBalanced(reverseLines);
+      const reversal = new this.ledgerModel({
         kind: LedgerEntryKind.ADJUSTMENT,
         paymentId: payment._id,
         lines: reverseLines,
@@ -1869,36 +2406,27 @@ export class FinanceService {
         occurredAt: new Date(),
         note: opts.note,
       });
-    } catch (err) {
-      if ((err as { code?: number }).code === 11000) {
-        const existing = await this.ledgerModel
-          .findOne({ dedupeKey: opts.dedupeKey })
-          .lean();
-        return existing
-          ? { ledgerId: existing._id.toString(), idempotent: true }
-          : null;
-      }
-      throw err;
-    }
+      await reversal.save({ session });
 
-    const walletLine = original.lines.find(
-      (line) =>
-        line.account === LedgerAccount.WALLET_LIABILITY &&
-        line.credit > 0 &&
-        line.party,
-    );
-    if (walletLine?.party) {
-      const wallet = await this.getOrCreateWallet({
-        type: walletLine.party.type,
-        id: walletLine.party.id,
-      });
-      await this.walletModel.updateOne(
-        { _id: wallet._id },
-        { $inc: { balance: -walletLine.credit } },
+      const walletLine = original.lines.find(
+        (line) =>
+          line.account === LedgerAccount.WALLET_LIABILITY &&
+          line.credit > 0 &&
+          line.party,
       );
-    }
-
-    return { ledgerId: reversal._id.toString(), idempotent: false };
+      if (walletLine?.party) {
+        const wallet = await this.getOrCreateWallet(
+          { type: walletLine.party.type, id: walletLine.party.id },
+          session,
+        );
+        await this.walletModel.updateOne(
+          { _id: wallet._id },
+          { $inc: { balance: -walletLine.credit } },
+          { session },
+        );
+      }
+      return { ledgerId: reversal._id.toString(), idempotent: false };
+    });
   }
 
   /**

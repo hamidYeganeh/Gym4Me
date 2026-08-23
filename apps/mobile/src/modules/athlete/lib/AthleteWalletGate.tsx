@@ -5,9 +5,11 @@ import { Typography } from "@heroui/react/typography";
 import { useCallback, useEffect, useState } from "react";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import { accountFinance } from "@/shared/lib/api";
 import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
+import { useRouter } from "@/shared/lib/app-router";
 import { AthleteWalletScreen } from "../screens/AthleteWalletScreen";
 import { mapPaymentsToWalletGroups } from "./api-wallet";
 import {
@@ -55,6 +57,8 @@ const DEMO_WALLET: WalletView = {
 
 export function AthleteWalletGate() {
   const t = useTranslations("AthleteWallet");
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { isAuthenticated, isReady } = useAuth();
   const [view, setView] = useState<WalletView | null>(null);
   const [topUpPending, setTopUpPending] = useState(false);
@@ -85,27 +89,51 @@ export function AthleteWalletGate() {
     }
 
     let cancelled = false;
-    load().catch(() => {
-      if (!cancelled) {
-        setView(DEMO_MODE ? DEMO_WALLET : EMPTY_WALLET);
+    const bootstrap = async () => {
+      const authority = searchParams.get("Authority");
+      const gatewayStatus = searchParams.get("Status");
+      if (authority && (gatewayStatus === "OK" || gatewayStatus === "NOK")) {
+        setTopUpPending(true);
+        await accountFinance.verifyWalletTopUp({
+          authority,
+          status: gatewayStatus,
+        });
+        if (cancelled) return;
+        router.replace("/athlete/wallet");
       }
-    });
+      await load();
+    };
+    bootstrap()
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        setActionError(
+          error instanceof ApiError ? error.message : t("topUpError"),
+        );
+        setView(DEMO_MODE ? DEMO_WALLET : EMPTY_WALLET);
+      })
+      .finally(() => {
+        if (!cancelled) setTopUpPending(false);
+      });
 
     return () => {
       cancelled = true;
     };
-  }, [isAuthenticated, isReady, load]);
+  }, [isAuthenticated, isReady, load, router, searchParams, t]);
 
   const handleTopUp = useCallback(async () => {
     if (!isAuthenticated) return;
     setTopUpPending(true);
     setActionError(null);
     try {
-      await accountFinance.topUpWallet({
+      const initiation = await accountFinance.topUpWallet({
         amount: DEFAULT_TOP_UP_AMOUNT,
-        channel: "zarinpal",
         idempotencyKey: `wallet-topup:${Date.now()}`,
+        callbackUrl: `${window.location.origin}/athlete/wallet`,
       });
+      if (initiation.redirectUrl) {
+        window.location.assign(initiation.redirectUrl);
+        return;
+      }
       await load();
     } catch (error) {
       setActionError(

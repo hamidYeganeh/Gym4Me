@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { FinanceModule } from '../../finance/finance.module';
+import { CouponsModule } from '../../coupons/coupons.module';
 import { NotificationsModule } from '../../notifications/notifications.module';
 import { OutboxModule } from '../../outbox/outbox.module';
 import { Booking, BookingSchema } from '../../schemas/booking.schema';
@@ -26,6 +27,7 @@ import { BookingProjector } from './application/projectors/booking.projector';
 import { BookingCalendarGuard } from './application/services/booking-calendar-guard.service';
 import { AthleteBookingsController } from './athlete-bookings.controller';
 import { BookingsExpireService } from './bookings-expire.service';
+import { BookingPaymentReconciliationWorker } from './booking-payment-reconciliation.worker';
 import { BookingsService } from './bookings.service';
 import { CoachBookingsController } from './coach-bookings.controller';
 import { CoachSlotsController } from './coach-slots.controller';
@@ -39,6 +41,7 @@ import { OwnerClubBookingsController } from './owner-club-bookings.controller';
     CalendarModule,
     NotificationsModule,
     FinanceModule,
+    CouponsModule,
     OutboxModule,
     ReferralModule,
     StaffModule,
@@ -70,6 +73,7 @@ import { OwnerClubBookingsController } from './owner-club-bookings.controller';
     BookingCalendarGuard,
     BookingsService,
     BookingsExpireService,
+    BookingPaymentReconciliationWorker,
   ],
   exports: [BookingsService, CoachSlotsService],
 })

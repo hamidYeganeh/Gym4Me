@@ -1,8 +1,5 @@
 import type { PaymentPurpose, PaymentRecord } from "@repo/api";
-import {
-  formatJalaliFullDate,
-  formatTomans,
-} from "@/shared/lib/booking-view";
+import { formatJalaliFullDate, formatTomans } from "@/shared/lib/booking-view";
 import type {
   WalletTransaction,
   WalletTransactionGroup,
@@ -18,7 +15,13 @@ const PURPOSE_TITLE: Record<PaymentPurpose, string> = {
   manual: "پرداخت دستی",
 };
 
-function paymentKind(purpose: PaymentPurpose): WalletTransactionKind {
+function paymentKind(
+  purpose: PaymentPurpose,
+  status: PaymentRecord["status"],
+): WalletTransactionKind {
+  if (status === "refunded" || status === "partially_refunded") {
+    return "refund";
+  }
   if (purpose === "wallet_topup") return "topup";
   if (purpose === "membership") return "membership";
   if (purpose === "booking") return "booking";
@@ -27,13 +30,23 @@ function paymentKind(purpose: PaymentPurpose): WalletTransactionKind {
 
 function paymentDirection(
   purpose: PaymentPurpose,
+  status: PaymentRecord["status"],
 ): WalletTransaction["direction"] {
+  if (status === "refunded" || status === "partially_refunded") {
+    return "credit";
+  }
   return purpose === "wallet_topup" || purpose === "manual"
     ? "credit"
     : "debit";
 }
 
-function paidAmount(payment: PaymentRecord): number {
+function displayAmount(payment: PaymentRecord): number {
+  if (
+    payment.status === "refunded" ||
+    payment.status === "partially_refunded"
+  ) {
+    return Math.max(0, payment.refundedAmount ?? 0);
+  }
   const gross = payment.amount.gross ?? 0;
   const discount = payment.amount.discount ?? 0;
   return Math.max(0, gross - discount);
@@ -56,6 +69,13 @@ export function mapPaymentsToWalletGroups(
   const groups = new Map<string, WalletTransactionGroup>();
 
   for (const payment of sorted) {
+    if (
+      payment.status !== "captured" &&
+      payment.status !== "refunded" &&
+      payment.status !== "partially_refunded"
+    ) {
+      continue;
+    }
     const when = payment.capturedAt ?? payment.createdAt;
     const key = groupKey(when);
     const date = new Date(when);
@@ -68,9 +88,9 @@ export function mapPaymentsToWalletGroups(
       title: PURPOSE_TITLE[payment.purpose] ?? "تراکنش",
       dateLabel: formatJalaliFullDate(when),
       timeLabel,
-      amountLabel: formatTomans(paidAmount(payment)),
-      direction: paymentDirection(payment.purpose),
-      kind: paymentKind(payment.purpose),
+      amountLabel: formatTomans(displayAmount(payment)),
+      direction: paymentDirection(payment.purpose, payment.status),
+      kind: paymentKind(payment.purpose, payment.status),
     };
 
     const existing = groups.get(key);

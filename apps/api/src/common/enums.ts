@@ -414,6 +414,7 @@ export enum MockPaymentStatus {
   PAID = 'paid',
   CANCELLED = 'cancelled',
   VERIFIED = 'verified',
+  REVERSED = 'reversed',
 }
 
 /**
@@ -685,6 +686,8 @@ export enum AuditAction {
   FINANCE_PAYMENT_RECORDED = 'finance.payment_recorded',
   FINANCE_LEDGER_POSTED = 'finance.ledger_posted',
   FINANCE_WALLET_TOPUP = 'finance.wallet_topup',
+  FINANCE_WALLET_REBUILT = 'finance.wallet_rebuilt',
+  FINANCE_REFUND_SETTLED = 'finance.refund_settled',
   FINANCE_SHIFT_CLOSED = 'finance.shift_closed',
   FINANCE_PAYOUT_CREATED = 'finance.payout_created',
   FINANCE_PAYOUT_SETTLED = 'finance.payout_settled',
@@ -790,6 +793,12 @@ export enum PaymentStatus {
   REFUNDED = 'refunded',
   PARTIALLY_REFUNDED = 'partially_refunded',
   CANCELLED = 'cancelled',
+}
+
+/** Settlement rail used for returning a captured payment. */
+export enum PaymentRefundMethod {
+  GATEWAY_REVERSE = 'gateway_reverse',
+  WALLET_CREDIT = 'wallet_credit',
 }
 
 export enum PaymentPurpose {

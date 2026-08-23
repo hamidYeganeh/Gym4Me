@@ -16,6 +16,7 @@ import {
 } from '../../../../common/enums';
 import { MongoTransactionService } from '../../../../common/mongo/mongo-transaction.service';
 import { OutboxService } from '../../../../outbox/outbox.service';
+import { CouponsService } from '../../../../coupons/coupons.service';
 import {
   Booking,
   type BookingDocument,
@@ -62,6 +63,7 @@ export class CreateClubBookingCommand {
     private readonly outbox: OutboxService,
     private readonly transactions: MongoTransactionService,
     private readonly calendarGuard: BookingCalendarGuard,
+    private readonly coupons: CouponsService,
   ) {}
 
   async execute(
@@ -190,6 +192,23 @@ export class CreateClubBookingCommand {
         const recurringGroupId =
           dates.length > 1 ? new Types.ObjectId() : undefined;
         const price = slot.price ?? 0;
+        const perBookingAmount = price * attendeeCount;
+        const orderAmount = perBookingAmount * resolved.length;
+        const redeemed = dto.couponCode
+          ? await this.coupons.redeem(
+              dto.couponCode,
+              {
+                userId: athleteId,
+                clubId: slot.clubId.toString(),
+                amount: orderAmount,
+                contextKey: `booking-series:${athleteId}:${dto.idempotencyKey}`,
+              },
+              session,
+            )
+          : { discount: 0 };
+        const baseDiscount = Math.floor(redeemed.discount / resolved.length);
+        let discountRemainder =
+          redeemed.discount - baseDiscount * resolved.length;
         const bookings: BookingDocument[] = [];
 
         for (const { occurrence, companionCoachId } of resolved) {
@@ -206,7 +225,8 @@ export class CreateClubBookingCommand {
             );
           }
 
-          const amount = price * attendeeCount;
+          const amount = perBookingAmount;
+          const discount = baseDiscount + (discountRemainder-- > 0 ? 1 : 0);
           const [booking] = await this.bookingModel.create(
             [
               {
@@ -238,16 +258,16 @@ export class CreateClubBookingCommand {
                 },
                 pricing: {
                   amount,
-                  discount: 0,
+                  discount,
                   couponCode: dto.couponCode,
-                  total: amount,
+                  total: amount - discount,
                 },
                 status:
-                  amount === 0
+                  amount - discount === 0
                     ? BookingStatus.CONFIRMED
                     : BookingStatus.AWAITING_PAYMENT,
                 paymentExpiresAt:
-                  amount === 0 ? undefined : this.paymentExpiresAt(),
+                  amount - discount === 0 ? undefined : this.paymentExpiresAt(),
               },
             ],
             { session },
@@ -255,7 +275,7 @@ export class CreateClubBookingCommand {
           if (!booking) throw new Error('Booking was not created');
           bookings.push(booking);
 
-          if (amount === 0) {
+          if (amount - discount === 0) {
             await this.enqueueConfirmation(booking, club, session);
           }
         }

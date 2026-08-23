@@ -20,8 +20,8 @@ import type {
   ListPaymentsQuery,
   ListPayoutsQuery,
   OwnerFinanceAnalytics,
-  PaymentChannel,
   PaymentRecord,
+  PaymentStatus,
   PaymentsPage,
   PaymentWithLedger,
   Payout,
@@ -36,11 +36,16 @@ import { accountFinanceEndpoints as ep } from "./finance.endpoint";
 
 export type TopUpWalletInput = {
   amount: number;
-  channel?: PaymentChannel;
   idempotencyKey: string;
-  orderId?: string;
-  authority?: string;
-  gatewayRefId?: string;
+  callbackUrl: string;
+};
+
+export type WalletTopUpInitiation = {
+  paymentId: string;
+  status: PaymentStatus;
+  authority: string | null;
+  redirectUrl: string | null;
+  idempotent: boolean;
 };
 
 export function createAccountFinanceApi(client: ApiClient) {
@@ -54,7 +59,14 @@ export function createAccountFinanceApi(client: ApiClient) {
     },
 
     topUpWallet(input: TopUpWalletInput) {
-      return client.request<PaymentRecord>(ep.walletTopUp, {
+      return client.request<WalletTopUpInitiation>(ep.walletTopUp, {
+        method: "POST",
+        body: input,
+      });
+    },
+
+    verifyWalletTopUp(input: { authority: string; status: "OK" | "NOK" }) {
+      return client.request<PaymentRecord>(ep.walletTopUpVerify, {
         method: "POST",
         body: input,
       });

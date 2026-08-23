@@ -13,6 +13,8 @@ import type {
   Payout,
   PayoutsPage,
   ResolvePayoutDisputeInput,
+  RebuildWalletInput,
+  RebuildWalletResult,
   SettlePayoutInput,
 } from "./finance.dto";
 
@@ -49,6 +51,13 @@ export function createAdminFinanceApi(client: ApiClient) {
 
     getPayment(id: string) {
       return client.request<PaymentWithLedger>(ep.payment(id));
+    },
+
+    rebuildWallet(input: RebuildWalletInput) {
+      return client.request<RebuildWalletResult>(ep.rebuildWallet, {
+        method: "POST",
+        body: input,
+      });
     },
 
     listPayouts(query: ListPayoutsQuery & { clubId?: string } = {}) {

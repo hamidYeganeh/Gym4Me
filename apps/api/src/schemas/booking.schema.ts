@@ -68,6 +68,9 @@ export const BookingIntakeSchema = SchemaFactory.createForClass(BookingIntake);
 /** Price snapshot at booking time (Tomans). */
 @Schema({ _id: false })
 export class BookingPricing {
+  @Prop({ required: true, default: 'booking-pricing-v1', trim: true })
+  version!: string;
+
   @Prop({ required: true, min: 0 })
   amount!: number;
 
@@ -97,6 +100,27 @@ export class BookingPayment {
 
   @Prop()
   paidAt?: Date;
+
+  @Prop({ trim: true, maxlength: 500 })
+  redirectUrl?: string;
+
+  @Prop()
+  initiatedAt?: Date;
+
+  @Prop({ trim: true })
+  initiationClaimId?: string;
+
+  @Prop()
+  initiationClaimedAt?: Date;
+
+  @Prop({ min: 0, default: 0 })
+  reconciliationAttempts?: number;
+
+  @Prop()
+  lastReconciliationAt?: Date;
+
+  @Prop({ trim: true, maxlength: 1000 })
+  lastReconciliationError?: string;
 }
 
 export const BookingPaymentSchema =
@@ -116,6 +140,16 @@ export class BookingCancellation {
 
   @Prop({ type: String, enum: BookingActor, required: true })
   cancelledBy!: BookingActor;
+
+  /** Immutable pricing snapshot used by refund settlement. */
+  @Prop({ min: 0, max: 100, default: 0 })
+  feePercent!: number;
+
+  @Prop({ min: 0, default: 0 })
+  feeAmount!: number;
+
+  @Prop({ min: 0, default: 0 })
+  refundAmount!: number;
 }
 
 export const BookingCancellationSchema =

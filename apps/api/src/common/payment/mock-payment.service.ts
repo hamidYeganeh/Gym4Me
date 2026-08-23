@@ -12,6 +12,8 @@ import {
   CreatePaymentRequest,
   CreatePaymentResult,
   PaymentGatewayService,
+  ReversePaymentRequest,
+  ReversePaymentResult,
   VerifyPaymentRequest,
   VerifyPaymentResult,
 } from './payment-gateway.service';
@@ -185,5 +187,29 @@ export class MockPaymentGatewayService extends PaymentGatewayService {
     await payment.save();
 
     return { ok: true, refId: payment.refId };
+  }
+
+  async reversePayment(
+    request: ReversePaymentRequest,
+  ): Promise<ReversePaymentResult> {
+    const payment = await this.mockPaymentModel.findOne({
+      authority: request.authority,
+    });
+    if (!payment) {
+      return { ok: false, code: -51, message: 'Payment session not found' };
+    }
+    if (payment.status === MockPaymentStatus.REVERSED) {
+      return { ok: true, code: 100, message: 'Already reversed' };
+    }
+    if (payment.status !== MockPaymentStatus.VERIFIED) {
+      return {
+        ok: false,
+        code: -60,
+        message: 'Only a verified payment can be reversed',
+      };
+    }
+    payment.status = MockPaymentStatus.REVERSED;
+    await payment.save();
+    return { ok: true, code: 100, message: 'Reversed' };
   }
 }

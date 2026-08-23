@@ -28,6 +28,7 @@ export type BookingIntake = {
 
 /** Price snapshot in Tomans. */
 export type BookingPricing = {
+  version?: string;
   amount: number;
   discount: number;
   couponCode: string | null;
@@ -44,6 +45,9 @@ export type BookingCancellation = {
   note: string | null;
   cancelledAt: string;
   cancelledBy: BookingActor;
+  feePercent: number;
+  feeAmount: number;
+  refundAmount: number;
 };
 
 /** What the booking reserves + display metadata for club resources. */

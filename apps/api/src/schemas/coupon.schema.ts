@@ -114,3 +114,23 @@ export const CouponRedemptionSchema =
   SchemaFactory.createForClass(CouponRedemption);
 
 CouponRedemptionSchema.index({ couponId: 1, userId: 1 });
+
+export type CouponUserUsageDocument = HydratedDocument<CouponUserUsage>;
+
+/** Atomic per-user counter for coupons allowing more than one redemption. */
+@Schema({ timestamps: true, collection: 'coupon_user_usage' })
+export class CouponUserUsage {
+  @Prop({ type: Types.ObjectId, ref: Coupon.name, required: true })
+  couponId!: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, required: true })
+  userId!: Types.ObjectId;
+
+  @Prop({ required: true, min: 0, default: 0 })
+  count!: number;
+}
+
+export const CouponUserUsageSchema =
+  SchemaFactory.createForClass(CouponUserUsage);
+
+CouponUserUsageSchema.index({ couponId: 1, userId: 1 }, { unique: true });

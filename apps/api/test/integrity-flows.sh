@@ -150,9 +150,14 @@ echo "══ Finance wallet / invoice / owner analytics ══"
 WALLET=$(jget_auth /account/finance/wallet/overview "$ATH")
 check "wallet overview has balance" "true" "$(echo "$WALLET" | jq -r 'has("balance") and has("currency")')"
 check "wallet overview has series" "true" "$(echo "$WALLET" | jq -r '(.balancePoints|type)=="array" and (.incomeSeries|type)=="array"')"
-# create a captured topup to force invoice path if possible
-TOP=$(jpost_auth /account/finance/wallet/topup "$ATH" '{"amount":100000,"channel":"cash","idempotencyKey":"integrity-topup-'$(date +%s)'"}')
-PAY_ID=$(echo "$TOP" | jq -r '.payment.id // .payment._id // .paymentId // .id // empty')
+# Initiate through the mock PSP, complete checkout, then verify server-side.
+TOP=$(jpost_auth /account/finance/wallet/topup "$ATH" '{"amount":100000,"idempotencyKey":"integrity-topup-'$(date +%s)'","callbackUrl":"http://localhost:3000/wallet"}')
+PAY_ID=$(echo "$TOP" | jq -r '.paymentId // empty')
+TOP_AUTH=$(echo "$TOP" | jq -r '.authority // empty')
+if [ -n "$TOP_AUTH" ]; then
+  curl -s -o /dev/null "$BASE/payments/mock/complete?authority=$TOP_AUTH&outcome=paid"
+  jpost_auth /account/finance/wallet/topup/verify "$ATH" "{\"authority\":\"$TOP_AUTH\",\"status\":\"OK\"}" >/dev/null
+fi
 INV_FROM=$(jpost_auth /account/finance/invoices/from-payment "$ATH" "{\"paymentId\":\"$PAY_ID\"}")
 INV_ID=$(echo "$INV_FROM" | jq -r '.id // empty')
 if [ -z "$INV_ID" ]; then

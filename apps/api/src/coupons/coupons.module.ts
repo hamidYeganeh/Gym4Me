@@ -5,6 +5,8 @@ import {
   CouponRedemption,
   CouponRedemptionSchema,
   CouponSchema,
+  CouponUserUsage,
+  CouponUserUsageSchema,
 } from '../schemas/coupon.schema';
 import {
   AccountCouponsController,
@@ -17,6 +19,7 @@ import { CouponsService } from './coupons.service';
     MongooseModule.forFeature([
       { name: Coupon.name, schema: CouponSchema },
       { name: CouponRedemption.name, schema: CouponRedemptionSchema },
+      { name: CouponUserUsage.name, schema: CouponUserUsageSchema },
     ]),
   ],
   controllers: [AccountCouponsController, AdminCouponsController],

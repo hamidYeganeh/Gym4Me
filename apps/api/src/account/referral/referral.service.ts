@@ -14,7 +14,6 @@ import {
   AnalyticsEventName,
   AuditAction,
   InviteStatus,
-  PaymentChannel,
   ReferralQualifyTrigger,
   ReferralRewardStatus,
   Role,
@@ -222,18 +221,18 @@ export class ReferralService {
 
     if (amount > 0) {
       const inviterId = invite.inviterId.toString();
-      await this.finance.topUpWallet(inviterId, {
+      await this.finance.grantWalletCredit(
+        inviterId,
         amount,
-        channel: PaymentChannel.CASH,
-        idempotencyKey: `referral:${inviteId}:inviter`,
-        orderId: `referral-inviter-${inviteId}`,
-      });
-      await this.finance.topUpWallet(userId, {
+        `referral:${inviteId}:inviter`,
+        `referral-inviter-${inviteId}`,
+      );
+      await this.finance.grantWalletCredit(
+        userId,
         amount,
-        channel: PaymentChannel.CASH,
-        idempotencyKey: `referral:${inviteId}:invitee`,
-        orderId: `referral-invitee-${inviteId}`,
-      });
+        `referral:${inviteId}:invitee`,
+        `referral-invitee-${inviteId}`,
+      );
     }
 
     invite.reward = {

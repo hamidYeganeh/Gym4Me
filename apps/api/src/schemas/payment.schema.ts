@@ -1,6 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-import { PaymentChannel, PaymentPurpose, PaymentStatus } from '../common/enums';
+import {
+  PaymentChannel,
+  PaymentPurpose,
+  PaymentRefundMethod,
+  PaymentStatus,
+} from '../common/enums';
 import { User } from './user.schema';
 
 export type PaymentDocument = HydratedDocument<Payment>;
@@ -11,6 +16,9 @@ export type PaymentDocument = HydratedDocument<Payment>;
  */
 @Schema({ _id: false })
 export class PaymentAmountSplit {
+  @Prop({ required: true, default: 'finance-split-v1', trim: true })
+  pricingVersion!: string;
+
   @Prop({ required: true, min: 0 })
   gross!: number;
 
@@ -49,6 +57,13 @@ export class PaymentReference {
 
   @Prop({ trim: true })
   externalRef?: string;
+
+  /** Provider checkout URL persisted for idempotent initiation retries. */
+  @Prop({ trim: true, maxlength: 500 })
+  redirectUrl?: string;
+
+  @Prop()
+  initiatedAt?: Date;
 }
 
 export const PaymentReferenceSchema =
@@ -123,6 +138,46 @@ export class PaymentRelated {
 export const PaymentRelatedSchema =
   SchemaFactory.createForClass(PaymentRelated);
 
+@Schema({ _id: false })
+export class PaymentRefund {
+  @Prop({ required: true, min: 1 })
+  amount!: number;
+
+  @Prop({ type: String, enum: PaymentRefundMethod, required: true })
+  method!: PaymentRefundMethod;
+
+  @Prop({ required: true, trim: true, maxlength: 240 })
+  idempotencyKey!: string;
+
+  @Prop({
+    type: String,
+    enum: ['pending', 'succeeded', 'failed'],
+    required: true,
+    default: 'pending',
+  })
+  status!: 'pending' | 'succeeded' | 'failed';
+
+  @Prop({ type: Types.ObjectId, ref: User.name, required: true })
+  processedBy!: Types.ObjectId;
+
+  @Prop({ trim: true, maxlength: 120 })
+  providerCode?: string;
+
+  @Prop({ trim: true, maxlength: 500 })
+  providerMessage?: string;
+
+  @Prop({ trim: true, maxlength: 1000 })
+  lastError?: string;
+
+  @Prop({ required: true })
+  processedAt!: Date;
+
+  @Prop()
+  succeededAt?: Date;
+}
+
+export const PaymentRefundSchema = SchemaFactory.createForClass(PaymentRefund);
+
 @Schema({ timestamps: true, collection: 'payments' })
 export class Payment {
   @Prop({
@@ -181,6 +236,32 @@ export class Payment {
 
   @Prop()
   refundedAt?: Date;
+
+  /** Cumulative amount returned to the payer, in Tomans. */
+  @Prop({ required: true, min: 0, default: 0 })
+  refundedAmount!: number;
+
+  @Prop({ type: [PaymentRefundSchema], default: [] })
+  refunds!: PaymentRefund[];
+
+  @Prop()
+  cancelledAt?: Date;
+
+  /** Short-lived owner for the external gateway-create call. */
+  @Prop({ trim: true })
+  gatewayInitiationClaimId?: string;
+
+  @Prop()
+  gatewayInitiationClaimedAt?: Date;
+
+  @Prop({ min: 0, default: 0 })
+  reconciliationAttempts!: number;
+
+  @Prop()
+  lastReconciliationAt?: Date;
+
+  @Prop({ trim: true, maxlength: 1000 })
+  lastReconciliationError?: string;
 
   createdAt!: Date;
   updatedAt!: Date;

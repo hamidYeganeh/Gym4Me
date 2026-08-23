@@ -10,4 +10,8 @@ export type AdminBookingsListQuery = BookingsListQuery & {
   clubId?: string;
 };
 
+export type SettleBookingRefundInput = {
+  method?: "gateway_reverse" | "wallet_credit";
+};
+
 export type { Booking, CancelBookingInput };

@@ -5,6 +5,7 @@ import type {
   AdminBookingsListQuery,
   Booking,
   CancelBookingInput,
+  SettleBookingRefundInput,
 } from "./bookings.dto";
 
 /** Admin booking ops: audits, disputes, refund settlement. */
@@ -25,8 +26,11 @@ export function createAdminBookingsApi(client: ApiClient) {
       });
     },
 
-    refund(id: string) {
-      return client.request<Booking>(ep.refund(id), { method: "POST" });
+    refund(id: string, input: SettleBookingRefundInput = {}) {
+      return client.request<Booking>(ep.refund(id), {
+        method: "POST",
+        body: input,
+      });
     },
   };
 }

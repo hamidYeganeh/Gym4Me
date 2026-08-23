@@ -7,6 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { randomUUID } from 'node:crypto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types, type ClientSession, type QueryFilter } from 'mongoose';
 import {
@@ -17,11 +18,15 @@ import {
   CoachSlotStatus,
   ConsultationKind,
   NotificationTemplateKey,
+  PaymentChannel,
+  PaymentRefundMethod,
   Role,
   SlotKind,
 } from '../../common/enums';
 import { PaymentGatewayService } from '../../common/payment';
+import { assertAllowedPaymentCallbackUrl } from '../../common/payment/payment-callback-url.policy';
 import { MongoTransactionService } from '../../common/mongo/mongo-transaction.service';
+import { FinanceService } from '../../finance/finance.service';
 import {
   paginatedResult,
   resolvePageSize,
@@ -58,6 +63,7 @@ import {
   ListBookingsQueryDto,
   RescheduleBookingDto,
   VerifyBookingPaymentDto,
+  SettleBookingRefundDto,
 } from './dto/booking.dto';
 
 /** Statuses that keep a slot / occurrence seat occupied. */
@@ -128,6 +134,7 @@ export class BookingsService {
     private readonly createCoachBooking: CreateCoachBookingCommand,
     private readonly verifyBookingPayment: VerifyBookingPaymentCommand,
     private readonly projector: BookingProjector,
+    private readonly finance: FinanceService,
   ) {}
 
   private paymentTtlMs() {
@@ -153,6 +160,14 @@ export class BookingsService {
           {
             status: BookingStatus.AWAITING_PAYMENT,
             paymentExpiresAt: { $lte: now },
+            $or: [
+              { 'payment.authority': { $exists: false } },
+              {
+                'payment.initiatedAt': {
+                  $lte: new Date(now.getTime() - 10 * 60_000),
+                },
+              },
+            ],
           },
           {
             status: BookingStatus.PENDING,
@@ -298,20 +313,98 @@ export class BookingsService {
       throw new ConflictException('Booking is not awaiting payment');
     }
 
-    const payment = await this.gateway.createPayment({
-      // Gateway operates in Rials; pricing is stored in Tomans.
-      amount: booking.pricing.total * 10,
-      description: `Booking ${booking.code}`,
-      callbackUrl,
-      orderId: booking.code,
-    });
+    if (booking.payment?.authority && booking.payment.redirectUrl) {
+      return {
+        bookingId: booking._id.toString(),
+        authority: booking.payment.authority,
+        redirectUrl: booking.payment.redirectUrl,
+      };
+    }
 
-    booking.payment = {
-      provider: process.env.PAYMENT_PROVIDER ?? 'mock',
-      authority: payment.authority,
-    };
-    booking.markModified('payment');
-    await booking.save();
+    const claimId = randomUUID();
+    const now = new Date();
+    const claim = await this.bookingModel.findOneAndUpdate(
+      {
+        _id: booking._id,
+        athleteId: new Types.ObjectId(athleteId),
+        status: BookingStatus.AWAITING_PAYMENT,
+        'payment.authority': { $exists: false },
+        $or: [
+          { 'payment.initiationClaimedAt': { $exists: false } },
+          {
+            'payment.initiationClaimedAt': {
+              $lte: new Date(now.getTime() - 60_000),
+            },
+          },
+        ],
+      },
+      {
+        $set: {
+          'payment.initiationClaimId': claimId,
+          'payment.initiationClaimedAt': now,
+        },
+      },
+      { new: true },
+    );
+    if (!claim) {
+      const raced = await this.bookingModel.findById(booking._id);
+      if (raced?.payment?.authority && raced.payment.redirectUrl) {
+        return {
+          bookingId: raced._id.toString(),
+          authority: raced.payment.authority,
+          redirectUrl: raced.payment.redirectUrl,
+        };
+      }
+      throw new ConflictException('Payment initiation is already in progress');
+    }
+
+    let payment: Awaited<ReturnType<PaymentGatewayService['createPayment']>>;
+    try {
+      payment = await this.gateway.createPayment({
+        // Gateway operates in Rials; pricing is stored in Tomans.
+        amount: booking.pricing.total * 10,
+        description: `Booking ${booking.code}`,
+        callbackUrl: assertAllowedPaymentCallbackUrl(callbackUrl),
+        orderId: booking.code,
+      });
+      const stored = await this.bookingModel.findOneAndUpdate(
+        {
+          _id: booking._id,
+          status: BookingStatus.AWAITING_PAYMENT,
+          'payment.initiationClaimId': claimId,
+        },
+        {
+          $set: {
+            'payment.provider': process.env.PAYMENT_PROVIDER ?? 'mock',
+            'payment.authority': payment.authority,
+            'payment.redirectUrl': payment.redirectUrl,
+            'payment.initiatedAt': new Date(),
+            paymentExpiresAt: new Date(Date.now() + this.paymentTtlMs()),
+          },
+          $unset: {
+            'payment.initiationClaimId': 1,
+            'payment.initiationClaimedAt': 1,
+          },
+        },
+        { new: true },
+      );
+      if (!stored) {
+        throw new ConflictException(
+          'Booking changed during payment initiation',
+        );
+      }
+    } catch (error) {
+      await this.bookingModel.updateOne(
+        { _id: booking._id, 'payment.initiationClaimId': claimId },
+        {
+          $unset: {
+            'payment.initiationClaimId': 1,
+            'payment.initiationClaimedAt': 1,
+          },
+        },
+      );
+      throw error;
+    }
 
     return {
       bookingId: booking._id.toString(),
@@ -903,7 +996,11 @@ export class BookingsService {
   }
 
   /** Settle a refund request (or refund a paid provider-cancelled booking). */
-  async refundByAdmin(id: string) {
+  async refundByAdmin(
+    adminId: string,
+    id: string,
+    dto?: SettleBookingRefundDto,
+  ) {
     const booking = await this.findOwned(id, {});
     const refundable: BookingStatus[] = [
       BookingStatus.REFUND_REQUESTED,
@@ -913,6 +1010,86 @@ export class BookingsService {
     if (!refundable.includes(booking.status) || !booking.payment?.paidAt) {
       throw new ConflictException('Booking has no refundable payment');
     }
+    const payment = await this.finance.findCapturedBookingPayment(booking._id);
+    const paidAmount = payment.amount.gross - payment.amount.discount;
+    const refundAmount = Math.min(
+      paidAmount,
+      booking.cancellation?.refundAmount ?? booking.pricing.total,
+    );
+    if (refundAmount <= 0) {
+      throw new ConflictException('Booking cancellation has no refund amount');
+    }
+
+    const idempotencyKey = `booking-refund:${booking._id.toString()}:${booking.cancellation?.cancelledAt?.toISOString() ?? 'legacy'}`;
+    const existingRefund = payment.refunds?.find(
+      (refund) => refund.idempotencyKey === idempotencyKey,
+    );
+    const requestedMethod = dto?.method;
+    const gatewayReverseWindowMs = 29 * 60 * 1000;
+    const gatewayReverseEligible =
+      payment.channel === PaymentChannel.ZARINPAL &&
+      refundAmount === paidAmount &&
+      Boolean(payment.reference.authority) &&
+      Boolean(payment.capturedAt) &&
+      Date.now() - payment.capturedAt!.getTime() <= gatewayReverseWindowMs;
+    const method =
+      requestedMethod ??
+      existingRefund?.method ??
+      (gatewayReverseEligible
+        ? PaymentRefundMethod.GATEWAY_REVERSE
+        : PaymentRefundMethod.WALLET_CREDIT);
+    if (
+      method === PaymentRefundMethod.GATEWAY_REVERSE &&
+      (payment.channel !== PaymentChannel.ZARINPAL ||
+        refundAmount !== paidAmount ||
+        !payment.reference.authority)
+    ) {
+      throw new ConflictException(
+        'Gateway reverse requires a full Zarinpal payment with authority',
+      );
+    }
+
+    const refundIntent = await this.finance.prepareBookingRefund({
+      paymentId: payment._id,
+      bookingId: booking._id,
+      processedBy: adminId,
+      amount: refundAmount,
+      method,
+      idempotencyKey,
+    });
+
+    let providerResult: { code: number | string; message?: string } | undefined;
+    if (
+      method === PaymentRefundMethod.GATEWAY_REVERSE &&
+      refundIntent.status !== 'succeeded'
+    ) {
+      const result = await this.gateway.reversePayment({
+        authority: payment.reference.authority!,
+      });
+      if (!result.ok) {
+        const error = new ConflictException(
+          `Gateway reverse failed (${result.code}): ${result.message}`,
+        );
+        await this.finance.markBookingRefundFailed(
+          payment._id,
+          idempotencyKey,
+          error,
+        );
+        throw error;
+      }
+      providerResult = { code: result.code, message: result.message };
+    }
+
+    await this.finance.settleBookingRefund({
+      paymentId: payment._id,
+      bookingId: booking._id,
+      payerUserId: booking.athleteId,
+      processedBy: adminId,
+      amount: refundAmount,
+      method,
+      idempotencyKey,
+      providerResult,
+    });
     booking.status = BookingStatus.REFUNDED;
     await booking.save();
     return this.project(booking, 'admin');
@@ -1042,16 +1219,22 @@ export class BookingsService {
     }
 
     const wasPaid = Boolean(current.payment?.paidAt);
+    const feePercent = wasPaid
+      ? providerCancel
+        ? 0
+        : await this.cancellationFeePercent(current, session)
+      : 0;
+    const refund = this.cancellationPreview(current, feePercent);
     let nextStatus: BookingStatus;
     if (systemExpire || current.status === BookingStatus.AWAITING_PAYMENT) {
       nextStatus = BookingStatus.CANCELLED;
     } else if (providerCancel && wasPaid) {
       nextStatus = BookingStatus.REFUND_REQUESTED;
     } else if (wasPaid) {
-      const refundEligible = await this.isRefundEligible(current, session);
-      nextStatus = refundEligible
-        ? BookingStatus.REFUND_REQUESTED
-        : BookingStatus.CANCELLED;
+      nextStatus =
+        refund.refundAmount > 0
+          ? BookingStatus.REFUND_REQUESTED
+          : BookingStatus.CANCELLED;
     } else if (providerCancel) {
       nextStatus = BookingStatus.REJECTED;
     } else {
@@ -1066,6 +1249,9 @@ export class BookingsService {
       note: dto.note,
       cancelledAt: new Date(),
       cancelledBy: actor === BookingActor.SYSTEM ? BookingActor.ADMIN : actor,
+      feePercent: refund.feePercent,
+      feeAmount: refund.feeAmount,
+      refundAmount: refund.refundAmount,
     };
     current.markModified('cancellation');
     await current.save({ session });
@@ -1102,14 +1288,6 @@ export class BookingsService {
         session,
       );
     }
-  }
-
-  /** Apply club.cancellation rules: refund if hours remaining >= matching rule with feePercent < 100. */
-  private async isRefundEligible(
-    booking: BookingDocument,
-    session?: ClientSession,
-  ): Promise<boolean> {
-    return (await this.cancellationFeePercent(booking, session)) < 100;
   }
 
   private async cancellationFeePercent(

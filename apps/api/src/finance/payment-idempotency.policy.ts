@@ -36,7 +36,6 @@ export function assertPaymentIdempotencyMatch(
   existing: ComparablePayment,
   requested: RequestedPayment,
 ): void {
-  const requestedStatus = requested.status ?? PaymentStatus.CAPTURED;
   const requestedUserId = requested.payer.userId ?? null;
   const existingUserId = existing.payer.userId?.toString() ?? null;
   const requestedGuestPhone = requested.payer.guest?.phone ?? null;
@@ -60,7 +59,6 @@ export function assertPaymentIdempotencyMatch(
   if (
     existing.purpose !== requested.purpose ||
     existing.channel !== requested.channel ||
-    existing.status !== requestedStatus ||
     existing.reference.orderId !== requested.reference.orderId ||
     existingUserId !== requestedUserId ||
     existingGuestPhone !== requestedGuestPhone ||

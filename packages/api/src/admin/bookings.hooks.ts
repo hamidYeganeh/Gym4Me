@@ -15,6 +15,7 @@ import type {
   AdminBookingsListQuery,
   Booking,
   CancelBookingInput,
+  SettleBookingRefundInput,
 } from "./bookings.dto";
 import { adminBookingsKeys } from "./bookings.keys";
 
@@ -67,7 +68,13 @@ export function useAdminRefundBooking() {
   const api = useAdminBookingsApi();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => api.refund(id),
+    mutationFn: ({
+      id,
+      input,
+    }: {
+      id: string;
+      input?: SettleBookingRefundInput;
+    }) => api.refund(id, input),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: adminBookingsKeys.all });
     },

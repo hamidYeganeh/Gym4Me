@@ -23,8 +23,10 @@ import { User, UserSchema } from '../schemas/user.schema';
 import { Wallet, WalletSchema } from '../schemas/wallet.schema';
 import { AccountFinanceController } from './account-finance.controller';
 import { FinanceReadQuery } from './application/queries/finance-read.query';
+import { WalletTopUpService } from './application/services/wallet-top-up.service';
 import { AdminFinanceController } from './admin-finance.controller';
 import { FinanceService } from './finance.service';
+import { FinanceReconciliationWorker } from './finance-reconciliation.worker';
 import { OwnerFinanceController } from './owner-finance.controller';
 
 @Module({
@@ -51,7 +53,12 @@ import { OwnerFinanceController } from './owner-finance.controller';
     OwnerFinanceController,
     AdminFinanceController,
   ],
-  providers: [FinanceReadQuery, FinanceService],
+  providers: [
+    FinanceReadQuery,
+    FinanceService,
+    WalletTopUpService,
+    FinanceReconciliationWorker,
+  ],
   exports: [FinanceService],
 })
 export class FinanceModule {}

@@ -16,6 +16,8 @@ import {
   CouponDocument,
   CouponRedemption,
   CouponRedemptionDocument,
+  CouponUserUsage,
+  CouponUserUsageDocument,
 } from '../schemas/coupon.schema';
 import {
   CreateCouponDto,
@@ -36,6 +38,8 @@ export class CouponsService {
     private readonly couponModel: Model<CouponDocument>,
     @InjectModel(CouponRedemption.name)
     private readonly redemptionModel: Model<CouponRedemptionDocument>,
+    @InjectModel(CouponUserUsage.name)
+    private readonly userUsageModel: Model<CouponUserUsageDocument>,
   ) {}
 
   // ── Evaluation ─────────────────────────────────────────────────────────
@@ -59,11 +63,11 @@ export class CouponsService {
   async redeem(
     code: string,
     ctx: CouponContext & { contextKey: string },
-    session?: ClientSession,
+    session: ClientSession,
   ) {
     const existing = await this.redemptionModel
       .findOne({ contextKey: ctx.contextKey })
-      .session(session ?? null)
+      .session(session)
       .lean();
     if (existing) {
       return { discount: existing.discount, idempotent: true as const };
@@ -85,7 +89,7 @@ export class CouponsService {
       if ((err as { code?: number }).code === 11000) {
         const raced = await this.redemptionModel
           .findOne({ contextKey: ctx.contextKey })
-          .session(session ?? null)
+          .session(session)
           .lean();
         if (raced)
           return { discount: raced.discount, idempotent: true as const };
@@ -93,11 +97,41 @@ export class CouponsService {
       throw err;
     }
 
-    await this.couponModel.updateOne(
-      { _id: coupon._id },
+    const globalLimit = coupon.constraints?.maxRedemptions;
+    const global = await this.couponModel.updateOne(
+      {
+        _id: coupon._id,
+        ...(globalLimit ? { redemptionCount: { $lt: globalLimit } } : {}),
+      },
       { $inc: { redemptionCount: 1 } },
       { session },
     );
+    if (global.modifiedCount !== 1) {
+      throw new BadRequestException('Coupon redemption limit reached');
+    }
+
+    const perUserLimit = coupon.constraints?.maxPerUser;
+    if (perUserLimit && ctx.userId) {
+      try {
+        const usage = await this.userUsageModel.findOneAndUpdate(
+          {
+            couponId: coupon._id,
+            userId: new Types.ObjectId(ctx.userId),
+            count: { $lt: perUserLimit },
+          },
+          { $inc: { count: 1 } },
+          { session, upsert: true, new: true, setDefaultsOnInsert: true },
+        );
+        if (!usage) {
+          throw new BadRequestException('You have already used this coupon');
+        }
+      } catch (err) {
+        if ((err as { code?: number }).code === 11000) {
+          throw new BadRequestException('You have already used this coupon');
+        }
+        throw err;
+      }
+    }
     return { discount, idempotent: false as const };
   }
 
@@ -136,13 +170,13 @@ export class CouponsService {
       throw new BadRequestException('Coupon redemption limit reached');
     }
     if (c.maxPerUser && ctx.userId) {
-      const used = await this.redemptionModel
-        .countDocuments({
+      const usage = await this.userUsageModel
+        .findOne({
           couponId: coupon._id,
           userId: new Types.ObjectId(ctx.userId),
         })
         .session(session ?? null);
-      if (used >= c.maxPerUser) {
+      if ((usage?.count ?? 0) >= c.maxPerUser) {
         throw new BadRequestException('You have already used this coupon');
       }
     }

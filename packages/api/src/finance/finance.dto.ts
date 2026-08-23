@@ -88,6 +88,8 @@ export type PaymentStatus =
   | "partially_refunded"
   | "cancelled";
 
+export type PaymentRefundMethod = "gateway_reverse" | "wallet_credit";
+
 export type PaymentPurpose =
   | "booking"
   | "membership"
@@ -97,6 +99,7 @@ export type PaymentPurpose =
   | "manual";
 
 export type PaymentAmountSplit = {
+  pricingVersion?: string;
   gross: number;
   discount?: number;
   tax?: number;
@@ -137,6 +140,7 @@ export type PaymentRecord = {
     authority?: string | null;
     gatewayRefId?: string | null;
     externalRef?: string | null;
+    redirectUrl?: string | null;
   };
   payer: PaymentPayer;
   tenders?: PaymentTender[] | null;
@@ -144,6 +148,21 @@ export type PaymentRecord = {
   note?: string | null;
   operatorNote?: string | null;
   capturedAt?: string | null;
+  cancelledAt?: string | null;
+  refundedAt?: string | null;
+  refundedAmount?: number;
+  refunds?: Array<{
+    amount: number;
+    method: PaymentRefundMethod;
+    idempotencyKey: string;
+    status: "pending" | "succeeded" | "failed";
+    processedBy: string;
+    providerCode?: string | null;
+    providerMessage?: string | null;
+    lastError?: string | null;
+    processedAt: string;
+    succeededAt?: string | null;
+  }>;
   createdAt: string;
   updatedAt: string;
 };

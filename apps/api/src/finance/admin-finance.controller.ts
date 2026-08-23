@@ -13,6 +13,7 @@ import {
   OpenPayoutDisputeDto,
   ResolvePayoutDisputeDto,
   SettlePayoutDto,
+  WalletOwnerDto,
 } from './dto/finance.dto';
 import { FinanceService } from './finance.service';
 
@@ -39,6 +40,16 @@ export class AdminFinanceController {
   @ApiOperation({ summary: 'Get a payment with its ledger entry' })
   getPayment(@Param('id') id: string) {
     return this.finance.getPayment(id);
+  }
+
+  @Post('wallets/rebuild')
+  @ApiOperation({ summary: 'Rebuild a wallet cache from immutable ledger' })
+  rebuildWallet(
+    @CurrentUser('sub') adminId: string,
+    @Body() dto: WalletOwnerDto,
+    @Req() request: Request,
+  ) {
+    return this.finance.rebuildWalletFromLedger(dto, adminId, request);
   }
 
   @Get('payouts')

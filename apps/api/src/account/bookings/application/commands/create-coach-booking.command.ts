@@ -18,6 +18,7 @@ import {
 } from '../../../../common/enums';
 import { MongoTransactionService } from '../../../../common/mongo/mongo-transaction.service';
 import { OutboxService } from '../../../../outbox/outbox.service';
+import { CouponsService } from '../../../../coupons/coupons.service';
 import { CalendarAvailabilityService } from '../../../calendar/calendar-availability.service';
 import {
   Booking,
@@ -53,6 +54,7 @@ export class CreateCoachBookingCommand {
     private readonly calendarAvailability: CalendarAvailabilityService,
     private readonly calendarGuard: BookingCalendarGuard,
     private readonly outbox: OutboxService,
+    private readonly coupons: CouponsService,
   ) {}
 
   async execute(
@@ -126,6 +128,18 @@ export class CreateCoachBookingCommand {
         if (!slot) {
           throw new ConflictException('Slot is no longer available');
         }
+        const redeemed = dto.couponCode
+          ? await this.coupons.redeem(
+              dto.couponCode,
+              {
+                userId: athleteId,
+                clubId: slot.clubId?.toString(),
+                amount: currentPrice,
+                contextKey: `booking:${athleteId}:${dto.idempotencyKey}`,
+              },
+              session,
+            )
+          : { discount: 0 };
         const isInPersonSlot = Boolean(slot.clubId);
         if (
           isInPersonSlot !==
@@ -197,9 +211,9 @@ export class CreateCoachBookingCommand {
               },
               pricing: {
                 amount: currentPrice,
-                discount: 0,
+                discount: redeemed.discount,
                 couponCode: dto.couponCode,
-                total: Math.max(0, currentPrice),
+                total: Math.max(0, currentPrice - redeemed.discount),
               },
               status: BookingStatus.PENDING,
               approvalExpiresAt: this.approvalExpiresAt(),

@@ -81,3 +81,14 @@ export type ListAdminPaymentsQuery = {
 export type SettlePayoutInput = {
   note?: string;
 };
+export type RebuildWalletInput = {
+  type: "user" | "club" | "coach";
+  id: string;
+};
+
+export type RebuildWalletResult = {
+  owner: RebuildWalletInput;
+  previousBalance: number;
+  balance: number;
+  corrected: boolean;
+};

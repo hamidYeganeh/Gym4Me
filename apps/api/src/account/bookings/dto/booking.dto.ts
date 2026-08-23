@@ -24,6 +24,7 @@ import {
   BookingResourceType,
   BookingStatus,
   ConsultationKind,
+  PaymentRefundMethod,
 } from '../../../common/enums';
 import { PaginationQueryDto } from '../../../basics/dto/common.dto';
 import { toStringArray } from '../../../common/utils/list-query.util';
@@ -221,6 +222,13 @@ export class CancelBookingDto {
   @IsString()
   @MaxLength(300)
   note?: string;
+}
+
+export class SettleBookingRefundDto {
+  /** Omitted = gateway reverse for eligible full PSP payments, wallet otherwise. */
+  @IsOptional()
+  @IsEnum(PaymentRefundMethod)
+  method?: PaymentRefundMethod;
 }
 
 export class ListBookingsQueryDto {

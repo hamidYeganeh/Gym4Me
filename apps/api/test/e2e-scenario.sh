@@ -247,9 +247,21 @@ echo ""
 echo "════ S8: رزرو دوم + لغو توسط ورزشکار ════"
 BOOKING2=$(book_occurrence "$ATH_TOKEN" "[{\"slotId\":\"$BOOKED_SLOT\",\"date\":\"$BOOKED_DATE\"}]")
 BOOKING2_ID=$(echo "$BOOKING2" | jq -r '.id // empty')
+BOOKING2_STATUS=$(echo "$BOOKING2" | jq -r '.status // empty')
 check "S8.1 second booking created" "true" "$([ -n "$BOOKING2_ID" ] && echo true || echo false)"
+if [ "$BOOKING2_STATUS" = "awaiting_payment" ]; then
+  BOOKING2=$(pay_and_verify "$BOOKING2_ID" "$ATH_TOKEN")
+  BOOKING2_STATUS=$(echo "$BOOKING2" | jq -r '.status // empty')
+fi
 CANCEL=$(jpost_auth "/account/bookings/$BOOKING2_ID/cancel" "$ATH_TOKEN" '{"note":"e2e cancel"}')
-check "S8.2 athlete cancels booking" "cancelled" "$(echo "$CANCEL" | jq -r '.status // empty')"
+BOOKING2_CANCEL_STATUS=$(echo "$CANCEL" | jq -r '.status // empty')
+if [ "$BOOKING2_STATUS" = "confirmed" ]; then
+  check "S8.2 paid cancellation requests refund" "refund_requested" "$BOOKING2_CANCEL_STATUS"
+  REFUND_BOOKING_ID="$BOOKING2_ID"
+else
+  check "S8.2 athlete cancels unpaid booking" "cancelled" "$BOOKING2_CANCEL_STATUS"
+  REFUND_BOOKING_ID=""
+fi
 
 echo ""
 echo "════ S9: مربی اسلات باز می‌کند، ورزشکار مشاوره رزرو می‌کند ════"
@@ -347,6 +359,17 @@ fi
 
 ADM_BOOKINGS=$(jget_auth "/admin/bookings?page=1&page_size=10" "$ADM_TOKEN")
 check "S10.5 admin bookings list" "true" "$(echo "$ADM_BOOKINGS" | jq -r 'has("result") or has("items")')"
+if [ -n "${REFUND_BOOKING_ID:-}" ]; then
+  REFUNDED=$(jpost_auth "/admin/bookings/$REFUND_BOOKING_ID/refund" "$ADM_TOKEN" '{}')
+  check "S10.6 admin settles refund" "refunded" "$(echo "$REFUNDED" | jq -r '.status // empty')"
+  REFUND_PAYMENT=$(jget_auth "/admin/finance/payments?purpose=booking&page_size=100" "$ADM_TOKEN" \
+    | jq -c --arg id "$REFUND_BOOKING_ID" '[(.result // .items // [])[] | select((.related.bookingId // "") == $id)][0] // {}')
+  check "S10.7 refund updates payment state" "refunded" "$(echo "$REFUND_PAYMENT" | jq -r '.status // empty')"
+  REFUND_PAYMENT_ID=$(echo "$REFUND_PAYMENT" | jq -r '._id // .id // empty')
+  REFUND_LEDGER=$(jget_auth "/admin/finance/ledger?kind=refund&page_size=100" "$ADM_TOKEN" \
+    | jq -c --arg id "$REFUND_PAYMENT_ID" '[(.result // .items // [])[] | select((.paymentId // "") == $id)][0] // {}')
+  check "S10.8 refund ledger remains balanced" "true" "$(echo "$REFUND_LEDGER" | jq -r '[.lines[]? | .debit] | add as $d | [.lines[]? | .credit] | add as $c | ($d == $c and $d > 0)')"
+fi
 
 echo ""
 echo "════ نتیجه ════"

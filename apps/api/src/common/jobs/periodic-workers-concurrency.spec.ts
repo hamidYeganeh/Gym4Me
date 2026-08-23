@@ -6,6 +6,8 @@ import type { WorkerLeaseService } from './worker-lease.service';
 import { BookingsExpireService } from '../../account/bookings/bookings-expire.service';
 import { WaitlistWorker } from '../../waitlist/waitlist.worker';
 import { LifecycleWorker } from '../../lifecycle/lifecycle.worker';
+import { FinanceReconciliationWorker } from '../../finance/finance-reconciliation.worker';
+import { BookingPaymentReconciliationWorker } from '../../account/bookings/booking-payment-reconciliation.worker';
 
 class SharedTestLease {
   private held = new Set<string>();
@@ -95,5 +97,61 @@ describe('periodic worker multi-instance leases', () => {
 
     expect(lifecycle.enrollAllDue).toHaveBeenCalledTimes(1);
     expect(lifecycle.advanceDueJourneys).toHaveBeenCalledTimes(1);
+  });
+
+  it('reconciles wallet top-ups once across two instances', async () => {
+    const gate = deferred();
+    const walletTopUps = {
+      reconcilePending: jest.fn(async () => {
+        await gate.promise;
+        return { scanned: 1, captured: 1, unresolved: 0, expired: 0 };
+      }),
+    };
+    const leases = new SharedTestLease() as unknown as WorkerLeaseService;
+    const first = new FinanceReconciliationWorker(
+      walletTopUps as never,
+      leases,
+    );
+    const second = new FinanceReconciliationWorker(
+      walletTopUps as never,
+      leases,
+    );
+
+    const firstTick = first.tick();
+    await Promise.resolve();
+    const secondTick = second.tick();
+    gate.release();
+    await Promise.all([firstTick, secondTick]);
+
+    expect(walletTopUps.reconcilePending).toHaveBeenCalledTimes(1);
+  });
+
+  it('reconciles booking payments once across two instances', async () => {
+    const gate = deferred();
+    const reconcile = jest.fn(async () => {
+      await gate.promise;
+      return { scanned: 1, captured: 1, unresolved: 0 };
+    });
+    const leases = new SharedTestLease() as unknown as WorkerLeaseService;
+    const first = new BookingPaymentReconciliationWorker(
+      {} as never,
+      {} as never,
+      leases,
+    );
+    const second = new BookingPaymentReconciliationWorker(
+      {} as never,
+      {} as never,
+      leases,
+    );
+    first.reconcilePending = reconcile;
+    second.reconcilePending = reconcile;
+
+    const firstTick = first.tick();
+    await Promise.resolve();
+    const secondTick = second.tick();
+    gate.release();
+    await Promise.all([firstTick, secondTick]);
+
+    expect(reconcile).toHaveBeenCalledTimes(1);
   });
 });

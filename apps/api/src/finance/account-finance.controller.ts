@@ -8,14 +8,19 @@ import {
   ListInvoicesQueryDto,
   ListPaymentsQueryDto,
   TopUpWalletDto,
+  VerifyWalletTopUpDto,
 } from './dto/finance.dto';
 import { FinanceService } from './finance.service';
+import { WalletTopUpService } from './application/services/wallet-top-up.service';
 
 @ApiTags('account')
 @ApiBearerAuth('access-token')
 @Controller('account/finance')
 export class AccountFinanceController {
-  constructor(private readonly finance: FinanceService) {}
+  constructor(
+    private readonly finance: FinanceService,
+    private readonly walletTopUps: WalletTopUpService,
+  ) {}
 
   @Get('wallet')
   @ApiOperation({ summary: 'Get my wallet balance' })
@@ -35,13 +40,19 @@ export class AccountFinanceController {
   }
 
   @Post('wallet/topup')
-  @ApiOperation({ summary: 'Top up my wallet (records Payment + Ledger)' })
-  topUp(
+  @ApiOperation({ summary: 'Initiate a verified gateway wallet top-up' })
+  topUp(@CurrentUser('sub') userId: string, @Body() dto: TopUpWalletDto) {
+    return this.walletTopUps.initiate(userId, dto);
+  }
+
+  @Post('wallet/topup/verify')
+  @ApiOperation({ summary: 'Verify wallet top-up callback and post ledger' })
+  verifyTopUp(
     @CurrentUser('sub') userId: string,
-    @Body() dto: TopUpWalletDto,
+    @Body() dto: VerifyWalletTopUpDto,
     @Req() request: Request,
   ) {
-    return this.finance.topUpWallet(userId, dto, request);
+    return this.walletTopUps.verify(userId, dto, request);
   }
 
   @Get('payments')

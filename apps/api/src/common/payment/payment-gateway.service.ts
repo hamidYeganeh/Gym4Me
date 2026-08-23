@@ -37,6 +37,24 @@ export type VerifyPaymentResult =
       raw?: unknown;
     };
 
+export interface ReversePaymentRequest {
+  authority: string;
+}
+
+export type ReversePaymentResult =
+  | {
+      ok: true;
+      code: number | string;
+      message?: string;
+      raw?: unknown;
+    }
+  | {
+      ok: false;
+      code: number | string;
+      message: string;
+      raw?: unknown;
+    };
+
 export abstract class PaymentGatewayService {
   abstract createPayment(
     request: CreatePaymentRequest,
@@ -45,4 +63,9 @@ export abstract class PaymentGatewayService {
   abstract verifyPayment(
     request: VerifyPaymentRequest,
   ): Promise<VerifyPaymentResult>;
+
+  /** Fully reverse a verified payment when the configured PSP supports it. */
+  abstract reversePayment(
+    request: ReversePaymentRequest,
+  ): Promise<ReversePaymentResult>;
 }

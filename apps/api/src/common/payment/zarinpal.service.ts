@@ -4,6 +4,8 @@ import {
   CreatePaymentRequest,
   CreatePaymentResult,
   PaymentGatewayService,
+  ReversePaymentRequest,
+  ReversePaymentResult,
   VerifyPaymentRequest,
   VerifyPaymentResult,
 } from './payment-gateway.service';
@@ -32,10 +34,10 @@ export class ZarinpalPaymentGatewayService extends PaymentGatewayService {
       ).toLowerCase() !== 'false';
     this.baseUrl = sandbox
       ? 'https://sandbox.zarinpal.com/pg/v4/payment'
-      : 'https://api.zarinpal.com/pg/v4/payment';
+      : 'https://payment.zarinpal.com/pg/v4/payment';
     this.startPayBase = sandbox
       ? 'https://sandbox.zarinpal.com/pg/StartPay'
-      : 'https://www.zarinpal.com/pg/StartPay';
+      : 'https://payment.zarinpal.com/pg/StartPay';
   }
 
   async createPayment(
@@ -127,6 +129,36 @@ export class ZarinpalPaymentGatewayService extends PaymentGatewayService {
       ok: false,
       code: code ?? json.errors?.code ?? 'unknown',
       message: json.data?.message ?? json.errors?.message ?? 'verify failed',
+      raw: json,
+    };
+  }
+
+  async reversePayment(
+    request: ReversePaymentRequest,
+  ): Promise<ReversePaymentResult> {
+    const res = await fetch(`${this.baseUrl}/reverse.json`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        merchant_id: this.merchantId,
+        authority: request.authority,
+      }),
+    });
+    const json = (await res.json()) as {
+      data?: { code?: number; message?: string };
+      errors?: { code?: number; message?: string };
+    };
+    const code = json.data?.code ?? json.errors?.code ?? 'unknown';
+    if (code === 100) {
+      return { ok: true, code, message: json.data?.message, raw: json };
+    }
+    return {
+      ok: false,
+      code,
+      message: json.data?.message ?? json.errors?.message ?? 'reverse failed',
       raw: json,
     };
   }
