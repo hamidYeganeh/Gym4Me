@@ -95,12 +95,12 @@ G4M-002 → G4M-010 ┬→ G4M-011 ─┐                                ├→ 
 | ---------- | ------ | ------- | ----------------------------------------------------- | ---------------------------- |
 | G4M-001    | P0     | DONE    | برگرداندن quality gate و build پایدار                 | —                            |
 | G4M-002    | P0     | DONE    | CI کامل، test pyramid و محیط integration              | G4M-001                      |
-| G4M-003    | P0     | VERIFY  | شکستن God Serviceها و تعریف transaction boundary      | G4M-002                      |
+| G4M-003    | P0     | DONE    | شکستن God Serviceها و تعریف transaction boundary      | G4M-002                      |
 | G4M-010    | P0     | BLOCKED | اصلاح permission و failure semantics در Health Sync   | G4M-002                      |
 | G4M-011    | P0     | BLOCKED | incremental Health Sync، cursor و offline queue واقعی | G4M-010                      |
 | G4M-012    | P1     | BLOCKED | حقوق داده و حذف حساب با retention روشن                | G4M-010                      |
 | G4M-013    | P1     | BLOCKED | observability و امنیت دادهٔ سلامت                     | G4M-011, G4M-012             |
-| G4M-020    | P0     | BLOCKED | حذف mock از مسیرهای production و demo isolation       | G4M-002                      |
+| G4M-020    | P0     | READY   | حذف mock از مسیرهای production و demo isolation       | G4M-002                      |
 | G4M-021    | P0     | BLOCKED | discovery واقعی کامل و supply integrity               | G4M-020                      |
 | G4M-030    | P0     | BLOCKED | رزرو اتمیک، ظرفیت و idempotency سراسری                | G4M-003                      |
 | G4M-031    | P0     | BLOCKED | پرداخت، coupon، wallet، refund و reconciliation واقعی | G4M-030                      |
@@ -157,7 +157,7 @@ G4M-002 → G4M-010 ┬→ G4M-011 ─┐                                ├→ 
 ### G4M-003 — شکستن God Serviceها و تعریف transaction boundary
 
 - **Persona/value:** توسعه‌دهنده و عملیات؛ کاهش ریسک تغییر و قابلیت رشد تیم.
-- **وضعیت:** VERIFY (۲۰۲۶-۰۸-۲۳)؛ gateهای محلی سبز و در انتظار تأیید آخرین CI رسمی.
+- **وضعیت:** DONE (۲۰۲۶-۰۸-۲۳)؛ اجرای رسمی GitHub Actions برای commit `5ee3202a` با هر ۹ job موفق بسته شد.
 - **دامنه:** `ProgressService`، `FinanceService`، `CoachingService`، `MembershipsService`، `ClubsService`، `BookingsService`.
 - **کار:**
   - facade عمومی را حفظ و use caseها را به command/query/policy/projector کوچک منتقل کن.
@@ -166,7 +166,7 @@ G4M-002 → G4M-010 ┬→ G4M-011 ─┐                                ├→ 
   - queryها projection و pagination محدود داشته باشند؛ no unbounded list.
 - **معیار پذیرش:** هیچ رفتار API شکسته نشود؛ contract tests قبل/بعد یکسان؛ فایل جدید application service ترجیحاً زیر ۴۰۰ خط و یک مسئولیت داشته باشد.
 - **ریسک:** refactor گسترده همراه feature ممنوع؛ هر استخراج باید characterization test داشته باشد.
-- **پیشرفت فعلی:** هر شش facade هدف حداقل یک مرز application مستقل دارند. ایجاد رزرو مربی/باشگاه و verify پرداخت به commandهای زیر ۴۰۰ خط منتقل شده‌اند؛ gateway بیرون transaction و Booking + Finance/Ledger + Outbox در session مشترک مانده است. فروش عضویت نیز Membership + Coupon + Payment/Ledger + Debt + MembershipEvent را اتمیک و effect/audit را post-commit نگه می‌دارد. `BookingProjector`، `FinanceReadQuery`، `ListProgressMetricsQuery` و projector آن، `CoachingStudentsQuery` و projector آن، و `ClubsListQuery` read modelهای نقش‌محور را از facade جدا و همهٔ listها را با سقف page size برابر ۲۰۰ محدود کرده‌اند. مدل `ClubMembership` نیز از `FinanceService` حذف و شمارش مالی از API خواندنی دامنهٔ Membership انجام می‌شود. مجموعاً ۴۰ characterization test جدید اضافه شده و مجموعهٔ API `111/111` تست سبز دارد؛ همهٔ application serviceهای جدید زیر ۴۰۰ خط‌اند. `check-types` ده package، lint کامل monorepo و build API محلی سبزند؛ CI commit `1b46076e` نیز هر ۹ job را پاس کرده و فقط CI آخرین اصلاح cross-domain باقی مانده است.
+- **شواهد بسته شدن:** هر شش facade هدف حداقل یک مرز application مستقل دارند. ایجاد رزرو مربی/باشگاه و verify پرداخت به commandهای زیر ۴۰۰ خط منتقل شده‌اند؛ gateway بیرون transaction و Booking + Finance/Ledger + Outbox در session مشترک مانده است. فروش عضویت نیز Membership + Coupon + Payment/Ledger + Debt + MembershipEvent را اتمیک و effect/audit را post-commit نگه می‌دارد. `BookingProjector`، `FinanceReadQuery`، `ListProgressMetricsQuery` و projector آن، `CoachingStudentsQuery` و projector آن، و `ClubsListQuery` read modelهای نقش‌محور را از facade جدا و همهٔ listها را با سقف page size برابر ۲۰۰ محدود کرده‌اند. مدل `ClubMembership` نیز از `FinanceService` حذف و شمارش مالی از API خواندنی دامنهٔ Membership انجام می‌شود. مجموعاً ۴۰ characterization test جدید اضافه شده و مجموعهٔ API `111/111` تست سبز دارد؛ همهٔ application serviceهای جدید زیر ۴۰۰ خط‌اند. `check-types` ده package، lint کامل monorepo و build API محلی سبزند. [CI run 32622127225](https://github.com/hamidYeganeh/Gym4Me/actions/runs/32622127225) نیز lint/typecheck، frontend، unit در `Asia/Tehran` و UTC، Mongo/Redis integration، contracts و buildهای API/admin/mobile/website را با موفقیت پاس کرده است.
 
 ---
 
