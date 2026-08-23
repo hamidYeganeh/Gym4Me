@@ -115,6 +115,21 @@ async function main() {
   );
   const winners = results.filter(({ response }) => response.status === 201);
   const conflicts = results.filter(({ response }) => response.status === 409);
+  const unexpected = results.filter(
+    ({ response }) => response.status !== 201 && response.status !== 409,
+  );
+  console.log(
+    `G4M030 responses: winners=${winners.length} conflicts=${conflicts.length} unexpected=${unexpected.length}`,
+  );
+  if (unexpected.length) {
+    console.error(
+      'Unexpected responses:',
+      unexpected.slice(0, 5).map(({ response, json }) => ({
+        status: response.status,
+        body: json,
+      })),
+    );
+  }
   assert(winners.length === 17, `expected 17 winners, got ${winners.length}`);
   assert(
     conflicts.length === 33,
@@ -122,7 +137,7 @@ async function main() {
   );
 
   const occupancy = await db
-    .collection('club_slot_occupancies')
+    .collection('club_slot_occupancy')
     .findOne({ slotId, date: occurrence });
   assert(occupancy?.reserved === 17, `reserved=${occupancy?.reserved}`);
   const bookingCount = await db.collection('bookings').countDocuments({
@@ -175,7 +190,7 @@ main()
         },
       });
       await db.collection('bookings').deleteMany({ 'resource.refId': slotId });
-      await db.collection('club_slot_occupancies').deleteMany({ slotId });
+      await db.collection('club_slot_occupancy').deleteMany({ slotId });
       await db.collection('club_slots').deleteOne({ _id: slotId });
       await db.collection('clubs').deleteOne({ _id: clubId });
       await db.collection('users').deleteMany({ _id: { $in: athleteIds } });
