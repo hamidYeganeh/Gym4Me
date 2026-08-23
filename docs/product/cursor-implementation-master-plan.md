@@ -102,9 +102,9 @@ G4M-002 → G4M-010 ┬→ G4M-011 ─┐                                ├→ 
 | G4M-013    | P1     | BLOCKED | observability و امنیت دادهٔ سلامت                     | G4M-011, G4M-012             |
 | G4M-020    | P0     | DONE    | حذف mock از مسیرهای production و demo isolation       | G4M-002                      |
 | G4M-021    | P0     | BLOCKED | discovery واقعی کامل و supply integrity               | G4M-020                      |
-| G4M-030    | P0     | IN_PROGRESS | رزرو اتمیک، ظرفیت و idempotency سراسری             | G4M-003                      |
+| G4M-030    | P0     | DONE    | رزرو اتمیک، ظرفیت و idempotency سراسری                | G4M-003                      |
 | G4M-031    | P0     | BLOCKED | پرداخت، coupon، wallet، refund و reconciliation واقعی | G4M-030                      |
-| G4M-040    | P0     | BLOCKED | workerهای چند-instance و outbox قابل اتکا             | G4M-003                      |
+| G4M-040    | P0     | READY   | workerهای چند-instance و outbox قابل اتکا             | G4M-003                      |
 | G4M-050    | P0     | BLOCKED | عضویت، subscription enforcement و عملیات پذیرش        | G4M-021, G4M-031, G4M-040    |
 | G4M-051    | P0     | BLOCKED | check-in آفلاین امن و reconciliation                  | G4M-050                      |
 | G4M-060    | P1     | BLOCKED | مربیگری و اجرای تمرین end-to-end                      | G4M-013, G4M-051             |
@@ -250,7 +250,7 @@ G4M-002 → G4M-010 ┬→ G4M-011 ─┐                                ├→ 
 
 ### G4M-030 — رزرو اتمیک، ظرفیت و idempotency سراسری
 
-- **وضعیت:** IN_PROGRESS (۲۰۲۶-۰۸-۲۳)
+- **وضعیت:** DONE (۲۰۲۶-۰۸-۲۳)
 - **Persona/value:** ATH/CCH/OWN/STF؛ جلوگیری از overbooking و رزرو نیمه‌کاره.
 - **استوری/سناریو:** D1–D13، O5–O7، P3/P4/P6، S2–S5/S14.
 - **مدل‌ها:** `Booking`، `ClubSlotOccupancy`، `CoachSlot`، `Waitlist`, `ResourceCalendarBlock`.
@@ -261,6 +261,7 @@ G4M-002 → G4M-010 ┬→ G4M-011 ─┐                                ├→ 
   - cancel/reschedule/TTL/waitlist offer با state machine معتبر.
 - **معیار پذیرش:** تست ۵۰ درخواست هم‌زمان هرگز ظرفیت را رد نکند؛ crash/retry رزرو ناقص نسازد؛ callback تکراری side effect دوم نداشته باشد.
 - **edge:** partial series، TTL هم‌زمان با verify، reschedule روی ظرفیت آخر، cancellation از یک تاریخ.
+- **شواهد بسته شدن:** ایجاد رزرو تکی/سری، occupancy، snapshot رزرو و outbox در transaction مشترک انجام می‌شود؛ کلید idempotency اجباری و fingerprint payload از replay با دادهٔ متفاوت جلوگیری می‌کند. mutex نسخه‌ای تقویم club/slot/class/space/coach و بازهٔ مؤثر بافر قبل/بعد/رفت‌وآمد، رزرو و reschedule هم‌زمان را serialize می‌کند و blockهای تقویم هم در mutation و هم در availability عمومی enforce می‌شوند. cancel سری، TTL، verify پرداخت، reschedule، transition و waitlist offer/claim/expiry دارای state machine تراکنشی و side effect idempotent هستند. پذیرش می‌تواند برای عضو موجود یا مهمان رزرو بسازد و پروفایل Athlete استاندارد را حفظ کند؛ owner/staff و coach نیز endpoint جابه‌جایی با اعلان تراکنشی دارند. API unit `123/123`، frontend شامل mobile `70/70`، shared API `13/13`، admin `2/2` و website `6/6`، lint/typecheck و build هر چهار اپ سبزند. [CI رسمی commit `f9369600`](https://github.com/hamidYeganeh/Gym4Me/actions/runs/32629505118) تست ۵۰ درخواست هم‌زمان با ظرفیت ۱۷ را بدون oversell (`17` موفق و `33` conflict)، replay ثابت و payload-drift conflict روی Mongo replica-set واقعی، تمام smokeهای چندنقشی و buildها با موفقیت پاس کرده است.
 
 ### G4M-031 — پرداخت، coupon، wallet، refund و reconciliation واقعی
 
