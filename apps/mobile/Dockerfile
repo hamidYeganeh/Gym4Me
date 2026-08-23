@@ -32,6 +32,10 @@ RUN --mount=type=cache,target=/root/.npm printf '%s\n' \
     @types/node@20 \
     @types/react@19 \
     @types/react-dom@19 \
+    @types/leaflet@1.9.22 \
+    @types/d3-array@3.2.2 \
+    @types/d3-shape@3.1.8 \
+    @capacitor/cli@7.6.8 \
     babel-plugin-react-compiler@1.0.0 \
     @tailwindcss/postcss@4
 
