@@ -286,15 +286,20 @@ PUB_SLOTS=$(jget "/discovery/coaches/$COACH_USER_ID/slots?from=$FROM&to=$TO7")
 CSLOT_ID=$(echo "$PUB_SLOTS" | jq -r '[.slots[]? | select(.status == "open")][0].id // empty')
 if [ -z "$CSLOT_ID" ]; then
   UMIN=$(( $(date +%s) % 50 + 5 ))
-  if TM_START=$(date -v+1d -v14H -v"${UMIN}M" -v0S -u +%Y-%m-%dT%H:%M:%S.000Z 2>/dev/null); then
-    TM_END=$(date -v+1d -v14H -v"${UMIN}M" -v0S -v+45M -u +%Y-%m-%dT%H:%M:%S.000Z)
-  else
-    TM_START_EPOCH=$(date -d "tomorrow 14:$UMIN" +%s)
-    TM_START=$(date -u -d "@$TM_START_EPOCH" +%Y-%m-%dT%H:%M:%S.000Z)
-    TM_END=$(date -u -d "@$((TM_START_EPOCH + 45 * 60))" +%Y-%m-%dT%H:%M:%S.000Z)
-  fi
-  CSLOTS=$(jpost_auth /coach/slots "$COACH_TOKEN" "{\"slots\":[{\"startsAt\":\"$TM_START\",\"endsAt\":\"$TM_END\"}]}")
-  CSLOT_ID=$(echo "$CSLOTS" | jq -r 'if type == "array" then (.[0].id // .[0]._id) else ((.slots // .result // .items // [.])[0].id // (.slots // .result // .items // [.])[0]._id) end // empty')
+  # Try distinct future days so the smoke remains rerunnable even when a prior
+  # interrupted run left an open or already-booked slot behind.
+  for UDAY in 8 9 10 11 12 13 14; do
+    if TM_START=$(date -v+"${UDAY}"d -v14H -v"${UMIN}M" -v0S -u +%Y-%m-%dT%H:%M:%S.000Z 2>/dev/null); then
+      TM_END=$(date -v+"${UDAY}"d -v14H -v"${UMIN}M" -v0S -v+45M -u +%Y-%m-%dT%H:%M:%S.000Z)
+    else
+      TM_START_EPOCH=$(date -d "+$UDAY days 14:$UMIN" +%s)
+      TM_START=$(date -u -d "@$TM_START_EPOCH" +%Y-%m-%dT%H:%M:%S.000Z)
+      TM_END=$(date -u -d "@$((TM_START_EPOCH + 45 * 60))" +%Y-%m-%dT%H:%M:%S.000Z)
+    fi
+    CSLOTS=$(jpost_auth /coach/slots "$COACH_TOKEN" "{\"slots\":[{\"startsAt\":\"$TM_START\",\"endsAt\":\"$TM_END\"}]}")
+    CSLOT_ID=$(echo "$CSLOTS" | jq -r 'if type == "array" then (.[0].id // .[0]._id) else ((.slots // .result // .items // [.])[0].id // (.slots // .result // .items // [.])[0]._id) end // empty')
+    [ -n "$CSLOT_ID" ] && break
+  done
 fi
 check "S9.3 coach slot available" "true" "$([ -n "$CSLOT_ID" ] && echo true || echo false)"
 
@@ -368,7 +373,7 @@ if [ -n "${REFUND_BOOKING_ID:-}" ]; then
   REFUND_PAYMENT_ID=$(echo "$REFUND_PAYMENT" | jq -r '._id // .id // empty')
   REFUND_LEDGER=$(jget_auth "/admin/finance/ledger?kind=refund&page_size=100" "$ADM_TOKEN" \
     | jq -c --arg id "$REFUND_PAYMENT_ID" '[(.result // .items // [])[] | select((.paymentId // "") == $id)][0] // {}')
-  check "S10.8 refund ledger remains balanced" "true" "$(echo "$REFUND_LEDGER" | jq -r '[.lines[]? | .debit] | add as $d | [.lines[]? | .credit] | add as $c | ($d == $c and $d > 0)')"
+  check "S10.8 refund ledger remains balanced" "true" "$(echo "$REFUND_LEDGER" | jq -r '. as $entry | ([$entry.lines[]? | .debit] | add // 0) as $d | ([$entry.lines[]? | .credit] | add // 0) as $c | ($d == $c and $d > 0)')"
 fi
 
 echo ""

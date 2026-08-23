@@ -12,7 +12,7 @@ export class WorkerLease {
   @Prop({ trim: true })
   ownerId?: string;
 
-  @Prop({ required: true, index: true })
+  @Prop({ required: true })
   leaseUntil!: Date;
 
   @Prop()
