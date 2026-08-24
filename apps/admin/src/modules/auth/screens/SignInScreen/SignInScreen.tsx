@@ -4,10 +4,8 @@ import { Link } from "@heroui/react/link";
 import { Typography } from "@heroui/react/typography";
 import { ApiError } from "@repo/api";
 import type { RequestOtpInput } from "@repo/api";
-import {
-  AuthLayout,
-  type AuthLayoutLabels,
-} from "@repo/ui/layout/AuthLayout";
+import { MediaImage } from "@repo/ui/common/MediaImage";
+import { AuthLayout, type AuthLayoutLabels } from "@repo/ui/layout/AuthLayout";
 import { useTranslations } from "next-intl";
 import { AuthLoginPasswordForm } from "@/modules/auth/components/AuthLoginPasswordForm";
 import type { AuthLoginPasswordPayload } from "@/modules/auth/components/AuthLoginPasswordForm";
@@ -15,6 +13,8 @@ import { useAuth } from "@/shared/providers/AuthProvider";
 import type { OtpRouteState } from "../OtpScreen";
 import { signInScreenVariants } from "./SignInScreen.styles";
 import type { SignInScreenProps } from "./SignInScreen.types";
+
+const FIGURE_SRC = "/auth/password-secure.png";
 
 export function SignInScreen({ className }: SignInScreenProps) {
   const t = useTranslations("Admin.Auth");
@@ -26,6 +26,7 @@ export function SignInScreen({ className }: SignInScreenProps) {
   const [isOtpPending, setIsOtpPending] = useState(false);
 
   const labels: AuthLayoutLabels = {
+    title: t("title"),
     subtitle: t("subtitle"),
     brandAriaLabel: t("brandAriaLabel"),
     heroAlt: t("heroAlt"),
@@ -76,7 +77,20 @@ export function SignInScreen({ className }: SignInScreenProps) {
   return (
     <AuthLayout
       className={className}
+      figure={
+        <MediaImage
+          alt=""
+          aria-hidden
+          className={styles.figureImage()}
+          image={FIGURE_SRC}
+          priority
+          sizes="208px"
+        />
+      }
+      framed={false}
       labels={labels}
+      showBrand={false}
+      tone="plain"
       footer={
         <Typography>
           {t("noAccount")}{" "}

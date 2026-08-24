@@ -5,6 +5,7 @@ import type { AdminBanner } from "@repo/api";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
 import { AdminDataTable } from "@/shared/components";
+import { mediaApi } from "@/shared/lib/api";
 import {
   adminListPaginationProps,
   adminListPaginationSummary,
@@ -37,6 +38,32 @@ export function BannersListTableSection({
   const columns = useMemo(
     () =>
       [
+        columnHelper.display({
+          id: "preview",
+          header: t("columns.preview"),
+          size: 132,
+          cell: (info) => {
+            const slides = info.row.original.slides;
+            return (
+              <div className={styles.previewGroup()}>
+                {slides.slice(0, 3).map((slide, index) => (
+                  <img
+                    alt={slide.alt ?? info.row.original.title}
+                    className={styles.previewImage()}
+                    key={`${slide.mediaId}-${index}`}
+                    loading="lazy"
+                    src={mediaApi.fileUrl(slide.mediaId)}
+                  />
+                ))}
+                {slides.length > 3 ? (
+                  <span className={styles.previewMore()}>
+                    +{slides.length - 3}
+                  </span>
+                ) : null}
+              </div>
+            );
+          },
+        }),
         columnHelper.accessor("title", {
           header: t("columns.title"),
           size: 220,

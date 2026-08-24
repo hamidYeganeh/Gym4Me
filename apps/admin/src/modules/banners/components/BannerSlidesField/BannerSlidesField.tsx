@@ -36,6 +36,8 @@ const DEFAULT_SLIDE: Omit<BannerSlideInput, "mediaId"> = {
   radius: "surface",
 };
 
+const MAX_SLIDES = 10;
+
 export function BannerSlidesField({
   value,
   onChange,
@@ -65,12 +67,10 @@ export function BannerSlidesField({
       );
       onChange([
         ...value,
-        ...assets.map(
-          (asset): BannerSlideInput => ({
-            mediaId: asset.id,
-            ...DEFAULT_SLIDE,
-          }),
-        ),
+        ...assets.map((asset): BannerSlideInput => ({
+          mediaId: asset.id,
+          ...DEFAULT_SLIDE,
+        })),
       ]);
     } catch {
       setUploadError(true);
@@ -249,8 +249,7 @@ export function BannerSlidesField({
                       title: next.trim()
                         ? {
                             text: next,
-                            placement:
-                              slide.title?.placement ?? "bottom-start",
+                            placement: slide.title?.placement ?? "bottom-start",
                           }
                         : undefined,
                     })
@@ -279,8 +278,7 @@ export function BannerSlidesField({
                             patchSlide(index, {
                               title: {
                                 text: slide.title?.text ?? "",
-                                placement:
-                                  placement as BannerOverlayPlacement,
+                                placement: placement as BannerOverlayPlacement,
                               },
                             })
                           }
@@ -303,8 +301,7 @@ export function BannerSlidesField({
                       action: next.trim()
                         ? {
                             label: next,
-                            placement:
-                              slide.action?.placement ?? "bottom-end",
+                            placement: slide.action?.placement ?? "bottom-end",
                           }
                         : undefined,
                     })
@@ -333,8 +330,7 @@ export function BannerSlidesField({
                             patchSlide(index, {
                               action: {
                                 label: slide.action?.label ?? "",
-                                placement:
-                                  placement as BannerOverlayPlacement,
+                                placement: placement as BannerOverlayPlacement,
                               },
                             })
                           }
@@ -355,7 +351,8 @@ export function BannerSlidesField({
         accept={IMAGE_ACCEPT}
         buttonLabel={labels.uploaderButtonLabel}
         description={labels.uploaderDescription}
-        disabled={disabled || uploading}
+        disabled={disabled || uploading || value.length >= MAX_SLIDES}
+        maxFiles={Math.max(1, MAX_SLIDES - value.length)}
         multiple
         title={labels.uploaderTitle}
         onDropAccepted={(files) => {

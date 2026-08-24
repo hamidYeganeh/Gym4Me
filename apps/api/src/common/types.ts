@@ -3,6 +3,8 @@ import type { Role } from './enums';
 export interface JwtUser {
   sub: string;
   phone: string;
+  /** Stable id for one login/device session. */
+  sessionId?: string;
   /** All roles the user holds — for UI switcher only. */
   roles: Role[];
   /** Role used for authorization on this session. */

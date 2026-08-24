@@ -19,6 +19,9 @@ const CATEGORY_ICON_SIZE = 14;
 export function DiscoveryHomeArticlesSection({
   articles,
   isLoading = false,
+  title,
+  hint,
+  seeAllHref = "/discovery/articles",
 }: DiscoveryHomeArticlesSectionProps) {
   const t = useTranslations("DiscoveryHome");
   const tArticles = useTranslations("Articles");
@@ -29,14 +32,14 @@ export function DiscoveryHomeArticlesSection({
 
   return (
     <DiscoverySectionRail
-      ariaLabel={t("articlesTitle")}
-      hint={t("articlesHint")}
+      ariaLabel={title ?? t("articlesTitle")}
+      hint={hint ?? t("articlesHint")}
       seeAllLabel={t("seeAll")}
       sheet
       slideClassName={slots.slide()}
-      title={t("articlesTitle")}
+      title={title ?? t("articlesTitle")}
       tone="muted"
-      onSeeAll={() => router.push("/discovery/articles")}
+      onSeeAll={() => router.push(seeAllHref)}
     >
       {isLoading
         ? Array.from({ length: ARTICLE_SKELETON_COUNT }, (_, index) => (

@@ -29,6 +29,7 @@ import { AuditModule } from './audit/audit.module';
 import { BasicsModule } from './basics/basics.module';
 import { ArticlesModule } from './articles/articles.module';
 import { BannersModule } from './banners/banners.module';
+import { DiscoveryModule } from './discovery/discovery.module';
 import { CheckinModule } from './checkin/checkin.module';
 import { CouponsModule } from './coupons/coupons.module';
 import { FinanceModule } from './finance/finance.module';
@@ -147,6 +148,7 @@ import { WaitlistModule } from './waitlist/waitlist.module';
     GamificationModule,
     ArticlesModule,
     BannersModule,
+    DiscoveryModule,
     AdminModule,
   ],
   controllers: [AppController],

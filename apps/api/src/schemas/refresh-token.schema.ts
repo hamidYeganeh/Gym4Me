@@ -13,6 +13,10 @@ export class RefreshToken {
   @Prop({ required: true, unique: true })
   tokenHash!: string;
 
+  /** Stable across refresh rotation, unique to one login/device session. */
+  @Prop({ index: true })
+  sessionId?: string;
+
   /** Role bound to this session — preserved across access-token refresh. */
   @Prop({ type: String, enum: Role })
   activeRole?: Role;

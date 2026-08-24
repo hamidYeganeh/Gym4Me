@@ -215,3 +215,17 @@
 **شاخه‌ها:** timeout/manifest نامعتبر → last-known-good یا bundled default · نسخه زیر minimum → صفحهٔ blocking update · افزایش خطا → ادمین kill switch/rollback می‌زند.
 
 **محدودیت:** Feature Flag فقط کد از قبل نصب‌شده را فعال می‌کند و هیچ authorization یا permission بومی جدیدی ایجاد نمی‌کند.
+
+---
+
+## S21 — feed داینامیک و شخصی‌شدهٔ اکتشاف
+
+1. ادمین سکشن‌های typed صفحهٔ `discovery_home` را مرتب، targeting علایق و منبع داده را تنظیم و draft را با context مهمان یا ورزشکار پیش‌نمایش می‌کند.
+2. publish یک revision تغییرناپذیر می‌سازد؛ renderer ناشناخته، لینک ناامن، شناسهٔ تکراری یا ترکیب strategy/type نامعتبر رد می‌شود.
+3. موبایل صفحهٔ اول را با `page_size=8` می‌گیرد؛ سرور revision، نقش فعال، `AthleteProfile.sportIds/goalKeys` و location را به یک feed session کوتاه‌عمر متصل می‌کند.
+4. فقط هشت سکشن همان صفحه resolve می‌شوند؛ باشگاه‌ها projection کارت و lookup دسته‌ای دارند و سکشن خالی طبق `hide/show_empty/fallback` رفتار می‌کند.
+5. نزدیک انتهای اسکرول، موبایل صفحهٔ بعد را با `feed_token` می‌گیرد؛ ترتیب و targeting تا refresh ثابت می‌مانند.
+
+**شاخه‌ها:** مهمان → feed عمومی · `activeRole` غیرورزشکار → بدون علایق AthleteProfile · token منقضی/متعلق به کاربر دیگر → restart از صفحهٔ اول · تغییر publish یا علایق وسط اسکرول → feed فعلی ثابت و refresh بعدی نسخهٔ تازه.
+
+**محدودیت:** ادمین فقط rendererهای از قبل نصب‌شده در موبایل را ترکیب می‌کند؛ دادهٔ سلامت و متریک خصوصی وارد recommendation نمی‌شود.

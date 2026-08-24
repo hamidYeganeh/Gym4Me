@@ -19,6 +19,9 @@ const CATEGORY_ICON_SIZE = 32;
 export function DiscoveryHomeSportCategoriesSection({
   categories,
   isLoading = false,
+  title,
+  hint,
+  seeAllHref = "/discovery/sports",
 }: DiscoveryHomeSportCategoriesSectionProps) {
   const t = useTranslations("DiscoveryHome");
   const router = useRouter();
@@ -28,14 +31,14 @@ export function DiscoveryHomeSportCategoriesSection({
 
   return (
     <DiscoverySectionRail
-      ariaLabel={t("sportCategoriesTitle")}
-      hint={t("sportCategoriesHint")}
+      ariaLabel={title ?? t("sportCategoriesTitle")}
+      hint={hint ?? t("sportCategoriesHint")}
       seeAllLabel={t("seeAll")}
       sheet
       slideClassName={slots.slide()}
-      title={t("sportCategoriesTitle")}
+      title={title ?? t("sportCategoriesTitle")}
       tone="surface"
-      onSeeAll={() => router.push("/discovery/sports")}
+      onSeeAll={() => router.push(seeAllHref)}
     >
       {isLoading
         ? Array.from({ length: CATEGORY_SKELETON_COUNT }, (_, index) => (
@@ -56,7 +59,10 @@ export function DiscoveryHomeSportCategoriesSection({
                   title: category.name,
                   subtitle: category.description ?? t("sportLabel"),
                   backgroundImage: category.image,
-                  icon: discoverySportIcon(category.iconKey, CATEGORY_ICON_SIZE),
+                  icon: discoverySportIcon(
+                    category.iconKey,
+                    CATEGORY_ICON_SIZE,
+                  ),
                 }}
                 className={slots.card()}
                 color={theme.color}

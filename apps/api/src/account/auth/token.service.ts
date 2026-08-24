@@ -56,6 +56,10 @@ export class TokenService {
     return `auth:sessions_revoked:${userId}`;
   }
 
+  private sessionRevokedKey(userId: string, sessionId: string): string {
+    return `auth:session_revoked:${userId}:${sessionId}`;
+  }
+
   async markSessionsRevoked(userId: Types.ObjectId | string): Promise<void> {
     const id = userId.toString();
     const accessTtl = this.config.get('JWT_ACCESS_TTL', '900s');
@@ -68,12 +72,24 @@ export class TokenService {
     );
   }
 
-  async assertAccessNotRevoked(userId: string, iat?: number): Promise<void> {
+  async assertAccessNotRevoked(
+    userId: string,
+    iat?: number,
+    sessionId?: string,
+  ): Promise<void> {
     if (iat == null) return;
-    const raw = await this.redis.get(this.sessionsRevokedKey(userId));
-    if (!raw) return;
-    const revokedAt = Number(raw);
-    if (Number.isFinite(revokedAt) && iat <= revokedAt) {
+    const [allRaw, sessionRaw] = await Promise.all([
+      this.redis.get(this.sessionsRevokedKey(userId)),
+      sessionId
+        ? this.redis.get(this.sessionRevokedKey(userId, sessionId))
+        : Promise.resolve(null),
+    ]);
+    const wasRevoked = [allRaw, sessionRaw].some((raw) => {
+      if (!raw) return false;
+      const revokedAt = Number(raw);
+      return Number.isFinite(revokedAt) && iat <= revokedAt;
+    });
+    if (wasRevoked) {
       throw new UnauthorizedException('Session revoked');
     }
   }
@@ -89,7 +105,11 @@ export class TokenService {
     return n;
   }
 
-  async issuePair(user: UserDocument, activeRole?: Role): Promise<TokenPair> {
+  async issuePair(
+    user: UserDocument,
+    activeRole?: Role,
+    sessionId = randomToken(16),
+  ): Promise<TokenPair> {
     const role = activeRole ?? pickDefaultActiveRole(user.roles);
     if (!user.roles.includes(role)) {
       throw new UnauthorizedException('Role not assigned to user');
@@ -98,6 +118,7 @@ export class TokenService {
     const payload: JwtUser = {
       sub: user._id.toString(),
       phone: user.phone,
+      sessionId,
       roles: user.roles,
       activeRole: role,
     };
@@ -109,6 +130,7 @@ export class TokenService {
     await this.refreshModel.create({
       userId: user._id,
       tokenHash: sha256(refreshToken),
+      sessionId,
       activeRole: role,
       expiresAt: new Date(Date.now() + this.refreshTtlMs()),
     });
@@ -162,7 +184,8 @@ export class TokenService {
       throw new UnauthorizedException('Session role is no longer valid');
     }
 
-    const pair = await this.issuePair(user, role);
+    const sessionId = doc.sessionId ?? randomToken(16);
+    const pair = await this.issuePair(user, role, sessionId);
     doc.revokedAt = new Date();
     doc.replacedByHash = sha256(pair.refreshToken);
     await doc.save();
@@ -185,11 +208,10 @@ export class TokenService {
         'Admin role cannot be activated via account auth',
       );
     }
-    const pair = await this.issuePair(user, nextRole);
     if (presentedRefreshToken) {
-      await this.revoke(presentedRefreshToken);
+      return this.rotate(user, presentedRefreshToken, nextRole);
     }
-    return pair;
+    return this.issuePair(user, nextRole);
   }
 
   async resolveUserId(presentedToken: string): Promise<Types.ObjectId> {
@@ -212,16 +234,68 @@ export class TokenService {
       throw new UnauthorizedException('Invalid refresh token');
     }
     if (doc.revokedAt) {
-      await this.revokeAll(doc.userId);
+      await this.revokeSession(doc);
       throw new UnauthorizedException('Refresh token reuse detected');
     }
     return doc;
   }
 
   async revoke(presentedToken: string): Promise<void> {
-    await this.refreshModel.updateOne(
-      { tokenHash: sha256(presentedToken), revokedAt: null },
-      { revokedAt: new Date() },
+    const doc = await this.refreshModel.findOne({
+      tokenHash: sha256(presentedToken),
+    });
+    if (!doc) return;
+    await this.revokeSession(doc);
+  }
+
+  private async revokeSession(doc: RefreshTokenDocument): Promise<void> {
+    const now = new Date();
+    if (doc.sessionId) {
+      await this.refreshModel.updateMany(
+        { userId: doc.userId, sessionId: doc.sessionId, revokedAt: null },
+        { revokedAt: now },
+      );
+      await this.markSessionRevoked(doc.userId, doc.sessionId, now);
+      return;
+    }
+
+    // Legacy tokens predate session ids. Revoke only their rotation chain so
+    // a stale token from one device cannot sign every other device out.
+    let tokenHash: string | undefined = doc.tokenHash;
+    while (tokenHash) {
+      const current = await this.refreshModel.findOne({ tokenHash });
+      if (!current) break;
+      if (current.sessionId) {
+        await this.refreshModel.updateMany(
+          {
+            userId: current.userId,
+            sessionId: current.sessionId,
+            revokedAt: null,
+          },
+          { revokedAt: now },
+        );
+        await this.markSessionRevoked(current.userId, current.sessionId, now);
+        break;
+      }
+      if (!current.revokedAt) {
+        current.revokedAt = now;
+        await current.save();
+      }
+      tokenHash = current.replacedByHash;
+    }
+  }
+
+  private async markSessionRevoked(
+    userId: Types.ObjectId,
+    sessionId: string,
+    revokedAt: Date,
+  ): Promise<void> {
+    const accessTtl = this.config.get('JWT_ACCESS_TTL', '900s');
+    await this.redis.set(
+      this.sessionRevokedKey(userId.toString(), sessionId),
+      String(Math.floor(revokedAt.getTime() / 1000)),
+      'EX',
+      Math.max(this.parseTtlSeconds(accessTtl), 900),
     );
   }
 

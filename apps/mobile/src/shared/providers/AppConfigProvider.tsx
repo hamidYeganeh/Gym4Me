@@ -12,6 +12,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { OptionalUpdateBanner } from "@/modules/app/components/OptionalUpdateBanner";
@@ -85,41 +86,59 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
   );
   const [isReady, setReady] = useState(false);
   const [optionalDismissed, setOptionalDismissed] = useState(false);
+  const cacheExpiresAtRef = useRef(0);
+  const refreshPromiseRef = useRef<Promise<void> | null>(null);
 
   const refresh = useCallback(async () => {
+    if (refreshPromiseRef.current) return refreshPromiseRef.current;
+
+    const request = (async () => {
+      try {
+        const [version, deviceId] = await Promise.all([
+          installedVersion(),
+          installationId(),
+        ]);
+        setAppVersion(version);
+        const platform = Capacitor.getPlatform();
+        const value = await appConfigApi.fetchBootstrap({
+          platform:
+            platform === "ios" || platform === "android" ? platform : "web",
+          appVersion: version,
+          installationId: deviceId,
+          channel:
+            (process.env.NEXT_PUBLIC_RELEASE_CHANNEL as
+              | "production"
+              | "beta"
+              | "development"
+              | undefined) || "production",
+        });
+        const expiresAt = Date.now() + value.cacheTtlSeconds * 1000;
+        cacheExpiresAtRef.current = expiresAt;
+        setBootstrap(value);
+        await Preferences.set({
+          key: CACHE_KEY,
+          value: JSON.stringify({ expiresAt, value } satisfies CachedBootstrap),
+        });
+      } catch {
+        // Cached/bundled defaults keep the app usable while config is offline.
+      } finally {
+        setReady(true);
+      }
+    })();
+
+    refreshPromiseRef.current = request;
     try {
-      const [version, deviceId] = await Promise.all([
-        installedVersion(),
-        installationId(),
-      ]);
-      setAppVersion(version);
-      const platform = Capacitor.getPlatform();
-      const value = await appConfigApi.fetchBootstrap({
-        platform:
-          platform === "ios" || platform === "android" ? platform : "web",
-        appVersion: version,
-        installationId: deviceId,
-        channel:
-          (process.env.NEXT_PUBLIC_RELEASE_CHANNEL as
-            | "production"
-            | "beta"
-            | "development"
-            | undefined) || "production",
-      });
-      setBootstrap(value);
-      await Preferences.set({
-        key: CACHE_KEY,
-        value: JSON.stringify({
-          expiresAt: Date.now() + value.cacheTtlSeconds * 1000,
-          value,
-        } satisfies CachedBootstrap),
-      });
-    } catch {
-      // Cached/bundled defaults keep the app usable while config is offline.
+      await request;
     } finally {
-      setReady(true);
+      if (refreshPromiseRef.current === request) {
+        refreshPromiseRef.current = null;
+      }
     }
   }, []);
+
+  const refreshIfStale = useCallback(() => {
+    if (cacheExpiresAtRef.current <= Date.now()) void refresh();
+  }, [refresh]);
 
   useEffect(() => {
     let active = true;
@@ -127,7 +146,10 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
       .then(({ value }) => {
         if (!active) return;
         const cached = parseCache(value);
-        if (cached) setBootstrap(cached.value);
+        if (cached) {
+          cacheExpiresAtRef.current = cached.expiresAt;
+          setBootstrap(cached.value);
+        }
         if (!cached || cached.expiresAt <= Date.now()) return refresh();
         setReady(true);
       })
@@ -139,15 +161,15 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const refreshWhenVisible = () => {
-      if (document.visibilityState === "visible") void refresh();
+      if (document.visibilityState === "visible") refreshIfStale();
     };
-    const interval = window.setInterval(() => void refresh(), 5 * 60_000);
+    const interval = window.setInterval(refreshIfStale, 5 * 60_000);
     document.addEventListener("visibilitychange", refreshWhenVisible);
     return () => {
       window.clearInterval(interval);
       document.removeEventListener("visibilitychange", refreshWhenVisible);
     };
-  }, [refresh]);
+  }, [refreshIfStale]);
 
   const dismissOptionalUpdate = useCallback(() => {
     setOptionalDismissed(true);

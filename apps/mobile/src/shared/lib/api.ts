@@ -41,6 +41,7 @@ import {
   createDiscoveryClubSlotsApi,
   createDiscoveryCoachesApi,
   createDiscoveryCoachSlotsApi,
+  createDiscoveryFeedApi,
 } from "@repo/api/discovery";
 import { createAnalyticsApi } from "@repo/api/analytics";
 import { createMediaApi } from "@repo/api/media";
@@ -79,6 +80,7 @@ export const discoveryClubSlots = createDiscoveryClubSlotsApi(apiClient);
 export const discoveryClasses = createDiscoveryClassesApi(apiClient);
 export const discoveryCoaches = createDiscoveryCoachesApi(apiClient);
 export const discoveryCoachSlots = createDiscoveryCoachSlotsApi(apiClient);
+export const discoveryFeed = createDiscoveryFeedApi(apiClient);
 export const accountBookings = createAccountBookingsApi(apiClient);
 export const clubBookings = createClubBookingsApi(apiClient);
 export const coachBookings = createCoachBookingsApi(apiClient);

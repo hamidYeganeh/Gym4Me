@@ -1,19 +1,14 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Link as RouterLink } from "react-router-dom";
 import { Button } from "@heroui/react/button";
 import { Checkbox } from "@heroui/react/checkbox";
-import { FieldError } from "@heroui/react/field-error";
-import { Input } from "@heroui/react/input";
-import { Label } from "@heroui/react/label";
-import { TextField } from "@heroui/react/textfield";
 import { Typography } from "@heroui/react/typography";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "@repo/icons/ArrowRight";
-import { Eye } from "@repo/icons/Eye";
-import { EyeSlash } from "@repo/icons/EyeSlash";
-import { Lock1 } from "@repo/icons/Lock1";
-import { Telephone1 } from "@repo/icons/Telephone1";
+import { Chat } from "@repo/icons/Chat";
+import { PasswordField } from "@repo/ui/kit/PasswordField";
+import { PhoneField } from "@repo/ui/kit/PhoneField";
 import { useTranslations } from "next-intl";
 import { routes } from "@/shared/lib/routes";
 import {
@@ -36,7 +31,6 @@ export function AuthLoginPasswordForm({
 }: AuthLoginPasswordFormProps) {
   const t = useTranslations("Admin.Auth");
   const styles = authLoginPasswordFormVariants();
-  const [showPassword, setShowPassword] = useState(false);
 
   const schema = useMemo(
     () =>
@@ -65,38 +59,28 @@ export function AuthLoginPasswordForm({
   };
 
   return (
-    <form autoComplete="off" className={styles.form({ className })} onSubmit={handleSubmit}>
+    <form
+      autoComplete="off"
+      className={styles.form({ className })}
+      onSubmit={handleSubmit}
+    >
       <Controller
         control={form.control}
         name="phone"
         render={({ field, fieldState }) => (
-          <TextField
-            autoComplete="off"
-            className={styles.field()}
-            fullWidth
+          <PhoneField
+            errorMessage={fieldState.error?.message}
+            hideLabel
+            inputRef={field.ref}
             isInvalid={fieldState.invalid}
-            isRequired
+            label={t("phoneLabel")}
             name={field.name}
-            type="tel"
+            placeholder={t("phonePlaceholder")}
+            showCountryChevron
             value={field.value}
             onBlur={field.onBlur}
             onChange={field.onChange}
-          >
-            <Label>{t("phoneLabel")}</Label>
-            <div className={styles.inputWrap()}>
-              <Telephone1 className={styles.inputIcon()} size={24} />
-              <Input
-                autoComplete="off"
-                autoCapitalize="none"
-                autoCorrect="off"
-                className={styles.input()}
-                placeholder={t("phonePlaceholder")}
-                ref={field.ref}
-                spellCheck={false}
-              />
-            </div>
-            <FieldError>{fieldState.error?.message}</FieldError>
-          </TextField>
+          />
         )}
       />
 
@@ -104,47 +88,21 @@ export function AuthLoginPasswordForm({
         control={form.control}
         name="password"
         render={({ field, fieldState }) => (
-          <TextField
-            autoComplete="off"
-            className={styles.field()}
-            fullWidth
+          <PasswordField
+            errorMessage={fieldState.error?.message}
+            hideLabel
+            hidePasswordLabel={t("hidePassword")}
+            inputRef={field.ref}
             isInvalid={fieldState.invalid}
             isRequired
+            label={t("passwordLabel")}
             name={field.name}
-            type={showPassword ? "text" : "password"}
+            placeholder={t("passwordLabel")}
+            showPasswordLabel={t("showPassword")}
             value={field.value}
             onBlur={field.onBlur}
             onChange={field.onChange}
-          >
-            <Label>{t("passwordLabel")}</Label>
-            <div className={styles.inputWrap()}>
-              <Lock1 className={styles.inputIcon()} size={24} />
-              <Input
-                autoComplete="off"
-                autoCapitalize="none"
-                autoCorrect="off"
-                className={`${styles.input()} ${styles.inputWithSuffix()}`}
-                dir="ltr"
-                placeholder={t("passwordPlaceholder")}
-                ref={field.ref}
-                spellCheck={false}
-              />
-              <Button
-                isIconOnly
-                size="lg"
-                type="button"
-                variant="ghost"
-                aria-label={
-                  showPassword ? t("hidePassword") : t("showPassword")
-                }
-                className={styles.suffixButton()}
-                onPress={() => setShowPassword((prev) => !prev)}
-              >
-                {showPassword ? <EyeSlash size={24} /> : <Eye size={24} />}
-              </Button>
-            </div>
-            <FieldError>{fieldState.error?.message}</FieldError>
-          </TextField>
+          />
         )}
       />
 
@@ -207,7 +165,7 @@ export function AuthLoginPasswordForm({
         variant="secondary"
         onPress={() => void handleOtpLogin()}
       >
-        <Telephone1 size={22} />
+        <Chat className={styles.otpIcon()} size={20} />
         {t("otpSubmit")}
       </Button>
     </form>

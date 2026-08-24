@@ -58,6 +58,21 @@ export { COACH_TYPES } from "../types";
 export type { CoachType } from "../types";
 export { discoveryCoachesKeys } from "./coaches.keys";
 
+export { createDiscoveryFeedApi, type DiscoveryFeedApi } from "./feed.client";
+export { discoveryFeedEndpoints } from "./feed.endpoint";
+export type {
+  DiscoveryArticleCard,
+  DiscoveryClubCard,
+  DiscoveryEmptyBehavior,
+  DiscoveryFeedQuery,
+  DiscoveryFeedResponse,
+  DiscoverySectionDefinition,
+  DiscoverySectionItem,
+  DiscoverySectionKind,
+  DiscoverySourceStrategy,
+  ResolvedDiscoverySection,
+} from "./feed.dto";
+
 export {
   createDiscoveryCoachSlotsApi,
   type DiscoveryCoachSlotsApi,

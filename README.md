@@ -2,6 +2,10 @@
 
 Monorepo for the Gym4Me platform — Iranian clubs, coaches, athletes, and ops.
 
+Discovery home is composed from typed, admin-published sections through a
+revision-pinned Redis feed; mobile loads up to eight sections per page and can
+personalize eligible sections from the active athlete profile.
+
 ## Apps
 
 | App     | Path           | Port | Role                             |

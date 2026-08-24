@@ -3,6 +3,7 @@ import {
   createAdminAuditApi,
   createAdminArticlesApi,
   createAdminBannersApi,
+  createAdminDiscoveryApi,
   createAdminBasicsApi,
   createAdminBookingsApi,
   createAdminClubsApi,
@@ -37,6 +38,7 @@ export const adminVerification = createAdminVerificationApi(apiClient);
 export const adminSupport = createAdminSupportApi(apiClient);
 export const adminArticles = createAdminArticlesApi(apiClient);
 export const adminBanners = createAdminBannersApi(apiClient);
+export const adminDiscovery = createAdminDiscoveryApi(apiClient);
 export const adminGamification = createAdminGamificationApi(apiClient);
 export const adminBookings = createAdminBookingsApi(apiClient);
 export const adminFinance = createAdminFinanceApi(apiClient);

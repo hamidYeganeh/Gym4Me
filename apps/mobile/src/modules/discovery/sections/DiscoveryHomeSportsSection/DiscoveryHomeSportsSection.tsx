@@ -16,6 +16,9 @@ const SPORT_ICON_SIZE = 28;
 export function DiscoveryHomeSportsSection({
   sports,
   isLoading = false,
+  title,
+  hint,
+  seeAllHref = "/discovery/sports",
 }: DiscoveryHomeSportsSectionProps) {
   const t = useTranslations("DiscoveryHome");
   const router = useRouter();
@@ -25,15 +28,15 @@ export function DiscoveryHomeSportsSection({
 
   return (
     <DiscoverySectionRail
-      ariaLabel={t("sportsTitle")}
-      hint={t("sportsHint")}
+      ariaLabel={title ?? t("sportsTitle")}
+      hint={hint ?? t("sportsHint")}
       pattern
       seeAllLabel={t("seeAll")}
       sheet
       slideClassName={slots.slide()}
-      title={t("sportsTitle")}
+      title={title ?? t("sportsTitle")}
       tone="accent"
-      onSeeAll={() => router.push("/discovery/sports")}
+      onSeeAll={() => router.push(seeAllHref)}
     >
       {isLoading
         ? Array.from({ length: SPORT_SKELETON_COUNT }, (_, index) => (

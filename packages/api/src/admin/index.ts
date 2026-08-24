@@ -289,3 +289,15 @@ export type {
   StartImpersonationResult,
 } from "./audit.dto";
 export { adminAuditKeys } from "./audit.keys";
+
+export {
+  createAdminDiscoveryApi,
+  type AdminDiscoveryApi,
+} from "./discovery.client";
+export { adminDiscoveryEndpoints } from "./discovery.endpoint";
+export type {
+  AdminDiscoveryPage,
+  PreviewDiscoveryDraftInput,
+  PreviewDiscoveryDraftResponse,
+  UpdateDiscoveryDraftInput,
+} from "./discovery.dto";

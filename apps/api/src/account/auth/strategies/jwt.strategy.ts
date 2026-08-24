@@ -42,7 +42,11 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       throw new UnauthorizedException('Missing active role');
     }
 
-    await this.tokens.assertAccessNotRevoked(payload.sub, payload.iat);
+    await this.tokens.assertAccessNotRevoked(
+      payload.sub,
+      payload.iat,
+      payload.sessionId,
+    );
 
     // Live status check so blocking a user takes effect immediately.
     const user = await this.userModel
@@ -73,6 +77,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     return {
       sub: payload.sub,
       phone: user.phone,
+      sessionId: payload.sessionId,
       roles,
       activeRole: payload.activeRole,
       impersonation: payload.impersonation,

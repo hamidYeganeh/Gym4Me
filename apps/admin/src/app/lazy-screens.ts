@@ -184,6 +184,10 @@ export const BannersListScreen = lazyNamed(
   () => import("@/modules/banners/screens/BannersListScreen"),
   "BannersListScreen",
 );
+export const DiscoveryComposerScreen = lazyNamed(
+  () => import("@/modules/discovery/screens/DiscoveryComposerScreen"),
+  "DiscoveryComposerScreen",
+);
 export const AchievementsCreateScreen = lazyNamed(
   () => import("@/modules/gamification/screens/AchievementsCreateScreen"),
   "AchievementsCreateScreen",

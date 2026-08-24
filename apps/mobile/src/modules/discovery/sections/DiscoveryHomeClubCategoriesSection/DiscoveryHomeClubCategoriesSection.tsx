@@ -21,6 +21,10 @@ const CATEGORY_SKELETON_COLUMNS = 3;
 export function DiscoveryHomeClubCategoriesSection({
   categories,
   isLoading = false,
+  title,
+  hint,
+  tone = "warning",
+  pattern = true,
 }: DiscoveryHomeClubCategoriesSectionProps) {
   const t = useTranslations("DiscoveryHome");
   const router = useRouter();
@@ -62,13 +66,13 @@ export function DiscoveryHomeClubCategoriesSection({
 
   return (
     <DiscoverySectionRail
-      ariaLabel={t("categoriesTitle")}
-      hint={t("categoriesHint")}
-      pattern
+      ariaLabel={title ?? t("categoriesTitle")}
+      hint={hint ?? t("categoriesHint")}
+      pattern={pattern}
       sheet
       slideClassName={slots.slide()}
-      title={t("categoriesTitle")}
-      tone="warning"
+      title={title ?? t("categoriesTitle")}
+      tone={tone}
     >
       {columns.map((column) => (
         <div className={slots.column()} key={column.key}>

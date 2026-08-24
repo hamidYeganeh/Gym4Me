@@ -45,6 +45,7 @@ import {
   CoachVerificationsScreen,
   RoleRequestsScreen,
   DashboardHomeScreen,
+  DiscoveryComposerScreen,
   ExercisesCatalogScreen,
   ExercisesCreateScreen,
   ExercisesEditScreen,
@@ -420,6 +421,10 @@ export function AppRouter() {
               <Route
                 element={<FeatureFlagsScreen />}
                 path="/dashboard/ops/flags"
+              />
+              <Route
+                element={<DiscoveryComposerScreen />}
+                path="/dashboard/ops/discovery"
               />
               <Route
                 element={<ReleasePoliciesScreen />}
