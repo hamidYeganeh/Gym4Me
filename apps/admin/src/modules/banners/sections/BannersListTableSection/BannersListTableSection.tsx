@@ -48,7 +48,7 @@ export function BannersListTableSection({
               <div className={styles.previewGroup()}>
                 {slides.slice(0, 3).map((slide, index) => (
                   <img
-                    alt={slide.alt ?? info.row.original.title}
+                    alt={slide.alt ?? info.row.original.title ?? ""}
                     className={styles.previewImage()}
                     key={`${slide.mediaId}-${index}`}
                     loading="lazy"
@@ -70,7 +70,7 @@ export function BannersListTableSection({
           enableSorting: false,
           cell: (info) => (
             <span className="block truncate font-medium">
-              {info.getValue()}
+              {info.getValue() || "بدون عنوان"}
             </span>
           ),
         }),

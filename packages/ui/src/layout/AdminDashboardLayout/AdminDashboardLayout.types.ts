@@ -8,6 +8,7 @@ export type AdminDashboardNavId =
   | "finance"
   | "catalogs"
   | "ops"
+  | "discovery"
   | "locations"
   | "sports"
   | "choices"
@@ -71,6 +72,7 @@ export type AdminDashboardLayoutProps = {
     ariaLabel: string;
     title: string;
     items: AdminDashboardSecondaryNavItem[];
+    presentation?: "panel" | "rail";
   };
   className?: string;
 };

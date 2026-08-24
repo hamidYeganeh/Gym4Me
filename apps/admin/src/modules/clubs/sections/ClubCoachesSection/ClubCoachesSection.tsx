@@ -2,13 +2,10 @@
 
 import { useState } from "react";
 import { Button } from "@heroui/react/button";
-import { Input } from "@heroui/react/input";
 import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
-import {
-  assignClubCoach,
-  unassignClubCoach,
-} from "../../lib/clubs-repository";
+import { AdminModelAutocomplete } from "@/shared/components";
+import { assignClubCoach, unassignClubCoach } from "../../lib/clubs-repository";
 import { clubCoachesSectionVariants } from "./ClubCoachesSection.styles";
 import type { ClubCoachesSectionProps } from "./ClubCoachesSection.types";
 
@@ -38,7 +35,9 @@ export function ClubCoachesSection({
       setCoachId("");
       onChanged();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("detail.coachAssignError"));
+      setError(
+        err instanceof Error ? err.message : t("detail.coachAssignError"),
+      );
     } finally {
       setPending(false);
     }
@@ -51,7 +50,9 @@ export function ClubCoachesSection({
       await unassignClubCoach(clubId, id);
       onChanged();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("detail.coachAssignError"));
+      setError(
+        err instanceof Error ? err.message : t("detail.coachAssignError"),
+      );
     } finally {
       setPending(false);
     }
@@ -62,11 +63,12 @@ export function ClubCoachesSection({
       <Typography className={styles.title()}>{t("detail.coaches")}</Typography>
 
       <div className={styles.formRow()}>
-        <Input
+        <AdminModelAutocomplete
           className="flex-1"
-          placeholder={t("detail.coachIdPlaceholder")}
+          kind="coach"
+          label={t("detail.coaches")}
           value={coachId}
-          onChange={(e) => setCoachId(e.target.value)}
+          onChange={setCoachId}
         />
         <Button
           isDisabled={pending || !coachId.trim()}
@@ -89,9 +91,6 @@ export function ClubCoachesSection({
           {coaches.map((c) => (
             <li key={c.coachId} className={styles.item()}>
               <span className={styles.itemLabel()}>{coachLabel(c)}</span>
-              <span className={styles.itemId()} dir="ltr">
-                {c.coachId}
-              </span>
               <Button
                 isDisabled={pending}
                 size="sm"
@@ -104,7 +103,9 @@ export function ClubCoachesSection({
           ))}
         </ul>
       ) : (
-        <Typography className={styles.empty()}>{t("detail.emptyRefs")}</Typography>
+        <Typography className={styles.empty()}>
+          {t("detail.emptyRefs")}
+        </Typography>
       )}
     </div>
   );

@@ -7,6 +7,10 @@ import { Spinner } from "@heroui/react/spinner";
 import { Pencil1 } from "@repo/icons/Pencil1";
 import { User } from "@repo/icons/User";
 import { useTranslations } from "next-intl";
+import {
+  ImageCropperSheet,
+  useImageCropper,
+} from "@/shared/components/ImageCropperSheet";
 import { profileSettingsAvatarSectionVariants } from "./ProfileSettingsAvatarSection.styles";
 import type { ProfileSettingsAvatarSectionProps } from "./ProfileSettingsAvatarSection.types";
 
@@ -24,6 +28,7 @@ export function ProfileSettingsAvatarSection({
   const tSettings = useTranslations("Mobile.ProfileSettings");
   const styles = profileSettingsAvatarSectionVariants();
   const inputRef = useRef<HTMLInputElement>(null);
+  const { cropImage, cropperProps } = useImageCropper();
 
   return (
     <div className={styles.root({ className })}>
@@ -50,7 +55,11 @@ export function ProfileSettingsAvatarSection({
         onChange={(event) => {
           const file = event.target.files?.[0];
           event.target.value = "";
-          if (file) onPickFile(file);
+          if (file) {
+            void cropImage(file, 1).then((cropped) => {
+              if (cropped) onPickFile(cropped);
+            });
+          }
         }}
         ref={inputRef}
         type="file"
@@ -66,6 +75,7 @@ export function ProfileSettingsAvatarSection({
       >
         <Pencil1 size={14} />
       </Button>
+      <ImageCropperSheet {...cropperProps} />
     </div>
   );
 }

@@ -27,13 +27,9 @@ export function RefsCreateScreen({ className }: RefsCreateScreenProps) {
   ) => {
     await adminBasics.createRef(type, {
       name: values.name.trim(),
-      slug: values.slug.trim() || undefined,
       description: values.description.trim() || undefined,
       icon: values.icon.trim() || undefined,
       coverMediaId: values.coverMediaId || undefined,
-      order: Number(values.order) || 0,
-      status: values.status,
-      isActive: values.isActive,
     });
     toast.success(tForm("created"));
     if (intent === "saveAndCreateNew") return;

@@ -7,6 +7,14 @@ export type DiscoverySectionKind =
   | "sport_categories"
   | "sports"
   | "clubs"
+  | "coaches"
+  | "classes"
+  | "spaces"
+  | "slots"
+  | "equipment"
+  | "membership_plans"
+  | "bookable_offers"
+  | "amenities"
   | "articles";
 
 export type DiscoverySourceStrategy =
@@ -15,7 +23,20 @@ export type DiscoverySourceStrategy =
   | "top_rated"
   | "nearby"
   | "recommended_for_user"
-  | "latest";
+  | "latest"
+  | "verified"
+  | "available"
+  | "today"
+  | "tomorrow"
+  | "starting_soon"
+  | "capacity_available"
+  | "beginner_friendly"
+  | "least_crowded"
+  | "economical"
+  | "unlimited"
+  | "duration"
+  | "sessions"
+  | "entries";
 
 export type DiscoveryEmptyBehavior = "hide" | "show_empty" | "fallback";
 
@@ -82,8 +103,59 @@ export type DiscoveryArticleCard = {
   authorName: string;
 };
 
+export type DiscoverySpaceCard = {
+  id: string;
+  clubId: string;
+  clubName: string;
+  title: string;
+  description: string | null;
+  sportId: string | null;
+  coverMediaId: string | null;
+};
+
+export type DiscoverySlotCard = {
+  id: string;
+  slotId: string;
+  clubId: string;
+  clubName: string;
+  kind: "class" | "session" | "space";
+  resourceId: string | null;
+  title: string;
+  coverMediaId: string | null;
+  date: string;
+  startTime: string;
+  endTime: string;
+  capacity: number;
+  remaining: number;
+  price: number;
+  currency: "IRT";
+};
+
+export type DiscoveryMembershipPlanCard = {
+  id: string;
+  clubId: string;
+  clubName: string;
+  name: string;
+  description: string | null;
+  kind: string;
+  amount: number;
+  currency: string;
+  durationDays: number | null;
+  sessionsTotal: number | null;
+  entriesTotal: number | null;
+};
+
 export type DiscoverySectionItem =
-  Banner | RefItem | SportNode | DiscoveryClubCard | DiscoveryArticleCard;
+  | Banner
+  | RefItem
+  | SportNode
+  | DiscoveryClubCard
+  | DiscoveryArticleCard
+  | DiscoverySpaceCard
+  | DiscoverySlotCard
+  | DiscoveryMembershipPlanCard
+  | import("./coaches.dto").DiscoveryCoach
+  | import("./classes.dto").DiscoveryClass;
 
 export type ResolvedDiscoverySection = DiscoverySectionDefinition & {
   items: DiscoverySectionItem[];

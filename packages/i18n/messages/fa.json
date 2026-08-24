@@ -977,6 +977,8 @@
       "submitted": "درخواست ثبت شد.",
       "error": "ثبت احراز هویت ممکن نشد.",
       "errorDetails": "کد ملی ده‌رقمی و تاریخ تولد معتبر وارد کنید.",
+      "nationalIdError": "کد ملی باید دقیقاً ۱۰ رقم باشد.",
+      "birthDateError": "تاریخ تولد را از تقویم انتخاب کنید.",
       "errorCamera": "برای اسکن مدرک، دسترسی دوربین لازم است.",
       "errorRejected": "احراز هویت تأیید نشد. دوباره تلاش کنید.",
       "intro": {
@@ -1100,6 +1102,14 @@
       "noteLabel": "یادداشت (اختیاری)",
       "submit": "ثبت در تاریخچه"
     },
+    "ImageCropper": {
+      "title": "تنظیم کادر تصویر",
+      "canvasLabel": "پیش‌نمایش برش تصویر",
+      "hint": "تصویر را بکشید و با نوار پایین اندازه آن را تنظیم کنید.",
+      "zoom": "بزرگ‌نمایی تصویر",
+      "cancel": "انصراف",
+      "apply": "تأیید و ادامه"
+    },
     "ClubCreate": {
       "title": "ثبت باشگاه",
       "subtitle": "اطلاعات باشگاه را مرحله‌به‌مرحله وارد و برای تأیید ارسال کنید.",
@@ -1195,6 +1205,20 @@
       "equipment": "تجهیزات",
       "catalogLoading": "در حال بارگذاری فهرست‌ها…",
       "catalogEmpty": "موردی برای انتخاب یافت نشد.",
+      "catalogAdd": "افزودن",
+      "catalogSelectHint": "برای انتخاب موارد، روی افزودن بزنید.",
+      "catalogPickerTitle": "انتخاب {title}",
+      "catalogSearch": "جست‌وجو",
+      "catalogSearchPlaceholder": "نام مورد را بنویسید…",
+      "catalogApply": "تأیید {count} مورد",
+      "catalogEditTitle": "ویرایش {name}",
+      "catalogEditItem": "ویرایش {name}",
+      "catalogQuantity": "تعداد",
+      "catalogQuantityValue": "تعداد: {count}",
+      "catalogDescription": "توضیحات",
+      "catalogDescriptionPlaceholder": "جزئیات این مورد در باشگاه را بنویسید…",
+      "catalogNoDetails": "بدون توضیحات",
+      "catalogSaveDetails": "ذخیره تغییرات",
       "genderPolicy": "سیاست جنسیتی",
       "genderMixed": "مختلط",
       "genderMaleOnly": "آقایان",
@@ -1396,6 +1420,7 @@
       "bookings": "رزروها",
       "catalogs": "کاتالوگ‌ها",
       "ops": "عملیات",
+      "discovery": "صفحات اکتشاف",
       "logout": "خروج"
     },
     "Articles": {
@@ -1692,8 +1717,8 @@
           "bonusPoints": "امتیاز پاداش",
           "order": "ترتیب",
           "subjectType": "نوع دریافت‌کننده",
-          "subjectId": "شناسه دریافت‌کننده",
-          "subjectIdHint": "شناسه‌ی پروفایل ورزشکار / مربی / باشگاه"
+          "subjectId": "دریافت‌کننده",
+          "subjectIdHint": "ورزشکار، مربی یا باشگاه را جستجو و انتخاب کنید"
         },
         "actions": {
           "create": "نشان جدید",
@@ -1776,9 +1801,9 @@
         "event": "رویداد",
         "subjectType": "نوع سوژه",
         "reason": "دلیل",
-        "subjectId": "شناسه سوژه",
-        "ruleId": "شناسه قانون",
-        "idPlaceholder": "ObjectId"
+        "subjectId": "مخاطب",
+        "ruleId": "قانون امتیاز",
+        "idPlaceholder": "جستجو و انتخاب کنید"
       }
     },
     "Finance": {
@@ -1847,7 +1872,7 @@
           "draft": "پیش‌نویس دوره",
           "draftTitle": "پیش‌نویس تسویه دوره",
           "draftBody": "برای باشگاه انتخابی، تسویه دوره اخیر بر اساس دفتر کل محاسبه و پیش‌نویس می‌شود.",
-          "clubIdLabel": "شناسه باشگاه",
+          "clubIdLabel": "باشگاه",
           "fromLabel": "از تاریخ (YYYY-MM-DD)",
           "toLabel": "تا تاریخ (YYYY-MM-DD)",
           "fromPlaceholder": "۱۴۰۴-۱۰-۱۱",
@@ -1889,14 +1914,14 @@
         "channel": "کانال",
         "purpose": "بابت",
         "kind": "نوع",
-        "clubId": "شناسه باشگاه",
-        "payerUserId": "شناسه پرداخت‌کننده",
+        "clubId": "باشگاه",
+        "payerUserId": "پرداخت‌کننده",
         "recipientType": "نوع گیرنده",
-        "recipientId": "شناسه گیرنده",
-        "paymentId": "شناسه پرداخت",
+        "recipientId": "دریافت‌کننده",
+        "paymentId": "پرداخت",
         "from": "از تاریخ",
         "to": "تا تاریخ",
-        "idPlaceholder": "ObjectId"
+        "idPlaceholder": "جستجو و انتخاب کنید"
       },
       "payoutRecipientType": {
         "club": "باشگاه",
@@ -1962,10 +1987,10 @@
         "resourceType": "نوع منبع",
         "from": "از تاریخ",
         "to": "تا تاریخ",
-        "athleteId": "شناسه ورزشکار",
-        "coachUserId": "شناسه مربی",
-        "clubId": "شناسه باشگاه",
-        "idPlaceholder": "ObjectId"
+        "athleteId": "ورزشکار",
+        "coachUserId": "مربی",
+        "clubId": "باشگاه",
+        "idPlaceholder": "جستجو و انتخاب کنید"
       },
       "status": {
         "pending": "در انتظار",
@@ -2247,7 +2272,7 @@
         "impersonation": {
           "start": "ورود از طرف کاربر",
           "startTitle": "شروع جلسه ورود از طرف کاربر",
-          "targetUserIdLabel": "شناسه کاربر هدف",
+          "targetUserIdLabel": "کاربر هدف",
           "reasonLabel": "دلیل (برای ممیزی ثبت می‌شود)",
           "confirm": "شروع جلسه",
           "tokenTitle": "توکن جلسه صادر شد",
@@ -2502,6 +2527,7 @@
       "errorInvalid": "شماره موبایل یا رمز عبور نادرست است.",
       "errorRateLimited": "تعداد درخواست‌ها زیاد است. کمی بعد دوباره تلاش کنید.",
       "errorOtpRequest": "ارسال کد ممکن نشد. دوباره تلاش کنید.",
+      "errorAdminAccess": "این شماره اجازه ورود به پنل مدیریت را ندارد.",
       "or": "یا",
       "otpSubmit": "ورود با کد یکبار مصرف",
       "noAccount": "دسترسی ندارید؟",
@@ -2744,6 +2770,18 @@
         "empty": "درخواستی با این فیلتر نیست.",
         "roleCoach": "مربی",
         "roleOwner": "باشگاه‌دار",
+        "view": "مشاهده",
+        "detailsTitle": "جزئیات درخواست نقش",
+        "user": "کاربر",
+        "requestInfo": "اطلاعات درخواست",
+        "profileInfo": "معرفی متقاضی",
+        "notes": "توضیحات",
+        "submittedAt": "تاریخ ارسال",
+        "headline": "عنوان درخواست",
+        "experience": "سابقه",
+        "bio": "معرفی",
+        "applicationNote": "توضیحات متقاضی",
+        "reviewNote": "یادداشت بررسی",
         "approve": "تأیید",
         "reject": "رد",
         "approveBody": "نقش به حساب کاربر اضافه و اعلان ارسال شود؟",
@@ -2978,7 +3016,7 @@
       "createModal": {
         "title": "ثبت باشگاه جدید",
         "ownerId": "شناسه مالک",
-        "ownerIdPlaceholder": "ObjectId کاربر مالک",
+        "ownerIdPlaceholder": "مالک باشگاه را انتخاب کنید",
         "owner": "مالک (نمونه)",
         "name": "نام باشگاه",
         "namePlaceholder": "مثلاً آسمانی",
@@ -3039,7 +3077,7 @@
         "deleteConfirm": "حذف",
         "cancel": "انصراف",
         "coaches": "مربیان",
-        "coachIdPlaceholder": "شناسه کاربر مربی (ObjectId)",
+        "coachIdPlaceholder": "مربی را جستجو و انتخاب کنید",
         "assignCoach": "افزودن مربی",
         "unassignCoach": "حذف",
         "coachAssignError": "افزودن مربی ممکن نشد.",
@@ -6133,9 +6171,9 @@
     "slotsHint": "ظرفیت و ساعات اوج هر روز را مرور کنید.",
     "noAddress": "آدرس ثبت نشده",
     "coachesTitle": "مربیان باشگاه",
-    "coachesHint": "کاربران دارای نقش مربی را با شناسه کاربر اضافه کنید.",
-    "coachIdLabel": "شناسه مربی",
-    "coachIdPlaceholder": "ObjectId کاربر مربی",
+    "coachesHint": "کاربران دارای نقش مربی را با نام یا شماره موبایل جستجو کنید.",
+    "coachIdLabel": "مربی",
+    "coachIdPlaceholder": "مربی را جستجو و انتخاب کنید",
     "assign": "افزودن",
     "unassign": "حذف",
     "emptyCoaches": "هنوز مربی‌ای اختصاص داده نشده.",

@@ -994,28 +994,53 @@ export class ClubsService {
       club.markModified('cancellation');
     }
 
-    if (dto.equipmentIds !== undefined) {
+    if (dto.equipments !== undefined) {
+      club.equipments = dto.equipments.map((item) => ({
+        equipmentId: new Types.ObjectId(item.id),
+        quantity: item.quantity,
+        description: item.description?.trim() || undefined,
+      }));
+      club.markModified('equipments');
+    } else if (dto.equipmentIds !== undefined) {
       club.equipments = dto.equipmentIds.map((equipmentId) => ({
         equipmentId: new Types.ObjectId(equipmentId),
       }));
       club.markModified('equipments');
     }
 
-    if (dto.amenityIds !== undefined) {
+    if (dto.amenities !== undefined) {
+      club.amenities = dto.amenities.map((item) => ({
+        amenityId: new Types.ObjectId(item.id),
+        description: item.description?.trim() || undefined,
+      }));
+      club.markModified('amenities');
+    } else if (dto.amenityIds !== undefined) {
       club.amenities = dto.amenityIds.map((amenityId) => ({
         amenityId: new Types.ObjectId(amenityId),
       }));
       club.markModified('amenities');
     }
 
-    if (dto.categoryIds !== undefined) {
+    if (dto.categories !== undefined) {
+      club.categories = dto.categories.map((item) => ({
+        categoryId: new Types.ObjectId(item.id),
+        description: item.description?.trim() || undefined,
+      }));
+      club.markModified('categories');
+    } else if (dto.categoryIds !== undefined) {
       club.categories = dto.categoryIds.map((categoryId) => ({
         categoryId: new Types.ObjectId(categoryId),
       }));
       club.markModified('categories');
     }
 
-    if (dto.sportIds !== undefined) {
+    if (dto.sports !== undefined) {
+      club.sports = dto.sports.map((item) => ({
+        sportId: new Types.ObjectId(item.id),
+        description: item.description?.trim() || undefined,
+      }));
+      club.markModified('sports');
+    } else if (dto.sportIds !== undefined) {
       club.sports = dto.sportIds.map((sportId) => ({
         sportId: new Types.ObjectId(sportId),
       }));
@@ -1323,10 +1348,23 @@ export class ClubsService {
         rules: c.cancellation?.rules ?? [],
         peakRules: c.cancellation?.peakRules ?? [],
       },
-      equipments: equipmentIds.map((id) => toRefPublic(id)),
-      amenities: amenityIds.map((id) => toRefPublic(id)),
-      categories: categoryIds.map((id) => toRefPublic(id)),
-      sports: sportIds.map((id) => toClubSportPublic(id)),
+      equipments: (c.equipments ?? []).map((selection) => ({
+        ...toRefPublic(selection.equipmentId),
+        quantity: selection.quantity ?? null,
+        selectionDescription: selection.description ?? null,
+      })),
+      amenities: (c.amenities ?? []).map((selection) => ({
+        ...toRefPublic(selection.amenityId),
+        selectionDescription: selection.description ?? null,
+      })),
+      categories: (c.categories ?? []).map((selection) => ({
+        ...toRefPublic(selection.categoryId),
+        selectionDescription: selection.description ?? null,
+      })),
+      sports: (c.sports ?? []).map((selection) => ({
+        ...toClubSportPublic(selection.sportId),
+        selectionDescription: selection.description ?? null,
+      })),
       classes: (c.classes ?? []).map((x) => ({
         classId: x.classId.toString(),
       })),

@@ -1,6 +1,5 @@
 import type { RefItem, SportNode } from "@repo/api";
 import {
-  AGE_GROUP_OPTIONS,
   hoursForAudience,
   SOCIAL_PLATFORM_OPTIONS,
   WEEKDAY_KEYS,
@@ -183,25 +182,37 @@ export function buildClubCreateReviewSections({
     {
       key: "categories",
       title: t("stepCategories"),
-      chips: resolveNames(values.categoryIds ?? [], categoryMap),
+      chips: resolveNames(
+        values.categories.map((item) => item.id),
+        categoryMap,
+      ),
       emptyLabel: t("reviewEmptyCatalog"),
     },
     {
       key: "sports",
       title: t("stepSports"),
-      chips: resolveNames(values.sportIds ?? [], sportMap),
+      chips: resolveNames(
+        values.sports.map((item) => item.id),
+        sportMap,
+      ),
       emptyLabel: t("reviewEmptyCatalog"),
     },
     {
       key: "amenities",
       title: t("stepAmenities"),
-      chips: resolveNames(values.amenityIds ?? [], amenityMap),
+      chips: resolveNames(
+        values.amenities.map((item) => item.id),
+        amenityMap,
+      ),
       emptyLabel: t("reviewEmptyCatalog"),
     },
     {
       key: "equipment",
       title: t("stepEquipment"),
-      chips: resolveNames(values.equipmentIds ?? [], equipmentMap),
+      chips: resolveNames(
+        values.equipment.map((item) => item.id),
+        equipmentMap,
+      ),
       emptyLabel: t("reviewEmptyCatalog"),
     },
     {
@@ -248,9 +259,17 @@ export function buildClubCreateReviewSections({
 }
 
 export function mapRefOptions(items: RefItem[]) {
-  return items.map((item) => ({ id: item.id, name: item.name }));
+  return items.map((item) => ({
+    id: item.id,
+    name: item.name,
+    icon: item.icon,
+  }));
 }
 
 export function mapSportOptions(items: SportNode[]) {
-  return items.map((item) => ({ id: item.id, name: item.name }));
+  return items.map((item) => ({
+    id: item.id,
+    name: item.name,
+    icon: item.icon,
+  }));
 }

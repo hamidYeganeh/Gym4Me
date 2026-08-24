@@ -34,7 +34,15 @@ export type CatalogSectionTabId =
   "plans" | "food" | "exercises" | "metrics" | "coaching";
 
 export type OpsSectionTabId =
-  "social" | "audit" | "templates" | "flags" | "releases" | "discovery";
+  "social" | "audit" | "templates" | "flags" | "releases";
+
+export type DiscoverySectionTabId =
+  | "discovery_home"
+  | "discovery_clubs"
+  | "discovery_coaches"
+  | "discovery_sports"
+  | "discovery_articles"
+  | "discovery_classes";
 
 export type AnalyticsSectionPeriodId = "week" | "month" | "quarter";
 
@@ -90,6 +98,9 @@ type AdminShellProps = {
   opsSection?: SectionSearch & {
     activeTabId: OpsSectionTabId;
   };
+  discoverySection?: {
+    activeTabId: DiscoverySectionTabId;
+  };
 };
 
 export function AdminShell({
@@ -111,6 +122,7 @@ export function AdminShell({
   financeSection,
   catalogSection,
   opsSection,
+  discoverySection,
 }: AdminShellProps) {
   const t = useTranslations("Admin");
   const { logout, user } = useAuth();
@@ -138,6 +150,7 @@ export function AdminShell({
         bookings: t("nav.bookings"),
         finance: t("nav.finance"),
         catalogs: t("nav.catalogs"),
+        discovery: t("nav.discovery"),
         ops: t("nav.ops"),
         locations: t("nav.locations"),
         sports: t("nav.sports"),
@@ -283,7 +296,6 @@ export function AdminShell({
       { id: "templates", label: t("Ops.tabs.templates") },
       { id: "flags", label: t("Ops.tabs.flags") },
       { id: "releases", label: t("Ops.tabs.releases") },
-      { id: "discovery", label: t("Ops.tabs.discovery") },
     ],
     [t],
   );
@@ -294,8 +306,16 @@ export function AdminShell({
     templates: routes.opsTemplates,
     flags: routes.opsFlags,
     releases: routes.opsReleases,
-    discovery: routes.opsDiscovery,
   };
+
+  const discoveryTabs: AdminSectionHeaderTab[] = [
+    { id: "discovery_home", label: "خانه اکتشاف" },
+    { id: "discovery_clubs", label: "کشف باشگاه‌ها" },
+    { id: "discovery_coaches", label: "کشف مربی‌ها" },
+    { id: "discovery_sports", label: "کشف ورزش‌ها" },
+    { id: "discovery_articles", label: "کشف مقالات" },
+    { id: "discovery_classes", label: "کشف کلاس‌ها" },
+  ];
 
   const pathByNav = useMemo<Partial<Record<AdminDashboardNavId, string>>>(
     () => ({
@@ -306,6 +326,7 @@ export function AdminShell({
       finance: routes.financeLedger,
       catalogs: routes.catalogPlans,
       ops: routes.opsSocial,
+      discovery: routes.discovery(),
       locations: routes.locations(),
       sports: routes.sports(),
       choices: routes.choices,
@@ -366,7 +387,8 @@ export function AdminShell({
           (opsSection && opsSection.activeTabId !== "social") ||
           locationsSection ||
           sportsSection ||
-          refsSection,
+          refsSection ||
+          discoverySection,
         );
       pushCurrentOrLink(
         labels.nav[activeNavId],
@@ -448,6 +470,7 @@ export function AdminShell({
     opsSection,
     pathByNav,
     refsSection,
+    discoverySection,
     sportsSection,
     supportSection,
     t,
@@ -680,6 +703,7 @@ export function AdminShell({
           ? {
               ariaLabel: labels.nav.refs,
               title: labels.nav.refs,
+              presentation: "rail" as const,
               items: secondaryItems(refTabs, refsSection.activeTabId, (id) =>
                 routes.refs(id as RefType),
               ),
@@ -743,7 +767,17 @@ export function AdminShell({
                             routes.opsSocial,
                         ),
                       }
-                    : undefined;
+                    : discoverySection
+                      ? {
+                          ariaLabel: labels.nav.discovery,
+                          title: labels.nav.discovery,
+                          items: secondaryItems(
+                            discoveryTabs,
+                            discoverySection.activeTabId,
+                            (id) => routes.discovery(id),
+                          ),
+                        }
+                      : undefined;
 
   return (
     <AdminDashboardLayout

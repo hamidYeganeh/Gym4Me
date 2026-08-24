@@ -252,6 +252,21 @@ export class ClubFaqDto {
   description!: string;
 }
 
+export class ClubCatalogSelectionDto {
+  @IsMongoId()
+  id!: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  quantity?: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  description?: string;
+}
+
 export class CreateClubDto {
   @ValidateNested()
   @Type(() => ClubIdentityDto)
@@ -279,11 +294,23 @@ export class CreateClubDto {
   @IsMongoId({ each: true })
   equipmentIds?: string[];
 
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ClubCatalogSelectionDto)
+  equipments?: ClubCatalogSelectionDto[];
+
   /** Amenity ref ids → stored as [{ amenityId }] */
   @IsOptional()
   @IsArray()
   @IsMongoId({ each: true })
   amenityIds?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ClubCatalogSelectionDto)
+  amenities?: ClubCatalogSelectionDto[];
 
   /** Category ref ids → stored as [{ categoryId }] */
   @IsOptional()
@@ -291,11 +318,23 @@ export class CreateClubDto {
   @IsMongoId({ each: true })
   categoryIds?: string[];
 
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ClubCatalogSelectionDto)
+  categories?: ClubCatalogSelectionDto[];
+
   /** Sport ids → stored as [{ sportId }] */
   @IsOptional()
   @IsArray()
   @IsMongoId({ each: true })
   sportIds?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ClubCatalogSelectionDto)
+  sports?: ClubCatalogSelectionDto[];
 
   /** Class ids → stored as [{ classId }] */
   @IsOptional()
@@ -377,8 +416,20 @@ export class UpdateClubDto {
 
   @IsOptional()
   @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ClubCatalogSelectionDto)
+  equipments?: ClubCatalogSelectionDto[];
+
+  @IsOptional()
+  @IsArray()
   @IsMongoId({ each: true })
   amenityIds?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ClubCatalogSelectionDto)
+  amenities?: ClubCatalogSelectionDto[];
 
   @IsOptional()
   @IsArray()
@@ -387,8 +438,20 @@ export class UpdateClubDto {
 
   @IsOptional()
   @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ClubCatalogSelectionDto)
+  categories?: ClubCatalogSelectionDto[];
+
+  @IsOptional()
+  @IsArray()
   @IsMongoId({ each: true })
   sportIds?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ClubCatalogSelectionDto)
+  sports?: ClubCatalogSelectionDto[];
 
   @IsOptional()
   @IsArray()

@@ -1,20 +1,18 @@
 export const seoClubDetailGallerySectionStyles = {
-  root: "flex flex-col gap-4 border-t border-border pt-8",
-  title: "tracking-tight text-foreground",
-  grid: [
-    "grid grid-cols-2 gap-3 sm:grid-cols-3",
-    "list-none p-0",
-  ].join(" "),
-  item: [
-    "group relative aspect-[4/3] overflow-hidden rounded-2xl",
-    "bg-surface-secondary",
-  ].join(" "),
-  image: "object-cover transition-transform duration-300 group-hover:scale-[1.03]",
-  caption: [
-    "absolute inset-x-0 bottom-0",
-    "bg-linear-to-t from-background/90 via-background/50 to-transparent",
-    "px-3 pb-3 pt-8",
-  ].join(" "),
-  captionTitle: "line-clamp-2 text-sm font-semibold text-foreground",
-  empty: "text-muted",
+  root: "relative w-full",
+  hero: "relative h-[52dvh] min-h-80 w-full overflow-hidden bg-surface-secondary sm:h-[60dvh] lg:h-[min(68dvh,760px)] lg:rounded-[2rem]",
+  image: "object-cover object-center",
+  scrim:
+    "pointer-events-none absolute inset-0 bg-linear-to-t from-background/55 via-transparent to-background/15",
+  counter:
+    "absolute bottom-14 start-4 border-0 bg-foreground/75 text-background shadow-sm backdrop-blur-md lg:bottom-5",
+  controls: "absolute bottom-14 end-4 flex gap-2 lg:bottom-5",
+  control: "bg-background/80 text-foreground shadow-sm backdrop-blur-md",
+  thumbnails:
+    "absolute inset-x-0 bottom-3 z-10 hidden justify-center gap-2 px-5 lg:flex",
+  thumbnail:
+    "relative size-16 overflow-hidden rounded-xl border-2 border-transparent opacity-65 transition data-[active=true]:border-accent data-[active=true]:opacity-100",
+  thumbnailImage: "object-cover",
+  emptyRoot:
+    "flex h-[45dvh] min-h-72 w-full flex-col items-center justify-center gap-3 bg-surface-secondary text-muted lg:rounded-[2rem]",
 } as const;

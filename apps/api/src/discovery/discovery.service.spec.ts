@@ -25,8 +25,14 @@ function makeService(redis: Pick<Redis, 'get' | 'expire' | 'set'>) {
     model,
     model,
     model,
+    model,
+    model,
+    model,
+    model,
     redis as Redis,
     { log: jest.fn() } as never,
+    model,
+    model,
   );
 }
 

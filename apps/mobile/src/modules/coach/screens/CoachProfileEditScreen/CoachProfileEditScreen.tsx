@@ -19,6 +19,10 @@ import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { accountProfile, mediaApi } from "@/shared/lib/api";
+import {
+  ImageCropperSheet,
+  useImageCropper,
+} from "@/shared/components/ImageCropperSheet";
 import { coachProfileEditScreenVariants } from "./CoachProfileEditScreen.styles";
 import type { CoachProfileEditScreenProps } from "./CoachProfileEditScreen.types";
 
@@ -39,6 +43,7 @@ export function CoachProfileEditScreen({
   const [notice, setNotice] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { cropImage, cropperProps } = useImageCropper();
 
   useEffect(() => {
     void accountProfile
@@ -193,7 +198,13 @@ export function CoachProfileEditScreen({
               className="mt-2 block w-full text-sm text-muted file:me-3 file:rounded-full file:border-0 file:bg-accent file:px-4 file:py-2 file:text-sm file:font-semibold file:text-accent-foreground"
               type="file"
               onChange={(event) => {
-                void handleVerification(event.target.files?.[0] ?? null);
+                const file = event.target.files?.[0] ?? null;
+                event.target.value = "";
+                if (file) {
+                  void cropImage(file, 4 / 3).then((cropped) => {
+                    if (cropped) void handleVerification(cropped);
+                  });
+                }
               }}
             />
           </Label>
@@ -210,6 +221,7 @@ export function CoachProfileEditScreen({
             {tProfile("privacyNote")}
           </Typography>
         </footer>
+        <ImageCropperSheet {...cropperProps} />
       </div>
     </AppLayout>
   );

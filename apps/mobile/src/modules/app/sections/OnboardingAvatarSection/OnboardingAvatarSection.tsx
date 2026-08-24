@@ -7,6 +7,10 @@ import { Typography } from "@heroui/react/typography";
 import { ArrowUpload } from "@repo/icons/ArrowUpload";
 import { User } from "@repo/icons/User";
 import Image from "next/image";
+import {
+  ImageCropperSheet,
+  useImageCropper,
+} from "@/shared/components/ImageCropperSheet";
 import { onboardingAvatarSectionVariants } from "./OnboardingAvatarSection.styles";
 import type { OnboardingAvatarSectionProps } from "./OnboardingAvatarSection.types";
 
@@ -20,6 +24,7 @@ export function OnboardingAvatarSection({
 }: OnboardingAvatarSectionProps) {
   const styles = onboardingAvatarSectionVariants();
   const inputRef = useRef<HTMLInputElement>(null);
+  const { cropImage, cropperProps } = useImageCropper();
 
   if (value.mode === "uploading") {
     return (
@@ -40,7 +45,9 @@ export function OnboardingAvatarSection({
           <Typography className={styles.uploadingTitle()} weight="bold">
             {labels.uploading}
           </Typography>
-          <Typography className={styles.fileName()}>{value.fileName}</Typography>
+          <Typography className={styles.fileName()}>
+            {value.fileName}
+          </Typography>
         </div>
       </div>
     );
@@ -75,7 +82,11 @@ export function OnboardingAvatarSection({
           onChange={(event) => {
             const file = event.target.files?.[0];
             event.target.value = "";
-            if (file) onUpload(file);
+            if (file) {
+              void cropImage(file, 1).then((cropped) => {
+                if (cropped) onUpload(cropped);
+              });
+            }
           }}
         />
         <Button
@@ -89,6 +100,7 @@ export function OnboardingAvatarSection({
           <ArrowUpload aria-hidden className={styles.uploadIcon()} size={20} />
         </Button>
       </div>
+      <ImageCropperSheet {...cropperProps} />
     </div>
   );
 }

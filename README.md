@@ -5,6 +5,8 @@ Monorepo for the Gym4Me platform — Iranian clubs, coaches, athletes, and ops.
 Discovery home is composed from typed, admin-published sections through a
 revision-pinned Redis feed; mobile loads up to eight sections per page and can
 personalize eligible sections from the active athlete profile.
+Installed section kinds also cover coaches, classes, spaces, live slots,
+equipment, membership plans, capacity-backed bookable offers, and amenities.
 
 ## Apps
 
@@ -41,6 +43,8 @@ npm install
 npm run docker:up          # mongo + redis
 cp apps/api/.env.example apps/api/.env   # if needed
 npm run db:seed:all -w api
+# Discovery pages only (does not overwrite admin-authored pages):
+npm run db:seed:discovery -w api
 
 # Default: API + mobile only (lighter on RAM)
 npm run dev

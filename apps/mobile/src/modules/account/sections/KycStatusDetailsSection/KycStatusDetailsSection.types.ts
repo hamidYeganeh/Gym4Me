@@ -5,8 +5,10 @@ export type KycStatusDetailsSectionProps = Pick<
   UseKycStatusReturn,
   | "nationalId"
   | "setNationalId"
+  | "nationalIdError"
   | "birthDateJalali"
   | "setBirthDateJalali"
+  | "birthDateError"
   | "error"
   | "isPending"
   | "handleDetails"

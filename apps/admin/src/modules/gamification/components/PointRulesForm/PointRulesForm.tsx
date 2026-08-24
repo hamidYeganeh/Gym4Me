@@ -9,7 +9,7 @@ import { Typography } from "@heroui/react/typography";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
-import { AdminFormActions } from "@/shared/components";
+import { AdminDatePicker, AdminFormActions } from "@/shared/components";
 import { resolveFormSubmitIntent } from "@/shared/lib/form-submit-intent";
 import {
   POINT_RULE_EVENTS,
@@ -205,34 +205,30 @@ export function PointRulesForm({
           control={form.control}
           name="effectiveFrom"
           render={({ field, fieldState }) => (
-            <TextField
-              isInvalid={fieldState.invalid}
+            <AdminDatePicker
+              error={fieldState.error?.message}
+              granularity="minute"
+              label={t("rules.fields.effectiveFrom")}
               name={field.name}
               value={field.value}
               onBlur={field.onBlur}
               onChange={field.onChange}
-            >
-              <Label>{t("rules.fields.effectiveFrom")}</Label>
-              <Input dir="ltr" ref={field.ref} type="datetime-local" />
-              <FieldError>{fieldState.error?.message}</FieldError>
-            </TextField>
+            />
           )}
         />
         <Controller
           control={form.control}
           name="effectiveTo"
           render={({ field, fieldState }) => (
-            <TextField
-              isInvalid={fieldState.invalid}
+            <AdminDatePicker
+              error={fieldState.error?.message}
+              granularity="minute"
+              label={t("rules.fields.effectiveTo")}
               name={field.name}
               value={field.value}
               onBlur={field.onBlur}
               onChange={field.onChange}
-            >
-              <Label>{t("rules.fields.effectiveTo")}</Label>
-              <Input dir="ltr" ref={field.ref} type="datetime-local" />
-              <FieldError>{fieldState.error?.message}</FieldError>
-            </TextField>
+            />
           )}
         />
       </div>

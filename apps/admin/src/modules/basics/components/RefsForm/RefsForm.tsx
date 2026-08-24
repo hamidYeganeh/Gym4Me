@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@heroui/react/button";
+import { Card } from "@heroui/react/card";
 import { FieldError } from "@heroui/react/field-error";
 import { Input } from "@heroui/react/input";
 import { Label } from "@heroui/react/label";
@@ -63,7 +64,9 @@ export function RefsForm({
       if (intent === "saveAndCreateNew") form.reset(refsFormDefaults);
     } catch (err) {
       setSubmitError(
-        err instanceof ApiError ? err.message || t("errorSave") : t("errorSave"),
+        err instanceof ApiError
+          ? err.message || t("errorSave")
+          : t("errorSave"),
       );
     }
   });
@@ -83,23 +86,6 @@ export function RefsForm({
             onChange={field.onChange}
           >
             <Label>{t("fields.name")}</Label>
-            <Input ref={field.ref} />
-            <FieldError>{fieldState.error?.message}</FieldError>
-          </TextField>
-        )}
-      />
-      <Controller
-        control={form.control}
-        name="slug"
-        render={({ field, fieldState }) => (
-          <TextField
-            isInvalid={fieldState.invalid}
-            name={field.name}
-            value={field.value}
-            onBlur={field.onBlur}
-            onChange={field.onChange}
-          >
-            <Label>{t("fields.slug")}</Label>
             <Input ref={field.ref} />
             <FieldError>{fieldState.error?.message}</FieldError>
           </TextField>
@@ -159,59 +145,56 @@ export function RefsForm({
           />
         )}
       />
-      <Controller
-        control={form.control}
-        name="status"
-        render={({ field }) => (
-          <div className={styles.field()}>
-            <Label>{t("fields.status")}</Label>
-            <div className={styles.chips()}>
-              {REF_STATUSES.map((status) => (
-                <Button
-                  key={status}
-                  size="sm"
-                  type="button"
-                  variant={field.value === status ? "primary" : "secondary"}
-                  onPress={() => field.onChange(status)}
-                >
-                  {t(`refStatuses.${status}`)}
-                </Button>
-              ))}
-            </div>
-          </div>
-        )}
-      />
-      <Controller
-        control={form.control}
-        name="order"
-        render={({ field, fieldState }) => (
-          <TextField
-            isInvalid={fieldState.invalid}
-            name={field.name}
-            value={field.value}
-            onBlur={field.onBlur}
-            onChange={field.onChange}
-          >
-            <Label>{t("fields.order")}</Label>
-            <Input ref={field.ref} type="number" />
-            <FieldError>{fieldState.error?.message}</FieldError>
-          </TextField>
-        )}
-      />
-      <Controller
-        control={form.control}
-        name="isActive"
-        render={({ field }) => (
-          <Switch isSelected={field.value} onChange={field.onChange}>
-            <Switch.Content>
-              <Switch.Control>
-                <Switch.Thumb />
-              </Switch.Control>
-              {t("fields.isActive")}
-            </Switch.Content>
-          </Switch>
-        )}
-      />
+      {isEdit ? (
+        <Card variant="secondary">
+          <Card.Header>
+            <Card.Title>وضعیت نمایش</Card.Title>
+            <Card.Description>
+              مشخص کنید این مورد در اپ برای کاربران قابل انتخاب باشد یا نه.
+            </Card.Description>
+          </Card.Header>
+          <Card.Content className="space-y-4">
+            <Controller
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <div className={styles.field()}>
+                  <Label>{t("fields.status")}</Label>
+                  <div className={styles.chips()}>
+                    {REF_STATUSES.map((status) => (
+                      <Button
+                        key={status}
+                        size="sm"
+                        type="button"
+                        variant={
+                          field.value === status ? "primary" : "secondary"
+                        }
+                        onPress={() => field.onChange(status)}
+                      >
+                        {t(`refStatuses.${status}`)}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            />
+            <Controller
+              control={form.control}
+              name="isActive"
+              render={({ field }) => (
+                <Switch isSelected={field.value} onChange={field.onChange}>
+                  <Switch.Content>
+                    <Switch.Control>
+                      <Switch.Thumb />
+                    </Switch.Control>
+                    {t("fields.isActive")}
+                  </Switch.Content>
+                </Switch>
+              )}
+            />
+          </Card.Content>
+        </Card>
+      ) : null}
       {submitError ? (
         <Typography className={styles.formError()} role="alert">
           {submitError}

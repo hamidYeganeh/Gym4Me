@@ -158,7 +158,7 @@ export class BannersService {
     const schedule = this.normalizeSchedule(dto.schedule);
 
     const item = await this.bannerModel.create({
-      title: dto.title,
+      title: dto.title?.trim() ?? '',
       placement: dto.placement,
       slides: dto.slides.map((slide) => this.toSlide(slide)),
       publishStatus: dto.publishStatus ?? PublishStatus.DRAFT,

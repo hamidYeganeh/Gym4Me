@@ -44,6 +44,9 @@ export function AdminEvidenceGallery({
                 className={styles.image()}
                 loading="lazy"
                 src={mediaApi.fileUrl(id)}
+                onError={(event) => {
+                  event.currentTarget.hidden = true;
+                }}
               />
             </a>
           ))}

@@ -64,6 +64,8 @@ export function SignInScreen({ className }: SignInScreenProps) {
     } catch (err) {
       if (err instanceof ApiError && err.status === 429) {
         setError(t("errorRateLimited"));
+      } else if (err instanceof ApiError && err.status === 403) {
+        setError(t("errorAdminAccess"));
       } else if (err instanceof ApiError) {
         setError(err.message || t("errorOtpRequest"));
       } else {

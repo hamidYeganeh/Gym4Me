@@ -100,10 +100,10 @@ export class BannerScheduleDto {
 }
 
 export class CreateBannerDto {
+  @IsOptional()
   @IsString()
-  @MinLength(2)
   @MaxLength(200)
-  title!: string;
+  title?: string;
 
   @IsEnum(BannerPlacement)
   placement!: BannerPlacement;
@@ -133,7 +133,6 @@ export class CreateBannerDto {
 export class UpdateBannerDto {
   @IsOptional()
   @IsString()
-  @MinLength(2)
   @MaxLength(200)
   title?: string;
 

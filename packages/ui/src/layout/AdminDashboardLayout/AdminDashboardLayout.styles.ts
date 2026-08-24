@@ -6,18 +6,27 @@ export const adminDashboardLayoutVariants = tv({
     shell:
       "flex min-h-dvh items-stretch gap-4 bg-background p-4 text-foreground sm:gap-5 sm:p-6",
     sidebar:
-      "relative flex w-[4.25rem] shrink-0 flex-col items-center gap-5 rounded-full bg-accent py-5 text-accent-foreground shadow-[0_18px_48px_-28px_color-mix(in_oklab,var(--accent)_65%,transparent)] sm:w-[4.75rem] sm:gap-6 sm:py-6",
+      "sticky top-6 flex h-[calc(100dvh-48px)] w-[4.25rem] shrink-0 self-start flex-col items-center gap-5 rounded-full bg-accent py-5 text-accent-foreground shadow-[0_18px_48px_-28px_color-mix(in_oklab,var(--accent)_65%,transparent)] sm:w-[4.75rem] sm:gap-6 sm:py-6",
     secondaryPanel:
-      "hidden w-52 shrink-0 flex-col gap-5 rounded-[2rem] border border-divider bg-surface px-3 py-6 text-surface-foreground shadow-[0_24px_70px_-45px_rgba(0,0,0,0.35)] lg:flex",
+      "sticky top-6 hidden max-h-[calc(100dvh-48px)] w-56 shrink-0 self-start flex-col gap-4 overflow-y-auto rounded-[2rem] border border-divider bg-surface p-3 text-surface-foreground shadow-[0_24px_70px_-45px_rgba(0,0,0,0.35)]",
     secondaryTitle: "px-3 text-sm font-semibold text-muted",
     secondaryNav: "flex flex-col gap-1",
     secondaryItem:
       "w-full justify-start rounded-xl px-3 text-start text-muted outline-none data-[hovered=true]:bg-accent/10 data-[hovered=true]:text-foreground",
     secondaryItemActive:
       "bg-accent/15 font-semibold text-foreground data-[hovered=true]:bg-accent/20",
+    secondaryMobilePanel: "border-b border-divider bg-surface px-5 pb-3 pt-4",
+    secondaryMobileTitle: "mb-3 text-sm font-semibold text-muted",
+    secondaryMobileScroll: "w-full",
+    secondaryMobileNav: "flex w-max gap-2 pb-1",
+    secondaryMobileItem:
+      "shrink-0 rounded-full px-4 text-muted data-[hovered=true]:bg-accent/10",
+    secondaryMobileItemActive:
+      "bg-accent text-accent-foreground data-[hovered=true]:bg-accent",
     logoButton:
       "text-accent-foreground outline-none data-[hovered=true]:bg-accent-foreground/10 data-[pressed=true]:bg-accent-foreground/15",
-    nav: "relative flex w-full flex-1 flex-col items-center gap-1",
+    navScroll: "min-h-0 w-full flex-1",
+    nav: "relative flex w-full flex-col items-center gap-1",
     navItemWrap: "relative flex w-full items-center justify-center",
     navItem: "outline-none",
     navItemActive:
@@ -47,6 +56,16 @@ export const adminDashboardLayoutVariants = tv({
     content: "min-h-0 flex-1 p-5 sm:p-8",
   },
   variants: {
+    secondaryLayout: {
+      panel: {
+        secondaryPanel: "lg:flex",
+        secondaryMobilePanel: "lg:hidden",
+      },
+      rail: {
+        secondaryPanel: "hidden",
+        secondaryMobilePanel: "block",
+      },
+    },
     colorScheme: {
       light: {
         // Inverse strip on light canvas — same composition as the dark reference.
@@ -63,6 +82,7 @@ export const adminDashboardLayoutVariants = tv({
   },
   defaultVariants: {
     colorScheme: "light",
+    secondaryLayout: "panel",
   },
 });
 

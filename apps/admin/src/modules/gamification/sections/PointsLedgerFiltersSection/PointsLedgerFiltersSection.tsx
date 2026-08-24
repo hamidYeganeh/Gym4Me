@@ -1,12 +1,9 @@
-import { Input } from "@heroui/react/input";
-import { Label } from "@heroui/react/label";
-import { TextField } from "@heroui/react/textfield";
 import type {
   GamificationSubjectType,
   PointTransactionReason,
 } from "@repo/api";
 import { useTranslations } from "next-intl";
-import { AdminFilterSelect } from "@/shared/components";
+import { AdminFilterSelect, AdminModelAutocomplete } from "@/shared/components";
 import { SUBJECT_TYPES } from "../../lib/gamification-constants";
 import { pointsLedgerFiltersSectionVariants } from "./PointsLedgerFiltersSection.styles";
 import {
@@ -38,9 +35,10 @@ export function PointsLedgerFiltersSection({
           label: t(`subjects.${item}`),
         }))}
         value={subjectFilter}
-        onChange={(value) =>
-          onSubjectChange(value as GamificationSubjectType | "all")
-        }
+        onChange={(value) => {
+          onSubjectChange(value as GamificationSubjectType | "all");
+          onSubjectIdChange("");
+        }}
       />
       <AdminFilterSelect
         allLabel={t("filterAllReasons")}
@@ -54,32 +52,27 @@ export function PointsLedgerFiltersSection({
           onReasonChange(value as PointTransactionReason | "all")
         }
       />
-      <TextField
+      <AdminModelAutocomplete
         className={styles.field()}
-        name="subjectId"
+        isDisabled={subjectFilter === "all"}
+        kind={
+          subjectFilter === "club"
+            ? "club"
+            : subjectFilter === "coach"
+              ? "coach"
+              : "athlete"
+        }
+        label={t("filters.subjectId")}
         value={subjectId}
         onChange={onSubjectIdChange}
-      >
-        <Label className={styles.label()}>{t("filters.subjectId")}</Label>
-        <Input
-          className={styles.input()}
-          dir="ltr"
-          placeholder={t("filters.idPlaceholder")}
-        />
-      </TextField>
-      <TextField
+      />
+      <AdminModelAutocomplete
         className={styles.field()}
-        name="ruleId"
+        kind="pointRule"
+        label={t("filters.ruleId")}
         value={ruleId}
         onChange={onRuleIdChange}
-      >
-        <Label className={styles.label()}>{t("filters.ruleId")}</Label>
-        <Input
-          className={styles.input()}
-          dir="ltr"
-          placeholder={t("filters.idPlaceholder")}
-        />
-      </TextField>
+      />
     </section>
   );
 }

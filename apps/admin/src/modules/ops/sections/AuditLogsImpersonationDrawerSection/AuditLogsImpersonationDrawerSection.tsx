@@ -4,7 +4,7 @@ import { Label } from "@heroui/react/label";
 import { TextField } from "@heroui/react/textfield";
 import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
-import { AdminFormDrawer } from "@/shared/components";
+import { AdminFormDrawer, AdminModelAutocomplete } from "@/shared/components";
 import { auditLogsImpersonationDrawerSectionVariants } from "./AuditLogsImpersonationDrawerSection.styles";
 import type { AuditLogsImpersonationDrawerSectionProps } from "./AuditLogsImpersonationDrawerSection.types";
 
@@ -50,27 +50,20 @@ export function AuditLogsImpersonationDrawerSection({
                   ? t("audit.impersonation.copied")
                   : t("audit.impersonation.copy")}
               </Button>
-              <Button
-                isDisabled={pending}
-                variant="danger"
-                onPress={onEnd}
-              >
+              <Button isDisabled={pending} variant="danger" onPress={onEnd}>
                 {t("audit.impersonation.end")}
               </Button>
             </div>
           </>
         ) : (
           <>
-            <TextField
+            <AdminModelAutocomplete
               className={styles.field()}
-              fullWidth
-              name="targetUserId"
+              kind="user"
+              label={t("audit.impersonation.targetUserIdLabel")}
               value={targetUserId}
               onChange={onTargetUserIdChange}
-            >
-              <Label>{t("audit.impersonation.targetUserIdLabel")}</Label>
-              <Input dir="ltr" />
-            </TextField>
+            />
             <TextField
               className={styles.field()}
               fullWidth

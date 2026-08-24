@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
 import { Button } from "@heroui/react/button";
+import { Chip } from "@heroui/react/chip";
 import { Input } from "@heroui/react/input";
 import { Label } from "@heroui/react/label";
 import { TextField } from "@heroui/react/textfield";
@@ -11,7 +13,9 @@ import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
 import {
   AdminConfirmDialog,
+  AdminEvidenceGallery,
   AdminFilterSelect,
+  AdminFormDrawer,
   AdminShell,
 } from "@/shared/components";
 import {
@@ -19,6 +23,8 @@ import {
   useAdminPaginatedQuery,
 } from "@/shared/hooks";
 import { adminVerification } from "@/shared/lib/api";
+import { routes } from "@/shared/lib/routes";
+import { formatAdminDate } from "@/shared/lib/user-format";
 import { roleRequestsScreenVariants } from "./RoleRequestsScreen.styles";
 import type { RoleRequestsScreenProps } from "./RoleRequestsScreen.types";
 
@@ -43,7 +49,6 @@ const FILTER_DEFAULTS: RoleRequestsFilters & {
   search: "",
   page: 1,
   page_size: PAGE_SIZE,
-
 };
 
 type ReviewState = {
@@ -62,16 +67,21 @@ export function RoleRequestsScreen({ className }: RoleRequestsScreenProps) {
   const t = useTranslations("Admin.Users");
   const tCommon = useTranslations("Admin.Common");
   const styles = roleRequestsScreenVariants();
-  const { search, searchInput, setSearchInput, filters, setFilter,
+  const {
+    search,
+    searchInput,
+    setSearchInput,
+    filters,
+    setFilter,
     page,
     pageSize,
     setPage,
-  } =
-    useAdminListQueryParams<RoleRequestsFilters>({
-      filterKeys: FILTER_KEYS,
-      defaults: FILTER_DEFAULTS,
-    });
+  } = useAdminListQueryParams<RoleRequestsFilters>({
+    filterKeys: FILTER_KEYS,
+    defaults: FILTER_DEFAULTS,
+  });
   const [review, setReview] = useState<ReviewState | null>(null);
+  const [selected, setSelected] = useState<RoleRequestAdminItem | null>(null);
   const [reviewNote, setReviewNote] = useState("");
   const [pending, setPending] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
@@ -130,6 +140,7 @@ export function RoleRequestsScreen({ className }: RoleRequestsScreenProps) {
         reviewNote: reviewNote.trim() || undefined,
       });
       setReview(null);
+      setSelected(null);
       void reload();
     } catch (err) {
       setReviewError(err instanceof ApiError ? err.message : t("reviewError"));
@@ -224,32 +235,15 @@ export function RoleRequestsScreen({ className }: RoleRequestsScreenProps) {
                     </Typography>
                   ) : null}
                 </div>
-                {item.status === "pending" ? (
-                  <div className={styles.rowActions()}>
-                    <Button
-                      size="lg"
-                      variant="primary"
-                      onPress={() => {
-                        setReview({ item, action: "approve" });
-                        setReviewNote("");
-                        setReviewError(null);
-                      }}
-                    >
-                      {t("roleRequests.approve")}
-                    </Button>
-                    <Button
-                      size="lg"
-                      variant="danger"
-                      onPress={() => {
-                        setReview({ item, action: "reject" });
-                        setReviewNote("");
-                        setReviewError(null);
-                      }}
-                    >
-                      {t("roleRequests.reject")}
-                    </Button>
-                  </div>
-                ) : null}
+                <div className={styles.rowActions()}>
+                  <Button
+                    size="lg"
+                    variant="secondary"
+                    onPress={() => setSelected(item)}
+                  >
+                    {t("roleRequests.view")}
+                  </Button>
+                </div>
               </li>
             ))}
           </ul>
@@ -266,7 +260,8 @@ export function RoleRequestsScreen({ className }: RoleRequestsScreenProps) {
               {tCommon("pagination.previous")}
             </Button>
             <Typography color="muted" type="body-sm">
-              {page.toLocaleString("fa-IR")} / {totalPages.toLocaleString("fa-IR")}
+              {page.toLocaleString("fa-IR")} /{" "}
+              {totalPages.toLocaleString("fa-IR")}
             </Typography>
             <Button
               isDisabled={page >= totalPages}
@@ -287,6 +282,191 @@ export function RoleRequestsScreen({ className }: RoleRequestsScreenProps) {
           })}
         </Typography>
       </div>
+
+      <AdminFormDrawer
+        isOpen={Boolean(selected)}
+        title={t("roleRequests.detailsTitle")}
+        onOpenChange={(open) => {
+          if (!open) setSelected(null);
+        }}
+      >
+        {selected ? (
+          <div className="flex flex-col gap-6 pb-24" dir="rtl">
+            <section className="rounded-2xl border border-border bg-surface p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <Typography color="muted" type="body-sm">
+                    {t("roleRequests.user")}
+                  </Typography>
+                  <RouterLink
+                    className="mt-1 block truncate text-lg font-semibold text-foreground underline-offset-4 hover:text-accent hover:underline"
+                    to={routes.user(selected.userId)}
+                  >
+                    {userLabel(selected)}
+                  </RouterLink>
+                  {selected.user?.phone ? (
+                    <Typography
+                      className="mt-1 text-right tabular-nums"
+                      color="muted"
+                      dir="ltr"
+                      type="body-sm"
+                    >
+                      {selected.user.phone}
+                    </Typography>
+                  ) : null}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Chip size="sm" variant="soft">
+                    {selected.role === "coach"
+                      ? t("roleRequests.roleCoach")
+                      : t("roleRequests.roleOwner")}
+                  </Chip>
+                  <Chip
+                    color={
+                      selected.status === "approved"
+                        ? "success"
+                        : selected.status === "rejected"
+                          ? "danger"
+                          : "warning"
+                    }
+                    size="sm"
+                    variant="soft"
+                  >
+                    {t(`verification.${selected.status}`)}
+                  </Chip>
+                </div>
+              </div>
+            </section>
+
+            <section className="flex flex-col gap-3">
+              <Typography className="font-semibold">
+                {t("roleRequests.requestInfo")}
+              </Typography>
+              <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="rounded-xl border border-border/70 bg-surface/60 p-3">
+                  <dt className="text-sm text-muted">
+                    {t("roleRequests.submittedAt")}
+                  </dt>
+                  <dd className="mt-1 font-medium">
+                    {formatAdminDate(
+                      selected.submittedAt ?? selected.createdAt,
+                    )}
+                  </dd>
+                </div>
+                <div className="rounded-xl border border-border/70 bg-surface/60 p-3">
+                  <dt className="text-sm text-muted">
+                    {t("roleRequests.experience")}
+                  </dt>
+                  <dd className="mt-1 font-medium">
+                    {selected.application.yearsExperience != null
+                      ? t("coachColumns.years", {
+                          count: selected.application.yearsExperience,
+                        })
+                      : "—"}
+                  </dd>
+                </div>
+              </dl>
+            </section>
+
+            {selected.application.headline || selected.application.bio ? (
+              <section className="flex flex-col gap-3">
+                <Typography className="font-semibold">
+                  {t("roleRequests.profileInfo")}
+                </Typography>
+                <div className="divide-y divide-border/70 overflow-hidden rounded-xl border border-border/70 bg-surface/60">
+                  {selected.application.headline ? (
+                    <div className="p-3.5">
+                      <Typography color="muted" type="body-sm">
+                        {t("roleRequests.headline")}
+                      </Typography>
+                      <Typography className="mt-1 leading-7">
+                        {selected.application.headline}
+                      </Typography>
+                    </div>
+                  ) : null}
+                  {selected.application.bio ? (
+                    <div className="p-3.5">
+                      <Typography color="muted" type="body-sm">
+                        {t("roleRequests.bio")}
+                      </Typography>
+                      <Typography className="mt-1 whitespace-pre-wrap leading-7">
+                        {selected.application.bio}
+                      </Typography>
+                    </div>
+                  ) : null}
+                </div>
+              </section>
+            ) : null}
+
+            {selected.application.note || selected.review.reason ? (
+              <section className="flex flex-col gap-3">
+                <Typography className="font-semibold">
+                  {t("roleRequests.notes")}
+                </Typography>
+                <dl className="flex flex-col gap-3">
+                  {selected.application.note ? (
+                    <div className="rounded-xl border border-border/70 bg-surface/60 p-3.5">
+                      <dt className="text-sm text-muted">
+                        {t("roleRequests.applicationNote")}
+                      </dt>
+                      <dd className="mt-1 whitespace-pre-wrap leading-7">
+                        {selected.application.note}
+                      </dd>
+                    </div>
+                  ) : null}
+                  {selected.review.reason ? (
+                    <div className="rounded-xl border border-danger/30 bg-danger/5 p-3.5">
+                      <dt className="text-sm text-danger">
+                        {t("roleRequests.reviewNote")}
+                      </dt>
+                      <dd className="mt-1 whitespace-pre-wrap leading-7">
+                        {selected.review.reason}
+                      </dd>
+                    </div>
+                  ) : null}
+                </dl>
+              </section>
+            ) : null}
+
+            <section className="rounded-xl border border-border/70 bg-surface/60 p-3.5">
+              <AdminEvidenceGallery
+                emptyLabel={t("kycActions.noDocument")}
+                label={t("kycActions.evidence")}
+                mediaIds={selected.application.documentMediaIds}
+              />
+            </section>
+
+            {selected.status === "pending" ? (
+              <div className="sticky bottom-0 z-10 -mx-4 flex gap-3 border-t border-border bg-background/95 p-4 backdrop-blur-sm">
+                <Button
+                  className="flex-1"
+                  size="lg"
+                  variant="primary"
+                  onPress={() => {
+                    setReview({ item: selected, action: "approve" });
+                    setReviewNote("");
+                    setReviewError(null);
+                  }}
+                >
+                  {t("roleRequests.approve")}
+                </Button>
+                <Button
+                  className="flex-1"
+                  size="lg"
+                  variant="danger"
+                  onPress={() => {
+                    setReview({ item: selected, action: "reject" });
+                    setReviewNote("");
+                    setReviewError(null);
+                  }}
+                >
+                  {t("roleRequests.reject")}
+                </Button>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+      </AdminFormDrawer>
 
       <AdminConfirmDialog
         body={

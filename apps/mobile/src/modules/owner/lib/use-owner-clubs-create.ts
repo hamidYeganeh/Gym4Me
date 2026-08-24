@@ -18,9 +18,7 @@ import {
   type ClubCreateFormState,
   type ClubCreateWizardStep,
 } from "@/modules/owner/lib/club-create-form";
-import {
-  buildClubCreateReviewSections,
-} from "@/modules/owner/lib/build-club-create-review-sections";
+import { buildClubCreateReviewSections } from "@/modules/owner/lib/build-club-create-review-sections";
 import {
   accountClubs,
   accountKyc,
@@ -176,9 +174,7 @@ export function useOwnerClubsCreate() {
       return;
     }
     stepDirection.current = -1;
-    setStep((prev) =>
-      prev > 0 ? ((prev - 1) as ClubCreateWizardStep) : prev,
-    );
+    setStep((prev) => (prev > 0 ? ((prev - 1) as ClubCreateWizardStep) : prev));
   };
 
   const slideTransition = reduceMotion
@@ -258,10 +254,10 @@ export function useOwnerClubsCreate() {
     [amenities, categories, equipment, formValues, sports, t],
   );
 
-  const categoryIds = watch("categoryIds");
-  const sportIds = watch("sportIds");
-  const amenityIds = watch("amenityIds");
-  const equipmentIds = watch("equipmentIds");
+  const categorySelections = watch("categories");
+  const sportSelections = watch("sports");
+  const amenitySelections = watch("amenities");
+  const equipmentSelections = watch("equipment");
   const genderPolicy = watch("genderPolicy");
   const ageGroupKeys = watch("ageGroupKeys");
   const hoursMode = watch("hoursMode");
@@ -292,10 +288,10 @@ export function useOwnerClubsCreate() {
     slideTransition,
     slideVariants,
     reviewSections,
-    categoryIds,
-    sportIds,
-    amenityIds,
-    equipmentIds,
+    categorySelections,
+    sportSelections,
+    amenitySelections,
+    equipmentSelections,
     genderPolicy,
     ageGroupKeys,
     hoursMode,

@@ -6,6 +6,7 @@ import { Badge } from "@heroui/react/badge";
 import { Breadcrumbs } from "@heroui/react/breadcrumbs";
 import { Button } from "@heroui/react/button";
 import { SearchField } from "@heroui/react/search-field";
+import { ScrollShadow } from "@heroui/react/scroll-shadow";
 import { Tooltip } from "@heroui/react/tooltip";
 import { Typography } from "@heroui/react/typography";
 import { ArrowSignOut1 } from "@repo/icons/ArrowSignOut1";
@@ -13,6 +14,7 @@ import { BarbellHorizontal } from "@repo/icons/BarbellHorizontal";
 import { Building2 } from "@repo/icons/Building2";
 import { Calendar2 } from "@repo/icons/Calendar2";
 import { ChartTrendUp } from "@repo/icons/ChartTrendUp";
+import { Compass } from "@repo/icons/Compass";
 import { Database } from "@repo/icons/Database";
 import { Gear1 } from "@repo/icons/Gear1";
 import { Headset1 } from "@repo/icons/Headset1";
@@ -49,6 +51,7 @@ const NAV_ICONS: Record<AdminDashboardNavId, ReactNode> = {
   finance: <Wallet size={22} />,
   catalogs: <PriceTag size={22} />,
   ops: <ShieldCheck size={22} />,
+  discovery: <Compass size={22} />,
   locations: <MapPin2 size={22} />,
   sports: <BarbellHorizontal size={22} />,
   choices: <ListThreeSquare size={22} />,
@@ -71,6 +74,7 @@ const NAV_ORDER: AdminDashboardNavId[] = [
   "bookings",
   "finance",
   "catalogs",
+  "discovery",
   "ops",
   "locations",
   "sports",
@@ -106,7 +110,10 @@ export function AdminDashboardLayout({
   const activeNavId = activeNavIdProp ?? uncontrolledActiveId;
   const isDark = resolvedTheme === "dark";
   const colorScheme = isDark ? "dark" : "light";
-  const styles = adminDashboardLayoutVariants({ colorScheme });
+  const styles = adminDashboardLayoutVariants({
+    colorScheme,
+    secondaryLayout: secondaryNav?.presentation ?? "panel",
+  });
   const hasCustomHeader = Boolean(header);
 
   const handleNavPress = (id: AdminDashboardNavId) => {
@@ -151,34 +158,41 @@ export function AdminDashboardLayout({
           </Tooltip.Content>
         </Tooltip>
 
-        <nav className={styles.nav()}>
-          {NAV_ORDER.map((id) => {
-            const isActive = id === activeNavId;
+        <ScrollShadow
+          hideScrollBar
+          className={styles.navScroll()}
+          orientation="vertical"
+          size={32}
+        >
+          <nav className={styles.nav()}>
+            {NAV_ORDER.map((id) => {
+              const isActive = id === activeNavId;
 
-            return (
-              <div key={id} className={styles.navItemWrap()}>
-                {isActive ? <span className={styles.navIndicator()} /> : null}
-                <Tooltip delay={300}>
-                  <Button
-                    isIconOnly
-                    size="lg"
-                    variant={isActive ? "secondary" : "primary"}
-                    aria-label={labels.nav[id]}
-                    aria-current={isActive ? "page" : undefined}
-                    className={styles.navItem()}
-                    onPress={() => handleNavPress(id)}
-                  >
-                    {NAV_ICONS[id]}
-                  </Button>
-                  <Tooltip.Content placement="end" showArrow>
-                    <Tooltip.Arrow />
-                    {labels.nav[id]}
-                  </Tooltip.Content>
-                </Tooltip>
-              </div>
-            );
-          })}
-        </nav>
+              return (
+                <div key={id} className={styles.navItemWrap()}>
+                  {isActive ? <span className={styles.navIndicator()} /> : null}
+                  <Tooltip delay={300}>
+                    <Button
+                      isIconOnly
+                      size="lg"
+                      variant={isActive ? "secondary" : "primary"}
+                      aria-label={labels.nav[id]}
+                      aria-current={isActive ? "page" : undefined}
+                      className={styles.navItem()}
+                      onPress={() => handleNavPress(id)}
+                    >
+                      {NAV_ICONS[id]}
+                    </Button>
+                    <Tooltip.Content placement="end" showArrow>
+                      <Tooltip.Arrow />
+                      {labels.nav[id]}
+                    </Tooltip.Content>
+                  </Tooltip>
+                </div>
+              );
+            })}
+          </nav>
+        </ScrollShadow>
 
         <div className={styles.avatarWrap()}>
           <Badge.Anchor>
@@ -243,6 +257,41 @@ export function AdminDashboardLayout({
       ) : null}
 
       <div className={styles.main()}>
+        {secondaryNav ? (
+          <section className={styles.secondaryMobilePanel()}>
+            <Typography className={styles.secondaryMobileTitle()}>
+              {secondaryNav.title}
+            </Typography>
+            <ScrollShadow
+              hideScrollBar
+              className={styles.secondaryMobileScroll()}
+              orientation="horizontal"
+              size={24}
+            >
+              <nav
+                aria-label={secondaryNav.ariaLabel}
+                className={styles.secondaryMobileNav()}
+              >
+                {secondaryNav.items.map((item) => (
+                  <Button
+                    key={item.id}
+                    aria-current={item.isActive ? "page" : undefined}
+                    className={styles.secondaryMobileItem({
+                      className: item.isActive
+                        ? styles.secondaryMobileItemActive()
+                        : undefined,
+                    })}
+                    size="sm"
+                    variant="ghost"
+                    onPress={item.isActive ? undefined : item.onPress}
+                  >
+                    {item.label}
+                  </Button>
+                ))}
+              </nav>
+            </ScrollShadow>
+          </section>
+        ) : null}
         <header
           className={hasCustomHeader ? styles.headerSection() : styles.header()}
         >

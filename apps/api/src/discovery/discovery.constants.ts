@@ -4,6 +4,14 @@ export enum DiscoverySectionKind {
   SPORT_CATEGORIES = 'sport_categories',
   SPORTS = 'sports',
   CLUBS = 'clubs',
+  COACHES = 'coaches',
+  CLASSES = 'classes',
+  SPACES = 'spaces',
+  SLOTS = 'slots',
+  EQUIPMENT = 'equipment',
+  MEMBERSHIP_PLANS = 'membership_plans',
+  BOOKABLE_OFFERS = 'bookable_offers',
+  AMENITIES = 'amenities',
   ARTICLES = 'articles',
 }
 
@@ -14,6 +22,19 @@ export enum DiscoverySourceStrategy {
   NEARBY = 'nearby',
   RECOMMENDED_FOR_USER = 'recommended_for_user',
   LATEST = 'latest',
+  VERIFIED = 'verified',
+  AVAILABLE = 'available',
+  TODAY = 'today',
+  TOMORROW = 'tomorrow',
+  STARTING_SOON = 'starting_soon',
+  CAPACITY_AVAILABLE = 'capacity_available',
+  BEGINNER_FRIENDLY = 'beginner_friendly',
+  LEAST_CROWDED = 'least_crowded',
+  ECONOMICAL = 'economical',
+  UNLIMITED = 'unlimited',
+  DURATION = 'duration',
+  SESSIONS = 'sessions',
+  ENTRIES = 'entries',
 }
 
 export enum DiscoveryAuthenticationTarget {
@@ -33,7 +54,7 @@ export enum DiscoveryEmptyBehavior {
   FALLBACK = 'fallback',
 }
 
-export const DISCOVERY_SCHEMA_VERSION = 1;
+export const DISCOVERY_SCHEMA_VERSION = 3;
 export const DISCOVERY_DEFAULT_PAGE_SIZE = 8;
 export const DISCOVERY_MAX_PAGE_SIZE = 8;
 export const DISCOVERY_MAX_SECTIONS = 64;

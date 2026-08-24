@@ -66,9 +66,12 @@ export type {
   DiscoveryEmptyBehavior,
   DiscoveryFeedQuery,
   DiscoveryFeedResponse,
+  DiscoveryMembershipPlanCard,
   DiscoverySectionDefinition,
   DiscoverySectionItem,
   DiscoverySectionKind,
+  DiscoverySlotCard,
+  DiscoverySpaceCard,
   DiscoverySourceStrategy,
   ResolvedDiscoverySection,
 } from "./feed.dto";

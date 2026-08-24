@@ -1,5 +1,6 @@
 export { AdminConfirmDialog } from "./AdminConfirmDialog";
 export { AdminDataTable } from "./AdminDataTable";
+export { AdminDatePicker } from "./AdminDatePicker";
 export { AdminDocumentMeta } from "./AdminDocumentMeta";
 export { AdminEvidenceGallery } from "./AdminEvidenceGallery";
 export { AdminFilterSelect } from "./AdminFilterSelect";
@@ -7,4 +8,5 @@ export { AdminFormActions } from "./AdminFormActions";
 export { AdminFormDrawer } from "./AdminFormDrawer";
 export { AdminFormPage } from "./AdminFormPage";
 export { AdminIconField } from "./AdminIconField";
+export { AdminModelAutocomplete } from "./AdminModelAutocomplete";
 export { AdminShell } from "./AdminShell";

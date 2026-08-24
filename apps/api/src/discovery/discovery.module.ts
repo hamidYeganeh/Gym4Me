@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ClubSlotsModule } from '../account/club-slots/club-slots.module';
+import { CoachesModule } from '../account/coaches/coaches.module';
 import {
   AthleteProfile,
   AthleteProfileSchema,
@@ -7,6 +9,13 @@ import {
 import { Article, ArticleSchema } from '../schemas/article.schema';
 import { Banner, BannerSchema } from '../schemas/banner.schema';
 import { Club, ClubSchema } from '../schemas/club.schema';
+import { ClubClass, ClubClassSchema } from '../schemas/club-class.schema';
+import {
+  ClubMembershipPlan,
+  ClubMembershipPlanSchema,
+} from '../schemas/club-membership-plan.schema';
+import { ClubSpace, ClubSpaceSchema } from '../schemas/club-space.schema';
+import { CoachSlot, CoachSlotSchema } from '../schemas/coach-slot.schema';
 import {
   DiscoveryPage,
   DiscoveryPageRevision,
@@ -22,6 +31,8 @@ import { DiscoveryService } from './discovery.service';
 
 @Module({
   imports: [
+    CoachesModule,
+    ClubSlotsModule,
     MongooseModule.forFeature([
       { name: DiscoveryPage.name, schema: DiscoveryPageSchema },
       {
@@ -31,6 +42,13 @@ import { DiscoveryService } from './discovery.service';
       { name: AthleteProfile.name, schema: AthleteProfileSchema },
       { name: Banner.name, schema: BannerSchema },
       { name: Club.name, schema: ClubSchema },
+      { name: ClubClass.name, schema: ClubClassSchema },
+      { name: ClubSpace.name, schema: ClubSpaceSchema },
+      { name: CoachSlot.name, schema: CoachSlotSchema },
+      {
+        name: ClubMembershipPlan.name,
+        schema: ClubMembershipPlanSchema,
+      },
       { name: RefItem.name, schema: RefItemSchema },
       { name: Sport.name, schema: SportSchema },
       { name: Article.name, schema: ArticleSchema },

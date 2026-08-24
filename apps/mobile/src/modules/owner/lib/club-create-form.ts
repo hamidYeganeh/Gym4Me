@@ -7,18 +7,7 @@ import type {
 
 export const CLUB_CREATE_STEP_COUNT = 11;
 
-export type ClubCreateWizardStep =
-  | 0
-  | 1
-  | 2
-  | 3
-  | 4
-  | 5
-  | 6
-  | 7
-  | 8
-  | 9
-  | 10;
+export type ClubCreateWizardStep = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
 
 export type ClubCreateHourDraft = {
   weekday: number;
@@ -53,6 +42,12 @@ export type ClubCreateGalleryDraft = {
   fileName: string;
 };
 
+export type ClubCreateCatalogSelectionDraft = {
+  id: string;
+  description: string;
+  quantity: number | null;
+};
+
 export type ClubCreateHoursMode = "unified" | "gender_split";
 
 export type ClubCreateFormState = {
@@ -64,10 +59,10 @@ export type ClubCreateFormState = {
   socials: ClubCreateSocialDraft[];
   address: string;
   point: { lat: number; lng: number } | null;
-  categoryIds: string[];
-  sportIds: string[];
-  amenityIds: string[];
-  equipmentIds: string[];
+  categories: ClubCreateCatalogSelectionDraft[];
+  sports: ClubCreateCatalogSelectionDraft[];
+  amenities: ClubCreateCatalogSelectionDraft[];
+  equipment: ClubCreateCatalogSelectionDraft[];
   gallery: ClubCreateGalleryDraft[];
   genderPolicy: string;
   ageGroupKeys: string[];
@@ -271,10 +266,10 @@ export function createEmptyClubCreateForm(): ClubCreateFormState {
     socials: [],
     address: "",
     point: null,
-    categoryIds: [],
-    sportIds: [],
-    amenityIds: [],
-    equipmentIds: [],
+    categories: [],
+    sports: [],
+    amenities: [],
+    equipment: [],
     gallery: [],
     genderPolicy: "mixed",
     ageGroupKeys: ["adults"],
@@ -286,6 +281,23 @@ export function createEmptyClubCreateForm(): ClubCreateFormState {
 
 export function toggleIdInList(ids: string[], id: string): string[] {
   return ids.includes(id) ? ids.filter((item) => item !== id) : [...ids, id];
+}
+
+export function toggleCatalogSelection(
+  items: ClubCreateCatalogSelectionDraft[],
+  id: string,
+  supportsQuantity = false,
+): ClubCreateCatalogSelectionDraft[] {
+  return items.some((item) => item.id === id)
+    ? items.filter((item) => item.id !== id)
+    : [
+        ...items,
+        {
+          id,
+          description: "",
+          quantity: supportsQuantity ? 1 : null,
+        },
+      ];
 }
 
 export function createRuleDraft(
@@ -302,6 +314,12 @@ export function createRuleDraft(
 export function buildCreateClubPayload(
   form: ClubCreateFormState,
 ): CreateClubInput {
+  const catalogPayload = (items: ClubCreateCatalogSelectionDraft[]) =>
+    items.map((item) => ({
+      id: item.id,
+      description: item.description.trim() || undefined,
+      quantity: item.quantity ?? undefined,
+    }));
   const rules = form.rules
     .map((rule) => ({
       policy: rule.policy,
@@ -359,10 +377,16 @@ export function buildCreateClubPayload(
       : undefined,
     location,
     gallery: gallery.length ? gallery : undefined,
-    categoryIds: form.categoryIds.length ? form.categoryIds : undefined,
-    sportIds: form.sportIds.length ? form.sportIds : undefined,
-    amenityIds: form.amenityIds.length ? form.amenityIds : undefined,
-    equipmentIds: form.equipmentIds.length ? form.equipmentIds : undefined,
+    categories: form.categories.length
+      ? catalogPayload(form.categories)
+      : undefined,
+    sports: form.sports.length ? catalogPayload(form.sports) : undefined,
+    amenities: form.amenities.length
+      ? catalogPayload(form.amenities)
+      : undefined,
+    equipments: form.equipment.length
+      ? catalogPayload(form.equipment)
+      : undefined,
     audience: {
       genderPolicy: form.genderPolicy || null,
       ageGroupKeys: form.ageGroupKeys,

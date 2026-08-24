@@ -46,7 +46,7 @@ export type BannerScheduleInput = {
 };
 
 export type CreateBannerInput = {
-  title: string;
+  title?: string;
   placement: BannerPlacement;
   slides: BannerSlideInput[];
   publishStatus?: PublishStatus;

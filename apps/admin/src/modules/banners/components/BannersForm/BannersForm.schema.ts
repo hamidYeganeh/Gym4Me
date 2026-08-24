@@ -5,7 +5,10 @@ import type {
   BannerSlideInput,
   PublishStatus,
 } from "@repo/api";
-import { BANNER_PLACEMENTS, PUBLISH_STATUSES } from "../../lib/banner-constants";
+import {
+  BANNER_PLACEMENTS,
+  PUBLISH_STATUSES,
+} from "../../lib/banner-constants";
 
 export type BannersFormMessages = {
   required: string;
@@ -14,7 +17,8 @@ export type BannersFormMessages = {
 
 const placementSchema = z.custom<BannerPlacement>(
   (value) =>
-    typeof value === "string" && (BANNER_PLACEMENTS as string[]).includes(value),
+    typeof value === "string" &&
+    (BANNER_PLACEMENTS as string[]).includes(value),
 );
 const publishStatusSchema = z.custom<PublishStatus>(
   (value) =>
@@ -22,15 +26,37 @@ const publishStatusSchema = z.custom<PublishStatus>(
 );
 
 export function createBannersFormSchema(messages: BannersFormMessages) {
-  return z.object({
-    title: z.string().trim().min(2, messages.required),
-    placement: placementSchema,
-    slides: z.array(z.custom<BannerSlideInput>()).min(1, messages.slidesRequired),
-    publishStatus: publishStatusSchema,
-    startsAt: z.string(),
-    endsAt: z.string(),
-    order: z.string(),
-  });
+  return z
+    .object({
+      title: z.string().trim().max(200),
+      placement: placementSchema,
+      slides: z
+        .array(z.custom<BannerSlideInput>())
+        .min(1, messages.slidesRequired)
+        .max(10, messages.slidesRequired),
+      publishStatus: publishStatusSchema,
+      startsAt: z.string(),
+      endsAt: z.string(),
+      order: z
+        .string()
+        .refine(
+          (value) => /^\d+$/.test(value) && Number(value) >= 0,
+          messages.required,
+        ),
+    })
+    .superRefine((values, ctx) => {
+      if (
+        values.startsAt &&
+        values.endsAt &&
+        new Date(values.endsAt) <= new Date(values.startsAt)
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["endsAt"],
+          message: messages.required,
+        });
+      }
+    });
 }
 
 export type BannersFormValues = z.infer<

@@ -5,7 +5,8 @@ import { discoveryHomeCarouselClassNames } from "../../lib/discovery-home-carous
 export const discoverySectionRailVariants = tv({
   slots: {
     root: "flex flex-col gap-4",
-    pattern: "pointer-events-none absolute inset-0 z-0 size-full text-white opacity-[0.16]",
+    pattern:
+      "pointer-events-none absolute inset-0 z-0 size-full text-white opacity-[0.16]",
     header: "relative z-10 flex items-start justify-between gap-3",
     titleRow: "flex min-w-0 flex-1 items-center gap-2",
     accent: "mt-0.5 shrink-0 text-accent",
@@ -39,8 +40,7 @@ export const discoverySectionRailVariants = tv({
         root: [
           "relative isolate w-full max-w-none",
           "overflow-hidden rounded-t-4xl",
-          "!gap-5 px-screen pt-8",
-          "pb-[calc(var(--discovery-sheet-overlap)+var(--discovery-sheet-gap))] last:pb-10",
+          "!gap-4 px-screen py-6",
         ].join(" "),
       },
       false: {},

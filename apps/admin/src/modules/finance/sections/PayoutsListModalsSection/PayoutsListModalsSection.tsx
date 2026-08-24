@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import {
   AdminConfirmDialog,
   AdminFormDrawer,
+  AdminModelAutocomplete,
 } from "@/shared/components";
 import { payoutsListModalsSectionVariants } from "./PayoutsListModalsSection.styles";
 import type { PayoutsListModalsSectionProps } from "./PayoutsListModalsSection.types";
@@ -52,16 +53,13 @@ export function PayoutsListModalsSection({
           <Typography className={styles.subtitle()}>
             {t("payouts.actions.draftBody")}
           </Typography>
-          <TextField
+          <AdminModelAutocomplete
             className={styles.field()}
-            fullWidth
-            name="clubId"
+            kind="club"
+            label={t("payouts.actions.clubIdLabel")}
             value={draftClubId}
             onChange={onDraftClubIdChange}
-          >
-            <Label>{t("payouts.actions.clubIdLabel")}</Label>
-            <Input dir="ltr" />
-          </TextField>
+          />
           <TextField
             className={styles.field()}
             fullWidth
@@ -83,10 +81,7 @@ export function PayoutsListModalsSection({
             onChange={onDraftToChange}
           >
             <Label>{t("payouts.actions.toLabel")}</Label>
-            <Input
-              dir="ltr"
-              placeholder={t("payouts.actions.toPlaceholder")}
-            />
+            <Input dir="ltr" placeholder={t("payouts.actions.toPlaceholder")} />
           </TextField>
 
           {actionError ? (

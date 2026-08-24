@@ -1,9 +1,6 @@
-import { Input } from "@heroui/react/input";
-import { Label } from "@heroui/react/label";
-import { TextField } from "@heroui/react/textfield";
 import type { PayoutRecipientType, PayoutStatus } from "@repo/api";
 import { useTranslations } from "next-intl";
-import { AdminFilterSelect } from "@/shared/components";
+import { AdminFilterSelect, AdminModelAutocomplete } from "@/shared/components";
 import { payoutsListFiltersSectionVariants } from "./PayoutsListFiltersSection.styles";
 import {
   PAYOUT_RECIPIENT_TYPES,
@@ -52,36 +49,32 @@ export function PayoutsListFiltersSection({
           label: t(`payoutRecipientType.${item}`),
         }))}
         value={recipientTypeFilter}
-        onChange={(value) =>
-          onRecipientTypeChange(value as PayoutRecipientType | "all")
-        }
+        onChange={(value) => {
+          onRecipientTypeChange(value as PayoutRecipientType | "all");
+          onRecipientIdChange("");
+        }}
       />
-      <TextField
+      <AdminModelAutocomplete
         className={styles.field()}
-        name="recipientId"
+        isDisabled={recipientTypeFilter === "all"}
+        kind={
+          recipientTypeFilter === "club"
+            ? "club"
+            : recipientTypeFilter === "coach"
+              ? "coach"
+              : "user"
+        }
+        label={t("filters.recipientId")}
         value={recipientId}
         onChange={onRecipientIdChange}
-      >
-        <Label className={styles.label()}>{t("filters.recipientId")}</Label>
-        <Input
-          className={styles.input()}
-          dir="ltr"
-          placeholder={t("filters.idPlaceholder")}
-        />
-      </TextField>
-      <TextField
+      />
+      <AdminModelAutocomplete
         className={styles.field()}
-        name="clubId"
+        kind="club"
+        label={t("filters.clubId")}
         value={clubId}
         onChange={onClubIdChange}
-      >
-        <Label className={styles.label()}>{t("filters.clubId")}</Label>
-        <Input
-          className={styles.input()}
-          dir="ltr"
-          placeholder={t("filters.idPlaceholder")}
-        />
-      </TextField>
+      />
     </div>
   );
 }

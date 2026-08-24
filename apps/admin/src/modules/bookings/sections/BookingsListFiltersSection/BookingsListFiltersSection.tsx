@@ -1,8 +1,9 @@
-import { Input } from "@heroui/react/input";
-import { Label } from "@heroui/react/label";
-import { TextField } from "@heroui/react/textfield";
 import { useTranslations } from "next-intl";
-import { AdminFilterSelect } from "@/shared/components";
+import {
+  AdminDatePicker,
+  AdminFilterSelect,
+  AdminModelAutocomplete,
+} from "@/shared/components";
 import { bookingsListFiltersSectionVariants } from "./BookingsListFiltersSection.styles";
 import {
   BOOKING_BUCKETS,
@@ -71,65 +72,43 @@ export function BookingsListFiltersSection({
       </div>
 
       <div className={styles.row()}>
-        <TextField
+        <AdminDatePicker
           className={styles.field()}
+          label={t("filters.from")}
+          labelClassName={styles.label()}
           name="from"
-          type="date"
           value={from}
           onChange={onFromChange}
-        >
-          <Label className={styles.label()}>{t("filters.from")}</Label>
-          <Input className={styles.input()} />
-        </TextField>
-        <TextField
+        />
+        <AdminDatePicker
           className={styles.field()}
+          label={t("filters.to")}
+          labelClassName={styles.label()}
           name="to"
-          type="date"
           value={to}
           onChange={onToChange}
-        >
-          <Label className={styles.label()}>{t("filters.to")}</Label>
-          <Input className={styles.input()} />
-        </TextField>
-        <TextField
+        />
+        <AdminModelAutocomplete
           className={styles.field()}
-          name="athleteId"
+          kind="athlete"
+          label={t("filters.athleteId")}
           value={athleteId}
           onChange={onAthleteIdChange}
-        >
-          <Label className={styles.label()}>{t("filters.athleteId")}</Label>
-          <Input
-            className={styles.input()}
-            dir="ltr"
-            placeholder={t("filters.idPlaceholder")}
-          />
-        </TextField>
-        <TextField
+        />
+        <AdminModelAutocomplete
           className={styles.field()}
-          name="coachUserId"
+          kind="coach"
+          label={t("filters.coachUserId")}
           value={coachUserId}
           onChange={onCoachUserIdChange}
-        >
-          <Label className={styles.label()}>{t("filters.coachUserId")}</Label>
-          <Input
-            className={styles.input()}
-            dir="ltr"
-            placeholder={t("filters.idPlaceholder")}
-          />
-        </TextField>
-        <TextField
+        />
+        <AdminModelAutocomplete
           className={styles.field()}
-          name="clubId"
+          kind="club"
+          label={t("filters.clubId")}
           value={clubId}
           onChange={onClubIdChange}
-        >
-          <Label className={styles.label()}>{t("filters.clubId")}</Label>
-          <Input
-            className={styles.input()}
-            dir="ltr"
-            placeholder={t("filters.idPlaceholder")}
-          />
-        </TextField>
+        />
       </div>
     </div>
   );

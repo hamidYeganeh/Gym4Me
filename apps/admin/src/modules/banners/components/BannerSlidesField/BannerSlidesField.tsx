@@ -38,6 +38,42 @@ const DEFAULT_SLIDE: Omit<BannerSlideInput, "mediaId"> = {
 
 const MAX_SLIDES = 10;
 
+function overlayPositionClass(placement: BannerOverlayPlacement) {
+  const positions: Record<BannerOverlayPlacement, string> = {
+    "top-start": "top-3 start-3",
+    "top-center": "top-3 left-1/2 -translate-x-1/2",
+    "top-end": "top-3 end-3",
+    "center-start": "top-1/2 start-3 -translate-y-1/2",
+    center: "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+    "center-end": "top-1/2 end-3 -translate-y-1/2",
+    "bottom-start": "bottom-3 start-3",
+    "bottom-center": "bottom-3 left-1/2 -translate-x-1/2",
+    "bottom-end": "bottom-3 end-3",
+  };
+  return positions[placement];
+}
+
+function previewRatioClass(ratio: BannerAspectRatio) {
+  return {
+    "16/9": "aspect-video",
+    "2/1": "aspect-[2/1]",
+    "4/3": "aspect-[4/3]",
+    "1/1": "aspect-square",
+  }[ratio];
+}
+
+function previewRadiusClass(radius: BannerRadius) {
+  return {
+    none: "rounded-none",
+    sm: "rounded-sm",
+    field: "rounded-xl",
+    compact: "rounded-2xl",
+    auth: "rounded-3xl",
+    surface: "rounded-[2rem]",
+    full: "rounded-[999px]",
+  }[radius];
+}
+
 export function BannerSlidesField({
   value,
   onChange,
@@ -93,12 +129,37 @@ export function BannerSlidesField({
           {value.map((slide, index) => (
             <div className={styles.slide()} key={`${slide.mediaId}-${index}`}>
               <div className={styles.slideHeader()}>
-                <div className={styles.preview()}>
+                <div
+                  className={`${styles.preview()} ${previewRatioClass(
+                    slide.ratio ?? "16/9",
+                  )} ${previewRadiusClass(slide.radius ?? "surface")}`}
+                >
                   <img
                     alt={slide.alt ?? ""}
                     className={styles.image()}
                     src={mediaApi.fileUrl(slide.mediaId)}
                   />
+                  {slide.gradient ? (
+                    <div aria-hidden className={styles.previewGradient()} />
+                  ) : null}
+                  {slide.title?.text ? (
+                    <strong
+                      className={`${styles.previewTitle()} ${overlayPositionClass(
+                        slide.title.placement ?? "bottom-start",
+                      )}`}
+                    >
+                      {slide.title.text}
+                    </strong>
+                  ) : null}
+                  {slide.action?.label ? (
+                    <span
+                      className={`${styles.previewAction()} ${overlayPositionClass(
+                        slide.action.placement ?? "bottom-end",
+                      )}`}
+                    >
+                      {slide.action.label}
+                    </span>
+                  ) : null}
                 </div>
                 <Button
                   isDisabled={disabled}
@@ -262,12 +323,13 @@ export function BannerSlidesField({
                 {slide.title?.text ? (
                   <div className={styles.field()}>
                     <Label>{labels.titlePlacementLabel}</Label>
-                    <div className={styles.chips()}>
+                    <div className={styles.placementGrid()}>
                       {BANNER_OVERLAY_PLACEMENTS.map((placement) => (
                         <Button
                           isDisabled={disabled}
                           key={`title-${placement}`}
                           size="sm"
+                          className={styles.placementButton()}
                           variant={
                             (slide.title?.placement ?? "bottom-start") ===
                             placement
@@ -314,12 +376,13 @@ export function BannerSlidesField({
                 {slide.action?.label ? (
                   <div className={styles.field()}>
                     <Label>{labels.actionPlacementLabel}</Label>
-                    <div className={styles.chips()}>
+                    <div className={styles.placementGrid()}>
                       {BANNER_OVERLAY_PLACEMENTS.map((placement) => (
                         <Button
                           isDisabled={disabled}
                           key={`action-${placement}`}
                           size="sm"
+                          className={styles.placementButton()}
                           variant={
                             (slide.action?.placement ?? "bottom-end") ===
                             placement

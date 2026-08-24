@@ -120,6 +120,12 @@ export const ClubCancellationPolicySchema = SchemaFactory.createForClass(
 export class ClubEquipmentRef {
   @Prop({ type: Types.ObjectId, ref: RefItem.name, required: true })
   equipmentId!: Types.ObjectId;
+
+  @Prop({ min: 1 })
+  quantity?: number;
+
+  @Prop({ trim: true })
+  description?: string;
 }
 
 export const ClubEquipmentRefSchema =
@@ -129,6 +135,9 @@ export const ClubEquipmentRefSchema =
 export class ClubAmenityRef {
   @Prop({ type: Types.ObjectId, ref: RefItem.name, required: true })
   amenityId!: Types.ObjectId;
+
+  @Prop({ trim: true })
+  description?: string;
 }
 
 export const ClubAmenityRefSchema =
@@ -138,6 +147,9 @@ export const ClubAmenityRefSchema =
 export class ClubCategoryRef {
   @Prop({ type: Types.ObjectId, ref: RefItem.name, required: true })
   categoryId!: Types.ObjectId;
+
+  @Prop({ trim: true })
+  description?: string;
 }
 
 export const ClubCategoryRefSchema =
@@ -147,6 +159,9 @@ export const ClubCategoryRefSchema =
 export class ClubSportRef {
   @Prop({ type: Types.ObjectId, ref: Sport.name, required: true })
   sportId!: Types.ObjectId;
+
+  @Prop({ trim: true })
+  description?: string;
 }
 
 export const ClubSportRefSchema = SchemaFactory.createForClass(ClubSportRef);

@@ -1,10 +1,12 @@
 import { Button } from "@heroui/react/button";
-import { Input } from "@heroui/react/input";
 import { Label } from "@heroui/react/label";
-import { TextField } from "@heroui/react/textfield";
 import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
-import { AdminConfirmDialog, AdminFormDrawer } from "@/shared/components";
+import {
+  AdminConfirmDialog,
+  AdminFormDrawer,
+  AdminModelAutocomplete,
+} from "@/shared/components";
 import { SUBJECT_TYPES } from "../../lib/gamification-constants";
 import { achievementsListModalsSectionVariants } from "./AchievementsListModalsSection.styles";
 import type { AchievementsListModalsSectionProps } from "./AchievementsListModalsSection.types";
@@ -57,19 +59,13 @@ export function AchievementsListModalsSection({
             </div>
           </div>
 
-          <TextField
+          <AdminModelAutocomplete
             className={styles.field()}
-            fullWidth
-            name="subjectId"
+            kind={grantSubjectType === "club" ? "club" : grantSubjectType}
+            label={t("achievements.fields.subjectId")}
             value={grantSubjectId}
             onChange={onGrantSubjectIdChange}
-          >
-            <Label>{t("achievements.fields.subjectId")}</Label>
-            <Input
-              dir="ltr"
-              placeholder={t("achievements.fields.subjectIdHint")}
-            />
-          </TextField>
+          />
 
           {grantError ? (
             <Typography className="text-sm text-danger" role="alert">

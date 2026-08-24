@@ -39,8 +39,8 @@ export function fromLocalInputValue(value: string) {
 export function createPointRulesFormSchema(messages: PointRulesFormMessages) {
   return z
     .object({
-      title: z.string().trim().min(2, messages.required),
-      description: z.string(),
+      title: z.string().trim().min(2, messages.required).max(120),
+      description: z.string().max(1000),
       event: eventSchema,
       awards: z.object({
         athlete: z.string(),
@@ -61,6 +61,17 @@ export function createPointRulesFormSchema(messages: PointRulesFormMessages) {
         ctx.addIssue({
           code: "custom",
           path: ["awards", "athlete"],
+          message: messages.required,
+        });
+      }
+      if (
+        values.effectiveFrom &&
+        values.effectiveTo &&
+        new Date(values.effectiveTo) <= new Date(values.effectiveFrom)
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["effectiveTo"],
           message: messages.required,
         });
       }

@@ -4,14 +4,12 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "@/shared/lib/app-router";
 
 import { Button } from "@heroui/react/button";
-import { Input } from "@heroui/react/input";
 import { InputGroup } from "@heroui/react/input-group";
 import { Label } from "@heroui/react/label";
 import { TextField } from "@heroui/react/textfield";
 import { Typography } from "@heroui/react/typography";
 import type { Role, RoleRequest } from "@repo/api";
 import { ApiError } from "@repo/api";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { Note1 } from "@repo/icons/Note1";
 import { FileItem, type FileItemStatus } from "@repo/ui/kit/FileItem";
 import { Uploader } from "@repo/ui/kit/Uploader";
@@ -19,6 +17,10 @@ import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { accountRoles, mediaApi } from "@/shared/lib/api";
+import {
+  ImageCropperSheet,
+  useImageCropper,
+} from "@/shared/components/ImageCropperSheet";
 import { roleRequestWizardScreenVariants } from "./RoleRequestWizardScreen.styles";
 import type { RoleRequestWizardScreenProps } from "./RoleRequestWizardScreen.types";
 
@@ -65,6 +67,7 @@ export function RoleRequestWizardScreen({
   const [notice, setNotice] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const { cropImage, cropperProps } = useImageCropper();
 
   const isCoach = role === "coach";
   const title = isCoach ? t("wizardCoachTitle") : t("wizardOwnerTitle");
@@ -175,8 +178,7 @@ export function RoleRequestWizardScreen({
       const result = await accountRoles.submit(role as Role, {
         bio: bio.trim() || undefined,
         headline: isCoach ? headline.trim() || undefined : undefined,
-        yearsExperience:
-          isCoach && years.trim() ? Number(years) : undefined,
+        yearsExperience: isCoach && years.trim() ? Number(years) : undefined,
         documentMediaIds: [documentId],
         note: note.trim() || undefined,
       });
@@ -304,7 +306,9 @@ export function RoleRequestWizardScreen({
                 onDropAccepted={(files) => {
                   const file = files[0];
                   if (!file) return;
-                  void uploadDocument(file);
+                  void cropImage(file, 4 / 3).then((cropped) => {
+                    if (cropped) void uploadDocument(cropped);
+                  });
                 }}
               />
             ) : null}
@@ -352,7 +356,12 @@ export function RoleRequestWizardScreen({
                   type="file"
                   onChange={(event) => {
                     const file = event.target.files?.[0] ?? null;
-                    void handleUpload(file);
+                    event.target.value = "";
+                    if (file) {
+                      void cropImage(file, 4 / 3).then((cropped) => {
+                        if (cropped) void handleUpload(cropped);
+                      });
+                    }
                   }}
                 />
                 {documentId ? (
@@ -370,7 +379,11 @@ export function RoleRequestWizardScreen({
             </Typography>
           ) : null}
           {notice ? (
-            <Typography className={styles.notice()} role="status" type="body-sm">
+            <Typography
+              className={styles.notice()}
+              role="status"
+              type="body-sm"
+            >
               {notice}
             </Typography>
           ) : null}
@@ -387,6 +400,7 @@ export function RoleRequestWizardScreen({
           </Button>
         </form>
       </div>
+      <ImageCropperSheet {...cropperProps} />
     </AppLayout>
   );
 }

@@ -9,10 +9,13 @@ import { Typography } from "@heroui/react/typography";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ApiError } from "@repo/api";
 import { useTranslations } from "next-intl";
-import { AdminFormActions } from "@/shared/components";
+import { AdminDatePicker, AdminFormActions } from "@/shared/components";
 import { resolveFormSubmitIntent } from "@/shared/lib/form-submit-intent";
 import { BannerSlidesField } from "../BannerSlidesField";
-import { BANNER_PLACEMENTS, PUBLISH_STATUSES } from "../../lib/banner-constants";
+import {
+  BANNER_PLACEMENTS,
+  PUBLISH_STATUSES,
+} from "../../lib/banner-constants";
 import {
   bannersFormDefaults,
   createBannersFormSchema,
@@ -70,7 +73,9 @@ export function BannersForm({
       }
     } catch (err) {
       setSubmitError(
-        err instanceof ApiError ? err.message || t("actionError") : t("actionError"),
+        err instanceof ApiError
+          ? err.message || t("actionError")
+          : t("actionError"),
       );
     }
   });
@@ -83,13 +88,12 @@ export function BannersForm({
         render={({ field, fieldState }) => (
           <TextField
             isInvalid={fieldState.invalid}
-            isRequired
             name={field.name}
             value={field.value}
             onBlur={field.onBlur}
             onChange={field.onChange}
           >
-            <Label>{t("fields.title")}</Label>
+            <Label>{t("fields.title")} (اختیاری)</Label>
             <Input placeholder={t("fields.titleHint")} ref={field.ref} />
             <FieldError>{fieldState.error?.message}</FieldError>
           </TextField>
@@ -183,7 +187,9 @@ export function BannersForm({
               onChange={field.onChange}
             />
             {fieldState.error?.message ? (
-              <Typography className={styles.formError()}>{fieldState.error.message}</Typography>
+              <Typography className={styles.formError()}>
+                {fieldState.error.message}
+              </Typography>
             ) : null}
           </div>
         )}
@@ -217,34 +223,30 @@ export function BannersForm({
           control={form.control}
           name="startsAt"
           render={({ field, fieldState }) => (
-            <TextField
-              isInvalid={fieldState.invalid}
+            <AdminDatePicker
+              error={fieldState.error?.message}
+              granularity="minute"
+              label={t("fields.startsAt")}
               name={field.name}
               value={field.value}
               onBlur={field.onBlur}
               onChange={field.onChange}
-            >
-              <Label>{t("fields.startsAt")}</Label>
-              <Input dir="ltr" ref={field.ref} type="datetime-local" />
-              <FieldError>{fieldState.error?.message}</FieldError>
-            </TextField>
+            />
           )}
         />
         <Controller
           control={form.control}
           name="endsAt"
           render={({ field, fieldState }) => (
-            <TextField
-              isInvalid={fieldState.invalid}
+            <AdminDatePicker
+              error={fieldState.error?.message}
+              granularity="minute"
+              label={t("fields.endsAt")}
               name={field.name}
               value={field.value}
               onBlur={field.onBlur}
               onChange={field.onChange}
-            >
-              <Label>{t("fields.endsAt")}</Label>
-              <Input dir="ltr" ref={field.ref} type="datetime-local" />
-              <FieldError>{fieldState.error?.message}</FieldError>
-            </TextField>
+            />
           )}
         />
       </div>

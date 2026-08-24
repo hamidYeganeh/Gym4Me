@@ -1,9 +1,15 @@
+"use client";
+
 import { Button } from "@heroui/react/button";
 import { Link } from "@heroui/react/link";
 import { Typography } from "@heroui/react/typography";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { Hourglass1 } from "@repo/icons/Hourglass1";
 import { Scan1 } from "@repo/icons/Scan1";
+import {
+  ImageCropperSheet,
+  useImageCropper,
+} from "@/shared/components/ImageCropperSheet";
 import { kycStatusScanSectionVariants } from "./KycStatusScanSection.styles";
 import type { KycStatusScanSectionProps } from "./KycStatusScanSection.types";
 
@@ -18,6 +24,7 @@ export function KycStatusScanSection({
   className,
 }: KycStatusScanSectionProps) {
   const styles = kycStatusScanSectionVariants();
+  const { cropImage, cropperProps } = useImageCropper();
 
   return (
     <main className={styles.root({ className })}>
@@ -82,10 +89,16 @@ export function KycStatusScanSection({
           type="file"
           onChange={(event) => {
             const file = event.target.files?.[0];
-            if (file) void submitCapturedFile(file);
+            event.target.value = "";
+            if (file) {
+              void cropImage(file, 1.586).then((cropped) => {
+                if (cropped) void submitCapturedFile(cropped);
+              });
+            }
           }}
         />
       </div>
+      <ImageCropperSheet {...cropperProps} />
     </main>
   );
 }

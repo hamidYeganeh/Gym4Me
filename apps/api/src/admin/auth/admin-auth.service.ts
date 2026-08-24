@@ -43,17 +43,12 @@ export class AdminAuthService {
   }
 
   async requestOtp(phone: string) {
-    // Identical response either way — no account enumeration.
     const user = await this.users.findByPhone(phone);
-    if (user && this.isAdmin(user) && user.status === UserStatus.ACTIVE) {
-      return this.otp.request(phone, OtpPurpose.ADMIN_AUTH);
+    if (!user || !this.isAdmin(user)) {
+      throw new ForbiddenException('Admin access required');
     }
-    if (this.isDebugMode()) {
-      this.logger.warn(
-        `[DEBUG] OTP skipped for ${phone}: ${!user ? 'user not found' : !this.isAdmin(user) ? 'not an admin' : `status=${user.status}`}`,
-      );
-    }
-    return { expiresInSeconds: 120 };
+    this.assertActive(user);
+    return this.otp.request(phone, OtpPurpose.ADMIN_AUTH);
   }
 
   async confirmOtp(phone: string, code: string, request: Request) {

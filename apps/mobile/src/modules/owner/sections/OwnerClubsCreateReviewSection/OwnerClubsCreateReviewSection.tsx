@@ -6,6 +6,10 @@ import { Typography } from "@heroui/react/typography";
 import { FileItem, type FileItemStatus } from "@repo/ui/kit/FileItem";
 import { Uploader } from "@repo/ui/kit/Uploader";
 import { useTranslations } from "next-intl";
+import {
+  ImageCropperSheet,
+  useImageCropper,
+} from "@/shared/components/ImageCropperSheet";
 import Image from "next/image";
 import { mediaFileUrl } from "@/shared/lib/api";
 import { ownerClubsCreateReviewSectionVariants } from "./OwnerClubsCreateReviewSection.styles";
@@ -43,6 +47,7 @@ export function OwnerClubsCreateReviewSection({
 }: OwnerClubsCreateReviewSectionProps) {
   const t = useTranslations("Mobile.ClubCreate");
   const styles = ownerClubsCreateReviewSectionVariants();
+  const { cropImage, cropperProps } = useImageCropper();
   const [docUpload, setDocUpload] = useState<DocUploadState | null>(null);
 
   return (
@@ -155,7 +160,10 @@ export function OwnerClubsCreateReviewSection({
                             />
                           </div>
                         ) : null}
-                        <Typography className={styles.mediaCaption()} type="body-sm">
+                        <Typography
+                          className={styles.mediaCaption()}
+                          type="body-sm"
+                        >
                           {item.label
                             ? `${item.label}: ${item.fileName}`
                             : item.fileName}
@@ -234,13 +242,16 @@ export function OwnerClubsCreateReviewSection({
               onDropAccepted={(files) => {
                 const file = files[0];
                 if (!file) return;
-                setDocUpload({
-                  fileName: file.name,
-                  fileSize: formatBytes(file.size),
-                  status: "uploading",
-                  progress: 40,
+                void cropImage(file, 4 / 3).then((prepared) => {
+                  if (!prepared) return;
+                  setDocUpload({
+                    fileName: prepared.name,
+                    fileSize: formatBytes(prepared.size),
+                    status: "uploading",
+                    progress: 40,
+                  });
+                  onSubmitDocument(prepared);
                 });
-                onSubmitDocument(file);
               }}
             />
           ) : null}
@@ -256,6 +267,7 @@ export function OwnerClubsCreateReviewSection({
           ) : null}
         </div>
       ) : null}
+      <ImageCropperSheet {...cropperProps} />
     </section>
   );
 }

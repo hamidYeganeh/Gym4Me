@@ -9,6 +9,10 @@ import { Uploader } from "@repo/ui/kit/Uploader";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { mediaApi, mediaFileUrl } from "@/shared/lib/api";
+import {
+  ImageCropperSheet,
+  useImageCropper,
+} from "@/shared/components/ImageCropperSheet";
 import { ownerClubsCreateMediaSectionVariants } from "./OwnerClubsCreateMediaSection.styles";
 import type { OwnerClubsCreateMediaSectionProps } from "./OwnerClubsCreateMediaSection.types";
 
@@ -40,13 +44,13 @@ export function OwnerClubsCreateMediaSection({
   const t = useTranslations("Mobile.ClubCreate");
   const styles = ownerClubsCreateMediaSectionVariants();
   const gallery = useFieldArray({ control, name: "gallery" });
-  const coverMediaId = useWatch({ control, name: "coverMediaId" });
   const coverFileName = useWatch({ control, name: "coverFileName" });
 
   const [coverUpload, setCoverUpload] = useState<UploadState | null>(null);
   const [galleryUploads, setGalleryUploads] = useState<
     Record<string, UploadState>
   >({});
+  const { cropImage, cropperProps } = useImageCropper();
 
   return (
     <section className={styles.root({ className })}>
@@ -64,8 +68,7 @@ export function OwnerClubsCreateMediaSection({
         name="coverMediaId"
         render={({ field }) => {
           const showUploader =
-            !field.value &&
-            (!coverUpload || coverUpload.status === "error");
+            !field.value && (!coverUpload || coverUpload.status === "error");
           const showItem =
             Boolean(field.value) ||
             (coverUpload != null &&
@@ -101,37 +104,40 @@ export function OwnerClubsCreateMediaSection({
                     multiple={false}
                     title={t("uploaderTitle")}
                     onDropAccepted={(files) => {
-                      const file = files[0];
-                      if (!file) return;
-                      setCoverUpload({
-                        fileName: file.name,
-                        fileSize: formatBytes(file.size),
-                        status: "uploading",
-                        progress: 35,
-                        file,
-                      });
-                      void mediaApi
-                        .upload(file)
-                        .then((asset) => {
-                          setCoverUpload({
-                            fileName: file.name,
-                            fileSize: formatBytes(file.size),
-                            status: "success",
-                            progress: 100,
-                            file,
-                          });
-                          field.onChange(asset.id);
-                          setValue("coverFileName", file.name);
-                        })
-                        .catch(() => {
-                          setCoverUpload({
-                            fileName: file.name,
-                            fileSize: formatBytes(file.size),
-                            status: "error",
-                            progress: 65,
-                            file,
-                          });
+                      const source = files[0];
+                      if (!source) return;
+                      void cropImage(source, 16 / 9).then((file) => {
+                        if (!file) return;
+                        setCoverUpload({
+                          fileName: file.name,
+                          fileSize: formatBytes(file.size),
+                          status: "uploading",
+                          progress: 35,
+                          file,
                         });
+                        void mediaApi
+                          .upload(file)
+                          .then((asset) => {
+                            setCoverUpload({
+                              fileName: file.name,
+                              fileSize: formatBytes(file.size),
+                              status: "success",
+                              progress: 100,
+                              file,
+                            });
+                            field.onChange(asset.id);
+                            setValue("coverFileName", file.name);
+                          })
+                          .catch(() => {
+                            setCoverUpload({
+                              fileName: file.name,
+                              fileSize: formatBytes(file.size),
+                              status: "error",
+                              progress: 65,
+                              file,
+                            });
+                          });
+                      });
                     }}
                   />
                 ) : null}
@@ -139,7 +145,9 @@ export function OwnerClubsCreateMediaSection({
                 {showItem && displayName ? (
                   <>
                     {previewUrl && coverUpload?.status !== "uploading" ? (
-                      <div className={`${styles.preview()} aspect-[16/9] w-full`}>
+                      <div
+                        className={`${styles.preview()} aspect-[16/9] w-full`}
+                      >
                         <Image
                           alt=""
                           className={styles.image()}
@@ -217,7 +225,11 @@ export function OwnerClubsCreateMediaSection({
       />
 
       <div className={styles.group()}>
-        <Typography className={styles.groupTitle()} type="body" weight="semibold">
+        <Typography
+          className={styles.groupTitle()}
+          type="body"
+          weight="semibold"
+        >
           {t("gallery")}
         </Typography>
         <Typography className={styles.hint()} type="body-sm">
@@ -231,53 +243,57 @@ export function OwnerClubsCreateMediaSection({
           multiple
           title={t("uploaderTitle")}
           onDropAccepted={(files) => {
-            for (const file of files) {
-              const tempId =
-                typeof crypto !== "undefined" && "randomUUID" in crypto
-                  ? crypto.randomUUID()
-                  : `gallery-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+            void (async () => {
+              for (const source of files) {
+                const file = await cropImage(source, 16 / 9);
+                if (!file) continue;
+                const tempId =
+                  typeof crypto !== "undefined" && "randomUUID" in crypto
+                    ? crypto.randomUUID()
+                    : `gallery-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
-              setGalleryUploads((prev) => ({
-                ...prev,
-                [tempId]: {
-                  fileName: file.name,
-                  fileSize: formatBytes(file.size),
-                  status: "uploading",
-                  progress: 35,
-                  file,
-                },
-              }));
-
-              void mediaApi
-                .upload(file)
-                .then((asset) => {
-                  setGalleryUploads((prev) => {
-                    const next = { ...prev };
-                    delete next[tempId];
-                    return next;
-                  });
-                  gallery.append({
-                    id: tempId,
-                    mediaId: asset.id,
+                setGalleryUploads((prev) => ({
+                  ...prev,
+                  [tempId]: {
                     fileName: file.name,
-                  });
-                })
-                .catch((err) => {
-                  setGalleryUploads((prev) => ({
-                    ...prev,
-                    [tempId]: {
+                    fileSize: formatBytes(file.size),
+                    status: "uploading",
+                    progress: 35,
+                    file,
+                  },
+                }));
+
+                void mediaApi
+                  .upload(file)
+                  .then((asset) => {
+                    setGalleryUploads((prev) => {
+                      const next = { ...prev };
+                      delete next[tempId];
+                      return next;
+                    });
+                    gallery.append({
+                      id: tempId,
+                      mediaId: asset.id,
                       fileName: file.name,
-                      fileSize: formatBytes(file.size),
-                      status: "error",
-                      progress: 65,
-                      file,
-                    },
-                  }));
-                  if (err instanceof ApiError) {
-                    // surfaced via FileItem status message
-                  }
-                });
-            }
+                    });
+                  })
+                  .catch((err) => {
+                    setGalleryUploads((prev) => ({
+                      ...prev,
+                      [tempId]: {
+                        fileName: file.name,
+                        fileSize: formatBytes(file.size),
+                        status: "error",
+                        progress: 65,
+                        file,
+                      },
+                    }));
+                    if (err instanceof ApiError) {
+                      // surfaced via FileItem status message
+                    }
+                  });
+              }
+            })();
           }}
         />
 
@@ -367,6 +383,7 @@ export function OwnerClubsCreateMediaSection({
           })}
         </div>
       </div>
+      <ImageCropperSheet {...cropperProps} />
     </section>
   );
 }

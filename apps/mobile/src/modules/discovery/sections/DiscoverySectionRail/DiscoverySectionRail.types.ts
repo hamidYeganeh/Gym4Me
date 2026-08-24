@@ -19,7 +19,7 @@ export type DiscoverySectionRailProps = {
   accentIcon?: ReactNode;
   titleSize?: "h3" | "h4";
   className?: string;
-  /** Full-bleed stacked band with rounded top corners. */
+  /** Full-bleed section band with rounded corners. */
   sheet?: boolean;
   /** Fill when `sheet` is on. Default `surface`. */
   tone?: DiscoverySectionSheetTone;

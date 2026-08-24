@@ -106,7 +106,7 @@ export const BannerScheduleSchema =
 @Schema({ timestamps: true, collection: 'banners' })
 export class Banner {
   /** Admin-facing label; never rendered to end users. */
-  @Prop({ required: true, trim: true, maxlength: 200 })
+  @Prop({ default: '', trim: true, maxlength: 200 })
   title!: string;
 
   @Prop({

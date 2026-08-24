@@ -48,7 +48,6 @@ export class DiscoveryActionDto {
 
 export class DiscoveryContentDto {
   @IsString()
-  @MinLength(1)
   @MaxLength(160)
   title!: string;
 

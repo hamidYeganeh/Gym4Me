@@ -82,7 +82,7 @@ export function BannersEditScreen({ className }: BannersEditScreenProps) {
     <AdminShell
       activeNavId="banners"
       breadcrumbs={[
-        { label: banner?.title ?? t("actions.edit") },
+        { label: banner?.title || t("actions.edit") },
         { label: t("actions.edit") },
       ]}
       className={className}

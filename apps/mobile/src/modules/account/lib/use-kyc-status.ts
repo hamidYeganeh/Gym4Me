@@ -20,6 +20,14 @@ import type { KycFlowStep } from "@/modules/account/screens/KycStatusScreen/KycS
 
 const PROCESSING_TICK_MS = 900;
 
+function normalizeNationalId(value: string) {
+  return value
+    .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
+    .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
+    .replace(/\D/g, "")
+    .slice(0, 10);
+}
+
 export function useKycStatus(roleSegment = "athlete") {
   const t = useTranslations("Mobile.Kyc");
   const apiT = useTranslations("Api");
@@ -36,6 +44,8 @@ export function useKycStatus(roleSegment = "athlete") {
   const [birthDateJalali, setBirthDateJalali] = useState(
     isoToJalaliDisplay(user?.demographics.birthDate),
   );
+  const [nationalIdError, setNationalIdError] = useState<string | null>(null);
+  const [birthDateError, setBirthDateError] = useState<string | null>(null);
   const [cameraReady, setCameraReady] = useState(false);
   const [processingIndex, setProcessingIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -165,9 +175,14 @@ export function useKycStatus(roleSegment = "athlete") {
   const handleDetails = (event: FormEvent) => {
     event.preventDefault();
     setError(null);
+    const nextNationalIdError = /^\d{10}$/.test(nationalId.trim())
+      ? null
+      : t("nationalIdError");
     const iso = jalaliDisplayToIso(birthDateJalali);
-    if (!/^\d{10}$/.test(nationalId.trim()) || !iso) {
-      setError(t("errorDetails"));
+    const nextBirthDateError = iso ? null : t("birthDateError");
+    setNationalIdError(nextNationalIdError);
+    setBirthDateError(nextBirthDateError);
+    if (nextNationalIdError || nextBirthDateError) {
       return;
     }
     void (async () => {
@@ -270,9 +285,19 @@ export function useKycStatus(roleSegment = "athlete") {
     step,
     status,
     nationalId,
-    setNationalId,
+    setNationalId: (value: string) => {
+      setNationalId(normalizeNationalId(value));
+      setError(null);
+      if (nationalIdError) setNationalIdError(null);
+    },
+    nationalIdError,
     birthDateJalali,
-    setBirthDateJalali,
+    setBirthDateJalali: (value: string) => {
+      setBirthDateJalali(value);
+      setError(null);
+      if (birthDateError) setBirthDateError(null);
+    },
+    birthDateError,
     cameraReady,
     processingIndex,
     error,

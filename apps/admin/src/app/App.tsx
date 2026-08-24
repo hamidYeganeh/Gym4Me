@@ -423,12 +423,16 @@ export function AppRouter() {
                 path="/dashboard/ops/flags"
               />
               <Route
-                element={<DiscoveryComposerScreen />}
+                element={<Navigate replace to={routes.discovery()} />}
                 path="/dashboard/ops/discovery"
               />
               <Route
                 element={<ReleasePoliciesScreen />}
                 path="/dashboard/ops/releases"
+              />
+              <Route
+                element={<DiscoveryComposerScreen />}
+                path="/dashboard/discovery/:pageKey"
               />
             </Route>
             <Route

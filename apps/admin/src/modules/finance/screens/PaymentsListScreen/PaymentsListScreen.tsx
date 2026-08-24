@@ -1,9 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { Button } from "@heroui/react/button";
 import { Chip } from "@heroui/react/chip";
-import { Input } from "@heroui/react/input";
-import { Label } from "@heroui/react/label";
-import { TextField } from "@heroui/react/textfield";
 import { Typography } from "@heroui/react/typography";
 import type {
   PaymentChannel,
@@ -16,6 +13,7 @@ import { useTranslations } from "next-intl";
 import {
   AdminDataTable,
   AdminFilterSelect,
+  AdminModelAutocomplete,
   AdminShell,
 } from "@/shared/components";
 import {
@@ -96,14 +94,11 @@ export function PaymentsListScreen({ className }: PaymentsListScreenProps) {
   const tCommon = useTranslations("Admin.Common");
   const styles = paymentsListScreenVariants();
 
-  const { filters, setFilter,
-    page,
-    pageSize,
-    setPage,
-  } = useAdminListQueryParams<PaymentsListFilters>({
-    filterKeys: FILTER_KEYS,
-    defaults: FILTER_DEFAULTS,
-  });
+  const { filters, setFilter, page, pageSize, setPage } =
+    useAdminListQueryParams<PaymentsListFilters>({
+      filterKeys: FILTER_KEYS,
+      defaults: FILTER_DEFAULTS,
+    });
 
   const queryKey = useMemo(
     () => JSON.stringify({ filters, pageSize }),
@@ -263,32 +258,20 @@ export function PaymentsListScreen({ className }: PaymentsListScreenProps) {
               setFilter("purpose", value as PaymentsListFilters["purpose"])
             }
           />
-          <TextField
+          <AdminModelAutocomplete
             className={styles.field()}
-            name="clubId"
+            kind="club"
+            label={t("filters.clubId")}
             value={filters.clubId}
             onChange={(value) => setFilter("clubId", value)}
-          >
-            <Label className={styles.label()}>{t("filters.clubId")}</Label>
-            <Input
-              className={styles.input()}
-              dir="ltr"
-              placeholder={t("filters.idPlaceholder")}
-            />
-          </TextField>
-          <TextField
+          />
+          <AdminModelAutocomplete
             className={styles.field()}
-            name="payerUserId"
+            kind="user"
+            label={t("filters.payerUserId")}
             value={filters.payerUserId}
             onChange={(value) => setFilter("payerUserId", value)}
-          >
-            <Label className={styles.label()}>{t("filters.payerUserId")}</Label>
-            <Input
-              className={styles.input()}
-              dir="ltr"
-              placeholder={t("filters.idPlaceholder")}
-            />
-          </TextField>
+          />
         </div>
 
         <AdminDataTable

@@ -37,10 +37,10 @@ export function OwnerClubsCreateWizardSection({
   slideTransition,
   slideVariants,
   reviewSections,
-  categoryIds,
-  sportIds,
-  amenityIds,
-  equipmentIds,
+  categorySelections,
+  sportSelections,
+  amenitySelections,
+  equipmentSelections,
   genderPolicy,
   ageGroupKeys,
   hoursMode,
@@ -83,12 +83,10 @@ export function OwnerClubsCreateWizardSection({
             hint={t("stepCategoriesHint")}
             isLoading={isCatalogLoading}
             options={mapRefOptions(categories)}
-            selectedIds={categoryIds}
+            selections={categorySelections}
             title={t("stepCategories")}
-            onToggle={(id) =>
-              setValue("categoryIds", toggleIdInList(categoryIds, id), {
-                shouldDirty: true,
-              })
+            onChange={(items) =>
+              setValue("categories", items, { shouldDirty: true })
             }
           />
         ) : null}
@@ -98,12 +96,10 @@ export function OwnerClubsCreateWizardSection({
             hint={t("stepSportsHint")}
             isLoading={isCatalogLoading}
             options={mapSportOptions(sports)}
-            selectedIds={sportIds}
+            selections={sportSelections}
             title={t("stepSports")}
-            onToggle={(id) =>
-              setValue("sportIds", toggleIdInList(sportIds, id), {
-                shouldDirty: true,
-              })
+            onChange={(items) =>
+              setValue("sports", items, { shouldDirty: true })
             }
           />
         ) : null}
@@ -113,12 +109,10 @@ export function OwnerClubsCreateWizardSection({
             hint={t("stepAmenitiesHint")}
             isLoading={isCatalogLoading}
             options={mapRefOptions(amenities)}
-            selectedIds={amenityIds}
+            selections={amenitySelections}
             title={t("stepAmenities")}
-            onToggle={(id) =>
-              setValue("amenityIds", toggleIdInList(amenityIds, id), {
-                shouldDirty: true,
-              })
+            onChange={(items) =>
+              setValue("amenities", items, { shouldDirty: true })
             }
           />
         ) : null}
@@ -128,12 +122,11 @@ export function OwnerClubsCreateWizardSection({
             hint={t("stepEquipmentHint")}
             isLoading={isCatalogLoading}
             options={mapRefOptions(equipment)}
-            selectedIds={equipmentIds}
+            selections={equipmentSelections}
+            supportsQuantity
             title={t("stepEquipment")}
-            onToggle={(id) =>
-              setValue("equipmentIds", toggleIdInList(equipmentIds, id), {
-                shouldDirty: true,
-              })
+            onChange={(items) =>
+              setValue("equipment", items, { shouldDirty: true })
             }
           />
         ) : null}

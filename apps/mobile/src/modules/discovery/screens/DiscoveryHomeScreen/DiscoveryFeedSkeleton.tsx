@@ -2,8 +2,10 @@ import { DiscoveryHomeArticlesSection } from "../../sections/DiscoveryHomeArticl
 import { DiscoveryHomeBannersSection } from "../../sections/DiscoveryHomeBannersSection";
 import { DiscoveryHomeClubCategoriesSection } from "../../sections/DiscoveryHomeClubCategoriesSection";
 import { DiscoveryHomeClubsRailSection } from "../../sections/DiscoveryHomeClubsRailSection";
+import { DiscoveryHomeCatalogRailSkeleton } from "../../sections/DiscoveryHomeCatalogRailSection";
 import { DiscoveryHomeSportCategoriesSection } from "../../sections/DiscoveryHomeSportCategoriesSection";
 import { DiscoveryHomeSportsSection } from "../../sections/DiscoveryHomeSportsSection";
+import { discoveryHomeScreenStyles as styles } from "./DiscoveryHomeScreen.styles";
 
 type DiscoveryFeedSkeletonProps = {
   mode?: "initial" | "more";
@@ -14,32 +16,68 @@ export function DiscoveryFeedSkeleton({
 }: DiscoveryFeedSkeletonProps) {
   if (mode === "more") {
     return (
-      <div aria-hidden="true">
-        <DiscoveryHomeClubsRailSection
-          ariaLabel=""
-          clubs={[]}
-          isLoading
-          keyPrefix="discovery-feed-more-clubs"
-          title=""
+      <>
+        <DiscoveryHomeCatalogRailSkeleton
+          hint="نزدیک‌ترین گزینه‌ها با ظرفیت باقی‌مانده"
+          title="همین حالا قابل رزرو"
+          variant="schedule"
         />
+        <DiscoveryHomeCatalogRailSkeleton
+          hint="دوش، رختکن، پارکینگ، کمد، سونا و بیشتر"
+          title="امکانات رفاهی"
+          variant="tile"
+        />
+        <DiscoveryHomeClubCategoriesSection categories={[]} isLoading />
+        <DiscoveryHomeSportCategoriesSection categories={[]} isLoading />
+        <DiscoveryHomeSportsSection isLoading sports={[]} />
         <DiscoveryHomeArticlesSection articles={[]} isLoading />
-      </div>
+      </>
     );
   }
 
   return (
-    <div aria-hidden="true">
-      <DiscoveryHomeBannersSection banners={[]} isLoading />
-      <DiscoveryHomeClubCategoriesSection categories={[]} isLoading />
-      <DiscoveryHomeSportCategoriesSection categories={[]} isLoading />
-      <DiscoveryHomeSportsSection isLoading sports={[]} />
+    <>
+      <div aria-hidden="true" className={styles.banners}>
+        <DiscoveryHomeBannersSection banners={[]} isLoading />
+      </div>
       <DiscoveryHomeClubsRailSection
         ariaLabel=""
         clubs={[]}
+        hint="بر اساس ورزش‌ها و هدف‌های شما"
         isLoading
         keyPrefix="discovery-feed-initial-clubs"
-        title=""
+        title="پیشنهاد برای شما"
       />
-    </div>
+      <DiscoveryHomeCatalogRailSkeleton
+        hint="مربی‌های تأییدشده و باتجربه"
+        title="مربی‌های برتر"
+        variant="portrait"
+      />
+      <DiscoveryHomeCatalogRailSkeleton
+        hint="کلاس‌هایی که هنوز فرصت ثبت‌نام دارند"
+        title="کلاس‌های امروز"
+        variant="media"
+      />
+      <DiscoveryHomeCatalogRailSkeleton
+        hint="استخر، زمین و سالن‌های قابل رزرو"
+        title="فضاها و زمین‌ها"
+        variant="media"
+      />
+      <DiscoveryHomeCatalogRailSkeleton
+        hint="سانس‌های باقی‌مانده با ظرفیت واقعی"
+        title="سانس‌های آزاد امروز"
+        variant="schedule"
+      />
+      <DiscoveryHomeCatalogRailSkeleton
+        hint="باشگاه را بر اساس تجهیزات موردنیاز پیدا کنید"
+        title="تجهیزات ورزشی"
+        variant="tile"
+      />
+      <DiscoveryHomeCatalogRailSkeleton
+        hint="عضویت‌های فعال و منتشرشده با قیمت مناسب‌تر"
+        title="پلن‌های عضویت اقتصادی"
+        variant="pricing"
+      />
+    </>
   );
 }

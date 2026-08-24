@@ -79,34 +79,38 @@ export function DiscoverySectionRail({
       {sheet && pattern ? (
         <DiscoverySheetPattern className={slots.pattern()} />
       ) : null}
-      <div className={slots.header()}>
-        <div className={slots.titleRow()}>
-          {accent ? (
-            <span aria-hidden className={slots.accent()}>
-              {accentIcon ?? <Sparkle1 size={ACCENT_ICON_SIZE} />}
-            </span>
-          ) : null}
-          <div className={slots.titleBlock()}>
-            <Typography
-              className={slots.title()}
-              type={titleSize}
-              weight="bold"
-            >
-              {title}
-            </Typography>
-            {hint ? (
-              <Typography className={slots.hint()} type="body-xs">
-                {hint}
-              </Typography>
+      {title || hint || (seeAllLabel && onSeeAll) ? (
+        <div className={slots.header()}>
+          <div className={slots.titleRow()}>
+            {accent && title ? (
+              <span aria-hidden className={slots.accent()}>
+                {accentIcon ?? <Sparkle1 size={ACCENT_ICON_SIZE} />}
+              </span>
             ) : null}
+            <div className={slots.titleBlock()}>
+              {title ? (
+                <Typography
+                  className={slots.title()}
+                  type={titleSize}
+                  weight="bold"
+                >
+                  {title}
+                </Typography>
+              ) : null}
+              {hint ? (
+                <Typography className={slots.hint()} type="body-xs">
+                  {hint}
+                </Typography>
+              ) : null}
+            </div>
           </div>
+          {seeAllLabel && onSeeAll ? (
+            <Link className={slots.seeAll()} onPress={onSeeAll}>
+              {seeAllLabel}
+            </Link>
+          ) : null}
         </div>
-        {seeAllLabel && onSeeAll ? (
-          <Link className={slots.seeAll()} onPress={onSeeAll}>
-            {seeAllLabel}
-          </Link>
-        ) : null}
-      </div>
+      ) : null}
       <div className={scrollerClassName ?? slots.scroller()}>
         <DiscoverySectionCarousel
           ariaLabel={ariaLabel}

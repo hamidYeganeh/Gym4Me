@@ -5,6 +5,11 @@ import type { Banner } from "@repo/api/banners";
 import type {
   DiscoveryArticleCard,
   DiscoveryClubCard,
+  DiscoveryCoach,
+  DiscoveryClass,
+  DiscoveryMembershipPlanCard,
+  DiscoverySlotCard,
+  DiscoverySpaceCard,
   ResolvedDiscoverySection,
 } from "@repo/api/discovery";
 import type { RefItem, SportNode } from "@repo/api";
@@ -28,6 +33,11 @@ import { DiscoveryHomeArticlesSection } from "../../sections/DiscoveryHomeArticl
 import { DiscoveryHomeBannersSection } from "../../sections/DiscoveryHomeBannersSection";
 import { DiscoveryHomeClubCategoriesSection } from "../../sections/DiscoveryHomeClubCategoriesSection";
 import { DiscoveryHomeClubsRailSection } from "../../sections/DiscoveryHomeClubsRailSection";
+import {
+  DiscoveryHomeCatalogRailSection,
+  type DiscoveryHomeCatalogRailItem,
+  type DiscoveryHomeCatalogRailVariant,
+} from "../../sections/DiscoveryHomeCatalogRailSection";
 import { DiscoveryHomeHeaderSection } from "../../sections/DiscoveryHomeHeaderSection";
 import { DiscoveryHomeSportCategoriesSection } from "../../sections/DiscoveryHomeSportCategoriesSection";
 import { DiscoveryHomeSportsSection } from "../../sections/DiscoveryHomeSportsSection";
@@ -105,6 +115,116 @@ function toneOf(section: ResolvedDiscoverySection): DiscoverySectionSheetTone {
     : "surface";
 }
 
+function coachItems(
+  section: ResolvedDiscoverySection,
+): DiscoveryHomeCatalogRailItem[] {
+  return (section.items as DiscoveryCoach[]).map((coach) => ({
+    id: coach.userId,
+    title:
+      [coach.user.name.first, coach.user.name.last].filter(Boolean).join(" ") ||
+      "مربی",
+    eyebrow:
+      coach.verification.status === "approved" ? "مربی تأییدشده" : undefined,
+    meta:
+      coach.experience.headline ??
+      (coach.experience.years
+        ? `${coach.experience.years} سال سابقه`
+        : undefined),
+    image: mediaFileUrl(coach.user.avatar.mediaId) ?? undefined,
+    href: `/discovery/coaches/${coach.userId}`,
+  }));
+}
+
+function classItems(
+  section: ResolvedDiscoverySection,
+): DiscoveryHomeCatalogRailItem[] {
+  return (section.items as DiscoveryClass[]).map((item) => ({
+    id: item.id,
+    title: item.title,
+    eyebrow: item.club.name,
+    meta: item.description ?? undefined,
+    image:
+      mediaFileUrl(item.media.coverMediaId) ??
+      mediaFileUrl(item.club.coverMediaId) ??
+      undefined,
+    href: `/discovery/classes/${item.id}?clubId=${encodeURIComponent(item.clubId)}`,
+  }));
+}
+
+function spaceItems(
+  section: ResolvedDiscoverySection,
+): DiscoveryHomeCatalogRailItem[] {
+  return (section.items as DiscoverySpaceCard[]).map((item) => ({
+    id: item.id,
+    title: item.title,
+    eyebrow: item.clubName,
+    meta: item.description ?? undefined,
+    image: mediaFileUrl(item.coverMediaId) ?? undefined,
+    href: `/discovery/clubs/${item.clubId}`,
+  }));
+}
+
+function slotItems(
+  section: ResolvedDiscoverySection,
+): DiscoveryHomeCatalogRailItem[] {
+  return (section.items as DiscoverySlotCard[]).map((item) => ({
+    id: item.id,
+    title: item.title,
+    eyebrow: item.clubName,
+    meta: `${item.date} · ${item.startTime} تا ${item.endTime} · ${item.remaining.toLocaleString("fa-IR")} جای خالی`,
+    image: mediaFileUrl(item.coverMediaId) ?? undefined,
+    href:
+      item.kind === "class" && item.resourceId
+        ? `/discovery/classes/${item.resourceId}?clubId=${encodeURIComponent(item.clubId)}`
+        : `/discovery/clubs/${item.clubId}`,
+  }));
+}
+
+function refItems(
+  section: ResolvedDiscoverySection,
+  filterKey: "equipmentSlug" | "amenitySlug",
+): DiscoveryHomeCatalogRailItem[] {
+  return (section.items as Array<RefItem & { count?: number }>).map((item) => ({
+    id: item.id,
+    title: item.name,
+    meta: item.count
+      ? `${item.count.toLocaleString("fa-IR")} باشگاه`
+      : undefined,
+    image: mediaFileUrl(item.coverMediaId) ?? undefined,
+    href: `/discovery/clubs?${filterKey}=${encodeURIComponent(item.slug)}`,
+  }));
+}
+
+function membershipItems(
+  section: ResolvedDiscoverySection,
+): DiscoveryHomeCatalogRailItem[] {
+  return (section.items as DiscoveryMembershipPlanCard[]).map((item) => ({
+    id: item.id,
+    title: item.name,
+    eyebrow: item.clubName,
+    meta: `${item.amount.toLocaleString("fa-IR")} تومان`,
+    href: `/discovery/clubs/${item.clubId}`,
+  }));
+}
+
+function catalogSection(
+  section: ResolvedDiscoverySection,
+  items: DiscoveryHomeCatalogRailItem[],
+  variant: DiscoveryHomeCatalogRailVariant,
+) {
+  return (
+    <DiscoveryHomeCatalogRailSection
+      hint={section.content.subtitle}
+      items={items}
+      pattern={Boolean(section.presentation.background?.pattern)}
+      seeAllHref={section.content.action?.link}
+      title={section.content.title}
+      tone={toneOf(section)}
+      variant={variant}
+    />
+  );
+}
+
 function DynamicSection({ section }: { section: ResolvedDiscoverySection }) {
   const actionHref = section.content.action?.link;
   switch (section.kind) {
@@ -150,7 +270,7 @@ function DynamicSection({ section }: { section: ResolvedDiscoverySection }) {
     case "clubs":
       return (
         <DiscoveryHomeClubsRailSection
-          ariaLabel={section.content.title}
+          ariaLabel={section.content.title || "باشگاه‌ها"}
           clubs={clubCards(section)}
           hint={section.content.subtitle}
           keyPrefix={section.id}
@@ -160,6 +280,26 @@ function DynamicSection({ section }: { section: ResolvedDiscoverySection }) {
           tone={toneOf(section)}
         />
       );
+    case "coaches":
+      return catalogSection(section, coachItems(section), "portrait");
+    case "classes":
+      return catalogSection(section, classItems(section), "media");
+    case "spaces":
+      return catalogSection(section, spaceItems(section), "media");
+    case "slots":
+      return catalogSection(section, slotItems(section), "schedule");
+    case "equipment":
+      return catalogSection(
+        section,
+        refItems(section, "equipmentSlug"),
+        "tile",
+      );
+    case "membership_plans":
+      return catalogSection(section, membershipItems(section), "pricing");
+    case "bookable_offers":
+      return catalogSection(section, slotItems(section), "schedule");
+    case "amenities":
+      return catalogSection(section, refItems(section, "amenitySlug"), "tile");
     case "articles":
       return (
         <DiscoveryHomeArticlesSection
@@ -195,9 +335,15 @@ export function DiscoveryFeedHomeScreen() {
 
   const content = useMemo(
     () =>
-      feed.sections.map((section) => (
-        <DynamicSection key={section.id} section={section} />
-      )),
+      feed.sections.map((section) =>
+        section.kind === "banners" ? (
+          <div className={styles.banners} key={section.id}>
+            <DynamicSection section={section} />
+          </div>
+        ) : (
+          <DynamicSection key={section.id} section={section} />
+        ),
+      ),
     [feed.sections],
   );
 

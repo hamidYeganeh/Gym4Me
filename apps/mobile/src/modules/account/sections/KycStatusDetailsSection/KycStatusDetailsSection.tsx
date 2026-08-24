@@ -1,10 +1,14 @@
+import { useState } from "react";
 import { Button } from "@heroui/react/button";
+import { DatePicker } from "@heroui/react/date-picker";
+import { FieldError } from "@heroui/react/field-error";
 import { Input } from "@heroui/react/input";
 import { Label } from "@heroui/react/label";
 import { TextField } from "@heroui/react/textfield";
 import { Typography } from "@heroui/react/typography";
 import { ArrowRight } from "@repo/icons/ArrowRight";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
+import { JalaliCalendar } from "@/shared/components/JalaliCalendar";
 import { kycStatusDetailsSectionVariants } from "./KycStatusDetailsSection.styles";
 import type { KycStatusDetailsSectionProps } from "./KycStatusDetailsSection.types";
 
@@ -12,14 +16,17 @@ export function KycStatusDetailsSection({
   t,
   nationalId,
   setNationalId,
+  nationalIdError,
   birthDateJalali,
   setBirthDateJalali,
+  birthDateError,
   error,
   isPending,
   handleDetails,
   goBack,
 }: KycStatusDetailsSectionProps) {
   const styles = kycStatusDetailsSectionVariants();
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
   return (
     <>
@@ -50,6 +57,7 @@ export function KycStatusDetailsSection({
         <TextField
           className={styles.field()}
           fullWidth
+          isInvalid={Boolean(nationalIdError)}
           isRequired
           name="nationalId"
           value={nationalId}
@@ -62,21 +70,46 @@ export function KycStatusDetailsSection({
             maxLength={10}
             placeholder={t("nationalIdPlaceholder")}
           />
+          <FieldError className={styles.fieldError()}>
+            {nationalIdError}
+          </FieldError>
         </TextField>
-        <TextField
+        <DatePicker
+          aria-label={t("birthDate")}
           className={styles.field()}
-          fullWidth
+          isOpen={isDatePickerOpen}
+          isInvalid={Boolean(birthDateError)}
           isRequired
           name="birthDate"
-          value={birthDateJalali}
-          onChange={setBirthDateJalali}
+          onOpenChange={setIsDatePickerOpen}
         >
           <Label className={styles.label()}>{t("birthDate")}</Label>
-          <Input
-            className={styles.input()}
-            placeholder={t("birthDatePlaceholder")}
-          />
-        </TextField>
+          <DatePicker.Trigger className={styles.dateTrigger()}>
+            <span
+              className={styles.dateValue()}
+              data-placeholder={!birthDateJalali || undefined}
+            >
+              {birthDateJalali || t("birthDatePlaceholder")}
+            </span>
+            <DatePicker.TriggerIndicator className={styles.dateIndicator()} />
+          </DatePicker.Trigger>
+          <FieldError className={styles.fieldError()}>
+            {birthDateError}
+          </FieldError>
+          <DatePicker.Popover className={styles.datePopover()}>
+            <JalaliCalendar
+              aria-label={t("birthDate")}
+              maxDate={new Date()}
+              value={birthDateJalali}
+              onChange={(next) => {
+                setBirthDateJalali(
+                  `${next.year}/${String(next.month).padStart(2, "0")}/${String(next.day).padStart(2, "0")}`,
+                );
+                setIsDatePickerOpen(false);
+              }}
+            />
+          </DatePicker.Popover>
+        </DatePicker>
 
         {error ? (
           <Typography className={styles.error()} role="alert" type="body-sm">

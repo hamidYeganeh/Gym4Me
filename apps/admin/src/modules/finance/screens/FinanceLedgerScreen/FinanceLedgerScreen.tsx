@@ -1,16 +1,15 @@
 import { useCallback, useMemo } from "react";
 import { Button } from "@heroui/react/button";
 import { Chip } from "@heroui/react/chip";
-import { Input } from "@heroui/react/input";
-import { Label } from "@heroui/react/label";
-import { TextField } from "@heroui/react/textfield";
 import { Typography } from "@heroui/react/typography";
 import type { AdminLedgerEntry, LedgerEntryKind } from "@repo/api";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
 import {
+  AdminDatePicker,
   AdminDataTable,
   AdminFilterSelect,
+  AdminModelAutocomplete,
   AdminShell,
 } from "@/shared/components";
 import {
@@ -68,11 +67,7 @@ export function FinanceLedgerScreen({ className }: FinanceLedgerScreenProps) {
   const tCommon = useTranslations("Admin.Common");
   const styles = financeLedgerScreenVariants();
 
-  const { filters, setFilter,
-    page,
-    pageSize,
-    setPage,
-  } =
+  const { filters, setFilter, page, pageSize, setPage } =
     useAdminListQueryParams<FinanceLedgerFilters>({
       filterKeys: FILTER_KEYS,
       defaults: FILTER_DEFAULTS,
@@ -185,52 +180,36 @@ export function FinanceLedgerScreen({ className }: FinanceLedgerScreenProps) {
               setFilter("kind", value as FinanceLedgerFilters["kind"])
             }
           />
-          <TextField
+          <AdminModelAutocomplete
             className={styles.field()}
-            name="clubId"
+            kind="club"
+            label={t("filters.clubId")}
             value={filters.clubId}
             onChange={(value) => setFilter("clubId", value)}
-          >
-            <Label className={styles.label()}>{t("filters.clubId")}</Label>
-            <Input
-              className={styles.input()}
-              dir="ltr"
-              placeholder={t("filters.idPlaceholder")}
-            />
-          </TextField>
-          <TextField
+          />
+          <AdminModelAutocomplete
             className={styles.field()}
-            name="paymentId"
+            kind="payment"
+            label={t("filters.paymentId")}
             value={filters.paymentId}
             onChange={(value) => setFilter("paymentId", value)}
-          >
-            <Label className={styles.label()}>{t("filters.paymentId")}</Label>
-            <Input
-              className={styles.input()}
-              dir="ltr"
-              placeholder={t("filters.idPlaceholder")}
-            />
-          </TextField>
-          <TextField
+          />
+          <AdminDatePicker
             className={styles.field()}
+            label={t("filters.from")}
+            labelClassName={styles.label()}
             name="from"
-            type="date"
             value={filters.from}
             onChange={(value) => setFilter("from", value)}
-          >
-            <Label className={styles.label()}>{t("filters.from")}</Label>
-            <Input className={styles.input()} />
-          </TextField>
-          <TextField
+          />
+          <AdminDatePicker
             className={styles.field()}
+            label={t("filters.to")}
+            labelClassName={styles.label()}
             name="to"
-            type="date"
             value={filters.to}
             onChange={(value) => setFilter("to", value)}
-          >
-            <Label className={styles.label()}>{t("filters.to")}</Label>
-            <Input className={styles.input()} />
-          </TextField>
+          />
         </div>
 
         <AdminDataTable

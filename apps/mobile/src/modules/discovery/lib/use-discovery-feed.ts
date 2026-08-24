@@ -7,6 +7,7 @@ import type {
 } from "@repo/api/discovery";
 import { ApiError } from "@repo/api";
 import { discoveryFeed } from "@/shared/lib/api";
+import { createInFlightRequestDeduper } from "@/shared/lib/in-flight-request";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { originFromUser } from "./nearby-clubs-home";
 
@@ -21,9 +22,15 @@ export type DiscoveryFeedState = {
 };
 
 const PAGE_SIZE = 8;
+const dedupeFirstPageRequest =
+  createInFlightRequestDeduper<DiscoveryFeedResponse>();
 
 export function useDiscoveryFeed(): DiscoveryFeedState {
-  const { user } = useAuth();
+  const { user, isAuthenticated, isReady } = useAuth();
+  const origin = originFromUser(user);
+  const originLat = origin?.lat;
+  const originLng = origin?.lng;
+  const requestContext = `${isAuthenticated ? (user?.id ?? "authenticated") : "guest"}:${originLat ?? ""}:${originLng ?? ""}`;
   const [sections, setSections] = useState<ResolvedDiscoverySection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -33,17 +40,19 @@ export function useDiscoveryFeed(): DiscoveryFeedState {
   const requestRef = useRef(0);
 
   const fetchFirstPage = useCallback(async () => {
+    if (!isReady) return;
     const requestId = ++requestRef.current;
     setIsLoading(true);
     setError(null);
-    const origin = originFromUser(user);
     try {
-      const response = await discoveryFeed.get({
-        page: 1,
-        page_size: PAGE_SIZE,
-        lat: origin?.lat,
-        lng: origin?.lng,
-      });
+      const response = await dedupeFirstPageRequest(requestContext, () =>
+        discoveryFeed.get({
+          page: 1,
+          page_size: PAGE_SIZE,
+          lat: originLat,
+          lng: originLng,
+        }),
+      );
       if (requestRef.current !== requestId) return;
       responseRef.current = response;
       setSections(response.result);
@@ -58,7 +67,7 @@ export function useDiscoveryFeed(): DiscoveryFeedState {
     } finally {
       if (requestRef.current === requestId) setIsLoading(false);
     }
-  }, [user]);
+  }, [isReady, originLat, originLng, requestContext]);
 
   useEffect(() => {
     void fetchFirstPage();

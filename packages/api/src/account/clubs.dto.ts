@@ -12,10 +12,7 @@ export type WeekdayStatus = "open" | "closed";
 export type OperatingHourAudience = "shared" | "male" | "female";
 export type RulePolicy = "allowed" | "forbidden";
 export type ClubUserReviewStatus =
-  | "pending"
-  | "approved"
-  | "rejected"
-  | "hidden";
+  "pending" | "approved" | "rejected" | "hidden";
 
 export type ClubPhone = {
   number: string;
@@ -52,10 +49,21 @@ export type ClubRefItem = {
   order?: number;
   status?: string;
   isActive?: boolean;
+  selectionDescription?: string | null;
+  quantity?: number | null;
 };
 
 /** Populated sport node; only `id` when the sport is missing. */
-export type ClubSportItem = SportNode | { id: string };
+export type ClubSportItem = (SportNode | { id: string }) & {
+  selectionDescription?: string | null;
+  quantity?: number | null;
+};
+
+export type ClubCatalogSelectionInput = {
+  id: string;
+  quantity?: number;
+  description?: string;
+};
 
 export type ClubLocationNode = LocationNode;
 
@@ -178,9 +186,13 @@ export type CreateClubInput = {
     peakRules?: CancellationRule[];
   };
   equipmentIds?: string[];
+  equipments?: ClubCatalogSelectionInput[];
   amenityIds?: string[];
+  amenities?: ClubCatalogSelectionInput[];
   categoryIds?: string[];
+  categories?: ClubCatalogSelectionInput[];
   sportIds?: string[];
+  sports?: ClubCatalogSelectionInput[];
   classIds?: string[];
   coachIds?: string[];
   location?: {

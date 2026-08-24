@@ -10,10 +10,15 @@ import { createHash, randomUUID } from 'node:crypto';
 import { Model, Types, type QueryFilter } from 'mongoose';
 import type { Request } from 'express';
 import { AuditService } from '../audit/audit.service';
+import { ClubSlotsService } from '../account/club-slots/club-slots.service';
+import { DiscoveryCoachesService } from '../account/coaches/discovery-coaches.service';
 import { REDIS } from '../common/redis/redis.module';
 import {
   AuditAction,
   BannerPlacement,
+  CoachSlotStatus,
+  EntityStatus,
+  MembershipPlanKind,
   PublishStatus,
   RefType,
   Role,
@@ -27,6 +32,22 @@ import {
 } from '../schemas/athlete-profile.schema';
 import { Banner, type BannerDocument } from '../schemas/banner.schema';
 import { Club, type ClubDocument } from '../schemas/club.schema';
+import {
+  ClubClass,
+  type ClubClassDocument,
+} from '../schemas/club-class.schema';
+import {
+  ClubMembershipPlan,
+  type ClubMembershipPlanDocument,
+} from '../schemas/club-membership-plan.schema';
+import {
+  ClubSpace,
+  type ClubSpaceDocument,
+} from '../schemas/club-space.schema';
+import {
+  CoachSlot,
+  type CoachSlotDocument,
+} from '../schemas/coach-slot.schema';
 import { RefItem, type RefItemDocument } from '../schemas/ref-item.schema';
 import { Sport, type SportDocument } from '../schemas/sport.schema';
 import { Article, type ArticleDocument } from '../schemas/article.schema';
@@ -46,8 +67,8 @@ import {
   DiscoverySectionKind,
   DiscoverySourceStrategy,
 } from './discovery.constants';
-import { DEFAULT_DISCOVERY_HOME_SECTIONS } from './discovery.defaults';
 import { isDiscoverySectionEligible } from './discovery-targeting.policy';
+import { INITIAL_DISCOVERY_HOME_SECTIONS } from './discovery.initial-sections';
 import type {
   DiscoveryFeedContext,
   DiscoveryFeedSession,
@@ -72,6 +93,35 @@ type ResolvedSource = {
   totalCount?: number;
 };
 
+type DiscoveryCalendarResult = {
+  days: Array<{
+    date: string;
+    items: Array<{
+      slotId: string;
+      kind: 'class' | 'session' | 'space';
+      class: {
+        id: string;
+        title: string;
+        media: { coverMediaId: string | null };
+      } | null;
+      space: {
+        id: string;
+        title: string;
+        media: { coverMediaId: string | null };
+      } | null;
+      coach: {
+        id: string;
+        name: { first: string | null; last: string | null };
+      } | null;
+      startTime: string;
+      endTime: string;
+      capacity: number;
+      remaining: number;
+      price: number;
+    }>;
+  }>;
+};
+
 const FEED_KEY_PREFIX = 'discovery:feed:';
 const SECTION_CACHE_PREFIX = 'discovery:section:';
 const SECTION_CACHE_TTL_SECONDS = 60;
@@ -90,6 +140,14 @@ export class DiscoveryService {
     private readonly bannerModel: Model<BannerDocument>,
     @InjectModel(Club.name)
     private readonly clubModel: Model<ClubDocument>,
+    @InjectModel(ClubClass.name)
+    private readonly classModel: Model<ClubClassDocument>,
+    @InjectModel(ClubSpace.name)
+    private readonly spaceModel: Model<ClubSpaceDocument>,
+    @InjectModel(CoachSlot.name)
+    private readonly coachSlotModel: Model<CoachSlotDocument>,
+    @InjectModel(ClubMembershipPlan.name)
+    private readonly membershipPlanModel: Model<ClubMembershipPlanDocument>,
     @InjectModel(RefItem.name)
     private readonly refModel: Model<RefItemDocument>,
     @InjectModel(Sport.name)
@@ -100,6 +158,8 @@ export class DiscoveryService {
     private readonly userModel: Model<UserDocument>,
     @Inject(REDIS) private readonly redis: Redis,
     private readonly audit: AuditService,
+    private readonly coaches: DiscoveryCoachesService,
+    private readonly clubSlots: ClubSlotsService,
   ) {}
 
   async getFeed(query: DiscoveryFeedQueryDto, user?: JwtUser | null) {
@@ -141,15 +201,43 @@ export class DiscoveryService {
 
   async adminList() {
     const pages = await this.pageModel.find().sort({ updatedAt: -1 }).lean();
-    if (pages.length === 0) {
-      return [this.defaultAdminPage()];
-    }
+    if (pages.length === 0) return [];
     return pages.map((page) => this.toAdminPage(page));
   }
 
   async adminGet(pageKey: string) {
     const page = await this.pageModel.findOne({ pageKey }).lean();
-    return page ? this.toAdminPage(page) : this.defaultAdminPage(pageKey);
+    if (!page) return this.defaultAdminPage(pageKey);
+    const result = this.toAdminPage(page);
+    if (
+      pageKey !== DEFAULT_PAGE_KEY ||
+      Number(page.schemaVersion) >= DISCOVERY_SCHEMA_VERSION
+    ) {
+      return result;
+    }
+    const base = result.draftSections.length
+      ? result.draftSections
+      : result.publishedSections;
+    const installedKinds = new Set(base.map((section) => section.kind));
+    const addedKinds = new Set<DiscoverySectionKind>([
+      DiscoverySectionKind.COACHES,
+      DiscoverySectionKind.CLASSES,
+      DiscoverySectionKind.SPACES,
+      DiscoverySectionKind.SLOTS,
+      DiscoverySectionKind.EQUIPMENT,
+      DiscoverySectionKind.MEMBERSHIP_PLANS,
+      DiscoverySectionKind.BOOKABLE_OFFERS,
+      DiscoverySectionKind.AMENITIES,
+    ]);
+    const additions = INITIAL_DISCOVERY_HOME_SECTIONS.filter(
+      (section) =>
+        addedKinds.has(section.kind) && !installedKinds.has(section.kind),
+    );
+    return {
+      ...result,
+      schemaVersion: DISCOVERY_SCHEMA_VERSION,
+      draftSections: [...base, ...this.asDefinitions(additions)],
+    };
   }
 
   async updateDraft(
@@ -183,9 +271,7 @@ export class DiscoveryService {
   async previewDraft(pageKey: string, dto: PreviewDiscoveryDraftDto) {
     const page = await this.pageModel.findOne({ pageKey }).lean();
     const sections = this.asDefinitions(
-      page?.draftSections?.length
-        ? page.draftSections
-        : DEFAULT_DISCOVERY_HOME_SECTIONS,
+      page?.draftSections?.length ? page.draftSections : [],
     );
     const personalization = this.previewPersonalization(dto.context);
     const eligible = sections.filter((section) =>
@@ -281,11 +367,7 @@ export class DiscoveryService {
   ): Promise<DiscoveryFeedSession> {
     const page = await this.pageModel.findOne({ pageKey }).lean();
     const sections = this.asDefinitions(
-      page?.publishedSections?.length
-        ? page.publishedSections
-        : pageKey === DEFAULT_PAGE_KEY
-          ? DEFAULT_DISCOVERY_HOME_SECTIONS
-          : [],
+      page?.publishedSections?.length ? page.publishedSections : [],
     );
     const personalization = await this.personalizationFor(user);
     return {
@@ -419,6 +501,22 @@ export class DiscoveryService {
         return this.resolveSports(section, SportKind.SPORT);
       case DiscoverySectionKind.CLUBS:
         return this.resolveClubs(section, session);
+      case DiscoverySectionKind.COACHES:
+        return this.resolveCoaches(section, session);
+      case DiscoverySectionKind.CLASSES:
+        return this.resolveClasses(section, session);
+      case DiscoverySectionKind.SPACES:
+        return this.resolveSpaces(section, session);
+      case DiscoverySectionKind.SLOTS:
+        return this.resolveSlotCards(section, session, true);
+      case DiscoverySectionKind.EQUIPMENT:
+        return this.resolveRefFacet(section, RefType.EQUIPMENT, 'equipment');
+      case DiscoverySectionKind.MEMBERSHIP_PLANS:
+        return this.resolveMembershipPlans(section);
+      case DiscoverySectionKind.BOOKABLE_OFFERS:
+        return this.resolveSlotCards(section, session, true);
+      case DiscoverySectionKind.AMENITIES:
+        return this.resolveRefFacet(section, RefType.AMENITY, 'amenities');
       case DiscoverySectionKind.ARTICLES:
         return this.resolveArticles(section);
       default:
@@ -637,6 +735,371 @@ export class DiscoveryService {
     };
   }
 
+  private async resolveCoaches(
+    section: DiscoverySectionDefinition,
+    session: DiscoveryFeedSession,
+  ): Promise<ResolvedSource> {
+    const strategy = section.source.strategy;
+    const sourceSport = this.stringFilter(section, 'sportId');
+    const sportId =
+      sourceSport ??
+      (strategy === DiscoverySourceStrategy.RECOMMENDED_FOR_USER
+        ? session.personalization.sportIds[0]
+        : undefined);
+    const cityId =
+      this.stringFilter(section, 'locationId') ?? session.context.locationId;
+    if (
+      strategy === DiscoverySourceStrategy.NEARBY &&
+      (!cityId || !Types.ObjectId.isValid(cityId))
+    ) {
+      return { items: [], totalCount: 0 };
+    }
+    const page = await this.coaches.list({
+      page: 1,
+      page_size: Math.max(section.source.limit, 12),
+      sportId: sportId && Types.ObjectId.isValid(sportId) ? sportId : undefined,
+      cityId:
+        strategy === DiscoverySourceStrategy.NEARBY &&
+        cityId &&
+        Types.ObjectId.isValid(cityId)
+          ? cityId
+          : undefined,
+    });
+    let items = page.result;
+    if (strategy === DiscoverySourceStrategy.AVAILABLE && items.length) {
+      const coachIds = items.map((item) => new Types.ObjectId(item.userId));
+      const available = await this.coachSlotModel
+        .distinct('coachUserId', {
+          coachUserId: { $in: coachIds },
+          status: CoachSlotStatus.OPEN,
+          startsAt: { $gt: new Date() },
+        })
+        .then((ids) => new Set(ids.map((id) => id.toString())));
+      items = items.filter((item) => available.has(item.userId));
+    }
+    return {
+      items: items.slice(0, section.source.limit),
+      totalCount: page.pagination.total,
+    };
+  }
+
+  private async resolveClasses(
+    section: DiscoverySectionDefinition,
+    session: DiscoveryFeedSession,
+  ): Promise<ResolvedSource> {
+    const strategy = section.source.strategy;
+    let occurrenceClassIds: string[] | undefined;
+    if (
+      strategy === DiscoverySourceStrategy.TODAY ||
+      strategy === DiscoverySourceStrategy.STARTING_SOON ||
+      strategy === DiscoverySourceStrategy.CAPACITY_AVAILABLE
+    ) {
+      const occurrenceSource = await this.resolveSlotCards(
+        {
+          ...section,
+          source: {
+            ...section.source,
+            filters: { ...section.source.filters, kind: 'class' },
+            strategy:
+              strategy === DiscoverySourceStrategy.TODAY
+                ? DiscoverySourceStrategy.TODAY
+                : DiscoverySourceStrategy.AVAILABLE,
+            limit: 12,
+          },
+        },
+        session,
+        true,
+      );
+      occurrenceClassIds = occurrenceSource.items
+        .filter((item) => (item as { kind?: string }).kind === 'class')
+        .map((item) => (item as { resourceId: string }).resourceId)
+        .filter(Boolean);
+      if (occurrenceClassIds.length === 0) return { items: [], totalCount: 0 };
+    }
+
+    const clubs = await this.visibleClubs(section.source.limit * 4);
+    const clubById = new Map(
+      clubs.map((club) => [club._id.toString(), club.identity?.name ?? '']),
+    );
+    const filter: QueryFilter<ClubClassDocument> = {
+      clubId: { $in: clubs.map((club) => club._id) },
+      status: EntityStatus.ACTIVE,
+    };
+    if (occurrenceClassIds) {
+      filter._id = {
+        $in: occurrenceClassIds.map((id) => new Types.ObjectId(id)),
+      };
+    }
+    const sportId = await this.resolveSportId(
+      this.stringFilter(section, 'sportId') ??
+        (strategy === DiscoverySourceStrategy.RECOMMENDED_FOR_USER
+          ? session.personalization.sportIds[0]
+          : undefined),
+    );
+    if (sportId) filter.sportId = sportId;
+    if (strategy === DiscoverySourceStrategy.BEGINNER_FRIENDLY) {
+      filter.$or = [
+        { title: { $regex: /مبتدی|beginner/i } },
+        { description: { $regex: /مبتدی|beginner/i } },
+      ];
+    }
+    const docs = await this.classModel
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .limit(section.source.limit)
+      .lean();
+    const order = new Map(
+      (occurrenceClassIds ?? []).map((id, index) => [id, index]),
+    );
+    if (occurrenceClassIds) {
+      docs.sort(
+        (a, b) =>
+          (order.get(a._id.toString()) ?? Number.MAX_SAFE_INTEGER) -
+          (order.get(b._id.toString()) ?? Number.MAX_SAFE_INTEGER),
+      );
+    }
+    return {
+      items: docs.map((doc) => ({
+        id: doc._id.toString(),
+        clubId: doc.clubId.toString(),
+        title: doc.title,
+        description: doc.description ?? null,
+        sportId: doc.sportId?.toString() ?? null,
+        coachId: doc.coachId?.toString() ?? null,
+        coach: null,
+        media: { coverMediaId: doc.media?.coverMediaId?.toString() ?? null },
+        status: doc.status,
+        club: {
+          id: doc.clubId.toString(),
+          name: clubById.get(doc.clubId.toString()) ?? '',
+          coverMediaId: null,
+        },
+      })),
+    };
+  }
+
+  private async resolveSpaces(
+    section: DiscoverySectionDefinition,
+    session: DiscoveryFeedSession,
+  ): Promise<ResolvedSource> {
+    const clubs = await this.visibleClubs(section.source.limit * 4);
+    const clubById = new Map(
+      clubs.map((club) => [club._id.toString(), club.identity?.name ?? '']),
+    );
+    const filter: QueryFilter<ClubSpaceDocument> = {
+      clubId: { $in: clubs.map((club) => club._id) },
+      status: EntityStatus.ACTIVE,
+    };
+    const sportId = await this.resolveSportId(
+      this.stringFilter(section, 'sportId') ??
+        (section.source.strategy ===
+        DiscoverySourceStrategy.RECOMMENDED_FOR_USER
+          ? session.personalization.sportIds[0]
+          : undefined),
+    );
+    if (sportId) filter.sportId = sportId;
+    const docs = await this.spaceModel
+      .find(filter)
+      .sort({
+        createdAt:
+          section.source.strategy === DiscoverySourceStrategy.LATEST ? -1 : 1,
+      })
+      .limit(section.source.limit)
+      .lean();
+    return {
+      items: docs.map((doc) => ({
+        id: doc._id.toString(),
+        clubId: doc.clubId.toString(),
+        clubName: clubById.get(doc.clubId.toString()) ?? '',
+        title: doc.title,
+        description: doc.description ?? null,
+        sportId: doc.sportId?.toString() ?? null,
+        coverMediaId: doc.media?.coverMediaId?.toString() ?? null,
+      })),
+    };
+  }
+
+  private async resolveSlotCards(
+    section: DiscoverySectionDefinition,
+    _session: DiscoveryFeedSession,
+    bookableOnly: boolean,
+  ): Promise<ResolvedSource> {
+    const today = this.tehranDate();
+    const strategy = section.source.strategy;
+    const from =
+      strategy === DiscoverySourceStrategy.TOMORROW
+        ? this.addIsoDays(today, 1)
+        : today;
+    const to =
+      strategy === DiscoverySourceStrategy.TODAY
+        ? today
+        : strategy === DiscoverySourceStrategy.TOMORROW
+          ? from
+          : this.addIsoDays(today, 7);
+    const clubs = await this.visibleClubs(
+      Math.max(12, section.source.limit * 3),
+    );
+    const calendars = await Promise.all(
+      clubs.map(async (club) => {
+        try {
+          const calendar = (await this.clubSlots.getCalendar(
+            club._id.toString(),
+            { from, to },
+          )) as unknown as DiscoveryCalendarResult;
+          return { club, calendar };
+        } catch {
+          return null;
+        }
+      }),
+    );
+    const now = new Date();
+    let items = calendars.flatMap((entry) => {
+      if (!entry) return [];
+      return entry.calendar.days.flatMap((day) =>
+        day.items.map((occurrence) => {
+          const resource = occurrence.class ?? occurrence.space;
+          const coachName = occurrence.coach
+            ? [occurrence.coach.name.first, occurrence.coach.name.last]
+                .filter(Boolean)
+                .join(' ')
+            : '';
+          const title = resource?.title ?? (coachName || 'سانس آزاد باشگاه');
+          return {
+            id: `${occurrence.slotId}:${day.date}`,
+            slotId: occurrence.slotId,
+            clubId: entry.club._id.toString(),
+            clubName: entry.club.identity?.name ?? '',
+            kind: occurrence.kind,
+            resourceId: resource?.id ?? occurrence.coach?.id ?? null,
+            title,
+            coverMediaId: resource?.media.coverMediaId ?? null,
+            date: day.date,
+            startTime: occurrence.startTime,
+            endTime: occurrence.endTime,
+            capacity: occurrence.capacity,
+            remaining: occurrence.remaining,
+            price: occurrence.price,
+            currency: 'IRT' as const,
+          };
+        }),
+      );
+    });
+    items = items.filter((item) => {
+      const startsAt = new Date(`${item.date}T${item.startTime}:00+03:30`);
+      const kind = this.stringFilter(section, 'kind');
+      return (
+        startsAt > now &&
+        (!kind || item.kind === kind) &&
+        (!bookableOnly || item.remaining > 0)
+      );
+    });
+    if (
+      strategy === DiscoverySourceStrategy.LEAST_CROWDED ||
+      strategy === DiscoverySourceStrategy.CAPACITY_AVAILABLE
+    ) {
+      items.sort((a, b) => b.remaining / b.capacity - a.remaining / a.capacity);
+    } else {
+      items.sort((a, b) =>
+        `${a.date}T${a.startTime}`.localeCompare(`${b.date}T${b.startTime}`),
+      );
+    }
+    return {
+      items: items.slice(0, section.source.limit),
+      totalCount: items.length,
+    };
+  }
+
+  private async resolveRefFacet(
+    section: DiscoverySectionDefinition,
+    type: RefType,
+    clubField: 'equipment' | 'amenities',
+  ): Promise<ResolvedSource> {
+    const refField = clubField === 'equipment' ? 'equipmentId' : 'amenityId';
+    const counts = await this.clubModel.aggregate<{
+      _id: Types.ObjectId;
+      count: number;
+    }>([
+      { $match: DISCOVERY_VISIBLE_CLUB_MATCH },
+      { $unwind: `$${clubField}` },
+      { $group: { _id: `$${clubField}.${refField}`, count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+    ]);
+    const countById = new Map(
+      counts.map((entry) => [entry._id.toString(), entry.count]),
+    );
+    const refs = await this.refModel
+      .find({ type, isActive: true })
+      .sort({ order: 1, name: 1 })
+      .lean();
+    refs.sort(
+      (a, b) =>
+        (countById.get(b._id.toString()) ?? 0) -
+        (countById.get(a._id.toString()) ?? 0),
+    );
+    return {
+      items: refs.slice(0, section.source.limit).map((item) => ({
+        id: item._id.toString(),
+        type: item.type,
+        name: item.name,
+        slug: item.slug,
+        description: item.description ?? null,
+        icon: item.icon ?? null,
+        coverMediaId: item.coverMediaId?.toString() ?? null,
+        order: item.order,
+        status: item.status,
+        isActive: item.isActive,
+        count: countById.get(item._id.toString()) ?? 0,
+      })),
+    };
+  }
+
+  private async resolveMembershipPlans(
+    section: DiscoverySectionDefinition,
+  ): Promise<ResolvedSource> {
+    const clubs = await this.visibleClubs(section.source.limit * 4);
+    const clubById = new Map(
+      clubs.map((club) => [club._id.toString(), club.identity?.name ?? '']),
+    );
+    const filter: QueryFilter<ClubMembershipPlanDocument> = {
+      clubId: { $in: clubs.map((club) => club._id) },
+      status: EntityStatus.ACTIVE,
+      publishStatus: PublishStatus.PUBLISHED,
+    };
+    if (section.source.strategy === DiscoverySourceStrategy.UNLIMITED) {
+      filter.kind = MembershipPlanKind.DURATION;
+    } else if (section.source.strategy === DiscoverySourceStrategy.DURATION) {
+      filter.kind = MembershipPlanKind.DURATION;
+    } else if (section.source.strategy === DiscoverySourceStrategy.SESSIONS) {
+      filter.kind = MembershipPlanKind.SESSIONS;
+    } else if (section.source.strategy === DiscoverySourceStrategy.ENTRIES) {
+      filter.kind = MembershipPlanKind.ENTRIES;
+    }
+    const query = this.membershipPlanModel
+      .find(filter)
+      .limit(section.source.limit);
+    if (section.source.strategy === DiscoverySourceStrategy.ECONOMICAL) {
+      query.sort({ 'pricing.amount': 1 });
+    } else {
+      query.sort({ createdAt: -1 });
+    }
+    const plans = await query.lean();
+    return {
+      items: plans.map((plan) => ({
+        id: plan._id.toString(),
+        clubId: plan.clubId.toString(),
+        clubName: clubById.get(plan.clubId.toString()) ?? '',
+        name: plan.name,
+        description: plan.description ?? null,
+        kind: plan.kind,
+        amount: plan.pricing.amount,
+        currency: plan.pricing.currency,
+        durationDays: plan.durationDays ?? null,
+        sessionsTotal: plan.sessionsTotal ?? null,
+        entriesTotal: plan.entriesTotal ?? null,
+      })),
+    };
+  }
+
   private async resolveArticles(
     section: DiscoverySectionDefinition,
   ): Promise<ResolvedSource> {
@@ -749,6 +1212,14 @@ export class DiscoveryService {
         [DiscoverySectionKind.SPORT_CATEGORIES]: 'sport_category_rail',
         [DiscoverySectionKind.SPORTS]: 'sport_rail',
         [DiscoverySectionKind.CLUBS]: 'club_rail',
+        [DiscoverySectionKind.COACHES]: 'coach_rail',
+        [DiscoverySectionKind.CLASSES]: 'class_rail',
+        [DiscoverySectionKind.SPACES]: 'space_rail',
+        [DiscoverySectionKind.SLOTS]: 'slot_rail',
+        [DiscoverySectionKind.EQUIPMENT]: 'equipment_grid',
+        [DiscoverySectionKind.MEMBERSHIP_PLANS]: 'membership_plan_rail',
+        [DiscoverySectionKind.BOOKABLE_OFFERS]: 'bookable_offer_rail',
+        [DiscoverySectionKind.AMENITIES]: 'amenity_rail',
         [DiscoverySectionKind.ARTICLES]: 'article_rail',
       };
       if (section.presentation.component !== renderers[section.kind]) {
@@ -795,6 +1266,47 @@ export class DiscoveryService {
         DiscoverySourceStrategy.RECOMMENDED_FOR_USER,
         DiscoverySourceStrategy.FEATURED,
       ],
+      [DiscoverySectionKind.COACHES]: [
+        DiscoverySourceStrategy.TOP_RATED,
+        DiscoverySourceStrategy.NEARBY,
+        DiscoverySourceStrategy.RECOMMENDED_FOR_USER,
+        DiscoverySourceStrategy.AVAILABLE,
+        DiscoverySourceStrategy.VERIFIED,
+      ],
+      [DiscoverySectionKind.CLASSES]: [
+        DiscoverySourceStrategy.TODAY,
+        DiscoverySourceStrategy.STARTING_SOON,
+        DiscoverySourceStrategy.CAPACITY_AVAILABLE,
+        DiscoverySourceStrategy.BEGINNER_FRIENDLY,
+        DiscoverySourceStrategy.LATEST,
+      ],
+      [DiscoverySectionKind.SPACES]: [
+        DiscoverySourceStrategy.FEATURED,
+        DiscoverySourceStrategy.RECOMMENDED_FOR_USER,
+        DiscoverySourceStrategy.LATEST,
+      ],
+      [DiscoverySectionKind.SLOTS]: [
+        DiscoverySourceStrategy.TODAY,
+        DiscoverySourceStrategy.TOMORROW,
+        DiscoverySourceStrategy.LEAST_CROWDED,
+        DiscoverySourceStrategy.CAPACITY_AVAILABLE,
+      ],
+      [DiscoverySectionKind.EQUIPMENT]: [DiscoverySourceStrategy.FEATURED],
+      [DiscoverySectionKind.MEMBERSHIP_PLANS]: [
+        DiscoverySourceStrategy.ECONOMICAL,
+        DiscoverySourceStrategy.FEATURED,
+        DiscoverySourceStrategy.DURATION,
+        DiscoverySourceStrategy.SESSIONS,
+        DiscoverySourceStrategy.ENTRIES,
+        DiscoverySourceStrategy.UNLIMITED,
+        DiscoverySourceStrategy.LATEST,
+      ],
+      [DiscoverySectionKind.BOOKABLE_OFFERS]: [
+        DiscoverySourceStrategy.AVAILABLE,
+        DiscoverySourceStrategy.STARTING_SOON,
+        DiscoverySourceStrategy.LEAST_CROWDED,
+      ],
+      [DiscoverySectionKind.AMENITIES]: [DiscoverySourceStrategy.FEATURED],
       [DiscoverySectionKind.ARTICLES]: [DiscoverySourceStrategy.LATEST],
     };
     if (!allowed[kind].includes(strategy)) {
@@ -868,6 +1380,33 @@ export class DiscoveryService {
     return sport?._id;
   }
 
+  private visibleClubs(limit: number) {
+    return this.clubModel
+      .find(DISCOVERY_VISIBLE_CLUB_MATCH)
+      .select({ identity: 1, reviewsSummary: 1 })
+      .sort({ 'reviewsSummary.average': -1, createdAt: -1 })
+      .limit(Math.max(1, Math.min(limit, 48)))
+      .lean();
+  }
+
+  private tehranDate(date = new Date()): string {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Tehran',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).formatToParts(date);
+    const value = (type: Intl.DateTimeFormatPartTypes) =>
+      parts.find((part) => part.type === type)?.value ?? '';
+    return `${value('year')}-${value('month')}-${value('day')}`;
+  }
+
+  private addIsoDays(date: string, days: number): string {
+    const [year, month, day] = date.split('-').map(Number);
+    const next = new Date(Date.UTC(year, month - 1, day + days, 12));
+    return next.toISOString().slice(0, 10);
+  }
+
   private asDefinitions(value: unknown): DiscoverySectionDefinition[] {
     return JSON.parse(JSON.stringify(value)) as DiscoverySectionDefinition[];
   }
@@ -879,12 +1418,15 @@ export class DiscoveryService {
   }
 
   private defaultAdminPage(pageKey = DEFAULT_PAGE_KEY) {
+    const draftSections =
+      pageKey === DEFAULT_PAGE_KEY
+        ? this.asDefinitions(INITIAL_DISCOVERY_HOME_SECTIONS)
+        : [];
     return {
       id: null,
       pageKey,
       schemaVersion: DISCOVERY_SCHEMA_VERSION,
-      draftSections:
-        pageKey === DEFAULT_PAGE_KEY ? DEFAULT_DISCOVERY_HOME_SECTIONS : [],
+      draftSections,
       publishedSections: [],
       publishedRevision: 0,
       publishedAt: null,

@@ -4,7 +4,7 @@ import { Label } from "@heroui/react/label";
 import { TextField } from "@heroui/react/textfield";
 import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
-import { AdminFormDrawer } from "@/shared/components";
+import { AdminFormDrawer, AdminModelAutocomplete } from "@/shared/components";
 import { SUBJECT_TYPES } from "../../lib/gamification-constants";
 import { pointsLedgerAdjustDrawerSectionVariants } from "./PointsLedgerAdjustDrawerSection.styles";
 import type { PointsLedgerAdjustDrawerSectionProps } from "./PointsLedgerAdjustDrawerSection.types";
@@ -53,19 +53,13 @@ export function PointsLedgerAdjustDrawerSection({
           </div>
         </div>
 
-        <TextField
+        <AdminModelAutocomplete
           className={styles.field()}
-          fullWidth
-          name="subjectId"
+          kind={subjectType === "club" ? "club" : subjectType}
+          label={t("achievements.fields.subjectId")}
           value={subjectId}
           onChange={onSubjectIdChange}
-        >
-          <Label>{t("achievements.fields.subjectId")}</Label>
-          <Input
-            dir="ltr"
-            placeholder={t("achievements.fields.subjectIdHint")}
-          />
-        </TextField>
+        />
 
         <TextField
           className={styles.field()}
