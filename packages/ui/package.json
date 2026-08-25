@@ -42,7 +42,7 @@
     "typescript": "5.9.2"
   },
   "dependencies": {
-    "@heroui/react": "^3.0.0",
+    "@heroui/react": "^3.2.4",
     "@number-flow/react": "^0.6.2",
     "@react-aria/i18n": "^3.13.1",
     "@react-aria/ssr": "^3.10.1",
@@ -70,6 +70,6 @@
     "react-use-measure": "^2.1.7",
     "swiper": "^14.1.0",
     "tailwind-merge": "^3.4.0",
-    "tailwind-variants": "^3.3.0"
+    "tailwind-variants": "^3.3.1"
   }
 }

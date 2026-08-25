@@ -428,7 +428,7 @@ function collectCoachSeeds(): CoachSeed[] {
     byId.set(coach.id, {
       id: coach.id,
       name: coach.name.replace(/^Coach\s+/i, ""),
-      specialty: "مربی تناسب اندام",
+      specialty: "مربی تناسب‌اندام",
       image: coach.image,
       rating: coach.rating,
       ratingCount: coach.ratingCount,

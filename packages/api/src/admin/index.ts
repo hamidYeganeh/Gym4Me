@@ -47,10 +47,12 @@ export {
 export { adminVerificationEndpoints } from "./verification.endpoint";
 export type {
   CoachVerificationItem,
+  CoachVerificationCredential,
   CoachVerificationUser,
   ListClubReviewsQuery,
   ListCoachVerificationsQuery,
   ReviewCoachResponse,
+  ReviewCoachVerificationInput,
   ReviewVerificationInput,
 } from "./verification.dto";
 export { adminVerificationKeys } from "./verification.keys";

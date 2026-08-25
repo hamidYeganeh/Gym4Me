@@ -14,7 +14,6 @@ import {
   CalendarResourceType,
   CoachSlotStatus,
   ConsultationKind,
-  VerificationStatus,
 } from '../../../../common/enums';
 import { MongoTransactionService } from '../../../../common/mongo/mongo-transaction.service';
 import { OutboxService } from '../../../../outbox/outbox.service';
@@ -38,6 +37,7 @@ import {
   coachBookingFingerprint,
 } from '../policies/booking-idempotency.policy';
 import { BookingCalendarGuard } from '../services/booking-calendar-guard.service';
+import { approvedCoachVerificationFilter } from '../../../coaches/coach-verification-visibility';
 
 /** Atomically reserve a concrete coach slot and persist its booking snapshot. */
 @Injectable()
@@ -71,7 +71,7 @@ export class CreateCoachBookingCommand {
 
     const profile = await this.coachModel.findOne({
       userId: new Types.ObjectId(dto.coachUserId),
-      'verification.status': VerificationStatus.APPROVED,
+      ...approvedCoachVerificationFilter(),
     });
     if (!profile) throw new NotFoundException('Coach not found');
     if (athleteId === dto.coachUserId) {
@@ -101,7 +101,7 @@ export class CreateCoachBookingCommand {
         const currentProfile = await this.coachModel
           .findOne({
             userId: new Types.ObjectId(dto.coachUserId),
-            'verification.status': VerificationStatus.APPROVED,
+            ...approvedCoachVerificationFilter(),
           })
           .session(session);
         if (!currentProfile) throw new NotFoundException('Coach not found');

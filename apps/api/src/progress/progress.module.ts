@@ -33,6 +33,7 @@ import {
 } from '../schemas/progress-photo.schema';
 import { WorkoutLog, WorkoutLogSchema } from '../schemas/workout-log.schema';
 import { WorkoutPlan, WorkoutPlanSchema } from '../schemas/workout-plan.schema';
+import { OutboxModule } from '../outbox/outbox.module';
 import {
   WorkoutProgram,
   WorkoutProgramSchema,
@@ -48,6 +49,7 @@ import { ProgressService } from './progress.service';
 
 @Module({
   imports: [
+    OutboxModule,
     MongooseModule.forFeature([
       { name: Exercise.name, schema: ExerciseSchema },
       { name: WorkoutPlan.name, schema: WorkoutPlanSchema },

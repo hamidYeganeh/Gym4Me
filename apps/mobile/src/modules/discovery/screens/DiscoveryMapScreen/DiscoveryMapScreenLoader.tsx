@@ -10,7 +10,10 @@ export function DiscoveryMapScreenLoader() {
     <DiscoveryMapScreen
       coaches={map.coaches}
       initialSelectedId={map.initialSelectedId}
+      isError={map.isError}
+      isLoading={map.isLoading}
       nearestId={map.nearestId}
+      onRetry={map.retry}
     />
   );
 }

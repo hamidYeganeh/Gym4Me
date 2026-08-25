@@ -7,8 +7,13 @@ import type {
   CheckInsPage,
   CheckinDevice,
   ListCheckInsQuery,
+  IssueOfflineCheckinSnapshotResult,
+  OfflineCheckinReconciliation,
+  OfflineCheckinReconciliationsPage,
   ProvisionCheckinDeviceInput,
   ProvisionCheckinDeviceResult,
+  RevokeCheckinDeviceResult,
+  ResolveOfflineCheckinReconciliationInput,
   SyncOfflineBatchInput,
   SyncOfflineBatchResult,
 } from "./checkin.dto";
@@ -44,6 +49,34 @@ export function createAccountCheckinApi(client: ApiClient) {
       });
     },
 
+    issueOfflineSnapshot(clubId: string, deviceId: string) {
+      return client.request<IssueOfflineCheckinSnapshotResult>(
+        ep.offlineSnapshots(clubId),
+        { method: "POST", body: { deviceId } },
+      );
+    },
+
+    listOfflineReconciliations(
+      clubId: string,
+      query: { page?: number; page_size?: number; status?: string } = {},
+    ) {
+      return client.request<OfflineCheckinReconciliationsPage>(
+        ep.offlineReconciliations(clubId),
+        { query },
+      );
+    },
+
+    resolveOfflineReconciliation(
+      clubId: string,
+      reconciliationId: string,
+      input: ResolveOfflineCheckinReconciliationInput,
+    ) {
+      return client.request<OfflineCheckinReconciliation>(
+        ep.resolveOfflineReconciliation(clubId, reconciliationId),
+        { method: "POST", body: input },
+      );
+    },
+
     listDevices(clubId: string) {
       return client.request<{ result: CheckinDevice[] }>(ep.devices(clubId));
     },
@@ -58,6 +91,13 @@ export function createAccountCheckinApi(client: ApiClient) {
     rotateDeviceSecret(clubId: string, deviceId: string) {
       return client.request<ProvisionCheckinDeviceResult>(
         ep.rotateDevice(clubId, deviceId),
+        { method: "POST" },
+      );
+    },
+
+    revokeDevice(clubId: string, deviceId: string) {
+      return client.request<RevokeCheckinDeviceResult>(
+        ep.revokeDevice(clubId, deviceId),
         { method: "POST" },
       );
     },

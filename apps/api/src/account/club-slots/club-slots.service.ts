@@ -12,12 +12,15 @@ import { MongoTransactionService } from '../../common/mongo/mongo-transaction.se
 import {
   AuditAction,
   CalendarResourceType,
+  ClubLifecycleStatus,
+  ClubOperationalStatus,
   EntityStatus,
   OccurrenceStatus,
   Role,
   SlotExceptionStatus,
   SlotKind,
   SlotRecurrenceType,
+  UserStatus,
 } from '../../common/enums';
 import type { JwtUser } from '../../common/types';
 import { asSinglePageResult } from '../../common/utils/pagination.util';
@@ -34,9 +37,14 @@ import {
   SlotRecurrence,
 } from '../../schemas/club-slot.schema';
 import { ClubSpace, ClubSpaceDocument } from '../../schemas/club-space.schema';
+import {
+  CoachProfile,
+  CoachProfileDocument,
+} from '../../schemas/coach-profile.schema';
 import { User, UserDocument } from '../../schemas/user.schema';
 import { UsersService } from '../../users/users.service';
 import { CalendarAvailabilityService } from '../calendar/calendar-availability.service';
+import { approvedCoachVerificationFilter } from '../coaches/coach-verification-visibility';
 import {
   CancelSlotOccurrenceDto,
   ClubCalendarQueryDto,
@@ -62,6 +70,8 @@ export class ClubSlotsService {
     private readonly slotModel: Model<ClubSlotDocument>,
     @InjectModel(ClubSpace.name)
     private readonly spaceModel: Model<ClubSpaceDocument>,
+    @InjectModel(CoachProfile.name)
+    private readonly coachProfileModel: Model<CoachProfileDocument>,
     @InjectModel(ClubSlotOccupancy.name)
     private readonly occupancyModel: Model<ClubSlotOccupancyDocument>,
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
@@ -108,6 +118,22 @@ export class ClubSlotsService {
 
   async getClass(clubId: string, classId: string) {
     const doc = await this.findClassOrFail(clubId, classId);
+    return this.toClassPublic(doc);
+  }
+
+  async listDiscoveryClasses(clubId: string) {
+    await this.requireDiscoveryClub(clubId);
+    const items = await this.classModel
+      .find({ clubId: new Types.ObjectId(clubId), status: EntityStatus.ACTIVE })
+      .sort({ createdAt: -1 });
+    return asSinglePageResult(
+      await Promise.all(items.map((item) => this.toClassPublic(item))),
+    );
+  }
+
+  async getDiscoveryClass(clubId: string, classId: string) {
+    await this.requireDiscoveryClub(clubId);
+    const doc = await this.findActiveClassOrFail(clubId, classId);
     return this.toClassPublic(doc);
   }
 
@@ -234,6 +260,20 @@ export class ClubSlotsService {
     return this.toSpacePublic(doc);
   }
 
+  async listDiscoverySpaces(clubId: string) {
+    await this.requireDiscoveryClub(clubId);
+    const items = await this.spaceModel
+      .find({ clubId: new Types.ObjectId(clubId), status: EntityStatus.ACTIVE })
+      .sort({ createdAt: -1 });
+    return asSinglePageResult(items.map((item) => this.toSpacePublic(item)));
+  }
+
+  async getDiscoverySpace(clubId: string, spaceId: string) {
+    await this.requireDiscoveryClub(clubId);
+    const doc = await this.findActiveSpaceOrFail(clubId, spaceId);
+    return this.toSpacePublic(doc);
+  }
+
   async createSpace(
     clubId: string,
     dto: CreateClubSpaceDto,
@@ -334,6 +374,29 @@ export class ClubSlotsService {
 
   async getSlot(clubId: string, slotId: string) {
     const doc = await this.findSlotOrFail(clubId, slotId);
+    return this.toSlotPublic(doc);
+  }
+
+  async listDiscoverySlots(clubId: string) {
+    await this.requireDiscoveryClub(clubId);
+    const items = await this.slotModel
+      .find({ clubId: new Types.ObjectId(clubId), status: EntityStatus.ACTIVE })
+      .sort({ createdAt: -1 });
+    const visible = [] as ClubSlotDocument[];
+    for (const item of items) {
+      if (await this.isSlotSupplyVisible(item)) visible.push(item);
+    }
+    return asSinglePageResult(
+      await Promise.all(visible.map((item) => this.toSlotPublic(item))),
+    );
+  }
+
+  async getDiscoverySlot(clubId: string, slotId: string) {
+    await this.requireDiscoveryClub(clubId);
+    const doc = await this.findActiveSlotOrFail(clubId, slotId);
+    if (!(await this.isSlotSupplyVisible(doc))) {
+      throw new NotFoundException('Slot not found');
+    }
     return this.toSlotPublic(doc);
   }
 
@@ -511,7 +574,7 @@ export class ClubSlotsService {
   // ── Calendar ──────────────────────────────────
 
   async getCalendar(clubId: string, query: ClubCalendarQueryDto) {
-    await this.findClubOrFail(clubId);
+    await this.requireDiscoveryClub(clubId);
     const days = this.enumerateDates(query.from, query.to);
     if (days.length === 0) {
       throw new BadRequestException('Invalid from/to range');
@@ -522,38 +585,48 @@ export class ClubSlotsService {
       );
     }
 
-    const slots = await this.slotModel.find({
+    const slotCandidates = await this.slotModel.find({
       clubId: new Types.ObjectId(clubId),
       status: EntityStatus.ACTIVE,
     });
 
     const classIds = [
       ...new Set(
-        slots.filter((s) => s.classId).map((s) => s.classId!.toString()),
+        slotCandidates
+          .filter((s) => s.classId)
+          .map((s) => s.classId!.toString()),
       ),
     ];
 
     const classes = classIds.length
       ? await this.classModel.find({
           _id: { $in: classIds.map((id) => new Types.ObjectId(id)) },
+          clubId: new Types.ObjectId(clubId),
+          status: EntityStatus.ACTIVE,
         })
       : ([] as ClubClassDocument[]);
 
     const spaceIds = [
       ...new Set(
-        slots.filter((s) => s.spaceId).map((s) => s.spaceId!.toString()),
+        slotCandidates
+          .filter((s) => s.spaceId)
+          .map((s) => s.spaceId!.toString()),
       ),
     ];
 
     const spaces = spaceIds.length
       ? await this.spaceModel.find({
           _id: { $in: spaceIds.map((id) => new Types.ObjectId(id)) },
+          clubId: new Types.ObjectId(clubId),
+          status: EntityStatus.ACTIVE,
         })
       : ([] as ClubSpaceDocument[]);
 
     const coachIds = [
       ...new Set([
-        ...slots.filter((s) => s.coachId).map((s) => s.coachId!.toString()),
+        ...slotCandidates
+          .filter((s) => s.coachId)
+          .map((s) => s.coachId!.toString()),
         ...classes.filter((c) => c.coachId).map((c) => c.coachId!.toString()),
       ]),
     ];
@@ -561,12 +634,25 @@ export class ClubSlotsService {
     const coaches = coachIds.length
       ? await this.userModel.find({
           _id: { $in: coachIds.map((id) => new Types.ObjectId(id)) },
+          status: UserStatus.ACTIVE,
         })
       : ([] as UserDocument[]);
 
     const classById = new Map(classes.map((c) => [c._id.toString(), c]));
     const spaceById = new Map(spaces.map((s) => [s._id.toString(), s]));
     const coachById = new Map(coaches.map((u) => [u._id.toString(), u]));
+    const approvedCoachIds = await this.approvedCoachIdSet(coachIds);
+    const slots = slotCandidates.filter((slot) => {
+      if (slot.classId && !classById.has(slot.classId.toString())) return false;
+      if (slot.spaceId && !spaceById.has(slot.spaceId.toString())) return false;
+      const classDoc = slot.classId
+        ? classById.get(slot.classId.toString())
+        : undefined;
+      const coachId = slot.coachId?.toString() ?? classDoc?.coachId?.toString();
+      return (
+        !coachId || (coachById.has(coachId) && approvedCoachIds.has(coachId))
+      );
+    });
 
     const blocks = await this.calendarAvailability.findOverlappingBlocks(
       [
@@ -737,6 +823,19 @@ export class ClubSlotsService {
     return doc;
   }
 
+  private async findActiveClassOrFail(clubId: string, classId: string) {
+    if (!Types.ObjectId.isValid(classId)) {
+      throw new NotFoundException('Class not found');
+    }
+    const doc = await this.classModel.findOne({
+      _id: new Types.ObjectId(classId),
+      clubId: new Types.ObjectId(clubId),
+      status: EntityStatus.ACTIVE,
+    });
+    if (!doc) throw new NotFoundException('Class not found');
+    return doc;
+  }
+
   private async findSpaceOrFail(clubId: string, spaceId: string) {
     if (!Types.ObjectId.isValid(spaceId)) {
       throw new NotFoundException('Space not found');
@@ -744,6 +843,19 @@ export class ClubSlotsService {
     const doc = await this.spaceModel.findOne({
       _id: new Types.ObjectId(spaceId),
       clubId: new Types.ObjectId(clubId),
+    });
+    if (!doc) throw new NotFoundException('Space not found');
+    return doc;
+  }
+
+  private async findActiveSpaceOrFail(clubId: string, spaceId: string) {
+    if (!Types.ObjectId.isValid(spaceId)) {
+      throw new NotFoundException('Space not found');
+    }
+    const doc = await this.spaceModel.findOne({
+      _id: new Types.ObjectId(spaceId),
+      clubId: new Types.ObjectId(clubId),
+      status: EntityStatus.ACTIVE,
     });
     if (!doc) throw new NotFoundException('Space not found');
     return doc;
@@ -769,6 +881,10 @@ export class ClubSlotsService {
     if (session) query.session(session);
     const slot = await query;
     if (!slot) throw new NotFoundException('Slot not found');
+    await this.requireDiscoveryClub(slot.clubId.toString(), session);
+    if (!(await this.isSlotSupplyVisible(slot, session))) {
+      throw new NotFoundException('Slot not found');
+    }
 
     const [occurrence] = this.expandSlot(slot, [date]);
     if (!occurrence) {
@@ -869,6 +985,93 @@ export class ClubSlotsService {
     });
     if (!doc) throw new NotFoundException('Slot not found');
     return doc;
+  }
+
+  private async findActiveSlotOrFail(clubId: string, slotId: string) {
+    if (!Types.ObjectId.isValid(slotId)) {
+      throw new NotFoundException('Slot not found');
+    }
+    const doc = await this.slotModel.findOne({
+      _id: new Types.ObjectId(slotId),
+      clubId: new Types.ObjectId(clubId),
+      status: EntityStatus.ACTIVE,
+    });
+    if (!doc) throw new NotFoundException('Slot not found');
+    return doc;
+  }
+
+  private async requireDiscoveryClub(
+    clubId: string,
+    session?: ClientSession,
+  ): Promise<ClubDocument> {
+    if (!Types.ObjectId.isValid(clubId)) {
+      throw new NotFoundException('Club not found');
+    }
+    const query = this.clubModel.findOne({
+      _id: new Types.ObjectId(clubId),
+      'review.status': ClubLifecycleStatus.APPROVED,
+      operationalStatus: ClubOperationalStatus.ACTIVE,
+    });
+    if (session) query.session(session);
+    const club = await query;
+    if (!club) throw new NotFoundException('Club not found');
+    return club;
+  }
+
+  private async approvedCoachIdSet(
+    coachIds: string[],
+    session?: ClientSession,
+  ): Promise<Set<string>> {
+    if (coachIds.length === 0) return new Set();
+    const query = this.coachProfileModel.find({
+      userId: { $in: coachIds.map((id) => new Types.ObjectId(id)) },
+      ...approvedCoachVerificationFilter(),
+    });
+    if (session) query.session(session);
+    const profiles = await query;
+    return new Set(profiles.map((profile) => profile.userId.toString()));
+  }
+
+  private async isSlotSupplyVisible(
+    slot: ClubSlotDocument,
+    session?: ClientSession,
+  ): Promise<boolean> {
+    const classDoc = slot.classId
+      ? await this.classModel
+          .findOne({
+            _id: slot.classId,
+            clubId: slot.clubId,
+            status: EntityStatus.ACTIVE,
+          })
+          .session(session ?? null)
+      : null;
+    if (slot.classId && !classDoc) return false;
+    if (
+      slot.spaceId &&
+      !(await this.spaceModel
+        .findOne({
+          _id: slot.spaceId,
+          clubId: slot.clubId,
+          status: EntityStatus.ACTIVE,
+        })
+        .session(session ?? null))
+    ) {
+      return false;
+    }
+    const coachId = slot.coachId ?? classDoc?.coachId;
+    if (!coachId) return true;
+    const [user, profile] = await Promise.all([
+      this.userModel
+        .findOne({ _id: coachId, status: UserStatus.ACTIVE })
+        .session(session ?? null),
+      this.coachProfileModel
+        .findOne({
+          userId: coachId,
+          ...approvedCoachVerificationFilter(),
+        })
+        .session(session ?? null),
+    ]);
+    return Boolean(user && profile);
   }
 
   private assertValidSchedule(recurrence: {

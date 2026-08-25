@@ -6,6 +6,7 @@ import type {
   ClubMembershipPlan,
   ImportMembershipRow,
   ImportMembershipsResult,
+  MembershipRenewalPreview,
 } from "@repo/api";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -15,7 +16,10 @@ import {
 } from "@/shared/lib/api";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { OwnerMembersScreen } from "../screens/OwnerMembersScreen";
-import type { OwnerMembersSellInput } from "../screens/OwnerMembersScreen/OwnerMembersScreen.types";
+import type {
+  OwnerMembersRenewInput,
+  OwnerMembersSellInput,
+} from "../screens/OwnerMembersScreen/OwnerMembersScreen.types";
 import {
   buildOwnerMembersStats,
   mapApiMembershipToOwnerMember,
@@ -119,6 +123,39 @@ export function OwnerMembersGate() {
     [clubId, load],
   );
 
+  const handlePreviewRenewal = useCallback(
+    async (member: OwnerMember) => {
+      if (!clubId) throw new Error("Club is not selected");
+      return accountMemberships.previewRenewal(clubId, member.id);
+    },
+    [clubId],
+  );
+
+  const handleRenew = useCallback(
+    async (
+      member: OwnerMember,
+      preview: MembershipRenewalPreview,
+      idempotencyKey: string,
+      payment: OwnerMembersRenewInput,
+    ) => {
+      if (!clubId) throw new Error("Club is not selected");
+      setPending(true);
+      try {
+        await accountMemberships.renew(clubId, member.id, {
+          idempotencyKey,
+          previewFingerprint: preview.previewFingerprint,
+          consentVersion: preview.consentVersion,
+          consentAccepted: true,
+          ...payment,
+        });
+        await load();
+      } finally {
+        setPending(false);
+      }
+    },
+    [clubId, load],
+  );
+
   const handleSell = useCallback(
     async (input: OwnerMembersSellInput) => {
       if (!clubId) return;
@@ -191,6 +228,8 @@ export function OwnerMembersGate() {
       onCheckIn={clubId ? handleCheckIn : undefined}
       onFreeze={clubId ? handleFreeze : undefined}
       onImport={clubId ? handleImport : undefined}
+      onPreviewRenewal={clubId ? handlePreviewRenewal : undefined}
+      onRenew={clubId ? handleRenew : undefined}
       onSell={clubId ? handleSell : undefined}
       onUnfreeze={clubId ? handleUnfreeze : undefined}
       pending={pending}

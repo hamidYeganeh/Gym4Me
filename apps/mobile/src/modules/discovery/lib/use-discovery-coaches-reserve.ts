@@ -25,6 +25,7 @@ import {
 } from "./use-discovery-coach-slots";
 import type { ReserveStep } from "../screens/DiscoveryCoachesReserveScreen/DiscoveryCoachesReserveScreen.types";
 import { useRouter } from "@/shared/lib/app-router";
+import { getPaymentCallbackUrl } from "@/shared/lib/payment-return";
 
 export const COACH_RESERVE_NOTE_MAX = 300;
 
@@ -194,7 +195,7 @@ export function useDiscoveryCoachesReserve(coach: CoachDetail) {
       }
       const payment = await accountBookings.pay(
         booking.id,
-        `${window.location.origin}/athlete/bookings/${booking.id}`,
+        getPaymentCallbackUrl(`/athlete/bookings/${booking.id}`),
       );
       window.location.assign(payment.redirectUrl);
     } catch (err) {

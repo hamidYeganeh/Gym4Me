@@ -22,6 +22,9 @@ export type AthleteWorkoutLogSetItem = {
   exerciseId: string;
   reps: number;
   weightKg: number | null;
+  durationSec: number | null;
+  distanceM: number | null;
+  rpe: number | null;
 };
 
 export type AthleteWorkoutLogItem = {
@@ -31,6 +34,11 @@ export type AthleteWorkoutLogItem = {
   loggedLabel: string;
   setsCount: number;
   sets: AthleteWorkoutLogSetItem[];
+  note: string | null;
+  pain: { score: number | null; bodyAreaKeys: string[] } | null;
+  planRevisionId: string | null;
+  syncState?: "queued" | "retryable_error" | "rejected_needs_user";
+  reviews: { id: string; note: string; reviewedAt: string }[];
 };
 
 export type AthleteWorkoutPlanItem = {
@@ -47,6 +55,7 @@ export type AthleteWorkoutPlanItem = {
 export type AthleteWorkoutPlanDetail = AthleteWorkoutPlanItem & {
   logs: AthleteWorkoutLogItem[];
   exercises: AthleteWorkoutPlanExercise[];
+  currentRevision: number | null;
 };
 
 export const DEMO_WORKOUT_PLANS: AthleteWorkoutPlanItem[] = [
@@ -88,6 +97,7 @@ export const DEMO_WORKOUT_DETAIL: AthleteWorkoutPlanDetail = {
       plannedReps: 12,
     },
   ],
+  currentRevision: 1,
   logs: [
     {
       id: "demo-log-1",
@@ -96,6 +106,10 @@ export const DEMO_WORKOUT_DETAIL: AthleteWorkoutPlanDetail = {
       loggedLabel: "امروز · ۰۸:۲۰",
       setsCount: 12,
       sets: [],
+      note: null,
+      pain: null,
+      planRevisionId: "demo-revision-1",
+      reviews: [],
     },
     {
       id: "demo-log-2",
@@ -104,6 +118,10 @@ export const DEMO_WORKOUT_DETAIL: AthleteWorkoutPlanDetail = {
       loggedLabel: "دیروز · ۱۹:۱۰",
       setsCount: 0,
       sets: [],
+      note: null,
+      pain: null,
+      planRevisionId: "demo-revision-1",
+      reviews: [],
     },
   ],
 };

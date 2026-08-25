@@ -65,6 +65,19 @@ export type ClubMembershipPlan = {
   updatedAt: string;
 };
 
+export type PublicMembershipPlanSummary = {
+  clubId: string;
+  offers: Array<{
+    currency: string;
+    fromAmount: number;
+    planCount: number;
+  }>;
+};
+
+export type PublicMembershipPlanSummariesResponse = {
+  items: PublicMembershipPlanSummary[];
+};
+
 export type ListMyMembershipsQuery = {
   page?: number;
   page_size?: number;
@@ -153,6 +166,123 @@ export type CancelMembershipInput = {
   reason?: string;
 };
 
+export type MembershipRenewalCredit = {
+  remainingSessions?: number;
+  remainingEntries?: number;
+  expiresAt?: string;
+};
+
+export type MembershipRenewalPrice = {
+  gross: number;
+  discount: number;
+  tax: number;
+  payable: number;
+  currency: string;
+};
+
+export type MembershipRenewalPreview = {
+  previewFingerprint: string;
+  consentVersion: "membership-renewal-v1";
+  membershipId: string;
+  plan: {
+    id: string;
+    name: string;
+    kind: MembershipPlanKind;
+  };
+  price: MembershipRenewalPrice;
+  currentCredit: MembershipRenewalCredit;
+  renewedCredit: MembershipRenewalCredit;
+};
+
+export type PreviewMembershipRenewalInput = {
+  couponCode?: string;
+};
+
+export type RenewMembershipInput = PreviewMembershipRenewalInput & {
+  idempotencyKey: string;
+  previewFingerprint: string;
+  consentVersion: "membership-renewal-v1";
+  consentAccepted: true;
+  channel?: Extract<
+    PaymentChannel,
+    "cash" | "pos" | "card_to_card" | "mixed"
+  >;
+  paidAmount?: number;
+  externalRef?: string;
+  tenders?: SellMembershipInput["tenders"];
+  debt?: SellMembershipInput["debt"];
+};
+
+export type MembershipRenewalResult = {
+  membership: ClubMembership;
+  renewal: {
+    previewFingerprint?: string;
+    consentVersion: "membership-renewal-v1";
+    price: MembershipRenewalPrice;
+    renewedCredit: MembershipRenewalCredit;
+    paymentId?: string;
+    debtId?: string;
+  };
+  idempotent: boolean;
+};
+
+export type MembershipCheckoutMode = "purchase" | "renewal";
+export type MembershipCheckoutStatus =
+  | "pending"
+  | "completed"
+  | "cancelled"
+  | "expired";
+
+export type PreviewMembershipCheckoutInput = {
+  clubId: string;
+  planId: string;
+  membershipId?: string;
+};
+
+export type MembershipCheckoutPreview = {
+  mode: MembershipCheckoutMode;
+  fingerprint: string;
+  consentVersion: "membership-checkout-v1" | "membership-renewal-v1";
+  plan: { id: string; name: string; kind: MembershipPlanKind };
+  price: MembershipRenewalPrice;
+  currentCredit: MembershipRenewalCredit;
+  resultingCredit: MembershipRenewalCredit;
+};
+
+export type InitiateMembershipCheckoutInput = PreviewMembershipCheckoutInput & {
+  idempotencyKey: string;
+  previewFingerprint: string;
+  consentVersion: MembershipCheckoutPreview["consentVersion"];
+  consentAccepted: true;
+  callbackUrl: string;
+};
+
+export type MembershipCheckoutInitiation = {
+  checkoutId: string;
+  mode: MembershipCheckoutMode;
+  fingerprint: string;
+  consentVersion: MembershipCheckoutPreview["consentVersion"];
+  price: MembershipRenewalPrice;
+  resultingCredit: MembershipRenewalCredit;
+  authority: string;
+  redirectUrl: string;
+  expiresAt: string;
+  idempotent: boolean;
+};
+
+export type VerifyMembershipCheckoutInput = {
+  authority: string;
+  status: "OK" | "NOK";
+};
+
+export type MembershipCheckoutResult = {
+  checkoutId: string;
+  status: MembershipCheckoutStatus;
+  membershipId?: string;
+  paymentId?: string;
+  idempotent: boolean;
+};
+
 export type ConsumeMembershipCreditInput = {
   creditKind?: "sessions" | "entries";
   amount?: number;
@@ -207,4 +337,53 @@ export type SubscribePlatformInput = {
 
 export type CancelPlatformSubscriptionInput = {
   reason?: string;
+};
+
+export type PlatformSubscriptionCheckoutPreview = {
+  fingerprint: string;
+  consentVersion: string;
+  plan: { id: string; name: string; periodDays: number };
+  price: {
+    gross: number;
+    tax: number;
+    payable: number;
+    currency: string;
+  };
+  renewalMode: SubscriptionRenewalMode;
+};
+
+export type PreviewPlatformSubscriptionCheckoutInput = {
+  planId: string;
+  renewalMode?: SubscriptionRenewalMode;
+};
+
+export type InitiatePlatformSubscriptionCheckoutInput =
+  PreviewPlatformSubscriptionCheckoutInput & {
+    idempotencyKey: string;
+    previewFingerprint: string;
+    consentVersion: string;
+    consentAccepted: true;
+    callbackUrl: string;
+  };
+
+export type PlatformSubscriptionCheckoutInitiation = {
+  checkoutId: string;
+  authority: string;
+  redirectUrl: string;
+  expiresAt: string;
+  idempotent: boolean;
+};
+
+export type VerifyPlatformSubscriptionCheckoutInput = {
+  authority: string;
+  status: "OK" | "NOK";
+};
+
+export type PlatformSubscriptionCheckoutResult = {
+  checkoutId: string;
+  status: "pending" | "completed" | "cancelled" | "expired";
+  subscriptionId?: string;
+  paymentId?: string;
+  gatewayRefId?: string;
+  idempotent: boolean;
 };

@@ -44,8 +44,10 @@ export function OwnerMembersListSection({
   checkInAction,
   unfreezeAction,
   freezeAction,
+  renewAction,
   onFreeze,
   onUnfreeze,
+  onRenew,
   className,
 }: OwnerMembersListSectionProps) {
   const styles = ownerMembersListSectionVariants();
@@ -160,6 +162,18 @@ export function OwnerMembersListSection({
                         size={22}
                       />
                     </Button>
+                    {member.renewalEligible && onRenew ? (
+                      <Button
+                        isDisabled={pending}
+                        onPress={() => {
+                          void onRenew(member);
+                        }}
+                        size="sm"
+                        variant="primary"
+                      >
+                        {renewAction}
+                      </Button>
+                    ) : null}
                     {member.membershipState === "frozen" && onUnfreeze ? (
                       <Button
                         isDisabled={pending}

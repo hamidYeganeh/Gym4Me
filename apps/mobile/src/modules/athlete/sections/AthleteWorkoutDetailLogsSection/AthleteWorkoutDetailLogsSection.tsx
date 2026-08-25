@@ -10,6 +10,7 @@ export function AthleteWorkoutDetailLogsSection({
   sessionLabel,
   setsCountLabel,
   logStatusLabel,
+  coachFeedbackLabel,
   logs,
   className,
 }: AthleteWorkoutDetailLogsSectionProps) {
@@ -55,6 +56,12 @@ export function AthleteWorkoutDetailLogsSection({
               <Typography className={styles.meta()} type="body-sm">
                 {log.loggedLabel} · {setsCountLabel(log.setsCount)}
               </Typography>
+              {log.reviews.map((review) => (
+                <div className="mt-2 rounded-xl bg-content2 p-2" key={review.id}>
+                  <Typography type="body-sm" weight="semibold">{coachFeedbackLabel}</Typography>
+                  <Typography className={styles.meta()} type="body-sm">{review.note}</Typography>
+                </div>
+              ))}
             </article>
           ))}
         </div>

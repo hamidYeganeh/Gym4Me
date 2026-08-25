@@ -19,6 +19,7 @@ const footer = publicSiteFooterVariants();
 
 const NAV_ITEMS = [
   { href: "/clubs", key: "clubs" },
+  { href: "/classes", key: "classes" },
   { href: "/coaches", key: "coaches" },
   { href: "/for-clubs", key: "forClubs" },
   { href: "/pricing", key: "pricing" },

@@ -30,6 +30,14 @@ export function assertAllowedPaymentCallbackUrl(
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean);
+  const apiOrigin = (() => {
+    try {
+      return env.API_BASE_URL ? new URL(env.API_BASE_URL).origin : undefined;
+    } catch {
+      return undefined;
+    }
+  })();
+  if (apiOrigin) allowedOrigins.push(apiOrigin);
   if (!allowedOrigins.includes(callback.origin)) {
     throw new BadRequestException('Payment callback origin is not allowed');
   }

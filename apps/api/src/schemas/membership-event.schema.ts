@@ -58,6 +58,14 @@ export class MembershipEvent {
   @Prop({ type: Date, required: true, index: true })
   occurredAt!: Date;
 
+  /** Retry key for a lifecycle mutation, scoped to this membership. */
+  @Prop({ trim: true, maxlength: 200 })
+  idempotencyKey?: string;
+
+  /** SHA-256 of the accepted preview/consent contract. */
+  @Prop({ trim: true, minlength: 64, maxlength: 64 })
+  requestFingerprint?: string;
+
   createdAt!: Date;
 }
 
@@ -66,3 +74,10 @@ export const MembershipEventSchema =
 
 MembershipEventSchema.index({ membershipId: 1, occurredAt: -1 });
 MembershipEventSchema.index({ type: 1, occurredAt: -1 });
+MembershipEventSchema.index(
+  { membershipId: 1, idempotencyKey: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { idempotencyKey: { $type: 'string' } },
+  },
+);

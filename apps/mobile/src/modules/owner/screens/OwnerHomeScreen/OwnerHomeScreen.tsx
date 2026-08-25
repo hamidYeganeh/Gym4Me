@@ -2,11 +2,12 @@
 
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { ProfileHeader } from "@repo/ui/layout/ProfileHeader";
+import { CallToActionCard } from "@repo/ui/cards/CallToActionCard";
 import { useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/shared/lib/app-router";
 
-import { mediaFileUrl } from "@/shared/lib/api";
+import { accountActionCenter, mediaFileUrl } from "@/shared/lib/api";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { OwnerHomeClubsSection } from "../../sections/OwnerHomeClubsSection";
@@ -26,6 +27,7 @@ export function OwnerHomeScreen({
   stats,
   clubs,
   tasksNewCount = 0,
+  actions = [],
 }: OwnerHomeScreenProps) {
   const t = useTranslations("OwnerHome");
   const router = useRouter();
@@ -56,6 +58,33 @@ export function OwnerHomeScreen({
             />
           </OwnerHomeStaggerItem>
         ) : null}
+
+        <OwnerHomeStaggerItem>
+          <section aria-labelledby="owner-action-center-title" className="space-y-3">
+            <h2 className="text-lg font-bold" id="owner-action-center-title">{t("actionCenterTitle")}</h2>
+            <p className="text-sm text-muted">{t("actionCenterDescription")}</p>
+            {actions.length === 0 ? <p className="text-sm text-muted">{t("actionCenterEmpty")}</p> : null}
+            {actions.map((action) => (
+              <CallToActionCard
+                actionLabel={t("actionCenterOpen")}
+                actionType="icon"
+                key={action.id}
+                onAction={() => {
+                  void accountActionCenter.click({
+                    itemId: action.id,
+                    kind: action.sourceKind,
+                  });
+                  router.push(action.href);
+                }}
+                subtitle={t(`action_${action.kind}_description`)}
+                title={t(`action_${action.kind}_title`, {
+                  count: action.count ?? 0,
+                })}
+                variant="outlined"
+              />
+            ))}
+          </section>
+        </OwnerHomeStaggerItem>
 
         <OwnerHomeStaggerItem>
           <OwnerHomeQuickLinksSection

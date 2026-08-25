@@ -5,7 +5,8 @@
 #   3) owner sees the new member
 #   4) athlete books a class occurrence, pays (mock gateway)
 #   5) owner sees the booking, checks the athlete in, completes it
-#   6) owner membership check-in consumes a credit
+#   6) owner membership check-in uses a signed offline snapshot, ordered sync,
+#      replay protection, reconciliation dismissal and device revocation
 #   7) athlete books again and cancels
 #   8) coach opens a consult slot, athlete books + pays, coach checks in + completes
 #   9) admin approves pending KYC / coach / club queues
@@ -127,20 +128,37 @@ if [ -z "$CLUB_ID" ]; then CLUB_ID="$FALLBACK_ID"; CLUB_NAME="$FALLBACK_NAME"; f
 check "S2.2 owner club with public plans found" "true" "$([ -n "$CLUB_ID" ] && echo true || echo false)"
 note "club: $CLUB_NAME ($CLUB_ID)"
 
+# Website and mobile both consume these exact public discovery contracts. Keep
+# the seeded identity stable across owner operations and unauthenticated browse.
+PUBLIC_CLUB=$(jget "/discovery/clubs/$CLUB_ID")
+check "S2.3 public clients resolve the same club id" "$CLUB_ID" "$(echo "$PUBLIC_CLUB" | jq -r '.id // empty')"
+
 echo ""
 echo "════ S3: ورزشکار پلن‌ها را می‌بیند و در باشگاه ثبت‌نام می‌کند ════"
 PLANS=$(jget "/discovery/clubs/$CLUB_ID/membership-plans?page=1&page_size=20")
 PLAN_COUNT=$(echo "$PLANS" | jq -r '(.result // .items // []) | length')
 check "S3.1 public plans visible to athlete" "true" "$([ "${PLAN_COUNT:-0}" -ge 1 ] && echo true || echo false)"
+PLAN_SUMMARY=$(jget "/discovery/membership-plan-summaries?clubIds=$CLUB_ID")
+check "S3.1a bounded catalog summary resolves same club" "$CLUB_ID" "$(echo "$PLAN_SUMMARY" | jq -r '.items[0].clubId // empty')"
 # prefer a sessions plan so credit consumption is observable
 PLAN_ID=$(echo "$PLANS" | jq -r '(.result // .items // []) | (map(select(.kind == "sessions")) + .)[0].id // empty')
 PLAN_KIND=$(echo "$PLANS" | jq -r --arg id "$PLAN_ID" '(.result // .items // []) | .[] | select((.id // ._id) == $id) | .kind')
 note "plan: $PLAN_ID kind=$PLAN_KIND"
 
-PURCHASE=$(jpost_auth /account/memberships "$ATH_TOKEN" "{\"clubId\":\"$CLUB_ID\",\"planId\":\"$PLAN_ID\",\"idempotencyKey\":\"e2e-purchase-$(date +%s)\"}")
-MEMBERSHIP_ID=$(echo "$PURCHASE" | jq -r '.id // ._id // empty')
+CHECKOUT_PREVIEW=$(jpost_auth /account/memberships/checkouts/preview "$ATH_TOKEN" "{\"clubId\":\"$CLUB_ID\",\"planId\":\"$PLAN_ID\"}")
+CHECKOUT_FINGERPRINT=$(echo "$CHECKOUT_PREVIEW" | jq -r '.fingerprint // empty')
+CHECKOUT_CONSENT=$(echo "$CHECKOUT_PREVIEW" | jq -r '.consentVersion // empty')
+CHECKOUT=$(jpost_auth /account/memberships/checkouts/initiate "$ATH_TOKEN" "{\"clubId\":\"$CLUB_ID\",\"planId\":\"$PLAN_ID\",\"idempotencyKey\":\"e2e-purchase-$(date +%s%N)\",\"previewFingerprint\":\"$CHECKOUT_FINGERPRINT\",\"consentVersion\":\"$CHECKOUT_CONSENT\",\"consentAccepted\":true,\"callbackUrl\":\"http://localhost:3000/athlete/memberships\"}")
+CHECKOUT_ID=$(echo "$CHECKOUT" | jq -r '.checkoutId // empty')
+CHECKOUT_AUTHORITY=$(echo "$CHECKOUT" | jq -r '.authority // empty')
+if [ -n "$CHECKOUT_AUTHORITY" ]; then
+  curl -s -o /dev/null "$BASE/payments/mock/complete?authority=$CHECKOUT_AUTHORITY&outcome=paid"
+fi
+PURCHASE=$(jpost_auth "/account/memberships/checkouts/$CHECKOUT_ID/verify" "$ATH_TOKEN" "{\"authority\":\"$CHECKOUT_AUTHORITY\",\"status\":\"OK\"}")
+MEMBERSHIP_ID=$(echo "$PURCHASE" | jq -r '.membershipId // .membership.id // .id // ._id // empty')
 check "S3.2 athlete self-purchase membership" "true" "$([ -n "$MEMBERSHIP_ID" ] && echo true || echo false)"
-REMAIN_BEFORE=$(echo "$PURCHASE" | jq -r '.credit.remainingSessions // .credit.remainingEntries // "null"')
+MEMBERSHIP=$(jget_auth "/account/memberships/$MEMBERSHIP_ID" "$ATH_TOKEN")
+REMAIN_BEFORE=$(echo "$MEMBERSHIP" | jq -r '.credit.remainingSessions // .credit.remainingEntries // "null"')
 note "membership: $MEMBERSHIP_ID remaining=$REMAIN_BEFORE"
 
 MY_MEMBERSHIPS=$(jget_auth "/account/memberships?page=1&page_size=50" "$ATH_TOKEN")
@@ -155,9 +173,18 @@ echo ""
 echo "════ S5: رزرو کلاس + پرداخت (mock) ════"
 CAL=$(jget "/discovery/clubs/$CLUB_ID/calendar?from=$FROM&to=$TO")
 # priced occurrences first so the mock-gateway path gets exercised
-OCCURRENCES=$(echo "$CAL" | jq -c '[.days[] | . as $d | .items[] | select(.remaining > 0) | {slotId, date: $d.date, price: (.price // 0)}] | sort_by(-.price)')
+OCCURRENCES=$(echo "$CAL" | jq -c '[.days[] | . as $d | .items[] | select(.remaining > 0) | {slotId, classId: (.class.id // null), date: $d.date, price: (.price // 0)}] | sort_by((if .classId then 0 else 1 end), -.price)')
 OCC_COUNT=$(echo "$OCCURRENCES" | jq -r 'length')
 check "S5.1 open occurrence found" "true" "$([ "${OCC_COUNT:-0}" -ge 1 ] && echo true || echo false)"
+
+PUBLIC_CLASS_ID=$(echo "$OCCURRENCES" | jq -r '[.[] | select(.classId != null)][0].classId // empty')
+check "S5.1a seeded class occurrence found" "true" "$([ -n "$PUBLIC_CLASS_ID" ] && echo true || echo false)"
+if [ -n "$PUBLIC_CLASS_ID" ]; then
+  PUBLIC_CLASSES=$(jget "/discovery/classes?clubId=$CLUB_ID&page=1&page_size=100")
+  check "S5.1b website/mobile class catalog shares calendar id" "true" "$(echo "$PUBLIC_CLASSES" | jq -r --arg id "$PUBLIC_CLASS_ID" '[(.result // .items // [])[] | select(.id == $id and .club.id != null)] | length == 1')"
+  PUBLIC_CLASS=$(jget "/discovery/classes/$PUBLIC_CLASS_ID")
+  check "S5.1c class detail preserves owning club" "$CLUB_ID" "$(echo "$PUBLIC_CLASS" | jq -r '.club.id // empty')"
+fi
 
 # try occurrences in order until one books (athlete may already hold some)
 book_occurrence() {
@@ -186,7 +213,9 @@ BOOKING_ID=$(echo "$BOOKING" | jq -r '.id // empty')
 BOOKING_STATUS=$(echo "$BOOKING" | jq -r '.status // empty')
 BOOKED_SLOT=$(echo "$BOOKING" | jq -r '.slotId // empty')
 BOOKED_DATE=$(echo "$BOOKING" | jq -r '.date // empty')
+BOOKED_CATALOG_PRICE=$(echo "$OCCURRENCES" | jq -r --arg slot "$BOOKED_SLOT" --arg date "$BOOKED_DATE" '.[] | select(.slotId == $slot and .date == $date) | .price' | head -1)
 check "S5.2 booking created" "true" "$([ -n "$BOOKING_ID" ] && echo true || echo false)"
+check "S5.2a booking snapshot uses catalog price" "${BOOKED_CATALOG_PRICE:-0}" "$(echo "$BOOKING" | jq -r '.pricing.amount // 0')"
 note "booking=$BOOKING_ID status=$BOOKING_STATUS slot=$BOOKED_SLOT date=$BOOKED_DATE"
 
 # mock gateway mirrors Zarinpal: pay → checkout page (payer accepts) → callback → verify
@@ -227,21 +256,62 @@ check "S6.4 athlete sees completed booking" "completed" "$(echo "$ATH_BOOKING" |
 
 echo ""
 echo "════ S7: چک‌این عضویت + مصرف اعتبار ════"
-MEM_CHECKIN=$(jpost_auth "/account/clubs/$CLUB_ID/checkin/membership" "$OWN_TOKEN" \
-  "{\"membershipId\":\"$MEMBERSHIP_ID\",\"userId\":\"$ATH_USER_ID\",\"method\":\"manual\",\"clientIdempotencyKey\":\"e2e-checkin-$(date +%s)\"}")
-check "S7.1 membership check-in accepted" "true" "$(echo "$MEM_CHECKIN" | jq -r '(.id // ._id) != null')"
+DEVICE_NAME="e2e-capacitor-$(date +%s)"
+DEVICE_RES=$(jpost_auth "/account/clubs/$CLUB_ID/checkin-devices" "$OWN_TOKEN" \
+  "{\"name\":\"$DEVICE_NAME\",\"provider\":\"capacitor-e2e\"}")
+DEVICE_ID=$(echo "$DEVICE_RES" | jq -r '.device.id // empty')
+check "S7.1 offline device provisioned" "true" "$([ -n "$DEVICE_ID" ] && echo true || echo false)"
+
+SNAPSHOT_RES=$(jpost_auth "/account/clubs/$CLUB_ID/checkin/offline-snapshots" "$OWN_TOKEN" \
+  "{\"deviceId\":\"$DEVICE_ID\"}")
+SNAPSHOT_TOKEN=$(echo "$SNAPSHOT_RES" | jq -r '.snapshotToken // empty')
+SNAPSHOT_ID=$(echo "$SNAPSHOT_RES" | jq -r '.snapshot.id // empty')
+SNAPSHOT_HAS_MEMBERSHIP=$(echo "$SNAPSHOT_RES" | jq -r --arg id "$MEMBERSHIP_ID" \
+  '[.snapshot.memberships[] | select(.membershipId == $id)] | length == 1')
+check "S7.2 signed snapshot contains active membership" "true" "$SNAPSHOT_HAS_MEMBERSHIP"
+
+NOW_ISO=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+OFFLINE_BATCH="{\"snapshotToken\":\"$SNAPSHOT_TOKEN\",\"items\":[{\"clientIdempotencyKey\":\"e2e-offline-membership-$MEMBERSHIP_ID\",\"method\":\"manual\",\"occurredAt\":\"$NOW_ISO\",\"sequence\":1,\"nonce\":\"e2e-offline-nonce-0001\",\"membershipId\":\"$MEMBERSHIP_ID\",\"userId\":\"$ATH_USER_ID\"}]}"
+MEM_CHECKIN=$(jpost_auth "/account/clubs/$CLUB_ID/checkin/sync" "$OWN_TOKEN" "$OFFLINE_BATCH")
+check "S7.3 ordered offline membership check-in accepted" "created" \
+  "$(echo "$MEM_CHECKIN" | jq -r '.items[0].status // empty')"
+
+OFFLINE_REPLAY=$(jpost_auth "/account/clubs/$CLUB_ID/checkin/sync" "$OWN_TOKEN" "$OFFLINE_BATCH")
+check "S7.4 replay is idempotent" "duplicate" \
+  "$(echo "$OFFLINE_REPLAY" | jq -r '.items[0].status // empty')"
+
+REJECTED_BATCH="{\"snapshotToken\":\"$SNAPSHOT_TOKEN\",\"items\":[{\"clientIdempotencyKey\":\"e2e-offline-rejected-$MEMBERSHIP_ID\",\"method\":\"manual\",\"occurredAt\":\"$NOW_ISO\",\"sequence\":2,\"nonce\":\"e2e-offline-nonce-0002\",\"bookingCode\":\"G4M-NOT-IN-SNAPSHOT\"}]}"
+REJECTED_SYNC=$(jpost_auth "/account/clubs/$CLUB_ID/checkin/sync" "$OWN_TOKEN" "$REJECTED_BATCH")
+check "S7.5 non-snapshot eligibility is rejected" "rejected" \
+  "$(echo "$REJECTED_SYNC" | jq -r '.items[0].status // empty')"
+
+REJECTIONS=$(jget_auth "/account/clubs/$CLUB_ID/checkin/offline-reconciliations?status=rejected&page_size=100" "$OWN_TOKEN")
+RECONCILIATION_ID=$(echo "$REJECTIONS" | jq -r --arg snapshot "$SNAPSHOT_ID" \
+  '[(.result // [])[] | select(.snapshotId == $snapshot and .sequence == 2)][0].id // empty')
+DISMISSED=$(jpost_auth "/account/clubs/$CLUB_ID/checkin/offline-reconciliations/$RECONCILIATION_ID/resolve" "$OWN_TOKEN" \
+  '{"action":"dismiss","reason":"رکورد تست نامعتبر بود","clientMutationId":"e2e-resolution-dismiss-0001"}')
+check "S7.6 rejected row is auditably dismissed" "dismissed" \
+  "$(echo "$DISMISSED" | jq -r '.status // empty')"
+
+REVOKED=$(jpost_auth "/account/clubs/$CLUB_ID/checkin-devices/$DEVICE_ID/revoke" "$OWN_TOKEN")
+check "S7.7 device revoked" "revoked" "$(echo "$REVOKED" | jq -r '.device.status // empty')"
+REVOKED_SYNC_HTTP=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
+  "$BASE/account/clubs/$CLUB_ID/checkin/sync" \
+  -H 'Content-Type: application/json' -H "Authorization: Bearer $OWN_TOKEN" \
+  -d "$REJECTED_BATCH")
+check "S7.8 revoked device cannot sync" "404" "$REVOKED_SYNC_HTTP"
 
 MEM_AFTER=$(jget_auth "/account/clubs/$CLUB_ID/memberships/$MEMBERSHIP_ID" "$OWN_TOKEN")
 REMAIN_AFTER=$(echo "$MEM_AFTER" | jq -r '.credit.remainingSessions // .credit.remainingEntries // "null"')
 note "credit: before=$REMAIN_BEFORE after=$REMAIN_AFTER"
 if [ "$REMAIN_BEFORE" != "null" ] && [ "$REMAIN_AFTER" != "null" ]; then
-  check "S7.2 credit consumed on check-in" "true" "$([ "$REMAIN_AFTER" -lt "$REMAIN_BEFORE" ] && echo true || echo false)"
+  check "S7.9 credit consumed once after replay" "true" "$([ "$REMAIN_AFTER" -lt "$REMAIN_BEFORE" ] && echo true || echo false)"
 else
   note "duration plan — no per-session credit to consume"
 fi
 
 ATH_CHECKINS=$(jget_auth "/account/checkin?page=1&page_size=20" "$ATH_TOKEN")
-check "S7.3 athlete check-in history non-empty" "true" "$(echo "$ATH_CHECKINS" | jq -r '((.result // .items // []) | length) >= 1')"
+check "S7.10 athlete check-in history non-empty" "true" "$(echo "$ATH_CHECKINS" | jq -r '((.result // .items // []) | length) >= 1')"
 
 echo ""
 echo "════ S8: رزرو دوم + لغو توسط ورزشکار ════"
@@ -274,6 +344,11 @@ check "S9.1 coach authenticated" "true" "$([ -n "$COACH_TOKEN" ] && echo true ||
 COACH_ME=$(jget_auth /account/profile/me "$COACH_TOKEN")
 COACH_USER_ID=$(echo "$COACH_ME" | jq -r '.id // .user.id // ._id // .user._id // empty')
 
+PUBLIC_COACHES=$(jget "/discovery/coaches?verified=true&page=1&page_size=100")
+check "S9.1a public clients resolve seeded coach user id" "true" "$(echo "$PUBLIC_COACHES" | jq -r --arg id "$COACH_USER_ID" '[(.result // .items // [])[] | select(.userId == $id)] | length == 1')"
+PUBLIC_COACH=$(jget "/discovery/coaches/$COACH_USER_ID")
+check "S9.1b public coach detail preserves user id" "$COACH_USER_ID" "$(echo "$PUBLIC_COACH" | jq -r '.userId // empty')"
+
 # coach maintains their own consultation pricing (athletes cannot book unpriced kinds)
 PRICING=$(curl -s -X PATCH "$BASE/account/profile/coach" -H 'Content-Type: application/json' \
   -H "Authorization: Bearer $COACH_TOKEN" \
@@ -302,6 +377,9 @@ if [ -z "$CSLOT_ID" ]; then
   done
 fi
 check "S9.3 coach slot available" "true" "$([ -n "$CSLOT_ID" ] && echo true || echo false)"
+
+PUB_SLOT_AFTER=$(jget "/discovery/coaches/$COACH_USER_ID/slots?from=$FROM&to=$(date -v+15d +%F 2>/dev/null || date -d "+15 days" +%F)")
+check "S9.3a public availability exposes same slot id" "true" "$(echo "$PUB_SLOT_AFTER" | jq -r --arg id "$CSLOT_ID" '[.slots[]? | select(.id == $id)] | length == 1')"
 
 CBOOKING=$(jpost_auth /account/bookings "$ATH_TOKEN" "{\"coachUserId\":\"$COACH_USER_ID\",\"slotId\":\"$CSLOT_ID\",\"consultationKind\":\"remote\",\"idempotencyKey\":\"e2e-coach-$CSLOT_ID-$(date +%s%N)\"}")
 CBOOKING_ID=$(echo "$CBOOKING" | jq -r '.id // ._id // empty')
@@ -347,7 +425,7 @@ fi
 COACHQ=$(jget_auth "/admin/coaches/verifications?status=pending" "$ADM_TOKEN")
 COACH_PENDING=$(echo "$COACHQ" | jq -r '(.result // .items // [])[0].userId // (.result // .items // [])[0].user.id // empty')
 if [ -n "$COACH_PENDING" ]; then
-  CV_RES=$(jpatch_auth "/admin/coaches/$COACH_PENDING/verification" "$ADM_TOKEN" '{"action":"approve"}')
+  CV_RES=$(jpatch_auth "/admin/coaches/$COACH_PENDING/verification" "$ADM_TOKEN" '{"action":"approve","credential":{"typeKey":"integration_coaching_card","issuer":"مرجع تست یکپارچه","issuedAt":"2026-01-01","expiresAt":"2099-12-31"}}')
   check "S10.3 admin approves pending coach" "true" "$(echo "$CV_RES" | jq -r '(.verification.status // .status // empty) | test("approved|active")')"
 else
   note "no pending coach verification — skipped"

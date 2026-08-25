@@ -20,6 +20,27 @@ export const CoachExperienceSchema =
   SchemaFactory.createForClass(CoachExperience);
 
 @Schema({ _id: false })
+export class CoachVerificationCredential {
+  /** Catalog-compatible certificate type key, e.g. federation_coaching_card. */
+  @Prop({ required: true, trim: true, maxlength: 80 })
+  typeKey!: string;
+
+  /** Public issuing authority/federation name. */
+  @Prop({ required: true, trim: true, maxlength: 160 })
+  issuer!: string;
+
+  @Prop()
+  issuedAt?: Date;
+
+  @Prop({ required: true, index: true })
+  expiresAt!: Date;
+}
+
+export const CoachVerificationCredentialSchema = SchemaFactory.createForClass(
+  CoachVerificationCredential,
+);
+
+@Schema({ _id: false })
 export class CoachVerification {
   @Prop({
     type: String,
@@ -43,6 +64,10 @@ export class CoachVerification {
   /** Media ids for certificates / ID proofs. */
   @Prop({ type: [Types.ObjectId], ref: Media.name, default: [] })
   documentMediaIds!: Types.ObjectId[];
+
+  /** Admin-reviewed public credential metadata; document media stays private. */
+  @Prop({ type: CoachVerificationCredentialSchema })
+  credential?: CoachVerificationCredential;
 }
 
 export const CoachVerificationSchema =
@@ -135,3 +160,7 @@ export class CoachProfile {
 export const CoachProfileSchema = SchemaFactory.createForClass(CoachProfile);
 
 CoachProfileSchema.index({ coachTypes: 1 });
+CoachProfileSchema.index({
+  'verification.status': 1,
+  'verification.credential.expiresAt': 1,
+});

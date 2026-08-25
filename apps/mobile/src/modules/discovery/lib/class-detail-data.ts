@@ -269,7 +269,7 @@ const FALLBACK_EQUIPMENT: ClubDetailEquipment[] = [
 const FALLBACK_SPORTS: ClubDetailSport[] = [
   {
     id: "fitness",
-    title: "تناسب اندام",
+    title: "تناسب‌اندام",
     subtitle: "عمومی",
     color: statsColors.blue,
   },
@@ -462,7 +462,7 @@ function createFallbackClass(clubId: string, classId: string): ClassDetail {
   return {
     id: classId,
     clubId,
-    category: "تناسب اندام",
+    category: "تناسب‌اندام",
     title,
     tagline: "تمرین مربی‌محور برای پیشرفت واقعی.",
     image: club?.images[0] ?? PLACEHOLDER_IMAGE,
@@ -480,7 +480,7 @@ function createFallbackClass(clubId: string, classId: string): ClassDetail {
       "فضای حمایتی گروهی",
       "رزرو و حضور آسان",
     ],
-    tags: ["تناسب اندام", "کلاس باشگاه", "مربی", "تمرین"],
+    tags: ["تناسب‌اندام", "کلاس باشگاه", "مربی", "تمرین"],
     enrollment: {
       price: 280_000,
       priceSuffix: "تومان",

@@ -21,6 +21,7 @@ import {
 import { MongoTransactionService } from '../../../../common/mongo/mongo-transaction.service';
 import { CouponsService } from '../../../../coupons/coupons.service';
 import { FinanceService } from '../../../../finance/finance.service';
+import { OutboxService } from '../../../../outbox/outbox.service';
 import {
   ClubMembership,
   type ClubMembershipDocument,
@@ -64,6 +65,7 @@ export class SellMembershipCommand {
     private readonly finance: FinanceService,
     private readonly coupons: CouponsService,
     private readonly transactions: MongoTransactionService,
+    private readonly outbox: OutboxService,
   ) {}
 
   async execute(
@@ -142,6 +144,8 @@ export class SellMembershipCommand {
     }
 
     const plan = await this.findSellablePlan(clubId, dto.planId, session);
+    const gross = plan.pricing?.amount ?? 0;
+    this.assertTrustedPaymentPath(dto, actor, gross, options);
     const membership = new this.membershipModel({
       clubId: new Types.ObjectId(clubId),
       planId: plan._id,
@@ -160,8 +164,6 @@ export class SellMembershipCommand {
     let paymentDto: Parameters<FinanceService['recordPayment']>[0] | undefined;
     let paymentResult:
       Awaited<ReturnType<FinanceService['recordPayment']>> | undefined;
-    const gross = plan.pricing?.amount ?? 0;
-
     if (!paymentId && gross > 0 && !options?.skipPayment) {
       const channel = dto.channel ?? PaymentChannel.CASH;
       const idempotencyKey =
@@ -257,7 +259,7 @@ export class SellMembershipCommand {
       }
     }
 
-    await this.appendSoldEvent(
+    const event = await this.appendSoldEvent(
       membership,
       plan,
       clubId,
@@ -265,6 +267,21 @@ export class SellMembershipCommand {
       paymentId,
       debtId,
       options,
+      session,
+    );
+    await this.outbox.enqueue(
+      {
+        eventName: 'membership.sold',
+        idempotencyKey: `membership-event:${event._id.toString()}`,
+        payload: {
+          membershipId: membership._id.toString(),
+          clubId,
+          planId: plan._id.toString(),
+          holderUserId: holder.userId?.toString(),
+          paymentId,
+          debtId,
+        },
+      },
       session,
     );
     return {
@@ -276,6 +293,33 @@ export class SellMembershipCommand {
       paymentResult,
       idempotent: false as const,
     };
+  }
+
+  private assertTrustedPaymentPath(
+    dto: SellMembershipDto,
+    actor: SellMembershipActor,
+    gross: number,
+    options?: SellMembershipOptions,
+  ): void {
+    if (dto.paymentId) {
+      throw new BadRequestException(
+        'Externally supplied membership paymentId is not accepted',
+      );
+    }
+    if (gross <= 0 || options?.skipPayment) return;
+    if (actor.kind === MembershipActorKind.ATHLETE) {
+      throw new BadRequestException(
+        'Online membership checkout requires a verified payment intent',
+      );
+    }
+    if (
+      dto.channel === PaymentChannel.ZARINPAL ||
+      dto.channel === PaymentChannel.WALLET
+    ) {
+      throw new BadRequestException(
+        'Desk sale requires cash, POS, card-to-card or mixed payment',
+      );
+    }
   }
 
   private async findIdempotentMembership(
@@ -356,7 +400,7 @@ export class SellMembershipCommand {
     debtId: string | undefined,
     options: SellMembershipOptions | undefined,
     session: ClientSession,
-  ): Promise<void> {
+  ): Promise<MembershipEventDocument> {
     const event = new this.eventModel({
       membershipId: membership._id,
       type: MembershipEventType.SOLD,
@@ -374,5 +418,6 @@ export class SellMembershipCommand {
       occurredAt: new Date(),
     });
     await event.save({ session });
+    return event;
   }
 }

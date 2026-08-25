@@ -30,7 +30,9 @@ export type OwnerMembersListSectionProps = Pick<
   checkInAction: (values: { name: string }) => string;
   unfreezeAction: string;
   freezeAction: string;
+  renewAction: string;
   onFreeze?: (member: OwnerMember) => Promise<void> | void;
   onUnfreeze?: (member: OwnerMember) => Promise<void> | void;
+  onRenew?: (member: OwnerMember) => Promise<void> | void;
   className?: string;
 };

@@ -9,6 +9,7 @@ export type {
   AthleteLifestyle,
   AthleteProfile,
   CoachProfile,
+  CoachVerificationCredential,
   CreateFavouriteLocationInput,
   FavouriteLocationsList,
   ProfileSettings,

@@ -126,6 +126,15 @@ export class PaymentRelated {
   membershipId?: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId })
+  membershipPlanId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId })
+  platformPlanId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId })
+  platformSubscriptionId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId })
   packageId?: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId })

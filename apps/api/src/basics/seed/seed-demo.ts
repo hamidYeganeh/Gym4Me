@@ -494,6 +494,12 @@ async function seed() {
             reviewedAt: new Date(Date.now() - 10 * 86400_000),
             reviewedBy: admin?._id,
             documentMediaIds: [],
+            credential: {
+              typeKey: 'fitness_federation_coaching_card',
+              issuer: 'فدراسیون ورزش‌های همگانی ایران',
+              issuedAt: new Date(Date.now() - 365 * 86400_000),
+              expiresAt: new Date(Date.now() + 365 * 86400_000),
+            },
           }
         : {
             status: VerificationStatus.PENDING,

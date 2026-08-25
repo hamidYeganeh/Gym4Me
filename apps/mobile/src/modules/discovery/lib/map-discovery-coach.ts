@@ -104,6 +104,17 @@ function specialtyIdsFromCoach(coach: DiscoveryCoach): CoachSpecialtyId[] {
 export function mapDiscoveryCoachToBrowse(coach: DiscoveryCoach): BrowseCoach {
   const specialty = specialtyLabel(coach);
   const specialtyIds = specialtyIdsFromCoach(coach);
+  const inPersonPrice = coach.pricing.consultation.inPerson;
+  const remotePrice = coach.pricing.consultation.remote;
+  const prices = [inPersonPrice, remotePrice].filter(
+    (price): price is number => price !== null,
+  );
+  const availability =
+    inPersonPrice !== null && remotePrice !== null
+      ? "hybrid"
+      : remotePrice !== null
+        ? "remote"
+        : "in-person";
   return {
     id: coach.userId,
     title: displayName(coach),
@@ -111,15 +122,19 @@ export function mapDiscoveryCoachToBrowse(coach: DiscoveryCoach): BrowseCoach {
     image: avatarUrl(coach),
     rating: 0,
     ratingCount: 0,
-    price: "—",
+    price:
+      prices.length > 0 ? Math.min(...prices).toLocaleString("fa-IR") : "—",
     featureLabels: [
       specialty,
       ...(coach.verification.status === "approved" ? ["تأییدشده"] : []),
     ].filter(Boolean),
     specialtyIds,
     distanceLabel: "—",
-    availability: "hybrid",
+    availability,
     isCertified: coach.verification.status === "approved",
+    isNew:
+      Date.now() - new Date(coach.createdAt).getTime() <=
+      30 * 24 * 60 * 60 * 1_000,
   };
 }
 
@@ -135,6 +150,10 @@ export function mapDiscoveryCoachToDetail(coach: DiscoveryCoach): CoachDetail {
   const reviewedAt = coach.verification.reviewedAt
     ? new Date(coach.verification.reviewedAt).toLocaleDateString("fa-IR")
     : null;
+  const credential = coach.verification.credential;
+  const credentialExpiresAt = credential
+    ? new Date(credential.expiresAt).toLocaleDateString("fa-IR-u-ca-persian")
+    : null;
   const avatar = avatarUrl(coach);
   const photos = [avatar, avatar, avatar].filter(Boolean);
 
@@ -149,7 +168,9 @@ export function mapDiscoveryCoachToDetail(coach: DiscoveryCoach): CoachDetail {
     avatar,
     availability: "hybrid",
     availabilityLabel:
-      coach.verification.status === "approved" && reviewedAt
+      credential && credentialExpiresAt
+        ? `${credential.typeKey.replaceAll("_", " ")} · ${credential.issuer} · معتبر تا ${credentialExpiresAt}`
+        : coach.verification.status === "approved" && reviewedAt
         ? `تأییدشده · ${reviewedAt}`
         : coach.verification.status === "approved"
           ? "تأییدشده"

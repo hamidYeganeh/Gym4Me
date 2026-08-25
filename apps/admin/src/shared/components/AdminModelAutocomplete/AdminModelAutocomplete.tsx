@@ -194,7 +194,7 @@ export function AdminModelAutocomplete({
           <SearchField autoFocus fullWidth>
             <SearchField.Group>
               <SearchField.SearchIcon />
-              <SearchField.Input placeholder="جستجو با نام یا شماره…" />
+              <SearchField.Input placeholder="جست‌وجو با نام یا شماره…" />
               <SearchField.ClearButton />
             </SearchField.Group>
           </SearchField>

@@ -7,6 +7,7 @@ import {
   IsDateString,
   IsEnum,
   IsInt,
+  IsIn,
   IsMongoId,
   IsNumber,
   IsObject,
@@ -25,6 +26,7 @@ import {
   AthleteDataGrantScope,
   AthleteDataGrantStatus,
   ExerciseStatus,
+  HEALTH_SYNC_METRIC_KEYS,
   HealthSyncProvider,
   HealthSyncStatus,
   MetricAggregation,
@@ -921,6 +923,18 @@ export class UpdateWorkoutLogDto {
   loggedAt?: string;
 }
 
+export class ReviewWorkoutLogDto {
+  @IsString()
+  @MinLength(2)
+  @MaxLength(2000)
+  note!: string;
+
+  @IsString()
+  @MinLength(16)
+  @MaxLength(120)
+  clientMutationId!: string;
+}
+
 export class ListWorkoutLogsQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsMongoId()
@@ -1141,7 +1155,9 @@ export class UpsertHealthSyncStateDto {
 
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(HEALTH_SYNC_METRIC_KEYS.length)
   @IsString({ each: true })
+  @IsIn(HEALTH_SYNC_METRIC_KEYS, { each: true })
   authorizedMetricKeys?: string[];
 
   @IsOptional()

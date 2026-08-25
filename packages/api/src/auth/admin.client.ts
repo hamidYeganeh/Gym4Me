@@ -31,7 +31,7 @@ export function createAdminAuthApi(client: ApiClient) {
         public: true,
         body: input,
       });
-      client.setSession(session);
+      await client.setSession(session);
       return session;
     },
 
@@ -41,7 +41,7 @@ export function createAdminAuthApi(client: ApiClient) {
         public: true,
         body: input,
       });
-      client.setSession(session);
+      await client.setSession(session);
       return session;
     },
 
@@ -53,7 +53,7 @@ export function createAdminAuthApi(client: ApiClient) {
       });
       const current = client.getSession();
       if (current) {
-        client.setSession({ ...current, ...pair });
+        await client.setSession({ ...current, ...pair });
       }
       return pair;
     },
@@ -69,7 +69,7 @@ export function createAdminAuthApi(client: ApiClient) {
           },
         });
       } finally {
-        client.setSession(null);
+        await client.setSession(null);
       }
     },
 

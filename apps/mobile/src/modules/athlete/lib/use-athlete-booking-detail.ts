@@ -3,6 +3,7 @@
 import { ApiError, type BookingCancellationPreview } from "@repo/api";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/shared/lib/app-router";
+import { getPaymentCallbackUrl } from "@/shared/lib/payment-return";
 
 import { useState } from "react";
 import { accountBookings } from "@/shared/lib/api";
@@ -52,7 +53,7 @@ export function useAthleteBookingDetail({
     void runAction(async () => {
       const payment = await accountBookings.pay(
         booking.id,
-        `${window.location.origin}/athlete/bookings/${booking.id}`,
+        getPaymentCallbackUrl(`/athlete/bookings/${booking.id}`),
       );
       window.location.assign(payment.redirectUrl);
     });

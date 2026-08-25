@@ -6,6 +6,7 @@ import { ApiError, type ClubCalendarResponse } from "@repo/api";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/shared/lib/app-router";
+import { getPaymentCallbackUrl } from "@/shared/lib/payment-return";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -217,7 +218,7 @@ export function DiscoveryClubReserveGate({ clubId }: Props) {
       if (booking.status === "awaiting_payment") {
         const payment = await accountBookings.pay(
           booking.id,
-          `${window.location.origin}/athlete/bookings/${booking.id}`,
+          getPaymentCallbackUrl(`/athlete/bookings/${booking.id}`),
         );
         window.location.assign(payment.redirectUrl);
         return;

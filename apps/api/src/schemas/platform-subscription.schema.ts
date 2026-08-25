@@ -42,6 +42,10 @@ export class PlatformSubscription {
   @Prop({ type: Types.ObjectId, ref: User.name, required: true, index: true })
   userId!: Types.ObjectId;
 
+  /** Present only while this is the user's current entitlement. */
+  @Prop({ trim: true, enum: ['current'] })
+  currentEntitlementKey?: 'current';
+
   @Prop({
     type: Types.ObjectId,
     ref: 'PlatformPlan',
@@ -77,3 +81,10 @@ export const PlatformSubscriptionSchema =
 PlatformSubscriptionSchema.index({ userId: 1, status: 1 });
 PlatformSubscriptionSchema.index({ planId: 1, status: 1 });
 PlatformSubscriptionSchema.index({ 'period.end': 1, status: 1 });
+PlatformSubscriptionSchema.index(
+  { userId: 1, currentEntitlementKey: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { currentEntitlementKey: 'current' },
+  },
+);

@@ -118,6 +118,18 @@ export class PaymentRelatedDto {
 
   @IsOptional()
   @IsMongoId()
+  membershipPlanId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  platformPlanId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  platformSubscriptionId?: string;
+
+  @IsOptional()
+  @IsMongoId()
   packageId?: string;
 
   @IsOptional()

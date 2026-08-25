@@ -13,8 +13,8 @@ export function AthleteGoalsIntroSection({
         اهداف و یادآوری
       </Typography>
       <Typography className={styles.subtitle()} type="body">
-        هدف متریک تعریف کن. یادآوری‌ها به‌صورت پیش‌فرض متوقف‌اند و فقط با
-        opt-in فعال می‌شوند.
+        برای یکی از معیارهای سلامتی‌ات هدف بساز. یادآوری‌ها فقط با اجازه خودت
+        فعال می‌شوند.
       </Typography>
     </section>
   );

@@ -9,7 +9,7 @@ function ref(overrides: Partial<RefItem> = {}): RefItem {
   return {
     id: "cat-1",
     type: "club_category",
-    name: "باشگاه بدنسازی و تناسب اندام",
+    name: "باشگاه بدنسازی و تناسب‌اندام",
     slug: "gym",
     description: null,
     icon: "BarbellHorizontal",

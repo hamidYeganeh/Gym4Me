@@ -133,7 +133,7 @@ function validateSection(section: DiscoverySectionDefinition): SectionErrors {
     radius !== undefined &&
     (typeof radius !== "number" || radius < 100 || radius > 100000)
   )
-    errors.radiusMeters = "شعاع جستجو باید بین ۱۰۰ تا ۱۰۰٬۰۰۰ متر باشد.";
+    errors.radiusMeters = "شعاع جست‌وجو باید بین ۱۰۰ تا ۱۰۰٬۰۰۰ متر باشد.";
   return errors;
 }
 

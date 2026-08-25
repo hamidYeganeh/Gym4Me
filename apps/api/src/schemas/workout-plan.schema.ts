@@ -65,6 +65,32 @@ export class WorkoutPlanPeriod {
 export const WorkoutPlanPeriodSchema =
   SchemaFactory.createForClass(WorkoutPlanPeriod);
 
+@Schema()
+export class WorkoutPlanRevision {
+  _id!: Types.ObjectId;
+
+  @Prop({ required: true, min: 1 })
+  revision!: number;
+
+  @Prop({ required: true, trim: true, maxlength: 200 })
+  title!: string;
+
+  @Prop({ type: [WorkoutPlanWeekSchema], default: [] })
+  weeks!: WorkoutPlanWeek[];
+
+  @Prop({ type: WorkoutPlanPeriodSchema })
+  period?: WorkoutPlanPeriod;
+
+  @Prop({ type: Types.ObjectId, ref: User.name, required: true })
+  createdByUserId!: Types.ObjectId;
+
+  @Prop({ type: Date, required: true })
+  createdAt!: Date;
+}
+
+export const WorkoutPlanRevisionSchema =
+  SchemaFactory.createForClass(WorkoutPlanRevision);
+
 @Schema({ timestamps: true, collection: 'workout_plans' })
 export class WorkoutPlan {
   @Prop({ type: Types.ObjectId, ref: User.name, required: true, index: true })
@@ -101,6 +127,16 @@ export class WorkoutPlan {
 
   @Prop({ type: WorkoutPlanPeriodSchema })
   period?: WorkoutPlanPeriod;
+
+  @Prop({ type: Types.ObjectId })
+  currentRevisionId?: Types.ObjectId;
+
+  @Prop({ min: 1 })
+  currentRevision?: number;
+
+  /** Append-only prescription snapshots. Existing entries are never edited. */
+  @Prop({ type: [WorkoutPlanRevisionSchema], default: [] })
+  revisions!: WorkoutPlanRevision[];
 
   createdAt!: Date;
   updatedAt!: Date;

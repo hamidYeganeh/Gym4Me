@@ -31,6 +31,7 @@ export function kycRequestId(row: AdminKycRequest) {
 
 export function kycUserLabel(row: AdminKycRequest) {
   const user = row.userId;
+  if (!user) return "—";
   if (typeof user === "string") return user;
   const name = [user.name?.first, user.name?.last].filter(Boolean).join(" ");
   return name || user.phone || user.code || user.id || "—";
@@ -38,6 +39,7 @@ export function kycUserLabel(row: AdminKycRequest) {
 
 export function kycUserId(row: AdminKycRequest): string | null {
   const user = row.userId;
+  if (!user) return null;
   if (typeof user === "string") return user;
   return user.id ?? null;
 }

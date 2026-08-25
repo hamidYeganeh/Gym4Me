@@ -58,6 +58,26 @@ export class WorkoutLogPain {
 export const WorkoutLogPainSchema =
   SchemaFactory.createForClass(WorkoutLogPain);
 
+@Schema({ _id: true })
+export class WorkoutLogReview {
+  _id!: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: User.name, required: true })
+  coachUserId!: Types.ObjectId;
+
+  @Prop({ required: true, trim: true, minlength: 2, maxlength: 2000 })
+  note!: string;
+
+  @Prop({ required: true, trim: true, maxlength: 120 })
+  clientMutationId!: string;
+
+  @Prop({ type: Date, required: true })
+  reviewedAt!: Date;
+}
+
+export const WorkoutLogReviewSchema =
+  SchemaFactory.createForClass(WorkoutLogReview);
+
 @Schema({ timestamps: true, collection: 'workout_logs' })
 export class WorkoutLog {
   @Prop({
@@ -98,6 +118,10 @@ export class WorkoutLog {
 
   @Prop({ type: WorkoutLogPainSchema })
   pain?: WorkoutLogPain;
+
+  /** Append-only coach feedback. Entries are never rewritten or deleted. */
+  @Prop({ type: [WorkoutLogReviewSchema], default: [] })
+  reviews!: WorkoutLogReview[];
 
   @Prop({ trim: true, maxlength: 120 })
   clientMutationId?: string;

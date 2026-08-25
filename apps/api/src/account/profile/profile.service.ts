@@ -459,6 +459,16 @@ export class ProfileService {
         documentMediaIds: (profile.verification?.documentMediaIds ?? []).map(
           (id) => id.toString(),
         ),
+        credential: profile.verification?.credential
+          ? {
+              typeKey: profile.verification.credential.typeKey,
+              issuer: profile.verification.credential.issuer,
+              issuedAt:
+                profile.verification.credential.issuedAt?.toISOString() ?? null,
+              expiresAt:
+                profile.verification.credential.expiresAt.toISOString(),
+            }
+          : null,
       },
       serviceArea: {
         cityId: profile.serviceArea?.cityId?.toString() ?? null,

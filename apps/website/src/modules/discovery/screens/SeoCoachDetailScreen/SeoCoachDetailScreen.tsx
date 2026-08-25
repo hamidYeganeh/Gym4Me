@@ -53,6 +53,20 @@ export async function SeoCoachDetailScreen({
             name: club.name,
             url: `/clubs/${club.id}`,
           })),
+          ...(coach.verification.credential
+            ? {
+                hasCredential: {
+                  "@type": "EducationalOccupationalCredential",
+                  credentialCategory:
+                    coach.verification.credential.typeKey.replaceAll("_", " "),
+                  recognizedBy: {
+                    "@type": "Organization",
+                    name: coach.verification.credential.issuer,
+                  },
+                  validUntil: coach.verification.credential.expiresAt,
+                },
+              }
+            : {}),
         }}
       />
       <main className={styles.root}>
@@ -71,7 +85,7 @@ export async function SeoCoachDetailScreen({
               هویت و سابقه تأییدشده
             </span>
             <span className="rounded-full bg-default px-3 py-1 text-muted">
-              بروزرسانی {new Date(coach.updatedAt).toLocaleDateString("fa-IR")}
+              به‌روزرسانی {new Date(coach.updatedAt).toLocaleDateString("fa-IR")}
             </span>
           </div>
           {coach.bio ? <p className={styles.body}>{coach.bio}</p> : null}
@@ -94,6 +108,20 @@ export async function SeoCoachDetailScreen({
               <dt>باشگاه‌ها</dt>
               <dd>{coach.clubs?.length ?? 0}</dd>
             </div>
+            {coach.verification.credential ? (
+              <div>
+                <dt>مدرک معتبر</dt>
+                <dd>
+                  {coach.verification.credential.typeKey.replaceAll("_", " ")}
+                  {" · "}
+                  {coach.verification.credential.issuer}
+                  {" · تا "}
+                  {new Date(
+                    coach.verification.credential.expiresAt,
+                  ).toLocaleDateString("fa-IR-u-ca-persian")}
+                </dd>
+              </div>
+            ) : null}
           </dl>
           <section className="border-t border-border pt-6">
             <h2 className="text-lg font-semibold">نوع جلسه و قیمت</h2>

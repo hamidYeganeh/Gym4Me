@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@heroui/react/button";
 import { Spinner } from "@heroui/react/spinner";
 import { Typography } from "@heroui/react/typography";
 import type { HealthSyncProvider, HealthSyncState } from "@repo/api";
@@ -21,6 +22,7 @@ export function AthleteHealthSyncGate() {
   const deviceSyncEnabled = useFeatureFlag("health.device_sync");
   const health = useHealthMetricsConnect();
   const [syncStates, setSyncStates] = useState<HealthSyncState[] | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [lastFlushSummary, setLastFlushSummary] = useState<string | null>(null);
 
@@ -29,13 +31,21 @@ export function AthleteHealthSyncGate() {
       setSyncStates([]);
       return;
     }
-    const result = await accountProgress.listHealthSyncStates();
-    setSyncStates(result.items);
+    try {
+      const result = await accountProgress.listHealthSyncStates();
+      setSyncStates(result.items);
+      setLoadError(null);
+    } catch (error) {
+      setLoadError(
+        error instanceof Error ? error.message : "بارگذاری اتصال‌ها ناموفق بود.",
+      );
+      throw error;
+    }
   }, [isAuthenticated]);
 
   useEffect(() => {
     if (!isReady || !deviceSyncEnabled) return;
-    void load().catch(() => setSyncStates([]));
+    void load().catch(() => undefined);
   }, [isReady, deviceSyncEnabled, load]);
 
   if (!deviceSyncEnabled) {
@@ -52,6 +62,24 @@ export function AthleteHealthSyncGate() {
   }
 
   if (!syncStates) {
+    if (loadError) {
+      return (
+        <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3 px-6 text-center">
+          <Typography type="h3" weight="semibold">
+            بارگذاری اتصال‌های سلامت ناموفق بود
+          </Typography>
+          <Typography className="text-muted" type="body">
+            {loadError}
+          </Typography>
+          <Button
+            onPress={() => void load().catch(() => undefined)}
+            variant="tertiary"
+          >
+            تلاش دوباره
+          </Button>
+        </div>
+      );
+    }
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
         <Spinner size="lg" />
@@ -74,7 +102,6 @@ export function AthleteHealthSyncGate() {
               await upsertConnectedHealthState({
                 provider,
                 authorization: result.authorization,
-                lastSyncAt: new Date().toISOString(),
               });
               await load();
               setLastFlushSummary("مجوز ثبت و وضعیت اتصال به‌روز شد.");
@@ -113,33 +140,31 @@ export function AthleteHealthSyncGate() {
         setPending(true);
         setLastFlushSummary(null);
         try {
-          // Ensure server knows we are connected before flush.
-          if (health.isConnected && health.authorization) {
-            const provider = resolveHealthProvider(health.platform);
-            if (provider) {
-              await upsertConnectedHealthState({
-                provider,
-                authorization: health.authorization,
-              });
-            }
-          }
-          const flush = await flushHealthSamples();
-          await load();
-          if (!flush) {
+          const provider = resolveHealthProvider(health.platform);
+          if (!provider || !health.authorization || !health.isConnected) {
             setLastFlushSummary(
-              "همگام‌سازی در این پلتفرم پشتیبانی نمی‌شود.",
+              "برای همگام‌سازی ابتدا دسترسی دادهٔ سلامت را متصل کنید.",
             );
             return;
           }
-          if (flush.mode === "stub_empty") {
+          const currentState = syncStates.find(
+            (state) => state.provider === provider,
+          );
+          const flush = await flushHealthSamples({
+            provider,
+            authorization: health.authorization,
+            cursorByMetric: currentState?.cursorByMetric,
+          });
+          await load();
+          if (flush.rejected > 0) {
             setLastFlushSummary(
-              "نمونهٔ دستگاه خوانده نشد (مسیر stub)؛ lastSyncAt به‌روز شد.",
+              `${flush.sampleCount} نمونه خوانده شد؛ ${flush.rejected} نمونه پذیرفته نشد و نشانگر همگام‌سازی جلو نرفت.`,
             );
-          } else {
-            setLastFlushSummary(
-              `${flush.sampleCount} نمونه · ${flush.created} جدید · ${flush.deduplicated} تکراری`,
-            );
+            return;
           }
+          setLastFlushSummary(
+            `${flush.sampleCount} نمونه · ${flush.created} جدید · ${flush.deduplicated} تکراری`,
+          );
         } catch (error) {
           setLastFlushSummary(
             error instanceof Error ? error.message : "همگام‌سازی ناموفق بود.",

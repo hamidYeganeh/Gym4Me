@@ -120,4 +120,10 @@ export const DEFAULT_NOTIFICATION_TEMPLATES: DefaultNotificationTemplate[] = [
     body: 'تبریک! نشان «{achievementTitle}» را دریافت کردید{bonusSuffix}.',
     channels: { push, inbox, sms: NotificationSmsSetting.DISABLED },
   },
+  {
+    key: NotificationTemplateKey.WORKOUT_REVIEWED,
+    title: 'بازخورد جدید مربی',
+    body: 'مربی شما تمرین تکمیل‌شده را مرور کرد. بازخورد را در جزئیات برنامه ببینید.',
+    channels: { push, inbox, sms: NotificationSmsSetting.DISABLED },
+  },
 ];

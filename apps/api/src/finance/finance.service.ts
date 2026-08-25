@@ -446,6 +446,99 @@ export class FinanceService {
     return committed;
   }
 
+  /**
+   * Capture a verified non-wallet gateway intent inside its caller's domain
+   * transaction. The provider verification must already have succeeded.
+   */
+  async capturePendingGatewayPayment(
+    input: {
+      paymentId: string | Types.ObjectId;
+      authority: string;
+      gatewayRefId: string;
+      membershipId?: string | Types.ObjectId;
+      platformSubscriptionId?: string | Types.ObjectId;
+    },
+    session: ClientSession,
+  ) {
+    const payment = await this.paymentModel
+      .findById(this.toObjectId(input.paymentId, 'paymentId'))
+      .session(session);
+    if (!payment) throw new NotFoundException('Payment intent not found');
+    if (payment.channel !== PaymentChannel.ZARINPAL) {
+      throw new ConflictException('Payment intent is not a gateway payment');
+    }
+    if (payment.status === PaymentStatus.CAPTURED) {
+      const ledger = await this.ledgerModel
+        .findOne({ paymentId: payment._id })
+        .session(session)
+        .lean();
+      return {
+        payment: payment.toObject(),
+        ledger,
+        idempotent: true as const,
+      };
+    }
+    if (
+      payment.status !== PaymentStatus.PENDING &&
+      payment.status !== PaymentStatus.AUTHORIZED
+    ) {
+      throw new ConflictException('Payment intent is not payable');
+    }
+
+    if (input.membershipId) {
+      payment.related.membershipId = this.toObjectId(
+        input.membershipId,
+        'membershipId',
+      );
+      payment.markModified('related');
+    }
+    if (input.platformSubscriptionId) {
+      payment.related.platformSubscriptionId = this.toObjectId(
+        input.platformSubscriptionId,
+        'platformSubscriptionId',
+      );
+      payment.markModified('related');
+    }
+    if (
+      payment.reference.authority &&
+      payment.reference.authority !== input.authority
+    ) {
+      throw new ConflictException('Payment authority does not match intent');
+    }
+    const lines = this.buildPaymentLines(
+      payment.channel,
+      payment.amount,
+      payment.related,
+      payment.purpose,
+      undefined,
+      payment.tenders,
+    );
+    this.assertBalanced(lines);
+    const now = new Date();
+    payment.status = PaymentStatus.CAPTURED;
+    payment.capturedAt = now;
+    payment.reference.authority = input.authority;
+    payment.reference.gatewayRefId = input.gatewayRefId;
+    payment.markModified('reference');
+    await payment.save({ session });
+
+    const ledger = new this.ledgerModel({
+      kind: LedgerEntryKind.PAYMENT,
+      paymentId: payment._id,
+      lines,
+      split: payment.amount,
+      related: payment.related,
+      dedupeKey: `payment:${payment.idempotencyKey}`,
+      occurredAt: now,
+    });
+    await ledger.save({ session });
+    return {
+      payment: payment.toObject(),
+      ledger: ledger.toObject(),
+      idempotent: false as const,
+    };
+  }
+
   async cancelPendingWalletTopUp(userId: string, authority: string) {
     const cancelled = await this.paymentModel.findOneAndUpdate(
       {
@@ -1366,6 +1459,8 @@ export class FinanceService {
         return 'Membership payment';
       case PaymentPurpose.PACKAGE:
         return 'Session package';
+      case PaymentPurpose.PLATFORM_SUBSCRIPTION:
+        return 'Platform subscription';
       default:
         return 'Payment';
     }
@@ -2619,6 +2714,18 @@ export class FinanceService {
         : undefined,
       membershipId: related.membershipId
         ? this.toObjectId(related.membershipId, 'related.membershipId')
+        : undefined,
+      membershipPlanId: related.membershipPlanId
+        ? this.toObjectId(related.membershipPlanId, 'related.membershipPlanId')
+        : undefined,
+      platformPlanId: related.platformPlanId
+        ? this.toObjectId(related.platformPlanId, 'related.platformPlanId')
+        : undefined,
+      platformSubscriptionId: related.platformSubscriptionId
+        ? this.toObjectId(
+            related.platformSubscriptionId,
+            'related.platformSubscriptionId',
+          )
         : undefined,
       packageId: related.packageId
         ? this.toObjectId(related.packageId, 'related.packageId')

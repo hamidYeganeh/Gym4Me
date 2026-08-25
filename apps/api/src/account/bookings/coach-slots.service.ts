@@ -11,7 +11,6 @@ import {
   ClubLifecycleStatus,
   ClubOperationalStatus,
   CoachSlotStatus,
-  VerificationStatus,
 } from '../../common/enums';
 import { MongoTransactionService } from '../../common/mongo/mongo-transaction.service';
 import { Club, ClubDocument } from '../../schemas/club.schema';
@@ -23,6 +22,7 @@ import { CoachSlot, CoachSlotDocument } from '../../schemas/coach-slot.schema';
 import { CoachSlotInputDto } from './dto/coach-slot.dto';
 import { CalendarAvailabilityService } from '../calendar/calendar-availability.service';
 import { BookingCalendarGuard } from './application/services/booking-calendar-guard.service';
+import { approvedCoachVerificationFilter } from '../coaches/coach-verification-visibility';
 
 const MAX_RANGE_DAYS = 62;
 
@@ -53,7 +53,7 @@ export class CoachSlotsService {
     }
     const profile = await this.coachModel.findOne({
       userId: new Types.ObjectId(coachUserId),
-      'verification.status': VerificationStatus.APPROVED,
+      ...approvedCoachVerificationFilter(),
     });
     if (!profile) throw new NotFoundException('Coach not found');
 

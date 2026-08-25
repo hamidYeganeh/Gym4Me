@@ -40,7 +40,7 @@ export function createAccountAuthApi(client: ApiClient) {
           body: input,
         }),
       );
-      client.setSession(session);
+      await client.setSession(session);
       return session;
     },
 
@@ -52,7 +52,7 @@ export function createAccountAuthApi(client: ApiClient) {
           body: input,
         }),
       );
-      client.setSession(session);
+      await client.setSession(session);
       return session;
     },
 
@@ -64,7 +64,7 @@ export function createAccountAuthApi(client: ApiClient) {
       });
       const current = client.getSession();
       if (current) {
-        client.setSession({ ...current, ...pair });
+        await client.setSession({ ...current, ...pair });
       }
       return pair;
     },
@@ -80,7 +80,7 @@ export function createAccountAuthApi(client: ApiClient) {
           },
         }),
       );
-      client.setSession(session);
+      await client.setSession(session);
       return session;
     },
 
@@ -95,7 +95,7 @@ export function createAccountAuthApi(client: ApiClient) {
           },
         });
       } finally {
-        client.setSession(null);
+        await client.setSession(null);
       }
     },
 

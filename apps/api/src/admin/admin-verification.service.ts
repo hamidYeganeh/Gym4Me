@@ -32,7 +32,7 @@ import { User, UserDocument } from '../schemas/user.schema';
 import { UsersService } from '../users/users.service';
 import {
   ListCoachVerificationsQueryDto,
-  ReviewVerificationDto,
+  ReviewCoachVerificationDto,
 } from './dto/admin-review.dto';
 
 const COACH_VERIFICATION_SORT_FIELDS = {
@@ -133,6 +133,7 @@ export class AdminVerificationService {
             documentMediaIds: (p.verification?.documentMediaIds ?? []).map(
               (id) => id.toString(),
             ),
+            credential: p.verification?.credential ?? null,
           },
           experience: p.experience ?? {},
           bio: p.bio ?? null,
@@ -146,13 +147,17 @@ export class AdminVerificationService {
 
   async reviewCoach(
     userId: string,
-    dto: ReviewVerificationDto,
+    dto: ReviewCoachVerificationDto,
     adminId: string,
     request: Request,
   ) {
     if (dto.action === 'reject' && !dto.reviewNote?.trim()) {
       throw new BadRequestException('Reject reason is required');
     }
+    const credential =
+      dto.action === 'approve'
+        ? this.validatedCredential(dto.credential)
+        : undefined;
 
     const profile = await this.profiles.getCoachProfileByUserId(userId);
     if (profile.verification.status !== VerificationStatus.PENDING) {
@@ -170,12 +175,18 @@ export class AdminVerificationService {
 
     if (handled) {
       const refreshed = await this.profiles.getCoachProfileByUserId(userId);
+      if (credential) {
+        refreshed.verification.credential = credential;
+        refreshed.markModified('verification');
+        await refreshed.save();
+      }
       return {
         userId,
         verification: {
           status: refreshed.verification.status,
           reviewedAt: refreshed.verification.reviewedAt,
           reviewNote: refreshed.verification.reviewNote ?? null,
+          credential: refreshed.verification.credential ?? null,
         },
       };
     }
@@ -188,6 +199,7 @@ export class AdminVerificationService {
     profile.verification.reviewedBy = new Types.ObjectId(adminId);
     profile.verification.reviewNote =
       dto.action === 'reject' ? (dto.reviewNote ?? 'Rejected') : dto.reviewNote;
+    profile.verification.credential = credential;
     profile.markModified('verification');
     await profile.save();
 
@@ -198,6 +210,9 @@ export class AdminVerificationService {
       metadata: {
         action: dto.action,
         reviewNote: profile.verification.reviewNote,
+        credentialTypeKey: credential?.typeKey,
+        credentialIssuer: credential?.issuer,
+        credentialExpiresAt: credential?.expiresAt,
       },
       request,
     });
@@ -214,7 +229,39 @@ export class AdminVerificationService {
         status: profile.verification.status,
         reviewedAt: profile.verification.reviewedAt,
         reviewNote: profile.verification.reviewNote ?? null,
+        credential: profile.verification.credential ?? null,
       },
+    };
+  }
+
+  private validatedCredential(
+    credential: ReviewCoachVerificationDto['credential'],
+  ) {
+    if (!credential) {
+      throw new BadRequestException('Credential details are required');
+    }
+    const issuedAt = credential.issuedAt
+      ? new Date(`${credential.issuedAt.slice(0, 10)}T00:00:00.000+03:30`)
+      : undefined;
+    const expiresAt = new Date(
+      `${credential.expiresAt.slice(0, 10)}T23:59:59.999+03:30`,
+    );
+    if (Number.isNaN(expiresAt.getTime()) || expiresAt <= new Date()) {
+      throw new BadRequestException('Credential expiry must be in the future');
+    }
+    if (
+      issuedAt &&
+      (Number.isNaN(issuedAt.getTime()) || issuedAt > expiresAt)
+    ) {
+      throw new BadRequestException(
+        'Credential issue date must be on or before expiry',
+      );
+    }
+    return {
+      typeKey: credential.typeKey.trim(),
+      issuer: credential.issuer.trim(),
+      issuedAt,
+      expiresAt,
     };
   }
 }

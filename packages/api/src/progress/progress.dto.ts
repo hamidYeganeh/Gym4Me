@@ -80,6 +80,9 @@ export type HealthSyncProvider = "apple_health" | "health_connect";
 
 export type HealthSyncStatus =
   | "connected"
+  | "syncing"
+  | "synced"
+  | "partial"
   | "paused"
   | "disconnected"
   | "error";
@@ -229,8 +232,24 @@ export type WorkoutPlan = {
   privacy: Privacy;
   weeks: WorkoutPlanWeek[];
   period: WorkoutPlanPeriod | null;
+  currentRevisionId: string | null;
+  currentRevision: number | null;
+  revisions: WorkoutPlanRevisionSummary[];
   createdAt: string;
   updatedAt: string;
+};
+
+export type WorkoutPlanRevisionSummary = {
+  id: string;
+  revision: number;
+  createdByUserId: string;
+  createdAt: string;
+};
+
+export type WorkoutPlanRevision = WorkoutPlanRevisionSummary & {
+  title: string;
+  weeks: WorkoutPlanWeek[];
+  period: WorkoutPlanPeriod | null;
 };
 
 export type WorkoutPlanExerciseItemInput = {
@@ -436,6 +455,14 @@ export type WorkoutLogPain = {
   bodyAreaKeys: string[];
 };
 
+export type WorkoutLogReview = {
+  id: string;
+  coachUserId: string;
+  note: string;
+  clientMutationId: string;
+  reviewedAt: string;
+};
+
 export type WorkoutLog = {
   id: string;
   planId: string;
@@ -447,10 +474,16 @@ export type WorkoutLog = {
   timing: WorkoutLogTiming | null;
   note: string | null;
   pain: WorkoutLogPain | null;
+  reviews: WorkoutLogReview[];
   clientMutationId: string | null;
   loggedAt: string;
   createdAt: string;
   updatedAt: string;
+};
+
+export type ReviewWorkoutLogInput = {
+  note: string;
+  clientMutationId: string;
 };
 
 export type WorkoutLogSetInput = {

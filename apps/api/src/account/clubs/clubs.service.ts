@@ -40,6 +40,10 @@ import { Location, LocationDocument } from '../../schemas/location.schema';
 import { ClubClass, ClubClassDocument } from '../../schemas/club-class.schema';
 import { Club, ClubDocument } from '../../schemas/club.schema';
 import {
+  CoachProfile,
+  CoachProfileDocument,
+} from '../../schemas/coach-profile.schema';
+import {
   ClubUserReview,
   ClubUserReviewDocument,
 } from '../../schemas/club-user-review.schema';
@@ -84,6 +88,7 @@ import {
   mapDiscoveryCategoryFacetRows,
 } from './discovery-club-facets';
 import { ClubsListQuery } from './application/queries/clubs-list.query';
+import { approvedCoachVerificationFilter } from '../coaches/coach-verification-visibility';
 
 type ClubWriteDto = CreateClubDto | UpdateClubDto;
 
@@ -121,6 +126,8 @@ export class ClubsService {
     private readonly refModel: Model<RefItemDocument>,
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
+    @InjectModel(CoachProfile.name)
+    private readonly coachProfileModel: Model<CoachProfileDocument>,
     private readonly users: UsersService,
     private readonly audit: AuditService,
     private readonly events: EventWriterService,
@@ -465,10 +472,20 @@ export class ClubsService {
 
   // ── Branches / classes / coaches ───────────────
 
-  async listBranches(clubId: string) {
-    await this.findClubOrFail(clubId);
+  async listBranches(clubId: string, opts?: { discovery?: boolean }) {
+    const discovery = opts?.discovery === true;
+    if (discovery) await this.discoveryGet(clubId);
+    else await this.findClubOrFail(clubId);
     const items = await this.clubModel
-      .find({ parentClubId: new Types.ObjectId(clubId) })
+      .find({
+        parentClubId: new Types.ObjectId(clubId),
+        ...(discovery
+          ? {
+              'review.status': ClubLifecycleStatus.APPROVED,
+              operationalStatus: ClubOperationalStatus.ACTIVE,
+            }
+          : {}),
+      })
       .sort({ createdAt: -1 })
       .lean();
     return asSinglePageResult(
@@ -564,23 +581,55 @@ export class ClubsService {
   }
 
   async listCoaches(clubId: string, opts?: { discovery?: boolean }) {
-    const club = await this.findClubOrFail(clubId);
-    const coachIds = (club.coaches ?? []).map((c) => c.coachId);
-    const users = await this.userModel.find({ _id: { $in: coachIds } });
-    const byId = new Map(users.map((u) => [u._id.toString(), u]));
     const discovery = opts?.discovery === true;
+    const club = discovery
+      ? await this.discoveryClubDocument(clubId)
+      : await this.findClubOrFail(clubId);
+    const coachIds = (club.coaches ?? []).map((c) => c.coachId);
+    let visibleCoachIds = coachIds;
+    if (discovery && coachIds.length > 0) {
+      const profiles = await this.coachProfileModel.find({
+        userId: { $in: coachIds },
+        ...approvedCoachVerificationFilter(),
+      });
+      const approved = new Set(
+        profiles.map((profile) => profile.userId.toString()),
+      );
+      visibleCoachIds = coachIds.filter((id) => approved.has(id.toString()));
+    }
+    const users = await this.userModel.find({
+      _id: { $in: visibleCoachIds },
+      ...(discovery ? { status: UserStatus.ACTIVE } : {}),
+    });
+    const byId = new Map(users.map((u) => [u._id.toString(), u]));
     return asSinglePageResult(
-      coachIds.map((id) => {
+      visibleCoachIds.flatMap((id) => {
         const user = byId.get(id.toString());
-        if (!user) return { coachId: id.toString() };
-        return {
-          coachId: id.toString(),
-          ...(discovery
-            ? this.users.toDiscoveryPublic(user)
-            : this.users.toPublic(user)),
-        };
+        if (!user && discovery) return [];
+        if (!user) return [{ coachId: id.toString() }];
+        return [
+          {
+            coachId: id.toString(),
+            ...(discovery
+              ? this.users.toDiscoveryPublic(user)
+              : this.users.toPublic(user)),
+          },
+        ];
       }),
     );
+  }
+
+  private async discoveryClubDocument(clubId: string) {
+    if (!Types.ObjectId.isValid(clubId)) {
+      throw new NotFoundException('Club not found');
+    }
+    const club = await this.clubModel.findOne({
+      _id: new Types.ObjectId(clubId),
+      'review.status': ClubLifecycleStatus.APPROVED,
+      operationalStatus: ClubOperationalStatus.ACTIVE,
+    });
+    if (!club) throw new NotFoundException('Club not found');
+    return club;
   }
 
   async assignCoach(

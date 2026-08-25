@@ -397,13 +397,18 @@ export enum AnalyticsEventName {
   METRIC_LOGGED = 'metric_logged',
   WORKOUT_STARTED = 'workout_started',
   WORKOUT_COMPLETED = 'workout_completed',
+  WORKOUT_SKIPPED = 'workout_skipped',
+  ACTION_CENTER_VIEWED = 'action_center_viewed',
+  ACTION_CENTER_CLICKED = 'action_center_clicked',
   WORKOUT_ABANDONED = 'workout_abandoned',
   DATA_GRANT_CREATED = 'data_grant_created',
   DATA_GRANT_REVOKED = 'data_grant_revoked',
   FEATURE_EXPOSED = 'feature_exposed',
   HEALTH_SYNC_STARTED = 'health_sync_started',
   HEALTH_SYNC_COMPLETED = 'health_sync_completed',
+  HEALTH_SYNC_PARTIAL = 'health_sync_partial',
   HEALTH_SYNC_FAILED = 'health_sync_failed',
+  HEALTH_SYNC_DISCONNECTED = 'health_sync_disconnected',
   PROGRESS_EXPORTED = 'progress_exported',
   PROGRESS_METRICS_DELETED = 'progress_metrics_deleted',
 }
@@ -480,6 +485,7 @@ export enum NotificationTemplateKey {
   ROLE_REQUEST_RESULT = 'role.request_result',
   PAYOUT_SETTLED = 'payout.settled',
   ACHIEVEMENT_UNLOCKED = 'gamification.achievement_unlocked',
+  WORKOUT_REVIEWED = 'workout.reviewed',
 }
 
 export enum SupportTicketCategory {
@@ -697,10 +703,13 @@ export enum AuditAction {
   MEMBERSHIP_PLAN_CREATED = 'membership.plan_created',
   MEMBERSHIP_PLAN_UPDATED = 'membership.plan_updated',
   MEMBERSHIP_SOLD = 'membership.sold',
+  MEMBERSHIP_RENEWED = 'membership.renewed',
   MEMBERSHIP_FROZEN = 'membership.frozen',
   MEMBERSHIP_UNFROZEN = 'membership.unfrozen',
   MEMBERSHIP_TRANSFERRED = 'membership.transferred',
   MEMBERSHIP_CANCELLED = 'membership.cancelled',
+  PLATFORM_SUBSCRIPTION_ACTIVATED = 'platform_subscription.activated',
+  PLATFORM_SUBSCRIPTION_CANCELLED = 'platform_subscription.cancelled',
   COACHING_SERVICE_UPSERTED = 'coaching.service_upserted',
   COACHING_AVAILABILITY_UPDATED = 'coaching.availability_updated',
   COACHING_PACKAGE_CREATED = 'coaching.package_created',
@@ -710,6 +719,8 @@ export enum AuditAction {
   STAFF_MEMBER_UPSERTED = 'staff.member_upserted',
   STAFF_MEMBER_REVOKED = 'staff.member_revoked',
   CHECKIN_RECORDED = 'checkin.recorded',
+  CHECKIN_OFFLINE_RETRIED = 'checkin.offline_retried',
+  CHECKIN_OFFLINE_DISMISSED = 'checkin.offline_dismissed',
   WAITLIST_JOINED = 'waitlist.joined',
   WAITLIST_OFFERED = 'waitlist.offered',
   WAITLIST_CLAIMED = 'waitlist.claimed',
@@ -730,6 +741,7 @@ export enum AuditAction {
   SOCIAL_REPORT_CREATED = 'social.report_created',
   SOCIAL_REPORT_RESOLVED = 'social.report_resolved',
   WORKOUT_LOG_UPSERTED = 'workout.log_upserted',
+  WORKOUT_LOG_REVIEWED = 'workout.log_reviewed',
   PERSONAL_RECORD_UPSERTED = 'progress.personal_record_upserted',
   EXERCISE_SUBMITTED = 'progress.exercise_submitted',
   EXERCISE_VERIFIED = 'progress.exercise_verified',
@@ -1184,8 +1196,19 @@ export enum HealthSyncProvider {
   HEALTH_CONNECT = 'health_connect',
 }
 
+export const HEALTH_SYNC_METRIC_KEYS = [
+  'steps',
+  'walking_distance_km',
+  'calories_kcal',
+  'heart_rate_bpm',
+  'weight_kg',
+] as const;
+
 export enum HealthSyncStatus {
   CONNECTED = 'connected',
+  SYNCING = 'syncing',
+  SYNCED = 'synced',
+  PARTIAL = 'partial',
   PAUSED = 'paused',
   DISCONNECTED = 'disconnected',
   ERROR = 'error',

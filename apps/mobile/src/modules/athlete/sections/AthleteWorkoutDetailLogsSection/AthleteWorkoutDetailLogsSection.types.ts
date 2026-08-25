@@ -10,6 +10,7 @@ export type AthleteWorkoutDetailLogsSectionProps = {
   sessionLabel: (index: number) => string;
   setsCountLabel: (count: number) => string;
   logStatusLabel: (status: AthleteWorkoutLogStatus) => string;
+  coachFeedbackLabel: string;
   logs: AthleteWorkoutLogItem[];
   className?: string;
 };

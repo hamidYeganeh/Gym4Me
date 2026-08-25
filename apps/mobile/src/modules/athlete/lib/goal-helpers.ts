@@ -39,7 +39,7 @@ export function goalStatusLabel(status: MetricGoal["status"]) {
 export function reminderStatusLabel(status: MetricReminderStatus) {
   switch (status) {
     case "active":
-      return "فعال (opt-in)";
+      return "فعال";
     case "paused":
       return "متوقف (پیش‌فرض)";
     case "archived":

@@ -16,10 +16,13 @@ import type {
   ListClubMembershipsQuery,
   ListMyMembershipsQuery,
   MembershipsPage,
+  InitiatePlatformSubscriptionCheckoutInput,
   PlatformPlansResponse,
   PlatformSubscriptionsResponse,
+  PreviewPlatformSubscriptionCheckoutInput,
   SelfPurchaseMembershipInput,
   SubscribePlatformInput,
+  VerifyPlatformSubscriptionCheckoutInput,
 } from "./memberships.dto";
 import { accountMembershipsKeys } from "./memberships.keys";
 
@@ -144,6 +147,41 @@ export function useCancelPlatformSubscription() {
       subscriptionId: string;
       input?: CancelPlatformSubscriptionInput;
     }) => api.cancelPlatformSubscription(subscriptionId, input),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: accountMembershipsKeys.all,
+      });
+    },
+  });
+}
+
+export function useInitiatePlatformSubscriptionCheckout() {
+  const api = useAccountMembershipsApi();
+  return useMutation({
+    mutationFn: (input: InitiatePlatformSubscriptionCheckoutInput) =>
+      api.initiatePlatformSubscriptionCheckout(input),
+  });
+}
+
+export function usePreviewPlatformSubscriptionCheckout() {
+  const api = useAccountMembershipsApi();
+  return useMutation({
+    mutationFn: (input: PreviewPlatformSubscriptionCheckoutInput) =>
+      api.previewPlatformSubscriptionCheckout(input),
+  });
+}
+
+export function useVerifyPlatformSubscriptionCheckout() {
+  const api = useAccountMembershipsApi();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      checkoutId,
+      input,
+    }: {
+      checkoutId: string;
+      input: VerifyPlatformSubscriptionCheckoutInput;
+    }) => api.verifyPlatformSubscriptionCheckout(checkoutId, input),
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: accountMembershipsKeys.all,

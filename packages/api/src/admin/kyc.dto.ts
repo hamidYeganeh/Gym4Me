@@ -19,7 +19,7 @@ export type AdminKycRequest = {
   id: string;
   /** @deprecated Prefer `id` — kept for older payloads. */
   _id?: string;
-  userId: AdminKycUserSummary | string;
+  userId: AdminKycUserSummary | string | null;
   kind: KycRequestKind;
   status: KycRequestStatus;
   documentType?: KycDocumentType | null;

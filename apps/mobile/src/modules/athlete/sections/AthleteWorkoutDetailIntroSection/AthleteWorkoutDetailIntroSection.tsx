@@ -8,6 +8,7 @@ export function AthleteWorkoutDetailIntroSection({
   focusLabel,
   statusLabel,
   periodLabel,
+  revisionLabel,
   className,
 }: AthleteWorkoutDetailIntroSectionProps) {
   const styles = athleteWorkoutDetailIntroSectionVariants();
@@ -27,6 +28,9 @@ export function AthleteWorkoutDetailIntroSection({
         <Typography className={styles.meta()} type="body-sm">
           {periodLabel}
         </Typography>
+        <Chip color="accent" size="sm" variant="soft">
+          <Chip.Label>{revisionLabel}</Chip.Label>
+        </Chip>
       </div>
     </section>
   );

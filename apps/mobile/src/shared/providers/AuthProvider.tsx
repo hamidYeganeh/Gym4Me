@@ -17,7 +17,11 @@ import {
   saveBiometricUnlock,
   readBiometricUnlock,
 } from "@/modules/auth/lib/biometric-unlock";
-import { accountAuth, apiClient } from "@/shared/lib/api-client";
+import {
+  accountAuth,
+  accountSessionStorage,
+  apiClient,
+} from "@/shared/lib/api-client";
 import { accountProfile } from "@/shared/lib/api";
 
 function captureSessionAttribution() {
@@ -31,7 +35,7 @@ type AuthContextValue = {
   user: PublicUser | null;
   activeRole: Role | null;
   isAuthenticated: boolean;
-  /** False until localStorage session is read on the client (SSR-safe). */
+  /** False until native secure storage or the web fallback is hydrated. */
   isReady: boolean;
   login: (phone: string, password: string) => Promise<AuthSession>;
   requestOtp: (phone: string) => Promise<OtpRequested>;
@@ -54,7 +58,7 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 function rememberSession(session: AuthSession) {
-  saveBiometricUnlock(session);
+  void saveBiometricUnlock(session);
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -63,8 +67,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    setSession(accountAuth.getSession());
-    setIsReady(true);
+    let cancelled = false;
+    void accountSessionStorage
+      .hydrate()
+      .then((persisted) => {
+        if (!cancelled) setSession(persisted);
+      })
+      .catch(() => {
+        // Native secure storage fails closed. The user can authenticate again
+        // instead of falling back to a plaintext token store.
+        if (!cancelled) setSession(null);
+      })
+      .finally(() => {
+        if (!cancelled) setIsReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -83,7 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession((current) => {
           if (!current) return current;
           const next = { ...current, user };
-          apiClient.setSession(next);
+          void apiClient.setSession(next);
           rememberSession(next);
           return next;
         });
@@ -95,7 +114,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       cancelled = true;
     };
     // Refresh once per authenticated bootstrap — not on every session write.
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: accessToken identity
   }, [isReady, session?.accessToken]);
 
   const login = useCallback(async (phone: string, password: string) => {
@@ -133,7 +151,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const loginWithBiometricUnlock = useCallback(async () => {
-    const unlock = readBiometricUnlock();
+    const unlock = await readBiometricUnlock();
     if (!unlock?.refreshToken) {
       throw new ApiError(
         401,
@@ -142,22 +160,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       );
     }
 
-    // Seed storage so refresh can merge the new token pair onto the session.
-    apiClient.setSession(unlock);
     try {
       const pair = await accountAuth.refresh(unlock.refreshToken);
       const next: AuthSession = {
         ...unlock,
         ...pair,
       };
-      apiClient.setSession(next);
+      await apiClient.setSession(next);
       rememberSession(next);
       setSession(next);
       void captureSessionAttribution();
       return next;
     } catch (error) {
-      clearBiometricUnlock();
-      apiClient.setSession(null);
+      await clearBiometricUnlock();
+      await apiClient.setSession(null);
       setSession(null);
       throw error;
     }
@@ -174,7 +190,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession((current) => {
       if (!current) return current;
       const next = { ...current, user };
-      apiClient.setSession(next);
+      void apiClient.setSession(next);
       rememberSession(next);
       return next;
     });
@@ -196,6 +212,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Never leak offline metric queue across accounts.
     const { clearOfflineQueue } = await import("@/shared/lib/offline-queue");
     await clearOfflineQueue();
+    const { clearWorkoutPlanCache } = await import(
+      "@/shared/lib/workout-plan-cache"
+    );
+    await clearWorkoutPlanCache();
+    const { clearOfflineCheckinQueues } = await import(
+      "@/modules/owner/lib/offline-checkin-queue"
+    );
+    await clearOfflineCheckinQueues();
 
     if (revoke) {
       try {
@@ -205,14 +229,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           throw error;
         }
       } finally {
-        clearBiometricUnlock();
+        await clearBiometricUnlock();
         setSession(null);
       }
       return;
     }
 
     // Soft lock: clear active session locally, keep biometric unlock payload.
-    apiClient.setSession(null);
+    await apiClient.setSession(null);
     setSession(null);
   }, [session]);
 

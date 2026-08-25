@@ -2,7 +2,7 @@ import type { AuthSession } from "./types";
 
 export type TokenStorage = {
   get(): AuthSession | null;
-  set(session: AuthSession | null): void;
+  set(session: AuthSession | null): void | Promise<void>;
 };
 
 /** In-memory fallback when `localStorage` is unavailable (SSR / tests). */

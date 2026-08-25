@@ -5,6 +5,7 @@ import type { DiscoveryClubsQuery } from "@repo/api/discovery";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import {
   basicsLocations,
+  accountMemberships,
   discoveryClubs,
   mediaFileUrl,
 } from "@/shared/lib/api";
@@ -153,8 +154,21 @@ export function useDiscoveryClubsBrowse(
 
       try {
         const page = await discoveryClubs.list(query);
+        const summaries = page.result.length
+          ? await accountMemberships
+              .listPublicPlanSummaries(page.result.map((club) => club.id))
+              .catch(() => ({ items: [] }))
+          : { items: [] };
+        const summaryByClub = new Map(
+          summaries.items.map((summary) => [summary.clubId, summary]),
+        );
         setClubs(
-          page.result.map((club) => mapDiscoveryClubToBrowse(club as never)),
+          page.result.map((club) =>
+            mapDiscoveryClubToBrowse(
+              club as never,
+              summaryByClub.get(club.id),
+            ),
+          ),
         );
         setSource("api");
       } catch {

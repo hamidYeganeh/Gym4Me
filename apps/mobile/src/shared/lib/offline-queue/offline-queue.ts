@@ -6,6 +6,8 @@ import type {
   OfflineQueueFlushResult,
   OfflineQueueItem,
   OfflineQueueItemStatus,
+  OfflineWorkoutPayload,
+  OfflineWorkoutQueueItem,
 } from "./offline-queue.types";
 
 const PENDING_STATUSES: OfflineQueueItemStatus[] = [
@@ -72,15 +74,12 @@ async function persist(items: OfflineQueueItem[]): Promise<void> {
   await offlineQueueStorage.saveJson(JSON.stringify(items));
 }
 
-function touch(
-  item: OfflineQueueItem,
-  patch: Partial<OfflineQueueItem>,
-): OfflineQueueItem {
+function touch<T extends OfflineQueueItem>(item: T, patch: Partial<T>): T {
   return {
     ...item,
     ...patch,
     updatedAt: nowIso(),
-  };
+  } as T;
 }
 
 /** Enqueue a metric payload (must include clientMutationId). */
@@ -115,6 +114,78 @@ export async function enqueue(
   return created;
 }
 
+/** Queue an ordered workout mutation. Create must precede local-id updates. */
+export async function enqueueWorkoutOperation(
+  payload: OfflineWorkoutPayload,
+): Promise<OfflineWorkoutQueueItem> {
+  const items = await loadAll();
+  const existing = items.find(
+    (item): item is OfflineWorkoutQueueItem =>
+      item.kind === "workout" &&
+      item.payload.localLogId === payload.localLogId &&
+      item.payload.operation === payload.operation &&
+      item.status !== "synced" &&
+      item.status !== "rejected_needs_user",
+  );
+  if (existing && payload.operation === "create") return existing;
+
+  const created: OfflineWorkoutQueueItem = {
+    id: newId(),
+    kind: "workout",
+    status: "queued",
+    payload,
+    serverResourceId: null,
+    createdAt: nowIso(),
+    updatedAt: nowIso(),
+    attempts: 0,
+    lastError: null,
+  };
+  await persist([...items, created]);
+  return created;
+}
+
+export async function listPendingWorkoutOperations(
+  planId?: string,
+): Promise<OfflineWorkoutQueueItem[]> {
+  const items = await loadAll();
+  return items.filter(
+    (item): item is OfflineWorkoutQueueItem =>
+      item.kind === "workout" &&
+      item.status !== "synced" &&
+      (!planId ||
+        (item.payload.operation === "create"
+          ? item.payload.input.planId === planId
+          : item.payload.planId === planId)),
+  );
+}
+
+export async function retryWorkoutOperations(localLogId: string) {
+  const items = await loadAll();
+  await persist(
+    items.map((item) =>
+      item.kind === "workout" &&
+      item.payload.localLogId === localLogId &&
+      item.status !== "synced"
+        ? touch(item, { status: "queued", lastError: null })
+        : item,
+    ),
+  );
+}
+
+export async function discardWorkoutOperations(localLogId: string) {
+  const items = await loadAll();
+  await persist(
+    items.filter(
+      (item) =>
+        !(
+          item.kind === "workout" &&
+          item.payload.localLogId === localLogId &&
+          item.status !== "synced"
+        ),
+    ),
+  );
+}
+
 export async function listPending(): Promise<OfflineQueueItem[]> {
   const items = await loadAll();
   return items.filter((item) => PENDING_STATUSES.includes(item.status));
@@ -131,7 +202,7 @@ export async function clearOfflineQueue(): Promise<void> {
 
 function applySyncResult(
   items: OfflineQueueItem[],
-  batch: OfflineQueueItem[],
+  batch: Extract<OfflineQueueItem, { kind: "metric" }>[],
   result: SyncProgressMetricsResult,
 ): OfflineQueueItem[] {
   const rejectedByMutation = new Map(
@@ -151,6 +222,7 @@ function applySyncResult(
 
   return items.map((item) => {
     if (!batchIds.has(item.id)) return item;
+    if (item.kind !== "metric") return item;
     const reason = rejectedByMutation.get(item.payload.clientMutationId);
     if (reason) {
       return touch(item, {
@@ -163,6 +235,91 @@ function applySyncResult(
       lastError: null,
     });
   });
+}
+
+function resolveWorkoutServerId(
+  items: OfflineQueueItem[],
+  item: OfflineWorkoutQueueItem,
+): string | null {
+  if (
+    item.payload.operation !== "create" &&
+    item.payload.serverLogId
+  ) {
+    return item.payload.serverLogId;
+  }
+  if (item.serverResourceId) return item.serverResourceId;
+  const create = items.find(
+    (candidate): candidate is OfflineWorkoutQueueItem =>
+      candidate.kind === "workout" &&
+      candidate.payload.operation === "create" &&
+      candidate.payload.localLogId === item.payload.localLogId &&
+      candidate.status === "synced" &&
+      Boolean(candidate.serverResourceId),
+  );
+  return create?.serverResourceId ?? null;
+}
+
+async function flushWorkoutItem(
+  items: OfflineQueueItem[],
+  queued: OfflineWorkoutQueueItem,
+): Promise<OfflineQueueItem[]> {
+  const current = items.find((item) => item.id === queued.id);
+  if (!current || current.kind !== "workout") return items;
+  const sending = touch(current, { status: "sending" });
+  let working = items.map((item) => (item.id === sending.id ? sending : item));
+  await persist(working);
+
+  let resolvedServerId: string | null = null;
+  try {
+    let serverResourceId: string | null = null;
+    if (sending.payload.operation === "create") {
+      const result = await accountProgress.createWorkoutLog(
+        sending.payload.input,
+      );
+      serverResourceId = result.id;
+    } else {
+      const logId = resolveWorkoutServerId(working, sending);
+      if (!logId) {
+        throw new Error("offline_workout_dependency_unresolved");
+      }
+      resolvedServerId = logId;
+      if (sending.payload.operation === "update") {
+        await accountProgress.updateWorkoutLog(logId, sending.payload.input);
+      } else if (sending.payload.operation === "complete") {
+        await accountProgress.completeWorkoutLog(logId);
+      } else {
+        await accountProgress.skipWorkoutLog(logId);
+      }
+      serverResourceId = logId;
+    }
+    working = working.map((item) =>
+      item.id === sending.id
+        ? touch(item, {
+            status: "synced",
+            lastError: null,
+            ...(item.kind === "workout" ? { serverResourceId } : {}),
+          })
+        : item,
+    );
+  } catch (error) {
+    const network = isNetworkFailure(error);
+    const dependency =
+      error instanceof Error &&
+      error.message === "offline_workout_dependency_unresolved";
+    const message = error instanceof Error ? error.message : "sync failed";
+    working = working.map((item) =>
+      item.id === sending.id
+        ? touch(item, {
+            status: network || dependency ? "retryable_error" : "rejected_needs_user",
+            attempts: item.attempts + 1,
+            lastError: message,
+            serverResourceId: resolvedServerId,
+          })
+        : item,
+    );
+  }
+  await persist(working);
+  return working;
 }
 
 /**
@@ -181,34 +338,47 @@ export async function flush(): Promise<OfflineQueueFlushResult> {
       return { synced: 0, retryable: 0, rejected: 0 };
     }
 
+    const metricPending = pending.filter(
+      (item): item is Extract<OfflineQueueItem, { kind: "metric" }> =>
+        item.kind === "metric",
+    );
     let working = items.map((item) =>
-      PENDING_STATUSES.includes(item.status)
+      item.kind === "metric" && PENDING_STATUSES.includes(item.status)
         ? touch(item, { status: "sending" })
         : item,
     );
-    await persist(working);
-
-    const batch = working.filter((item) => item.status === "sending");
-
-    try {
-      const result = await accountProgress.syncMetrics({
-        entries: batch.map((item) => item.payload),
-      });
-      working = applySyncResult(working, batch, result);
+    if (metricPending.length > 0) {
       await persist(working);
-    } catch (error) {
-      const network = isNetworkFailure(error);
-      const message =
-        error instanceof Error ? error.message : "sync failed";
-      working = working.map((item) => {
-        if (item.status !== "sending") return item;
-        return touch(item, {
-          status: network ? "retryable_error" : "rejected_needs_user",
-          attempts: item.attempts + 1,
-          lastError: message,
+      const batch = working.filter(
+        (item): item is Extract<OfflineQueueItem, { kind: "metric" }> =>
+          item.kind === "metric" && item.status === "sending",
+      );
+      try {
+        const result = await accountProgress.syncMetrics({
+          entries: batch.map((item) => item.payload),
         });
-      });
-      await persist(working);
+        working = applySyncResult(working, batch, result);
+        await persist(working);
+      } catch (error) {
+        const network = isNetworkFailure(error);
+        const message = error instanceof Error ? error.message : "sync failed";
+        working = working.map((item) => {
+          if (item.kind !== "metric" || item.status !== "sending") return item;
+          return touch(item, {
+            status: network ? "retryable_error" : "rejected_needs_user",
+            attempts: item.attempts + 1,
+            lastError: message,
+          });
+        });
+        await persist(working);
+      }
+    }
+
+    const workoutPending = pending.filter(
+      (item): item is OfflineWorkoutQueueItem => item.kind === "workout",
+    );
+    for (const item of workoutPending) {
+      working = await flushWorkoutItem(working, item);
     }
 
     const after = await loadAll();

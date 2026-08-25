@@ -28,6 +28,8 @@ import {
   ImportMembershipsDto,
   ListClubMembershipsQueryDto,
   ListMembershipPlansQueryDto,
+  PreviewMembershipRenewalDto,
+  RenewMembershipDto,
   SellMembershipDto,
   TransferMembershipDto,
   UnfreezeMembershipDto,
@@ -178,6 +180,35 @@ export class OwnerMembershipsController {
       dto,
       membershipActor(userId, activeRole),
       clubId,
+      request,
+    );
+  }
+
+  @Post(':membershipId/renewal-preview')
+  @ApiOperation({ summary: 'Preview same-plan membership renewal' })
+  previewRenewal(
+    @Param('clubId') clubId: string,
+    @Param('membershipId') membershipId: string,
+    @Body() dto: PreviewMembershipRenewalDto,
+  ) {
+    return this.memberships.previewRenewal(clubId, membershipId, dto);
+  }
+
+  @Post(':membershipId/renew')
+  @ApiOperation({ summary: 'Renew membership after price/effect consent' })
+  renew(
+    @CurrentUser('sub') userId: string,
+    @CurrentUser('activeRole') activeRole: Role,
+    @Param('clubId') clubId: string,
+    @Param('membershipId') membershipId: string,
+    @Body() dto: RenewMembershipDto,
+    @Req() request: Request,
+  ) {
+    return this.memberships.renew(
+      clubId,
+      membershipId,
+      dto,
+      membershipActor(userId, activeRole),
       request,
     );
   }

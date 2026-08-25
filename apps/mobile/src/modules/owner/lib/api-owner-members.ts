@@ -80,6 +80,8 @@ export function mapApiMembershipToOwnerMember(
     lastCheckInLabel: item.updatedAt
       ? `آخرین به‌روزرسانی: ${formatJalaliDateTime(item.updatedAt)}`
       : "—",
+    renewalEligible:
+      item.status !== "cancelled" && item.status !== "transferred",
   };
 }
 

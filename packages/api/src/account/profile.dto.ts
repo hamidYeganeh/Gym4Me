@@ -130,12 +130,20 @@ export type CoachProfile = {
     reviewedAt: string | null;
     reviewNote: string | null;
     documentMediaIds: string[];
+    credential: CoachVerificationCredential | null;
   };
   serviceArea: { cityId: string | null };
   sportIds: string[];
   coachTypes: CoachType[];
   createdAt: string;
   updatedAt: string;
+};
+
+export type CoachVerificationCredential = {
+  typeKey: string;
+  issuer: string;
+  issuedAt: string | null;
+  expiresAt: string;
 };
 
 export type UpdateCoachProfileInput = {

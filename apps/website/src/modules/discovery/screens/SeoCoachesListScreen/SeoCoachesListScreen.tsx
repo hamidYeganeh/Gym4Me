@@ -54,7 +54,7 @@ export async function SeoCoachesListScreen({
             </h1>
             <p className={slots.description()}>
               تخصص، سابقه، قیمت جلسه حضوری یا آنلاین و باشگاه‌های همکار را قبل
-              از ارسال درخواست ببینید.
+              از ارسال درخواست ببین.
             </p>
           </header>
           <form

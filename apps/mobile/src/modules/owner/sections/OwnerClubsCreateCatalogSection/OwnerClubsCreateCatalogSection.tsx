@@ -199,6 +199,9 @@ export function OwnerClubsCreateCatalogSection({
                       }
                     >
                       <Checkbox.Content>
+                        <Checkbox.Control>
+                          <Checkbox.Indicator />
+                        </Checkbox.Control>
                         <span className={styles.iconBox()}>
                           <CatalogIcon name={option.icon} />
                         </span>
@@ -206,9 +209,6 @@ export function OwnerClubsCreateCatalogSection({
                           {option.name}
                         </span>
                       </Checkbox.Content>
-                      <Checkbox.Control>
-                        <Checkbox.Indicator />
-                      </Checkbox.Control>
                     </Checkbox>
                   );
                 })}

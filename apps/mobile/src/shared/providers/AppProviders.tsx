@@ -11,6 +11,7 @@ import { DevicePermissionsProvider } from "./DevicePermissionsProvider";
 import { ExitAppProvider } from "./ExitAppProvider";
 import { NextMediaImageAdapter } from "./NextMediaImageAdapter";
 import { PushNotificationsProvider } from "./PushNotificationsProvider";
+import { PaymentReturnProvider } from "./PaymentReturnProvider";
 
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
@@ -21,6 +22,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
             <ApiToastBridge client={apiClient} />
             <DevicePermissionsProvider>
               <PushNotificationsProvider />
+              <PaymentReturnProvider />
               <ExitAppProvider />
               {children}
             </DevicePermissionsProvider>

@@ -32,7 +32,7 @@ describe('SellMembershipCommand', () => {
   const planId = new Types.ObjectId().toString();
   const actor = {
     userId: new Types.ObjectId().toString(),
-    kind: MembershipActorKind.CLUB_OWNER,
+    kind: MembershipActorKind.OWNER,
   };
   const holderUserId = new Types.ObjectId().toString();
   const session = {} as ClientSession;
@@ -68,6 +68,7 @@ describe('SellMembershipCommand', () => {
       .mockImplementation((input: Record<string, unknown>) => {
         const instance = {
           ...input,
+          _id: new Types.ObjectId(),
           save: jest.fn().mockResolvedValue(undefined),
         };
         eventInstances.push(instance);
@@ -95,6 +96,7 @@ describe('SellMembershipCommand', () => {
           work(session),
       ),
     };
+    const outbox = { enqueue: jest.fn().mockResolvedValue(undefined) };
     const command = new SellMembershipCommand(
       planModel as never,
       membershipModel as never,
@@ -103,6 +105,7 @@ describe('SellMembershipCommand', () => {
       finance as never,
       coupons as never,
       transactions as unknown as MongoTransactionService,
+      outbox as never,
     );
     return {
       audit,
@@ -113,6 +116,7 @@ describe('SellMembershipCommand', () => {
       finance,
       membershipInstances,
       membershipModel,
+      outbox,
       paymentId,
       paymentResult,
       plan,
@@ -153,8 +157,14 @@ describe('SellMembershipCommand', () => {
   });
 
   it('creates a free membership and SOLD event in the same session', async () => {
-    const { audit, command, eventInstances, finance, membershipInstances } =
-      setup();
+    const {
+      audit,
+      command,
+      eventInstances,
+      finance,
+      membershipInstances,
+      outbox,
+    } = setup();
 
     const result = await command.execute(clubId, dto, actor);
 
@@ -177,6 +187,17 @@ describe('SellMembershipCommand', () => {
       },
     });
     expect(eventInstances[0]?.save).toHaveBeenCalledWith({ session });
+    expect(outbox.enqueue).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventName: 'membership.sold',
+        payload: expect.objectContaining({
+          membershipId: result._id.toString(),
+          clubId,
+          planId,
+        }),
+      }),
+      session,
+    );
     expect(finance.recordPayment).not.toHaveBeenCalled();
     expect(finance.createDebt).not.toHaveBeenCalled();
     expect(audit.log).toHaveBeenCalledWith(
@@ -269,6 +290,48 @@ describe('SellMembershipCommand', () => {
       }),
     );
     jest.useRealTimers();
+  });
+
+  it('rejects paid athlete checkout before creating a membership or captured payment', async () => {
+    const { command, finance, membershipInstances } = setup({ amount: 1_000 });
+
+    await expect(
+      command.execute(
+        clubId,
+        { ...dto, channel: PaymentChannel.ZARINPAL },
+        { ...actor, kind: MembershipActorKind.ATHLETE },
+      ),
+    ).rejects.toThrow(
+      'Online membership checkout requires a verified payment intent',
+    );
+    expect(membershipInstances).toHaveLength(0);
+    expect(finance.recordPayment).not.toHaveBeenCalled();
+  });
+
+  it('rejects unverified external payment ids and online desk channels', async () => {
+    const suppliedPayment = setup({ amount: 1_000 });
+    await expect(
+      suppliedPayment.command.execute(
+        clubId,
+        { ...dto, paymentId: new Types.ObjectId().toString() },
+        actor,
+      ),
+    ).rejects.toThrow(
+      'Externally supplied membership paymentId is not accepted',
+    );
+    expect(suppliedPayment.membershipInstances).toHaveLength(0);
+
+    const onlineDesk = setup({ amount: 1_000 });
+    await expect(
+      onlineDesk.command.execute(
+        clubId,
+        { ...dto, channel: PaymentChannel.WALLET },
+        actor,
+      ),
+    ).rejects.toThrow(
+      'Desk sale requires cash, POS, card-to-card or mixed payment',
+    );
+    expect(onlineDesk.membershipInstances).toHaveLength(0);
   });
 
   it('returns the winning record after a duplicate-key race', async () => {

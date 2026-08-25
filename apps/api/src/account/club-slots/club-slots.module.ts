@@ -10,6 +10,10 @@ import {
   ClubSlotOccupancySchema,
 } from '../../schemas/club-slot-occupancy.schema';
 import { ClubSpace, ClubSpaceSchema } from '../../schemas/club-space.schema';
+import {
+  CoachProfile,
+  CoachProfileSchema,
+} from '../../schemas/coach-profile.schema';
 import { AdminClubSlotsController } from './admin-club-slots.controller';
 import { ClubSlotsService } from './club-slots.service';
 import { DiscoveryClassesController } from './discovery-classes.controller';
@@ -26,6 +30,7 @@ import { OwnerClubSlotsController } from './owner-club-slots.controller';
       { name: ClubClass.name, schema: ClubClassSchema },
       { name: ClubSlot.name, schema: ClubSlotSchema },
       { name: ClubSpace.name, schema: ClubSpaceSchema },
+      { name: CoachProfile.name, schema: CoachProfileSchema },
       { name: ClubSlotOccupancy.name, schema: ClubSlotOccupancySchema },
     ]),
   ],

@@ -105,6 +105,7 @@ Gym4Me از نظر مسئله و دامنه محصول کاربردی است: ت
 - **کار:** ابتدا inventory دادهٔ واقعی هر role؛ query projection با محدودیت؛ stateهای loading/empty/error/stale؛ حذف اعداد و statusهای ثابت؛ CTA فقط به use case موجود و مجاز.
 - **پذیرش:** خانه athlete رزرو/تمرین/اعتبار واقعی بعدی، coach جلسه/پیگیری واقعی و owner exceptionهای واقعی را نشان دهد؛ قطع API fixture نمایش ندهد؛ پاسخ query با p95 هدف‌گذاری‌شده در محیط staging ثبت شود.
 - **یادداشت وابستگی:** CTAهای booking/membership می‌توانند روی دادهٔ همان دامنه‌ها سوار شوند؛ `G4M-021` برای جلوگیری از deep-link به قیمت/ظرفیت discovery ناپایدار الزامی است، نه برای ساخت dashboard جدا.
+- **شواهد slice محلی PARTIAL (۲۰۲۶-۰۸-۲۵):** projection محدود سه‌نقشی و role guard در `apps/api/src/action-center/`، قرارداد و client در `packages/api/src/action-center/`، مصرف واقعی در homeهای athlete/coach/owner و eventهای view/click بدون PII اضافه شده‌اند. unit/client test و typecheck سه workspace پاس‌اند. وضعیت task همچنان `BLOCKED` است: dependencyها، stale state، p95 staging و آزمون integration هنوز بسته نشده‌اند.
 - **عدم انجام:** recommendation ML، redesign سراسری یا ایجاد dashboard service چنددامنه‌ای بزرگ.
 
 ### G4M-MKT-02 — Recovery loop رزرو و ظرفیت

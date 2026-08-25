@@ -16,6 +16,8 @@ export type BrowseClub = {
   rating: number;
   ratingCount: number;
   price: string;
+  /** Exact server currency label; no implicit IRR/IRT conversion. */
+  priceSuffix?: string;
   featureLabels: string[];
   sportIds: Exclude<ClubSportFilterId, "all">[];
   distanceLabel: string;

@@ -12,13 +12,30 @@ import type {
   ImportMembershipsResult,
   MembershipsPage,
   MembershipPlansPage,
+  MembershipCheckoutInitiation,
+  MembershipCheckoutPreview,
+  MembershipCheckoutResult,
+  MembershipRenewalPreview,
+  MembershipRenewalResult,
+  InitiateMembershipCheckoutInput,
+  InitiatePlatformSubscriptionCheckoutInput,
   PlatformPlansResponse,
   PlatformSubscription,
+  PlatformSubscriptionCheckoutInitiation,
+  PlatformSubscriptionCheckoutPreview,
+  PlatformSubscriptionCheckoutResult,
   PlatformSubscriptionsResponse,
+  PublicMembershipPlanSummariesResponse,
+  PreviewMembershipRenewalInput,
+  PreviewMembershipCheckoutInput,
+  PreviewPlatformSubscriptionCheckoutInput,
+  RenewMembershipInput,
   SelfPurchaseMembershipInput,
   SellMembershipInput,
   SubscribePlatformInput,
   TransferMembershipInput,
+  VerifyMembershipCheckoutInput,
+  VerifyPlatformSubscriptionCheckoutInput,
 } from "./memberships.dto";
 
 export function createAccountMembershipsApi(client: ApiClient) {
@@ -38,6 +55,37 @@ export function createAccountMembershipsApi(client: ApiClient) {
       });
     },
 
+    previewCheckout(input: PreviewMembershipCheckoutInput) {
+      return client.request<MembershipCheckoutPreview>(ep.checkoutPreview, {
+        method: "POST",
+        body: input,
+      });
+    },
+
+    initiateCheckout(input: InitiateMembershipCheckoutInput) {
+      return client.request<MembershipCheckoutInitiation>(ep.checkoutInitiate, {
+        method: "POST",
+        body: input,
+      });
+    },
+
+    verifyCheckout(
+      checkoutId: string,
+      input: VerifyMembershipCheckoutInput,
+    ) {
+      return client.request<MembershipCheckoutResult>(
+        ep.checkoutVerify(checkoutId),
+        { method: "POST", body: input },
+      );
+    },
+
+    previewMyRenewal(membershipId: string) {
+      return client.request<MembershipRenewalPreview>(
+        ep.mineRenewalPreview(membershipId),
+        { method: "POST", body: {} },
+      );
+    },
+
     /** Public plan catalog (no auth) — used before purchase. */
     listPublicClubPlans(
       clubId: string,
@@ -51,6 +99,13 @@ export function createAccountMembershipsApi(client: ApiClient) {
     getPublicClubPlan(clubId: string, planId: string) {
       return client.request<ClubMembershipPlan>(
         ep.discoveryPlan(clubId, planId),
+      );
+    },
+
+    listPublicPlanSummaries(clubIds: string[]) {
+      return client.request<PublicMembershipPlanSummariesResponse>(
+        ep.discoveryPlanSummaries,
+        { query: { clubIds }, public: true },
       );
     },
 
@@ -137,6 +192,28 @@ export function createAccountMembershipsApi(client: ApiClient) {
       });
     },
 
+    previewRenewal(
+      clubId: string,
+      membershipId: string,
+      input: PreviewMembershipRenewalInput = {},
+    ) {
+      return client.request<MembershipRenewalPreview>(
+        ep.renewalPreview(clubId, membershipId),
+        { method: "POST", body: input },
+      );
+    },
+
+    renew(
+      clubId: string,
+      membershipId: string,
+      input: RenewMembershipInput,
+    ) {
+      return client.request<MembershipRenewalResult>(
+        ep.renew(clubId, membershipId),
+        { method: "POST", body: input },
+      );
+    },
+
     consume(
       clubId: string,
       membershipId: string,
@@ -165,6 +242,34 @@ export function createAccountMembershipsApi(client: ApiClient) {
         method: "POST",
         body: input,
       });
+    },
+
+    previewPlatformSubscriptionCheckout(
+      input: PreviewPlatformSubscriptionCheckoutInput,
+    ) {
+      return client.request<PlatformSubscriptionCheckoutPreview>(
+        ep.platformSubscriptionCheckoutPreview,
+        { method: "POST", body: input },
+      );
+    },
+
+    initiatePlatformSubscriptionCheckout(
+      input: InitiatePlatformSubscriptionCheckoutInput,
+    ) {
+      return client.request<PlatformSubscriptionCheckoutInitiation>(
+        ep.platformSubscriptionCheckoutInitiate,
+        { method: "POST", body: input },
+      );
+    },
+
+    verifyPlatformSubscriptionCheckout(
+      checkoutId: string,
+      input: VerifyPlatformSubscriptionCheckoutInput,
+    ) {
+      return client.request<PlatformSubscriptionCheckoutResult>(
+        ep.platformSubscriptionCheckoutVerify(checkoutId),
+        { method: "POST", body: input },
+      );
     },
 
     cancelPlatformSubscription(

@@ -2,7 +2,7 @@
 
 import { Spinner } from "@heroui/react/spinner";
 import { Typography } from "@heroui/react/typography";
-import type { CoachStudent } from "@repo/api";
+import type { CoachStudent, WorkoutLog } from "@repo/api";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/shared/lib/app-router";
@@ -10,6 +10,7 @@ import { useRouter } from "@/shared/lib/app-router";
 import { useCallback, useEffect, useState } from "react";
 import {
   accountCoaching,
+  accountProgress,
   isDiscoveryApiId,
   isDiscoveryDemoId,
 } from "@/shared/lib/api";
@@ -61,6 +62,47 @@ export function CoachClientDetailGate({ clientId }: { clientId: string }) {
     undefined,
   );
   const [messaging, setMessaging] = useState(false);
+  const [workoutLogs, setWorkoutLogs] = useState<WorkoutLog[]>([]);
+  const [workoutLogsLoading, setWorkoutLogsLoading] = useState(false);
+  const [workoutLogsError, setWorkoutLogsError] = useState(false);
+  const [reviewingLogId, setReviewingLogId] = useState<string | null>(null);
+
+  const loadWorkoutLogs = useCallback(async () => {
+    if (!client?.athleteUserId || !isAuthenticated) return;
+    setWorkoutLogsLoading(true);
+    setWorkoutLogsError(false);
+    try {
+      const page = await accountProgress.listWorkoutLogs({
+        athleteId: client.athleteUserId,
+        status: "completed",
+        page_size: 20,
+      });
+      setWorkoutLogs(page.result);
+    } catch {
+      setWorkoutLogsError(true);
+    } finally {
+      setWorkoutLogsLoading(false);
+    }
+  }, [client?.athleteUserId, isAuthenticated]);
+
+  useEffect(() => {
+    void loadWorkoutLogs();
+  }, [loadWorkoutLogs]);
+
+  const onReviewWorkoutLog = useCallback(async (logId: string, note: string) => {
+    setReviewingLogId(logId);
+    try {
+      const updated = await accountProgress.reviewWorkoutLog(logId, {
+        note,
+        clientMutationId: crypto.randomUUID(),
+      });
+      setWorkoutLogs((current) =>
+        current.map((log) => (log.id === updated.id ? updated : log)),
+      );
+    } finally {
+      setReviewingLogId(null);
+    }
+  }, []);
 
   useEffect(() => {
     if (!isReady) return;
@@ -141,6 +183,12 @@ export function CoachClientDetailGate({ clientId }: { clientId: string }) {
       client={client}
       messaging={messaging}
       onSendMessage={onSendMessage}
+      workoutLogs={workoutLogs}
+      workoutLogsLoading={workoutLogsLoading}
+      workoutLogsError={workoutLogsError}
+      reviewingLogId={reviewingLogId}
+      onRetryWorkoutLogs={loadWorkoutLogs}
+      onReviewWorkoutLog={onReviewWorkoutLog}
     />
   );
 }

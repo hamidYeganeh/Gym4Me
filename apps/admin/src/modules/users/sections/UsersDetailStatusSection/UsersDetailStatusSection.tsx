@@ -46,9 +46,11 @@ export function UsersDetailStatusSection({
               else onDeactivate();
             }}
           >
-            <Switch.Control>
-              <Switch.Thumb />
-            </Switch.Control>
+            <Switch.Content>
+              <Switch.Control>
+                <Switch.Thumb />
+              </Switch.Control>
+            </Switch.Content>
           </Switch>
           <div className={styles.switchCopy()}>
             <Typography className={styles.switchLabel()}>

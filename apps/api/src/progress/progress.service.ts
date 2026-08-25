@@ -10,6 +10,8 @@ import { Model, Types } from 'mongoose';
 import type { QueryFilter } from 'mongoose';
 import { EventWriterService } from '../analytics/event-writer.service';
 import { AuditService } from '../audit/audit.service';
+import { MongoTransactionService } from '../common/mongo/mongo-transaction.service';
+import { OutboxService } from '../outbox/outbox.service';
 import {
   AnalyticsEventName,
   AuditAction,
@@ -30,6 +32,7 @@ import {
   MetricSource,
   MetricTypeStatus,
   MetricValueKind,
+  NotificationTemplateKey,
   Privacy,
   Role,
   VerificationStatus,
@@ -77,6 +80,7 @@ import { WorkoutLog, WorkoutLogDocument } from '../schemas/workout-log.schema';
 import {
   WorkoutPlan,
   WorkoutPlanDocument,
+  WorkoutPlanRevision,
 } from '../schemas/workout-plan.schema';
 import {
   WorkoutProgram,
@@ -109,6 +113,7 @@ import {
   ListWorkoutLogsQueryDto,
   ListWorkoutPlansQueryDto,
   ListWorkoutProgramsQueryDto,
+  ReviewWorkoutLogDto,
   MetricsSummaryQueryDto,
   ReviewExerciseVerificationDto,
   SyncProgressMetricItemDto,
@@ -131,6 +136,12 @@ import {
 } from './data-grant.policy';
 import { ListProgressMetricsQuery } from './application/queries/list-progress-metrics.query';
 import { projectProgressMetric } from './application/projectors/progress-metric.projector';
+import { buildHealthSyncStateUpdate } from './health-sync-state-update';
+import {
+  healthProviderForMetricSource,
+  healthSyncIngestionRejection,
+  type HealthSyncAuthorizationState,
+} from './health-sync-ingestion.policy';
 
 const HEALTH_METRIC_SOURCES = new Set<MetricSource>([
   MetricSource.APPLE_HEALTH,
@@ -391,6 +402,8 @@ export class ProgressService {
     private readonly audit: AuditService,
     private readonly events: EventWriterService,
     private readonly listProgressMetrics: ListProgressMetricsQuery,
+    private readonly transactions: MongoTransactionService,
+    private readonly outbox: OutboxService,
   ) {}
 
   // ── Exercises ───────────────────────────────────────────────────────────
@@ -601,7 +614,11 @@ export class ProgressService {
     activeRole: Role,
     query: ListWorkoutPlansQueryDto,
   ) {
-    const filter = this.workoutPlanAccessFilter(userId, activeRole, query);
+    const filter = await this.workoutPlanAccessFilter(
+      userId,
+      activeRole,
+      query,
+    );
     const { page, pageSize } = resolvePageSize(query);
     const [items, total] = await Promise.all([
       this.workoutPlanModel
@@ -622,8 +639,28 @@ export class ProgressService {
 
   async getWorkoutPlan(id: string, userId: string, activeRole: Role) {
     const item = await this.findWorkoutPlan(id);
-    this.assertWorkoutPlanAccess(item, userId, activeRole);
+    await this.assertWorkoutPlanAccess(item, userId, activeRole);
     return this.toWorkoutPlan(item.toObject());
+  }
+
+  async getWorkoutPlanRevision(
+    id: string,
+    revisionId: string,
+    userId: string,
+    activeRole: Role,
+  ) {
+    if (!Types.ObjectId.isValid(revisionId)) {
+      throw new NotFoundException('Workout plan revision not found');
+    }
+    const item = await this.findWorkoutPlan(id);
+    await this.assertWorkoutPlanAccess(item, userId, activeRole);
+    const revision = (item.revisions ?? []).find(
+      (candidate) => candidate._id.toString() === revisionId,
+    );
+    if (!revision) {
+      throw new NotFoundException('Workout plan revision not found');
+    }
+    return this.toWorkoutPlanRevision(revision);
   }
 
   async createWorkoutPlan(
@@ -639,15 +676,35 @@ export class ProgressService {
     );
     const coachUserId =
       activeRole === Role.COACH ? new Types.ObjectId(userId) : undefined;
+    if (activeRole === Role.COACH) {
+      await this.assertCoachStudent(userId, athleteUserId);
+    }
 
+    const revisionId = new Types.ObjectId();
+    const title = dto.title.trim();
+    const weeks = this.mapWeeks(dto.weeks ?? []);
+    const period = this.mapPeriod(dto.period);
     const item = await this.workoutPlanModel.create({
       athleteUserId: new Types.ObjectId(athleteUserId),
       coachUserId,
-      title: dto.title.trim(),
+      title,
       status: dto.status ?? WorkoutPlanStatus.DRAFT,
       privacy: dto.privacy ?? Privacy.PRIVATE,
-      weeks: this.mapWeeks(dto.weeks ?? []),
-      period: this.mapPeriod(dto.period),
+      weeks,
+      period,
+      currentRevisionId: revisionId,
+      currentRevision: 1,
+      revisions: [
+        {
+          _id: revisionId,
+          revision: 1,
+          title,
+          weeks,
+          period,
+          createdByUserId: new Types.ObjectId(userId),
+          createdAt: new Date(),
+        },
+      ],
     });
 
     this.audit.log({
@@ -668,7 +725,12 @@ export class ProgressService {
     request: Request,
   ) {
     const item = await this.findWorkoutPlan(id);
-    this.assertWorkoutPlanAccess(item, userId, activeRole);
+    await this.assertWorkoutPlanAccess(item, userId, activeRole);
+
+    const prescriptionChanged =
+      dto.title !== undefined ||
+      dto.weeks !== undefined ||
+      dto.period !== undefined;
 
     if (dto.title !== undefined) item.title = dto.title.trim();
     if (dto.status !== undefined) item.status = dto.status;
@@ -677,6 +739,9 @@ export class ProgressService {
     if (dto.period !== undefined) {
       item.period =
         dto.period === null ? undefined : this.mapPeriod(dto.period);
+    }
+    if (prescriptionChanged) {
+      this.appendWorkoutPlanRevision(item, userId);
     }
     await item.save();
 
@@ -697,7 +762,7 @@ export class ProgressService {
     request: Request,
   ) {
     const item = await this.findWorkoutPlan(id);
-    this.assertWorkoutPlanAccess(item, userId, activeRole);
+    await this.assertWorkoutPlanAccess(item, userId, activeRole);
     item.status = WorkoutPlanStatus.ARCHIVED;
     await item.save();
     this.audit.log({
@@ -824,6 +889,14 @@ export class ProgressService {
     request: Request,
   ) {
     this.assertAthleteOnlyWrite(activeRole, 'create');
+    if (
+      dto.source === MetricSource.APPLE_HEALTH ||
+      dto.source === MetricSource.HEALTH_CONNECT
+    ) {
+      throw new BadRequestException(
+        'Health-provider samples must use the idempotent sync endpoint',
+      );
+    }
     await this.assertMetricValue(dto.metricKey, dto.value);
     const period = this.resolveMetricPeriod(dto);
     if (dto.clientMutationId) {
@@ -876,6 +949,31 @@ export class ProgressService {
   ) {
     this.assertAthleteOnlyWrite(activeRole, 'sync');
     const athleteUserId = new Types.ObjectId(userId);
+    const requestedProviders = [
+      ...new Set(
+        dto.entries
+          .map((entry) => healthProviderForMetricSource(entry.source))
+          .filter((provider): provider is HealthSyncProvider =>
+            Boolean(provider),
+          ),
+      ),
+    ];
+    const healthStates = new Map<
+      HealthSyncProvider,
+      HealthSyncAuthorizationState
+    >();
+    if (requestedProviders.length > 0) {
+      const states = await this.healthSyncStateModel
+        .find({ athleteUserId, provider: { $in: requestedProviders } })
+        .lean();
+      for (const state of states) {
+        healthStates.set(state.provider, {
+          provider: state.provider,
+          status: state.status,
+          authorizedMetricKeys: state.authorizedMetricKeys ?? [],
+        });
+      }
+    }
     let created = 0;
     let deduplicated = 0;
     const rejected: {
@@ -888,6 +986,12 @@ export class ProgressService {
     for (let index = 0; index < dto.entries.length; index++) {
       const entry = dto.entries[index];
       try {
+        const healthRejection = healthSyncIngestionRejection({
+          source: entry.source,
+          metricKey: entry.metricKey,
+          states: healthStates,
+        });
+        if (healthRejection) throw new ForbiddenException(healthRejection);
         await this.assertMetricValue(entry.metricKey, entry.value);
         const period = this.resolveMetricPeriod(entry);
         if (!entry.sourceRecordId?.trim() && !entry.clientMutationId?.trim()) {
@@ -1412,16 +1516,34 @@ export class ProgressService {
     if (program.status === WorkoutProgramStatus.ARCHIVED) {
       throw new BadRequestException('Cannot assign an archived program');
     }
+    await this.assertCoachStudent(coachUserId, dto.athleteUserId);
 
+    const revisionId = new Types.ObjectId();
+    const title = program.title;
+    const weeks = program.weeks ?? [];
+    const period = this.mapPeriod(dto.period);
     const plan = await this.workoutPlanModel.create({
       athleteUserId: new Types.ObjectId(dto.athleteUserId),
       coachUserId: new Types.ObjectId(coachUserId),
       programId: program._id,
-      title: program.title,
+      title,
       status: dto.status ?? WorkoutPlanStatus.ACTIVE,
       privacy: dto.privacy ?? program.privacy ?? Privacy.PRIVATE,
-      weeks: program.weeks ?? [],
-      period: this.mapPeriod(dto.period),
+      weeks,
+      period,
+      currentRevisionId: revisionId,
+      currentRevision: 1,
+      revisions: [
+        {
+          _id: revisionId,
+          revision: 1,
+          title,
+          weeks,
+          period,
+          createdByUserId: new Types.ObjectId(coachUserId),
+          createdAt: new Date(),
+        },
+      ],
     });
 
     await this.workoutProgramModel.updateOne(
@@ -1468,11 +1590,11 @@ export class ProgressService {
     throw new ForbiddenException('Role cannot manage workout plans');
   }
 
-  private workoutPlanAccessFilter(
+  private async workoutPlanAccessFilter(
     userId: string,
     activeRole: Role,
     query: ListWorkoutPlansQueryDto,
-  ): QueryFilter<WorkoutPlanDocument> {
+  ): Promise<QueryFilter<WorkoutPlanDocument>> {
     const filter: QueryFilter<WorkoutPlanDocument> = {};
     if (query.status) filter.status = query.status;
 
@@ -1487,17 +1609,20 @@ export class ProgressService {
       return filter;
     }
     if (activeRole === Role.COACH) {
-      // Authoring coach can list plans they created (v1; no CoachStudent check).
-      filter.coachUserId = new Types.ObjectId(userId);
-      if (query.athleteUserId) {
-        filter.athleteUserId = new Types.ObjectId(query.athleteUserId);
+      if (!query.athleteUserId) {
+        throw new BadRequestException(
+          'athleteUserId is required for coach workout plan view',
+        );
       }
+      await this.assertCoachStudent(userId, query.athleteUserId);
+      filter.coachUserId = new Types.ObjectId(userId);
+      filter.athleteUserId = new Types.ObjectId(query.athleteUserId);
       return filter;
     }
     throw new ForbiddenException('Role cannot list workout plans');
   }
 
-  private assertWorkoutPlanAccess(
+  private async assertWorkoutPlanAccess(
     plan: WorkoutPlanDocument,
     userId: string,
     activeRole: Role,
@@ -1506,6 +1631,7 @@ export class ProgressService {
     const uid = userId;
     if (plan.athleteUserId.toString() === uid) return;
     if (activeRole === Role.COACH && plan.coachUserId?.toString() === uid) {
+      await this.assertCoachStudent(uid, plan.athleteUserId.toString());
       return;
     }
     throw new ForbiddenException('Not allowed to access this workout plan');
@@ -1634,6 +1760,63 @@ export class ProgressService {
     return { start, end };
   }
 
+  private appendWorkoutPlanRevision(
+    plan: WorkoutPlanDocument,
+    createdByUserId: string,
+  ) {
+    const revisionId = new Types.ObjectId();
+    const revision = (plan.currentRevision ?? 0) + 1;
+    const snapshot: WorkoutPlanRevision = {
+      _id: revisionId,
+      revision,
+      title: plan.title,
+      weeks: (plan.weeks ?? []).map((week) => ({
+        weekIndex: week.weekIndex,
+        days: (week.days ?? []).map((day) => ({
+          dayIndex: day.dayIndex,
+          exercises: (day.exercises ?? []).map((exercise) => ({
+            exerciseId: new Types.ObjectId(exercise.exerciseId),
+            sets: exercise.sets,
+            reps: exercise.reps,
+            durationSec: exercise.durationSec,
+            note: exercise.note,
+          })),
+        })),
+      })),
+      period: plan.period
+        ? {
+            start: plan.period.start ? new Date(plan.period.start) : undefined,
+            end: plan.period.end ? new Date(plan.period.end) : undefined,
+          }
+        : undefined,
+      createdByUserId: new Types.ObjectId(createdByUserId),
+      createdAt: new Date(),
+    };
+    plan.revisions = [...(plan.revisions ?? []), snapshot];
+    plan.currentRevisionId = revisionId;
+    plan.currentRevision = revision;
+    plan.markModified('revisions');
+    return revisionId;
+  }
+
+  private async ensureCurrentWorkoutPlanRevision(
+    plan: WorkoutPlanDocument,
+    actorId: string,
+  ) {
+    const current = plan.currentRevisionId;
+    if (
+      current &&
+      (plan.revisions ?? []).some(
+        (revision) => revision._id.toString() === current.toString(),
+      )
+    ) {
+      return current;
+    }
+    const revisionId = this.appendWorkoutPlanRevision(plan, actorId);
+    await plan.save();
+    return revisionId;
+  }
+
   private toExercise(doc: {
     _id: Types.ObjectId;
     name: string;
@@ -1697,6 +1880,9 @@ export class ProgressService {
       }[];
     }[];
     period?: { start?: Date; end?: Date };
+    currentRevisionId?: Types.ObjectId;
+    currentRevision?: number;
+    revisions?: WorkoutPlanRevision[];
     createdAt: Date;
     updatedAt: Date;
   }) {
@@ -1727,8 +1913,45 @@ export class ProgressService {
             end: doc.period.end?.toISOString() ?? null,
           }
         : null,
+      currentRevisionId: doc.currentRevisionId?.toString() ?? null,
+      currentRevision: doc.currentRevision ?? null,
+      revisions: (doc.revisions ?? []).map((revision) => ({
+        id: revision._id.toString(),
+        revision: revision.revision,
+        createdByUserId: revision.createdByUserId.toString(),
+        createdAt: revision.createdAt.toISOString(),
+      })),
       createdAt: doc.createdAt.toISOString(),
       updatedAt: doc.updatedAt.toISOString(),
+    };
+  }
+
+  private toWorkoutPlanRevision(revision: WorkoutPlanRevision) {
+    return {
+      id: revision._id.toString(),
+      revision: revision.revision,
+      title: revision.title,
+      weeks: (revision.weeks ?? []).map((week) => ({
+        weekIndex: week.weekIndex,
+        days: (week.days ?? []).map((day) => ({
+          dayIndex: day.dayIndex,
+          exercises: (day.exercises ?? []).map((exercise) => ({
+            exerciseId: exercise.exerciseId.toString(),
+            sets: exercise.sets,
+            reps: exercise.reps ?? null,
+            durationSec: exercise.durationSec ?? null,
+            note: exercise.note ?? null,
+          })),
+        })),
+      })),
+      period: revision.period
+        ? {
+            start: revision.period.start?.toISOString() ?? null,
+            end: revision.period.end?.toISOString() ?? null,
+          }
+        : null,
+      createdByUserId: revision.createdByUserId.toString(),
+      createdAt: revision.createdAt.toISOString(),
     };
   }
 
@@ -2010,11 +2233,18 @@ export class ProgressService {
         'Workout logs must start as draft or in progress',
       );
     }
+    const revisionId = await this.ensureCurrentWorkoutPlanRevision(
+      plan,
+      athleteId,
+    );
+    if (dto.planRevisionId && dto.planRevisionId !== revisionId.toString()) {
+      throw new BadRequestException(
+        'Workout log revision must match the current plan revision',
+      );
+    }
     const item = await this.workoutLogModel.create({
       planId: new Types.ObjectId(dto.planId),
-      planRevisionId: dto.planRevisionId
-        ? new Types.ObjectId(dto.planRevisionId)
-        : undefined,
+      planRevisionId: revisionId,
       athleteId: new Types.ObjectId(athleteId),
       sessionIndex: dto.sessionIndex,
       sets: (dto.sets ?? []).map((s) => ({
@@ -2165,12 +2395,16 @@ export class ProgressService {
     if (item.athleteId.toString() !== athleteId) {
       throw new ForbiddenException('Not your workout log');
     }
+    if (item.status === WorkoutLogStatus.COMPLETED) {
+      return this.toWorkoutLog(item.toObject());
+    }
     if (
-      item.status === WorkoutLogStatus.COMPLETED ||
       item.status === WorkoutLogStatus.SKIPPED ||
       item.status === WorkoutLogStatus.ABANDONED
     ) {
-      return this.toWorkoutLog(item.toObject());
+      throw new BadRequestException(
+        `Cannot complete workout log in status ${item.status}`,
+      );
     }
     const completedAt = new Date();
     item.status = WorkoutLogStatus.COMPLETED;
@@ -2206,6 +2440,49 @@ export class ProgressService {
         workoutLogId: id,
         planId: item.planId.toString(),
         durationSec: item.timing?.durationSec ?? null,
+      },
+    });
+    return this.toWorkoutLog(item.toObject());
+  }
+
+  async skipWorkoutLog(id: string, athleteId: string, request: Request) {
+    const item = await this.findWorkoutLog(id);
+    if (item.athleteId.toString() !== athleteId) {
+      throw new ForbiddenException('Not your workout log');
+    }
+    if (item.status === WorkoutLogStatus.SKIPPED) {
+      return this.toWorkoutLog(item.toObject());
+    }
+    if (
+      item.status === WorkoutLogStatus.COMPLETED ||
+      item.status === WorkoutLogStatus.ABANDONED
+    ) {
+      throw new BadRequestException(
+        `Cannot skip workout log in status ${item.status}`,
+      );
+    }
+    const completedAt = new Date();
+    item.status = WorkoutLogStatus.SKIPPED;
+    item.timing = {
+      startedAt: item.timing?.startedAt,
+      completedAt,
+      durationSec: item.timing?.durationSec,
+    };
+    item.markModified('timing');
+    item.loggedAt = completedAt;
+    await item.save();
+    this.audit.log({
+      action: AuditAction.WORKOUT_LOG_UPSERTED,
+      actorId: athleteId,
+      metadata: { workoutLogId: id, op: 'skip' },
+      request,
+    });
+    void this.events.track({
+      eventName: AnalyticsEventName.WORKOUT_SKIPPED,
+      actor: { userId: athleteId, activeRole: Role.ATHLETE },
+      properties: {
+        workoutLogId: id,
+        planId: item.planId.toString(),
       },
     });
     return this.toWorkoutLog(item.toObject());
@@ -2258,6 +2535,104 @@ export class ProgressService {
       page,
       pageSize,
     );
+  }
+
+  async reviewWorkoutLog(
+    id: string,
+    dto: ReviewWorkoutLogDto,
+    coachUserId: string,
+    request: Request,
+  ) {
+    const item = await this.findWorkoutLog(id);
+    if (item.status !== WorkoutLogStatus.COMPLETED) {
+      throw new BadRequestException(
+        'Only completed workout logs can be reviewed',
+      );
+    }
+    const athleteId = item.athleteId.toString();
+    await this.assertCoachStudent(coachUserId, athleteId);
+    await this.assertActiveGrantScope(
+      athleteId,
+      coachUserId,
+      AthleteDataGrantScope.WORKOUTS_LOGS,
+    );
+    const plan = await this.workoutPlanModel.findById(item.planId).lean();
+    if (!plan || plan.coachUserId?.toString() !== coachUserId) {
+      throw new ForbiddenException(
+        'Only the assigned coach can review this workout log',
+      );
+    }
+
+    const clientMutationId = dto.clientMutationId.trim();
+    const prior = item.reviews?.find(
+      (review) =>
+        review.coachUserId.toString() === coachUserId &&
+        review.clientMutationId === clientMutationId,
+    );
+    if (prior) return this.toWorkoutLog(item.toObject());
+
+    const review = {
+      _id: new Types.ObjectId(),
+      coachUserId: new Types.ObjectId(coachUserId),
+      note: dto.note.trim(),
+      clientMutationId,
+      reviewedAt: new Date(),
+    };
+    const result = await this.transactions.run(async (session) => {
+      const mutation = await this.workoutLogModel.updateOne(
+        {
+          _id: item._id,
+          reviews: {
+            $not: {
+              $elemMatch: {
+                coachUserId: new Types.ObjectId(coachUserId),
+                clientMutationId,
+              },
+            },
+          },
+        },
+        { $push: { reviews: review } },
+        { session },
+      );
+      await this.outbox.enqueue(
+        {
+          eventName: 'workout.log_reviewed',
+          idempotencyKey: `workout-review:${id}:${coachUserId}:${clientMutationId}`,
+          payload: {
+            workoutLogId: id,
+            athleteId,
+            coachUserId,
+            reviewId: review._id.toString(),
+            notification: {
+              userId: athleteId,
+              templateKey: NotificationTemplateKey.WORKOUT_REVIEWED,
+              params: {},
+              payload: {
+                kind: 'workout_review',
+                workoutLogId: id,
+                planId: item.planId.toString(),
+              },
+            },
+          },
+        },
+        session,
+      );
+      return mutation;
+    });
+    const updated = await this.findWorkoutLog(id);
+    if (result.modifiedCount > 0) {
+      this.audit.log({
+        action: AuditAction.WORKOUT_LOG_REVIEWED,
+        actorId: coachUserId,
+        metadata: {
+          workoutLogId: id,
+          athleteId,
+          reviewId: review._id.toString(),
+        },
+        request,
+      });
+    }
+    return this.toWorkoutLog(updated.toObject());
   }
 
   // ── Personal records ────────────────────────────────────────────────────
@@ -2481,6 +2856,13 @@ export class ProgressService {
     };
     note?: string;
     pain?: { score?: number; bodyAreaKeys?: string[] };
+    reviews?: {
+      _id: Types.ObjectId;
+      coachUserId: Types.ObjectId;
+      note: string;
+      clientMutationId: string;
+      reviewedAt: Date;
+    }[];
     clientMutationId?: string;
     loggedAt: Date;
     createdAt: Date;
@@ -2515,6 +2897,13 @@ export class ProgressService {
             bodyAreaKeys: doc.pain.bodyAreaKeys ?? [],
           }
         : null,
+      reviews: (doc.reviews ?? []).map((review) => ({
+        id: review._id.toString(),
+        coachUserId: review.coachUserId.toString(),
+        note: review.note,
+        clientMutationId: review.clientMutationId,
+        reviewedAt: review.reviewedAt.toISOString(),
+      })),
       clientMutationId: doc.clientMutationId ?? null,
       loggedAt: doc.loggedAt.toISOString(),
       createdAt: doc.createdAt.toISOString(),
@@ -2862,25 +3251,13 @@ export class ProgressService {
     if (!Object.values(HealthSyncProvider).includes(provider)) {
       throw new BadRequestException('Invalid health sync provider');
     }
+    const update = buildHealthSyncStateUpdate({ provider, dto, userId });
     const item = await this.healthSyncStateModel.findOneAndUpdate(
       {
         athleteUserId: new Types.ObjectId(userId),
         provider,
       },
-      {
-        $set: {
-          status: dto.status,
-          authorizedMetricKeys: dto.authorizedMetricKeys ?? [],
-          cursorByMetric: dto.cursorByMetric ?? {},
-          lastSyncAt: dto.lastSyncAt ? new Date(dto.lastSyncAt) : undefined,
-          lastErrorCode:
-            dto.lastErrorCode === null ? undefined : dto.lastErrorCode?.trim(),
-        },
-        $setOnInsert: {
-          athleteUserId: new Types.ObjectId(userId),
-          provider,
-        },
-      },
+      update,
       { upsert: true, new: true },
     );
     this.audit.log({
@@ -2890,13 +3267,25 @@ export class ProgressService {
       request,
     });
 
-    if (dto.status === HealthSyncStatus.CONNECTED) {
+    if (
+      dto.status === HealthSyncStatus.CONNECTED ||
+      dto.status === HealthSyncStatus.SYNCING
+    ) {
       void this.events.track({
         eventName: AnalyticsEventName.HEALTH_SYNC_STARTED,
         actor: { userId, activeRole: Role.ATHLETE },
         properties: {
           provider,
           authorizedMetricKeyCount: (dto.authorizedMetricKeys ?? []).length,
+        },
+      });
+    } else if (dto.status === HealthSyncStatus.PARTIAL) {
+      void this.events.track({
+        eventName: AnalyticsEventName.HEALTH_SYNC_PARTIAL,
+        actor: { userId, activeRole: Role.ATHLETE },
+        properties: {
+          provider,
+          lastErrorCode: dto.lastErrorCode ?? null,
         },
       });
     } else if (dto.status === HealthSyncStatus.ERROR) {
@@ -2907,6 +3296,12 @@ export class ProgressService {
           provider,
           lastErrorCode: dto.lastErrorCode ?? null,
         },
+      });
+    } else if (dto.status === HealthSyncStatus.DISCONNECTED) {
+      void this.events.track({
+        eventName: AnalyticsEventName.HEALTH_SYNC_DISCONNECTED,
+        actor: { userId, activeRole: Role.ATHLETE },
+        properties: { provider },
       });
     }
 

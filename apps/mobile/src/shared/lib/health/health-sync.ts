@@ -3,11 +3,7 @@ import type {
   SyncProgressMetricInput,
 } from "@repo/api";
 import { accountProgress } from "@/shared/lib/api";
-import {
-  DEFAULT_HEALTH_READ_TYPES,
-  loadHealthPlugin,
-  normalizePlatform,
-} from "./health-metrics";
+import { loadHealthPlugin, normalizePlatform } from "./health-metrics";
 import type {
   HealthMetricsAuthorization,
   HealthMetricsDataType,
@@ -35,12 +31,21 @@ export const HEALTH_TYPE_TO_UNIT: Record<HealthMetricsDataType, string> = {
   weight: "kg",
 };
 
-/**
- * Capgo `readSamples` is available on native builds. On web / when samples
- * cannot be read, sync still advances `lastSyncAt` / cursor via upsert so the
- * manual-only path stays healthy (stub empty flush).
- */
-export type HealthSampleReadMode = "plugin" | "stub_empty";
+export type HealthSampleReadMode = "plugin";
+
+export const HEALTH_SYNC_OVERLAP_MS = 5 * 60 * 1000;
+const HEALTH_SYNC_DEFAULT_LOOKBACK_MS = 7 * 24 * 60 * 60 * 1000;
+
+export class HealthSyncError extends Error {
+  constructor(
+    public readonly code: string,
+    message: string,
+    options?: ErrorOptions,
+  ) {
+    super(message, options);
+    this.name = "HealthSyncError";
+  }
+}
 
 export type HealthSyncFlushResult = {
   provider: HealthSyncProvider;
@@ -68,9 +73,29 @@ export function resolveHealthProvider(
 export function authorizedMetricKeysFromAuth(
   authorization: HealthMetricsAuthorization | null,
 ): string[] {
-  return (authorization?.readAuthorized ?? []).map(
-    (type) => HEALTH_TYPE_TO_METRIC_KEY[type],
-  );
+  return [
+    ...new Set(
+      (authorization?.readAuthorized ?? []).map(
+        (type) => HEALTH_TYPE_TO_METRIC_KEY[type],
+      ),
+    ),
+  ];
+}
+
+export function authorizedHealthTypesFromAuth(
+  authorization: HealthMetricsAuthorization | null,
+): HealthMetricsDataType[] {
+  return [...new Set(authorization?.readAuthorized ?? [])];
+}
+
+export function overlapStartDate(
+  cursor: string | undefined,
+  fallbackStartDate: string,
+): string {
+  if (!cursor) return fallbackStartDate;
+  const cursorTime = Date.parse(cursor);
+  if (!Number.isFinite(cursorTime)) return fallbackStartDate;
+  return new Date(cursorTime - HEALTH_SYNC_OVERLAP_MS).toISOString();
 }
 
 function normalizeSampleValue(
@@ -100,63 +125,75 @@ function sampleSourceRecordId(sample: {
   ].join("|");
 }
 
-/**
- * Reads samples from Capgo Health when available; otherwise returns an empty
- * list and `stub_empty` mode (cursor/lastSyncAt still updated by caller).
- */
 export async function readHealthSamples(options: {
-  types?: HealthMetricsDataType[];
+  provider: HealthSyncProvider;
+  types: HealthMetricsDataType[];
   startDate?: string;
   endDate?: string;
   limitPerType?: number;
+  cursorByMetric?: Record<string, string>;
 }): Promise<{
   mode: HealthSampleReadMode;
   platform: HealthMetricsPlatform;
   entries: SyncProgressMetricInput[];
-  provider: HealthSyncProvider | null;
+  provider: HealthSyncProvider;
 }> {
-  const types = options.types ?? DEFAULT_HEALTH_READ_TYPES;
+  const types = options.types;
   const endDate = options.endDate ?? new Date().toISOString();
   const startDate =
     options.startDate ??
-    new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    new Date(Date.now() - HEALTH_SYNC_DEFAULT_LOOKBACK_MS).toISOString();
   const limit = options.limitPerType ?? 100;
 
   try {
     const { Capacitor, Health } = await loadHealthPlugin();
     if (!Capacitor.isNativePlatform()) {
-      return {
-        mode: "stub_empty",
-        platform: "web",
-        entries: [],
-        provider: null,
-      };
+      throw new HealthSyncError(
+        "health_sync_not_native",
+        "Health sync is only available on a native installation.",
+      );
     }
 
     const availability = await Health.isAvailable();
     const platform = normalizePlatform(availability.platform);
     const provider = providerForPlatform(platform);
     if (!availability.available || !provider) {
-      return { mode: "stub_empty", platform, entries: [], provider };
+      throw new HealthSyncError(
+        "health_sync_unavailable",
+        "The device health provider is unavailable.",
+      );
+    }
+    if (provider !== options.provider) {
+      throw new HealthSyncError(
+        "health_sync_provider_mismatch",
+        "The connected provider does not match this device platform.",
+      );
     }
 
     if (typeof Health.readSamples !== "function") {
-      // Documented stub: plugin present but readSamples unavailable.
-      return { mode: "stub_empty", platform, entries: [], provider };
+      throw new HealthSyncError(
+        "health_sync_read_unsupported",
+        "The installed health provider cannot read samples.",
+      );
     }
 
     const entries: SyncProgressMetricInput[] = [];
     for (const dataType of types) {
+      const metricKey = HEALTH_TYPE_TO_METRIC_KEY[dataType];
+      const typeStartDate = overlapStartDate(
+        options.cursorByMetric?.[metricKey],
+        startDate,
+      );
       const { samples } = await Health.readSamples({
         dataType,
-        startDate,
+        startDate: typeStartDate,
         endDate,
         limit,
         ascending: true,
       });
       for (const sample of samples) {
         entries.push({
-          metricKey: HEALTH_TYPE_TO_METRIC_KEY[dataType],
+          metricKey,
           value: normalizeSampleValue(dataType, sample.value),
           unit: HEALTH_TYPE_TO_UNIT[dataType],
           recordedAt: sample.endDate || sample.startDate,
@@ -174,13 +211,13 @@ export async function readHealthSamples(options: {
     }
 
     return { mode: "plugin", platform, entries, provider };
-  } catch {
-    return {
-      mode: "stub_empty",
-      platform: "unknown",
-      entries: [],
-      provider: null,
-    };
+  } catch (error) {
+    if (error instanceof HealthSyncError) throw error;
+    throw new HealthSyncError(
+      "health_sync_read_failed",
+      "Reading health samples failed.",
+      { cause: error },
+    );
   }
 }
 
@@ -193,7 +230,7 @@ export async function upsertConnectedHealthState(options: {
   return accountProgress.upsertHealthSyncState(options.provider, {
     status: "connected",
     authorizedMetricKeys: authorizedMetricKeysFromAuth(options.authorization),
-    cursorByMetric: options.cursorByMetric ?? {},
+    cursorByMetric: options.cursorByMetric,
     lastSyncAt: options.lastSyncAt,
     lastErrorCode: null,
   });
@@ -203,31 +240,121 @@ export async function disconnectHealthProvider(provider: HealthSyncProvider) {
   // Disconnect does NOT delete prior samples — only flips sync status.
   return accountProgress.upsertHealthSyncState(provider, {
     status: "disconnected",
+    authorizedMetricKeys: [],
+    cursorByMetric: {},
     lastErrorCode: null,
   });
 }
 
-export async function flushHealthSamples(options?: {
-  types?: HealthMetricsDataType[];
+function errorCode(error: unknown, fallback: string): string {
+  return error instanceof HealthSyncError ? error.code : fallback;
+}
+
+async function markHealthSyncError(
+  provider: HealthSyncProvider,
+  error: unknown,
+  fallbackCode: string,
+) {
+  await accountProgress
+    .upsertHealthSyncState(provider, {
+      status: "error",
+      lastErrorCode: errorCode(error, fallbackCode),
+    })
+    .catch(() => undefined);
+}
+
+async function markHealthSyncPartial(provider: HealthSyncProvider) {
+  await accountProgress.upsertHealthSyncState(provider, {
+    status: "partial",
+    lastErrorCode: "health_sync_partial_rejection",
+  });
+}
+
+export async function flushHealthSamples(options: {
+  provider: HealthSyncProvider;
+  authorization: HealthMetricsAuthorization;
+  cursorByMetric?: Record<string, string>;
   startDate?: string;
   endDate?: string;
-}): Promise<HealthSyncFlushResult | null> {
-  const read = await readHealthSamples(options ?? {});
-  if (!read.provider) return null;
+}): Promise<HealthSyncFlushResult> {
+  const types = authorizedHealthTypesFromAuth(options.authorization);
+  const authorizedMetricKeys = authorizedMetricKeysFromAuth(
+    options.authorization,
+  );
+  if (types.length === 0) {
+    const error = new HealthSyncError(
+      "health_sync_no_permission",
+      "No health metric has read permission.",
+    );
+    await markHealthSyncError(options.provider, error, error.code);
+    throw error;
+  }
+
+  await accountProgress.upsertHealthSyncState(options.provider, {
+    status: "syncing",
+    authorizedMetricKeys,
+    lastErrorCode: null,
+  });
+
+  let read: Awaited<ReturnType<typeof readHealthSamples>>;
+  try {
+    read = await readHealthSamples({
+      provider: options.provider,
+      types,
+      cursorByMetric: options.cursorByMetric,
+      startDate: options.startDate,
+      endDate: options.endDate,
+    });
+  } catch (error) {
+    await markHealthSyncError(
+      options.provider,
+      error,
+      "health_sync_read_failed",
+    );
+    throw error;
+  }
 
   const now = new Date().toISOString();
-  const cursorByMetric: Record<string, string> = {};
+  const cursorByMetric: Record<string, string> = {
+    ...(options.cursorByMetric ?? {}),
+  };
   for (const entry of read.entries) {
-    cursorByMetric[entry.metricKey] = entry.recordedAt;
+    const previous = cursorByMetric[entry.metricKey];
+    if (!previous || Date.parse(entry.recordedAt) > Date.parse(previous)) {
+      cursorByMetric[entry.metricKey] = entry.recordedAt;
+    }
   }
 
   if (read.entries.length > 0) {
-    const result = await accountProgress.syncMetrics({
-      entries: read.entries,
-    });
+    let result: Awaited<ReturnType<typeof accountProgress.syncMetrics>>;
+    try {
+      result = await accountProgress.syncMetrics({
+        entries: read.entries,
+      });
+    } catch (error) {
+      await markHealthSyncError(
+        read.provider,
+        error,
+        "health_sync_upload_failed",
+      );
+      throw error;
+    }
+
+    if (result.rejected.length > 0) {
+      await markHealthSyncPartial(read.provider);
+      return {
+        provider: read.provider,
+        mode: read.mode,
+        sampleCount: read.entries.length,
+        created: result.created,
+        deduplicated: result.deduplicated,
+        rejected: result.rejected.length,
+      };
+    }
+
     await accountProgress.upsertHealthSyncState(read.provider, {
-      status: "connected",
-      authorizedMetricKeys: Object.values(HEALTH_TYPE_TO_METRIC_KEY),
+      status: "synced",
+      authorizedMetricKeys,
       cursorByMetric,
       lastSyncAt: now,
       lastErrorCode: null,
@@ -242,11 +369,11 @@ export async function flushHealthSamples(options?: {
     };
   }
 
-  // Stub / empty path: still advance cursor + lastSyncAt.
+  // A successful native read may legitimately return no new samples.
   await accountProgress.upsertHealthSyncState(read.provider, {
-    status: "connected",
-    authorizedMetricKeys: Object.values(HEALTH_TYPE_TO_METRIC_KEY),
-    cursorByMetric: {},
+    status: "synced",
+    authorizedMetricKeys,
+    cursorByMetric,
     lastSyncAt: now,
     lastErrorCode: null,
   });

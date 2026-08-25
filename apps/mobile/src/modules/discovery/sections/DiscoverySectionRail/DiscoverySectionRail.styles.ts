@@ -6,7 +6,7 @@ export const discoverySectionRailVariants = tv({
   slots: {
     root: "flex flex-col gap-4",
     pattern:
-      "pointer-events-none absolute inset-0 z-0 size-full text-white opacity-[0.16]",
+      "pointer-evesnts-none absolute inset-0 z-0 size-full text-white opacity-[0.16]",
     header: "relative z-10 flex items-start justify-between gap-3",
     titleRow: "flex min-w-0 flex-1 items-center gap-2",
     accent: "mt-0.5 shrink-0 text-accent",

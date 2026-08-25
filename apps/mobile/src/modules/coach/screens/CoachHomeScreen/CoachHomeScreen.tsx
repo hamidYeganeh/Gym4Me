@@ -13,21 +13,83 @@ import { QuickActionCard } from "@repo/ui/cards/QuickActionCard";
 import { TodoCard, type TodoCardItem } from "@repo/ui/cards/TodoCard";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { ProfileHeader } from "@repo/ui/layout/ProfileHeader";
+import type { ActionCenterKind } from "@repo/api/action-center";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/shared/lib/app-router";
+import { useCallback, useEffect, useState } from "react";
 
-import { mediaFileUrl } from "@/shared/lib/api";
+import {
+  accountActionCenter,
+  mediaFileUrl,
+} from "@/shared/lib/api";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { coachHomeScreenStyles as styles } from "./CoachHomeScreen.styles";
 
 const ICON_SIZE = 22;
 
+type CoachAction = {
+  id: string;
+  title: string;
+  description: string;
+  href: string;
+  kind: ActionCenterKind;
+};
+
 export function CoachHomeScreen() {
   const t = useTranslations("CoachHome");
   const router = useRouter();
   const { user } = useAuth();
   const firstName = user?.name.first?.trim() ?? "";
+  const [actions, setActions] = useState<CoachAction[]>([]);
+  const [actionsLoading, setActionsLoading] = useState(false);
+  const [actionsError, setActionsError] = useState(false);
+
+  const loadActions = useCallback(async () => {
+    if (!user) return;
+    setActionsLoading(true);
+    setActionsError(false);
+    try {
+      const result = await accountActionCenter.get();
+      setActions(
+        result.items.map((item) => {
+          if (item.kind === "coach.booking_requests") {
+            return {
+              id: item.id,
+              title: t("actionBookingsTitle", item.params),
+              description: t("actionBookingsBody"),
+              href: item.href,
+              kind: item.kind,
+            };
+          }
+          if (item.kind === "coach.student_at_risk") {
+            return {
+              id: item.id,
+              title: t("actionAtRiskTitle"),
+              description: t("actionAtRiskBody"),
+              href: item.href,
+              kind: item.kind,
+            };
+          }
+          return {
+            id: item.id,
+            title: t("actionProgramTitle"),
+            description: t("actionProgramBody"),
+            href: item.href,
+            kind: item.kind,
+          };
+        }),
+      );
+    } catch {
+      setActionsError(true);
+    } finally {
+      setActionsLoading(false);
+    }
+  }, [t, user]);
+
+  useEffect(() => {
+    void loadActions();
+  }, [loadActions]);
 
   const setupItems: TodoCardItem[] = [
     {
@@ -83,6 +145,40 @@ export function CoachHomeScreen() {
             title={t("todoTitle")}
           />
         ) : null}
+
+        <section aria-labelledby="coach-action-center-title" className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <Typography id="coach-action-center-title" type="h4" weight="semibold">{t("actionCenterTitle")}</Typography>
+            <Typography className={styles.sectionDescription} type="body-sm">{t("actionCenterDescription")}</Typography>
+          </div>
+          {actionsLoading ? <Typography className={styles.sectionDescription} type="body-sm">{t("actionCenterLoading")}</Typography> : null}
+          {actionsError ? (
+            <div>
+              <Typography className="text-danger" type="body-sm">{t("actionCenterError")}</Typography>
+              <button className="mt-2 text-sm text-primary underline" onClick={() => void loadActions()} type="button">{t("actionCenterRetry")}</button>
+            </div>
+          ) : null}
+          {!actionsLoading && !actionsError && actions.length === 0 ? <Typography className={styles.sectionDescription} type="body-sm">{t("actionCenterEmpty")}</Typography> : null}
+          <div className={styles.featureGrid}>
+            {actions.map((action) => (
+              <CallToActionCard
+                actionLabel={t("actionCenterOpen")}
+                actionType="icon"
+                key={action.id}
+                onAction={() => {
+                  void accountActionCenter.click({
+                    itemId: action.id,
+                    kind: action.kind,
+                  });
+                  router.push(action.href);
+                }}
+                subtitle={action.description}
+                title={action.title}
+                variant="outlined"
+              />
+            ))}
+          </div>
+        </section>
 
         <section
           aria-labelledby="coach-overview-title"

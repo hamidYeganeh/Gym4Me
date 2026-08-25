@@ -9,6 +9,10 @@ import {
 import { ClubClass, ClubClassSchema } from '../../schemas/club-class.schema';
 import { Club, ClubSchema } from '../../schemas/club.schema';
 import {
+  CoachProfile,
+  CoachProfileSchema,
+} from '../../schemas/coach-profile.schema';
+import {
   ClubUserReview,
   ClubUserReviewSchema,
 } from '../../schemas/club-user-review.schema';
@@ -27,6 +31,7 @@ import { OwnerClubsController } from './owner-clubs.controller';
     GamificationModule,
     MongooseModule.forFeature([
       { name: Club.name, schema: ClubSchema },
+      { name: CoachProfile.name, schema: CoachProfileSchema },
       { name: ClubClass.name, schema: ClubClassSchema },
       { name: ClubUserReview.name, schema: ClubUserReviewSchema },
       { name: Achievement.name, schema: AchievementSchema },

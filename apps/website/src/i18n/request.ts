@@ -7,6 +7,8 @@ const WEBSITE_MESSAGE_KEYS = [
   "Api",
   "MarketingLanding",
   "PublicSite",
+  "PublicClasses",
+  "PublicCity",
   "Articles",
   "AthleteHome",
 ] as const;

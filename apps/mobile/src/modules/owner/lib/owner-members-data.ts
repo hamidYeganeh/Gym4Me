@@ -21,6 +21,7 @@ export type OwnerMember = {
   sessionsTotal: number;
   membershipState: OwnerMembershipState;
   lastCheckInLabel: string;
+  renewalEligible?: boolean;
 };
 
 export type OwnerMembersStats = {

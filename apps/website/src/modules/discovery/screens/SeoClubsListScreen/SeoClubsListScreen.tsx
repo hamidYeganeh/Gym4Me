@@ -4,13 +4,16 @@ import {
   PublicSiteHeader,
 } from "@/shared/components/PublicSiteHeader";
 import { JsonLd } from "@/shared/components/JsonLd";
-import { discoveryClubs } from "@/shared/lib/api";
+import { discoveryClubs, membershipsApi } from "@/shared/lib/api";
 import { seoClubsListScreenVariants as styles } from "./SeoClubsListScreen.styles";
 import type { SeoClubsListScreenProps } from "./SeoClubsListScreen.types";
 
 export async function SeoClubsListScreen({ q = "" }: SeoClubsListScreenProps) {
   const slots = styles();
   let clubs: Awaited<ReturnType<typeof discoveryClubs.list>>["result"] = [];
+  let planSummaries: Awaited<
+    ReturnType<typeof membershipsApi.listPublicPlanSummaries>
+  >["items"] = [];
 
   try {
     const page = await discoveryClubs.list({
@@ -18,9 +21,20 @@ export async function SeoClubsListScreen({ q = "" }: SeoClubsListScreenProps) {
       page_size: 100,
     });
     clubs = page.result;
+    planSummaries = clubs.length
+      ? (
+          await membershipsApi
+            .listPublicPlanSummaries(clubs.map((club) => club.id))
+            .catch(() => ({ items: [] }))
+        ).items
+      : [];
   } catch {
     clubs = [];
+    planSummaries = [];
   }
+  const summaryByClub = new Map(
+    planSummaries.map((summary) => [summary.clubId, summary]),
+  );
 
   return (
     <>
@@ -48,7 +62,7 @@ export async function SeoClubsListScreen({ q = "" }: SeoClubsListScreenProps) {
             </h1>
             <p className={slots.description()}>
               فقط مجموعه‌های تأییدشده نمایش داده می‌شوند؛ امتیاز، امکانات،
-              رشته‌ها و موقعیت را پیش از انتخاب ببینید.
+              رشته‌ها و موقعیت را پیش از انتخاب ببین.
             </p>
           </header>
           <form className={slots.searchForm()} method="get" role="search">
@@ -88,6 +102,24 @@ export async function SeoClubsListScreen({ q = "" }: SeoClubsListScreenProps) {
                         .join(" · ") ||
                         `${club.reviewsSummary.count} نظر تأییدشده`}
                     </p>
+                    {(() => {
+                      const offers = summaryByClub.get(club.id)?.offers ?? [];
+                      const offer =
+                        offers.find((item) => item.currency === "IRT") ??
+                        offers[0];
+                      if (!offer) return null;
+                      const currency =
+                        offer.currency === "IRT"
+                          ? "تومان"
+                          : offer.currency === "IRR"
+                            ? "ریال"
+                            : offer.currency;
+                      return (
+                        <p className={slots.cardMeta()}>
+                          از {offer.fromAmount.toLocaleString("fa-IR")} {currency}
+                        </p>
+                      );
+                    })()}
                   </Link>
                 </li>
               ))}

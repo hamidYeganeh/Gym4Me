@@ -24,10 +24,18 @@ export type CoachVerificationItem = {
     status?: VerificationStatus;
     submittedAt: string | null;
     documentMediaIds: string[];
+    credential: CoachVerificationCredential | null;
     reviewNote: string | null;
   };
   experience: { years?: number; headline?: string };
   bio: string | null;
+};
+
+export type CoachVerificationCredential = {
+  typeKey: string;
+  issuer: string;
+  issuedAt: string | null;
+  expiresAt: string;
 };
 
 export type CoachVerificationsSortBy =
@@ -60,11 +68,21 @@ export type ReviewVerificationInput = {
   reviewNote?: string;
 };
 
+export type ReviewCoachVerificationInput = ReviewVerificationInput & {
+  credential?: {
+    typeKey: string;
+    issuer: string;
+    issuedAt?: string;
+    expiresAt: string;
+  };
+};
+
 export type ReviewCoachResponse = {
   userId: string;
   verification: {
     status: VerificationStatus;
     reviewedAt: string;
     reviewNote: string | null;
+    credential: CoachVerificationCredential | null;
   };
 };

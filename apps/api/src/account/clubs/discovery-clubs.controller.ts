@@ -65,7 +65,7 @@ export class DiscoveryClubsController {
   @Get(':clubId/branches')
   @ApiOperation({ summary: 'Public list of club branches' })
   branches(@Param('clubId') clubId: string) {
-    return this.clubs.listBranches(clubId);
+    return this.clubs.listBranches(clubId, { discovery: true });
   }
 
   @Public()

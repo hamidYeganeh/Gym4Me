@@ -36,7 +36,7 @@ import {
 } from './dto/admin.dto';
 import {
   ListCoachVerificationsQueryDto,
-  ReviewVerificationDto,
+  ReviewCoachVerificationDto,
 } from './dto/admin-review.dto';
 import {
   ListRoleRequestsQueryDto,
@@ -204,7 +204,7 @@ export class AdminController {
   @ApiOperation({ summary: 'Approve or reject coach verification' })
   reviewCoachVerification(
     @Param('userId') userId: string,
-    @Body() dto: ReviewVerificationDto,
+    @Body() dto: ReviewCoachVerificationDto,
     @CurrentUser('sub') adminId: string,
     @Req() request: Request,
   ) {

@@ -31,6 +31,13 @@ type ReviewState = {
   action: "approve" | "reject";
 };
 
+const EMPTY_CREDENTIAL = {
+  typeKey: "",
+  issuer: "",
+  issuedAt: "",
+  expiresAt: "",
+};
+
 export function CoachVerificationsScreen({
   className,
 }: CoachVerificationsScreenProps) {
@@ -47,6 +54,7 @@ export function CoachVerificationsScreen({
   const [selected, setSelected] = useState<CoachVerificationItem | null>(null);
   const [review, setReview] = useState<ReviewState | null>(null);
   const [reviewNote, setReviewNote] = useState("");
+  const [credential, setCredential] = useState(EMPTY_CREDENTIAL);
   const [pending, setPending] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
 
@@ -85,12 +93,31 @@ export function CoachVerificationsScreen({
 
   const handleConfirm = async () => {
     if (!review) return;
+    if (
+      review.action === "approve" &&
+      (!credential.typeKey.trim() ||
+        !credential.issuer.trim() ||
+        !credential.expiresAt)
+    ) {
+      setReviewError(t("coachActions.credentialRequired"));
+      return;
+    }
     setPending(true);
     setReviewError(null);
     try {
       await adminVerification.reviewCoach(review.item.userId, {
         action: review.action,
         reviewNote: reviewNote.trim() || undefined,
+        ...(review.action === "approve"
+          ? {
+              credential: {
+                typeKey: credential.typeKey.trim(),
+                issuer: credential.issuer.trim(),
+                issuedAt: credential.issuedAt || undefined,
+                expiresAt: credential.expiresAt,
+              },
+            }
+          : {}),
       });
       setReview(null);
       setSelected(null);
@@ -134,6 +161,7 @@ export function CoachVerificationsScreen({
           if (!selected) return;
           setReview({ item: selected, action: "approve" });
           setReviewNote("");
+          setCredential(EMPTY_CREDENTIAL);
           setReviewError(null);
         }}
         onOpenChange={(open) => {
@@ -143,6 +171,7 @@ export function CoachVerificationsScreen({
           if (!selected) return;
           setReview({ item: selected, action: "reject" });
           setReviewNote("");
+          setCredential(EMPTY_CREDENTIAL);
           setReviewError(null);
         }}
       />
@@ -152,6 +181,10 @@ export function CoachVerificationsScreen({
         review={review}
         reviewError={reviewError}
         reviewNote={reviewNote}
+        credential={credential}
+        onCredentialChange={(field, value) =>
+          setCredential((current) => ({ ...current, [field]: value }))
+        }
         onConfirm={() => void handleConfirm()}
         onOpenChange={(open) => {
           if (!open) setReview(null);

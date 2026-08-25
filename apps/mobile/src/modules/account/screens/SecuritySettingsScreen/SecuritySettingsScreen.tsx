@@ -38,9 +38,11 @@ function SecuritySwitch({
       onChange={onChange}
       size="sm"
     >
-      <Switch.Control>
-        <Switch.Thumb />
-      </Switch.Control>
+      <Switch.Content>
+        <Switch.Control>
+          <Switch.Thumb />
+        </Switch.Control>
+      </Switch.Content>
     </Switch>
   );
 }

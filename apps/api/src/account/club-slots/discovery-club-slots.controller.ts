@@ -25,41 +25,41 @@ export class DiscoveryClubSlotsController {
   @Get(':clubId/classes')
   @ApiOperation({ summary: 'Public club classes' })
   classes(@Param('clubId') clubId: string) {
-    return this.slots.listClasses(clubId);
+    return this.slots.listDiscoveryClasses(clubId);
   }
 
   @Public()
   @Get(':clubId/classes/:classId')
   @ApiOperation({ summary: 'Public club class detail' })
   getClass(@Param('clubId') clubId: string, @Param('classId') classId: string) {
-    return this.slots.getClass(clubId, classId);
+    return this.slots.getDiscoveryClass(clubId, classId);
   }
 
   @Public()
   @Get(':clubId/spaces')
   @ApiOperation({ summary: 'Public club spaces' })
   spaces(@Param('clubId') clubId: string) {
-    return this.slots.listSpaces(clubId);
+    return this.slots.listDiscoverySpaces(clubId);
   }
 
   @Public()
   @Get(':clubId/spaces/:spaceId')
   @ApiOperation({ summary: 'Public club space detail' })
   getSpace(@Param('clubId') clubId: string, @Param('spaceId') spaceId: string) {
-    return this.slots.getSpace(clubId, spaceId);
+    return this.slots.getDiscoverySpace(clubId, spaceId);
   }
 
   @Public()
   @Get(':clubId/slots')
   @ApiOperation({ summary: 'Public club slots' })
   listSlots(@Param('clubId') clubId: string) {
-    return this.slots.listSlots(clubId);
+    return this.slots.listDiscoverySlots(clubId);
   }
 
   @Public()
   @Get(':clubId/slots/:slotId')
   @ApiOperation({ summary: 'Public club slot detail' })
   getSlot(@Param('clubId') clubId: string, @Param('slotId') slotId: string) {
-    return this.slots.getSlot(clubId, slotId);
+    return this.slots.getDiscoverySlot(clubId, slotId);
   }
 }

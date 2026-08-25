@@ -2,7 +2,9 @@ import type {
   ClubMembershipPlan,
   ImportMembershipRow,
   ImportMembershipsResult,
+  MembershipRenewalPreview,
   PaymentChannel,
+  RenewMembershipInput,
 } from "@repo/api";
 import type {
   OwnerMember,
@@ -27,6 +29,11 @@ export type OwnerMembersSellInput = {
   debt?: { dueAt: string; installmentCount?: number };
 };
 
+export type OwnerMembersRenewInput = Pick<
+  RenewMembershipInput,
+  "channel" | "paidAmount" | "externalRef" | "tenders" | "debt"
+>;
+
 export type OwnerMembersScreenProps = {
   members: OwnerMember[];
   stats: OwnerMembersStats;
@@ -36,6 +43,15 @@ export type OwnerMembersScreenProps = {
   onCheckIn?: (member: OwnerMember) => Promise<void> | void;
   onFreeze?: (member: OwnerMember) => Promise<void> | void;
   onUnfreeze?: (member: OwnerMember) => Promise<void> | void;
+  onPreviewRenewal?: (
+    member: OwnerMember,
+  ) => Promise<MembershipRenewalPreview>;
+  onRenew?: (
+    member: OwnerMember,
+    preview: MembershipRenewalPreview,
+    idempotencyKey: string,
+    payment: OwnerMembersRenewInput,
+  ) => Promise<void>;
   onSell?: (input: OwnerMembersSellInput) => Promise<void> | void;
   onImport?: (
     rows: ImportMembershipRow[],

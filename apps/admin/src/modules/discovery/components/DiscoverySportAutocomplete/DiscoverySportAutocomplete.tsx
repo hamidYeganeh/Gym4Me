@@ -24,7 +24,7 @@ export function DiscoverySportAutocomplete({
   label,
   description,
   placeholder = "ورزش‌ها را انتخاب کنید",
-  searchPlaceholder = "جستجوی ورزش…",
+  searchPlaceholder = "جست‌وجوی ورزش…",
   options,
   value,
   isLoading = false,

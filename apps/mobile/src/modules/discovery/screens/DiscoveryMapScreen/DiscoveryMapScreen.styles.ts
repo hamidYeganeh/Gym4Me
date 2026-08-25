@@ -5,6 +5,9 @@ export const discoveryMapScreenStyles = {
     "[&_main]:min-h-0 [&_main]:flex-1 [&_main]:px-0 [&_main]:pb-0",
   ].join(" "),
   stage: "relative h-full min-h-0 w-full flex-1",
+  loading: "absolute inset-0",
+  state:
+    "absolute inset-0 flex items-center justify-center bg-background/95 px-6 py-10",
   header:
     "border-b-0 bg-linear-to-t from-transparent via-map-land/80 to-map-land",
 } as const;

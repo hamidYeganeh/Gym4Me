@@ -12,22 +12,35 @@ import { stagger, transition } from "@repo/theme";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { AppSectionHeader } from "@repo/ui/layout/AppSectionHeader";
 import { ProfileHeader } from "@repo/ui/layout/ProfileHeader";
+import type { ActionCenterKind } from "@repo/api/action-center";
 import { motion, useReducedMotion, type Variants } from "motion/react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/shared/lib/app-router";
 
-import type { ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { AthleteHomeMetricsSection } from "@/modules/athlete/sections/AthleteHomeMetricsSection";
 import { AthleteHomeSetupTodoSection } from "@/modules/athlete/sections/AthleteHomeSetupTodoSection";
 import { AthleteReferralInviteSection } from "@/modules/athlete/sections/AthleteReferralInviteSection";
 import { AthleteRoleUpgradeSection } from "@/modules/athlete/sections/AthleteRoleUpgradeSection";
-import { mediaFileUrl } from "@/shared/lib/api";
+import {
+  accountActionCenter,
+  mediaFileUrl,
+} from "@/shared/lib/api";
 import { useRoleNavActions } from "@/shared/components/RoleAppNavigation";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { athleteHomeScreenStyles as styles } from "./AthleteHomeScreen.styles";
 
 const ICON_SIZE = 22;
+
+type AthleteAction = {
+  id: string;
+  title: string;
+  description: string;
+  href: string;
+  priority: number;
+  kind: ActionCenterKind;
+};
 
 const contentVariants: Variants = {
   hidden: {},
@@ -55,6 +68,52 @@ export function AthleteHomeScreen() {
   const { user } = useAuth();
   const { openActions } = useRoleNavActions();
   const firstName = user?.name.first?.trim() ?? "";
+  const [actions, setActions] = useState<AthleteAction[]>([]);
+  const [actionsLoading, setActionsLoading] = useState(false);
+  const [actionsError, setActionsError] = useState(false);
+
+  const loadActions = useCallback(async () => {
+    if (!user) return;
+    setActionsLoading(true);
+    setActionsError(false);
+    try {
+      const result = await accountActionCenter.get();
+      setActions(
+        result.items.map((item) => {
+          const due = item.dueAt
+            ? new Date(item.dueAt).toLocaleString("fa-IR-u-ca-persian", {
+                dateStyle: "medium",
+                timeStyle: "short",
+              })
+            : "";
+          const copy =
+            item.kind === "athlete.booking_payment"
+              ? [t("actionPaymentTitle"), t("actionPaymentBody", item.params)]
+              : item.kind === "athlete.workout_resume"
+                ? [t("actionWorkoutTitle"), t("actionWorkoutBody")]
+                : item.kind === "athlete.membership_renew"
+                  ? [t("actionMembershipTitle"), t("actionMembershipBodyShort")]
+                  : [t("actionUpcomingTitle"), due];
+          return {
+            id: item.id,
+            title: copy[0],
+            description: copy[1],
+            href: item.href,
+            priority: item.priority,
+            kind: item.kind,
+          };
+        }),
+      );
+    } catch {
+      setActionsError(true);
+    } finally {
+      setActionsLoading(false);
+    }
+  }, [t, user]);
+
+  useEffect(() => {
+    void loadActions();
+  }, [loadActions]);
 
   return (
     <AppLayout
@@ -104,6 +163,43 @@ export function AthleteHomeScreen() {
 
         <StaggerSection>
           <AthleteHomeMetricsSection />
+        </StaggerSection>
+
+        <StaggerSection>
+          <section aria-labelledby="athlete-action-center-title" className={styles.section}>
+            <AppSectionHeader
+              description={t("actionCenterDescription")}
+              id="athlete-action-center-title"
+              title={t("actionCenterTitle")}
+            />
+            {actionsLoading ? <p aria-live="polite" className="text-sm text-muted">{t("actionCenterLoading")}</p> : null}
+            {actionsError ? (
+              <div>
+                <p className="text-sm text-danger">{t("actionCenterError")}</p>
+                <button className="mt-2 text-sm text-primary underline" onClick={() => void loadActions()} type="button">{t("actionCenterRetry")}</button>
+              </div>
+            ) : null}
+            {!actionsLoading && !actionsError && actions.length === 0 ? <p className="text-sm text-muted">{t("actionCenterEmpty")}</p> : null}
+            <div className="space-y-3">
+              {actions.map((action) => (
+                <CallToActionCard
+                  actionLabel={t("actionCenterOpen")}
+                  actionType="icon"
+                  subtitle={action.description}
+                  key={action.id}
+                  onAction={() => {
+                    void accountActionCenter.click({
+                      itemId: action.id,
+                      kind: action.kind,
+                    });
+                    router.push(action.href);
+                  }}
+                  title={action.title}
+                  variant={action.priority >= 90 ? "primary" : "outlined"}
+                />
+              ))}
+            </div>
+          </section>
         </StaggerSection>
 
         <StaggerSection>

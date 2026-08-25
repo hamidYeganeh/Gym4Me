@@ -5,5 +5,7 @@ export type AthleteSubscriptionScreenProps = {
   currentPlanId: string;
   pending?: boolean;
   onUpgrade?: (planId: string) => void | Promise<void>;
+  title?: string;
+  subtitle?: string;
   className?: string;
 };

@@ -20,7 +20,9 @@ type State = {
   initialSelectedId: string;
   nearestId: string;
   isLoading: boolean;
+  isError: boolean;
   source: "api" | "mock";
+  retry: () => void;
 };
 
 const DEFAULT_RADIUS_METERS = 20_000;
@@ -85,11 +87,16 @@ export function useDiscoveryMapPins(): State {
     initialSelectedId: "",
     nearestId: "",
     isLoading: true,
+    isError: false,
     source: "api",
+    retry: () => undefined,
   });
+  const [retryToken, setRetryToken] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
+
+    setState((current) => ({ ...current, isLoading: true, isError: false }));
 
     void (async () => {
       try {
@@ -130,7 +137,9 @@ export function useDiscoveryMapPins(): State {
             initialSelectedId: "",
             nearestId: "",
             isLoading: false,
+            isError: false,
             source: "api",
+            retry: () => setRetryToken((value) => value + 1),
           });
           return;
         }
@@ -142,7 +151,9 @@ export function useDiscoveryMapPins(): State {
           initialSelectedId: nearestId,
           nearestId,
           isLoading: false,
+          isError: false,
           source: "api",
+          retry: () => setRetryToken((value) => value + 1),
         });
       } catch {
         if (cancelled) return;
@@ -151,7 +162,9 @@ export function useDiscoveryMapPins(): State {
           initialSelectedId: "",
           nearestId: "",
           isLoading: false,
+          isError: true,
           source: "api",
+          retry: () => setRetryToken((value) => value + 1),
         });
       }
     })();
@@ -159,7 +172,7 @@ export function useDiscoveryMapPins(): State {
     return () => {
       cancelled = true;
     };
-  }, [ensurePermission]);
+  }, [ensurePermission, retryToken]);
 
   return state;
 }

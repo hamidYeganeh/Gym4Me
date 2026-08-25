@@ -3,5 +3,6 @@ export type AthleteWorkoutDetailIntroSectionProps = {
   focusLabel: string;
   statusLabel: string;
   periodLabel: string;
+  revisionLabel: string;
   className?: string;
 };

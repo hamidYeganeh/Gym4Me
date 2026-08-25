@@ -1,4 +1,5 @@
 import { createAccountCheckinApi } from "@repo/api/checkin";
+import { createAccountActionCenterApi } from "@repo/api/action-center";
 import {
   createAccountClubsApi,
   createAccountClubSlotsApi,
@@ -53,6 +54,7 @@ import { canUseDemoFixtureId } from "./runtime-mode";
 export { apiClient, accountAuth };
 
 export const accountProfile = createAccountProfileApi(apiClient);
+export const accountActionCenter = createAccountActionCenterApi(apiClient);
 export const accountKyc = createAccountKycApi(apiClient);
 export const accountRoles = createAccountRolesApi(apiClient);
 export const accountReferral = createAccountReferralApi(apiClient);

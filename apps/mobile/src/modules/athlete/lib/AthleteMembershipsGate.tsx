@@ -2,10 +2,14 @@
 
 import { Spinner } from "@heroui/react/spinner";
 import { Typography } from "@heroui/react/typography";
+import { ApiError, type MembershipCheckoutPreview } from "@repo/api";
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { accountMemberships } from "@/shared/lib/api";
 import { useRouter } from "@/shared/lib/app-router";
 import { useAuth } from "@/shared/providers/AuthProvider";
+import { getPaymentCallbackUrl } from "@/shared/lib/payment-return";
 import { AthleteMembershipsScreen } from "../screens/AthleteMembershipsScreen";
 import { mapApiMembershipToAthlete } from "./api-memberships";
 import type { AthleteMembership } from "./memberships-data";
@@ -14,7 +18,9 @@ import type { AthleteMembership } from "./memberships-data";
  * Client gate: live memberships for signed-in athletes.
  */
 export function AthleteMembershipsGate() {
+  const t = useTranslations("AthleteMemberships");
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isAuthenticated, isReady } = useAuth();
   const [memberships, setMemberships] = useState<AthleteMembership[] | null>(
     null,
@@ -34,47 +40,83 @@ export function AthleteMembershipsGate() {
       return;
     }
     let cancelled = false;
-    reload().catch(() => {
-      if (!cancelled) setMemberships([]);
-    });
+    const bootstrap = async () => {
+      const checkoutId = searchParams.get("checkoutId");
+      const authority = searchParams.get("Authority");
+      const status = searchParams.get("Status");
+      if (
+        checkoutId &&
+        authority &&
+        (status === "OK" || status === "NOK")
+      ) {
+        setPending(true);
+        await accountMemberships.verifyCheckout(checkoutId, {
+          authority,
+          status,
+        });
+        if (cancelled) return;
+        router.replace("/athlete/memberships");
+      }
+      await reload();
+    };
+    bootstrap()
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        setActionError(
+          error instanceof ApiError ? error.message : t("renewError"),
+        );
+        setMemberships([]);
+      })
+      .finally(() => {
+        if (!cancelled) setPending(false);
+      });
     return () => {
       cancelled = true;
     };
-  }, [isAuthenticated, isReady, reload]);
+  }, [isAuthenticated, isReady, reload, router, searchParams, t]);
 
-  const handleRenew = useCallback(
-    async (membership: AthleteMembership) => {
+  const previewRenewal = useCallback(async (membership: AthleteMembership) => {
+    if (!membership.clubId || !membership.planId) {
+      throw new Error("Membership cannot be renewed");
+    }
+    return accountMemberships.previewCheckout({
+      clubId: membership.clubId,
+      planId: membership.planId,
+      membershipId: membership.id,
+    });
+  }, []);
+
+  const confirmRenewal = useCallback(
+    async (
+      membership: AthleteMembership,
+      preview: MembershipCheckoutPreview,
+      idempotencyKey: string,
+    ) => {
       if (!membership.clubId || !membership.planId) return;
       setPending(true);
       setActionError(null);
       try {
-        const created = await accountMemberships.purchase({
+        const initiation = await accountMemberships.initiateCheckout({
           clubId: membership.clubId,
           planId: membership.planId,
-          idempotencyKey: `membership-renew:${membership.clubId}:${membership.planId}:${Date.now()}`,
+          membershipId: membership.id,
+          idempotencyKey,
+          previewFingerprint: preview.fingerprint,
+          consentVersion: preview.consentVersion,
+          consentAccepted: true,
+          callbackUrl: getPaymentCallbackUrl("/athlete/memberships"),
         });
-        if (created.paymentId) {
-          try {
-            const { accountFinance } = await import("@/shared/lib/api");
-            const invoice = await accountFinance.issueInvoiceFromPayment({
-              paymentId: created.paymentId,
-            });
-            router.push(
-              `/athlete/payment/${invoice.id}?status=success&source=membership`,
-            );
-            return;
-          } catch {
-            // Membership renew succeeded even if invoice issue failed.
-          }
-        }
-        await reload();
-      } catch {
-        setActionError("تمدید/خرید عضویت ناموفق بود.");
+        window.location.assign(initiation.redirectUrl);
+      } catch (error) {
+        setActionError(
+          error instanceof ApiError ? error.message : t("renewError"),
+        );
+        throw error;
       } finally {
         setPending(false);
       }
     },
-    [reload, router],
+    [t],
   );
 
   if (!memberships) {
@@ -96,7 +138,8 @@ export function AthleteMembershipsGate() {
       ) : null}
       <AthleteMembershipsScreen
         memberships={memberships}
-        onRenew={isAuthenticated ? handleRenew : undefined}
+        onConfirmRenewal={confirmRenewal}
+        onPreviewRenewal={previewRenewal}
         pending={pending}
       />
     </>

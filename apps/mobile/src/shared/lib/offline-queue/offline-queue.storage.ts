@@ -1,9 +1,24 @@
 import { Preferences } from "@capacitor/preferences";
+import { getNativeSecureStore } from "@/shared/lib/native-secure-store";
 
 const STORAGE_KEY = "gym4me.offline-queue.v1";
 
 async function readRaw(): Promise<string | null> {
   if (typeof window === "undefined") return null;
+  const secure = await getNativeSecureStore();
+  if (secure.isNative) {
+    const encrypted = await secure.getItem(STORAGE_KEY);
+    if (encrypted != null) return encrypted;
+    // One-time migration from the former unencrypted Preferences location.
+    const legacy = await Preferences.get({ key: STORAGE_KEY }).catch(() => ({
+      value: null,
+    }));
+    if (legacy.value != null) {
+      await secure.setItem(STORAGE_KEY, legacy.value);
+      await Preferences.remove({ key: STORAGE_KEY }).catch(() => undefined);
+    }
+    return legacy.value;
+  }
   try {
     const { value } = await Preferences.get({ key: STORAGE_KEY });
     if (value != null) return value;
@@ -19,6 +34,11 @@ async function readRaw(): Promise<string | null> {
 
 async function writeRaw(value: string): Promise<void> {
   if (typeof window === "undefined") return;
+  const secure = await getNativeSecureStore();
+  if (secure.isNative) {
+    await secure.setItem(STORAGE_KEY, value);
+    return;
+  }
   try {
     window.localStorage.setItem(STORAGE_KEY, value);
   } catch {
@@ -33,6 +53,11 @@ async function writeRaw(value: string): Promise<void> {
 
 async function clearRaw(): Promise<void> {
   if (typeof window === "undefined") return;
+  const secure = await getNativeSecureStore();
+  if (secure.isNative) {
+    await secure.removeItem(STORAGE_KEY);
+    return;
+  }
   try {
     window.localStorage.removeItem(STORAGE_KEY);
   } catch {

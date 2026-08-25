@@ -1,5 +1,7 @@
 import {
   IsEnum,
+  IsDateString,
+  IsDefined,
   IsIn,
   IsInt,
   IsOptional,
@@ -7,6 +9,8 @@ import {
   Max,
   MaxLength,
   Min,
+  ValidateIf,
+  ValidateNested,
 } from 'class-validator';
 import { ClubLifecycleStatus, VerificationStatus } from '../../common/enums';
 import { Transform, type TransformFnParams, Type } from 'class-transformer';
@@ -25,6 +29,31 @@ export class ReviewVerificationDto {
   @IsString()
   @MaxLength(500)
   reviewNote?: string;
+}
+
+export class CoachCredentialReviewDto {
+  @IsString()
+  @MaxLength(80)
+  typeKey!: string;
+
+  @IsString()
+  @MaxLength(160)
+  issuer!: string;
+
+  @IsOptional()
+  @IsDateString({ strict: true })
+  issuedAt?: string;
+
+  @IsDateString({ strict: true })
+  expiresAt!: string;
+}
+
+export class ReviewCoachVerificationDto extends ReviewVerificationDto {
+  @ValidateIf((dto: ReviewCoachVerificationDto) => dto.action === 'approve')
+  @IsDefined()
+  @ValidateNested()
+  @Type(() => CoachCredentialReviewDto)
+  credential?: CoachCredentialReviewDto;
 }
 
 class ReviewQueueQueryDto {

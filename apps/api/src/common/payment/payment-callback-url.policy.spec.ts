@@ -26,6 +26,19 @@ describe('assertAllowedPaymentCallbackUrl', () => {
     ).toThrow(BadRequestException);
   });
 
+  it('allows the configured public API origin for the native return broker', () => {
+    expect(
+      assertAllowedPaymentCallbackUrl(
+        'https://api.gym4me.ir/api/v1/payment-returns/native',
+        {
+          NODE_ENV: 'production',
+          API_BASE_URL: 'https://api.gym4me.ir',
+          CORS_ORIGINS: 'https://app.gym4me.ir',
+        },
+      ),
+    ).toBe('https://api.gym4me.ir/api/v1/payment-returns/native');
+  });
+
   it.each([
     'javascript:alert(1)',
     'file:///tmp/callback',

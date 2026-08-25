@@ -31,11 +31,11 @@ export function AthleteGoalsReminderSection({
   return (
     <section className={styles.root({ className })}>
       <Typography type="h3" weight="semibold">
-        یادآوری متریک (opt-in)
+        یادآوری معیار سلامت
       </Typography>
       <div className={styles.form()}>
         <label className="flex flex-col gap-1.5">
-          <span className={styles.meta()}>متریک</span>
+          <span className={styles.meta()}>معیار سلامت</span>
           <select
             className={styles.nativeSelect()}
             onChange={(event) => onReminderKeyChange(event.target.value)}
@@ -80,7 +80,7 @@ export function AthleteGoalsReminderSection({
             onChange={(event) => onEnableReminderChange(event.target.checked)}
             type="checkbox"
           />
-          فعال‌سازی یادآوری (opt-in صریح)
+          این یادآوری را فعال کن
         </label>
         <Button
           fullWidth

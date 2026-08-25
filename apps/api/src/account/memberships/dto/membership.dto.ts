@@ -2,16 +2,19 @@ import { Transform, Type } from 'class-transformer';
 import {
   ArrayMaxSize,
   ArrayMinSize,
+  Equals,
   IsArray,
   IsBoolean,
   IsDateString,
   IsEnum,
   IsInt,
+  IsIn,
   IsMongoId,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
+  Length,
   Max,
   MaxLength,
   Min,
@@ -33,6 +36,15 @@ import {
 import { toStringArray } from '../../../common/utils/list-query.util';
 
 export class PaginationQueryDto extends CommonPaginationQueryDto {}
+
+export class PublicMembershipPlanSummariesQueryDto {
+  @Transform(toStringArray)
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(50)
+  @IsMongoId({ each: true })
+  clubIds!: string[];
+}
 
 // ── Nested DTOs ───────────────────────────────────────────────────────────
 
@@ -331,6 +343,108 @@ export class SellMembershipDto {
   debt?: MembershipDebtDto;
 }
 
+/** Server-authoritative price/effect preview for renewing the current plan. */
+export class PreviewMembershipRenewalDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  couponCode?: string;
+}
+
+/** Confirm a renewal against an unchanged preview and explicit consent copy. */
+export class RenewMembershipDto extends PreviewMembershipRenewalDto {
+  @IsString()
+  @MinLength(8)
+  @MaxLength(200)
+  idempotencyKey!: string;
+
+  @IsString()
+  @Length(64, 64)
+  previewFingerprint!: string;
+
+  @IsString()
+  @Equals('membership-renewal-v1')
+  consentVersion!: 'membership-renewal-v1';
+
+  @IsBoolean()
+  @Equals(true)
+  consentAccepted!: true;
+
+  @IsOptional()
+  @IsEnum(PaymentChannel)
+  channel?: PaymentChannel;
+
+  /** Amount collected now. Omit for a fully-paid renewal. */
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  paidAmount?: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  externalRef?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(2)
+  @ValidateNested({ each: true })
+  @Type(() => MembershipPaymentTenderDto)
+  tenders?: MembershipPaymentTenderDto[];
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => MembershipDebtDto)
+  debt?: MembershipDebtDto;
+}
+
+export class PreviewMembershipCheckoutDto {
+  @IsMongoId()
+  clubId!: string;
+
+  @IsMongoId()
+  planId!: string;
+
+  @IsOptional()
+  @IsMongoId()
+  membershipId?: string;
+}
+
+/** Initiate a persisted athlete checkout; membershipId selects renewal mode. */
+export class InitiateMembershipCheckoutDto extends PreviewMembershipCheckoutDto {
+  @IsString()
+  @MinLength(8)
+  @MaxLength(200)
+  idempotencyKey!: string;
+
+  @IsString()
+  @Length(64, 64)
+  previewFingerprint!: string;
+
+  @IsString()
+  @MaxLength(64)
+  consentVersion!: string;
+
+  @IsBoolean()
+  @Equals(true)
+  consentAccepted!: true;
+
+  @IsString()
+  @MaxLength(1000)
+  callbackUrl!: string;
+}
+
+export class VerifyMembershipCheckoutDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(120)
+  authority!: string;
+
+  @IsIn(['OK', 'NOK'])
+  status!: 'OK' | 'NOK';
+}
+
 export class ImportMembershipRowDto {
   @IsString()
   @MinLength(1)
@@ -542,6 +656,48 @@ export class SubscribePlatformDto {
   @ValidateNested()
   @Type(() => SubscriptionRenewalDto)
   renewal?: SubscriptionRenewalDto;
+}
+
+export class PreviewPlatformSubscriptionCheckoutDto {
+  @IsMongoId()
+  planId!: string;
+
+  @IsOptional()
+  @IsEnum(SubscriptionRenewalMode)
+  renewalMode?: SubscriptionRenewalMode;
+}
+
+export class InitiatePlatformSubscriptionCheckoutDto extends PreviewPlatformSubscriptionCheckoutDto {
+  @IsString()
+  @MinLength(8)
+  @MaxLength(200)
+  idempotencyKey!: string;
+
+  @IsString()
+  @Length(64, 64)
+  previewFingerprint!: string;
+
+  @IsString()
+  @MaxLength(64)
+  consentVersion!: string;
+
+  @IsBoolean()
+  @Equals(true)
+  consentAccepted!: true;
+
+  @IsString()
+  @MaxLength(1000)
+  callbackUrl!: string;
+}
+
+export class VerifyPlatformSubscriptionCheckoutDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(120)
+  authority!: string;
+
+  @IsIn(['OK', 'NOK'])
+  status!: 'OK' | 'NOK';
 }
 
 export class CancelPlatformSubscriptionDto {

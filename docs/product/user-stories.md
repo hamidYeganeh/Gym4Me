@@ -177,6 +177,8 @@
 | N3 | (همه) inbox اعلان درون‌برنامه | ۳ |
 | N4 | (CCH↔ATH) پیام مستقیم | ۵ |
 
+> وضعیت N1 در ۲۰۲۶-۰۸-۲۵: اپ Android با package `com.gym4me.app` در Firebase ثبت و config بومی متصل شد؛ credential بک‌اند با FCM HTTP v1 اعتبارسنجی شده است. دریافت واقعی، deep link و registration token باید روی دستگاه فیزیکی smoke شوند.
+
 ## Epic O — عملیات واقعی باشگاه در ایران
 
 جزئیات و معیارهای سطح بالا: [`market-requirements.md`](./market-requirements.md)

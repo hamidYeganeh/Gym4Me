@@ -26,6 +26,7 @@ export {
   useProgressMetrics,
   useProgressPhotos,
   useRevokeDataGrant,
+  useSkipWorkoutLog,
   useSubmitExercise,
   useUpdateMetricGoal,
   useUpdateProgressMetric,

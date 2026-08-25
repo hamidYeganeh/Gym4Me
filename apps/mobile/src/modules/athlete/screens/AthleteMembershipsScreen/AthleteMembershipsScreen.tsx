@@ -1,12 +1,15 @@
 "use client";
 
 import { Button } from "@heroui/react/button";
+import { AlertDialog } from "@heroui/react/alert-dialog";
 import { Chip } from "@heroui/react/chip";
 import { Typography } from "@heroui/react/typography";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
+import type { MembershipCheckoutPreview } from "@repo/api";
+import { useState } from "react";
 import { useRouter } from "@/shared/lib/app-router";
 
 import { athleteMembershipsScreenStyles as styles } from "./AthleteMembershipsScreen.styles";
@@ -15,10 +18,86 @@ import type { AthleteMembershipsScreenProps } from "./AthleteMembershipsScreen.t
 export function AthleteMembershipsScreen({
   memberships,
   pending = false,
-  onRenew,
+  onPreviewRenewal,
+  onConfirmRenewal,
 }: AthleteMembershipsScreenProps) {
   const t = useTranslations("AthleteMemberships");
   const router = useRouter();
+  const [renewalOpen, setRenewalOpen] = useState(false);
+  const [renewalMember, setRenewalMember] = useState<
+    (typeof memberships)[number] | null
+  >(null);
+  const [renewalPreview, setRenewalPreview] =
+    useState<MembershipCheckoutPreview | null>(null);
+  const [renewalAttemptKey, setRenewalAttemptKey] = useState<string | null>(
+    null,
+  );
+  const [renewalLoading, setRenewalLoading] = useState(false);
+  const [renewalError, setRenewalError] = useState(false);
+
+  const openRenewal = async (membership: (typeof memberships)[number]) => {
+    if (!onPreviewRenewal) return;
+    setRenewalMember(membership);
+    setRenewalPreview(null);
+    setRenewalError(false);
+    setRenewalAttemptKey(
+      `athlete-membership-renewal:${globalThis.crypto?.randomUUID?.() ?? Date.now()}`,
+    );
+    setRenewalOpen(true);
+    setRenewalLoading(true);
+    try {
+      setRenewalPreview(await onPreviewRenewal(membership));
+    } catch {
+      setRenewalError(true);
+    } finally {
+      setRenewalLoading(false);
+    }
+  };
+
+  const confirmRenewal = async () => {
+    if (
+      !onConfirmRenewal ||
+      !renewalMember ||
+      !renewalPreview ||
+      !renewalAttemptKey
+    ) {
+      return;
+    }
+    setRenewalError(false);
+    try {
+      await onConfirmRenewal(
+        renewalMember,
+        renewalPreview,
+        renewalAttemptKey,
+      );
+    } catch {
+      setRenewalError(true);
+    }
+  };
+
+  const formatPrice = (preview: MembershipCheckoutPreview) => {
+    const unit = preview.price.currency === "IRT" ? t("currencyIrt") : preview.price.currency;
+    return `${new Intl.NumberFormat("fa-IR").format(preview.price.payable)} ${unit}`;
+  };
+
+  const effectLabel = (preview: MembershipCheckoutPreview) => {
+    if (typeof preview.resultingCredit.remainingSessions === "number") {
+      return t("renewSessionsEffect", {
+        count: preview.resultingCredit.remainingSessions,
+      });
+    }
+    if (typeof preview.resultingCredit.remainingEntries === "number") {
+      return t("renewEntriesEffect", {
+        count: preview.resultingCredit.remainingEntries,
+      });
+    }
+    return t("renewExpiryEffect", {
+      date: new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
+        dateStyle: "long",
+        timeZone: "Asia/Tehran",
+      }).format(new Date(preview.resultingCredit.expiresAt ?? "")),
+    });
+  };
 
   const currentMemberships = memberships.filter(
     (membership) => membership.state !== "expired",
@@ -128,11 +207,13 @@ export function AthleteMembershipsScreen({
                       >
                         {membership.priceLabel}
                       </Typography>
-                      {onRenew && membership.clubId && membership.planId ? (
+                      {onPreviewRenewal &&
+                      membership.clubId &&
+                      membership.planId ? (
                         <Button
                           isDisabled={pending}
                           onPress={() => {
-                            void onRenew(membership);
+                            void openRenewal(membership);
                           }}
                           size="sm"
                           variant="primary"
@@ -185,12 +266,14 @@ export function AthleteMembershipsScreen({
                   <Typography className={styles.pastMeta} type="body-sm">
                     {membership.expiresLabel}
                   </Typography>
-                  {onRenew && membership.clubId && membership.planId ? (
+                  {onPreviewRenewal &&
+                  membership.clubId &&
+                  membership.planId ? (
                     <Button
                       className="mt-2"
                       isDisabled={pending}
                       onPress={() => {
-                        void onRenew(membership);
+                        void openRenewal(membership);
                       }}
                       size="sm"
                       variant="secondary"
@@ -210,6 +293,58 @@ export function AthleteMembershipsScreen({
           )}
         </section>
       </div>
+
+      <AlertDialog>
+        <AlertDialog.Backdrop isOpen={renewalOpen} onOpenChange={setRenewalOpen}>
+          <AlertDialog.Container>
+            <AlertDialog.Dialog>
+              <AlertDialog.Header>
+                <AlertDialog.Heading>{t("renewTitle")}</AlertDialog.Heading>
+              </AlertDialog.Header>
+              <AlertDialog.Body>
+                {renewalLoading ? (
+                  <Typography type="body-sm">{t("renewLoading")}</Typography>
+                ) : renewalPreview ? (
+                  <div className="space-y-3">
+                    <Typography type="body-sm">
+                      {t("renewPlan", { plan: renewalPreview.plan.name })}
+                    </Typography>
+                    <Typography type="body" weight="semibold">
+                      {formatPrice(renewalPreview)}
+                    </Typography>
+                    <Typography type="body-sm">
+                      {effectLabel(renewalPreview)}
+                    </Typography>
+                    <Typography className="text-muted" type="body-sm">
+                      {t("renewConsent")}
+                    </Typography>
+                  </div>
+                ) : null}
+                {renewalError ? (
+                  <Typography className="text-danger" type="body-sm">
+                    {t("renewError")}
+                  </Typography>
+                ) : null}
+              </AlertDialog.Body>
+              <AlertDialog.Footer>
+                <Button slot="close" variant="tertiary">
+                  {t("renewCancel")}
+                </Button>
+                <Button
+                  isDisabled={!renewalPreview || renewalLoading}
+                  isPending={pending}
+                  onPress={() => {
+                    void confirmRenewal();
+                  }}
+                  variant="primary"
+                >
+                  {t("renewPay")}
+                </Button>
+              </AlertDialog.Footer>
+            </AlertDialog.Dialog>
+          </AlertDialog.Container>
+        </AlertDialog.Backdrop>
+      </AlertDialog>
     </AppLayout>
   );
 }

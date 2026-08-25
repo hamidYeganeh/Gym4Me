@@ -10,6 +10,7 @@
     "./auth/hooks": "./src/auth/hooks.ts",
     "./account": "./src/account/index.ts",
     "./account/hooks": "./src/account/hooks.ts",
+    "./action-center": "./src/action-center/index.ts",
     "./admin": "./src/admin/index.ts",
     "./admin/hooks": "./src/admin/hooks.ts",
     "./discovery": "./src/discovery/index.ts",

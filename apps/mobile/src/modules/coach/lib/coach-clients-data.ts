@@ -82,7 +82,7 @@ export const COACH_CLIENTS: CoachClient[] = [
     id: "c5",
     name: "سمیرا نادری",
     avatar: PLACEHOLDER_IMAGE,
-    goalLabel: "تناسب اندام پس از بارداری",
+    goalLabel: "تناسب‌اندام پس از بارداری",
     levelLabel: "مبتدی",
     lastSessionLabel: "۱ ماه پیش",
     progressPercent: 18,

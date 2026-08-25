@@ -26,6 +26,8 @@
 
 **شاخه‌ها:** پرداخت ناموفق یا TTL → `CANCELLED` و آزادسازی hold · عدم حضور → `NO_SHOW` · verify تکراری → idempotent.
 
+**Capacitor:** اپ به‌جای origin محلی WebView، callback عمومی HTTPS سرور را به PSP می‌دهد؛ broker فقط return path و پارامترهای پرداخت allowlistشده را به `com.gym4me.app://payment-return` می‌فرستد و اپ پس از hydrate نشست، verify سروری را انجام می‌دهد.
+
 ---
 
 ## S3 — لغو و بازپرداخت
@@ -113,8 +115,12 @@
 ## S12 — اشتراک پلتفرم و enforcement
 
 1. مربی پلن پایه (`maxStudents: 20`) → شاگرد ۲۱ → خطای limit + CTA ارتقا.
-2. ارتقا → زرین‌پال → `PlatformSubscription` جدید.
+2. خرید یا ارتقا → preview مبلغ و شرایط نسخه‌دار → intent پایدار → زرین‌پال → verify سمت سرور → `PlatformSubscription` + `Payment` + Ledger + Outbox در transaction واحد.
 3. انقضا → grace → downgrade؛ داده حذف نمی‌شود، قابلیت‌ها read-only.
+
+**بازیابی:** callback تکراری idempotent است؛ timeout مرورگر intent را با reconciliation بازیابی می‌کند و خطای موقت provider باعث لغو خودکار authority آغازشده نمی‌شود.
+
+**وضعیت شواهد:** checkout خرید اولیهٔ پولی برای نقش فعال owner پیاده شده است؛ upgrade/plan-change، limits ساخت‌یافته، grace و entitlement مربی هنوز قرارداد قفل‌شده ندارند و برای تکمیل این سناریو ADR لازم است.
 
 ---
 
@@ -174,6 +180,8 @@
 4. پس از اتصال، رکوردها به‌ترتیب sync و سمت سرور validate می‌شوند.
 5. مصرف تکراری یا عضویت نامعتبر به صف بررسی می‌رود؛ سابقهٔ محلی حذف نمی‌شود.
 
+**شواهد فعلی (`PARTIAL`، ۲۰۲۶-۰۸-۲۵):** صدور snapshot به actor/club/device فعال bind شده، HMAC و signing secret مستقل production دارد، eligibility و clock window bounded است و sync با sequence/nonce، fingerprint و idempotency مشتق‌شدهٔ server-side انجام می‌شود. اپ Capacitor snapshot و eventها را در secure storage نگه می‌دارد و فقط نتیجهٔ `created/duplicate` را حذف می‌کند؛ `review/rejected` محلی حفظ می‌شوند. میز پذیرش صف server-authoritative را با علت فارسی نشان می‌دهد؛ retry با همان idempotency اصلی و dismiss بدون ثبت حضور/مصرف اعتبار انجام و تصمیم در resolution history + AuditLog ثبت می‌شود. resolved row پس از refresh سرور از secure queue حذف می‌شود. سناریوی replica-set خودکار provision/sync/replay/reject/dismiss/revoke محلی کامل پاس شد؛ smoke قطع/وصل و revoke دستگاه فیزیکی هنوز باز است (`apps/api/src/checkin/offline-checkin.service.ts`, `apps/mobile/src/modules/owner/lib/offline-checkin-queue.ts`, `apps/api/test/e2e-scenario.sh`).
+
 **محدودیت:** عملیات مالی و ایجاد عضویت جدید آفلاین انجام نمی‌شوند؛ سقف زمان/تعداد آفلاین per-device اجباری است.
 
 ---
@@ -201,6 +209,8 @@
 5. sync بعدی incremental و cursor-based است؛ disconnect فوراً خواندن دادهٔ جدید را متوقف می‌کند.
 
 **شاخه‌ها:** permission جزئی → فقط همان metricها sync · provider unavailable → ثبت دستی فعال می‌ماند · disconnect → دادهٔ قبلی تا حذف صریح ورزشکار حفظ می‌شود.
+
+**enforcement و شواهد integration:** API نمونهٔ health-provider را فقط از مسیر batch idempotent، در state `syncing` و برای scope صریح همان provider می‌پذیرد؛ disconnect scope/cursor را سمت سرور پاک می‌کند و sampleهای قبلی را حذف نمی‌کند. smoke replica-set برای connect/sync/dedupe/scope rejection/disconnect در `apps/api/test/smoke-bootstrap-progress.sh` ثبت شده است؛ اجرای native permission matrix روی دستگاه فیزیکی همچنان شرط نهایی S19 است.
 
 ---
 
@@ -230,3 +240,17 @@
 **شاخه‌ها:** مهمان → feed عمومی · `activeRole` غیرورزشکار → بدون علایق AthleteProfile · token منقضی/متعلق به کاربر دیگر → restart از صفحهٔ اول · تغییر publish یا علایق وسط اسکرول → feed فعلی ثابت و refresh بعدی نسخهٔ تازه.
 
 **محدودیت:** ادمین فقط rendererهای از قبل نصب‌شده در موبایل را ترکیب می‌کند؛ دادهٔ سلامت و متریک خصوصی وارد recommendation نمی‌شود.
+
+---
+
+## S22 — ثبت دستگاه و دریافت Push بومی
+
+1. کاربر احراز‌شده روی Android اجازه اعلان می‌دهد؛ Capacitor از FCM registration token می‌گیرد.
+2. اپ token را با platform در `POST /api/v1/account/devices` ثبت می‌کند و هنگام logout آن را revoke می‌کند.
+3. رویداد دامنه پس از commit از Outbox به template اعلان می‌رسد؛ inbox همیشه منبع پایدار است و FCM HTTP v1 پیام را به device فعال می‌فرستد.
+4. لمس اعلان کاربر را پس از بررسی session به inbox یا deep link مجاز می‌برد.
+5. `UNREGISTERED` یا token نامعتبر، device را revoke می‌کند؛ retry نباید اعلان دامنه را دوباره بسازد.
+
+**شواهد فعلی (`PARTIAL`، ۲۰۲۶-۰۸-۲۵):** Android app با package `com.gym4me.app` در Firebase ثبت شده، `google-services.json` در build معتبر است، credential بک‌اند OAuth و FCM HTTP v1 را عبور می‌دهد و listener ثبت/revoke در mobile موجود است. smoke دریافت، foreground/background/tap و rotation token روی دستگاه فیزیکی باز است.
+
+**Guardrail:** payload اعلان حاوی داده سلامت، KYC، متن خصوصی یا credential نیست؛ consent، quiet hours و frequency cap پیش از delivery اعمال می‌شوند.

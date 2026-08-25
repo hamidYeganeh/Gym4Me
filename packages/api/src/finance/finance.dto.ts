@@ -117,6 +117,9 @@ export type PaymentPayer = {
 export type PaymentRelated = {
   bookingId?: string | null;
   membershipId?: string | null;
+  membershipPlanId?: string | null;
+  platformPlanId?: string | null;
+  platformSubscriptionId?: string | null;
   packageId?: string | null;
   clubId?: string | null;
   coachUserId?: string | null;
@@ -193,6 +196,7 @@ export type RecordManualPaymentInput = {
   related?: {
     bookingId?: string;
     membershipId?: string;
+    membershipPlanId?: string;
     packageId?: string;
     coachUserId?: string;
   };

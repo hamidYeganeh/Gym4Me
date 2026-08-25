@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 import {
   articlesApi,
+  basicsLocations,
+  discoveryClasses,
   discoveryClubs,
   discoveryCoaches,
 } from "@/shared/lib/api";
@@ -22,6 +24,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     ...[
       "/clubs",
+      "/classes",
       "/coaches",
       "/pricing",
       "/for-clubs",
@@ -30,12 +33,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ].map((path) => ({
       url: `${SITE_URL}${path}`,
       changeFrequency: "weekly" as const,
-      priority: path === "/clubs" || path === "/coaches" ? 0.9 : 0.75,
+      priority:
+        path === "/clubs" || path === "/classes" || path === "/coaches"
+          ? 0.9
+          : 0.75,
     })),
   ];
 
   let clubRoutes: MetadataRoute.Sitemap = [];
+  let classRoutes: MetadataRoute.Sitemap = [];
   let coachRoutes: MetadataRoute.Sitemap = [];
+  let cityRoutes: MetadataRoute.Sitemap = [];
   let articleRoutes: MetadataRoute.Sitemap = [];
 
   try {
@@ -54,6 +62,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
   } catch {
     clubRoutes = [];
+  }
+
+  try {
+    const items: Awaited<ReturnType<typeof discoveryClasses.list>>["result"] =
+      [];
+    let page = 1;
+    while (page) {
+      const classes = await discoveryClasses.list({ page, page_size: 200 });
+      items.push(...classes.result);
+      page = classes.pagination.next ?? 0;
+    }
+    classRoutes = items.map((item) => ({
+      url: `${SITE_URL}/classes/${item.id}`,
+      lastModified: item.updatedAt ? new Date(item.updatedAt) : undefined,
+      changeFrequency: "weekly" as const,
+      priority: 0.75,
+    }));
+  } catch {
+    classRoutes = [];
   }
 
   try {
@@ -76,6 +103,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   try {
+    const countries = await basicsLocations.listCountries();
+    const provinces = (
+      await Promise.all(
+        countries.result.map((country) =>
+          basicsLocations.listProvinces(country.id),
+        ),
+      )
+    ).flatMap((page) => page.result);
+    const cities = (
+      await Promise.all(
+        provinces.map((province) => basicsLocations.listCities(province.id)),
+      )
+    ).flatMap((page) => page.result);
+    cityRoutes = cities.map((city) => ({
+      url: `${SITE_URL}/cities/${city.id}`,
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+    }));
+  } catch {
+    cityRoutes = [];
+  }
+
+  try {
     const items: Awaited<ReturnType<typeof articlesApi.list>>["result"] = [];
     let page = 1;
     while (page) {
@@ -93,5 +143,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     articleRoutes = [];
   }
 
-  return [...staticRoutes, ...clubRoutes, ...coachRoutes, ...articleRoutes];
+  return [
+    ...staticRoutes,
+    ...clubRoutes,
+    ...classRoutes,
+    ...coachRoutes,
+    ...cityRoutes,
+    ...articleRoutes,
+  ];
 }

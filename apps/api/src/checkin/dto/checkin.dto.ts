@@ -5,14 +5,17 @@ import {
   IsArray,
   IsDateString,
   IsEnum,
+  IsInt,
   IsMongoId,
   IsOptional,
   IsString,
   MaxLength,
+  Min,
   MinLength,
   ValidateNested,
 } from 'class-validator';
 import { CheckInMethod } from '../../common/enums';
+import { CheckinOfflineResolutionAction } from '../../schemas/checkin-offline-reconciliation.schema';
 import { PaginationQueryDto } from '../../basics/dto/common.dto';
 
 export class CheckInByBookingCodeDto {
@@ -66,6 +69,15 @@ export class OfflineCheckInItemDto {
   @IsDateString()
   occurredAt!: string;
 
+  @IsInt()
+  @Min(1)
+  sequence!: number;
+
+  @IsString()
+  @MinLength(16)
+  @MaxLength(120)
+  nonce!: string;
+
   @IsOptional()
   @IsString()
   @MaxLength(40)
@@ -81,12 +93,43 @@ export class OfflineCheckInItemDto {
 }
 
 export class SyncOfflineBatchDto {
+  @IsString()
+  @MinLength(32)
+  @MaxLength(4096)
+  snapshotToken!: string;
+
   @IsArray()
   @ArrayMinSize(1)
   @ArrayMaxSize(100)
   @ValidateNested({ each: true })
   @Type(() => OfflineCheckInItemDto)
   items!: OfflineCheckInItemDto[];
+}
+
+export class IssueOfflineSnapshotDto {
+  @IsMongoId()
+  deviceId!: string;
+}
+
+export class ListOfflineReconciliationsQueryDto extends PaginationQueryDto {
+  @IsOptional()
+  @IsEnum(['processing', 'accepted', 'review', 'rejected', 'dismissed'])
+  status?: 'processing' | 'accepted' | 'review' | 'rejected' | 'dismissed';
+}
+
+export class ResolveOfflineReconciliationDto {
+  @IsEnum(CheckinOfflineResolutionAction)
+  action!: CheckinOfflineResolutionAction;
+
+  @IsString()
+  @MinLength(3)
+  @MaxLength(500)
+  reason!: string;
+
+  @IsString()
+  @MinLength(16)
+  @MaxLength(120)
+  clientMutationId!: string;
 }
 
 export class ListCheckInsQueryDto extends PaginationQueryDto {

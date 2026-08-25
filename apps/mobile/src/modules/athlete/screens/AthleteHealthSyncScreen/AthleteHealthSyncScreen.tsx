@@ -4,7 +4,6 @@ import { Button } from "@heroui/react/button";
 import { Chip } from "@heroui/react/chip";
 import { Typography } from "@heroui/react/typography";
 import type { HealthSyncState } from "@repo/api";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useRouter } from "@/shared/lib/app-router";
@@ -24,6 +23,12 @@ function statusLabel(status: HealthSyncState["status"]) {
   switch (status) {
     case "connected":
       return "متصل";
+    case "syncing":
+      return "در حال همگام‌سازی";
+    case "synced":
+      return "همگام‌شده";
+    case "partial":
+      return "نیازمند بررسی";
     case "paused":
       return "متوقف";
     case "disconnected":
@@ -49,7 +54,7 @@ export function AthleteHealthSyncScreen({
   const router = useRouter();
   const styles = athleteHealthSyncScreenVariants();
   const active = syncStates.find(
-    (item) => item.status === "connected" || item.status === "error",
+    (item) => item.status !== "disconnected",
   );
 
   return (

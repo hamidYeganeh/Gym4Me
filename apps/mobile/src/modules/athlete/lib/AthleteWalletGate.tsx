@@ -10,6 +10,7 @@ import { accountFinance } from "@/shared/lib/api";
 import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { useRouter } from "@/shared/lib/app-router";
+import { getPaymentCallbackUrl } from "@/shared/lib/payment-return";
 import { AthleteWalletScreen } from "../screens/AthleteWalletScreen";
 import { mapPaymentsToWalletGroups } from "./api-wallet";
 import {
@@ -128,7 +129,7 @@ export function AthleteWalletGate() {
       const initiation = await accountFinance.topUpWallet({
         amount: DEFAULT_TOP_UP_AMOUNT,
         idempotencyKey: `wallet-topup:${Date.now()}`,
-        callbackUrl: `${window.location.origin}/athlete/wallet`,
+        callbackUrl: getPaymentCallbackUrl("/athlete/wallet"),
       });
       if (initiation.redirectUrl) {
         window.location.assign(initiation.redirectUrl);

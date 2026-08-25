@@ -12,6 +12,7 @@ import type {
   ListClubReviewsQuery,
   ListCoachVerificationsQuery,
   ReviewCoachResponse,
+  ReviewCoachVerificationInput,
   ReviewVerificationInput,
 } from "./verification.dto";
 import { adminVerificationEndpoints as ep } from "./verification.endpoint";
@@ -26,7 +27,7 @@ export function createAdminVerificationApi(client: ApiClient) {
       );
     },
 
-    reviewCoach(userId: string, input: ReviewVerificationInput) {
+    reviewCoach(userId: string, input: ReviewCoachVerificationInput) {
       return client.request<ReviewCoachResponse>(ep.coachVerification(userId), {
         method: "PATCH",
         body: input,

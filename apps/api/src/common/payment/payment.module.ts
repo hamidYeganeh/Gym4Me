@@ -8,6 +8,7 @@ import {
 import { MockPaymentController } from './mock-payment.controller';
 import { MockPaymentGatewayService } from './mock-payment.service';
 import { PaymentGatewayService } from './payment-gateway.service';
+import { PaymentReturnController } from './payment-return.controller';
 import { ZarinpalPaymentGatewayService } from './zarinpal.service';
 
 @Global()
@@ -17,7 +18,7 @@ import { ZarinpalPaymentGatewayService } from './zarinpal.service';
       { name: MockPayment.name, schema: MockPaymentSchema },
     ]),
   ],
-  controllers: [MockPaymentController],
+  controllers: [MockPaymentController, PaymentReturnController],
   providers: [
     MockPaymentGatewayService,
     {

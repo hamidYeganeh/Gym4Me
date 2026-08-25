@@ -7,6 +7,8 @@ export const accountProgressEndpoints = {
     `/account/progress/workout-programs/${id}/assign`,
   workoutPlans: "/account/progress/workout-plans",
   workoutPlan: (id: string) => `/account/progress/workout-plans/${id}`,
+  workoutPlanRevision: (id: string, revisionId: string) =>
+    `/account/progress/workout-plans/${id}/revisions/${revisionId}`,
   metrics: "/account/progress/metrics",
   metricsSummary: "/account/progress/metrics/summary",
   syncMetrics: "/account/progress/metrics/sync",
@@ -17,6 +19,10 @@ export const accountProgressEndpoints = {
   workoutLog: (id: string) => `/account/progress/workout-logs/${id}`,
   completeWorkoutLog: (id: string) =>
     `/account/progress/workout-logs/${id}/complete`,
+  skipWorkoutLog: (id: string) =>
+    `/account/progress/workout-logs/${id}/skip`,
+  reviewWorkoutLog: (id: string) =>
+    `/account/progress/workout-logs/${id}/reviews`,
   goals: "/account/progress/goals",
   goal: (id: string) => `/account/progress/goals/${id}`,
   reminders: "/account/progress/reminders",

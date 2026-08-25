@@ -61,6 +61,77 @@ check "sync dedupe on clientMutationId" "true" "$(echo "$SYNC2" | jq -r '((.dedu
 SUMMARY=$(curl -s "$V1/account/progress/metrics/summary" -H "Authorization: Bearer $ATH_TOKEN")
 check "metrics summary endpoint" "true" "$(echo "$SUMMARY" | jq -r 'type == "object" or type == "array"')"
 
+echo "── H10: health provider lifecycle + server-enforced scopes ──"
+HEALTH_CURSOR="2026-08-25T08:00:00.000Z"
+CONNECTED=$(curl -s -X PUT "$V1/account/progress/health-sync/apple_health" \
+  -H "Authorization: Bearer $ATH_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d "{\"status\":\"connected\",\"authorizedMetricKeys\":[\"steps\"],\"cursorByMetric\":{\"steps\":\"$HEALTH_CURSOR\"},\"lastErrorCode\":null}")
+check "health connect persists explicit scope" "steps" \
+  "$(echo "$CONNECTED" | jq -r '.authorizedMetricKeys[0] // empty')"
+
+SYNCING=$(curl -s -X PUT "$V1/account/progress/health-sync/apple_health" \
+  -H "Authorization: Bearer $ATH_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"status":"syncing","authorizedMetricKeys":["steps"],"lastErrorCode":null}')
+check "health ingestion enters explicit syncing state" "syncing" \
+  "$(echo "$SYNCING" | jq -r '.status // empty')"
+
+HEALTH_RECORD="smoke-health-$(date +%s)-$$"
+HEALTH_SYNC=$(curl -s -X POST "$V1/account/progress/metrics/sync" \
+  -H "Authorization: Bearer $ATH_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d "{\"entries\":[{\"metricKey\":\"steps\",\"value\":1234,\"unit\":\"count\",\"recordedAt\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"source\":\"apple_health\",\"sourceRecordId\":\"$HEALTH_RECORD\"}]}")
+check "authorized health sample accepted" "1" \
+  "$(echo "$HEALTH_SYNC" | jq -r '.created // 0')"
+
+HEALTH_REPLAY=$(curl -s -X POST "$V1/account/progress/metrics/sync" \
+  -H "Authorization: Bearer $ATH_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d "{\"entries\":[{\"metricKey\":\"steps\",\"value\":1234,\"unit\":\"count\",\"recordedAt\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"source\":\"apple_health\",\"sourceRecordId\":\"$HEALTH_RECORD\"}]}")
+check "health sample replay deduplicated" "1" \
+  "$(echo "$HEALTH_REPLAY" | jq -r '.deduplicated // 0')"
+
+DIRECT_HEALTH_HTTP=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
+  "$V1/account/progress/metrics" \
+  -H "Authorization: Bearer $ATH_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d "{\"metricKey\":\"steps\",\"value\":99,\"unit\":\"count\",\"recordedAt\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"source\":\"apple_health\",\"sourceRecordId\":\"$HEALTH_RECORD-direct\"}")
+check "health source cannot bypass idempotent sync endpoint" "400" \
+  "$DIRECT_HEALTH_HTTP"
+
+OUT_OF_SCOPE=$(curl -s -X POST "$V1/account/progress/metrics/sync" \
+  -H "Authorization: Bearer $ATH_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d "{\"entries\":[{\"metricKey\":\"heart_rate_bpm\",\"value\":72,\"unit\":\"bpm\",\"recordedAt\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"source\":\"apple_health\",\"sourceRecordId\":\"$HEALTH_RECORD-heart\"}]}")
+check "ungranted health metric rejected at API boundary" \
+  "health_sync_metric_scope_not_authorized" \
+  "$(echo "$OUT_OF_SCOPE" | jq -r '.rejected[0].reason // empty')"
+
+DISCONNECTED=$(curl -s -X PUT "$V1/account/progress/health-sync/apple_health" \
+  -H "Authorization: Bearer $ATH_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"status":"disconnected","authorizedMetricKeys":["steps"],"cursorByMetric":{"steps":"2099-01-01T00:00:00.000Z"},"lastErrorCode":null}')
+check "disconnect clears server-side granted scopes" "0" \
+  "$(echo "$DISCONNECTED" | jq -r '.authorizedMetricKeys | length')"
+check "disconnect clears incremental cursors" "0" \
+  "$(echo "$DISCONNECTED" | jq -r '.cursorByMetric | length')"
+
+AFTER_DISCONNECT=$(curl -s -X POST "$V1/account/progress/metrics/sync" \
+  -H "Authorization: Bearer $ATH_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d "{\"entries\":[{\"metricKey\":\"steps\",\"value\":1235,\"unit\":\"count\",\"recordedAt\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"source\":\"apple_health\",\"sourceRecordId\":\"$HEALTH_RECORD-after-disconnect\"}]}")
+check "disconnected provider cannot ingest" \
+  "health_sync_connection_not_active" \
+  "$(echo "$AFTER_DISCONNECT" | jq -r '.rejected[0].reason // empty')"
+
+INVALID_SCOPE_HTTP=$(curl -s -o /dev/null -w '%{http_code}' -X PUT \
+  "$V1/account/progress/health-sync/apple_health" \
+  -H "Authorization: Bearer $ATH_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"status":"connected","authorizedMetricKeys":["medical_records"]}')
+check "unknown health scope fails validation" "400" "$INVALID_SCOPE_HTTP"
+
 if [ "$FAILURES" -eq 0 ]; then
   echo "All smoke-bootstrap-progress checks passed."
   exit 0

@@ -58,6 +58,7 @@ import { OutboxModule } from './outbox/outbox.module';
 import { ProgressModule } from './progress/progress.module';
 import { SocialModule } from './social/social.module';
 import { SupportModule } from './support/support.module';
+import { ActionCenterModule } from './action-center/action-center.module';
 import { UsersModule } from './users/users.module';
 import { WaitlistModule } from './waitlist/waitlist.module';
 
@@ -118,6 +119,7 @@ import { WaitlistModule } from './waitlist/waitlist.module';
     NotificationsModule,
     AuditModule,
     AppConfigModule,
+    ActionCenterModule,
     AnalyticsModule,
     MediaModule,
     BasicsModule,

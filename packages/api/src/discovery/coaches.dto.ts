@@ -9,6 +9,9 @@ export type DiscoveryCoachesQuery = {
   cityId?: string;
   coachType?: CoachType;
   gender?: string;
+  availability?: "remote" | "in-person";
+  verified?: "1" | "true";
+  fresh?: "1" | "true";
 };
 
 /** Privacy-safe user projection for public coach cards. */
@@ -42,6 +45,12 @@ export type DiscoveryCoach = {
   verification: {
     status: VerificationStatus;
     reviewedAt: string | null;
+    credential: {
+      typeKey: string;
+      issuer: string;
+      issuedAt: string | null;
+      expiresAt: string;
+    } | null;
   };
   serviceArea: { cityId: string | null };
   pricing: { consultation: CoachConsultationPricing };

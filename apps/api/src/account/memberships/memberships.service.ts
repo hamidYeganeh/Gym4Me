@@ -8,8 +8,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import type { Request } from 'express';
 import { Model, Types, type ClientSession, type QueryFilter } from 'mongoose';
 import { AuditService } from '../../audit/audit.service';
+import { MongoTransactionService } from '../../common/mongo/mongo-transaction.service';
 import {
   AuditAction,
+  ClubLifecycleStatus,
+  ClubOperationalStatus,
   EntityStatus,
   MembershipActorKind,
   MembershipEventType,
@@ -26,6 +29,7 @@ import {
   resolvePageSize,
 } from '../../common/utils/pagination.util';
 import { normalizeIranPhone } from '../../common/utils/phone.util';
+import { OutboxService } from '../../outbox/outbox.service';
 import { Club, ClubDocument } from '../../schemas/club.schema';
 import {
   ClubMembershipPlan,
@@ -62,6 +66,8 @@ import {
   ListPlatformPlansQueryDto,
   ListPlatformSubscriptionsQueryDto,
   PaginationQueryDto,
+  PreviewMembershipRenewalDto,
+  RenewMembershipDto,
   SelfPurchaseMembershipDto,
   SellMembershipDto,
   SubscribePlatformDto,
@@ -71,6 +77,7 @@ import {
   UpdatePlatformPlanDto,
 } from './dto/membership.dto';
 import { SellMembershipCommand } from './application/commands/sell-membership.command';
+import { RenewMembershipCommand } from './application/commands/renew-membership.command';
 
 type ActorRef = {
   userId: string;
@@ -96,6 +103,9 @@ export class MembershipsService {
     private readonly userModel: Model<UserDocument>,
     private readonly audit: AuditService,
     private readonly sellMembershipCommand: SellMembershipCommand,
+    private readonly renewMembershipCommand: RenewMembershipCommand,
+    private readonly transactions: MongoTransactionService,
+    private readonly outbox: OutboxService,
   ) {}
 
   // ── Access ──────────────────────────────────────────────────────────────
@@ -244,6 +254,7 @@ export class MembershipsService {
     if (!Types.ObjectId.isValid(clubId)) {
       throw new NotFoundException('Club not found');
     }
+    await this.requireDiscoverableClub(clubId);
     const filter: QueryFilter<ClubMembershipPlanDocument> = {
       clubId: new Types.ObjectId(clubId),
       status: EntityStatus.ACTIVE,
@@ -269,6 +280,7 @@ export class MembershipsService {
   }
 
   async getPublicPlan(clubId: string, planId: string) {
+    await this.requireDiscoverableClub(clubId);
     const plan = await this.findPlanOrFail(clubId, planId);
     if (
       plan.status !== EntityStatus.ACTIVE ||
@@ -277,6 +289,74 @@ export class MembershipsService {
       throw new NotFoundException('Membership plan not found');
     }
     return this.toPlanPublic(plan);
+  }
+
+  async listPublicPlanSummaries(clubIds: string[]) {
+    const objectIds = clubIds.map((clubId) => new Types.ObjectId(clubId));
+    const clubs = await this.clubModel
+      .find({
+        _id: { $in: objectIds },
+        'review.status': ClubLifecycleStatus.APPROVED,
+        operationalStatus: ClubOperationalStatus.ACTIVE,
+      })
+      .select({ _id: 1 })
+      .lean();
+    const visibleIds = clubs.map((club) => club._id);
+    if (visibleIds.length === 0) return { items: [] };
+
+    const rows = await this.planModel.aggregate<{
+      _id: { clubId: Types.ObjectId; currency: string };
+      fromAmount: number;
+      planCount: number;
+    }>([
+      {
+        $match: {
+          clubId: { $in: visibleIds },
+          status: EntityStatus.ACTIVE,
+          publishStatus: PublishStatus.PUBLISHED,
+        },
+      },
+      {
+        $group: {
+          _id: { clubId: '$clubId', currency: '$pricing.currency' },
+          fromAmount: { $min: '$pricing.amount' },
+          planCount: { $sum: 1 },
+        },
+      },
+      { $sort: { '_id.clubId': 1, '_id.currency': 1 } },
+    ]);
+
+    const offersByClub = new Map<
+      string,
+      Array<{ currency: string; fromAmount: number; planCount: number }>
+    >();
+    for (const row of rows) {
+      const clubId = row._id.clubId.toString();
+      const offers = offersByClub.get(clubId) ?? [];
+      offers.push({
+        currency: row._id.currency,
+        fromAmount: row.fromAmount,
+        planCount: row.planCount,
+      });
+      offersByClub.set(clubId, offers);
+    }
+
+    return {
+      items: clubIds.flatMap((clubId) => {
+        const offers = offersByClub.get(clubId);
+        return offers ? [{ clubId, offers }] : [];
+      }),
+    };
+  }
+
+  private async requireDiscoverableClub(clubId: string) {
+    const club = await this.clubModel.findOne({
+      _id: new Types.ObjectId(clubId),
+      'review.status': ClubLifecycleStatus.APPROVED,
+      operationalStatus: ClubOperationalStatus.ACTIVE,
+    });
+    if (!club) throw new NotFoundException('Club not found');
+    return club;
   }
 
   // ── Sell / list memberships ─────────────────────────────────────────────
@@ -503,6 +583,30 @@ export class MembershipsService {
 
   // ── Lifecycle mutations ─────────────────────────────────────────────────
 
+  previewRenewal(
+    clubId: string,
+    membershipId: string,
+    dto: PreviewMembershipRenewalDto,
+  ) {
+    return this.renewMembershipCommand.preview(clubId, membershipId, dto);
+  }
+
+  renew(
+    clubId: string,
+    membershipId: string,
+    dto: RenewMembershipDto,
+    actor: ActorRef,
+    request?: Request,
+  ) {
+    return this.renewMembershipCommand.execute(
+      clubId,
+      membershipId,
+      dto,
+      actor,
+      request,
+    );
+  }
+
   async freeze(
     membershipId: string,
     dto: FreezeMembershipDto,
@@ -510,42 +614,50 @@ export class MembershipsService {
     clubId?: string,
     request?: Request,
   ) {
-    const membership = await this.findMembershipOrFail(membershipId, clubId);
-    if (membership.status !== MembershipStatus.ACTIVE) {
-      throw new BadRequestException('Only active memberships can be frozen');
-    }
-
-    const plan = await this.planModel.findById(membership.planId);
-    const maxDays = plan?.rules?.freezeMaxDays;
-    if (maxDays !== undefined && maxDays <= 0) {
-      throw new BadRequestException('Freeze is not allowed for this plan');
-    }
-
-    const frozenAt = new Date();
-    let unfreezeAt = dto.unfreezeAt ? new Date(dto.unfreezeAt) : undefined;
-    if (maxDays !== undefined && maxDays > 0) {
-      const maxUnfreeze = new Date(
-        frozenAt.getTime() + maxDays * 24 * 60 * 60 * 1000,
+    const membership = await this.transactions.run(async (session) => {
+      const current = await this.findMembershipOrFail(
+        membershipId,
+        clubId,
+        session,
       );
-      if (!unfreezeAt || unfreezeAt > maxUnfreeze) {
-        unfreezeAt = maxUnfreeze;
+      if (current.status !== MembershipStatus.ACTIVE) {
+        throw new BadRequestException('Only active memberships can be frozen');
       }
-    }
 
-    membership.status = MembershipStatus.FROZEN;
-    membership.freeze = {
-      frozenAt,
-      unfreezeAt,
-      reason: dto.reason,
-    };
-    await membership.save();
+      const plan = await this.planModel
+        .findById(current.planId)
+        .session(session);
+      const maxDays = plan?.rules?.freezeMaxDays;
+      if (maxDays !== undefined && maxDays <= 0) {
+        throw new BadRequestException('Freeze is not allowed for this plan');
+      }
 
-    await this.appendEvent({
-      membershipId: membership._id,
-      type: MembershipEventType.FROZEN,
-      actor,
-      reason: dto.reason,
-      payload: { unfreezeAt: unfreezeAt?.toISOString() },
+      const frozenAt = new Date();
+      let unfreezeAt = dto.unfreezeAt ? new Date(dto.unfreezeAt) : undefined;
+      if (maxDays !== undefined && maxDays > 0) {
+        const maxUnfreeze = new Date(
+          frozenAt.getTime() + maxDays * 24 * 60 * 60 * 1000,
+        );
+        if (!unfreezeAt || unfreezeAt > maxUnfreeze) {
+          unfreezeAt = maxUnfreeze;
+        }
+      }
+
+      current.status = MembershipStatus.FROZEN;
+      current.freeze = { frozenAt, unfreezeAt, reason: dto.reason };
+      await current.save({ session });
+      const event = await this.appendEvent(
+        {
+          membershipId: current._id,
+          type: MembershipEventType.FROZEN,
+          actor,
+          reason: dto.reason,
+          payload: { unfreezeAt: unfreezeAt?.toISOString() },
+        },
+        session,
+      );
+      await this.enqueueMembershipEvent(event, current, session);
+      return current;
     });
 
     this.audit.log({
@@ -566,31 +678,40 @@ export class MembershipsService {
     clubId?: string,
     request?: Request,
   ) {
-    const membership = await this.findMembershipOrFail(membershipId, clubId);
-    if (membership.status !== MembershipStatus.FROZEN) {
-      throw new BadRequestException('Membership is not frozen');
-    }
-
-    // Extend expiry by freeze duration if credit has an expiry.
-    if (membership.freeze?.frozenAt && membership.credit?.expiresAt) {
-      const frozenMs =
-        Date.now() - new Date(membership.freeze.frozenAt).getTime();
-      if (frozenMs > 0) {
-        membership.credit.expiresAt = new Date(
-          new Date(membership.credit.expiresAt).getTime() + frozenMs,
-        );
+    const membership = await this.transactions.run(async (session) => {
+      const current = await this.findMembershipOrFail(
+        membershipId,
+        clubId,
+        session,
+      );
+      if (current.status !== MembershipStatus.FROZEN) {
+        throw new BadRequestException('Membership is not frozen');
       }
-    }
 
-    membership.status = MembershipStatus.ACTIVE;
-    membership.freeze = undefined;
-    await membership.save();
+      if (current.freeze?.frozenAt && current.credit?.expiresAt) {
+        const frozenMs =
+          Date.now() - new Date(current.freeze.frozenAt).getTime();
+        if (frozenMs > 0) {
+          current.credit.expiresAt = new Date(
+            new Date(current.credit.expiresAt).getTime() + frozenMs,
+          );
+        }
+      }
 
-    await this.appendEvent({
-      membershipId: membership._id,
-      type: MembershipEventType.UNFROZEN,
-      actor,
-      reason: dto.reason,
+      current.status = MembershipStatus.ACTIVE;
+      current.freeze = undefined;
+      await current.save({ session });
+      const event = await this.appendEvent(
+        {
+          membershipId: current._id,
+          type: MembershipEventType.UNFROZEN,
+          actor,
+          reason: dto.reason,
+        },
+        session,
+      );
+      await this.enqueueMembershipEvent(event, current, session);
+      return current;
     });
 
     this.audit.log({
@@ -611,64 +732,95 @@ export class MembershipsService {
     clubId?: string,
     request?: Request,
   ) {
-    const membership = await this.findMembershipOrFail(membershipId, clubId);
-    if (
-      membership.status !== MembershipStatus.ACTIVE &&
-      membership.status !== MembershipStatus.FROZEN
-    ) {
-      throw new BadRequestException(
-        'Only active or frozen memberships can be transferred',
-      );
-    }
+    const { membership, transferred, toHolder } = await this.transactions.run(
+      async (session) => {
+        const current = await this.findMembershipOrFail(
+          membershipId,
+          clubId,
+          session,
+        );
+        if (
+          current.status !== MembershipStatus.ACTIVE &&
+          current.status !== MembershipStatus.FROZEN
+        ) {
+          throw new BadRequestException(
+            'Only active or frozen memberships can be transferred',
+          );
+        }
 
-    const plan = await this.planModel.findById(membership.planId);
-    if (plan?.rules?.transferPolicy !== MembershipTransferPolicy.ALLOWED) {
-      throw new BadRequestException('Transfer is forbidden for this plan');
-    }
+        const plan = await this.planModel
+          .findById(current.planId)
+          .session(session);
+        if (plan?.rules?.transferPolicy !== MembershipTransferPolicy.ALLOWED) {
+          throw new BadRequestException('Transfer is forbidden for this plan');
+        }
 
-    const fromHolder = { ...membership.holder };
-    const toHolder = this.normalizeHolder(dto.toHolder);
+        const fromHolder = {
+          userId: current.holder.userId,
+          guest: current.holder.guest
+            ? {
+                name: current.holder.guest.name,
+                phone: current.holder.guest.phone,
+              }
+            : undefined,
+        };
+        const nextHolder = this.normalizeHolder(dto.toHolder);
 
-    membership.holder = toHolder;
-    membership.status = MembershipStatus.TRANSFERRED;
-    membership.freeze = undefined;
-    await membership.save();
+        current.status = MembershipStatus.TRANSFERRED;
+        current.freeze = undefined;
+        await current.save({ session });
 
-    // Issue a fresh ACTIVE membership for the new holder with remaining credit.
-    const transferred = await this.membershipModel.create({
-      clubId: membership.clubId,
-      planId: membership.planId,
-      holder: toHolder,
-      status: MembershipStatus.ACTIVE,
-      credit: {
-        remainingSessions: membership.credit?.remainingSessions,
-        remainingEntries: membership.credit?.remainingEntries,
-        expiresAt: membership.credit?.expiresAt,
+        const next = new this.membershipModel({
+          clubId: current.clubId,
+          planId: current.planId,
+          holder: nextHolder,
+          status: MembershipStatus.ACTIVE,
+          credit: {
+            remainingSessions: current.credit?.remainingSessions,
+            remainingEntries: current.credit?.remainingEntries,
+            expiresAt: current.credit?.expiresAt,
+          },
+          soldBy: new Types.ObjectId(actor.userId),
+        });
+        await next.save({ session });
+
+        const transferEvent = await this.appendEvent(
+          {
+            membershipId: current._id,
+            type: MembershipEventType.TRANSFERRED,
+            actor,
+            reason: dto.reason,
+            payload: {
+              from: this.holderPublic(fromHolder),
+              to: this.holderPublic(nextHolder),
+              newMembershipId: next._id.toString(),
+            },
+          },
+          session,
+        );
+        const soldEvent = await this.appendEvent(
+          {
+            membershipId: next._id,
+            type: MembershipEventType.SOLD,
+            actor,
+            reason: dto.reason ?? 'Transferred from prior membership',
+            payload: { transferredFrom: current._id.toString() },
+          },
+          session,
+        );
+        await this.enqueueMembershipEvent(transferEvent, current, session, {
+          newMembershipId: next._id.toString(),
+        });
+        await this.enqueueMembershipEvent(soldEvent, next, session, {
+          transferredFrom: current._id.toString(),
+        });
+        return {
+          membership: current,
+          transferred: next,
+          toHolder: nextHolder,
+        };
       },
-      soldBy: new Types.ObjectId(actor.userId),
-    });
-
-    await this.appendEvent({
-      membershipId: membership._id,
-      type: MembershipEventType.TRANSFERRED,
-      actor,
-      reason: dto.reason,
-      payload: {
-        from: this.holderPublic(fromHolder),
-        to: this.holderPublic(toHolder),
-        newMembershipId: transferred._id.toString(),
-      },
-    });
-
-    await this.appendEvent({
-      membershipId: transferred._id,
-      type: MembershipEventType.SOLD,
-      actor,
-      reason: dto.reason ?? 'Transferred from prior membership',
-      payload: {
-        transferredFrom: membership._id.toString(),
-      },
-    });
+    );
 
     this.audit.log({
       action: AuditAction.MEMBERSHIP_TRANSFERRED,
@@ -694,26 +846,36 @@ export class MembershipsService {
     clubId?: string,
     request?: Request,
   ) {
-    const membership = await this.findMembershipOrFail(membershipId, clubId);
-    if (
-      membership.status === MembershipStatus.CANCELLED ||
-      membership.status === MembershipStatus.EXPIRED ||
-      membership.status === MembershipStatus.TRANSFERRED
-    ) {
-      throw new BadRequestException(
-        `Cannot cancel membership in status ${membership.status}`,
+    const membership = await this.transactions.run(async (session) => {
+      const current = await this.findMembershipOrFail(
+        membershipId,
+        clubId,
+        session,
       );
-    }
+      if (
+        current.status === MembershipStatus.CANCELLED ||
+        current.status === MembershipStatus.EXPIRED ||
+        current.status === MembershipStatus.TRANSFERRED
+      ) {
+        throw new BadRequestException(
+          `Cannot cancel membership in status ${current.status}`,
+        );
+      }
 
-    membership.status = MembershipStatus.CANCELLED;
-    membership.freeze = undefined;
-    await membership.save();
-
-    await this.appendEvent({
-      membershipId: membership._id,
-      type: MembershipEventType.CANCELLED,
-      actor,
-      reason: dto.reason,
+      current.status = MembershipStatus.CANCELLED;
+      current.freeze = undefined;
+      await current.save({ session });
+      const event = await this.appendEvent(
+        {
+          membershipId: current._id,
+          type: MembershipEventType.CANCELLED,
+          actor,
+          reason: dto.reason,
+        },
+        session,
+      );
+      await this.enqueueMembershipEvent(event, current, session);
+      return current;
     });
 
     this.audit.log({
@@ -734,6 +896,33 @@ export class MembershipsService {
     clubId?: string,
     session?: ClientSession,
   ) {
+    if (!session) {
+      return this.transactions.run((transactionSession) =>
+        this.consumeCreditInSession(
+          membershipId,
+          dto,
+          actor,
+          clubId,
+          transactionSession,
+        ),
+      );
+    }
+    return this.consumeCreditInSession(
+      membershipId,
+      dto,
+      actor,
+      clubId,
+      session,
+    );
+  }
+
+  private async consumeCreditInSession(
+    membershipId: string,
+    dto: ConsumeMembershipCreditDto,
+    actor: ActorRef,
+    clubId: string | undefined,
+    session: ClientSession,
+  ) {
     const membership = await this.findMembershipOrFail(
       membershipId,
       clubId,
@@ -751,7 +940,7 @@ export class MembershipsService {
     ) {
       membership.status = MembershipStatus.EXPIRED;
       await membership.save({ session });
-      await this.appendEvent(
+      const event = await this.appendEvent(
         {
           membershipId: membership._id,
           type: MembershipEventType.EXPIRED,
@@ -759,12 +948,13 @@ export class MembershipsService {
         },
         session,
       );
+      await this.enqueueMembershipEvent(event, membership, session);
       throw new BadRequestException('Membership has expired');
     }
 
     const plan = await this.planModel
       .findById(membership.planId)
-      .session(session ?? null);
+      .session(session);
     const amount = dto.amount ?? 1;
     const kind =
       dto.creditKind ??
@@ -802,7 +992,7 @@ export class MembershipsService {
       );
     }
 
-    await this.appendEvent(
+    const event = await this.appendEvent(
       {
         membershipId: updated._id,
         type: MembershipEventType.CREDIT_CONSUMED,
@@ -812,6 +1002,10 @@ export class MembershipsService {
       },
       session,
     );
+    await this.enqueueMembershipEvent(event, updated, session, {
+      creditKind: kind,
+      amount,
+    });
 
     return this.toMembershipPublic(updated);
   }
@@ -962,7 +1156,7 @@ export class MembershipsService {
     ]);
 
     return paginatedResult(
-      items.map((s) => this.toPlatformSubPublic(s)),
+      items.map((subscription) => this.toPlatformSubPublic(subscription)),
       total,
       page,
       pageSize,
@@ -980,6 +1174,11 @@ export class MembershipsService {
     if (plan.status !== EntityStatus.ACTIVE) {
       throw new BadRequestException('Platform plan is not active');
     }
+    if (plan.pricing.amount > 0) {
+      throw new BadRequestException(
+        'Paid platform plans require verified gateway checkout',
+      );
+    }
 
     const active = await this.platformSubModel.findOne({
       userId: new Types.ObjectId(userId),
@@ -991,6 +1190,12 @@ export class MembershipsService {
       },
     });
     if (active) {
+      if (
+        plan.pricing.amount === 0 &&
+        active.planId.toString() === plan._id.toString()
+      ) {
+        return this.toPlatformSubPublic(active);
+      }
       throw new BadRequestException(
         'User already has an active platform subscription',
       );
@@ -1000,18 +1205,36 @@ export class MembershipsService {
     const periodDays = plan.pricing.periodDays ?? 30;
     const end = new Date(start.getTime() + periodDays * 24 * 60 * 60 * 1000);
 
-    const sub = await this.platformSubModel.create({
-      userId: new Types.ObjectId(userId),
-      planId: plan._id,
-      status: PlatformSubscriptionStatus.ACTIVE,
-      period: { start, end },
-      renewal: {
-        mode: dto.renewal?.mode ?? SubscriptionRenewalMode.MANUAL,
-      },
+    const sub = await this.transactions.run(async (session) => {
+      const created = new this.platformSubModel({
+        userId: new Types.ObjectId(userId),
+        currentEntitlementKey: 'current',
+        planId: plan._id,
+        status: PlatformSubscriptionStatus.ACTIVE,
+        period: { start, end },
+        renewal: {
+          mode: dto.renewal?.mode ?? SubscriptionRenewalMode.MANUAL,
+        },
+      });
+      await created.save({ session });
+      await this.outbox.enqueue(
+        {
+          eventName: 'platform_subscription.activated',
+          idempotencyKey: `platform-subscription-free:${created._id.toString()}`,
+          payload: {
+            subscriptionId: created._id.toString(),
+            planId: plan._id.toString(),
+            userId,
+            paymentId: null,
+          },
+        },
+        session,
+      );
+      return created;
     });
 
     this.audit.log({
-      action: AuditAction.MEMBERSHIP_SOLD,
+      action: AuditAction.PLATFORM_SUBSCRIPTION_ACTIVATED,
       actorId: userId,
       targetUserId: userId,
       metadata: {
@@ -1049,11 +1272,12 @@ export class MembershipsService {
     }
 
     sub.status = PlatformSubscriptionStatus.CANCELLED;
+    sub.currentEntitlementKey = undefined;
     sub.renewal = { mode: SubscriptionRenewalMode.MANUAL };
     await sub.save();
 
     this.audit.log({
-      action: AuditAction.MEMBERSHIP_CANCELLED,
+      action: AuditAction.PLATFORM_SUBSCRIPTION_CANCELLED,
       actorId: userId,
       targetUserId: userId,
       metadata: {
@@ -1230,6 +1454,29 @@ export class MembershipsService {
       occurredAt: new Date(),
     });
     await event.save({ session });
+    return event;
+  }
+
+  private async enqueueMembershipEvent(
+    event: MembershipEventDocument,
+    membership: ClubMembershipDocument,
+    session: ClientSession,
+    extra: Record<string, unknown> = {},
+  ) {
+    await this.outbox.enqueue(
+      {
+        eventName: `membership.${event.type}`,
+        idempotencyKey: `membership-event:${event._id.toString()}`,
+        payload: {
+          membershipId: membership._id.toString(),
+          clubId: membership.clubId.toString(),
+          planId: membership.planId.toString(),
+          holderUserId: membership.holder.userId?.toString(),
+          ...extra,
+        },
+      },
+      session,
+    );
   }
 
   private holderPublic(holder: {

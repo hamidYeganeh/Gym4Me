@@ -8,6 +8,8 @@ import { WaitlistWorker } from '../../waitlist/waitlist.worker';
 import { LifecycleWorker } from '../../lifecycle/lifecycle.worker';
 import { FinanceReconciliationWorker } from '../../finance/finance-reconciliation.worker';
 import { BookingPaymentReconciliationWorker } from '../../account/bookings/booking-payment-reconciliation.worker';
+import { MembershipCheckoutReconciliationWorker } from '../../account/memberships/membership-checkout-reconciliation.worker';
+import { PlatformSubscriptionCheckoutReconciliationWorker } from '../../account/memberships/platform-subscription-checkout-reconciliation.worker';
 
 class SharedTestLease {
   private held = new Set<string>();
@@ -153,5 +155,59 @@ describe('periodic worker multi-instance leases', () => {
     await Promise.all([firstTick, secondTick]);
 
     expect(reconcile).toHaveBeenCalledTimes(1);
+  });
+
+  it('reconciles membership checkouts once across two instances', async () => {
+    const gate = deferred();
+    const checkouts = {
+      reconcilePending: jest.fn(async () => {
+        await gate.promise;
+        return { scanned: 1, captured: 1, unresolved: 0, expired: 0 };
+      }),
+    };
+    const leases = new SharedTestLease() as unknown as WorkerLeaseService;
+    const first = new MembershipCheckoutReconciliationWorker(
+      checkouts as never,
+      leases,
+    );
+    const second = new MembershipCheckoutReconciliationWorker(
+      checkouts as never,
+      leases,
+    );
+
+    const firstTick = first.tick();
+    await Promise.resolve();
+    const secondTick = second.tick();
+    gate.release();
+    await Promise.all([firstTick, secondTick]);
+
+    expect(checkouts.reconcilePending).toHaveBeenCalledTimes(1);
+  });
+
+  it('reconciles platform subscription checkouts once across two instances', async () => {
+    const gate = deferred();
+    const checkouts = {
+      reconcilePending: jest.fn(async () => {
+        await gate.promise;
+        return { scanned: 1, captured: 1, unresolved: 0, expired: 0 };
+      }),
+    };
+    const leases = new SharedTestLease() as unknown as WorkerLeaseService;
+    const first = new PlatformSubscriptionCheckoutReconciliationWorker(
+      checkouts as never,
+      leases,
+    );
+    const second = new PlatformSubscriptionCheckoutReconciliationWorker(
+      checkouts as never,
+      leases,
+    );
+
+    const firstTick = first.tick();
+    await Promise.resolve();
+    const secondTick = second.tick();
+    gate.release();
+    await Promise.all([firstTick, secondTick]);
+
+    expect(checkouts.reconcilePending).toHaveBeenCalledTimes(1);
   });
 });

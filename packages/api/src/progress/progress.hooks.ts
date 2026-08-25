@@ -464,6 +464,19 @@ export function useCompleteWorkoutLog() {
   });
 }
 
+export function useSkipWorkoutLog() {
+  const api = useAccountProgressApi();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.skipWorkoutLog(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: accountProgressKeys.all,
+      });
+    },
+  });
+}
+
 export function useMetricsSummary(
   query: MetricsSummaryQuery = {},
   options?: Omit<

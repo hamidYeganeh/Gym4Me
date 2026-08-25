@@ -1,5 +1,6 @@
 import {
   IsEnum,
+  IsIn,
   IsMongoId,
   IsOptional,
   IsString,
@@ -31,4 +32,18 @@ export class DiscoveryCoachesQueryDto extends PaginationQueryDto {
   @IsString()
   @MaxLength(40)
   gender?: string;
+
+  @IsOptional()
+  @IsIn(['remote', 'in-person'])
+  availability?: 'remote' | 'in-person';
+
+  /** Public list already contains approved profiles only; accepted for URL parity. */
+  @IsOptional()
+  @IsIn(['1', 'true'])
+  verified?: '1' | 'true';
+
+  /** Profiles created during the rolling 30-day discovery window. */
+  @IsOptional()
+  @IsIn(['1', 'true'])
+  fresh?: '1' | 'true';
 }

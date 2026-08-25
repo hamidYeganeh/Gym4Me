@@ -223,9 +223,11 @@ export function ChoicesForm({
                 name={`options.${index}.isActive`}
                 render={({ field }) => (
                   <Switch isSelected={field.value} onChange={field.onChange}>
-                    <Switch.Control>
-                      <Switch.Thumb />
-                    </Switch.Control>
+                    <Switch.Content>
+                      <Switch.Control>
+                        <Switch.Thumb />
+                      </Switch.Control>
+                    </Switch.Content>
                   </Switch>
                 )}
               />

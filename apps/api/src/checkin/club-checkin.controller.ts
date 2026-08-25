@@ -18,12 +18,16 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { Role, StaffPermissionKey } from '../common/enums';
 import { StaffPermissionGuard } from '../common/guards/staff-permission.guard';
 import { CheckinService } from './checkin.service';
+import { OfflineCheckinService } from './offline-checkin.service';
 import {
   CheckInByBookingCodeDto,
   CheckInByMembershipDto,
   HardwareCheckinEventDto,
+  IssueOfflineSnapshotDto,
   ListCheckInsQueryDto,
+  ListOfflineReconciliationsQueryDto,
   ProvisionCheckinDeviceDto,
+  ResolveOfflineReconciliationDto,
   SyncOfflineBatchDto,
 } from './dto/checkin.dto';
 
@@ -33,7 +37,10 @@ import {
 @UseGuards(StaffPermissionGuard)
 @Controller('account/clubs/:clubId/checkin')
 export class ClubCheckinController {
-  constructor(private readonly checkin: CheckinService) {}
+  constructor(
+    private readonly checkin: CheckinService,
+    private readonly offlineCheckin: OfflineCheckinService,
+  ) {}
 
   @Get()
   @RequireStaffPermission(StaffPermissionKey.BOOKINGS_READ)
@@ -80,7 +87,50 @@ export class ClubCheckinController {
     @Body() dto: SyncOfflineBatchDto,
     @Req() request: Request,
   ) {
-    return this.checkin.syncOfflineBatch(clubId, actorId, dto, request);
+    return this.offlineCheckin.syncBatch(clubId, actorId, dto, request);
+  }
+
+  @Post('offline-snapshots')
+  @RequireStaffPermission(StaffPermissionKey.BOOKINGS_CHECKIN)
+  @ApiOperation({
+    summary: 'Issue a signed, device-bound offline eligibility snapshot',
+  })
+  issueOfflineSnapshot(
+    @CurrentUser('sub') actorId: string,
+    @Param('clubId') clubId: string,
+    @Body() dto: IssueOfflineSnapshotDto,
+  ) {
+    return this.offlineCheckin.issueSnapshot(clubId, actorId, dto);
+  }
+
+  @Get('offline-reconciliations')
+  @RequireStaffPermission(StaffPermissionKey.BOOKINGS_READ)
+  @ApiOperation({ summary: 'List offline check-in reconciliation outcomes' })
+  listOfflineReconciliations(
+    @CurrentUser('sub') actorId: string,
+    @Param('clubId') clubId: string,
+    @Query() query: ListOfflineReconciliationsQueryDto,
+  ) {
+    return this.offlineCheckin.listReconciliations(clubId, actorId, query);
+  }
+
+  @Post('offline-reconciliations/:reconciliationId/resolve')
+  @RequireStaffPermission(StaffPermissionKey.BOOKINGS_CHECKIN)
+  @ApiOperation({ summary: 'Retry or dismiss an offline reconciliation' })
+  resolveOfflineReconciliation(
+    @CurrentUser('sub') actorId: string,
+    @Param('clubId') clubId: string,
+    @Param('reconciliationId') reconciliationId: string,
+    @Body() dto: ResolveOfflineReconciliationDto,
+    @Req() request: Request,
+  ) {
+    return this.offlineCheckin.resolveReconciliation(
+      clubId,
+      reconciliationId,
+      actorId,
+      dto,
+      request,
+    );
   }
 }
 
@@ -117,6 +167,16 @@ export class ClubCheckinDevicesController {
     @Param('deviceId') deviceId: string,
   ) {
     return this.checkin.rotateDeviceSecret(clubId, deviceId, actorId);
+  }
+
+  @Post(':deviceId/revoke')
+  @ApiOperation({ summary: 'Revoke a check-in device and its offline access' })
+  revoke(
+    @CurrentUser('sub') actorId: string,
+    @Param('clubId') clubId: string,
+    @Param('deviceId') deviceId: string,
+  ) {
+    return this.checkin.revokeDevice(clubId, deviceId, actorId);
   }
 }
 

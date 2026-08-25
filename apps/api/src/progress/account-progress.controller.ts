@@ -39,6 +39,7 @@ import {
   ListWorkoutPlansQueryDto,
   ListWorkoutProgramsQueryDto,
   MetricsSummaryQueryDto,
+  ReviewWorkoutLogDto,
   SyncProgressMetricsDto,
   UpdateMetricGoalDto,
   UpdateProgressMetricDto,
@@ -184,6 +185,23 @@ export class AccountProgressController {
     @CurrentUser('activeRole') activeRole: Role,
   ) {
     return this.progress.getWorkoutPlan(id, userId, activeRole);
+  }
+
+  @Get('workout-plans/:id/revisions/:revisionId')
+  @Roles(Role.ATHLETE, Role.COACH, Role.ADMIN)
+  @ApiOperation({ summary: 'Get an immutable workout plan revision snapshot' })
+  getWorkoutPlanRevision(
+    @Param('id') id: string,
+    @Param('revisionId') revisionId: string,
+    @CurrentUser('sub') userId: string,
+    @CurrentUser('activeRole') activeRole: Role,
+  ) {
+    return this.progress.getWorkoutPlanRevision(
+      id,
+      revisionId,
+      userId,
+      activeRole,
+    );
   }
 
   @Post('workout-plans')
@@ -410,6 +428,29 @@ export class AccountProgressController {
     @Req() request: Request,
   ) {
     return this.progress.completeWorkoutLog(id, userId, request);
+  }
+
+  @Post('workout-logs/:id/skip')
+  @Roles(Role.ATHLETE)
+  @ApiOperation({ summary: 'Mark a workout log skipped' })
+  skipWorkoutLog(
+    @Param('id') id: string,
+    @CurrentUser('sub') userId: string,
+    @Req() request: Request,
+  ) {
+    return this.progress.skipWorkoutLog(id, userId, request);
+  }
+
+  @Post('workout-logs/:id/reviews')
+  @Roles(Role.COACH)
+  @ApiOperation({ summary: 'Append coach feedback to a completed workout log' })
+  reviewWorkoutLog(
+    @Param('id') id: string,
+    @Body() dto: ReviewWorkoutLogDto,
+    @CurrentUser('sub') userId: string,
+    @Req() request: Request,
+  ) {
+    return this.progress.reviewWorkoutLog(id, dto, userId, request);
   }
 
   // ── Goals ───────────────────────────────────────────────────────────────

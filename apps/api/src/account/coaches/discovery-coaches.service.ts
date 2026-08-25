@@ -19,6 +19,7 @@ import {
 import { User, UserDocument } from '../../schemas/user.schema';
 import { uniqueCoachTypes } from './coach-types';
 import { DiscoveryCoachesQueryDto } from './dto/discovery-coaches.dto';
+import { approvedCoachVerificationFilter } from './coach-verification-visibility';
 
 @Injectable()
 export class DiscoveryCoachesService {
@@ -34,7 +35,7 @@ export class DiscoveryCoachesService {
   async list(query: DiscoveryCoachesQueryDto) {
     const { page, pageSize } = resolvePageSize(query);
     const filter: QueryFilter<CoachProfileDocument> = {
-      'verification.status': VerificationStatus.APPROVED,
+      ...approvedCoachVerificationFilter(),
     };
 
     if (query.sportId?.trim()) {
@@ -45,6 +46,17 @@ export class DiscoveryCoachesService {
     }
     if (query.coachType) {
       filter.coachTypes = query.coachType;
+    }
+    if (query.availability === 'remote') {
+      filter['pricing.consultation.remote'] = { $ne: null };
+    }
+    if (query.availability === 'in-person') {
+      filter['pricing.consultation.inPerson'] = { $ne: null };
+    }
+    if (query.fresh) {
+      filter.createdAt = {
+        $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1_000),
+      };
     }
 
     const profiles = await this.coachModel
@@ -105,7 +117,7 @@ export class DiscoveryCoachesService {
 
     const profile = await this.coachModel.findOne({
       userId: new Types.ObjectId(userId),
-      'verification.status': VerificationStatus.APPROVED,
+      ...approvedCoachVerificationFilter(),
     });
     if (!profile) throw new NotFoundException('Coach not found');
 
@@ -154,6 +166,14 @@ export class DiscoveryCoachesService {
       verification: {
         status: profile.verification?.status ?? VerificationStatus.UNSUBMITTED,
         reviewedAt: profile.verification?.reviewedAt ?? null,
+        credential: profile.verification?.credential
+          ? {
+              typeKey: profile.verification.credential.typeKey,
+              issuer: profile.verification.credential.issuer,
+              issuedAt: profile.verification.credential.issuedAt ?? null,
+              expiresAt: profile.verification.credential.expiresAt,
+            }
+          : null,
       },
       serviceArea: {
         cityId: profile.serviceArea?.cityId?.toString() ?? null,

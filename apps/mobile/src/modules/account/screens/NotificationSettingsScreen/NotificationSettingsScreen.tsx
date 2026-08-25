@@ -72,9 +72,11 @@ export function NotificationSettingsScreen({
                   isSelected={preferences.channels.push}
                   onChange={(value) => toggleChannel("push", value)}
                 >
-                  <Switch.Control>
-                    <Switch.Thumb />
-                  </Switch.Control>
+                  <Switch.Content>
+                    <Switch.Control>
+                      <Switch.Thumb />
+                    </Switch.Control>
+                  </Switch.Content>
                 </Switch>
               }
             />
@@ -90,9 +92,11 @@ export function NotificationSettingsScreen({
                   isSelected={preferences.channels.sms}
                   onChange={(value) => toggleChannel("sms", value)}
                 >
-                  <Switch.Control>
-                    <Switch.Thumb />
-                  </Switch.Control>
+                  <Switch.Content>
+                    <Switch.Control>
+                      <Switch.Thumb />
+                    </Switch.Control>
+                  </Switch.Content>
                 </Switch>
               }
             />
@@ -108,9 +112,11 @@ export function NotificationSettingsScreen({
                   isSelected={preferences.channels.inApp}
                   onChange={(value) => toggleChannel("inApp", value)}
                 >
-                  <Switch.Control>
-                    <Switch.Thumb />
-                  </Switch.Control>
+                  <Switch.Content>
+                    <Switch.Control>
+                      <Switch.Thumb />
+                    </Switch.Control>
+                  </Switch.Content>
                 </Switch>
               }
             />
@@ -126,9 +132,11 @@ export function NotificationSettingsScreen({
                   isSelected={preferences.channels.email}
                   onChange={(value) => toggleChannel("email", value)}
                 >
-                  <Switch.Control>
-                    <Switch.Thumb />
-                  </Switch.Control>
+                  <Switch.Content>
+                    <Switch.Control>
+                      <Switch.Thumb />
+                    </Switch.Control>
+                  </Switch.Content>
                 </Switch>
               }
             />
@@ -144,9 +152,11 @@ export function NotificationSettingsScreen({
                   isSelected={preferences.channels.marketing}
                   onChange={(value) => toggleChannel("marketing", value)}
                 >
-                  <Switch.Control>
-                    <Switch.Thumb />
-                  </Switch.Control>
+                  <Switch.Content>
+                    <Switch.Control>
+                      <Switch.Thumb />
+                    </Switch.Control>
+                  </Switch.Content>
                 </Switch>
               }
             />

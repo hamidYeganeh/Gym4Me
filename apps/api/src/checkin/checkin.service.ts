@@ -42,7 +42,6 @@ import {
   ListCheckInsQueryDto,
   OfflineCheckInItemDto,
   ProvisionCheckinDeviceDto,
-  SyncOfflineBatchDto,
 } from './dto/checkin.dto';
 
 @Injectable()
@@ -157,42 +156,6 @@ export class CheckinService {
     return this.toPublic(doc);
   }
 
-  async syncOfflineBatch(
-    clubId: string,
-    actorId: string,
-    dto: SyncOfflineBatchDto,
-    request?: Request,
-  ) {
-    await this.staff.requireClubAccess(actorId, clubId);
-
-    const results: Array<{
-      clientIdempotencyKey: string;
-      status: 'created' | 'duplicate' | 'error';
-      checkIn?: ReturnType<CheckinService['toPublic']>;
-      error?: string;
-    }> = [];
-
-    for (const item of dto.items) {
-      try {
-        const outcome = await this.syncOneOfflineItem(
-          clubId,
-          actorId,
-          item,
-          request,
-        );
-        results.push(outcome);
-      } catch (err) {
-        results.push({
-          clientIdempotencyKey: item.clientIdempotencyKey,
-          status: 'error',
-          error: err instanceof Error ? err.message : 'Unknown error',
-        });
-      }
-    }
-
-    return { items: results };
-  }
-
   async listForClub(clubId: string, query: ListCheckInsQueryDto) {
     const filter: QueryFilter<CheckInDocument> = {
       clubId: new Types.ObjectId(clubId),
@@ -301,11 +264,43 @@ export class CheckinService {
         clubId: new Types.ObjectId(clubId),
         status: 'active',
       },
-      { $set: { keyHash: this.hashDeviceSecret(secret) } },
+      {
+        $set: { keyHash: this.hashDeviceSecret(secret) },
+        $inc: { credentialVersion: 1 },
+      },
       { new: true },
     );
     if (!device) throw new NotFoundException('Check-in device not found');
     return { device: this.toDevicePublic(device), secret };
+  }
+
+  async revokeDevice(clubId: string, deviceId: string, actorId: string) {
+    await this.assertMembersCheckin(clubId, actorId);
+    if (!Types.ObjectId.isValid(deviceId)) {
+      throw new NotFoundException('Check-in device not found');
+    }
+    const device = await this.deviceModel.findOneAndUpdate(
+      { _id: new Types.ObjectId(deviceId), clubId: new Types.ObjectId(clubId) },
+      { $set: { status: 'revoked' } },
+      { new: true },
+    );
+    if (!device) throw new NotFoundException('Check-in device not found');
+    return { device: this.toDevicePublic(device) };
+  }
+
+  async executeOfflineItem(
+    clubId: string,
+    actorId: string,
+    item: OfflineCheckInItemDto,
+    serverIdempotencyKey: string,
+    request?: Request,
+  ) {
+    return this.syncOneOfflineItem(
+      clubId,
+      actorId,
+      { ...item, clientIdempotencyKey: serverIdempotencyKey },
+      request,
+    );
   }
 
   async ingestHardwareEvent(
@@ -324,7 +319,7 @@ export class CheckinService {
     const idempotencyKey = `hardware:${deviceId}:${eventHash}`;
     const method = dto.method ?? CheckInMethod.BARCODE;
 
-    let result;
+    let result: ReturnType<CheckinService['toPublic']>;
     if (dto.bookingCode) {
       result = await this.checkInByBookingCode(
         clubId,

@@ -78,7 +78,7 @@ export function useAthleteGoals({
       setMessage(
         enableReminder
           ? "یادآوری فعال شد."
-          : "یادآوری ذخیره شد (متوقف — برای فعال‌سازی opt-in لازم است).",
+          : "یادآوری ذخیره شد و فعلاً غیرفعال است.",
       );
     } catch (caught) {
       setError(

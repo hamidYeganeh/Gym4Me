@@ -131,7 +131,7 @@ function ModelOptionAutocomplete({
           <SearchField autoFocus fullWidth>
             <SearchField.Group>
               <SearchField.SearchIcon />
-              <SearchField.Input placeholder="جستجو با نام…" />
+              <SearchField.Input placeholder="جست‌وجو با نام…" />
               <SearchField.ClearButton />
             </SearchField.Group>
           </SearchField>
@@ -267,7 +267,7 @@ export function DiscoverySectionEditor({
               errorMessage={errors.icon}
               isInvalid={Boolean(errors.icon)}
               label="آیکن عنوان (اختیاری)"
-              placeholder="جستجو و انتخاب آیکن"
+              placeholder="جست‌وجو و انتخاب آیکن"
               value={section.content.icon ?? ""}
               onChange={(icon) =>
                 patch({
@@ -419,7 +419,7 @@ export function DiscoverySectionEditor({
                       patchFilter("radiusMeters", Number(value))
                     }
                   >
-                    <Label>شعاع جستجو</Label>
+                    <Label>شعاع جست‌وجو</Label>
                     <Input
                       inputMode="numeric"
                       max={100000}

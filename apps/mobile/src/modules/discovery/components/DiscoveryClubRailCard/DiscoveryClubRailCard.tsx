@@ -27,7 +27,7 @@ export function DiscoveryClubRailCard({
       orientation={orientation}
       price={pricePrefix || priceSuffix ? club.price : undefined}
       pricePrefix={pricePrefix}
-      priceSuffix={priceSuffix}
+      priceSuffix={club.priceSuffix ?? priceSuffix}
       rating={club.rating}
       ratingCount={club.ratingCount}
       shareLabel={shareLabel}

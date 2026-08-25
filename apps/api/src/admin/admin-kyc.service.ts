@@ -172,7 +172,7 @@ export class AdminKycService {
 
   private toPublic(doc: {
     _id: Types.ObjectId;
-    userId: Types.ObjectId | PopulatedUser;
+    userId: Types.ObjectId | PopulatedUser | null;
     kind: string;
     status: string;
     documentType?: string;
@@ -200,7 +200,9 @@ export class AdminKycService {
             code: populated.code,
             kycStatus: populated.kycStatus,
           }
-        : doc.userId.toString(),
+        : doc.userId instanceof Types.ObjectId
+          ? doc.userId.toHexString()
+          : null,
       kind: doc.kind,
       status: doc.status,
       documentType: doc.documentType ?? null,

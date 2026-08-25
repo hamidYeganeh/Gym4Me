@@ -6,10 +6,18 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums';
 import {
   CancelPlatformSubscriptionDto,
+  InitiateMembershipCheckoutDto,
+  InitiatePlatformSubscriptionCheckoutDto,
   ListMyMembershipsQueryDto,
+  PreviewMembershipCheckoutDto,
+  PreviewPlatformSubscriptionCheckoutDto,
   SelfPurchaseMembershipDto,
   SubscribePlatformDto,
+  VerifyMembershipCheckoutDto,
+  VerifyPlatformSubscriptionCheckoutDto,
 } from './dto/membership.dto';
+import { MembershipCheckoutService } from './application/services/membership-checkout.service';
+import { PlatformSubscriptionCheckoutService } from './application/services/platform-subscription-checkout.service';
 import { MembershipsService } from './memberships.service';
 
 @ApiTags('account-memberships')
@@ -17,7 +25,10 @@ import { MembershipsService } from './memberships.service';
 @Roles(Role.ATHLETE)
 @Controller('account/memberships')
 export class AthleteMembershipsController {
-  constructor(private readonly memberships: MembershipsService) {}
+  constructor(
+    private readonly memberships: MembershipsService,
+    private readonly checkouts: MembershipCheckoutService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'My club memberships (paginated)' })
@@ -46,6 +57,50 @@ export class AthleteMembershipsController {
   ) {
     return this.memberships.selfPurchase(userId, dto, request);
   }
+
+  @Post('checkouts/initiate')
+  @ApiOperation({ summary: 'Initiate verified online membership checkout' })
+  initiateCheckout(
+    @CurrentUser('sub') userId: string,
+    @Body() dto: InitiateMembershipCheckoutDto,
+  ) {
+    return this.checkouts.initiate(userId, dto);
+  }
+
+  @Post('checkouts/preview')
+  @ApiOperation({ summary: 'Preview online membership purchase or renewal' })
+  previewCheckout(
+    @CurrentUser('sub') userId: string,
+    @Body() dto: PreviewMembershipCheckoutDto,
+  ) {
+    return this.checkouts.preview(userId, dto);
+  }
+
+  @Post('checkouts/:checkoutId/verify')
+  @ApiOperation({
+    summary: 'Verify and atomically fulfill membership checkout',
+  })
+  verifyCheckout(
+    @CurrentUser('sub') userId: string,
+    @Param('checkoutId') checkoutId: string,
+    @Body() dto: VerifyMembershipCheckoutDto,
+    @Req() request: Request,
+  ) {
+    return this.checkouts.verify(userId, checkoutId, dto, request);
+  }
+
+  @Post(':membershipId/renewal-preview')
+  @ApiOperation({ summary: 'Preview renewal of my current membership plan' })
+  async previewRenewal(
+    @CurrentUser('sub') userId: string,
+    @Param('membershipId') membershipId: string,
+  ) {
+    const membership = await this.memberships.getMyMembership(
+      userId,
+      membershipId,
+    );
+    return this.memberships.previewRenewal(membership.clubId, membershipId, {});
+  }
 }
 
 /** Active platform plan catalog for subscribers (owners). */
@@ -69,7 +124,10 @@ export class AccountPlatformPlansController {
 @Roles(Role.CLUB_OWNER)
 @Controller('account/platform-subscriptions')
 export class AccountPlatformSubscriptionsController {
-  constructor(private readonly memberships: MembershipsService) {}
+  constructor(
+    private readonly memberships: MembershipsService,
+    private readonly checkouts: PlatformSubscriptionCheckoutService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'My platform subscriptions' })
@@ -85,6 +143,37 @@ export class AccountPlatformSubscriptionsController {
     @Req() request: Request,
   ) {
     return this.memberships.subscribePlatform(userId, dto, request);
+  }
+
+  @Post('checkouts/preview')
+  @ApiOperation({ summary: 'Preview a platform subscription checkout' })
+  previewCheckout(
+    @CurrentUser('sub') userId: string,
+    @Body() dto: PreviewPlatformSubscriptionCheckoutDto,
+  ) {
+    return this.checkouts.preview(userId, dto);
+  }
+
+  @Post('checkouts/initiate')
+  @ApiOperation({ summary: 'Initiate verified platform subscription checkout' })
+  initiateCheckout(
+    @CurrentUser('sub') userId: string,
+    @Body() dto: InitiatePlatformSubscriptionCheckoutDto,
+  ) {
+    return this.checkouts.initiate(userId, dto);
+  }
+
+  @Post('checkouts/:checkoutId/verify')
+  @ApiOperation({
+    summary: 'Verify and atomically fulfill platform subscription checkout',
+  })
+  verifyCheckout(
+    @CurrentUser('sub') userId: string,
+    @Param('checkoutId') checkoutId: string,
+    @Body() dto: VerifyPlatformSubscriptionCheckoutDto,
+    @Req() request: Request,
+  ) {
+    return this.checkouts.verify(userId, checkoutId, dto, request);
   }
 
   @Post(':subscriptionId/cancel')

@@ -27,6 +27,10 @@ export class CheckinDevice {
   @Prop({ enum: ['active', 'revoked'], default: 'active', index: true })
   status!: 'active' | 'revoked';
 
+  /** Incrementing epoch invalidates previously signed offline snapshots. */
+  @Prop({ required: true, min: 1, default: 1 })
+  credentialVersion!: number;
+
   @Prop()
   lastSeenAt?: Date;
 

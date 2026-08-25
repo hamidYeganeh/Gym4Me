@@ -145,6 +145,13 @@ export function useDiscoveryCoachesBrowse(
                 .coachType as DiscoveryCoachesQuery["coachType"],
             }
           : {}),
+        ...(filter?.query?.availability
+          ? { availability: filter.query.availability }
+          : {}),
+        ...(filter?.query?.verified
+          ? { verified: filter.query.verified }
+          : {}),
+        ...(filter?.query?.fresh ? { fresh: filter.query.fresh } : {}),
       };
 
       try {

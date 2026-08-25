@@ -8,6 +8,14 @@ personalize eligible sections from the active athlete profile.
 Installed section kinds also cover coaches, classes, spaces, live slots,
 equipment, membership plans, capacity-backed bookable offers, and amenities.
 
+Paid athlete club-membership and owner platform-subscription purchases use
+persisted, idempotent gateway checkouts. Provider verification happens before
+the Mongo transaction that activates entitlement and captures the immutable
+Payment/Ledger/Outbox records; browser callback loss is recovered by leased
+reconciliation workers. Native Capacitor payments return through a public API
+callback broker and an allowlisted `com.gym4me.app://payment-return` deep link;
+the app never submits a WebView-local origin to the PSP.
+
 ## Apps
 
 | App     | Path           | Port | Role                             |
@@ -62,6 +70,11 @@ npm run dev:all
 MongoDB must run as a replica set because booking, payment/Ledger, membership,
 and check-in mutations use transactions. The provided Docker setup initializes
 the local single-node `rs0` replica set automatically.
+
+Production offline reception also requires a distinct, random
+`OFFLINE_CHECKIN_SIGNING_SECRET` (at least 32 characters). Capacitor stores the
+signed eligibility snapshot and pending attendance rows in native secure
+storage; unsigned offline rows are not accepted by the API.
 
 Frontend API base URLs come from each app’s `.env.development` / `.env.production`
 (must include `/api/v1`). Defaults: LAN `http://192.168.3.106:8088/api/v1` in

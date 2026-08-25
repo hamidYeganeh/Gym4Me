@@ -108,8 +108,8 @@ export class ApiClient {
     return this.storage?.get() ?? null;
   }
 
-  setSession(session: AuthSession | null) {
-    this.storage?.set(session);
+  async setSession(session: AuthSession | null): Promise<void> {
+    await this.storage?.set(session);
   }
 
   async request<T>(
@@ -196,7 +196,7 @@ export class ApiClient {
       if (refreshed) {
         return this.sendWithAuthRetry(path, options, true);
       }
-      this.storage?.set(null);
+      await this.storage?.set(null);
       this.onUnauthorized?.();
     }
 
@@ -252,12 +252,12 @@ export class ApiClient {
         });
 
         if (!response.ok) {
-          this.storage?.set(null);
+          await this.storage?.set(null);
           return null;
         }
 
         const pair = (await response.json()) as TokenPair;
-        this.storage?.set({
+        await this.storage?.set({
           ...current,
           accessToken: pair.accessToken,
           refreshToken: pair.refreshToken,

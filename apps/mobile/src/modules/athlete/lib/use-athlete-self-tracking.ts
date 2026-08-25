@@ -69,7 +69,7 @@ export function useAthleteSelfTracking({
 
     const offline = pendingQueue
       .filter(
-        (item) =>
+        (item): item is Extract<typeof item, { kind: "metric" }> =>
           item.kind === "metric" &&
           item.payload.metricKey === selected.key &&
           item.status !== "synced",

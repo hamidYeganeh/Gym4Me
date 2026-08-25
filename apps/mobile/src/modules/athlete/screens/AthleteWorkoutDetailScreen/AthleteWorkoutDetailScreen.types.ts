@@ -14,8 +14,29 @@ export type AthleteWorkoutDetailScreenProps = {
     exerciseId: string;
     reps: number;
     weightKg?: number;
+    durationSec?: number;
+    distanceM?: number;
+    rpe?: number;
+  }) => Promise<void>;
+  onUpdateSet?: (
+    index: number,
+    input: {
+      exerciseId: string;
+      reps: number;
+      weightKg?: number;
+      durationSec?: number;
+      distanceM?: number;
+      rpe?: number;
+    },
+  ) => Promise<void>;
+  onRemoveSet?: (index: number) => Promise<void>;
+  onSaveSessionDetails?: (input: {
+    note?: string;
+    pain?: { score?: number; bodyAreaKeys?: string[] };
   }) => Promise<void>;
   onCompleteSession?: () => Promise<void>;
+  onRetryOfflineSync?: () => Promise<void>;
+  onDiscardOfflineChanges?: () => Promise<void>;
   onLogSession?: (status: AthleteWorkoutLogStatus) => Promise<void>;
   className?: string;
 };

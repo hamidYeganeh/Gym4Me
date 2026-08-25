@@ -64,7 +64,7 @@ export function useProfileMenu({
     const path = (suffix: string) => `/${roleSegment}/profile/${suffix}`;
     const billingHref =
       roleSegment === "owner"
-        ? "/owner/finance"
+        ? "/owner/subscription"
         : roleSegment === "coach"
           ? "/coach/earnings"
           : "/athlete/subscription";

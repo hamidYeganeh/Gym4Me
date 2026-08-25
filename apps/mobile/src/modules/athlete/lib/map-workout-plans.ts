@@ -67,6 +67,17 @@ export function mapWorkoutLog(log: WorkoutLog): AthleteWorkoutLogItem {
       exerciseId: set.exerciseId,
       reps: set.reps,
       weightKg: set.weightKg,
+      durationSec: set.durationSec,
+      distanceM: set.distanceM,
+      rpe: set.rpe,
+    })),
+    note: log.note,
+    pain: log.pain,
+    planRevisionId: log.planRevisionId,
+    reviews: log.reviews.map((review) => ({
+      id: review.id,
+      note: review.note,
+      reviewedAt: review.reviewedAt,
     })),
   };
 }
@@ -80,5 +91,6 @@ export function mapWorkoutPlanDetail(
     ...mapWorkoutPlan(plan),
     exercises: flattenPlanExercises(plan, nameById),
     logs: logs.map(mapWorkoutLog),
+    currentRevision: plan.currentRevision,
   };
 }

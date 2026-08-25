@@ -46,6 +46,7 @@ import type {
   ProgressMetricsPage,
   ProgressPhoto,
   ProgressPhotosPage,
+  ReviewWorkoutLogInput,
   SyncProgressMetricsInput,
   SyncProgressMetricsResult,
   UpdateMetricGoalInput,
@@ -59,6 +60,7 @@ import type {
   WorkoutLog,
   WorkoutLogsPage,
   WorkoutPlan,
+  WorkoutPlanRevision,
   WorkoutPlansPage,
   WorkoutProgram,
   WorkoutProgramsPage,
@@ -124,6 +126,12 @@ export function createAccountProgressApi(client: ApiClient) {
 
     getWorkoutPlan(id: string) {
       return client.request<WorkoutPlan>(ep.workoutPlan(id));
+    },
+
+    getWorkoutPlanRevision(id: string, revisionId: string) {
+      return client.request<WorkoutPlanRevision>(
+        ep.workoutPlanRevision(id, revisionId),
+      );
     },
 
     createWorkoutPlan(input: CreateWorkoutPlanInput) {
@@ -228,6 +236,19 @@ export function createAccountProgressApi(client: ApiClient) {
     completeWorkoutLog(id: string) {
       return client.request<WorkoutLog>(ep.completeWorkoutLog(id), {
         method: "POST",
+      });
+    },
+
+    skipWorkoutLog(id: string) {
+      return client.request<WorkoutLog>(ep.skipWorkoutLog(id), {
+        method: "POST",
+      });
+    },
+
+    reviewWorkoutLog(id: string, input: ReviewWorkoutLogInput) {
+      return client.request<WorkoutLog>(ep.reviewWorkoutLog(id), {
+        method: "POST",
+        body: input,
       });
     },
 
