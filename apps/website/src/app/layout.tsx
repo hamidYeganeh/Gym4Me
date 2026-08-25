@@ -22,6 +22,9 @@ export async function generateMetadata(): Promise<Metadata> {
     authors: [{ name: "Gym4Me" }],
     creator: "Gym4Me",
     publisher: "Gym4Me",
+    other: {
+      enamad: "850078462",
+    },
     keywords: ["Gym4Me", "gym", "fitness", "باشگاه", "مربی", "ورزشکار"],
     icons: {
       icon: [

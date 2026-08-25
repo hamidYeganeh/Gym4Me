@@ -52,7 +52,7 @@ export const LANDING_ASSETS = {
     },
     {
       src: `${MOCK}/coach-2.png`,
-      name: "سارا نوری",
+      name: "سامان نوری",
       role: "مربی عملکرد",
       specialty: "HIIT و عملکرد",
       alt: "مربی عملکرد در حال هدایت جلسه",
@@ -169,7 +169,7 @@ export const LANDING_CLASSES = [
   {
     id: "hiit-morning",
     title: "HIIT صبحگاهی",
-    author: "سارا نوری",
+    author: "سامان نوری",
     category: "آمادگی جسمانی",
     date: "شنبه، ۲۵ خرداد",
     duration: "۴۵ دقیقه",
@@ -329,7 +329,7 @@ export const LANDING_ARTICLES = [
       "میزان پروتئین روزانه را با هدف و وزن خود هماهنگ کن تا ریکاوری کامل شود.",
     category: "نکته",
     coverSrc: `${MOCK}/collection-1.png`,
-    authorName: "سارا نوری",
+    authorName: "سامان نوری",
     publishedAtLabel: "۵ روز پیش",
     readingTimeMinutes: 7,
     viewsLabel: "۲٬۱۱۰",
@@ -373,7 +373,7 @@ export const LANDING_REVIEWS = [
     title: "رزرو کلاس بدون تماس تلفنی",
     content:
       "باشگاه نزدیک را روی نقشه پیدا کردم، کلاس HIIT را رزرو کردم و قبل از جلسه یادآوری آمد.",
-    authorName: "نیلوفر احمدی",
+    authorName: "نوید احمدی",
     authorRole: "عضو اوربن جیم",
     avatarSrc: `${MOCK}/coach-2.png`,
     date: "خرداد ۱۴۰۵",
