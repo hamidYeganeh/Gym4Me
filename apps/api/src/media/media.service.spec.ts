@@ -1,5 +1,6 @@
 import { ForbiddenException } from '@nestjs/common';
-import { writeFileSync } from 'fs';
+import { mkdtempSync, rmSync, writeFileSync } from 'fs';
+import { tmpdir } from 'os';
 import { join } from 'path';
 import { Types } from 'mongoose';
 import { MediaVisibility } from '../common/enums';
@@ -123,8 +124,11 @@ describe('MediaService ownership policy', () => {
   });
 
   it('removes the stored object when Mongo persistence fails', async () => {
+    const previousUploadDir = process.env.UPLOAD_DIR;
+    const uploadDir = mkdtempSync(join(tmpdir(), 'gym4me-media-'));
+    process.env.UPLOAD_DIR = uploadDir;
     const filename = `media-rollback-${Date.now()}.webp`;
-    const staged = join(process.env.UPLOAD_DIR || './uploads', filename);
+    const staged = join(uploadDir, filename);
     writeFileSync(staged, Buffer.from('sanitized-image'));
     const model = { create: jest.fn().mockRejectedValue(new Error('mongo')) };
     const storage = {
@@ -137,18 +141,24 @@ describe('MediaService ownership policy', () => {
       storage as never,
     );
 
-    await expect(
-      service.create(
-        {
-          filename,
-          mimetype: 'image/webp',
-          size: 15,
-          originalname: 'photo.webp',
-        } as Express.Multer.File,
-        ownerId.toString(),
-      ),
-    ).rejects.toThrow('mongo');
-    expect(storage.delete).toHaveBeenCalledWith(filename);
+    try {
+      await expect(
+        service.create(
+          {
+            filename,
+            mimetype: 'image/webp',
+            size: 15,
+            originalname: 'photo.webp',
+          } as Express.Multer.File,
+          ownerId.toString(),
+        ),
+      ).rejects.toThrow('mongo');
+      expect(storage.delete).toHaveBeenCalledWith(filename);
+    } finally {
+      if (previousUploadDir === undefined) delete process.env.UPLOAD_DIR;
+      else process.env.UPLOAD_DIR = previousUploadDir;
+      rmSync(uploadDir, { recursive: true, force: true });
+    }
   });
 
   it('opens scoped social media only through its exact attachment', async () => {

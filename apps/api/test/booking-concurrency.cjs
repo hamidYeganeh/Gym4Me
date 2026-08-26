@@ -77,38 +77,45 @@ async function main() {
       updatedAt: new Date(),
       testRunId: runId,
     })),
+    { writeConcern: { w: 'majority' } },
   );
-  await db.collection('clubs').insertOne({
-    _id: clubId,
-    ownerId,
-    identity: { name: `G4M030 ${runId}` },
-    operationalStatus: 'active',
-    calendarRevision: 0,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    testRunId: runId,
-  });
-  await db.collection('club_slots').insertOne({
-    _id: slotId,
-    clubId,
-    kind: 'session',
-    capacity: 17,
-    price: 0,
-    schedule: {
-      recurrence: {
-        type: 'once',
-        date: occurrence,
-        startTime: '20:00',
-        endTime: '21:00',
-      },
-      exceptions: [],
+  await db.collection('clubs').insertOne(
+    {
+      _id: clubId,
+      ownerId,
+      identity: { name: `G4M030 ${runId}` },
+      operationalStatus: 'active',
+      calendarRevision: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      testRunId: runId,
     },
-    status: 'active',
-    calendarRevision: 0,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    testRunId: runId,
-  });
+    { writeConcern: { w: 'majority' } },
+  );
+  await db.collection('club_slots').insertOne(
+    {
+      _id: slotId,
+      clubId,
+      kind: 'session',
+      capacity: 17,
+      price: 0,
+      schedule: {
+        recurrence: {
+          type: 'once',
+          date: occurrence,
+          startTime: '20:00',
+          endTime: '21:00',
+        },
+        exceptions: [],
+      },
+      status: 'active',
+      calendarRevision: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      testRunId: runId,
+    },
+    { writeConcern: { w: 'majority' } },
+  );
 
   const results = await Promise.all(
     athleteIds.map((athleteId, index) => reserve(athleteId, index)),
