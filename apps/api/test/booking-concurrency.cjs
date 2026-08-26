@@ -84,6 +84,7 @@ async function main() {
       _id: clubId,
       ownerId,
       identity: { name: `G4M030 ${runId}` },
+      review: { status: 'approved', documentMediaIds: [] },
       operationalStatus: 'active',
       calendarRevision: 0,
       createdAt: new Date(),
