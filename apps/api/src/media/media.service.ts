@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { createHash } from 'crypto';
 import { ClientSession, Model, Types } from 'mongoose';
@@ -10,10 +11,25 @@ import type { Request } from 'express';
 import { existsSync, readFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import { AuditService } from '../audit/audit.service';
-import { AuditAction, MediaVisibility, Role } from '../common/enums';
+import { MalwareScannerService } from '../common/malware/malware-scanner.service';
+import {
+  AuditAction,
+  MediaScanStatus,
+  MediaVisibility,
+  Role,
+} from '../common/enums';
 import { StorageService } from '../common/storage/storage.service';
 import type { JwtUser } from '../common/types';
 import { Media, MediaDocument, MediaPurpose } from '../schemas/media.schema';
+import {
+  initialScanStatus,
+  isManagedMediaPurpose,
+  mediaScanAllowsClaim,
+  mediaScanAllowsServe,
+  resolveMediaScanStatus,
+} from './media-scan.policy';
+
+const MAX_SCAN_ATTEMPTS = 5;
 
 @Injectable()
 export class MediaService {
@@ -21,6 +37,8 @@ export class MediaService {
     @InjectModel(Media.name) private readonly mediaModel: Model<MediaDocument>,
     private readonly audit: AuditService,
     private readonly storage: StorageService,
+    private readonly malwareScanner: MalwareScannerService,
+    private readonly config: ConfigService,
   ) {}
 
   async create(
@@ -34,6 +52,9 @@ export class MediaService {
       purpose?: MediaPurpose;
     },
   ) {
+    const purpose = opts?.purpose ?? MediaPurpose.GENERAL;
+    this.assertManagedUploadAllowed(purpose);
+
     const staged = join(process.env.UPLOAD_DIR || './uploads', file.filename);
     const hash = existsSync(staged)
       ? createHash('sha256').update(readFileSync(staged)).digest('hex')
@@ -57,7 +78,11 @@ export class MediaService {
         originalName: opts?.originalName ?? file.originalname,
         visibility: opts?.visibility ?? MediaVisibility.PUBLIC,
         uploaderId: new Types.ObjectId(uploaderId),
-        purpose: opts?.purpose ?? MediaPurpose.GENERAL,
+        purpose,
+        scan: {
+          status: initialScanStatus(purpose),
+          attempts: 0,
+        },
       });
     } catch (error) {
       if (stored)
@@ -101,6 +126,35 @@ export class MediaService {
     throw new ForbiddenException('Media is private');
   }
 
+  private assertManagedUploadAllowed(purpose: MediaPurpose): void {
+    if (!isManagedMediaPurpose(purpose)) return;
+    const isProd =
+      (this.config.get<string>('NODE_ENV', 'development') ?? 'development') ===
+      'production';
+    const provider = (
+      this.config.get<string>('MALWARE_SCANNER_PROVIDER', 'mock') ?? 'mock'
+    ).toLowerCase();
+    if (isProd && provider === 'mock') {
+      throw new ForbiddenException(
+        'Managed media upload requires a production malware scanner',
+      );
+    }
+  }
+
+  private assertScanAllowsServe(media: MediaDocument): void {
+    const status = resolveMediaScanStatus(media);
+    if (!mediaScanAllowsServe(status)) {
+      throw new ForbiddenException('Media is not available until scan completes');
+    }
+  }
+
+  private assertScanAllowsClaim(media: MediaDocument): void {
+    const status = resolveMediaScanStatus(media);
+    if (!mediaScanAllowsClaim(status)) {
+      throw new ForbiddenException('Media cannot be attached until scan completes');
+    }
+  }
+
   async getMeta(id: string, user?: JwtUser | null) {
     const media = await this.findById(id);
     this.assertCanRead(media, user);
@@ -110,6 +164,7 @@ export class MediaService {
   async openFile(id: string, user?: JwtUser | null) {
     const media = await this.findById(id);
     this.assertCanRead(media, user);
+    this.assertScanAllowsServe(media);
     if (!(await this.storage.exists(media.path))) {
       throw new NotFoundException('File missing in storage');
     }
@@ -138,6 +193,7 @@ export class MediaService {
       'attachment.kind': kind,
       'attachment.refId': refId,
       deletingAt: { $exists: false },
+      'scan.status': MediaScanStatus.CLEAN,
     });
     if (!media || !(await this.storage.exists(media.path))) {
       throw new NotFoundException('Media not found');
@@ -178,6 +234,7 @@ export class MediaService {
     if (requiredPurpose !== undefined && media.purpose !== requiredPurpose) {
       throw new ForbiddenException('Media purpose is not allowed');
     }
+    this.assertScanAllowsClaim(media);
     return media;
   }
 
@@ -195,6 +252,7 @@ export class MediaService {
         visibility: MediaVisibility.PRIVATE,
         purpose: MediaPurpose.PROGRESS_PHOTO,
         deletingAt: { $exists: false },
+        'scan.status': MediaScanStatus.CLEAN,
         $or: [
           { attachment: { $exists: false } },
           {
@@ -233,6 +291,7 @@ export class MediaService {
         visibility: MediaVisibility.PRIVATE,
         purpose: MediaPurpose.SOCIAL_POST,
         deletingAt: { $exists: false },
+        'scan.status': MediaScanStatus.CLEAN,
         $or: [
           { attachment: { $exists: false } },
           { 'attachment.kind': 'social_post', 'attachment.refId': postId },
@@ -292,6 +351,7 @@ export class MediaService {
         visibility: MediaVisibility.PRIVATE,
         purpose: MediaPurpose.MEAL_ADHERENCE,
         deletingAt: { $exists: false },
+        'scan.status': MediaScanStatus.CLEAN,
         attachment: { $exists: false },
       },
       {
@@ -429,6 +489,118 @@ export class MediaService {
     return { scanned: candidates.length, deleted, failed };
   }
 
+  async processPendingScans(
+    now = new Date(),
+    limit = 25,
+  ): Promise<{ scanned: number; clean: number; quarantined: number; failed: number }> {
+    const provider = (
+      this.config.get<string>('MALWARE_SCANNER_PROVIDER', 'mock') ?? 'mock'
+    ).toLowerCase();
+    const candidates = await this.mediaModel
+      .find({
+        $or: [
+          { 'scan.status': MediaScanStatus.PENDING_SCAN },
+          {
+            'scan.status': MediaScanStatus.SCAN_FAILED,
+            'scan.attempts': { $lt: MAX_SCAN_ATTEMPTS },
+          },
+          {
+            scan: { $exists: false },
+            purpose: {
+              $in: [
+                MediaPurpose.PROGRESS_PHOTO,
+                MediaPurpose.SOCIAL_POST,
+                MediaPurpose.MEAL_ADHERENCE,
+              ],
+            },
+          },
+        ],
+      })
+      .sort({ createdAt: 1 })
+      .limit(Math.max(1, Math.min(limit, 100)));
+
+    let clean = 0;
+    let quarantined = 0;
+    let failed = 0;
+
+    for (const candidate of candidates) {
+      const claimed = await this.mediaModel.findOneAndUpdate(
+        {
+          _id: candidate._id,
+          'scan.status': candidate.scan?.status,
+        },
+        { $inc: { 'scan.attempts': 1 } },
+        { new: true },
+      );
+      if (!claimed) continue;
+
+      try {
+        const verdict = await this.malwareScanner.scan({
+          storageKey: claimed.path,
+          mimeType: claimed.mimeType,
+          size: claimed.size,
+          hash: claimed.hash,
+        });
+        if (verdict === 'infected') {
+          await this.mediaModel.updateOne(
+            { _id: claimed._id, 'scan.status': candidate.scan?.status },
+            {
+              $set: {
+                scan: {
+                  status: MediaScanStatus.QUARANTINED,
+                  scannedAt: now,
+                  provider,
+                  attempts: claimed.scan?.attempts ?? 1,
+                  lastErrorCode: 'malware_detected',
+                },
+              },
+            },
+          );
+          quarantined += 1;
+          continue;
+        }
+        const updated = await this.mediaModel.updateOne(
+          { _id: claimed._id, 'scan.status': candidate.scan?.status },
+          {
+            $set: {
+              scan: {
+                status: MediaScanStatus.CLEAN,
+                scannedAt: now,
+                provider,
+                attempts: claimed.scan?.attempts ?? 1,
+              },
+            },
+          },
+        );
+        if (updated.modifiedCount === 1) clean += 1;
+      } catch (error) {
+        await this.mediaModel.updateOne(
+          { _id: claimed._id },
+          {
+            $set: {
+              scan: {
+                status: MediaScanStatus.SCAN_FAILED,
+                scannedAt: now,
+                provider,
+                attempts: claimed.scan?.attempts ?? 1,
+                lastErrorCode:
+                  error instanceof Error ? error.message : 'scan_failed',
+              },
+            },
+          },
+        );
+        failed += 1;
+      }
+    }
+
+    return {
+      scanned: candidates.length,
+      clean,
+      quarantined,
+      failed,
+    };
+  }
+
   toPublic(media: MediaDocument | (Media & { _id: Types.ObjectId })) {
     return {
       id: media._id.toString(),
@@ -438,6 +610,7 @@ export class MediaService {
       originalName: media.originalName ?? null,
       visibility: media.visibility ?? MediaVisibility.PUBLIC,
       purpose: media.purpose ?? MediaPurpose.GENERAL,
+      scanStatus: resolveMediaScanStatus(media),
       url: `/api/v1/media/${media._id.toString()}/file`,
       createdAt: media.createdAt,
     };

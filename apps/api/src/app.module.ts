@@ -45,6 +45,7 @@ import { REDIS, RedisModule } from './common/redis/redis.module';
 import { SmsModule } from './common/sms/sms.module';
 import { PushModule } from './common/push/push.module';
 import { PaymentModule } from './common/payment/payment.module';
+import { MalwareModule } from './common/malware/malware.module';
 import { StorageModule } from './common/storage/storage.module';
 import {
   AUTH_THROTTLE_DAY,
@@ -116,6 +117,7 @@ import { WaitlistModule } from './waitlist/waitlist.module';
     SmsModule,
     PushModule,
     PaymentModule,
+    MalwareModule,
     StorageModule,
     OutboxModule,
     NotificationsModule,

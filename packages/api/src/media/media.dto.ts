@@ -1,3 +1,10 @@
+export type MediaScanStatus =
+  | 'pending_scan'
+  | 'clean'
+  | 'infected'
+  | 'scan_failed'
+  | 'quarantined';
+
 export type MediaAsset = {
   id: string;
   mimeType: string;
@@ -6,6 +13,7 @@ export type MediaAsset = {
   originalName: string | null;
   visibility: 'public' | 'private';
   purpose: 'general' | 'progress_photo' | 'social_post' | 'meal_adherence';
+  scanStatus: MediaScanStatus;
   url: string;
   createdAt: string;
 };

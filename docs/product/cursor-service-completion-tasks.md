@@ -23,7 +23,7 @@
 | SVC-001 | P0 | VERIFY | پایدارسازی Health Sync آفلاین و recovery | G4M-010 در VERIFY |
 | SVC-002 | P0 | VERIFY | تکمیل enforcement و cleanup اشتراک پلتفرم | ADR-0001 ACCEPTED |
 | SVC-003 | P0 | VERIFY | تکمیل check-in آفلاین و telemetry قابل certification | SVC-002 برای بستن نهایی G4M-050 |
-| SVC-004 | P1 | READY | سرویس اسکن بدافزار و quarantine رسانه | — |
+| SVC-004 | P1 | VERIFY | سرویس اسکن بدافزار و quarantine رسانه | — |
 | SVC-005 | P1 | READY | conflict/recovery و backfill محدود تمرین | SVC-001 |
 | SVC-006 | P0 | DECISION_GATE | پردازش نهایی حذف/ناشناس‌سازی حساب | تصویب retention/legal-hold policy |
 | SVC-007 | P1 | DECISION_GATE | رضایت‌نامه و اقرار نسخه‌دار باشگاه | تصویب O11/consent policy |
@@ -159,6 +159,8 @@ Cursor بخش کد و runbook را تحویل می‌دهد؛ تبدیل `PARTIA
 ### گیت خروج
 
 unit/contract/integration media، social، progress photo و meal adherence پاس؛ انتخاب vendor/credential و smoke واقعی scanner به‌عنوان deployment gate ثبت شود.
+
+**شواهد ۲۰۲۶-۰۸-۲۷:** `MalwareScannerService` port + `MALWARE_SCANNER_PROVIDER=mock`؛ nested `scan.status` on `Media` (`pending_scan/clean/quarantined/scan_failed`)؛ managed uploads start `pending_scan` and block serve/claim until `clean`؛ `MediaScanWorker` lease `media.malware-scan`؛ production managed upload fail-closed when provider is mock؛ EICAR fixture test in mock scanner only. تست‌ها: media + malware specs. **مانده:** real scanner adapter، admin retry/delete queue، integration policy specs (slice 2).
 
 ---
 

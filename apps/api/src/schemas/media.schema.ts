@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-import { MediaVisibility } from '../common/enums';
+import { MediaScanStatus, MediaVisibility } from '../common/enums';
 
 export type MediaDocument = HydratedDocument<Media>;
 
@@ -71,6 +71,28 @@ export class Media {
   @Prop({ type: Date, index: true })
   deletingAt?: Date;
 
+  @Prop({
+    type: {
+      status: {
+        type: String,
+        enum: MediaScanStatus,
+        required: true,
+      },
+      scannedAt: { type: Date },
+      provider: { type: String },
+      attempts: { type: Number, default: 0 },
+      lastErrorCode: { type: String },
+    },
+    _id: false,
+  })
+  scan?: {
+    status: MediaScanStatus;
+    scannedAt?: Date;
+    provider?: string;
+    attempts?: number;
+    lastErrorCode?: string;
+  };
+
   createdAt!: Date;
   updatedAt!: Date;
 }
@@ -79,3 +101,4 @@ export const MediaSchema = SchemaFactory.createForClass(Media);
 
 MediaSchema.index({ purpose: 1, 'attachment.refId': 1 });
 MediaSchema.index({ purpose: 1, deletingAt: 1, createdAt: 1 });
+MediaSchema.index({ 'scan.status': 1, createdAt: 1 });

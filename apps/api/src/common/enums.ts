@@ -121,6 +121,15 @@ export enum MediaVisibility {
   PRIVATE = 'private',
 }
 
+/** Malware scan lifecycle for uploaded media (managed purposes require scan). */
+export enum MediaScanStatus {
+  PENDING_SCAN = 'pending_scan',
+  CLEAN = 'clean',
+  INFECTED = 'infected',
+  SCAN_FAILED = 'scan_failed',
+  QUARANTINED = 'quarantined',
+}
+
 export enum InviteStatus {
   SENT = 'sent',
   JOINED = 'joined',
