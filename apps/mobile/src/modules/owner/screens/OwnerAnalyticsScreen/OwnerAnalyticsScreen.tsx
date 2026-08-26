@@ -3,7 +3,6 @@
 import { Button } from "@heroui/react/button";
 import { Chip } from "@heroui/react/chip";
 import { Typography } from "@heroui/react/typography";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { StatsCard } from "@repo/ui/cards/StatsCard";
 import { AreaLineChart } from "@repo/ui/kit/AreaLineChart";
 import { AppLayout } from "@repo/ui/layout/AppLayout";

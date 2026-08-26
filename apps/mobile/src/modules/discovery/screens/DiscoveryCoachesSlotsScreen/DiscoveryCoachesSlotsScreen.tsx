@@ -2,7 +2,6 @@
 
 import { Button } from "@heroui/react/button";
 import { Calendar1 } from "@repo/icons/Calendar1";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { EMPTY_STATE_ILLUSTRATIONS, EmptyState } from "@repo/ui/kit/EmptyState";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";

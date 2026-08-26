@@ -5,9 +5,13 @@ import { ClubStaff, ClubStaffSchema } from '../../schemas/club-staff.schema';
 import { User, UserSchema } from '../../schemas/user.schema';
 import { OwnerStaffController } from './owner-staff.controller';
 import { StaffService } from './staff.service';
+import { PlatformEntitlementsModule } from '../memberships/platform-entitlements.module';
+import { MongoTransactionModule } from '../../common/mongo/mongo-transaction.module';
 
 @Module({
   imports: [
+    PlatformEntitlementsModule,
+    MongoTransactionModule,
     MongooseModule.forFeature([
       { name: ClubStaff.name, schema: ClubStaffSchema },
       { name: Club.name, schema: ClubSchema },

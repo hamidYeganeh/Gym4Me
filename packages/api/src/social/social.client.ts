@@ -57,6 +57,10 @@ export function createAccountSocialApi(client: ApiClient) {
       return client.request<SocialPost>(accountEp.post(id));
     },
 
+    downloadPostMedia(postId: string, mediaId: string) {
+      return client.requestBlob(accountEp.postMedia(postId, mediaId));
+    },
+
     createPost(input: CreateSocialPostInput) {
       return client.request<SocialPost>(accountEp.posts, {
         method: "POST",

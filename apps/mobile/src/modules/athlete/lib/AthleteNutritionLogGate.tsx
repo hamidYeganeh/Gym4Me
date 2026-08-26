@@ -2,8 +2,8 @@
 
 import { Spinner } from "@heroui/react/spinner";
 import type { MealAdherenceStatus } from "@repo/api/nutrition";
-import { useCallback, useEffect, useState } from "react";
-import { accountNutrition } from "@/shared/lib/api";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { accountNutrition, mediaApi } from "@/shared/lib/api";
 import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { AthleteNutritionLogScreen } from "../screens/AthleteNutritionLogScreen";
@@ -18,6 +18,12 @@ export function AthleteNutritionLogGate() {
   const { isAuthenticated, isReady } = useAuth();
   const [logs, setLogs] = useState<AthleteMealLogItem[] | null>(null);
   const [pending, setPending] = useState(false);
+  const objectUrls = useRef(new Set<string>());
+
+  const clearObjectUrls = useCallback(() => {
+    for (const url of objectUrls.current) URL.revokeObjectURL(url);
+    objectUrls.current.clear();
+  }, []);
 
   const reload = useCallback(async () => {
     const [adherence, plans] = await Promise.all([
@@ -27,15 +33,29 @@ export function AthleteNutritionLogGate() {
     const titleById = new Map(
       plans.result.map((plan) => [plan.id, plan.title] as const),
     );
-    setLogs(
-      adherence.result.map((entry) =>
-        mapMealAdherence(
+    clearObjectUrls();
+    const mapped = await Promise.all(
+      adherence.result.map(async (entry) => {
+        const item = mapMealAdherence(
           entry,
           titleById.get(entry.mealPlanId) ?? "برنامه غذایی",
-        ),
-      ),
+        );
+        if (entry.mediaId) {
+          try {
+            const blob = await mediaApi.download(entry.mediaId);
+            item.mediaUrl = URL.createObjectURL(blob);
+            objectUrls.current.add(item.mediaUrl);
+          } catch {
+            item.mediaUrl = null;
+          }
+        }
+        return item;
+      }),
     );
-  }, []);
+    setLogs(mapped);
+  }, [clearObjectUrls]);
+
+  useEffect(() => clearObjectUrls, [clearObjectUrls]);
 
   useEffect(() => {
     if (!isReady) return;
@@ -55,7 +75,7 @@ export function AthleteNutritionLogGate() {
   }, [isAuthenticated, isReady, reload]);
 
   const handleQuickLog = useCallback(
-    async (status: MealAdherenceStatus) => {
+    async (status: MealAdherenceStatus, file?: File) => {
       if (!isAuthenticated) {
         if (!DEMO_MODE) return;
         const planId = DEMO_MEAL_PLANS[0]?.id;
@@ -70,6 +90,8 @@ export function AthleteNutritionLogGate() {
             status,
             loggedLabel: "همین حالا",
             note: null,
+            mediaId: null,
+            mediaUrl: file ? URL.createObjectURL(file) : null,
           },
           ...(prev ?? []),
         ]);
@@ -84,10 +106,18 @@ export function AthleteNutritionLogGate() {
         });
         const active = plans.result[0];
         if (!active) return;
+        const uploaded = file
+          ? await mediaApi.upload(file, file.name, {
+              visibility: "private",
+              purpose: "meal_adherence",
+            })
+          : null;
         await accountNutrition.createAdherence({
+          idempotencyKey: `meal-log:${globalThis.crypto?.randomUUID?.() ?? Date.now()}`,
           mealPlanId: active.id,
           slot: { dayIndex: 0, mealIndex: 0 },
           status,
+          mediaId: uploaded?.id,
         });
         await reload();
       } catch {

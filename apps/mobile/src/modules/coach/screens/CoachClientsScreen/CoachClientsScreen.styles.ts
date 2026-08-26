@@ -15,6 +15,9 @@ export const coachClientsScreenStyles = {
   rowGoal: "truncate text-muted",
   progressTrack: "h-1.5 w-full overflow-hidden rounded-full bg-default",
   progressFill: "h-full rounded-full bg-accent",
+  followUpSummary:
+    "flex flex-col gap-1 rounded-[20px] border border-warning/30 bg-warning/10 px-4 py-3 text-foreground",
+  followUpAction: "flex justify-end px-4 pb-3",
   divider: "mx-4 h-px bg-border last:hidden",
   empty:
     "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center",

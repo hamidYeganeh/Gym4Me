@@ -3,6 +3,7 @@ export type OwnerHolidayEntry = {
   title: string;
   jalaliDateLabel: string;
   isOfficial: boolean;
+  fromIso?: string;
 };
 
 export type OwnerSpecialProgram = {

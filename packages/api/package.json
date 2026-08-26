@@ -55,7 +55,10 @@
     "./lifecycle": "./src/lifecycle/index.ts",
     "./lifecycle/hooks": "./src/lifecycle/hooks.ts",
     "./calendar": "./src/calendar/index.ts",
-    "./calendar/hooks": "./src/calendar/hooks.ts"
+    "./calendar/hooks": "./src/calendar/hooks.ts",
+    "./inventory": "./src/inventory/index.ts",
+    "./inventory/hooks": "./src/inventory/inventory.hooks.ts",
+    "./coupons": "./src/coupons/index.ts"
   },
   "scripts": {
     "check-types": "tsc --noEmit",

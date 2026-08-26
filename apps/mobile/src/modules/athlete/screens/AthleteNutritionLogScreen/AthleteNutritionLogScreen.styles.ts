@@ -8,9 +8,12 @@ export const athleteNutritionLogScreenVariants = tv({
     introTitle: "tracking-tight text-foreground",
     introSubtitle: "text-muted",
     quickActions: "flex flex-wrap gap-2",
+    photoPicker: "flex flex-col gap-2 rounded-[24px] bg-surface p-4",
+    photoPreview: "aspect-video w-full rounded-2xl object-cover",
     list: "flex flex-col gap-3",
     card: "flex flex-col gap-2 rounded-[24px] border-0 bg-surface p-4",
     cardTop: "flex items-start justify-between gap-2",
+    mealImage: "aspect-video w-full rounded-2xl object-cover",
     meta: "text-muted",
     empty:
       "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center",

@@ -6,13 +6,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types, type QueryFilter } from 'mongoose';
+import { Model, Types, type ClientSession, type QueryFilter } from 'mongoose';
 import type { Request } from 'express';
 import { MongoTransactionService } from '../common/mongo/mongo-transaction.service';
 import { AuditService } from '../audit/audit.service';
 import { StaffService } from '../account/staff/staff.service';
 import {
   AuditAction,
+  CalendarResourceType,
   NotificationTemplateKey,
   StaffPermissionKey,
   WaitlistEntryStatus,
@@ -202,6 +203,7 @@ export class WaitlistService {
             eventName: 'waitlist.offer_created',
             payload: {
               waitlistId,
+              clubId: waitlist.clubId.toString(),
               entryId: entry._id.toString(),
               userId: entry.userId.toString(),
               notification: {
@@ -244,6 +246,85 @@ export class WaitlistService {
     });
 
     return this.toPublic(result.waitlist);
+  }
+
+  /** Offer one newly freed club-slot occurrence to the FIFO head. */
+  async offerFreedSlotCapacity(
+    input: { clubId: string; slotId: string; occurrenceDate?: string },
+    session: import('mongoose').ClientSession,
+  ): Promise<boolean> {
+    const waitlist = await this.waitlistModel
+      .findOne({
+        clubId: new Types.ObjectId(input.clubId),
+        'resource.type': CalendarResourceType.SLOT,
+        'resource.id': new Types.ObjectId(input.slotId),
+        ...(input.occurrenceDate
+          ? { occurrenceDate: input.occurrenceDate }
+          : {
+              $or: [
+                { occurrenceDate: null },
+                { occurrenceDate: { $exists: false } },
+              ],
+            }),
+      })
+      .session(session);
+    if (!waitlist) return false;
+
+    const now = new Date();
+    this.expireEntries(waitlist, now);
+    if (
+      waitlist.entries.some(
+        (entry) => entry.status === WaitlistEntryStatus.OFFERED,
+      )
+    ) {
+      await waitlist.save({ session });
+      return false;
+    }
+    const entry = waitlist.entries
+      .filter((candidate) => candidate.status === WaitlistEntryStatus.WAITING)
+      .sort((a, b) => a.priority - b.priority)[0];
+    if (!entry) {
+      await waitlist.save({ session });
+      return false;
+    }
+
+    const expiresAt = new Date(
+      now.getTime() + DEFAULT_OFFER_TTL_SECONDS * 1000,
+    );
+    entry.status = WaitlistEntryStatus.OFFERED;
+    entry.offeredAt = now;
+    entry.offerExpiresAt = expiresAt;
+    await this.outbox.enqueue(
+      {
+        eventName: 'waitlist.offer_created',
+        payload: {
+          waitlistId: waitlist._id.toString(),
+          clubId: input.clubId,
+          entryId: entry._id.toString(),
+          userId: entry.userId.toString(),
+          notification: {
+            userId: entry.userId.toString(),
+            templateKey: NotificationTemplateKey.WAITLIST_OFFER,
+            params: {
+              subject: `slot:${input.slotId}`,
+              deadline: expiresAt.toISOString(),
+            },
+            payload: {
+              waitlistId: waitlist._id.toString(),
+              entryId: entry._id.toString(),
+              action: 'claim_waitlist_offer',
+            },
+            critical: true,
+            forceSms: true,
+            smsTokens: [`slot:${input.slotId}`, expiresAt.toISOString()],
+          },
+        },
+        idempotencyKey: `outbox:waitlist.offer:${entry._id.toString()}`,
+      },
+      session,
+    );
+    await waitlist.save({ session });
+    return true;
   }
 
   async claim(
@@ -293,6 +374,86 @@ export class WaitlistService {
     });
 
     return this.toPublic(waitlist, userId);
+  }
+
+  async claimContextInSession(
+    userId: string,
+    waitlistId: string,
+    entryId: string,
+    session: ClientSession,
+  ): Promise<{
+    waitlist: WaitlistDocument;
+    clubId: string;
+    slotId: string;
+    occurrenceDate: string;
+    alreadyClaimed: boolean;
+  }> {
+    const waitlist = await this.findOrFail(waitlistId, session);
+    const entry = waitlist.entries.find(
+      (candidate) => candidate._id.toString() === entryId,
+    );
+    if (!entry) throw new NotFoundException('Waitlist entry not found');
+    if (entry.userId.toString() !== userId) {
+      throw new ForbiddenException('Not your waitlist entry');
+    }
+    const alreadyClaimed = entry.status === WaitlistEntryStatus.CLAIMED;
+    if (!alreadyClaimed && entry.status !== WaitlistEntryStatus.OFFERED) {
+      throw new ConflictException(
+        `Cannot claim entry in status "${entry.status}"`,
+      );
+    }
+    if (
+      !alreadyClaimed &&
+      (!entry.offerExpiresAt || entry.offerExpiresAt.getTime() <= Date.now())
+    ) {
+      throw new ConflictException('Offer has expired');
+    }
+    if (
+      waitlist.resource.type !== CalendarResourceType.SLOT ||
+      !waitlist.clubId ||
+      !waitlist.occurrenceDate
+    ) {
+      throw new BadRequestException(
+        'This waitlist offer cannot create a club booking',
+      );
+    }
+    return {
+      waitlist,
+      clubId: waitlist.clubId.toString(),
+      slotId: waitlist.resource.id.toString(),
+      occurrenceDate: waitlist.occurrenceDate,
+      alreadyClaimed,
+    };
+  }
+
+  async markClaimedInSession(
+    waitlist: WaitlistDocument,
+    entryId: string,
+    session: ClientSession,
+  ): Promise<void> {
+    const entry = waitlist.entries.find(
+      (candidate) => candidate._id.toString() === entryId,
+    );
+    if (!entry) throw new NotFoundException('Waitlist entry not found');
+    if (entry.status !== WaitlistEntryStatus.CLAIMED) {
+      entry.status = WaitlistEntryStatus.CLAIMED;
+      await waitlist.save({ session });
+    }
+  }
+
+  recordClaimAudit(
+    userId: string,
+    waitlistId: string,
+    entryId: string,
+    bookingId: string,
+    request?: Request,
+  ): void {
+    this.audit.log({
+      action: AuditAction.WAITLIST_CLAIMED,
+      actorId: userId,
+      metadata: { waitlistId, entryId, bookingId },
+      request,
+    });
   }
 
   /**

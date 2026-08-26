@@ -1,8 +1,23 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { createHash } from 'node:crypto';
+import { Model, Types, type ClientSession } from 'mongoose';
+import { MongoTransactionService } from '../common/mongo/mongo-transaction.service';
+import { paginatedResult } from '../common/utils/pagination.util';
 import { OutboxService } from '../outbox/outbox.service';
 import { CheckIn, CheckInDocument } from '../schemas/check-in.schema';
+import {
+  ClubBroadcast,
+  ClubBroadcastAudience,
+  ClubBroadcastDocument,
+  ClubBroadcastStatus,
+} from '../schemas/club-broadcast.schema';
 import { Club, ClubDocument } from '../schemas/club.schema';
 import {
   ClubMembership,
@@ -17,6 +32,10 @@ import {
   LifecycleSegmentKind,
 } from '../schemas/lifecycle.schema';
 import { MembershipStatus, NotificationTemplateKey } from '../common/enums';
+import {
+  CreateClubBroadcastDto,
+  ListClubBroadcastsQueryDto,
+} from './dto/broadcast.dto';
 
 const DAY_MS = 86_400_000;
 /** Days between journey reminder steps. */
@@ -57,7 +76,10 @@ export class LifecycleService {
     private readonly clubModel: Model<ClubDocument>,
     @InjectModel(CheckIn.name)
     private readonly checkInModel: Model<CheckInDocument>,
+    @InjectModel(ClubBroadcast.name)
+    private readonly broadcastModel: Model<ClubBroadcastDocument>,
     private readonly outbox: OutboxService,
+    private readonly transactions: MongoTransactionService,
   ) {}
 
   async ensureDefaultSegments(clubId: string) {
@@ -202,6 +224,213 @@ export class LifecycleService {
         context: j.context,
       })),
     };
+  }
+
+  async listBroadcasts(
+    ownerId: string,
+    clubId: string,
+    query: ListClubBroadcastsQueryDto,
+  ) {
+    await this.requireClubOwner(ownerId, clubId);
+    const filter = { clubId: this.oid(clubId) };
+    const [items, total] = await Promise.all([
+      this.broadcastModel
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .skip((query.page - 1) * query.pageSize)
+        .limit(query.pageSize)
+        .lean(),
+      this.broadcastModel.countDocuments(filter),
+    ]);
+    return paginatedResult(
+      items.map((item) => this.broadcastView(item)),
+      total,
+      query.page,
+      query.pageSize,
+    );
+  }
+
+  async createBroadcast(
+    ownerId: string,
+    clubId: string,
+    dto: CreateClubBroadcastDto,
+  ) {
+    const fingerprint = this.broadcastFingerprint(dto);
+    const replay = await this.findBroadcastReplay(clubId, dto, fingerprint);
+    if (replay) return replay;
+
+    try {
+      return await this.transactions.run(async (session) => {
+        await this.requireClubOwner(ownerId, clubId, session);
+        const inTransactionReplay = await this.findBroadcastReplay(
+          clubId,
+          dto,
+          fingerprint,
+          session,
+        );
+        if (inTransactionReplay) return inTransactionReplay;
+
+        const recipientIds = await this.resolveBroadcastAudience(
+          clubId,
+          dto.audience,
+          session,
+        );
+        if (recipientIds.length > 500) {
+          throw new BadRequestException('Broadcast audience exceeds 500 users');
+        }
+
+        const [broadcast] = await this.broadcastModel.create(
+          [
+            {
+              clubId: this.oid(clubId),
+              createdBy: this.oid(ownerId),
+              title: dto.title.trim(),
+              body: dto.body.trim(),
+              audience: dto.audience,
+              status: ClubBroadcastStatus.QUEUED,
+              recipientCount: recipientIds.length,
+              idempotencyKey: dto.idempotencyKey,
+              mutationFingerprint: fingerprint,
+            },
+          ],
+          { session },
+        );
+
+        for (const userId of recipientIds) {
+          await this.outbox.enqueue(
+            {
+              eventName: 'club.broadcast_queued',
+              idempotencyKey: `broadcast:${broadcast._id.toString()}:${userId}`,
+              payload: {
+                clubId,
+                broadcastId: broadcast._id.toString(),
+                notification: {
+                  userId,
+                  templateKey: NotificationTemplateKey.CLUB_BROADCAST,
+                  params: { title: dto.title.trim(), body: dto.body.trim() },
+                  payload: { clubId, broadcastId: broadcast._id.toString() },
+                },
+              },
+            },
+            session,
+          );
+        }
+        return this.broadcastView(broadcast.toObject());
+      });
+    } catch (error: unknown) {
+      if (!this.isDuplicateKey(error)) throw error;
+      const winner = await this.findBroadcastReplay(clubId, dto, fingerprint);
+      if (!winner) throw error;
+      return winner;
+    }
+  }
+
+  private async resolveBroadcastAudience(
+    clubId: string,
+    audience: ClubBroadcastAudience,
+    session: ClientSession,
+  ) {
+    const now = new Date();
+    const in7 = new Date(now.getTime() + 7 * DAY_MS);
+    const match: Record<string, unknown> = {
+      clubId: this.oid(clubId),
+      'holder.userId': { $type: 'objectId' },
+    };
+    if (audience === ClubBroadcastAudience.ACTIVE_MEMBERS) {
+      match.status = MembershipStatus.ACTIVE;
+    } else if (audience === ClubBroadcastAudience.AT_RISK) {
+      match.status = MembershipStatus.ACTIVE;
+      match.$or = [
+        { 'credit.expiresAt': { $gte: now, $lte: in7 } },
+        { 'credit.remainingSessions': { $gte: 0, $lte: 3 } },
+      ];
+    }
+    const rows = await this.membershipModel
+      .aggregate<{ _id: Types.ObjectId }>([
+        { $match: match },
+        { $group: { _id: '$holder.userId' } },
+        { $limit: 501 },
+      ])
+      .session(session);
+    return rows.map((row) => row._id.toString());
+  }
+
+  private async requireClubOwner(
+    ownerId: string,
+    clubId: string,
+    session?: ClientSession,
+  ) {
+    const club = await this.clubModel
+      .exists({ _id: this.oid(clubId), ownerId: this.oid(ownerId) })
+      .session(session ?? null);
+    if (!club) throw new ForbiddenException('Club ownership required');
+  }
+
+  private async findBroadcastReplay(
+    clubId: string,
+    dto: CreateClubBroadcastDto,
+    fingerprint: string,
+    session?: ClientSession,
+  ) {
+    const existing = await this.broadcastModel
+      .findOne({ clubId: this.oid(clubId), idempotencyKey: dto.idempotencyKey })
+      .session(session ?? null)
+      .lean();
+    if (!existing) return null;
+    if (existing.mutationFingerprint !== fingerprint) {
+      throw new ConflictException('Idempotency key payload mismatch');
+    }
+    return this.broadcastView(existing);
+  }
+
+  private broadcastFingerprint(dto: CreateClubBroadcastDto) {
+    return createHash('sha256')
+      .update(
+        JSON.stringify({
+          title: dto.title.trim(),
+          body: dto.body.trim(),
+          audience: dto.audience,
+        }),
+      )
+      .digest('hex');
+  }
+
+  private broadcastView(item: {
+    _id: Types.ObjectId;
+    clubId: Types.ObjectId;
+    title: string;
+    body: string;
+    audience: string;
+    status: string;
+    recipientCount: number;
+    createdAt: Date;
+  }) {
+    return {
+      id: item._id.toString(),
+      clubId: item.clubId.toString(),
+      title: item.title,
+      body: item.body,
+      audience: item.audience,
+      status: item.status,
+      recipientCount: item.recipientCount,
+      createdAt: item.createdAt,
+    };
+  }
+
+  private oid(value: string) {
+    if (!Types.ObjectId.isValid(value)) {
+      throw new ForbiddenException('Club ownership required');
+    }
+    return new Types.ObjectId(value);
+  }
+
+  private isDuplicateKey(error: unknown): error is { code: 11000 } {
+    return (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      error.code === 11000
+    );
   }
 
   private memberRow(m: {

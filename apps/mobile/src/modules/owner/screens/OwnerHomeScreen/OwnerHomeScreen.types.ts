@@ -10,9 +10,13 @@ export type OwnerHomeScreenProps = {
   tasksNewCount?: number;
   actions?: Array<{
     id: string;
-    kind: "create_club" | "debts" | "tasks";
+    kind: "create_club" | "debts" | "booking_queue" | "renewal_risk" | "tasks";
     count?: number;
     href: string;
     sourceKind: ActionCenterKind;
   }>;
+  actionsError?: boolean;
+  actionsLoading?: boolean;
+  actionsStale?: boolean;
+  onActionsRetry?: () => void;
 };

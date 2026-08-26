@@ -8,6 +8,8 @@ export const accountSocialEndpoints = {
   feed: "/account/social/feed",
   posts: "/account/social/posts",
   post: (id: string) => `/account/social/posts/${id}`,
+  postMedia: (postId: string, mediaId: string) =>
+    `/account/social/posts/${postId}/media/${mediaId}`,
   comments: (id: string) => `/account/social/posts/${id}/comments`,
   comment: (postId: string, commentId: string) =>
     `/account/social/posts/${postId}/comments/${commentId}`,

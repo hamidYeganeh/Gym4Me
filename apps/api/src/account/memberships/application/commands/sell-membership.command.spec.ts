@@ -97,6 +97,17 @@ describe('SellMembershipCommand', () => {
       ),
     };
     const outbox = { enqueue: jest.fn().mockResolvedValue(undefined) };
+    const clubModel = {
+      findById: jest.fn().mockReturnValue({
+        select: jest.fn().mockResolvedValue({ ownerId: new Types.ObjectId() }),
+      }),
+    };
+    const entitlements = {
+      assertIncrementAllowed: jest.fn().mockResolvedValue({ allowed: true }),
+      serializeAndAssertIncrement: jest
+        .fn()
+        .mockResolvedValue({ allowed: true }),
+    };
     const command = new SellMembershipCommand(
       planModel as never,
       membershipModel as never,
@@ -106,6 +117,8 @@ describe('SellMembershipCommand', () => {
       coupons as never,
       transactions as unknown as MongoTransactionService,
       outbox as never,
+      clubModel as never,
+      entitlements as never,
     );
     return {
       audit,

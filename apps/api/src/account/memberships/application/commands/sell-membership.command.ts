@@ -35,6 +35,8 @@ import {
   type MembershipEventDocument,
 } from '../../../../schemas/membership-event.schema';
 import type { SellMembershipDto } from '../../dto/membership.dto';
+import { Club, type ClubDocument } from '../../../../schemas/club.schema';
+import { PlatformEntitlementService } from '../services/platform-entitlement.service';
 
 export type SellMembershipActor = {
   userId: string;
@@ -66,6 +68,9 @@ export class SellMembershipCommand {
     private readonly coupons: CouponsService,
     private readonly transactions: MongoTransactionService,
     private readonly outbox: OutboxService,
+    @InjectModel(Club.name)
+    private readonly clubModel: Model<ClubDocument>,
+    private readonly entitlements: PlatformEntitlementService,
   ) {}
 
   async execute(
@@ -78,11 +83,21 @@ export class SellMembershipCommand {
     const existing = await this.findIdempotentMembership(clubId, dto);
     if (existing) return existing;
 
+    const club = await this.clubModel.findById(clubId).select({ ownerId: 1 });
+    if (!club) throw new NotFoundException('Club not found');
     const holder = this.normalizeHolder(dto.holder);
     let committed: Awaited<ReturnType<SellMembershipCommand['commit']>>;
     try {
       committed = await this.transactions.run((session) =>
-        this.commit(clubId, dto, actor, holder, options, session),
+        this.commit(
+          clubId,
+          club.ownerId.toString(),
+          dto,
+          actor,
+          holder,
+          options,
+          session,
+        ),
       );
     } catch (error) {
       if (dto.idempotencyKey && (error as { code?: number }).code === 11000) {
@@ -124,6 +139,7 @@ export class SellMembershipCommand {
 
   private async commit(
     clubId: string,
+    ownerId: string,
     dto: SellMembershipDto,
     actor: SellMembershipActor,
     holder: NormalizedHolder,
@@ -142,6 +158,13 @@ export class SellMembershipCommand {
         idempotent: true as const,
       };
     }
+
+    await this.entitlements.serializeAndAssertIncrement({
+      userId: ownerId,
+      clubId,
+      key: 'members.active_per_club',
+      session,
+    });
 
     const plan = await this.findSellablePlan(clubId, dto.planId, session);
     const gross = plan.pricing?.amount ?? 0;

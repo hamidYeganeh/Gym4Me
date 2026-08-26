@@ -69,4 +69,49 @@ describe('KavenegarSmsService', () => {
       BadGatewayException,
     );
   });
+
+  it('sends rendered booking text as plain SMS when no lookup template is configured', async () => {
+    global.fetch = jest
+      .fn()
+      .mockResolvedValue(
+        response(200, { return: { status: 200, message: 'تایید شد' } }),
+      );
+
+    await service.sendTemplate(
+      '+989121234567',
+      undefined,
+      ['باشگاه', '1405/06/04', '18:00'],
+      'رزرو شما تأیید شد.',
+    );
+
+    const [url, init] = (global.fetch as jest.Mock).mock.calls[0] as [
+      string,
+      RequestInit,
+    ];
+    expect(url).toContain('/sms/send.json');
+    expect(init.method).toBe('POST');
+    expect(new URLSearchParams(String(init.body)).get('message')).toBe(
+      'رزرو شما تأیید شد.',
+    );
+  });
+
+  it('uses Kavenegar lookup when an approved booking template is configured', async () => {
+    global.fetch = jest
+      .fn()
+      .mockResolvedValue(
+        response(200, { return: { status: 200, message: 'تایید شد' } }),
+      );
+
+    await service.sendTemplate(
+      '+989121234567',
+      'booking-confirmed',
+      ['باشگاه', '1405/06/04', '18:00'],
+      'fallback',
+    );
+
+    const [url] = (global.fetch as jest.Mock).mock.calls[0] as [string];
+    expect(url).toContain('/verify/lookup.json');
+    expect(url).toContain('template=booking-confirmed');
+    expect(url).toContain('token3=18%3A00');
+  });
 });

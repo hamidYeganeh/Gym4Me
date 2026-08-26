@@ -23,6 +23,7 @@ import {
   ListCompensationRulesQueryDto,
   ListDebtsQueryDto,
   ListPaymentsQueryDto,
+  ListInvoicesQueryDto,
   ListPayoutsQueryDto,
   OpenPayoutDisputeDto,
   PaginationQueryDto,
@@ -95,6 +96,17 @@ export class OwnerFinanceController {
       throw new ForbiddenException('Payment does not belong to this club');
     }
     return result;
+  }
+
+  @Get('invoices')
+  @ApiOperation({ summary: 'List invoices issued for club payments' })
+  async listInvoices(
+    @CurrentUser('sub') userId: string,
+    @Param('clubId') clubId: string,
+    @Query() query: ListInvoicesQueryDto,
+  ) {
+    await this.finance.requireOwnedClub(userId, clubId);
+    return this.finance.listClubInvoices(clubId, query);
   }
 
   // ── Cash shifts ─────────────────────────────────────────────────────────

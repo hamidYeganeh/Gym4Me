@@ -62,6 +62,7 @@ export const routes = {
   financePayments: "/dashboard/finance/payments",
   financePayouts: "/dashboard/finance/payouts",
   financeRefunds: "/dashboard/finance/refunds",
+  financeWallets: "/dashboard/finance/wallets",
   bookings: "/dashboard/bookings",
   catalogPlans: "/dashboard/catalog/plans",
   catalogPlanNew: "/dashboard/catalog/plans/new",
@@ -81,6 +82,7 @@ export const routes = {
   catalogCoaching: "/dashboard/catalog/coaching",
   opsSocial: "/dashboard/ops/social",
   opsAudit: "/dashboard/ops/audit",
+  opsDeletions: "/dashboard/ops/deletions",
   opsTemplates: "/dashboard/ops/templates",
   opsTemplateEdit: (templateKey: string) =>
     `/dashboard/ops/templates/${encodeURIComponent(templateKey)}/edit`,

@@ -7,10 +7,8 @@ import { TextArea } from "@heroui/react/textarea";
 import { TextField } from "@heroui/react/textfield";
 import { Typography } from "@heroui/react/typography";
 import { Bookmark } from "@repo/icons/Bookmark";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { Flag1 } from "@repo/icons/Flag1";
 import { Heart } from "@repo/icons/Heart";
-import { Image1 } from "@repo/icons/Image1";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
@@ -56,14 +54,17 @@ export function AthleteSocialPostScreen({
           <Typography className={styles.body()} type="body">
             {detail.body}
           </Typography>
-          {detail.mediaCount > 0 ? (
-            <div className={styles.media()}>
-              <Image1 size={28} />
-              <Typography type="body-sm">
-                {t("mediaPlaceholder", {
-                  count: toPersianDigits(detail.mediaCount),
-                })}
-              </Typography>
+          {detail.mediaUrls.length > 0 ? (
+            <div className={styles.mediaGrid()}>
+              {detail.mediaUrls.map((url, index) => (
+                <img
+                  alt={t("postMediaAlt", { index: index + 1 })}
+                  className={styles.mediaImage()}
+                  key={url}
+                  loading="lazy"
+                  src={url}
+                />
+              ))}
             </div>
           ) : null}
           <div className={styles.actions()}>

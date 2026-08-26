@@ -28,13 +28,13 @@ export type SupportSectionTabId = "tickets" | "faq";
 
 export type GamificationSectionTabId = "achievements" | "rules" | "ledger";
 
-export type FinanceSectionTabId = "ledger" | "payments" | "payouts" | "refunds";
+export type FinanceSectionTabId = "ledger" | "payments" | "payouts" | "refunds" | "wallets";
 
 export type CatalogSectionTabId =
   "plans" | "food" | "exercises" | "metrics" | "coaching";
 
 export type OpsSectionTabId =
-  "social" | "audit" | "templates" | "flags" | "releases";
+  "social" | "audit" | "deletions" | "templates" | "flags" | "releases";
 
 export type DiscoverySectionTabId =
   | "discovery_home"
@@ -259,6 +259,7 @@ export function AdminShell({
       { id: "payments", label: t("Finance.tabs.payments") },
       { id: "payouts", label: t("Finance.tabs.payouts") },
       { id: "refunds", label: t("Finance.tabs.refunds") },
+      { id: "wallets", label: t("Finance.tabs.wallets") },
     ],
     [t],
   );
@@ -268,6 +269,7 @@ export function AdminShell({
     payments: routes.financePayments,
     payouts: routes.financePayouts,
     refunds: routes.financeRefunds,
+    wallets: routes.financeWallets,
   };
 
   const catalogTabs = useMemo<AdminSectionHeaderTab[]>(
@@ -293,6 +295,7 @@ export function AdminShell({
     () => [
       { id: "social", label: t("Ops.tabs.social") },
       { id: "audit", label: t("Ops.tabs.audit") },
+      { id: "deletions", label: t("Ops.tabs.deletions") },
       { id: "templates", label: t("Ops.tabs.templates") },
       { id: "flags", label: t("Ops.tabs.flags") },
       { id: "releases", label: t("Ops.tabs.releases") },
@@ -303,6 +306,7 @@ export function AdminShell({
   const opsTabPath: Record<OpsSectionTabId, string> = {
     social: routes.opsSocial,
     audit: routes.opsAudit,
+    deletions: routes.opsDeletions,
     templates: routes.opsTemplates,
     flags: routes.opsFlags,
     releases: routes.opsReleases,

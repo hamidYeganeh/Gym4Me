@@ -10,6 +10,7 @@
 #   7) athlete books again and cancels
 #   8) coach opens a consult slot, athlete books + pays, coach checks in + completes
 #   9) admin approves pending KYC / coach / club queues
+#  10) concurrent refresh rotation has one winner and revokes reuse family
 #
 # Requires: db:seed + db:seed:demo, API with SMS_PROVIDER=mock, PAYMENT_PROVIDER=mock,
 #           DEBUG_MODE=true, THROTTLE_DISABLED=true recommended, jq.
@@ -77,7 +78,9 @@ fi
 check "S1.2 debug otp code available" "true" "$([[ "${OTP_CODE:-}" =~ ^[0-9]{5}$ ]] && echo true || echo false)"
 CONFIRM=$(jpost /account/auth/otp/confirm "{\"phone\":\"$NEW_PHONE\",\"code\":\"${OTP_CODE:-00000}\",\"firstName\":\"سام\",\"lastName\":\"آزمایشی\"}")
 ATH_TOKEN=$(echo "$CONFIRM" | token_of)
+ATH_REFRESH=$(echo "$CONFIRM" | jq -r '.refreshToken // empty')
 check "S1.3 otp confirm issues token" "true" "$([ -n "$ATH_TOKEN" ] && echo true || echo false)"
+check "S1.3a otp confirm issues refresh token" "true" "$([ -n "$ATH_REFRESH" ] && echo true || echo false)"
 if [ -z "$ATH_TOKEN" ]; then
   ATH_TOKEN=$(login_token /account/auth/login "{\"phone\":\"09124000003\",\"password\":\"$PASS\"}")
   ATH_LABEL="athlete3"
@@ -453,6 +456,21 @@ if [ -n "${REFUND_BOOKING_ID:-}" ]; then
     | jq -c --arg id "$REFUND_PAYMENT_ID" '[(.result // .items // [])[] | select((.paymentId // "") == $id)][0] // {}')
   check "S10.8 refund ledger remains balanced" "true" "$(echo "$REFUND_LEDGER" | jq -r '. as $entry | ([$entry.lines[]? | .debit] | add // 0) as $d | ([$entry.lines[]? | .credit] | add // 0) as $c | ($d == $c and $d > 0)')"
 fi
+
+echo ""
+echo "════ S11: رقابت rotation توکن refresh ════"
+ROTATION_DIR=$(mktemp -d)
+ROTATION_BODY=$(jq -nc --arg token "$ATH_REFRESH" '{refreshToken:$token}')
+curl -s -X POST "$BASE/account/auth/refresh" -H 'Content-Type: application/json' --data-binary "$ROTATION_BODY" > "$ROTATION_DIR/one.json" &
+ROTATE_ONE_PID=$!
+curl -s -X POST "$BASE/account/auth/refresh" -H 'Content-Type: application/json' --data-binary "$ROTATION_BODY" > "$ROTATION_DIR/two.json" &
+ROTATE_TWO_PID=$!
+wait "$ROTATE_ONE_PID"
+wait "$ROTATE_TWO_PID"
+ROTATION_WINNERS=$(jq -s '[.[] | select((.accessToken // "") != "")] | length' "$ROTATION_DIR/one.json" "$ROTATION_DIR/two.json")
+ROTATION_REJECTIONS=$(jq -s '[.[] | select((.accessToken // "") == "")] | length' "$ROTATION_DIR/one.json" "$ROTATION_DIR/two.json")
+check "S11.1 concurrent refresh has exactly one winner" "1" "$ROTATION_WINNERS"
+check "S11.2 reused refresh is rejected" "1" "$ROTATION_REJECTIONS"
 
 echo ""
 echo "════ نتیجه ════"

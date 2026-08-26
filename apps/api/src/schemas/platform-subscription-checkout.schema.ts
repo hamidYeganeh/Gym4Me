@@ -2,6 +2,10 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { SubscriptionRenewalMode } from '../common/enums';
 import { User } from './user.schema';
+import {
+  PlatformEntitlementContract,
+  PlatformEntitlementContractSchema,
+} from './platform-plan.schema';
 
 export type PlatformSubscriptionCheckoutDocument =
   HydratedDocument<PlatformSubscriptionCheckout>;
@@ -26,6 +30,9 @@ export class PlatformSubscriptionCheckoutPrice {
 
   @Prop({ required: true, trim: true, default: 'IRT' })
   currency!: string;
+
+  @Prop({ required: true, min: 0, default: 0 })
+  credit!: number;
 }
 
 const PlatformSubscriptionCheckoutPriceSchema = SchemaFactory.createForClass(
@@ -66,6 +73,45 @@ export class PlatformSubscriptionCheckout {
 
   @Prop({ type: PlatformSubscriptionCheckoutPriceSchema, required: true })
   price!: PlatformSubscriptionCheckoutPrice;
+
+  @Prop({ type: PlatformEntitlementContractSchema })
+  entitlementSnapshot?: PlatformEntitlementContract;
+
+  @Prop({ type: Number, min: 1 })
+  planVersion?: number;
+
+  @Prop({ type: String, enum: ['free_plan', 'read_only'] })
+  postExpirationModeSnapshot?: 'free_plan' | 'read_only';
+
+  @Prop({ type: Types.ObjectId, ref: 'PlatformPlan' })
+  fallbackPlanIdSnapshot?: Types.ObjectId;
+
+  @Prop({ type: String, enum: ['initial', 'renewal', 'upgrade'] })
+  changeKind?: 'initial' | 'renewal' | 'upgrade';
+
+  @Prop({ type: Types.ObjectId, ref: 'PlatformPlan' })
+  previousPlanId?: Types.ObjectId;
+
+  @Prop({ type: Date })
+  previousPeriodStart?: Date;
+
+  @Prop({ type: Date })
+  previousPeriodEnd?: Date;
+
+  @Prop({ type: Number, min: 0 })
+  previousSubscriptionVersion?: number;
+
+  @Prop({ type: Date })
+  priceReferenceAt?: Date;
+
+  @Prop({ type: Number, min: 0 })
+  previousNetPrice?: number;
+
+  @Prop({ type: Number, min: 0 })
+  remainingSeconds?: number;
+
+  @Prop({ type: String, enum: ['floor'] })
+  roundingPolicy?: 'floor';
 
   @Prop({ required: true, trim: true, minlength: 64, maxlength: 64 })
   fingerprint!: string;

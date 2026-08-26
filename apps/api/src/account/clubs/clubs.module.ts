@@ -24,11 +24,15 @@ import { ClubsListQuery } from './application/queries/clubs-list.query';
 import { ClubsService } from './clubs.service';
 import { DiscoveryClubsController } from './discovery-clubs.controller';
 import { OwnerClubsController } from './owner-clubs.controller';
+import { PlatformEntitlementsModule } from '../memberships/platform-entitlements.module';
+import { MongoTransactionModule } from '../../common/mongo/mongo-transaction.module';
 
 @Module({
   imports: [
     UsersModule,
     GamificationModule,
+    PlatformEntitlementsModule,
+    MongoTransactionModule,
     MongooseModule.forFeature([
       { name: Club.name, schema: ClubSchema },
       { name: CoachProfile.name, schema: CoachProfileSchema },

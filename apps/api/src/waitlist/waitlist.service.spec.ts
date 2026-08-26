@@ -40,6 +40,7 @@ describe('WaitlistService state machine', () => {
   function setup(doc: WaitlistDocument) {
     const model = {
       findById: jest.fn().mockReturnValue(queryResult(doc)),
+      findOne: jest.fn().mockReturnValue(queryResult(doc)),
     };
     const staff = {
       requireClubAccess: jest.fn().mockResolvedValue(undefined),
@@ -119,5 +120,74 @@ describe('WaitlistService state machine', () => {
       ),
     ).rejects.toThrow('active waitlist offer');
     expect(outbox.enqueue).toHaveBeenCalledTimes(1);
+  });
+
+  it('offers a freed slot to the FIFO head inside the booking transaction', async () => {
+    const doc = document(WaitlistEntryStatus.WAITING);
+    const { outbox, service } = setup(doc);
+
+    await expect(
+      service.offerFreedSlotCapacity(
+        {
+          clubId: clubId.toString(),
+          slotId: doc.resource.id.toString(),
+          occurrenceDate: doc.occurrenceDate,
+        },
+        session,
+      ),
+    ).resolves.toBe(true);
+
+    expect(doc.entries[0]?.status).toBe(WaitlistEntryStatus.OFFERED);
+    expect(doc.save).toHaveBeenCalledWith({ session });
+    expect(outbox.enqueue).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventName: 'waitlist.offer_created',
+        payload: expect.objectContaining({
+          notification: expect.objectContaining({ forceSms: true }),
+        }),
+      }),
+      session,
+    );
+  });
+
+  it('validates and finalizes a booking-backed claim in the caller transaction', async () => {
+    const doc = document(
+      WaitlistEntryStatus.OFFERED,
+      new Date(Date.now() + 60_000),
+    );
+    const { service } = setup(doc);
+
+    const context = await service.claimContextInSession(
+      userId.toString(),
+      doc._id.toString(),
+      entryId.toString(),
+      session,
+    );
+    await service.markClaimedInSession(doc, entryId.toString(), session);
+
+    expect(context).toEqual(
+      expect.objectContaining({
+        clubId: clubId.toString(),
+        slotId: doc.resource.id.toString(),
+        occurrenceDate: doc.occurrenceDate,
+        alreadyClaimed: false,
+      }),
+    );
+    expect(doc.entries[0]?.status).toBe(WaitlistEntryStatus.CLAIMED);
+    expect(doc.save).toHaveBeenCalledWith({ session });
+  });
+
+  it('allows an already-claimed offer to replay its deterministic booking', async () => {
+    const doc = document(WaitlistEntryStatus.CLAIMED);
+    const { service } = setup(doc);
+
+    await expect(
+      service.claimContextInSession(
+        userId.toString(),
+        doc._id.toString(),
+        entryId.toString(),
+        session,
+      ),
+    ).resolves.toEqual(expect.objectContaining({ alreadyClaimed: true }));
   });
 });

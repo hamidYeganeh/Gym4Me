@@ -87,7 +87,7 @@ export function AthleteSubscriptionScreen({
                       onPress={() => void onUpgrade(plan.id)}
                       variant="primary"
                     >
-                      {t("upgrade")}
+                      {plan.actionLabel ?? t("upgrade")}
                     </Button>
                   </div>
                 ) : null}

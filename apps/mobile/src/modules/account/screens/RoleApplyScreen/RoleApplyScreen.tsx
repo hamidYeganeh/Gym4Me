@@ -3,11 +3,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "@/shared/lib/app-router";
 
-import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import type { Role, RoleOverviewResponse } from "@repo/api";
 import { ApiError } from "@repo/api";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { Bicep } from "@repo/icons/Bicep";
 import { Building2 } from "@repo/icons/Building2";
 import { Whistle } from "@repo/icons/Whistle";

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@heroui/react/button";
 import { Label } from "@heroui/react/label";
 import { TextArea } from "@heroui/react/textarea";
@@ -24,6 +24,19 @@ export function AthleteSocialCreateScreen({
   const styles = athleteSocialCreateScreenVariants();
   const router = useRouter();
   const [body, setBody] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const previews = useMemo(
+    () => files.map((file) => ({ file, url: URL.createObjectURL(file) })),
+    [files],
+  );
+
+  useEffect(
+    () => () => {
+      for (const preview of previews) URL.revokeObjectURL(preview.url);
+    },
+    [previews],
+  );
 
   return (
     <AppLayout
@@ -56,9 +69,58 @@ export function AthleteSocialCreateScreen({
               value={body}
             />
           </TextField>
+          <input
+            ref={fileInputRef}
+            accept="image/jpeg,image/png,image/webp"
+            aria-label={t("selectMedia")}
+            className="sr-only"
+            disabled={pending || files.length >= 4}
+            multiple
+            onChange={(event) => {
+              const selected = Array.from(event.target.files ?? []);
+              event.target.value = "";
+              setFiles((current) => [...current, ...selected].slice(0, 4));
+            }}
+            type="file"
+          />
+          <Button
+            isDisabled={pending || files.length >= 4}
+            onPress={() => fileInputRef.current?.click()}
+            variant="secondary"
+          >
+            {t("addMedia", { count: files.length })}
+          </Button>
           <Typography className={styles.hint()} type="body-sm">
             {t("mediaHint")}
           </Typography>
+          {previews.length > 0 ? (
+            <div className={styles.mediaGrid()}>
+              {previews.map(({ file, url }, index) => (
+                <div className={styles.mediaItem()} key={`${file.name}-${index}`}>
+                  <img
+                    alt={t("mediaPreviewAlt", { index: index + 1 })}
+                    className={styles.mediaImage()}
+                    src={url}
+                  />
+                  <Button
+                    aria-label={t("removeMedia", { index: index + 1 })}
+                    className="absolute end-2 top-2"
+                    isDisabled={pending}
+                    isIconOnly
+                    onPress={() =>
+                      setFiles((current) =>
+                        current.filter((_, itemIndex) => itemIndex !== index),
+                      )
+                    }
+                    size="sm"
+                    variant="danger"
+                  >
+                    ×
+                  </Button>
+                </div>
+              ))}
+            </div>
+          ) : null}
           {error ? (
             <Typography className={styles.error()} type="body-sm">
               {t("createError")}
@@ -67,7 +129,7 @@ export function AthleteSocialCreateScreen({
           <Button
             fullWidth
             isDisabled={pending || body.trim().length === 0}
-            onPress={() => void onSubmit(body)}
+            onPress={() => void onSubmit(body, files)}
             variant="primary"
           >
             {t("publish")}

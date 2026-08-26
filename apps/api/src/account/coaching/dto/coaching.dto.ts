@@ -469,6 +469,11 @@ export class LeadContactDto {
 }
 
 export class CreateLeadDto {
+  @IsString()
+  @MinLength(8)
+  @MaxLength(200)
+  idempotencyKey!: string;
+
   @ValidateNested()
   @Type(() => LeadContactDto)
   contact!: LeadContactDto;

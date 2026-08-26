@@ -6,7 +6,6 @@ import { Input } from "@heroui/react/input";
 import { Label } from "@heroui/react/label";
 import { TextField } from "@heroui/react/textfield";
 import { Typography } from "@heroui/react/typography";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
@@ -39,6 +38,8 @@ export function OwnerCouponsScreen({
   pending = false,
   onFormChange,
   onCreate,
+  onToggleStatus,
+  pendingCouponId,
   className,
 }: OwnerCouponsScreenProps) {
   const t = useTranslations("OwnerCoupons");
@@ -142,6 +143,21 @@ export function OwnerCouponsScreen({
                       <Chip.Label>{t(STATUS_KEY[coupon.status])}</Chip.Label>
                     </Chip>
                   </div>
+                  {onToggleStatus ? (
+                    <div className="flex justify-end px-4 pb-3">
+                      <Button
+                        isDisabled={Boolean(pendingCouponId)}
+                        isPending={pendingCouponId === coupon.id}
+                        onPress={() => onToggleStatus(coupon)}
+                        size="sm"
+                        variant="secondary"
+                      >
+                        {coupon.apiStatus === "active"
+                          ? t("disable")
+                          : t("activate")}
+                      </Button>
+                    </div>
+                  ) : null}
                   {index < coupons.length - 1 ? (
                     <div aria-hidden className={styles.divider()} />
                   ) : null}

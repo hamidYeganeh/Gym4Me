@@ -9,9 +9,11 @@ import {
   Post,
   Query,
   Req,
+  Res,
+  StreamableFile,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Role } from '../common/enums';
 import {
@@ -48,6 +50,24 @@ export class AccountSocialController {
   @ApiOperation({ summary: 'Get a social post' })
   get(@Param('id') id: string, @CurrentUser('sub') userId: string) {
     return this.social.getPost(id, userId);
+  }
+
+  @Get('posts/:postId/media/:mediaId')
+  @ApiOperation({ summary: 'Stream post media with post visibility checks' })
+  async getPostMedia(
+    @Param('postId') postId: string,
+    @Param('mediaId') mediaId: string,
+    @CurrentUser('sub') userId: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const file = await this.social.openPostMedia(postId, mediaId, userId);
+    res.set({
+      'Content-Type': file.mimeType,
+      'Content-Length': String(file.size),
+      'Cache-Control': 'private, no-store',
+      'X-Content-Type-Options': 'nosniff',
+    });
+    return new StreamableFile(file.stream);
   }
 
   @Post('posts')

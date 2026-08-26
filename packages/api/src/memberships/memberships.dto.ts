@@ -299,6 +299,25 @@ export type PlatformSubscriptionStatus =
 
 export type SubscriptionRenewalMode = "auto" | "manual";
 
+export type PlatformEntitlementKey =
+  | "clubs.active"
+  | "staff.active_per_club"
+  | "members.active_per_club"
+  | "monthly_messages.transactional"
+  | "students.active";
+
+export type PlatformEntitlementContract = {
+  schemaVersion: 1;
+  audience: "club_owner" | "coach";
+  capabilities: string[];
+  limits: Array<{
+    key: PlatformEntitlementKey;
+    value: number | null;
+    mode: "hard" | "soft";
+  }>;
+  graceDays: number;
+};
+
 export type PlatformPlan = {
   id: string;
   code: string;
@@ -311,6 +330,11 @@ export type PlatformPlan = {
     periodDays: number;
   };
   features: string[];
+  entitlementContract: PlatformEntitlementContract | null;
+  planVersion: number;
+  contractReady: boolean;
+  postExpirationMode: "free_plan" | "read_only" | null;
+  fallbackPlanId: string | null;
   status: "active" | "inactive" | "archived";
   createdAt: string;
   updatedAt: string;
@@ -323,12 +347,39 @@ export type PlatformSubscription = {
   status: PlatformSubscriptionStatus;
   period: { start: string; end: string };
   renewal: { mode: SubscriptionRenewalMode };
+  entitlementSnapshot: PlatformEntitlementContract | null;
+  planVersion: number | null;
+  postExpirationModeSnapshot: "free_plan" | "read_only" | null;
+  fallbackPlanIdSnapshot: string | null;
+  graceEndsAt: string | null;
+  scheduledPlanId: string | null;
+  scheduledPlanEffectiveAt: string | null;
+  cancellationRequestedAt: string | null;
+  cancellationReason: string | null;
   createdAt: string;
   updatedAt: string;
 };
 
 export type PlatformPlansResponse = { result: PlatformPlan[] };
 export type PlatformSubscriptionsResponse = { result: PlatformSubscription[] };
+
+export type PlatformEntitlementSummary = {
+  subscriptionId: string | null;
+  planId: string | null;
+  state: "active" | "grace" | "read_only" | "legacy_unlimited" | "missing";
+  period: { start: string; end: string } | null;
+  graceEndsAt: string | null;
+  scheduledPlanId: string | null;
+  scheduledPlanEffectiveAt?: string | null;
+  cancellationRequestedAt?: string | null;
+  limits: Array<{
+    key: PlatformEntitlementKey;
+    value: number | null;
+    mode: "hard" | "soft";
+    usage: number | null;
+    allowed: boolean;
+  }>;
+};
 
 export type SubscribePlatformInput = {
   planId: string;
@@ -339,6 +390,8 @@ export type CancelPlatformSubscriptionInput = {
   reason?: string;
 };
 
+export type SchedulePlatformPlanChangeInput = { planId: string };
+
 export type PlatformSubscriptionCheckoutPreview = {
   fingerprint: string;
   consentVersion: string;
@@ -348,13 +401,26 @@ export type PlatformSubscriptionCheckoutPreview = {
     tax: number;
     payable: number;
     currency: string;
+    credit: number;
   };
   renewalMode: SubscriptionRenewalMode;
+  changeKind: "initial" | "renewal" | "upgrade";
+  currentSubscriptionId?: string;
+  priceReferenceAt: string;
+  proration: {
+    previousNetPrice: number;
+    remainingSeconds: number;
+    credit: number;
+    roundingPolicy: "floor";
+  };
+  entitlementSnapshot: PlatformEntitlementContract | null;
+  planVersion: number;
 };
 
 export type PreviewPlatformSubscriptionCheckoutInput = {
   planId: string;
   renewalMode?: SubscriptionRenewalMode;
+  priceReferenceAt?: string;
 };
 
 export type InitiatePlatformSubscriptionCheckoutInput =

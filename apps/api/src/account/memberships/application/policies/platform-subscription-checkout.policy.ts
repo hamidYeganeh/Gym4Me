@@ -44,7 +44,11 @@ export class PlatformSubscriptionCheckoutPolicy {
     private readonly subscriptions: Model<PlatformSubscriptionDocument>,
   ) {}
 
-  async buildSnapshot(dto: PreviewPlatformSubscriptionCheckoutDto) {
+  async buildSnapshot(
+    userId: string,
+    dto: PreviewPlatformSubscriptionCheckoutDto,
+    referenceAt = new Date(),
+  ) {
     const plan = await this.plans.findOne({
       _id: new Types.ObjectId(dto.planId),
       status: EntityStatus.ACTIVE,
@@ -56,11 +60,78 @@ export class PlatformSubscriptionCheckoutPolicy {
       throw new ConflictException('Platform plan tax exceeds its price');
     }
     const periodDays = plan.pricing.periodDays ?? 30;
+    const current = await this.subscriptions.findOne({
+      userId: new Types.ObjectId(userId),
+      currentEntitlementKey: 'current',
+      status: {
+        $in: [
+          PlatformSubscriptionStatus.ACTIVE,
+          PlatformSubscriptionStatus.TRIALING,
+          PlatformSubscriptionStatus.PAST_DUE,
+        ],
+      },
+    });
+    const currentPlan = current
+      ? await this.plans.findById(current.planId)
+      : null;
+    if (current && !currentPlan) {
+      throw new ConflictException('Current platform plan not found');
+    }
+    let changeKind: 'initial' | 'renewal' | 'upgrade' = 'initial';
+    let credit = 0;
+    let remainingSeconds = 0;
+    let previousNetPrice = 0;
+    if (current && currentPlan) {
+      if (current.planId.toString() === plan._id.toString()) {
+        changeKind = 'renewal';
+      } else if (
+        current.scheduledPlanId?.toString() === plan._id.toString() &&
+        referenceAt.getTime() >= current.period.end.getTime()
+      ) {
+        changeKind = 'renewal';
+      } else if (plan.pricing.amount > currentPlan.pricing.amount) {
+        changeKind = 'upgrade';
+        const periodSeconds = Math.max(
+          1,
+          Math.floor(
+            (current.period.end.getTime() - current.period.start.getTime()) /
+              1000,
+          ),
+        );
+        remainingSeconds = Math.max(
+          0,
+          Math.floor(
+            (current.period.end.getTime() - referenceAt.getTime()) / 1000,
+          ),
+        );
+        previousNetPrice = Math.max(
+          0,
+          currentPlan.pricing.amount - (currentPlan.pricing.tax ?? 0),
+        );
+        credit = Math.floor(
+          (previousNetPrice * Math.min(remainingSeconds, periodSeconds)) /
+            periodSeconds,
+        );
+      } else {
+        throw new ConflictException(
+          'Downgrades must be scheduled for the current period end',
+        );
+      }
+      if (
+        current.entitlementSnapshot?.audience &&
+        plan.entitlementContract?.audience &&
+        current.entitlementSnapshot.audience !==
+          plan.entitlementContract.audience
+      ) {
+        throw new ConflictException('Plan audience cannot be changed');
+      }
+    }
     const price = {
       gross,
       tax,
-      payable: gross,
+      payable: Math.max(0, gross - credit),
       currency: plan.pricing.currency ?? 'IRT',
+      credit,
     };
     const fingerprint = createHash('sha256')
       .update(
@@ -71,10 +142,41 @@ export class PlatformSubscriptionCheckoutPolicy {
           renewalMode: dto.renewalMode ?? SubscriptionRenewalMode.MANUAL,
           periodDays,
           price,
+          changeKind,
+          currentSubscriptionId: current?._id.toString() ?? null,
+          currentPlanId: currentPlan?._id.toString() ?? null,
+          currentPeriod: current
+            ? {
+                start: current.period.start.toISOString(),
+                end: current.period.end.toISOString(),
+              }
+            : null,
+          currentSubscriptionVersion: current?.__v ?? 0,
+          planVersion: plan.planVersion ?? 1,
+          entitlementContract: plan.entitlementContract ?? null,
+          referenceAt: referenceAt.toISOString(),
+          previousNetPrice,
+          remainingSeconds,
+          roundingPolicy: 'floor',
         }),
       )
       .digest('hex');
-    return { plan, periodDays, price, fingerprint };
+    return {
+      plan,
+      current,
+      currentPlan,
+      periodDays,
+      price,
+      fingerprint,
+      changeKind,
+      referenceAt,
+      previousNetPrice,
+      remainingSeconds,
+      previousPeriodStart: current?.period.start,
+      previousPeriodEnd: current?.period.end,
+      previousSubscriptionVersion: current?.__v ?? 0,
+      roundingPolicy: 'floor' as const,
+    };
   }
 
   async assertNoCurrentSubscription(userId: string) {
@@ -137,8 +239,12 @@ export class PlatformSubscriptionCheckoutPolicy {
       status: gatewayRefId ? PaymentStatus.CAPTURED : PaymentStatus.PENDING,
       amount: {
         gross: checkout.price.gross,
+        discount: checkout.price.credit,
         tax: checkout.price.tax,
-        platformFee: checkout.price.gross - checkout.price.tax,
+        platformFee: Math.max(
+          0,
+          checkout.price.gross - checkout.price.credit - checkout.price.tax,
+        ),
         net: 0,
       },
       reference: {

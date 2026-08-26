@@ -232,6 +232,10 @@ export const RefundsListScreen = lazyNamed(
   () => import("@/modules/finance/screens/RefundsListScreen"),
   "RefundsListScreen",
 );
+export const WalletsScreen = lazyNamed(
+  () => import("@/modules/finance/screens/WalletsScreen"),
+  "WalletsScreen",
+);
 export const BookingsListScreen = lazyNamed(
   () => import("@/modules/bookings/screens/BookingsListScreen"),
   "BookingsListScreen",
@@ -295,6 +299,10 @@ export const SocialReportsScreen = lazyNamed(
 export const AuditLogsScreen = lazyNamed(
   () => import("@/modules/ops/screens/AuditLogsScreen"),
   "AuditLogsScreen",
+);
+export const AccountDeletionRequestsScreen = lazyNamed(
+  () => import('@/modules/ops/screens/AccountDeletionRequestsScreen'),
+  'AccountDeletionRequestsScreen',
 );
 export const NotificationTemplatesEditScreen = lazyNamed(
   () => import("@/modules/ops/screens/NotificationTemplatesEditScreen"),

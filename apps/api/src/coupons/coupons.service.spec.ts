@@ -92,3 +92,54 @@ describe('CouponsService atomic redemption limits', () => {
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 });
+
+describe('CouponsService owner scope and safe create replay', () => {
+  const ownerId = new Types.ObjectId().toString();
+  const clubId = new Types.ObjectId().toString();
+  const input = {
+    code: 'CLUB10',
+    discount: { type: CouponDiscountType.PERCENT, value: 10 },
+    constraints: { maxRedemptions: 10, maxPerUser: 1 },
+    status: EntityStatus.ACTIVE,
+  };
+
+  function ownerSetup(storedClubId = clubId) {
+    const existing = {
+      _id: new Types.ObjectId(),
+      code: input.code,
+      title: undefined,
+      clubId: new Types.ObjectId(storedClubId),
+      discount: input.discount,
+      constraints: input.constraints,
+      status: EntityStatus.ACTIVE,
+      redemptionCount: 0,
+      createdAt: new Date(),
+    };
+    const couponModel = { findOne: jest.fn().mockResolvedValue(existing) };
+    const clubModel = { exists: jest.fn().mockResolvedValue({ _id: clubId }) };
+    const service = new CouponsService(
+      couponModel as never,
+      {} as never,
+      {} as never,
+      clubModel as never,
+    );
+    return { couponModel, service };
+  }
+
+  it('replays the same natural-key payload without creating a duplicate', async () => {
+    const { couponModel, service } = ownerSetup();
+
+    await expect(
+      service.createForOwner(ownerId, clubId, input),
+    ).resolves.toEqual(expect.objectContaining({ code: input.code, clubId }));
+    expect(couponModel.findOne).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not expose another club coupon through code replay', async () => {
+    const { service } = ownerSetup(new Types.ObjectId().toString());
+
+    await expect(
+      service.createForOwner(ownerId, clubId, input),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+});

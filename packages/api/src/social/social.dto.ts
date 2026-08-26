@@ -83,6 +83,7 @@ export type ListSocialFollowsQuery = {
 };
 
 export type CreateSocialPostInput = {
+  idempotencyKey: string;
   body: string;
   mediaIds?: string[];
   status?: SocialPostStatus;

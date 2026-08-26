@@ -1,6 +1,8 @@
 import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
+  ArrayMaxSize,
+  ArrayUnique,
   IsEnum,
   IsIn,
   IsInt,
@@ -38,12 +40,19 @@ export class PaginationQueryDto {
 
 export class CreateSocialPostDto {
   @IsString()
+  @MinLength(8)
+  @MaxLength(128)
+  idempotencyKey!: string;
+
+  @IsString()
   @MinLength(1)
   @MaxLength(4000)
   body!: string;
 
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(4)
+  @ArrayUnique()
   @IsMongoId({ each: true })
   mediaIds?: string[];
 
@@ -65,6 +74,8 @@ export class UpdateSocialPostDto {
 
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(4)
+  @ArrayUnique()
   @IsMongoId({ each: true })
   mediaIds?: string[];
 

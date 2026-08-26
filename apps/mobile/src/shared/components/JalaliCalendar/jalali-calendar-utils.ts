@@ -4,13 +4,19 @@ import {
   PersianCalendar,
   toCalendar,
 } from "@internationalized/date";
-import { toGregorian, toJalali } from "@/shared/lib/jalali";
+import { toJalali } from "@/shared/lib/jalali";
 import type { JalaliCalendarValue } from "./JalaliCalendar.types";
 
 export const JALALI_CALENDAR_LOCALE = "fa-IR-u-ca-persian";
 
 const PERSIAN_CALENDAR = new PersianCalendar();
 const GREGORIAN_CALENDAR = new GregorianCalendar();
+const TEHRAN_DATE_PARTS = new Intl.DateTimeFormat("en-US-u-ca-gregory", {
+  timeZone: "Asia/Tehran",
+  year: "numeric",
+  month: "numeric",
+  day: "numeric",
+});
 
 export function jalaliValueToCalendarDate(
   value: JalaliCalendarValue,
@@ -54,10 +60,14 @@ export function toJalaliCalendarDate(
   }
 
   if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) return undefined;
+    const parts = Object.fromEntries(
+      TEHRAN_DATE_PARTS.formatToParts(value).map((part) => [part.type, part.value]),
+    );
     const { jy, jm, jd } = toJalali(
-      value.getFullYear(),
-      value.getMonth() + 1,
-      value.getDate(),
+      Number(parts.year),
+      Number(parts.month),
+      Number(parts.day),
     );
     return new CalendarDate(PERSIAN_CALENDAR, jy, jm, jd);
   }

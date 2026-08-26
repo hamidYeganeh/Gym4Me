@@ -8,6 +8,10 @@ export type CoachStudent = {
   id: string;
   coachUserId: string;
   athleteUserId: string;
+  athlete: {
+    displayName: string | null;
+    avatarMediaId: string | null;
+  };
   status: CoachStudentStatus;
   coaching: {
     goalKey: string | null;
@@ -54,6 +58,56 @@ export type CoachAnalyticsOverview = {
 };
 
 export type StudentsPage = Paginated<CoachStudent>;
+
+// ── Coach CRM leads ───────────────────────────────────────────────────────
+
+export type CoachLeadStage =
+  | "new"
+  | "contacted"
+  | "trial"
+  | "converted"
+  | "lost";
+
+export type CoachLead = {
+  id: string;
+  coachUserId: string;
+  contact: {
+    name: string;
+    phone: string | null;
+    userId: string | null;
+  };
+  stage: CoachLeadStage;
+  notes: string | null;
+  source: string | null;
+  convertedStudentId: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ListCoachLeadsQuery = {
+  page?: number;
+  page_size?: number;
+  stage?: CoachLeadStage;
+};
+
+export type CreateCoachLeadInput = {
+  idempotencyKey: string;
+  contact: { name: string; phone?: string; userId?: string };
+  stage?: CoachLeadStage;
+  notes?: string;
+  source?: string;
+};
+
+export type UpdateCoachLeadInput = Partial<
+  Pick<CreateCoachLeadInput, "contact" | "notes" | "source">
+>;
+
+export type UpdateCoachLeadStageInput = {
+  stage: CoachLeadStage;
+  athleteUserId?: string;
+};
+
+export type CoachLeadsPage = Paginated<CoachLead>;
 
 // ── Coach ↔ athlete messaging ───────────────────────────────────────────────
 

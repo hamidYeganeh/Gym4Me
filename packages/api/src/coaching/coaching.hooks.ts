@@ -13,6 +13,10 @@ import {
 } from "./coaching.client";
 import type {
   CoachAnalyticsOverview,
+  CoachLead,
+  CoachLeadsPage,
+  CreateCoachLeadInput,
+  ListCoachLeadsQuery,
   ListPackagesQuery,
   ListStudentsQuery,
   ListThreadMessagesQuery,
@@ -22,6 +26,8 @@ import type {
   StudentsPage,
   ThreadMessagesPage,
   ThreadsPage,
+  UpdateCoachLeadInput,
+  UpdateCoachLeadStageInput,
 } from "./coaching.dto";
 import { accountCoachingKeys } from "./coaching.keys";
 
@@ -57,6 +63,51 @@ export function useCoachAnalyticsOverview(
     queryKey: accountCoachingKeys.analytics(period),
     queryFn: () => api.analyticsOverview(period),
     ...options,
+  });
+}
+
+export function useCoachLeads(
+  query: ListCoachLeadsQuery = {},
+  options?: Omit<UseQueryOptions<CoachLeadsPage, Error>, "queryKey" | "queryFn">,
+) {
+  const api = useAccountCoachingApi();
+  return useQuery({
+    queryKey: accountCoachingKeys.leads(query),
+    queryFn: () => api.listLeads(query),
+    ...options,
+  });
+}
+
+function useInvalidateCoachLeads() {
+  const queryClient = useQueryClient();
+  return () =>
+    queryClient.invalidateQueries({ queryKey: accountCoachingKeys.all });
+}
+
+export function useCreateCoachLead() {
+  const api = useAccountCoachingApi();
+  const invalidate = useInvalidateCoachLeads();
+  return useMutation<CoachLead, Error, CreateCoachLeadInput>({
+    mutationFn: (input) => api.createLead(input),
+    onSuccess: invalidate,
+  });
+}
+
+export function useUpdateCoachLead(leadId: string) {
+  const api = useAccountCoachingApi();
+  const invalidate = useInvalidateCoachLeads();
+  return useMutation<CoachLead, Error, UpdateCoachLeadInput>({
+    mutationFn: (input) => api.updateLead(leadId, input),
+    onSuccess: invalidate,
+  });
+}
+
+export function useUpdateCoachLeadStage(leadId: string) {
+  const api = useAccountCoachingApi();
+  const invalidate = useInvalidateCoachLeads();
+  return useMutation<CoachLead, Error, UpdateCoachLeadStageInput>({
+    mutationFn: (input) => api.updateLeadStage(leadId, input),
+    onSuccess: invalidate,
   });
 }
 

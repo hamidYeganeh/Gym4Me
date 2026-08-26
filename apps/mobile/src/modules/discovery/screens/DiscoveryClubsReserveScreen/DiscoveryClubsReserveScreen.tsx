@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import { duration, ease } from "@repo/theme";
 import { FormStepper } from "@repo/ui/kit/FormStepper";
 import {
@@ -38,6 +40,7 @@ export function DiscoveryClubsReserveScreen({
   slotsByDay,
   plans,
   onConfirm,
+  onJoinWaitlist,
 }: DiscoveryClubsReserveScreenProps) {
   const t = useTranslations("ReserveFlow");
   const reduceMotion = useReducedMotion();
@@ -47,6 +50,22 @@ export function DiscoveryClubsReserveScreen({
     plans,
     onConfirm,
   });
+  const [waitlistPendingId, setWaitlistPendingId] = useState<string | null>(null);
+  const [waitlistResult, setWaitlistResult] = useState<{ slotId: string; error: boolean } | null>(null);
+
+  const joinWaitlist = async (slot: Parameters<NonNullable<typeof onJoinWaitlist>>[0]) => {
+    if (!onJoinWaitlist || waitlistPendingId) return;
+    setWaitlistPendingId(slot.id);
+    setWaitlistResult(null);
+    try {
+      await onJoinWaitlist(slot);
+      setWaitlistResult({ slotId: slot.id, error: false });
+    } catch {
+      setWaitlistResult({ slotId: slot.id, error: true });
+    } finally {
+      setWaitlistPendingId(null);
+    }
+  };
 
   const slideTransition = reduceMotion
     ? { duration: 0 }
@@ -103,8 +122,11 @@ export function DiscoveryClubsReserveScreen({
                   days={reserve.days}
                   onDayPress={reserve.onDayPress}
                   onSlotPress={reserve.setSelectedSlotId}
+                  onWaitlistPress={onJoinWaitlist ? (slot) => void joinWaitlist(slot) : undefined}
                   selectedSlotId={reserve.selectedSlotId}
                   slots={reserve.slots}
+                  waitlistPendingId={waitlistPendingId}
+                  waitlistResult={waitlistResult}
                 />
               ) : null}
 

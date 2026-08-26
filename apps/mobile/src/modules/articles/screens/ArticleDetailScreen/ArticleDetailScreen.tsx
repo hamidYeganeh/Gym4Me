@@ -6,7 +6,6 @@ import { Typography } from "@heroui/react/typography";
 import type { Article, ArticleSummary } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { Bookmark } from "@repo/icons/Bookmark";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";

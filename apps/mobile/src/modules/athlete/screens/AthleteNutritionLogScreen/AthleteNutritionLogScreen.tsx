@@ -4,10 +4,10 @@ import { Button } from "@heroui/react/button";
 import { Chip } from "@heroui/react/chip";
 import { Typography } from "@heroui/react/typography";
 import type { MealAdherenceStatus } from "@repo/api/nutrition";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
 import { useRouter } from "@/shared/lib/app-router";
 
 import { toPersianDigits } from "@/modules/athlete/lib/weight/format";
@@ -40,6 +40,23 @@ export function AthleteNutritionLogScreen({
   const t = useTranslations("AthleteNutrition");
   const styles = athleteNutritionLogScreenVariants();
   const router = useRouter();
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!photo) {
+      setPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(photo);
+    setPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [photo]);
+
+  const submit = async (status: MealAdherenceStatus) => {
+    await onQuickLog(status, photo ?? undefined);
+    setPhoto(null);
+  };
 
   return (
     <AppLayout
@@ -64,25 +81,53 @@ export function AthleteNutritionLogScreen({
         <div className={styles.quickActions()}>
           <Button
             isDisabled={pending}
-            onPress={() => void onQuickLog("followed")}
+            onPress={() => void submit("followed")}
             variant="primary"
           >
             {t("quickFollowed")}
           </Button>
           <Button
             isDisabled={pending}
-            onPress={() => void onQuickLog("partial")}
+            onPress={() => void submit("partial")}
             variant="secondary"
           >
             {t("quickPartial")}
           </Button>
           <Button
             isDisabled={pending}
-            onPress={() => void onQuickLog("skipped")}
+            onPress={() => void submit("skipped")}
             variant="outline"
           >
             {t("quickSkipped")}
           </Button>
+        </div>
+
+        <div className={styles.photoPicker()}>
+          <Typography type="body-sm">{t("mealPhotoHint")}</Typography>
+          <input
+            accept="image/jpeg,image/png,image/webp"
+            aria-label={t("mealPhotoSelect")}
+            disabled={pending}
+            onChange={(event) => setPhoto(event.target.files?.[0] ?? null)}
+            type="file"
+          />
+          {preview ? (
+            <img
+              alt={t("mealPhotoPreview")}
+              className={styles.photoPreview()}
+              src={preview}
+            />
+          ) : null}
+          {photo ? (
+            <Button
+              isDisabled={pending}
+              onPress={() => setPhoto(null)}
+              size="sm"
+              variant="ghost"
+            >
+              {t("mealPhotoRemove")}
+            </Button>
+          ) : null}
         </div>
 
         {logs.length === 0 ? (
@@ -116,6 +161,13 @@ export function AthleteNutritionLogScreen({
                 </Typography>
                 {log.note ? (
                   <Typography type="body-sm">{log.note}</Typography>
+                ) : null}
+                {log.mediaUrl ? (
+                  <img
+                    alt={t("mealPhotoAlt")}
+                    className={styles.mealImage()}
+                    src={log.mediaUrl}
+                  />
                 ) : null}
               </article>
             ))}

@@ -43,6 +43,7 @@ import { Booking, BookingDocument } from '../../schemas/booking.schema';
 import { Club, ClubDocument } from '../../schemas/club.schema';
 import { CoachSlot, CoachSlotDocument } from '../../schemas/coach-slot.schema';
 import { UsersService } from '../../users/users.service';
+import { WaitlistService } from '../../waitlist/waitlist.service';
 import { ClubSlotsService } from '../club-slots/club-slots.service';
 import { CalendarAvailabilityService } from '../calendar/calendar-availability.service';
 import { CreateClubBookingCommand } from './application/commands/create-club-booking.command';
@@ -133,6 +134,7 @@ export class BookingsService {
     private readonly createClubBookingCommand: CreateClubBookingCommand,
     private readonly createCoachBooking: CreateCoachBookingCommand,
     private readonly verifyBookingPayment: VerifyBookingPaymentCommand,
+    private readonly waitlist: WaitlistService,
     private readonly projector: BookingProjector,
     private readonly finance: FinanceService,
   ) {}
@@ -213,6 +215,52 @@ export class BookingsService {
 
   async createClubBooking(athleteId: string, dto: CreateClubBookingDto) {
     const result = await this.createClubBookingCommand.execute(athleteId, dto);
+    return {
+      recurringGroupId: result.recurringGroupId?.toString() ?? null,
+      bookings: await this.projectMany(result.bookings, 'athlete'),
+    };
+  }
+
+  async claimWaitlistOffer(
+    athleteId: string,
+    waitlistId: string,
+    entryId: string,
+    request?: import('express').Request,
+  ) {
+    const result = await this.transactions.run(async (session) => {
+      const claim = await this.waitlist.claimContextInSession(
+        athleteId,
+        waitlistId,
+        entryId,
+        session,
+      );
+      const created = await this.createClubBookingCommand.execute(
+        athleteId,
+        {
+          clubId: claim.clubId,
+          slotId: claim.slotId,
+          dates: [claim.occurrenceDate],
+          attendeeCount: 1,
+          idempotencyKey: `waitlist:${entryId}`,
+        },
+        { session },
+      );
+      await this.waitlist.markClaimedInSession(
+        claim.waitlist,
+        entryId,
+        session,
+      );
+      return created;
+    });
+    const bookingId = result.bookings[0]?._id.toString();
+    if (!bookingId) throw new Error('Waitlist booking was not created');
+    this.waitlist.recordClaimAudit(
+      athleteId,
+      waitlistId,
+      entryId,
+      bookingId,
+      request,
+    );
     return {
       recurringGroupId: result.recurringGroupId?.toString() ?? null,
       bookings: await this.projectMany(result.bookings, 'athlete'),
@@ -808,6 +856,14 @@ export class BookingsService {
               code: current.code,
             },
             critical: true,
+            forceSms: true,
+            smsTokens: [
+              clubName,
+              current.occurrence?.date ??
+                current.startsAt.toISOString().slice(0, 10),
+              current.occurrence?.startTime ??
+                formatTimeTehran(current.startsAt),
+            ],
           }
         : {
             userId: current.athleteId.toString(),
@@ -821,6 +877,8 @@ export class BookingsService {
               action: 'pay_booking',
             },
             critical: true,
+            forceSms: true,
+            smsTokens: [current.paymentExpiresAt?.toISOString() ?? ''],
           };
       await this.outbox.enqueue(
         {
@@ -830,6 +888,7 @@ export class BookingsService {
           payload: {
             bookingId: current._id.toString(),
             athleteId: current.athleteId.toString(),
+            clubId: current.clubId?.toString() ?? null,
             notification,
           },
           idempotencyKey: confirmed
@@ -1129,6 +1188,14 @@ export class BookingsService {
               action: 'view_booking',
             },
             critical: true,
+            forceSms: true,
+            smsTokens: [
+              booking.code,
+              booking.occurrence?.date ??
+                booking.startsAt.toISOString().slice(0, 10),
+              booking.occurrence?.startTime ??
+                formatTimeTehran(booking.startsAt),
+            ],
           },
         },
         idempotencyKey: `outbox:booking.rescheduled:${booking._id.toString()}:${booking.rescheduleRevision}`,
@@ -1256,6 +1323,16 @@ export class BookingsService {
     current.markModified('cancellation');
     await current.save({ session });
     await this.releaseResource(current, session);
+    if (current.clubId && current.resource.type !== BookingResourceType.COACH) {
+      await this.waitlist.offerFreedSlotCapacity(
+        {
+          clubId: current.clubId.toString(),
+          slotId: current.resource.refId.toString(),
+          occurrenceDate: current.occurrence?.date,
+        },
+        session,
+      );
+    }
 
     if (shouldNotifyAthlete) {
       await this.outbox.enqueue(
@@ -1281,6 +1358,12 @@ export class BookingsService {
                 code: current.code,
               },
               critical: true,
+              forceSms: true,
+              smsTokens: [
+                `رزرو ${current.code}`,
+                current.occurrence?.date ??
+                  current.startsAt.toISOString().slice(0, 10),
+              ],
             },
           },
           idempotencyKey: `outbox:booking.provider_cancelled:${current._id.toString()}`,

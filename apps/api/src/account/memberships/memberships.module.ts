@@ -57,6 +57,9 @@ import { PlatformSubscriptionCheckoutService } from './application/services/plat
 import { PlatformSubscriptionCheckoutReconciliationService } from './application/services/platform-subscription-checkout-reconciliation.service';
 import { PlatformSubscriptionCheckoutPolicy } from './application/policies/platform-subscription-checkout.policy';
 import { PlatformSubscriptionCheckoutReconciliationWorker } from './platform-subscription-checkout-reconciliation.worker';
+import { PlatformEntitlementsModule } from './platform-entitlements.module';
+import { PlatformSubscriptionLifecycleService } from './application/services/platform-subscription-lifecycle.service';
+import { PlatformSubscriptionLifecycleWorker } from './platform-subscription-lifecycle.worker';
 import {
   OwnerMembershipPlansController,
   OwnerMembershipsController,
@@ -69,6 +72,7 @@ import {
     FinanceModule,
     OutboxModule,
     StaffModule,
+    PlatformEntitlementsModule,
     MongooseModule.forFeature([
       { name: Club.name, schema: ClubSchema },
       { name: ClubMembershipPlan.name, schema: ClubMembershipPlanSchema },
@@ -104,10 +108,12 @@ import {
     PlatformSubscriptionCheckoutPolicy,
     PlatformSubscriptionCheckoutReconciliationService,
     PlatformSubscriptionCheckoutReconciliationWorker,
+    PlatformSubscriptionLifecycleService,
+    PlatformSubscriptionLifecycleWorker,
     SellMembershipCommand,
     MembershipsService,
     StaffPermissionGuard,
   ],
-  exports: [MembershipsService],
+  exports: [MembershipsService, PlatformEntitlementsModule],
 })
 export class MembershipsModule {}

@@ -19,9 +19,11 @@ import { AccountSocialController } from './account-social.controller';
 import { AdminSocialController } from './admin-social.controller';
 import { SocialController } from './social.controller';
 import { SocialService } from './social.service';
+import { MediaModule } from '../media/media.module';
 
 @Module({
   imports: [
+    MediaModule,
     MongooseModule.forFeature([
       { name: SocialPost.name, schema: SocialPostSchema },
       { name: SocialComment.name, schema: SocialCommentSchema },

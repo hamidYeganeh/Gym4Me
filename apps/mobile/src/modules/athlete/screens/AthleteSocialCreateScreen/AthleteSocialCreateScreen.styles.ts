@@ -10,5 +10,8 @@ export const athleteSocialCreateScreenVariants = tv({
     form: "flex flex-col gap-4",
     error: "text-danger",
     hint: "text-muted",
+    mediaGrid: "grid grid-cols-2 gap-3",
+    mediaItem: "relative overflow-hidden rounded-xl bg-surface",
+    mediaImage: "aspect-square w-full object-cover",
   },
 });

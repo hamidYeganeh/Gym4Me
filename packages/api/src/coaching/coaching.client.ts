@@ -2,8 +2,12 @@ import type { ApiClient } from "../client";
 import type { AnalyticsPeriod } from "../finance/finance.dto";
 import type {
   CoachAnalyticsOverview,
+  CoachLead,
+  CoachLeadsPage,
   CoachMessage,
   CoachThread,
+  CreateCoachLeadInput,
+  ListCoachLeadsQuery,
   ListPackagesQuery,
   ListStudentsQuery,
   ListThreadMessagesQuery,
@@ -13,6 +17,8 @@ import type {
   StudentsPage,
   ThreadMessagesPage,
   ThreadsPage,
+  UpdateCoachLeadInput,
+  UpdateCoachLeadStageInput,
 } from "./coaching.dto";
 import { accountCoachingEndpoints as ep } from "./coaching.endpoint";
 
@@ -25,6 +31,31 @@ export function createAccountCoachingApi(client: ApiClient) {
     analyticsOverview(period?: AnalyticsPeriod) {
       return client.request<CoachAnalyticsOverview>(ep.analyticsOverview, {
         query: period ? { period } : undefined,
+      });
+    },
+
+    listLeads(query: ListCoachLeadsQuery = {}) {
+      return client.request<CoachLeadsPage>(ep.leads, { query });
+    },
+
+    createLead(input: CreateCoachLeadInput) {
+      return client.request<CoachLead>(ep.leads, {
+        method: "POST",
+        body: input,
+      });
+    },
+
+    updateLead(leadId: string, input: UpdateCoachLeadInput) {
+      return client.request<CoachLead>(ep.lead(leadId), {
+        method: "PATCH",
+        body: input,
+      });
+    },
+
+    updateLeadStage(leadId: string, input: UpdateCoachLeadStageInput) {
+      return client.request<CoachLead>(ep.leadStage(leadId), {
+        method: "PATCH",
+        body: input,
       });
     },
 

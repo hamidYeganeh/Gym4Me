@@ -13,6 +13,14 @@ export type CoachLead = {
   note: string;
   stage: CoachLeadStage;
   updatedLabel: string;
+  athleteUserId?: string;
+};
+
+export type CreateCoachLeadFormInput = {
+  name: string;
+  phone?: string;
+  source?: string;
+  notes?: string;
 };
 
 export const COACH_LEADS: CoachLead[] = [

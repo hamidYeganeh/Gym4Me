@@ -105,6 +105,10 @@ export function createAccountFinanceApi(client: ApiClient) {
       );
     },
 
+    listClubInvoices(clubId: string, query: ListInvoicesQuery = {}) {
+      return client.request<InvoicesPage>(ep.ownerInvoices(clubId), { query });
+    },
+
     recordManualPayment(clubId: string, input: RecordManualPaymentInput) {
       return client.request<PaymentRecord>(ep.ownerManualPayment(clubId), {
         method: "POST",

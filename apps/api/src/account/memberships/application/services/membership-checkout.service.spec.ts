@@ -68,7 +68,12 @@ describe('MembershipCheckoutService', () => {
     const payments = {
       updateOne: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
     };
-    const clubs = { findOne: jest.fn().mockResolvedValue({ _id: clubId }) };
+    const clubs = {
+      findOne: jest.fn().mockResolvedValue({ _id: clubId }),
+      findById: jest.fn().mockReturnValue({
+        session: jest.fn().mockResolvedValue({ ownerId: new Types.ObjectId() }),
+      }),
+    };
     const membershipInstances: ClubMembershipDocument[] = [];
     const memberships = Object.assign(
       jest.fn().mockImplementation((input: Record<string, unknown>) => {
@@ -129,6 +134,12 @@ describe('MembershipCheckoutService', () => {
     };
     const outbox = { enqueue: jest.fn().mockResolvedValue(undefined) };
     const audit = { log: jest.fn() };
+    const entitlements = {
+      assertIncrementAllowed: jest.fn().mockResolvedValue({ allowed: true }),
+      serializeAndAssertIncrement: jest
+        .fn()
+        .mockResolvedValue({ allowed: true }),
+    };
     const service = new MembershipCheckoutService(
       checkoutModel as never,
       payments as never,
@@ -142,6 +153,7 @@ describe('MembershipCheckoutService', () => {
       transactions as never,
       outbox as never,
       audit as never,
+      entitlements as never,
     );
     return {
       audit,

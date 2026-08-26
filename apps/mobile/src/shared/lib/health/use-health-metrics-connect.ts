@@ -196,16 +196,14 @@ export function useHealthMetricsConnect(
     return () => {
       cancelled = true;
     };
-    // Intentional: run once on mount when autoCheck is enabled.
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only probe
   }, [autoCheck]);
 
   return {
     status,
     platform,
-  isSupported: status !== "unsupported",
-  isConnected: status === "connected",
-  isConnecting: status === "connecting" || status === "checking",
+    isSupported: status !== "unsupported",
+    isConnected: status === "connected",
+    isConnecting: status === "connecting" || status === "checking",
     reason,
     authorization,
     connect,

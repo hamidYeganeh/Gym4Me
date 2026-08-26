@@ -7,7 +7,6 @@ import { Label } from "@heroui/react/label";
 import { TextField } from "@heroui/react/textfield";
 import { Typography } from "@heroui/react/typography";
 import type { AthleteDataGrantScope } from "@repo/api";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useRouter } from "@/shared/lib/app-router";

@@ -87,6 +87,7 @@ import {
   ListInvoicesQueryDto,
   ListLedgerQueryDto,
   ListPaymentsQueryDto,
+  ListWalletsQueryDto,
   ListPayoutsQueryDto,
   RecordDebtPaymentDto,
   RecordManualPaymentDto,
@@ -250,6 +251,39 @@ export class FinanceService {
       balance: wallet.balance,
       currency: wallet.currency,
     };
+  }
+
+  async listWallets(query: ListWalletsQueryDto) {
+    const { page, pageSize } = resolvePageSize(query);
+    const filter: QueryFilter<WalletDocument> = {};
+    if (query.type) filter['owner.type'] = query.type;
+    if (query.ownerId) filter['owner.id'] = new Types.ObjectId(query.ownerId);
+
+    const [wallets, total] = await Promise.all([
+      this.walletModel
+        .find(filter)
+        .sort({ updatedAt: -1, _id: -1 })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .lean(),
+      this.walletModel.countDocuments(filter),
+    ]);
+    return paginatedResult(
+      wallets.map((wallet) => ({
+        id: wallet._id.toString(),
+        owner: {
+          type: wallet.owner.type,
+          id: wallet.owner.id.toString(),
+        },
+        balance: wallet.balance,
+        currency: wallet.currency,
+        createdAt: wallet.createdAt,
+        updatedAt: wallet.updatedAt,
+      })),
+      total,
+      page,
+      pageSize,
+    );
   }
 
   // ── Payments ────────────────────────────────────────────────────────────
@@ -1243,6 +1277,59 @@ export class FinanceService {
     ]);
     return paginatedResult(
       items.map((item) => this.toInvoice(item)),
+      total,
+      page,
+      pageSize,
+    );
+  }
+
+  async listClubInvoices(clubId: string, query: ListInvoicesQueryDto) {
+    const filter: QueryFilter<InvoiceDocument> = {
+      'party.clubId': this.toObjectId(clubId, 'clubId'),
+    };
+    if (query.status) filter.status = query.status;
+    const { page, pageSize } = resolvePageSize(query);
+    const [items, total] = await Promise.all([
+      this.invoiceModel
+        .find(filter)
+        .sort({ issuedAt: -1 })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .lean(),
+      this.invoiceModel.countDocuments(filter),
+    ]);
+    const payerIds = [
+      ...new Set(
+        items
+          .map((item) => item.party?.payerUserId?.toString())
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ];
+    const payers = payerIds.length
+      ? await this.userModel
+          .find({ _id: { $in: payerIds.map((id) => new Types.ObjectId(id)) } })
+          .select({ name: 1 })
+          .lean()
+      : [];
+    const payerNames = new Map(
+      payers.map((payer) => [
+        payer._id.toString(),
+        [payer.name?.first, payer.name?.last].filter(Boolean).join(' ') || null,
+      ]),
+    );
+    return paginatedResult(
+      items.map((item) => {
+        const view = this.toInvoice(item);
+        return {
+          ...view,
+          party: {
+            ...view.party,
+            payerDisplayName: view.party.payerUserId
+              ? (payerNames.get(view.party.payerUserId) ?? null)
+              : null,
+          },
+        };
+      }),
       total,
       page,
       pageSize,

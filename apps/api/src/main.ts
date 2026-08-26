@@ -51,4 +51,4 @@ async function bootstrap() {
     console.log(`Swagger UI: http://localhost:${port}/${SWAGGER_PATH}`);
   }
 }
-bootstrap();
+void bootstrap();

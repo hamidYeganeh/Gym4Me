@@ -29,7 +29,8 @@ export async function generateMetadata({
   const program = canUseDemoFixtureId(programId)
     ? getCoachProgramEditorDetail(programId)
     : undefined;
-  return { title: program?.title ?? "Program" };
+  const t = await getTranslations("CoachProgramEditor");
+  return { title: program?.title ?? t("pageTitle") };
 }
 
 export default async function CoachProgramDetailPage({

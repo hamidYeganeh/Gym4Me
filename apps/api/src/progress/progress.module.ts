@@ -34,6 +34,7 @@ import {
 import { WorkoutLog, WorkoutLogSchema } from '../schemas/workout-log.schema';
 import { WorkoutPlan, WorkoutPlanSchema } from '../schemas/workout-plan.schema';
 import { OutboxModule } from '../outbox/outbox.module';
+import { MediaModule } from '../media/media.module';
 import {
   WorkoutProgram,
   WorkoutProgramSchema,
@@ -50,6 +51,7 @@ import { ProgressService } from './progress.service';
 @Module({
   imports: [
     OutboxModule,
+    MediaModule,
     MongooseModule.forFeature([
       { name: Exercise.name, schema: ExerciseSchema },
       { name: WorkoutPlan.name, schema: WorkoutPlanSchema },

@@ -8,6 +8,7 @@ import type {
   Waitlist,
   WaitlistsPage,
 } from "./waitlist.dto";
+import type { CreateClubBookingResult } from "../booking/bookings.dto";
 import { accountWaitlistEndpoints as ep } from "./waitlist.endpoint";
 
 export function createAccountWaitlistApi(client: ApiClient) {
@@ -31,7 +32,7 @@ export function createAccountWaitlistApi(client: ApiClient) {
     },
 
     claim(waitlistId: string, input: ClaimWaitlistInput) {
-      return client.request<Waitlist>(ep.claim(waitlistId), {
+      return client.request<CreateClubBookingResult>(ep.claim(waitlistId), {
         method: "POST",
         body: input,
       });

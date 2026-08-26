@@ -3,7 +3,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types, type ClientSession } from 'mongoose';
 import { OutboxMessageStatus } from '../common/enums';
 import { WorkerLeaseService } from '../common/jobs/worker-lease.service';
+import { PlatformEntitlementService } from '../account/memberships/application/services/platform-entitlement.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { Club, ClubDocument } from '../schemas/club.schema';
 import {
   OutboxMessage,
   OutboxMessageDocument,
@@ -20,6 +22,8 @@ export type OutboxNotification = {
   params?: Record<string, string | number>;
   payload?: Record<string, unknown>;
   critical?: boolean;
+  forceSms?: boolean;
+  smsTokens?: string[];
 };
 
 export type EnqueueOutboxInput = {
@@ -37,8 +41,11 @@ export class OutboxService {
   constructor(
     @InjectModel(OutboxMessage.name)
     private readonly outboxModel: Model<OutboxMessageDocument>,
+    @InjectModel(Club.name)
+    private readonly clubModel: Model<ClubDocument>,
     private readonly notifications: NotificationsService,
     private readonly workerLeases: WorkerLeaseService,
+    private readonly entitlements: PlatformEntitlementService,
   ) {}
 
   async enqueue(input: EnqueueOutboxInput, session?: ClientSession) {
@@ -301,12 +308,26 @@ export class OutboxService {
       OutboxNotification | undefined;
     if (!notification?.userId || !notification.templateKey) return;
 
+    const clubId = message.payload?.clubId;
+    if (typeof clubId === 'string' && Types.ObjectId.isValid(clubId)) {
+      const club = await this.clubModel.findById(clubId).select({ ownerId: 1 });
+      if (club?.ownerId) {
+        await this.entitlements.reserveTransactionalMessage({
+          ownerUserId: club.ownerId.toString(),
+          clubId,
+          sourceId: message._id.toString(),
+        });
+      }
+    }
+
     const delivery = await this.notifications.dispatch({
       userId: notification.userId,
       templateKey: notification.templateKey,
       params: notification.params,
       payload: notification.payload,
       critical: notification.critical,
+      forceSms: notification.forceSms,
+      smsTokens: notification.smsTokens,
       idempotencyKey: `outbox:${message._id.toString()}`,
     });
     if (!delivery.notificationId) {

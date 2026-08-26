@@ -71,6 +71,7 @@ import {
   SelfPurchaseMembershipDto,
   SellMembershipDto,
   SubscribePlatformDto,
+  SchedulePlatformPlanChangeDto,
   TransferMembershipDto,
   UnfreezeMembershipDto,
   UpdateMembershipPlanDto,
@@ -1022,6 +1023,7 @@ export class MembershipsService {
       throw new BadRequestException('Platform plan code already exists');
     }
 
+    await this.assertPlatformEntitlementConfiguration(dto);
     const plan = await this.platformPlanModel.create({
       code: dto.code,
       name: dto.name,
@@ -1033,6 +1035,13 @@ export class MembershipsService {
         periodDays: dto.pricing.periodDays ?? 30,
       },
       features: dto.features ?? [],
+      entitlementContract: dto.entitlementContract,
+      planVersion: 1,
+      contractReady: dto.contractReady ?? false,
+      postExpirationMode: dto.postExpirationMode,
+      fallbackPlanId: dto.fallbackPlanId
+        ? new Types.ObjectId(dto.fallbackPlanId)
+        : undefined,
       status: dto.status ?? EntityStatus.ACTIVE,
     });
 
@@ -1058,6 +1067,13 @@ export class MembershipsService {
   ) {
     const plan = await this.findPlatformPlanOrFail(planId);
 
+    await this.assertPlatformEntitlementConfiguration({
+      entitlementContract: dto.entitlementContract ?? plan.entitlementContract,
+      contractReady: dto.contractReady ?? plan.contractReady,
+      postExpirationMode: dto.postExpirationMode ?? plan.postExpirationMode,
+      fallbackPlanId: dto.fallbackPlanId ?? plan.fallbackPlanId?.toString(),
+    });
+
     if (dto.name !== undefined) plan.name = dto.name;
     if (dto.description !== undefined) plan.description = dto.description;
     if (dto.pricing !== undefined) {
@@ -1069,6 +1085,17 @@ export class MembershipsService {
       };
     }
     if (dto.features !== undefined) plan.features = dto.features;
+    if (dto.entitlementContract !== undefined) {
+      plan.entitlementContract = dto.entitlementContract;
+      plan.planVersion = (plan.planVersion ?? 1) + 1;
+    }
+    if (dto.contractReady !== undefined) plan.contractReady = dto.contractReady;
+    if (dto.postExpirationMode !== undefined) {
+      plan.postExpirationMode = dto.postExpirationMode;
+    }
+    if (dto.fallbackPlanId !== undefined) {
+      plan.fallbackPlanId = new Types.ObjectId(dto.fallbackPlanId);
+    }
     if (dto.status !== undefined) plan.status = dto.status;
 
     await plan.save();
@@ -1215,6 +1242,14 @@ export class MembershipsService {
         renewal: {
           mode: dto.renewal?.mode ?? SubscriptionRenewalMode.MANUAL,
         },
+        entitlementSnapshot: plan.entitlementContract,
+        planVersion: plan.planVersion ?? 1,
+        postExpirationModeSnapshot: plan.postExpirationMode,
+        fallbackPlanIdSnapshot: plan.fallbackPlanId,
+        graceEndsAt: new Date(
+          end.getTime() +
+            (plan.entitlementContract?.graceDays ?? 7) * 86_400_000,
+        ),
       });
       await created.save({ session });
       await this.outbox.enqueue(
@@ -1257,38 +1292,63 @@ export class MembershipsService {
     if (!Types.ObjectId.isValid(subscriptionId)) {
       throw new NotFoundException('Subscription not found');
     }
-    const sub = await this.platformSubModel.findById(subscriptionId);
-    if (!sub) throw new NotFoundException('Subscription not found');
-    if (sub.userId.toString() !== userId) {
-      throw new ForbiddenException('Not your subscription');
-    }
-    if (
-      sub.status === PlatformSubscriptionStatus.CANCELLED ||
-      sub.status === PlatformSubscriptionStatus.EXPIRED
-    ) {
-      throw new BadRequestException(
-        `Cannot cancel subscription in status ${sub.status}`,
+    const result = await this.transactions.run(async (session) => {
+      const sub = await this.platformSubModel
+        .findById(subscriptionId)
+        .session(session);
+      if (!sub) throw new NotFoundException('Subscription not found');
+      if (sub.userId.toString() !== userId) {
+        throw new ForbiddenException('Not your subscription');
+      }
+      if (
+        sub.status === PlatformSubscriptionStatus.CANCELLED ||
+        sub.status === PlatformSubscriptionStatus.EXPIRED
+      ) {
+        throw new BadRequestException(
+          `Cannot cancel subscription in status ${sub.status}`,
+        );
+      }
+      if (sub.cancellationRequestedAt) {
+        return { sub, idempotent: true };
+      }
+
+      // ADR-0001: disable renewal but retain entitlement until period end.
+      sub.renewal = { mode: SubscriptionRenewalMode.MANUAL };
+      sub.cancellationRequestedAt = new Date();
+      sub.cancellationReason = dto.reason;
+      await sub.save({ session });
+      await this.outbox.enqueue(
+        {
+          eventName: 'platform_subscription.cancellation_requested',
+          idempotencyKey: `platform-subscription-cancel:${sub._id.toString()}:${sub.period.end.toISOString()}`,
+          payload: {
+            subscriptionId: sub._id.toString(),
+            userId,
+            effectiveAt: sub.period.end.toISOString(),
+            reason: dto.reason,
+          },
+        },
+        session,
       );
-    }
-
-    sub.status = PlatformSubscriptionStatus.CANCELLED;
-    sub.currentEntitlementKey = undefined;
-    sub.renewal = { mode: SubscriptionRenewalMode.MANUAL };
-    await sub.save();
-
-    this.audit.log({
-      action: AuditAction.PLATFORM_SUBSCRIPTION_CANCELLED,
-      actorId: userId,
-      targetUserId: userId,
-      metadata: {
-        scope: 'platform',
-        subscriptionId: sub._id.toString(),
-        reason: dto.reason,
-      },
-      request,
+      return { sub, idempotent: false };
     });
 
-    return this.toPlatformSubPublic(sub);
+    if (!result.idempotent) {
+      this.audit.log({
+        action: AuditAction.PLATFORM_SUBSCRIPTION_CANCELLATION_REQUESTED,
+        actorId: userId,
+        targetUserId: userId,
+        metadata: {
+          scope: 'platform',
+          subscriptionId: result.sub._id.toString(),
+          effectiveAt: result.sub.period.end,
+          reason: dto.reason,
+        },
+        request,
+      });
+    }
+
+    return this.toPlatformSubPublic(result.sub);
   }
 
   async listMyPlatformSubscriptions(userId: string) {
@@ -1298,6 +1358,92 @@ export class MembershipsService {
     return {
       result: items.map((s) => this.toPlatformSubPublic(s)),
     };
+  }
+
+  async schedulePlatformPlanChange(
+    userId: string,
+    subscriptionId: string,
+    dto: SchedulePlatformPlanChangeDto,
+    request?: Request,
+  ) {
+    if (!Types.ObjectId.isValid(subscriptionId)) {
+      throw new NotFoundException('Subscription not found');
+    }
+    const target = await this.findPlatformPlanOrFail(dto.planId);
+    if (
+      target.status !== EntityStatus.ACTIVE ||
+      !target.contractReady ||
+      !target.entitlementContract
+    ) {
+      throw new BadRequestException(
+        'Target platform plan is not ready for entitlement enforcement',
+      );
+    }
+    const updated = await this.transactions.run(async (session) => {
+      const subscription = await this.platformSubModel
+        .findOne({
+          _id: new Types.ObjectId(subscriptionId),
+          userId: new Types.ObjectId(userId),
+          currentEntitlementKey: 'current',
+          status: {
+            $in: [
+              PlatformSubscriptionStatus.ACTIVE,
+              PlatformSubscriptionStatus.TRIALING,
+              PlatformSubscriptionStatus.PAST_DUE,
+            ],
+          },
+        })
+        .session(session);
+      if (!subscription) throw new NotFoundException('Subscription not found');
+      const currentPlan = await this.platformPlanModel
+        .findById(subscription.planId)
+        .session(session);
+      if (!currentPlan) throw new NotFoundException('Current plan not found');
+      if (
+        currentPlan.entitlementContract?.audience !==
+        target.entitlementContract?.audience
+      ) {
+        throw new BadRequestException('Plan audience cannot be changed');
+      }
+      if (target.pricing.amount >= currentPlan.pricing.amount) {
+        throw new BadRequestException(
+          'Same-plan renewal and upgrades require checkout preview',
+        );
+      }
+      if (subscription.scheduledPlanId?.toString() === dto.planId) {
+        return subscription;
+      }
+      subscription.scheduledPlanId = target._id;
+      subscription.scheduledPlanEffectiveAt = subscription.period.end;
+      await subscription.save({ session });
+      await this.outbox.enqueue(
+        {
+          eventName: 'platform_subscription.plan_change_scheduled',
+          idempotencyKey: `platform-subscription-plan-change:${subscription._id.toString()}:${target._id.toString()}:${subscription.period.end.toISOString()}`,
+          payload: {
+            subscriptionId: subscription._id.toString(),
+            userId,
+            currentPlanId: currentPlan._id.toString(),
+            targetPlanId: target._id.toString(),
+            effectiveAt: subscription.period.end.toISOString(),
+          },
+        },
+        session,
+      );
+      return subscription;
+    });
+    this.audit.log({
+      action: AuditAction.PLATFORM_SUBSCRIPTION_UPDATED,
+      actorId: userId,
+      targetUserId: userId,
+      metadata: {
+        scope: 'platform',
+        subscriptionId,
+        scheduledPlanId: dto.planId,
+      },
+      request,
+    });
+    return this.toPlatformSubPublic(updated);
   }
 
   /** Subscriber-facing catalog: active plans only. */
@@ -1635,6 +1781,11 @@ export class MembershipsService {
         periodDays: plan.pricing.periodDays,
       },
       features: plan.features ?? [],
+      entitlementContract: plan.entitlementContract ?? null,
+      planVersion: plan.planVersion ?? 1,
+      contractReady: plan.contractReady ?? false,
+      postExpirationMode: plan.postExpirationMode ?? null,
+      fallbackPlanId: plan.fallbackPlanId?.toString() ?? null,
       status: plan.status,
       createdAt: plan.createdAt,
       updatedAt: plan.updatedAt,
@@ -1654,8 +1805,84 @@ export class MembershipsService {
       renewal: {
         mode: sub.renewal?.mode ?? SubscriptionRenewalMode.MANUAL,
       },
+      entitlementSnapshot: sub.entitlementSnapshot ?? null,
+      planVersion: sub.planVersion ?? null,
+      postExpirationModeSnapshot: sub.postExpirationModeSnapshot ?? null,
+      fallbackPlanIdSnapshot: sub.fallbackPlanIdSnapshot?.toString() ?? null,
+      graceEndsAt: sub.graceEndsAt ?? null,
+      scheduledPlanId: sub.scheduledPlanId?.toString() ?? null,
+      scheduledPlanEffectiveAt: sub.scheduledPlanEffectiveAt ?? null,
+      cancellationRequestedAt: sub.cancellationRequestedAt ?? null,
+      cancellationReason: sub.cancellationReason ?? null,
       createdAt: sub.createdAt,
       updatedAt: sub.updatedAt,
     };
+  }
+
+  private async assertPlatformEntitlementConfiguration(input: {
+    entitlementContract?: {
+      schemaVersion: 1;
+      audience: 'club_owner' | 'coach';
+      capabilities: string[];
+      limits: Array<{
+        key: string;
+        value: number | null;
+        mode: 'hard' | 'soft';
+      }>;
+      graceDays: number;
+    };
+    contractReady?: boolean;
+    postExpirationMode?: 'free_plan' | 'read_only';
+    fallbackPlanId?: string;
+  }) {
+    const contract = input.entitlementContract;
+    if (input.contractReady && (!contract || !input.postExpirationMode)) {
+      throw new BadRequestException(
+        'Contract-ready plans require entitlement contract and expiration mode',
+      );
+    }
+    if (!contract) return;
+    const keys = contract.limits.map((limit) => limit.key);
+    if (new Set(keys).size !== keys.length) {
+      throw new BadRequestException('Duplicate platform entitlement limit key');
+    }
+    const ownerKeys = new Set([
+      'clubs.active',
+      'staff.active_per_club',
+      'members.active_per_club',
+      'monthly_messages.transactional',
+    ]);
+    const incompatible = keys.some((key) =>
+      contract.audience === 'club_owner'
+        ? !ownerKeys.has(key)
+        : ownerKeys.has(key),
+    );
+    if (incompatible) {
+      throw new BadRequestException(
+        'Entitlement limit key is incompatible with plan audience',
+      );
+    }
+    if (input.postExpirationMode === 'free_plan') {
+      if (
+        !input.fallbackPlanId ||
+        !Types.ObjectId.isValid(input.fallbackPlanId)
+      ) {
+        throw new BadRequestException(
+          'Free-plan expiration mode requires a fallback plan',
+        );
+      }
+      const fallback = await this.platformPlanModel.findById(
+        input.fallbackPlanId,
+      );
+      if (
+        !fallback ||
+        fallback.pricing.amount !== 0 ||
+        fallback.entitlementContract?.audience !== contract.audience
+      ) {
+        throw new BadRequestException(
+          'Fallback plan must be free and match entitlement audience',
+        );
+      }
+    }
   }
 }

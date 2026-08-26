@@ -12,5 +12,7 @@ export type OwnerCouponsScreenProps = {
   pending?: boolean;
   onFormChange: (patch: Partial<OwnerCouponForm>) => void;
   onCreate?: () => void;
+  onToggleStatus?: (coupon: OwnerCoupon) => void;
+  pendingCouponId?: string | null;
   className?: string;
 };

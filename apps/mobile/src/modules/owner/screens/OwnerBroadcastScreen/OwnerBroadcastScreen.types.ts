@@ -11,9 +11,7 @@ export type OwnerBroadcastForm = {
 
 export type OwnerBroadcastScreenProps = {
   broadcasts: OwnerBroadcastEntry[];
-  form: OwnerBroadcastForm;
   pending?: boolean;
-  onFormChange: (patch: Partial<OwnerBroadcastForm>) => void;
-  onSend?: () => void;
+  onSend?: (form: OwnerBroadcastForm) => Promise<void>;
   className?: string;
 };

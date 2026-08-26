@@ -52,3 +52,31 @@ export type RunJourneysResult = {
   sent: number;
   completed: number;
 };
+
+export type ClubBroadcastAudience = "all" | "active_members" | "at_risk";
+
+export type ClubBroadcast = {
+  id: string;
+  clubId: string;
+  title: string;
+  body: string;
+  audience: ClubBroadcastAudience;
+  status: "queued";
+  recipientCount: number;
+  createdAt: string;
+};
+
+export type ClubBroadcastList = {
+  result: ClubBroadcast[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+};
+
+export type CreateClubBroadcastInput = {
+  title: string;
+  body: string;
+  audience: ClubBroadcastAudience;
+  idempotencyKey: string;
+};

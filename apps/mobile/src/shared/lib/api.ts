@@ -23,6 +23,8 @@ import { createAccountSocialApi } from "@repo/api/social";
 import { createClubStaffApi } from "@repo/api/staff";
 import { createAccountWaitlistApi } from "@repo/api/waitlist";
 import { createAccountLifecycleApi } from "@repo/api/lifecycle";
+import { createInventoryApi } from "@repo/api/inventory";
+import { createOwnerCouponsApi } from "@repo/api/coupons";
 import { createAccountCalendarApi } from "@repo/api/calendar";
 import {
   createBasicsLocationsApi,
@@ -76,6 +78,8 @@ export const accountNutrition = createAccountNutritionApi(apiClient);
 export const accountStaff = createClubStaffApi(apiClient);
 export const accountSupport = createAccountSupportApi(apiClient);
 export const accountLifecycle = createAccountLifecycleApi(apiClient);
+export const accountInventory = createInventoryApi(apiClient);
+export const ownerCoupons = createOwnerCouponsApi(apiClient);
 export const accountCalendar = createAccountCalendarApi(apiClient);
 export const discoveryClubs = createDiscoveryClubsApi(apiClient);
 export const discoveryClubSlots = createDiscoveryClubSlotsApi(apiClient);

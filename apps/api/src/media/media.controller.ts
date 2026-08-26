@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Get,
   MaxFileSizeValidator,
@@ -23,19 +24,22 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { diskStorage } from 'multer';
-import { readFileSync, renameSync } from 'fs';
+import { readFileSync, renameSync, unlinkSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { OptionalAuth } from '../common/decorators/optional-auth.decorator';
 import { Public } from '../common/decorators/public.decorator';
 import type { JwtUser } from '../common/types';
 import { randomToken } from '../common/utils/hash.util';
+import { MediaVisibility } from '../common/enums';
 import {
   extensionForMime,
   sanitizeContentDispositionFilename,
   sniffAllowedMime,
 } from '../common/utils/mime-sniff.util';
+import { sanitizeUploadedImage } from '../common/utils/image-sanitize.util';
 import { MediaService } from './media.service';
+import { MediaPurpose } from '../schemas/media.schema';
 
 @ApiTags('media')
 @Controller('media')
@@ -56,12 +60,23 @@ export class MediaController {
           format: 'binary',
           description: 'jpeg / png / webp / pdf, max 8MB',
         },
+        visibility: {
+          type: 'string',
+          enum: Object.values(MediaVisibility),
+          default: MediaVisibility.PUBLIC,
+        },
+        purpose: {
+          type: 'string',
+          enum: Object.values(MediaPurpose),
+          default: MediaPurpose.GENERAL,
+        },
       },
     },
   })
   @ApiOperation({ summary: 'Upload a media file' })
   @UseInterceptors(
     FileInterceptor('file', {
+      limits: { fileSize: 8 * 1024 * 1024, files: 1 },
       storage: diskStorage({
         destination: process.env.UPLOAD_DIR || './uploads',
         filename: (_req, _file, cb) => cb(null, `media-${randomToken(16)}.bin`),
@@ -78,13 +93,49 @@ export class MediaController {
       }),
     )
     file: Express.Multer.File,
+    @Body('visibility') requestedVisibility: string | undefined,
+    @Body('purpose') requestedPurpose: string | undefined,
     @Req() request: Request,
   ) {
+    const visibility = (requestedVisibility ??
+      MediaVisibility.PUBLIC) as MediaVisibility;
+    if (!Object.values(MediaVisibility).includes(visibility)) {
+      unlinkSync(file.path);
+      throw new BadRequestException('Invalid media visibility');
+    }
+    const purpose = (requestedPurpose ?? MediaPurpose.GENERAL) as MediaPurpose;
+    if (!Object.values(MediaPurpose).includes(purpose)) {
+      unlinkSync(file.path);
+      throw new BadRequestException('Invalid media purpose');
+    }
+    if (
+      (purpose === MediaPurpose.PROGRESS_PHOTO ||
+        purpose === MediaPurpose.SOCIAL_POST ||
+        purpose === MediaPurpose.MEAL_ADHERENCE) &&
+      visibility !== MediaVisibility.PRIVATE
+    ) {
+      unlinkSync(file.path);
+      throw new BadRequestException('Managed user media must be private');
+    }
+
     const absolute = join(process.env.UPLOAD_DIR || './uploads', file.filename);
-    const head = readFileSync(absolute).subarray(0, 32);
+    const uploadedBytes = readFileSync(absolute);
+    const head = uploadedBytes.subarray(0, 32);
     const mime = sniffAllowedMime(head);
     if (!mime) {
+      unlinkSync(absolute);
       throw new BadRequestException('Only jpeg/png/webp/pdf allowed');
+    }
+
+    if (mime.startsWith('image/')) {
+      try {
+        const sanitized = sanitizeUploadedImage(uploadedBytes, mime);
+        writeFileSync(absolute, sanitized);
+        file.size = sanitized.length;
+      } catch (error) {
+        unlinkSync(absolute);
+        throw error;
+      }
     }
 
     const ext = extensionForMime(mime);
@@ -96,6 +147,8 @@ export class MediaController {
 
     return this.media.create(file, userId, request, {
       mimeType: mime,
+      visibility,
+      purpose,
       originalName: sanitizeContentDispositionFilename(
         file.originalname || finalName,
       ),

@@ -1,7 +1,7 @@
 "use client";
 
 import { Spinner } from "@heroui/react/spinner";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { accountSocial } from "@/shared/lib/api";
 import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
@@ -16,11 +16,43 @@ export function AthleteSocialFeedGate() {
   const { isAuthenticated, isReady } = useAuth();
   const [posts, setPosts] = useState<AthleteSocialPostView[] | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const objectUrls = useRef(new Set<string>());
+
+  const clearObjectUrls = useCallback(() => {
+    for (const url of objectUrls.current) URL.revokeObjectURL(url);
+    objectUrls.current.clear();
+  }, []);
 
   const reload = useCallback(async () => {
     const page = await accountSocial.listFeed({ page_size: 50 });
-    setPosts(page.result.map((post) => mapSocialPost(post)));
-  }, []);
+    clearObjectUrls();
+    const mapped = await Promise.all(
+      page.result.map(async (post) => {
+        const view = mapSocialPost(post);
+        view.mediaUrls = (
+          await Promise.all(
+            post.mediaIds.map(async (mediaId) => {
+              try {
+                const blob = await accountSocial.downloadPostMedia(
+                  post.id,
+                  mediaId,
+                );
+                const url = URL.createObjectURL(blob);
+                objectUrls.current.add(url);
+                return url;
+              } catch {
+                return null;
+              }
+            }),
+          )
+        ).filter((url): url is string => url !== null);
+        return view;
+      }),
+    );
+    setPosts(mapped);
+  }, [clearObjectUrls]);
+
+  useEffect(() => clearObjectUrls, [clearObjectUrls]);
 
   useEffect(() => {
     if (!isReady) return;
@@ -66,7 +98,12 @@ export function AthleteSocialFeedGate() {
         const updated = await accountSocial.toggleLike(postId);
         setPosts((prev) =>
           (prev ?? []).map((post) =>
-            post.id === postId ? mapSocialPost(updated, post.saved) : post,
+            post.id === postId
+              ? {
+                  ...mapSocialPost(updated, post.saved),
+                  mediaUrls: post.mediaUrls,
+                }
+              : post,
           ),
         );
       } catch {

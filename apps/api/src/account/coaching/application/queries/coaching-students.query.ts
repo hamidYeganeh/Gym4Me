@@ -10,6 +10,7 @@ import {
   CoachStudent,
   type CoachStudentDocument,
 } from '../../../../schemas/coach-student.schema';
+import { User, type UserDocument } from '../../../../schemas/user.schema';
 import type { ListStudentsQueryDto } from '../../dto/coaching.dto';
 import { projectCoachStudent } from '../projectors/coach-student.projector';
 
@@ -19,6 +20,8 @@ export class CoachingStudentsQuery {
   constructor(
     @InjectModel(CoachStudent.name)
     private readonly studentModel: Model<CoachStudentDocument>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
   ) {}
 
   listForCoach(coachUserId: string, query: ListStudentsQueryDto) {
@@ -54,8 +57,30 @@ export class CoachingStudentsQuery {
         .lean(),
       this.studentModel.countDocuments(filter),
     ]);
+    const athleteIds = items.map((item) => item.athleteUserId);
+    const athletes = await this.userModel
+      .find({ _id: { $in: athleteIds } })
+      .select('_id name avatar.mediaId')
+      .lean();
+    const athleteById = new Map(
+      athletes.map((athlete) => [athlete._id.toString(), athlete]),
+    );
     return paginatedResult(
-      items.map(projectCoachStudent),
+      items.map((item) => {
+        const projected = projectCoachStudent(item);
+        const athlete = athleteById.get(item.athleteUserId.toString());
+        const displayName = [athlete?.name?.first, athlete?.name?.last]
+          .filter(Boolean)
+          .join(' ')
+          .trim();
+        return {
+          ...projected,
+          athlete: {
+            displayName: displayName || null,
+            avatarMediaId: athlete?.avatar?.mediaId?.toString() ?? null,
+          },
+        };
+      }),
       total,
       page,
       pageSize,

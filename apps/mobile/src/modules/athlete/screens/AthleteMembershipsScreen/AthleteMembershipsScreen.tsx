@@ -4,7 +4,6 @@ import { Button } from "@heroui/react/button";
 import { AlertDialog } from "@heroui/react/alert-dialog";
 import { Chip } from "@heroui/react/chip";
 import { Typography } from "@heroui/react/typography";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";

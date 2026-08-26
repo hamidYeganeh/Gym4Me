@@ -21,6 +21,7 @@ import {
   accountAuth,
   accountSessionStorage,
   apiClient,
+  SESSION_INVALIDATED_EVENT,
 } from "@/shared/lib/api-client";
 import { accountProfile } from "@/shared/lib/api";
 
@@ -84,6 +85,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  useEffect(() => {
+    const invalidate = () => setSession(null);
+    window.addEventListener(SESSION_INVALIDATED_EVENT, invalidate);
+    return () => window.removeEventListener(SESSION_INVALIDATED_EVENT, invalidate);
   }, []);
 
   useEffect(() => {

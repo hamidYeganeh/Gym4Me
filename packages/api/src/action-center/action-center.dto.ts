@@ -3,11 +3,14 @@ export type ActionCenterKind =
   | "athlete.workout_resume"
   | "athlete.membership_renew"
   | "athlete.booking_upcoming"
+  | "athlete.waitlist_offer"
   | "coach.booking_requests"
   | "coach.student_at_risk"
   | "coach.student_program"
   | "owner.create_club"
   | "owner.debts"
+  | "owner.booking_queue"
+  | "owner.renewal_risk"
   | "owner.tasks";
 
 export type ActionCenterItem = {

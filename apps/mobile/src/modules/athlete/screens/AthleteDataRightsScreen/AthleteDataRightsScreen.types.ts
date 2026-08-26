@@ -1,4 +1,4 @@
-import type { ConsentHistoryEvent } from "@repo/api";
+import type { AccountDeletionRequest, ConsentHistoryEvent } from "@repo/api";
 
 export type AthleteDataRightsScreenProps = {
   consentEvents: ConsentHistoryEvent[];
@@ -6,4 +6,7 @@ export type AthleteDataRightsScreenProps = {
   lastExportSummary?: string | null;
   onExport: () => Promise<void>;
   onDeleteMetrics: () => Promise<{ deletedCount: number }>;
+  deletionRequest: AccountDeletionRequest | null;
+  onRequestAccountDeletion: (reason?: string) => Promise<void>;
+  onCancelAccountDeletion: () => Promise<void>;
 };

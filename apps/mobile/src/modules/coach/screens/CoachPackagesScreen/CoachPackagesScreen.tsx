@@ -7,7 +7,6 @@ import { Input } from "@heroui/react/input";
 import { Label } from "@heroui/react/label";
 import { TextField } from "@heroui/react/textfield";
 import { Typography } from "@heroui/react/typography";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import type { CoachPackageStatus } from "../../lib/coach-packages-data";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";

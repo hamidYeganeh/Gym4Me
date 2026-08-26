@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, Query, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  GoneException,
+  Param,
+  Post,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -6,7 +15,6 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { Role, StaffPermissionKey } from '../common/enums';
 import { StaffService } from '../account/staff/staff.service';
 import {
-  ClaimWaitlistDto,
   JoinWaitlistDto,
   ListWaitlistQueryDto,
   OfferWaitlistDto,
@@ -55,12 +63,12 @@ export class AccountWaitlistController {
   @Roles(Role.ATHLETE)
   @ApiOperation({ summary: 'Claim a timed waitlist offer' })
   claim(
-    @CurrentUser('sub') userId: string,
-    @Param('waitlistId') waitlistId: string,
-    @Body() dto: ClaimWaitlistDto,
-    @Req() request: Request,
+    @CurrentUser('sub') _userId: string,
+    @Param('waitlistId') _waitlistId: string,
   ) {
-    return this.waitlists.claim(userId, waitlistId, dto, request);
+    throw new GoneException(
+      'Use POST /account/bookings/waitlist/:waitlistId/claim',
+    );
   }
 
   @Post('expire-offers')

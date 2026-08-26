@@ -4,10 +4,8 @@ import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import { Bookmark } from "@repo/icons/Bookmark";
 import { Chat } from "@repo/icons/Chat";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { Flag1 } from "@repo/icons/Flag1";
 import { Heart } from "@repo/icons/Heart";
-import { Image1 } from "@repo/icons/Image1";
 import { Plus } from "@repo/icons/Plus";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
@@ -102,14 +100,17 @@ export function AthleteSocialFeedScreen({
                   <Typography className={styles.body()} type="body">
                     {post.body}
                   </Typography>
-                  {post.mediaCount > 0 ? (
-                    <div className={styles.media()}>
-                      <Image1 size={28} />
-                      <Typography type="body-sm">
-                        {t("mediaPlaceholder", {
-                          count: toPersianDigits(post.mediaCount),
-                        })}
-                      </Typography>
+                  {post.mediaUrls.length > 0 ? (
+                    <div className={styles.mediaGrid()}>
+                      {post.mediaUrls.map((url, index) => (
+                        <img
+                          alt={t("postMediaAlt", { index: index + 1 })}
+                          className={styles.mediaImage()}
+                          key={url}
+                          loading="lazy"
+                          src={url}
+                        />
+                      ))}
                     </div>
                   ) : null}
                 </Button>

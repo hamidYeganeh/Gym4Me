@@ -15,6 +15,8 @@ import type {
   ResolvePayoutDisputeInput,
   RebuildWalletInput,
   RebuildWalletResult,
+  ListAdminWalletsQuery,
+  AdminWalletsPage,
   SettlePayoutInput,
 } from "./finance.dto";
 
@@ -58,6 +60,10 @@ export function createAdminFinanceApi(client: ApiClient) {
         method: "POST",
         body: input,
       });
+    },
+
+    listWallets(query: ListAdminWalletsQuery = {}) {
+      return client.request<AdminWalletsPage>(ep.wallets, { query });
     },
 
     listPayouts(query: ListPayoutsQuery & { clubId?: string } = {}) {

@@ -5,6 +5,10 @@ import {
   SubscriptionRenewalMode,
 } from '../common/enums';
 import { User } from './user.schema';
+import {
+  PlatformEntitlementContract,
+  PlatformEntitlementContractSchema,
+} from './platform-plan.schema';
 
 export type PlatformSubscriptionDocument =
   HydratedDocument<PlatformSubscription>;
@@ -70,6 +74,45 @@ export class PlatformSubscription {
     default: () => ({ mode: SubscriptionRenewalMode.MANUAL }),
   })
   renewal!: PlatformSubscriptionRenewal;
+
+  @Prop({ type: PlatformEntitlementContractSchema })
+  entitlementSnapshot?: PlatformEntitlementContract;
+
+  @Prop({ type: Number, min: 1 })
+  planVersion?: number;
+
+  @Prop({ type: String, enum: ['free_plan', 'read_only'] })
+  postExpirationModeSnapshot?: 'free_plan' | 'read_only';
+
+  @Prop({ type: Types.ObjectId, ref: 'PlatformPlan' })
+  fallbackPlanIdSnapshot?: Types.ObjectId;
+
+  @Prop({ type: Date })
+  graceEndsAt?: Date;
+
+  @Prop({ type: Types.ObjectId, ref: 'PlatformPlan' })
+  scheduledPlanId?: Types.ObjectId;
+
+  @Prop({ type: Date })
+  scheduledPlanEffectiveAt?: Date;
+
+  @Prop({ type: Date })
+  cancellationRequestedAt?: Date;
+
+  @Prop({ trim: true, maxlength: 500 })
+  cancellationReason?: string;
+
+  @Prop({ type: Date })
+  graceEnteredAt?: Date;
+
+  @Prop({ type: Date })
+  readOnlyAt?: Date;
+
+  @Prop({ type: Date })
+  fallbackAppliedAt?: Date;
+
+  @Prop({ type: Date })
+  entitlementBackfilledAt?: Date;
 
   createdAt!: Date;
   updatedAt!: Date;

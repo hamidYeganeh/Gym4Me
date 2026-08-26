@@ -486,6 +486,7 @@ export enum NotificationTemplateKey {
   PAYOUT_SETTLED = 'payout.settled',
   ACHIEVEMENT_UNLOCKED = 'gamification.achievement_unlocked',
   WORKOUT_REVIEWED = 'workout.reviewed',
+  CLUB_BROADCAST = 'club.broadcast',
 }
 
 export enum SupportTicketCategory {
@@ -642,6 +643,8 @@ export enum AuditAction {
   ACHIEVEMENT_GRANTED = 'club.achievement_granted',
   MEDIA_UPLOADED = 'media.uploaded',
   PROFILE_SETTINGS_UPDATED = 'profile.settings_updated',
+  ACCOUNT_DELETION_REQUESTED = 'account.deletion_requested',
+  ACCOUNT_DELETION_CANCELLED = 'account.deletion_cancelled',
   PROFILE_FAVOURITE_LOCATION_CREATED = 'profile.favourite_location_created',
   PROFILE_FAVOURITE_LOCATION_UPDATED = 'profile.favourite_location_updated',
   PROFILE_FAVOURITE_LOCATION_DELETED = 'profile.favourite_location_deleted',
@@ -709,7 +712,9 @@ export enum AuditAction {
   MEMBERSHIP_TRANSFERRED = 'membership.transferred',
   MEMBERSHIP_CANCELLED = 'membership.cancelled',
   PLATFORM_SUBSCRIPTION_ACTIVATED = 'platform_subscription.activated',
+  PLATFORM_SUBSCRIPTION_CANCELLATION_REQUESTED = 'platform_subscription.cancellation_requested',
   PLATFORM_SUBSCRIPTION_CANCELLED = 'platform_subscription.cancelled',
+  PLATFORM_SUBSCRIPTION_UPDATED = 'platform_subscription.updated',
   COACHING_SERVICE_UPSERTED = 'coaching.service_upserted',
   COACHING_AVAILABILITY_UPDATED = 'coaching.availability_updated',
   COACHING_PACKAGE_CREATED = 'coaching.package_created',

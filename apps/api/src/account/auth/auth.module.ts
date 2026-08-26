@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
+import { MongoTransactionModule } from '../../common/mongo/mongo-transaction.module';
 import {
   ImpersonationSession,
   ImpersonationSessionSchema,
@@ -21,6 +22,7 @@ import { TokenService } from './token.service';
 @Module({
   imports: [
     PassportModule,
+    MongoTransactionModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({

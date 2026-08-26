@@ -7,7 +7,6 @@ import { Input } from "@heroui/react/input";
 import { Label } from "@heroui/react/label";
 import { TextField } from "@heroui/react/textfield";
 import { Typography } from "@heroui/react/typography";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { PlayCircle } from "@repo/icons/PlayCircle";
 import type { CoachVideoFeedbackStatus } from "../../lib/coach-video-feedback-data";
 import { AppLayout } from "@repo/ui/layout/AppLayout";

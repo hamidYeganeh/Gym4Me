@@ -3,8 +3,9 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import type Redis from 'ioredis';
-import { Model, Types } from 'mongoose';
+import { ClientSession, Model, Types } from 'mongoose';
 import { Role } from '../../common/enums';
+import { MongoTransactionService } from '../../common/mongo/mongo-transaction.service';
 import { REDIS } from '../../common/redis/redis.module';
 import type { JwtUser, PasswordResetTokenPayload } from '../../common/types';
 import { randomToken, sha256 } from '../../common/utils/hash.util';
@@ -20,6 +21,9 @@ export interface TokenPair {
 }
 
 const ACCOUNT_ROLES: Role[] = [Role.ATHLETE, Role.COACH, Role.CLUB_OWNER];
+
+class RefreshRotationClaimFailed extends Error {}
+class RefreshRotationRoleInvalid extends Error {}
 
 /**
  * Prefer athlete when present; never pick admin for account (mobile) sessions.
@@ -41,6 +45,7 @@ export class TokenService {
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
     @Inject(REDIS) private readonly redis: Redis,
+    private readonly transactions: MongoTransactionService,
   ) {}
 
   private refreshTtlMs(): number {
@@ -62,7 +67,7 @@ export class TokenService {
 
   async markSessionsRevoked(userId: Types.ObjectId | string): Promise<void> {
     const id = userId.toString();
-    const accessTtl = this.config.get('JWT_ACCESS_TTL', '900s');
+    const accessTtl = this.config.get<string>('JWT_ACCESS_TTL', '900s');
     const seconds = Math.max(this.parseTtlSeconds(accessTtl), 900);
     await this.redis.set(
       this.sessionsRevokedKey(id),
@@ -109,6 +114,7 @@ export class TokenService {
     user: UserDocument,
     activeRole?: Role,
     sessionId = randomToken(16),
+    mongoSession?: ClientSession,
   ): Promise<TokenPair> {
     const role = activeRole ?? pickDefaultActiveRole(user.roles);
     if (!user.roles.includes(role)) {
@@ -127,13 +133,20 @@ export class TokenService {
     });
 
     const refreshToken = randomToken();
-    await this.refreshModel.create({
+    const refreshRecord = {
       userId: user._id,
       tokenHash: sha256(refreshToken),
       sessionId,
       activeRole: role,
       expiresAt: new Date(Date.now() + this.refreshTtlMs()),
-    });
+    };
+    if (mongoSession) {
+      await this.refreshModel.create([refreshRecord], {
+        session: mongoSession,
+      });
+    } else {
+      await this.refreshModel.create(refreshRecord);
+    }
 
     return { accessToken, refreshToken };
   }
@@ -169,27 +182,53 @@ export class TokenService {
     presentedToken: string,
     forceActiveRole?: Role,
   ): Promise<TokenPair> {
-    const doc = await this.findValidToken(presentedToken);
+    const tokenHash = sha256(presentedToken);
+    try {
+      return await this.transactions.run(async (mongoSession) => {
+        const doc = await this.refreshModel.findOneAndUpdate(
+          {
+            tokenHash,
+            revokedAt: null,
+            expiresAt: { $gt: new Date() },
+          },
+          { $set: { revokedAt: new Date() } },
+          { new: true, session: mongoSession },
+        );
+        if (!doc) throw new RefreshRotationClaimFailed();
 
-    let role: Role;
-    if (forceActiveRole) {
-      if (!user.roles.includes(forceActiveRole)) {
-        throw new UnauthorizedException('Role not assigned to user');
+        let role: Role;
+        if (forceActiveRole) {
+          if (!user.roles.includes(forceActiveRole)) {
+            throw new RefreshRotationRoleInvalid();
+          }
+          role = forceActiveRole;
+        } else if (doc.activeRole && user.roles.includes(doc.activeRole)) {
+          role = doc.activeRole;
+        } else {
+          throw new RefreshRotationRoleInvalid();
+        }
+
+        const sessionId = doc.sessionId ?? randomToken(16);
+        const pair = await this.issuePair(user, role, sessionId, mongoSession);
+        doc.replacedByHash = sha256(pair.refreshToken);
+        await doc.save({ session: mongoSession });
+        return pair;
+      });
+    } catch (error) {
+      if (error instanceof RefreshRotationRoleInvalid) {
+        await this.revokeAll(user._id);
+        throw new UnauthorizedException('Session role is no longer valid');
       }
-      role = forceActiveRole;
-    } else if (doc.activeRole && user.roles.includes(doc.activeRole)) {
-      role = doc.activeRole;
-    } else {
-      await this.revokeAll(user._id);
-      throw new UnauthorizedException('Session role is no longer valid');
+      if (error instanceof RefreshRotationClaimFailed) {
+        const reused = await this.refreshModel.findOne({ tokenHash });
+        if (reused?.revokedAt) {
+          await this.revokeSession(reused);
+          throw new UnauthorizedException('Refresh token reuse detected');
+        }
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+      throw error;
     }
-
-    const sessionId = doc.sessionId ?? randomToken(16);
-    const pair = await this.issuePair(user, role, sessionId);
-    doc.revokedAt = new Date();
-    doc.replacedByHash = sha256(pair.refreshToken);
-    await doc.save();
-    return pair;
   }
 
   /**
@@ -263,7 +302,8 @@ export class TokenService {
     // a stale token from one device cannot sign every other device out.
     let tokenHash: string | undefined = doc.tokenHash;
     while (tokenHash) {
-      const current = await this.refreshModel.findOne({ tokenHash });
+      const current: RefreshTokenDocument | null =
+        await this.refreshModel.findOne({ tokenHash });
       if (!current) break;
       if (current.sessionId) {
         await this.refreshModel.updateMany(
@@ -290,7 +330,7 @@ export class TokenService {
     sessionId: string,
     revokedAt: Date,
   ): Promise<void> {
-    const accessTtl = this.config.get('JWT_ACCESS_TTL', '900s');
+    const accessTtl = this.config.get<string>('JWT_ACCESS_TTL', '900s');
     await this.redis.set(
       this.sessionRevokedKey(userId.toString(), sessionId),
       String(Math.floor(revokedAt.getTime() / 1000)),

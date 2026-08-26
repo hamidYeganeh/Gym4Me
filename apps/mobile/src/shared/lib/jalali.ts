@@ -11,6 +11,12 @@ function mod(a: number, b: number) {
   return a - Math.trunc(a / b) * b;
 }
 
+function normalizeCalendarDigits(value: string): string {
+  return value
+    .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
+    .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)));
+}
+
 export function toJalali(gy: number, gm: number, gd: number) {
   const gdm = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
   const gy2 = gm > 2 ? gy + 1 : gy;
@@ -93,12 +99,18 @@ export function isoToJalaliDisplay(iso: string | null | undefined): string {
 
 /** Parse Jalali `jy/jm/jd` or `jy-jm-jd` into ISO `YYYY-MM-DD`. */
 export function jalaliDisplayToIso(value: string): string | null {
-  const match = /^(\d{3,4})[/-](\d{1,2})[/-](\d{1,2})$/.exec(value.trim());
+  const match = /^(\d{3,4})[/-](\d{1,2})[/-](\d{1,2})$/.exec(
+    normalizeCalendarDigits(value.trim()),
+  );
   if (!match) return null;
   const jy = Number(match[1]);
   const jm = Number(match[2]);
   const jd = Number(match[3]);
   if (jm < 1 || jm > 12 || jd < 1 || jd > 31) return null;
   const { gy, gm, gd } = toGregorian(jy, jm, jd);
+  const roundTrip = toJalali(gy, gm, gd);
+  if (roundTrip.jy !== jy || roundTrip.jm !== jm || roundTrip.jd !== jd) {
+    return null;
+  }
   return `${gy}-${String(gm).padStart(2, "0")}-${String(gd).padStart(2, "0")}`;
 }

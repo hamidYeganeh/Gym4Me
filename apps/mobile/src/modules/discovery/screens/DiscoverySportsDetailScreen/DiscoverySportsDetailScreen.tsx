@@ -2,7 +2,6 @@
 
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { ClubCard } from "@repo/ui/cards/ClubCard";
 import { SportCard } from "@repo/ui/cards/SportCard";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";

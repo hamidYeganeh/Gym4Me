@@ -34,6 +34,7 @@ import {
   SubscriptionRenewalMode,
 } from '../../../common/enums';
 import { toStringArray } from '../../../common/utils/list-query.util';
+import { PLATFORM_ENTITLEMENT_KEYS } from '../../../schemas/platform-plan.schema';
 
 export class PaginationQueryDto extends CommonPaginationQueryDto {}
 
@@ -166,6 +167,46 @@ export class PlatformPlanPricingDto {
 export class SubscriptionRenewalDto {
   @IsEnum(SubscriptionRenewalMode)
   mode!: SubscriptionRenewalMode;
+}
+
+export class PlatformEntitlementLimitDto {
+  @IsIn(PLATFORM_ENTITLEMENT_KEYS)
+  key!: (typeof PLATFORM_ENTITLEMENT_KEYS)[number];
+
+  @ValidateIf((_object, value) => value !== null)
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  value!: number | null;
+
+  @IsIn(['hard', 'soft'])
+  mode!: 'hard' | 'soft';
+}
+
+export class PlatformEntitlementContractDto {
+  @Type(() => Number)
+  @Equals(1)
+  schemaVersion!: 1;
+
+  @IsIn(['club_owner', 'coach'])
+  audience!: 'club_owner' | 'coach';
+
+  @IsArray()
+  @ArrayMaxSize(100)
+  @IsString({ each: true })
+  capabilities!: string[];
+
+  @IsArray()
+  @ArrayMaxSize(20)
+  @ValidateNested({ each: true })
+  @Type(() => PlatformEntitlementLimitDto)
+  limits!: PlatformEntitlementLimitDto[];
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(30)
+  graceDays!: number;
 }
 
 // ── Club membership plans ─────────────────────────────────────────────────
@@ -594,6 +635,23 @@ export class CreatePlatformPlanDto {
   features?: string[];
 
   @IsOptional()
+  @ValidateNested()
+  @Type(() => PlatformEntitlementContractDto)
+  entitlementContract?: PlatformEntitlementContractDto;
+
+  @IsOptional()
+  @IsBoolean()
+  contractReady?: boolean;
+
+  @IsOptional()
+  @IsIn(['free_plan', 'read_only'])
+  postExpirationMode?: 'free_plan' | 'read_only';
+
+  @IsOptional()
+  @IsMongoId()
+  fallbackPlanId?: string;
+
+  @IsOptional()
   @IsEnum(EntityStatus)
   status?: EntityStatus;
 }
@@ -618,6 +676,23 @@ export class UpdatePlatformPlanDto {
   @IsOptional()
   @IsString({ each: true })
   features?: string[];
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => PlatformEntitlementContractDto)
+  entitlementContract?: PlatformEntitlementContractDto;
+
+  @IsOptional()
+  @IsBoolean()
+  contractReady?: boolean;
+
+  @IsOptional()
+  @IsIn(['free_plan', 'read_only'])
+  postExpirationMode?: 'free_plan' | 'read_only';
+
+  @IsOptional()
+  @IsMongoId()
+  fallbackPlanId?: string;
 
   @IsOptional()
   @IsEnum(EntityStatus)
@@ -665,6 +740,10 @@ export class PreviewPlatformSubscriptionCheckoutDto {
   @IsOptional()
   @IsEnum(SubscriptionRenewalMode)
   renewalMode?: SubscriptionRenewalMode;
+
+  @IsOptional()
+  @IsDateString()
+  priceReferenceAt?: string;
 }
 
 export class InitiatePlatformSubscriptionCheckoutDto extends PreviewPlatformSubscriptionCheckoutDto {
@@ -705,6 +784,11 @@ export class CancelPlatformSubscriptionDto {
   @IsString()
   @MaxLength(500)
   reason?: string;
+}
+
+export class SchedulePlatformPlanChangeDto {
+  @IsMongoId()
+  planId!: string;
 }
 
 /** Self-purchase: athlete buys an active published plan for themselves. */

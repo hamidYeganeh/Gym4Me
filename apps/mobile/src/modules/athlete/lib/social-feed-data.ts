@@ -4,12 +4,15 @@ import type {
   SocialPostStatus,
   SocialPostVisibility,
 } from "@repo/api/social";
+import { mediaFileUrl } from "@/shared/lib/api";
 
 export type AthleteSocialPostView = {
   id: string;
   authorLabel: string;
   body: string;
   mediaCount: number;
+  mediaIds: string[];
+  mediaUrls: string[];
   status: SocialPostStatus;
   visibility: SocialPostVisibility | string;
   likeCount: number;
@@ -60,6 +63,10 @@ export function mapSocialPost(
     authorLabel: authorLabelFromId(post.authorUserId),
     body: post.body,
     mediaCount: post.mediaIds.length,
+    mediaIds: post.mediaIds,
+    mediaUrls: post.mediaIds
+      .map((mediaId) => mediaFileUrl(mediaId))
+      .filter((url): url is string => Boolean(url)),
     status: post.status,
     visibility: post.visibility,
     likeCount: post.likeCount,
@@ -91,6 +98,8 @@ export const DEMO_SOCIAL_POSTS: AthleteSocialPostView[] = [
     authorLabel: "سارا محمدی",
     body: "امروز صبح ۵ کیلومتر دویدم. حس فوق‌العاده‌ای دارم — کی همراه می‌آید؟",
     mediaCount: 1,
+    mediaIds: [],
+    mediaUrls: [],
     status: "published",
     visibility: "public",
     likeCount: 24,
@@ -105,6 +114,8 @@ export const DEMO_SOCIAL_POSTS: AthleteSocialPostView[] = [
     authorLabel: "علی رضایی",
     body: "برنامه بالاتنه این هفته تموم شد. رکورد پرس سینه جدید! 💪",
     mediaCount: 0,
+    mediaIds: [],
+    mediaUrls: [],
     status: "published",
     visibility: "followers",
     likeCount: 18,
@@ -119,6 +130,8 @@ export const DEMO_SOCIAL_POSTS: AthleteSocialPostView[] = [
     authorLabel: "شما",
     body: "اولین پست من در Gym4Me — آماده‌ام برای چالش ۳۰ روزه.",
     mediaCount: 0,
+    mediaIds: [],
+    mediaUrls: [],
     status: "published",
     visibility: "public",
     likeCount: 7,

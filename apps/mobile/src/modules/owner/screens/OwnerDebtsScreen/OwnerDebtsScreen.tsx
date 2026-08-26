@@ -3,7 +3,6 @@
 import { Button } from "@heroui/react/button";
 import { Chip } from "@heroui/react/chip";
 import { Typography } from "@heroui/react/typography";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
@@ -15,12 +14,13 @@ import type { OwnerDebtsScreenProps } from "./OwnerDebtsScreen.types";
 
 const STATUS_COLOR: Record<
   OwnerDebtStatus,
-  "success" | "warning" | "danger" | "accent"
+  "success" | "warning" | "danger" | "accent" | "default"
 > = {
   open: "accent",
   partial: "warning",
   settled: "success",
   overdue: "danger",
+  "written-off": "default",
 };
 
 const STATUS_KEY = {
@@ -28,6 +28,7 @@ const STATUS_KEY = {
   partial: "statusPartial",
   settled: "statusSettled",
   overdue: "statusOverdue",
+  "written-off": "statusWrittenOff",
 } as const;
 
 export function OwnerDebtsScreen({

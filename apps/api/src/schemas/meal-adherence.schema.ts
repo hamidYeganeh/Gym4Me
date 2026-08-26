@@ -55,6 +55,15 @@ export class MealAdherence {
   @Prop({ trim: true, maxlength: 500 })
   note?: string;
 
+  @Prop({ type: Types.ObjectId, ref: 'Media' })
+  mediaId?: Types.ObjectId;
+
+  @Prop({ required: true })
+  idempotencyKey!: string;
+
+  @Prop({ required: true })
+  idempotencyFingerprint!: string;
+
   createdAt!: Date;
   updatedAt!: Date;
 }
@@ -66,3 +75,10 @@ MealAdherenceSchema.index({
   mealPlanId: 1,
   loggedAt: -1,
 });
+MealAdherenceSchema.index(
+  { athleteUserId: 1, idempotencyKey: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { idempotencyKey: { $type: 'string' } },
+  },
+);

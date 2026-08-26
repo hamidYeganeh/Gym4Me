@@ -92,3 +92,21 @@ export type RebuildWalletResult = {
   balance: number;
   corrected: boolean;
 };
+
+export type AdminWallet = {
+  id: string;
+  owner: RebuildWalletInput;
+  balance: number;
+  currency: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ListAdminWalletsQuery = {
+  page?: number;
+  page_size?: number;
+  type?: RebuildWalletInput["type"];
+  ownerId?: string;
+};
+
+export type AdminWalletsPage = Paginated<AdminWallet>;

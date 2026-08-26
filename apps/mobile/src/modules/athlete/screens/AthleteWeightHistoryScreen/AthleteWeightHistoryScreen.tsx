@@ -4,7 +4,6 @@ import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import { Calendar1 } from "@repo/icons/Calendar1";
 import { ChevronDown } from "@repo/icons/ChevronDown";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { MetricHistoryItem } from "@repo/ui/cards/MetricHistoryItem";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";

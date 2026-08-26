@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { createHash } from 'crypto';
 import type { Request } from 'express';
 import { Model, Types } from 'mongoose';
 import type { QueryFilter } from 'mongoose';
@@ -14,14 +15,18 @@ import {
   FoodItemStatus,
   MealAdherenceStatus,
   MealPlanStatus,
+  MediaVisibility,
   Privacy,
   Role,
 } from '../common/enums';
+import { MongoTransactionService } from '../common/mongo/mongo-transaction.service';
 import {
   paginatedResult,
   resolvePageSize,
 } from '../common/utils/pagination.util';
 import { FoodItem, FoodItemDocument } from '../schemas/food-item.schema';
+import { MediaService } from '../media/media.service';
+import { MediaPurpose } from '../schemas/media.schema';
 import {
   MealAdherence,
   MealAdherenceDocument,
@@ -50,6 +55,8 @@ export class NutritionService {
     @InjectModel(MealAdherence.name)
     private readonly adherenceModel: Model<MealAdherenceDocument>,
     private readonly audit: AuditService,
+    private readonly media: MediaService,
+    private readonly transactions: MongoTransactionService,
   ) {}
 
   async listMealPlans(
@@ -442,15 +449,86 @@ export class NutritionService {
     if (plan.athleteUserId.toString() !== athleteUserId) {
       throw new ForbiddenException('Not your meal plan');
     }
-    const item = await this.adherenceModel.create({
+    const day = plan.days.find((entry) => entry.dayIndex === dto.slot.dayIndex);
+    if (!day?.meals[dto.slot.mealIndex]) {
+      throw new BadRequestException('Meal plan slot does not exist');
+    }
+    const fingerprint = createHash('sha256')
+      .update(
+        JSON.stringify({
+          mealPlanId: dto.mealPlanId,
+          slot: dto.slot,
+          status: dto.status,
+          loggedAt: dto.loggedAt ?? null,
+          note: dto.note?.trim() ?? null,
+          mediaId: dto.mediaId ?? null,
+        }),
+      )
+      .digest('hex');
+    const replay = await this.adherenceModel.findOne({
       athleteUserId: new Types.ObjectId(athleteUserId),
-      mealPlanId: plan._id,
-      slot: dto.slot,
-      status: dto.status,
-      loggedAt: dto.loggedAt ? new Date(dto.loggedAt) : new Date(),
-      privacy: Privacy.PRIVATE,
-      note: dto.note?.trim(),
+      idempotencyKey: dto.idempotencyKey,
     });
+    if (replay) {
+      if (replay.idempotencyFingerprint !== fingerprint) {
+        throw new BadRequestException(
+          'Idempotency key is already used with a different meal log payload',
+        );
+      }
+      return this.toAdherence(replay.toObject());
+    }
+    if (dto.mediaId) {
+      await this.media.assertOwnedImage(
+        dto.mediaId,
+        athleteUserId,
+        MediaVisibility.PRIVATE,
+        MediaPurpose.MEAL_ADHERENCE,
+      );
+    }
+    let item: MealAdherenceDocument;
+    try {
+      item = await this.transactions.run(async (session) => {
+        const [created] = await this.adherenceModel.create(
+          [
+            {
+              athleteUserId: new Types.ObjectId(athleteUserId),
+              mealPlanId: plan._id,
+              slot: dto.slot,
+              status: dto.status,
+              loggedAt: dto.loggedAt ? new Date(dto.loggedAt) : new Date(),
+              privacy: Privacy.PRIVATE,
+              note: dto.note?.trim(),
+              mediaId: dto.mediaId
+                ? new Types.ObjectId(dto.mediaId)
+                : undefined,
+              idempotencyKey: dto.idempotencyKey,
+              idempotencyFingerprint: fingerprint,
+            },
+          ],
+          { session },
+        );
+        if (dto.mediaId) {
+          await this.media.claimMealAdherence(
+            dto.mediaId,
+            athleteUserId,
+            created._id,
+            session,
+          );
+        }
+        return created;
+      });
+    } catch (error) {
+      if ((error as { code?: number }).code === 11000) {
+        const raced = await this.adherenceModel.findOne({
+          athleteUserId: new Types.ObjectId(athleteUserId),
+          idempotencyKey: dto.idempotencyKey,
+        });
+        if (raced?.idempotencyFingerprint === fingerprint) {
+          return this.toAdherence(raced.toObject());
+        }
+      }
+      throw error;
+    }
     this.audit.log({
       action: AuditAction.MEAL_ADHERENCE_LOGGED,
       actorId: athleteUserId,
@@ -532,6 +610,7 @@ export class NutritionService {
     loggedAt: Date;
     privacy: Privacy;
     note?: string;
+    mediaId?: Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
   }) {
@@ -544,6 +623,7 @@ export class NutritionService {
       loggedAt: doc.loggedAt.toISOString(),
       privacy: doc.privacy,
       note: doc.note ?? null,
+      mediaId: doc.mediaId?.toString() ?? null,
       createdAt: doc.createdAt.toISOString(),
       updatedAt: doc.updatedAt.toISOString(),
     };

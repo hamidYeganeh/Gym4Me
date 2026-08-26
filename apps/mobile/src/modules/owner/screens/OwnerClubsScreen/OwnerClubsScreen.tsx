@@ -4,7 +4,6 @@ import { Button } from "@heroui/react/button";
 import { Chip } from "@heroui/react/chip";
 import { Typography } from "@heroui/react/typography";
 import { Building2 } from "@repo/icons/Building2";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { UsersThree } from "@repo/icons/UsersThree";
 import { CallToActionCard } from "@repo/ui/cards/CallToActionCard";
 import { AppLayout } from "@repo/ui/layout/AppLayout";

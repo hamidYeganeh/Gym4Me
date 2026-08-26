@@ -8,6 +8,7 @@ import {
 } from "@repo/api/discovery";
 import { createBasicsLocationsApi } from "@repo/api/basics";
 import { createAccountMembershipsApi } from "@repo/api/memberships";
+import { createAccountSupportApi } from "@repo/api/account";
 import { getApiBaseUrl } from "./env";
 
 export const apiClient = createApiClient({
@@ -21,6 +22,7 @@ export const discoveryCoaches = createDiscoveryCoachesApi(apiClient);
 export const basicsLocations = createBasicsLocationsApi(apiClient);
 export const articlesApi = createArticlesApi(apiClient);
 export const membershipsApi = createAccountMembershipsApi(apiClient);
+export const supportApi = createAccountSupportApi(apiClient);
 
 export function mediaFileUrl(
   mediaId: string | null | undefined,

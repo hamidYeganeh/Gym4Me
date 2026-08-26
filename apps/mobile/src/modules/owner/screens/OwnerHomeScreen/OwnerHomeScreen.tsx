@@ -28,6 +28,10 @@ export function OwnerHomeScreen({
   clubs,
   tasksNewCount = 0,
   actions = [],
+  actionsError = false,
+  actionsLoading = false,
+  actionsStale = false,
+  onActionsRetry,
 }: OwnerHomeScreenProps) {
   const t = useTranslations("OwnerHome");
   const router = useRouter();
@@ -63,7 +67,14 @@ export function OwnerHomeScreen({
           <section aria-labelledby="owner-action-center-title" className="space-y-3">
             <h2 className="text-lg font-bold" id="owner-action-center-title">{t("actionCenterTitle")}</h2>
             <p className="text-sm text-muted">{t("actionCenterDescription")}</p>
-            {actions.length === 0 ? <p className="text-sm text-muted">{t("actionCenterEmpty")}</p> : null}
+            {actionsLoading ? <p aria-live="polite" className="text-sm text-muted">{t("actionCenterLoading")}</p> : null}
+            {actionsError ? (
+              <div role="alert">
+                <p className="text-sm text-danger">{t(actionsStale ? "actionCenterStale" : "actionCenterError")}</p>
+                <button className="mt-2 min-h-11 rounded-medium px-3 text-sm text-primary underline" onClick={onActionsRetry} type="button">{t("actionCenterRetry")}</button>
+              </div>
+            ) : null}
+            {!actionsLoading && !actionsError && actions.length === 0 ? <p className="text-sm text-muted">{t("actionCenterEmpty")}</p> : null}
             {actions.map((action) => (
               <CallToActionCard
                 actionLabel={t("actionCenterOpen")}

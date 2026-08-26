@@ -10,6 +10,8 @@ export const athleteSocialPostScreenVariants = tv({
     body: "text-foreground whitespace-pre-wrap",
     media:
       "flex h-40 items-center justify-center rounded-[18px] border border-dashed border-border bg-surface text-muted",
+    mediaGrid: "grid grid-cols-2 gap-2 overflow-hidden rounded-[18px]",
+    mediaImage: "aspect-square w-full bg-surface object-cover",
     actions: "flex items-center gap-1",
     sectionTitle: "text-muted",
     list: "flex flex-col gap-3",

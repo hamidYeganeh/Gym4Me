@@ -27,6 +27,7 @@ export type Invoice = {
     payerUserId: string | null;
     clubName: string | null;
     clubId: string | null;
+    payerDisplayName?: string | null;
   };
   issuedAt: string;
   voidedAt: string | null;

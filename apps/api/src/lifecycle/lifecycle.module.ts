@@ -5,6 +5,10 @@ import { OutboxModule } from '../outbox/outbox.module';
 import { CheckIn, CheckInSchema } from '../schemas/check-in.schema';
 import { Club, ClubSchema } from '../schemas/club.schema';
 import {
+  ClubBroadcast,
+  ClubBroadcastSchema,
+} from '../schemas/club-broadcast.schema';
+import {
   ClubMembership,
   ClubMembershipSchema,
 } from '../schemas/club-membership.schema';
@@ -28,6 +32,7 @@ import { OwnerLifecycleController } from './owner-lifecycle.controller';
       { name: ClubMembership.name, schema: ClubMembershipSchema },
       { name: Club.name, schema: ClubSchema },
       { name: CheckIn.name, schema: CheckInSchema },
+      { name: ClubBroadcast.name, schema: ClubBroadcastSchema },
     ]),
   ],
   controllers: [OwnerLifecycleController],

@@ -8,4 +8,7 @@ export type DiscoveryClubsReserveTimeStepSectionProps = {
   slots: ReserveSlot[];
   selectedSlotId: string | null;
   onSlotPress: (slotId: string) => void;
+  onWaitlistPress?: (slot: ReserveSlot) => void;
+  waitlistPendingId?: string | null;
+  waitlistResult?: { slotId: string; error: boolean } | null;
 };

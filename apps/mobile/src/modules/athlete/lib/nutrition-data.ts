@@ -47,6 +47,8 @@ export type AthleteMealLogItem = {
   status: MealAdherenceStatus;
   loggedLabel: string;
   note: string | null;
+  mediaId: string | null;
+  mediaUrl: string | null;
 };
 
 function formatUpdatedAt(iso: string): string {
@@ -109,6 +111,8 @@ export function mapMealAdherence(
     status: entry.status,
     loggedLabel: formatUpdatedAt(entry.loggedAt),
     note: entry.note,
+    mediaId: entry.mediaId,
+    mediaUrl: null,
   };
 }
 
@@ -227,6 +231,8 @@ export const DEMO_MEAL_LOGS: AthleteMealLogItem[] = [
     status: "followed",
     loggedLabel: "امروز",
     note: null,
+    mediaId: null,
+    mediaUrl: null,
   },
   {
     id: "demo-log-2",
@@ -237,6 +243,8 @@ export const DEMO_MEAL_LOGS: AthleteMealLogItem[] = [
     status: "partial",
     loggedLabel: "امروز",
     note: "برنج کمتر خوردم",
+    mediaId: null,
+    mediaUrl: null,
   },
   {
     id: "demo-log-3",
@@ -247,5 +255,7 @@ export const DEMO_MEAL_LOGS: AthleteMealLogItem[] = [
     status: "skipped",
     loggedLabel: "دیروز",
     note: null,
+    mediaId: null,
+    mediaUrl: null,
   },
 ];

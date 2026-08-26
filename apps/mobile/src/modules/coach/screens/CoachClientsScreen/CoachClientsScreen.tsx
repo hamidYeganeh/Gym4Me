@@ -49,11 +49,17 @@ const ENGAGEMENT_LABEL_KEY: Record<CoachClientEngagement, string> = {
   paused: "engagementPaused",
 };
 
-export function CoachClientsScreen({ clients }: CoachClientsScreenProps) {
+export function CoachClientsScreen({
+  clients,
+  initialFilter = "all",
+  followingUpId,
+  followUpError,
+  onFollowUp,
+}: CoachClientsScreenProps) {
   const t = useTranslations("CoachClients");
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<EngagementFilter>("all");
+  const [filter, setFilter] = useState<EngagementFilter>(initialFilter);
 
   const filteredClients = useMemo(() => {
     const normalized = query.trim();
@@ -110,6 +116,23 @@ export function CoachClientsScreen({ clients }: CoachClientsScreenProps) {
           ))}
         </FilterChipBar>
 
+        {initialFilter === "at-risk" ? (
+          <div className={styles.followUpSummary} role="status">
+            <Typography type="body" weight="semibold">
+              {t("followUpTitle")}
+            </Typography>
+            <Typography className={styles.introSubtitle} type="body-sm">
+              {t("followUpSummary", { count: filteredClients.length })}
+            </Typography>
+          </div>
+        ) : null}
+
+        {followUpError ? (
+          <Typography className="text-danger" role="alert" type="body-sm">
+            {followUpError}
+          </Typography>
+        ) : null}
+
         {filteredClients.length > 0 ? (
           <div className={styles.groupCard}>
             {filteredClients.map((client) => (
@@ -163,6 +186,19 @@ export function CoachClientsScreen({ clients }: CoachClientsScreenProps) {
                     </span>
                   </span>
                 </Button>
+                {client.engagement === "at-risk" && onFollowUp ? (
+                  <div className={styles.followUpAction}>
+                    <Button
+                      isDisabled={Boolean(followingUpId)}
+                      isPending={followingUpId === client.id}
+                      onPress={() => onFollowUp(client)}
+                      size="sm"
+                      variant="secondary"
+                    >
+                      {t("followUpAction")}
+                    </Button>
+                  </div>
+                ) : null}
                 <div className={styles.divider} />
               </div>
             ))}

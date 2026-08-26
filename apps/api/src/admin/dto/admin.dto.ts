@@ -28,6 +28,7 @@ import {
 } from '../../common/utils/password.util';
 import { toStringArray } from '../../common/utils/list-query.util';
 import { IR_PHONE, normalizeIranPhone } from '../../common/utils/phone.util';
+import { AccountDeletionRequestStatus } from '../../schemas/account-deletion-request.schema';
 
 export class PaginationQueryDto {
   @IsOptional()
@@ -81,6 +82,13 @@ export class ListUsersQueryDto extends PaginationQueryDto {
   @Transform(toStringArray)
   @IsEnum(KycStatus, { each: true })
   kycStatus?: KycStatus[];
+}
+
+export class ListAccountDeletionRequestsQueryDto extends PaginationQueryDto {
+  @IsOptional()
+  @Transform(toStringArray)
+  @IsEnum(AccountDeletionRequestStatus, { each: true })
+  status?: AccountDeletionRequestStatus[];
 }
 
 export class AdminCreateUserDto {

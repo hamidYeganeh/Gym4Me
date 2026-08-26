@@ -8,6 +8,7 @@ export type OwnerCoupon = {
   usedCount: number;
   status: OwnerCouponStatus;
   expiresAtLabel?: string;
+  apiStatus?: "active" | "inactive" | "archived";
 };
 
 export const OWNER_COUPONS: OwnerCoupon[] = [

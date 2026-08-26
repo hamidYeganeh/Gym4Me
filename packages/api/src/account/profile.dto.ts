@@ -158,3 +158,30 @@ export type SubmitCoachVerificationInput = {
   documentMediaIds: string[];
   note?: string;
 };
+
+export type AccountDeletionRequestStatus =
+  | "cooling_off"
+  | "blocked"
+  | "processing"
+  | "completed"
+  | "cancelled";
+
+export type AccountDeletionRequest = {
+  id: string;
+  status: AccountDeletionRequestStatus;
+  requestedAt: string;
+  coolingOffUntil: string;
+  retentionPolicyVersion: string;
+  cancelledAt: string | null;
+  completedAt: string | null;
+  idempotent?: boolean;
+};
+
+export type RequestAccountDeletionInput = {
+  confirmation: "DELETE_ACCOUNT";
+  reason?: string;
+};
+
+export type CancelAccountDeletionInput = {
+  confirmation: "KEEP_ACCOUNT";
+};

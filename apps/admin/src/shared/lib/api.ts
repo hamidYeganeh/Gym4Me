@@ -19,6 +19,7 @@ import {
   createAdminSocialApi,
   createAdminSupportApi,
   createAdminUsersApi,
+  createAdminDataRightsApi,
   createAdminVerificationApi,
 } from "@repo/api/admin";
 import { createAccountProfileApi } from "@repo/api/account";
@@ -30,6 +31,7 @@ export { adminAuth, apiClient } from "./api-client";
 
 export const accountProfile = createAccountProfileApi(apiClient);
 export const adminUsers = createAdminUsersApi(apiClient);
+export const adminDataRights = createAdminDataRightsApi(apiClient);
 export const adminBasics = createAdminBasicsApi(apiClient);
 export const adminClubs = createAdminClubsApi(apiClient);
 export const adminClubSlots = createAdminClubSlotsApi(apiClient);

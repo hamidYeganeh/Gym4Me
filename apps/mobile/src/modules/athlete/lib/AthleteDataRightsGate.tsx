@@ -1,9 +1,13 @@
 "use client";
 
 import { Spinner } from "@heroui/react/spinner";
-import type { ConsentHistoryEvent, ProgressExportPayload } from "@repo/api";
+import type {
+  AccountDeletionRequest,
+  ConsentHistoryEvent,
+  ProgressExportPayload,
+} from "@repo/api";
 import { useCallback, useEffect, useState } from "react";
-import { accountProgress } from "@/shared/lib/api";
+import { accountProfile, accountProgress } from "@/shared/lib/api";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { AthleteDataRightsScreen } from "../screens/AthleteDataRightsScreen";
 
@@ -20,9 +24,11 @@ function downloadJson(payload: ProgressExportPayload) {
 }
 
 export function AthleteDataRightsGate() {
-  const { isAuthenticated, isReady } = useAuth();
+  const { isAuthenticated, isReady, logout } = useAuth();
   const [events, setEvents] = useState<ConsentHistoryEvent[] | null>(null);
   const [pending, setPending] = useState(false);
+  const [deletionRequest, setDeletionRequest] =
+    useState<AccountDeletionRequest | null>(null);
   const [lastExportSummary, setLastExportSummary] = useState<string | null>(
     null,
   );
@@ -32,8 +38,12 @@ export function AthleteDataRightsGate() {
       setEvents([]);
       return;
     }
-    const history = await accountProgress.consentHistory();
+    const [history, deletion] = await Promise.all([
+      accountProgress.consentHistory(),
+      accountProfile.getAccountDeletionRequest(),
+    ]);
     setEvents(history.items);
+    setDeletionRequest(deletion);
   }, [isAuthenticated]);
 
   useEffect(() => {
@@ -52,6 +62,7 @@ export function AthleteDataRightsGate() {
   return (
     <AthleteDataRightsScreen
       consentEvents={events}
+      deletionRequest={deletionRequest}
       lastExportSummary={lastExportSummary}
       onDeleteMetrics={async () => {
         setPending(true);
@@ -72,6 +83,30 @@ export function AthleteDataRightsGate() {
           downloadJson(payload);
           setLastExportSummary(
             `${payload.metrics.length} متریک · ${payload.photos.length} عکس · ${payload.grants.length} دسترسی · ${payload.goals.length} هدف`,
+          );
+        } finally {
+          setPending(false);
+        }
+      }}
+      onRequestAccountDeletion={async (reason) => {
+        setPending(true);
+        try {
+          await accountProfile.requestAccountDeletion({
+            confirmation: "DELETE_ACCOUNT",
+            reason,
+          });
+          await logout({ revoke: false });
+        } finally {
+          setPending(false);
+        }
+      }}
+      onCancelAccountDeletion={async () => {
+        setPending(true);
+        try {
+          setDeletionRequest(
+            await accountProfile.cancelAccountDeletion({
+              confirmation: "KEEP_ACCOUNT",
+            }),
           );
         } finally {
           setPending(false);

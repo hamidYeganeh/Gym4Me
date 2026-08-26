@@ -14,6 +14,7 @@ import {
   planToFormValues,
   PlatformPlansForm,
   type PlatformPlansFormValues,
+  formValuesToEntitlement,
 } from "../../components/PlatformPlansForm";
 import { platformPlansEditScreenVariants } from "./PlatformPlansEditScreen.styles";
 import type { PlatformPlansEditScreenProps } from "./PlatformPlansEditScreen.types";
@@ -68,9 +69,15 @@ export function PlatformPlansEditScreen({
       description: values.description.trim() || undefined,
       pricing: {
         amount: Number.parseInt(values.amount, 10) || 0,
+        tax: Number.parseInt(values.tax, 10) || 0,
         periodDays: Number.parseInt(values.periodDays, 10) || 30,
+        currency: "IRT",
       },
       features: parseFeatures(values.features),
+      entitlementContract: formValuesToEntitlement(values),
+      contractReady: values.contractReady,
+      postExpirationMode: values.postExpirationMode,
+      fallbackPlanId: values.fallbackPlanId.trim() || undefined,
     });
     toast.success(tForm("saved"));
     navigate(routes.catalogPlans);

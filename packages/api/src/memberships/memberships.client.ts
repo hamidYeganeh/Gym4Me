@@ -20,6 +20,7 @@ import type {
   InitiateMembershipCheckoutInput,
   InitiatePlatformSubscriptionCheckoutInput,
   PlatformPlansResponse,
+  PlatformEntitlementSummary,
   PlatformSubscription,
   PlatformSubscriptionCheckoutInitiation,
   PlatformSubscriptionCheckoutPreview,
@@ -33,6 +34,7 @@ import type {
   SelfPurchaseMembershipInput,
   SellMembershipInput,
   SubscribePlatformInput,
+  SchedulePlatformPlanChangeInput,
   TransferMembershipInput,
   VerifyMembershipCheckoutInput,
   VerifyPlatformSubscriptionCheckoutInput,
@@ -237,6 +239,13 @@ export function createAccountMembershipsApi(client: ApiClient) {
       );
     },
 
+    getPlatformEntitlements(clubId?: string) {
+      return client.request<PlatformEntitlementSummary>(
+        ep.platformEntitlements,
+        { query: clubId ? { clubId } : undefined },
+      );
+    },
+
     subscribePlatform(input: SubscribePlatformInput) {
       return client.request<PlatformSubscription>(ep.platformSubscriptions, {
         method: "POST",
@@ -278,6 +287,16 @@ export function createAccountMembershipsApi(client: ApiClient) {
     ) {
       return client.request<PlatformSubscription>(
         ep.cancelPlatformSubscription(subscriptionId),
+        { method: "POST", body: input },
+      );
+    },
+
+    schedulePlatformPlanChange(
+      subscriptionId: string,
+      input: SchedulePlatformPlanChangeInput,
+    ) {
+      return client.request<PlatformSubscription>(
+        ep.schedulePlatformPlanChange(subscriptionId),
         { method: "POST", body: input },
       );
     },

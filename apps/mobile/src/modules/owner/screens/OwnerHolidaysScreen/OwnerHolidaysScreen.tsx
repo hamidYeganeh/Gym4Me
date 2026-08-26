@@ -6,7 +6,6 @@ import { Input } from "@heroui/react/input";
 import { Label } from "@heroui/react/label";
 import { TextField } from "@heroui/react/textfield";
 import { Typography } from "@heroui/react/typography";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
@@ -21,6 +20,8 @@ export function OwnerHolidaysScreen({
   pending = false,
   onFormChange,
   onAddHoliday,
+  onRemoveHoliday,
+  pendingHolidayId,
   className,
 }: OwnerHolidaysScreenProps) {
   const t = useTranslations("OwnerHolidays");
@@ -101,6 +102,19 @@ export function OwnerHolidaysScreen({
                     </Chip.Label>
                   </Chip>
                 </div>
+                {!holiday.isOfficial && onRemoveHoliday ? (
+                  <div className="flex justify-end px-4 pb-3">
+                    <Button
+                      isDisabled={Boolean(pendingHolidayId)}
+                      isPending={pendingHolidayId === holiday.id}
+                      onPress={() => onRemoveHoliday(holiday.id)}
+                      size="sm"
+                      variant="secondary"
+                    >
+                      {t("remove")}
+                    </Button>
+                  </div>
+                ) : null}
                 {index < data.holidays.length - 1 ? (
                   <div aria-hidden className={styles.divider()} />
                 ) : null}

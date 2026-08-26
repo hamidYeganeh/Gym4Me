@@ -1,10 +1,14 @@
-import { Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
-import { Role } from '../common/enums';
+import { Role, StaffPermissionKey } from '../common/enums';
 import { StaffService } from '../account/staff/staff.service';
 import { LifecycleService } from './lifecycle.service';
+import {
+  CreateClubBroadcastDto,
+  ListClubBroadcastsQueryDto,
+} from './dto/broadcast.dto';
 
 @ApiTags('lifecycle')
 @ApiBearerAuth('access-token')
@@ -22,7 +26,11 @@ export class OwnerLifecycleController {
     @CurrentUser('sub') userId: string,
     @Param('clubId') clubId: string,
   ) {
-    await this.staff.requireClubAccess(userId, clubId);
+    await this.staff.assertStaffPermission(
+      clubId,
+      userId,
+      StaffPermissionKey.REPORTS_READ,
+    );
     return this.lifecycle.listSegments(clubId);
   }
 
@@ -33,7 +41,11 @@ export class OwnerLifecycleController {
     @CurrentUser('sub') userId: string,
     @Param('clubId') clubId: string,
   ) {
-    await this.staff.requireClubAccess(userId, clubId);
+    await this.staff.assertStaffPermission(
+      clubId,
+      userId,
+      StaffPermissionKey.REPORTS_READ,
+    );
     return this.lifecycle.listAtRiskMembers(clubId);
   }
 
@@ -44,7 +56,11 @@ export class OwnerLifecycleController {
     @CurrentUser('sub') userId: string,
     @Param('clubId') clubId: string,
   ) {
-    await this.staff.requireClubAccess(userId, clubId);
+    await this.staff.assertStaffPermission(
+      clubId,
+      userId,
+      StaffPermissionKey.REPORTS_READ,
+    );
     return this.lifecycle.listJourneys(clubId);
   }
 
@@ -55,7 +71,11 @@ export class OwnerLifecycleController {
     @CurrentUser('sub') userId: string,
     @Param('clubId') clubId: string,
   ) {
-    await this.staff.requireClubAccess(userId, clubId);
+    await this.staff.assertStaffPermission(
+      clubId,
+      userId,
+      StaffPermissionKey.MEMBERS_MANAGE,
+    );
     return this.lifecycle.enrollExpiringJourneys(clubId);
   }
 
@@ -68,7 +88,33 @@ export class OwnerLifecycleController {
     @CurrentUser('sub') userId: string,
     @Param('clubId') clubId: string,
   ) {
-    await this.staff.requireClubAccess(userId, clubId);
+    await this.staff.assertStaffPermission(
+      clubId,
+      userId,
+      StaffPermissionKey.MEMBERS_MANAGE,
+    );
     return this.lifecycle.advanceDueJourneys({ clubId });
+  }
+
+  @Get('broadcasts')
+  @Roles(Role.CLUB_OWNER)
+  @ApiOperation({ summary: 'List immutable club broadcast history' })
+  listBroadcasts(
+    @CurrentUser('sub') userId: string,
+    @Param('clubId') clubId: string,
+    @Query() query: ListClubBroadcastsQueryDto,
+  ) {
+    return this.lifecycle.listBroadcasts(userId, clubId, query);
+  }
+
+  @Post('broadcasts')
+  @Roles(Role.CLUB_OWNER)
+  @ApiOperation({ summary: 'Queue an idempotent broadcast through Outbox' })
+  createBroadcast(
+    @CurrentUser('sub') userId: string,
+    @Param('clubId') clubId: string,
+    @Body() dto: CreateClubBroadcastDto,
+  ) {
+    return this.lifecycle.createBroadcast(userId, clubId, dto);
   }
 }

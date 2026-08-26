@@ -8,5 +8,6 @@ export type OwnerCashShiftScreenProps = {
   onCountedChange: (channel: string, value: string) => void;
   onDiscrepancyChange: (value: string) => void;
   onClose?: () => void;
+  onOpen?: () => void;
   className?: string;
 };

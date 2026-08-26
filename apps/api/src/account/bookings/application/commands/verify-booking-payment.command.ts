@@ -131,6 +131,14 @@ export class VerifyBookingPaymentCommand {
                 code: current.code,
               },
               critical: true,
+              forceSms: true,
+              smsTokens: [
+                clubName ?? 'Gym4Me',
+                current.occurrence?.date ??
+                  current.startsAt.toISOString().slice(0, 10),
+                current.occurrence?.startTime ??
+                  formatTimeTehran(current.startsAt),
+              ],
             },
           },
           idempotencyKey: `outbox:booking.confirmed:${current._id.toString()}`,

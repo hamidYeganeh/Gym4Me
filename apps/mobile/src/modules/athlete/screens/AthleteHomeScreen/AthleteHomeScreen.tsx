@@ -17,7 +17,7 @@ import { motion, useReducedMotion, type Variants } from "motion/react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/shared/lib/app-router";
 
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { AthleteHomeMetricsSection } from "@/modules/athlete/sections/AthleteHomeMetricsSection";
 import { AthleteHomeSetupTodoSection } from "@/modules/athlete/sections/AthleteHomeSetupTodoSection";
 import { AthleteReferralInviteSection } from "@/modules/athlete/sections/AthleteReferralInviteSection";
@@ -71,6 +71,8 @@ export function AthleteHomeScreen() {
   const [actions, setActions] = useState<AthleteAction[]>([]);
   const [actionsLoading, setActionsLoading] = useState(false);
   const [actionsError, setActionsError] = useState(false);
+  const [actionsStale, setActionsStale] = useState(false);
+  const actionsRef = useRef<AthleteAction[]>([]);
 
   const loadActions = useCallback(async () => {
     if (!user) return;
@@ -78,34 +80,39 @@ export function AthleteHomeScreen() {
     setActionsError(false);
     try {
       const result = await accountActionCenter.get();
-      setActions(
-        result.items.map((item) => {
-          const due = item.dueAt
-            ? new Date(item.dueAt).toLocaleString("fa-IR-u-ca-persian", {
-                dateStyle: "medium",
-                timeStyle: "short",
-              })
-            : "";
-          const copy =
-            item.kind === "athlete.booking_payment"
-              ? [t("actionPaymentTitle"), t("actionPaymentBody", item.params)]
-              : item.kind === "athlete.workout_resume"
-                ? [t("actionWorkoutTitle"), t("actionWorkoutBody")]
-                : item.kind === "athlete.membership_renew"
-                  ? [t("actionMembershipTitle"), t("actionMembershipBodyShort")]
-                  : [t("actionUpcomingTitle"), due];
-          return {
-            id: item.id,
-            title: copy[0],
-            description: copy[1],
-            href: item.href,
-            priority: item.priority,
-            kind: item.kind,
-          };
-        }),
-      );
+      setActionsStale(false);
+      const nextActions = result.items.map((item) => {
+        const due = item.dueAt
+          ? new Date(item.dueAt).toLocaleString("fa-IR-u-ca-persian", {
+              dateStyle: "medium",
+              timeStyle: "short",
+              timeZone: "Asia/Tehran",
+            })
+          : "";
+        const copy =
+          item.kind === "athlete.booking_payment"
+            ? [t("actionPaymentTitle"), t("actionPaymentBody", item.params)]
+            : item.kind === "athlete.workout_resume"
+              ? [t("actionWorkoutTitle"), t("actionWorkoutBody")]
+              : item.kind === "athlete.waitlist_offer"
+                ? [t("actionWaitlistTitle"), t("actionWaitlistBody", { due })]
+              : item.kind === "athlete.membership_renew"
+                ? [t("actionMembershipTitle"), t("actionMembershipBodyShort")]
+                : [t("actionUpcomingTitle"), due];
+        return {
+          id: item.id,
+          title: copy[0],
+          description: copy[1],
+          href: item.href,
+          priority: item.priority,
+          kind: item.kind,
+        };
+      });
+      actionsRef.current = nextActions;
+      setActions(nextActions);
     } catch {
       setActionsError(true);
+      setActionsStale(actionsRef.current.length > 0);
     } finally {
       setActionsLoading(false);
     }
@@ -174,9 +181,9 @@ export function AthleteHomeScreen() {
             />
             {actionsLoading ? <p aria-live="polite" className="text-sm text-muted">{t("actionCenterLoading")}</p> : null}
             {actionsError ? (
-              <div>
-                <p className="text-sm text-danger">{t("actionCenterError")}</p>
-                <button className="mt-2 text-sm text-primary underline" onClick={() => void loadActions()} type="button">{t("actionCenterRetry")}</button>
+              <div role="alert">
+                <p className="text-sm text-danger">{t(actionsStale ? "actionCenterStale" : "actionCenterError")}</p>
+                <button className="mt-2 min-h-11 rounded-medium px-3 text-sm text-primary underline" onClick={() => void loadActions()} type="button">{t("actionCenterRetry")}</button>
               </div>
             ) : null}
             {!actionsLoading && !actionsError && actions.length === 0 ? <p className="text-sm text-muted">{t("actionCenterEmpty")}</p> : null}

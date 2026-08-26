@@ -6,6 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { createHash } from 'node:crypto';
 import type { Request } from 'express';
 import { Model, Types } from 'mongoose';
 import type { QueryFilter } from 'mongoose';
@@ -704,17 +705,57 @@ export class CoachingService {
   }
 
   async createLead(coachUserId: string, dto: CreateLeadDto, request?: Request) {
-    const item = await this.leadModel.create({
-      coachUserId: this.oid(coachUserId),
-      contact: {
-        name: dto.contact.name,
-        phone: dto.contact.phone,
-        userId: dto.contact.userId ? this.oid(dto.contact.userId) : undefined,
-      },
-      stage: dto.stage ?? CoachLeadStage.NEW,
-      notes: dto.notes,
-      source: dto.source,
-    });
+    const fingerprint = createHash('sha256')
+      .update(
+        JSON.stringify({
+          contact: dto.contact,
+          stage: dto.stage ?? CoachLeadStage.NEW,
+          notes: dto.notes ?? null,
+          source: dto.source ?? null,
+        }),
+      )
+      .digest('hex');
+    const replay = await this.leadModel
+      .findOne({
+        coachUserId: this.oid(coachUserId),
+        idempotencyKey: dto.idempotencyKey,
+      })
+      .select('+idempotencyFingerprint');
+    if (replay) {
+      if (replay.idempotencyFingerprint !== fingerprint) {
+        throw new ConflictException('Idempotency key payload mismatch');
+      }
+      return this.toLead(replay.toObject());
+    }
+    let item: CoachLeadDocument;
+    try {
+      item = await this.leadModel.create({
+        coachUserId: this.oid(coachUserId),
+        contact: {
+          name: dto.contact.name,
+          phone: dto.contact.phone,
+          userId: dto.contact.userId ? this.oid(dto.contact.userId) : undefined,
+        },
+        stage: dto.stage ?? CoachLeadStage.NEW,
+        notes: dto.notes,
+        source: dto.source,
+        idempotencyKey: dto.idempotencyKey,
+        idempotencyFingerprint: fingerprint,
+      });
+    } catch (error) {
+      if ((error as { code?: number }).code !== 11000) throw error;
+      const winner = await this.leadModel
+        .findOne({
+          coachUserId: this.oid(coachUserId),
+          idempotencyKey: dto.idempotencyKey,
+        })
+        .select('+idempotencyFingerprint');
+      if (!winner) throw error;
+      if (winner.idempotencyFingerprint !== fingerprint) {
+        throw new ConflictException('Idempotency key payload mismatch');
+      }
+      return this.toLead(winner.toObject());
+    }
 
     this.audit.log({
       action: AuditAction.COACHING_LEAD_UPSERTED,

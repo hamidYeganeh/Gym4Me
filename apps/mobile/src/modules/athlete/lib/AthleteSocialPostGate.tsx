@@ -1,7 +1,7 @@
 "use client";
 
 import { Spinner } from "@heroui/react/spinner";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { accountSocial } from "@/shared/lib/api";
 import { canUseDemoFixtureId } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
@@ -19,6 +19,12 @@ export function AthleteSocialPostGate({ postId }: { postId: string }) {
   const [detail, setDetail] = useState<AthleteSocialPostDetail | null>(null);
   const [pending, setPending] = useState(false);
   const [commentPending, setCommentPending] = useState(false);
+  const objectUrls = useRef(new Set<string>());
+
+  const clearObjectUrls = useCallback(() => {
+    for (const url of objectUrls.current) URL.revokeObjectURL(url);
+    objectUrls.current.clear();
+  }, []);
 
   const loadDemo = useCallback(() => {
     if (!canUseDemoFixtureId(postId)) {
@@ -42,11 +48,29 @@ export function AthleteSocialPostGate({ postId }: { postId: string }) {
       accountSocial.getPost(postId),
       accountSocial.listComments(postId, { page_size: 50 }),
     ]);
+    clearObjectUrls();
+    const mapped = mapSocialPost(post);
+    mapped.mediaUrls = (
+      await Promise.all(
+        post.mediaIds.map(async (mediaId) => {
+          try {
+            const blob = await accountSocial.downloadPostMedia(post.id, mediaId);
+            const url = URL.createObjectURL(blob);
+            objectUrls.current.add(url);
+            return url;
+          } catch {
+            return null;
+          }
+        }),
+      )
+    ).filter((url): url is string => url !== null);
     setDetail({
-      ...mapSocialPost(post),
+      ...mapped,
       comments: comments.result.map(mapSocialComment),
     });
-  }, [postId]);
+  }, [clearObjectUrls, postId]);
+
+  useEffect(() => clearObjectUrls, [clearObjectUrls]);
 
   useEffect(() => {
     if (!isReady) return;
@@ -84,7 +108,11 @@ export function AthleteSocialPostGate({ postId }: { postId: string }) {
       const updated = await accountSocial.toggleLike(postId);
       setDetail((prev) =>
         prev
-          ? { ...mapSocialPost(updated, prev.saved), comments: prev.comments }
+          ? {
+              ...mapSocialPost(updated, prev.saved),
+              mediaUrls: prev.mediaUrls,
+              comments: prev.comments,
+            }
           : prev,
       );
     } catch {

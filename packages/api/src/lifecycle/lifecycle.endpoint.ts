@@ -7,4 +7,8 @@ export const accountLifecycleEndpoints = {
     `/account/clubs/${clubId}/lifecycle/journeys/enroll-expiring`,
   runJourneys: (clubId: string) =>
     `/account/clubs/${clubId}/lifecycle/journeys/run`,
+  broadcasts: (clubId: string, page = 1, pageSize = 20) =>
+    `/account/clubs/${clubId}/lifecycle/broadcasts?page=${page}&pageSize=${pageSize}`,
+  createBroadcast: (clubId: string) =>
+    `/account/clubs/${clubId}/lifecycle/broadcasts`,
 } as const;

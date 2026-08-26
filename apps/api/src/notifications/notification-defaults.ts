@@ -40,7 +40,7 @@ export const DEFAULT_NOTIFICATION_TEMPLATES: DefaultNotificationTemplate[] = [
     key: NotificationTemplateKey.BOOKING_CONFIRMED,
     title: 'رزرو تأیید شد',
     body: 'رزرو شما در {clubName} برای {date} ساعت {time} تأیید شد.',
-    channels: { push, inbox, sms: NotificationSmsSetting.CRITICAL_FALLBACK },
+    channels: { push, inbox, sms: NotificationSmsSetting.ALWAYS },
   },
   {
     key: NotificationTemplateKey.BOOKING_APPROVED_PAYMENT_REQUIRED,
@@ -52,13 +52,13 @@ export const DEFAULT_NOTIFICATION_TEMPLATES: DefaultNotificationTemplate[] = [
     key: NotificationTemplateKey.BOOKING_REJECTED,
     title: 'رزرو رد شد',
     body: 'رزرو شما برای {subject} تأیید نشد. مبلغ پرداختی طبق سیاست لغو بازگردانده می‌شود.',
-    channels: { push, inbox, sms: NotificationSmsSetting.CRITICAL_FALLBACK },
+    channels: { push, inbox, sms: NotificationSmsSetting.ALWAYS },
   },
   {
     key: NotificationTemplateKey.BOOKING_REMINDER,
     title: 'یادآوری جلسه',
     body: 'یادآوری: {subject} امروز ساعت {time} در {clubName} برگزار می‌شود.',
-    channels: { push, inbox, sms: NotificationSmsSetting.DISABLED },
+    channels: { push, inbox, sms: NotificationSmsSetting.ALWAYS },
   },
   {
     key: NotificationTemplateKey.BOOKING_CANCELLED_BY_PROVIDER,
@@ -124,6 +124,12 @@ export const DEFAULT_NOTIFICATION_TEMPLATES: DefaultNotificationTemplate[] = [
     key: NotificationTemplateKey.WORKOUT_REVIEWED,
     title: 'بازخورد جدید مربی',
     body: 'مربی شما تمرین تکمیل‌شده را مرور کرد. بازخورد را در جزئیات برنامه ببینید.',
+    channels: { push, inbox, sms: NotificationSmsSetting.DISABLED },
+  },
+  {
+    key: NotificationTemplateKey.CLUB_BROADCAST,
+    title: '{title}',
+    body: '{body}',
     channels: { push, inbox, sms: NotificationSmsSetting.DISABLED },
   },
 ];

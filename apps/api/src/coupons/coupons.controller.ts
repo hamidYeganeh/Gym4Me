@@ -62,3 +62,42 @@ export class AdminCouponsController {
     return this.coupons.update(couponId, dto);
   }
 }
+
+@ApiTags('club-owner-coupons')
+@ApiBearerAuth('access-token')
+@Roles(Role.CLUB_OWNER)
+@Controller('account/clubs/:clubId/coupons')
+export class OwnerCouponsController {
+  constructor(private readonly coupons: CouponsService) {}
+
+  @Get()
+  @ApiOperation({ summary: 'List coupons owned by this club' })
+  list(
+    @CurrentUser('sub') ownerId: string,
+    @Param('clubId') clubId: string,
+    @Query() query: ListCouponsQueryDto,
+  ) {
+    return this.coupons.listForOwner(ownerId, clubId, query);
+  }
+
+  @Post()
+  @ApiOperation({ summary: 'Create or safely replay a club coupon' })
+  create(
+    @CurrentUser('sub') ownerId: string,
+    @Param('clubId') clubId: string,
+    @Body() dto: CreateCouponDto,
+  ) {
+    return this.coupons.createForOwner(ownerId, clubId, dto);
+  }
+
+  @Patch(':couponId')
+  @ApiOperation({ summary: 'Update a coupon owned by this club' })
+  update(
+    @CurrentUser('sub') ownerId: string,
+    @Param('clubId') clubId: string,
+    @Param('couponId') couponId: string,
+    @Body() dto: UpdateCouponDto,
+  ) {
+    return this.coupons.updateForOwner(ownerId, clubId, couponId, dto);
+  }
+}

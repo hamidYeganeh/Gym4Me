@@ -57,6 +57,7 @@ import type {
   VerifyMembershipCheckoutDto,
 } from '../../dto/membership.dto';
 import { RenewMembershipCommand } from '../commands/renew-membership.command';
+import { PlatformEntitlementService } from './platform-entitlement.service';
 
 const PURCHASE_CONSENT_VERSION = 'membership-checkout-v1';
 const RENEWAL_CONSENT_VERSION = 'membership-renewal-v1';
@@ -84,6 +85,7 @@ export class MembershipCheckoutService {
     private readonly transactions: MongoTransactionService,
     private readonly outbox: OutboxService,
     private readonly audit: AuditService,
+    private readonly entitlements: PlatformEntitlementService,
   ) {}
 
   async preview(userId: string, dto: PreviewMembershipCheckoutDto) {
@@ -544,6 +546,14 @@ export class MembershipCheckoutService {
       current.credit = this.applyGrant(current.credit, checkout.creditGrant);
       membership = current;
     } else {
+      const club = await this.clubs.findById(checkout.clubId).session(session);
+      if (!club) throw new NotFoundException('Club not found');
+      await this.entitlements.serializeAndAssertIncrement({
+        userId: club.ownerId.toString(),
+        clubId: checkout.clubId.toString(),
+        key: 'members.active_per_club',
+        session,
+      });
       membership = new this.memberships({
         clubId: checkout.clubId,
         planId: checkout.planId,

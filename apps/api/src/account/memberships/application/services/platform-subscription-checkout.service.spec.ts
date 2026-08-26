@@ -73,6 +73,7 @@ describe('PlatformSubscriptionCheckoutService', () => {
         exists: jest.fn().mockResolvedValue(null),
         findOne: jest.fn(),
         findById: jest.fn(),
+        findOneAndUpdate: jest.fn(),
       },
     );
     const gateway = {
@@ -148,6 +149,7 @@ describe('PlatformSubscriptionCheckoutService', () => {
       planId: planId.toString(),
       idempotencyKey: 'platform-checkout-attempt-1',
       previewFingerprint: preview.fingerprint,
+      priceReferenceAt: preview.priceReferenceAt,
       consentVersion: preview.consentVersion,
       consentAccepted: true,
       callbackUrl: 'https://app.gym4me.ir/owner/subscription',
@@ -156,7 +158,13 @@ describe('PlatformSubscriptionCheckoutService', () => {
     expect(finance.recordPayment).toHaveBeenCalledWith(
       expect.objectContaining({
         status: PaymentStatus.PENDING,
-        amount: { gross: 2_000, tax: 180, platformFee: 1_820, net: 0 },
+        amount: {
+          gross: 2_000,
+          discount: 0,
+          tax: 180,
+          platformFee: 1_820,
+          net: 0,
+        },
         related: { platformPlanId: planId.toString() },
       }),
       { actorId: userId.toString(), session },
@@ -168,6 +176,80 @@ describe('PlatformSubscriptionCheckoutService', () => {
       checkoutId: checkoutId.toString(),
       authority: 'authority-1',
     });
+  });
+
+  it('rejects stale client-supplied proration reference times', async () => {
+    const { service } = setup();
+    await expect(
+      service.initiate(userId.toString(), {
+        planId: planId.toString(),
+        idempotencyKey: 'platform-checkout-stale-preview',
+        previewFingerprint: 'a'.repeat(64),
+        priceReferenceAt: new Date(Date.now() - 10 * 60_000).toISOString(),
+        consentVersion: 'platform-subscription-checkout-v1',
+        consentAccepted: true,
+        callbackUrl: 'https://app.gym4me.ir/owner/subscription',
+      }),
+    ).rejects.toThrow('Platform subscription preview expired');
+  });
+
+  it('uses a subscription-state CAS before applying an upgrade', async () => {
+    const { service, subscriptions } = setup();
+    const previousPlanId = new Types.ObjectId();
+    const previousStart = new Date('2026-08-01T00:00:00.000Z');
+    const previousEnd = new Date('2026-09-01T00:00:00.000Z');
+    const existing = {
+      _id: new Types.ObjectId(),
+      __v: 4,
+      userId,
+      planId: previousPlanId,
+      currentEntitlementKey: 'current',
+      period: { start: previousStart, end: previousEnd },
+    };
+    const updated = { ...existing, planId };
+    subscriptions.findById.mockImplementation(() => queryOf(existing));
+    subscriptions.findOneAndUpdate.mockResolvedValue(updated);
+    const checkout = {
+      userId,
+      planId,
+      subscriptionId: existing._id,
+      changeKind: 'upgrade',
+      previousPlanId,
+      previousPeriodStart: previousStart,
+      previousPeriodEnd: previousEnd,
+      previousSubscriptionVersion: 4,
+      periodDays: 30,
+      renewalMode: 'manual',
+      entitlementSnapshot: {
+        schemaVersion: 1,
+        audience: 'club_owner',
+        capabilities: [],
+        limits: [],
+        graceDays: 7,
+      },
+    } as unknown as PlatformSubscriptionCheckoutDocument;
+
+    const result = await (
+      service as unknown as {
+        applySubscriptionChange: (
+          value: PlatformSubscriptionCheckoutDocument,
+          valueSession: ClientSession,
+        ) => Promise<PlatformSubscriptionDocument>;
+      }
+    ).applySubscriptionChange(checkout, session);
+
+    expect(subscriptions.findOneAndUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        _id: existing._id,
+        planId: previousPlanId,
+        __v: 4,
+        'period.start': previousStart,
+        'period.end': previousEnd,
+      }),
+      expect.objectContaining({ $inc: { __v: 1 } }),
+      { new: true, session },
+    );
+    expect(result).toBe(updated);
   });
 
   it('verifies the provider before atomically activating entitlement and finance', async () => {

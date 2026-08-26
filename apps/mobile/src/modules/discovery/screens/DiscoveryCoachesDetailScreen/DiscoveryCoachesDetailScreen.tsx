@@ -1,8 +1,6 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
 import { useRequireAuthAction } from "@/shared/hooks/useRequireAuthAction";
 import { DiscoveryCoachesDetailActionsSection } from "../../sections/DiscoveryCoachesDetailActionsSection";
 import { DiscoveryCoachesDetailBodySection } from "../../sections/DiscoveryCoachesDetailBodySection";
@@ -15,14 +13,13 @@ export function DiscoveryCoachesDetailScreen({
   coach,
 }: DiscoveryCoachesDetailScreenProps) {
   const t = useTranslations("CoachDetail");
-  const pathname = usePathname();
   const router = useRouter();
   const { runWithAuth } = useRequireAuthAction();
   const defaultPackageId =
     coach.packages.find((plan) => plan.price > 0)?.id ??
     coach.packages[0]?.id ??
     "";
-  const [selectedPackageId, setSelectedPackageId] = useState(defaultPackageId);
+  const selectedPackageId = defaultPackageId;
 
   const selectedPackage =
     coach.packages.find((plan) => plan.id === selectedPackageId) ??

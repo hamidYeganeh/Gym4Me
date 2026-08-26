@@ -5,6 +5,16 @@ import { getApiBaseUrl } from "./env";
 import { roleAppPath } from "./role-routes";
 import { createSecureSessionStorage } from "./secure-session-storage";
 
+export const API_NAVIGATION_EVENT = "gym4me:api-navigation";
+export const SESSION_INVALIDATED_EVENT = "gym4me:session-invalidated";
+
+function navigateFromApi(path: string) {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(
+    new CustomEvent<string>(API_NAVIGATION_EVENT, { detail: path }),
+  );
+}
+
 export const accountSessionStorage = createSecureSessionStorage({
   key: ACCOUNT_SESSION_KEY,
 });
@@ -14,8 +24,10 @@ export const apiClient = createApiClient({
   storage: accountSessionStorage,
   onUnauthorized: () => {
     void accountSessionStorage.set(null);
-    if (typeof window !== "undefined" && !window.location.pathname.startsWith("/auth")) {
-      window.location.assign("/auth");
+    if (typeof window === "undefined") return;
+    window.dispatchEvent(new Event(SESSION_INVALIDATED_EVENT));
+    if (!window.location.pathname.startsWith("/auth")) {
+      navigateFromApi("/auth");
     }
   },
   onKycRequired: () => {
@@ -25,7 +37,7 @@ export const apiClient = createApiClient({
       "kyc",
     );
     if (!window.location.pathname.startsWith(kycPath)) {
-      window.location.assign(kycPath);
+      navigateFromApi(kycPath);
     }
   },
 });

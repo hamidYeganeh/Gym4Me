@@ -6,7 +6,6 @@ import { I18nProvider } from "react-aria-components";
 import {
   calendarDateToJalaliValue,
   JALALI_CALENDAR_LOCALE,
-  jalaliValueToIso,
   toJalaliCalendarDate,
 } from "./jalali-calendar-utils";
 import { jalaliCalendarVariants } from "./JalaliCalendar.styles";

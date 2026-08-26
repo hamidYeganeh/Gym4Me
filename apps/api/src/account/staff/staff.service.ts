@@ -27,6 +27,8 @@ import {
   UpdateStaffPermissionsDto,
   UpsertStaffDto,
 } from './dto/staff.dto';
+import { PlatformEntitlementService } from '../memberships/application/services/platform-entitlement.service';
+import { MongoTransactionService } from '../../common/mongo/mongo-transaction.service';
 
 /** Default grants for named presets — final grants remain per-staff. */
 export const STAFF_PRESET_PERMISSIONS: Record<
@@ -58,6 +60,8 @@ export class StaffService {
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
     private readonly audit: AuditService,
+    private readonly entitlements: PlatformEntitlementService,
+    private readonly transactions: MongoTransactionService,
   ) {}
 
   /**
@@ -149,38 +153,48 @@ export class StaffService {
     const userOid = new Types.ObjectId(dto.userId);
     const now = new Date();
 
-    let staff = await this.staffModel.findOne({
-      clubId: clubOid,
-      userId: userOid,
-    });
-
-    if (staff) {
-      staff.preset = dto.preset;
-      staff.permissions = permissions;
-      if (dto.status) {
-        staff.status = dto.status;
-        if (dto.status === ClubStaffStatus.REVOKED) {
-          staff.revokedAt = now;
-        } else if (dto.status === ClubStaffStatus.ACTIVE) {
-          staff.revokedAt = undefined;
-        }
-      } else if (staff.status === ClubStaffStatus.REVOKED) {
-        staff.status = ClubStaffStatus.ACTIVE;
-        staff.revokedAt = undefined;
-        staff.invitedAt = staff.invitedAt ?? now;
+    const staff = await this.transactions.run(async (session) => {
+      let current = await this.staffModel
+        .findOne({ clubId: clubOid, userId: userOid })
+        .session(session);
+      const willActivate =
+        (dto.status ?? ClubStaffStatus.ACTIVE) === ClubStaffStatus.ACTIVE &&
+        (!current || current.status !== ClubStaffStatus.ACTIVE);
+      if (willActivate) {
+        await this.entitlements.serializeAndAssertIncrement({
+          userId: ownerId,
+          clubId,
+          key: 'staff.active_per_club',
+          session,
+        });
       }
-      await staff.save();
-    } else {
-      staff = await this.staffModel.create({
-        clubId: clubOid,
-        userId: userOid,
-        status: dto.status ?? ClubStaffStatus.ACTIVE,
-        preset: dto.preset,
-        permissions,
-        invitedAt: now,
-        acceptedAt: now,
-      });
-    }
+
+      if (!current) {
+        current = new this.staffModel({
+          clubId: clubOid,
+          userId: userOid,
+          status: dto.status ?? ClubStaffStatus.ACTIVE,
+          preset: dto.preset,
+          permissions,
+          invitedAt: now,
+          acceptedAt: now,
+        });
+      } else {
+        current.preset = dto.preset;
+        current.permissions = permissions;
+        if (dto.status) {
+          current.status = dto.status;
+          current.revokedAt =
+            dto.status === ClubStaffStatus.REVOKED ? now : undefined;
+        } else if (current.status === ClubStaffStatus.REVOKED) {
+          current.status = ClubStaffStatus.ACTIVE;
+          current.revokedAt = undefined;
+          current.invitedAt = current.invitedAt ?? now;
+        }
+      }
+      await current.save({ session });
+      return current;
+    });
 
     await this.ensureClubStaffRole(user);
 
@@ -208,24 +222,41 @@ export class StaffService {
     request?: Request,
   ) {
     await this.requireOwnedClub(ownerId, clubId);
-    const staff = await this.findStaffOrFail(clubId, staffId);
+    const staff = await this.transactions.run(async (session) => {
+      const current = await this.staffModel
+        .findOne({
+          _id: new Types.ObjectId(staffId),
+          clubId: new Types.ObjectId(clubId),
+        })
+        .session(session);
+      if (!current) throw new NotFoundException('Staff member not found');
 
-    if (dto.preset !== undefined) staff.preset = dto.preset;
-    if (dto.permissions !== undefined || dto.preset !== undefined) {
-      staff.permissions = this.resolvePermissions(
-        staff.preset,
-        dto.permissions ?? staff.permissions,
-      );
-    }
-    if (dto.status !== undefined) {
-      staff.status = dto.status;
-      if (dto.status === ClubStaffStatus.REVOKED) {
-        staff.revokedAt = new Date();
-      } else if (dto.status === ClubStaffStatus.ACTIVE) {
-        staff.revokedAt = undefined;
+      if (
+        dto.status === ClubStaffStatus.ACTIVE &&
+        current.status !== ClubStaffStatus.ACTIVE
+      ) {
+        await this.entitlements.serializeAndAssertIncrement({
+          userId: ownerId,
+          clubId,
+          key: 'staff.active_per_club',
+          session,
+        });
       }
-    }
-    await staff.save();
+      if (dto.preset !== undefined) current.preset = dto.preset;
+      if (dto.permissions !== undefined || dto.preset !== undefined) {
+        current.permissions = this.resolvePermissions(
+          current.preset,
+          dto.permissions ?? current.permissions,
+        );
+      }
+      if (dto.status !== undefined) {
+        current.status = dto.status;
+        current.revokedAt =
+          dto.status === ClubStaffStatus.REVOKED ? new Date() : undefined;
+      }
+      await current.save({ session });
+      return current;
+    });
 
     this.audit.log({
       action: AuditAction.STAFF_MEMBER_UPSERTED,

@@ -3,7 +3,6 @@
 import { Button } from "@heroui/react/button";
 import { Chip } from "@heroui/react/chip";
 import { Typography } from "@heroui/react/typography";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
@@ -15,6 +14,7 @@ import type { AthleteWaitlistScreenProps } from "./AthleteWaitlistScreen.types";
 export function AthleteWaitlistScreen({
   items,
   pendingId,
+  error,
   onLeave,
   onClaim,
   className,
@@ -43,6 +43,12 @@ export function AthleteWaitlistScreen({
           </Typography>
         </section>
 
+        {error ? (
+          <div className="rounded-large bg-danger-50 p-3 text-danger" role="alert">
+            {error}
+          </div>
+        ) : null}
+
         {items.length === 0 ? (
           <div className={styles.empty()}>
             <Typography type="h4" weight="semibold">
@@ -64,7 +70,7 @@ export function AthleteWaitlistScreen({
                     </Typography>
                     {myEntry ? (
                       <Chip size="sm" variant="soft">
-                        <Chip.Label>{myEntry.status}</Chip.Label>
+                        <Chip.Label>{t(`status.${myEntry.status}`)}</Chip.Label>
                       </Chip>
                     ) : null}
                   </div>
@@ -74,6 +80,20 @@ export function AthleteWaitlistScreen({
                       date: item.occurrenceDate ?? "—",
                     })}
                   </Typography>
+                  {myEntry?.status === "offered" && myEntry.offerExpiresAt ? (
+                    <Typography className={styles.meta()} type="body-sm">
+                      {t("offerExpires", {
+                        date: new Date(myEntry.offerExpiresAt).toLocaleString(
+                          "fa-IR-u-ca-persian",
+                          {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                            timeZone: "Asia/Tehran",
+                          },
+                        ),
+                      })}
+                    </Typography>
+                  ) : null}
                   <div className={styles.actions()}>
                     {myEntry?.status === "offered" && onClaim ? (
                       <Button

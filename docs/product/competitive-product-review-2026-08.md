@@ -105,7 +105,7 @@ Gym4Me از نظر مسئله و دامنه محصول کاربردی است: ت
 - **کار:** ابتدا inventory دادهٔ واقعی هر role؛ query projection با محدودیت؛ stateهای loading/empty/error/stale؛ حذف اعداد و statusهای ثابت؛ CTA فقط به use case موجود و مجاز.
 - **پذیرش:** خانه athlete رزرو/تمرین/اعتبار واقعی بعدی، coach جلسه/پیگیری واقعی و owner exceptionهای واقعی را نشان دهد؛ قطع API fixture نمایش ندهد؛ پاسخ query با p95 هدف‌گذاری‌شده در محیط staging ثبت شود.
 - **یادداشت وابستگی:** CTAهای booking/membership می‌توانند روی دادهٔ همان دامنه‌ها سوار شوند؛ `G4M-021` برای جلوگیری از deep-link به قیمت/ظرفیت discovery ناپایدار الزامی است، نه برای ساخت dashboard جدا.
-- **شواهد slice محلی PARTIAL (۲۰۲۶-۰۸-۲۵):** projection محدود سه‌نقشی و role guard در `apps/api/src/action-center/`، قرارداد و client در `packages/api/src/action-center/`، مصرف واقعی در homeهای athlete/coach/owner و eventهای view/click بدون PII اضافه شده‌اند. unit/client test و typecheck سه workspace پاس‌اند. وضعیت task همچنان `BLOCKED` است: dependencyها، stale state، p95 staging و آزمون integration هنوز بسته نشده‌اند.
+- **شواهد slice محلی PARTIAL (۲۰۲۶-۰۸-۲۶):** projection محدود سه‌نقشی و role guard در `apps/api/src/action-center/`، قرارداد و client در `packages/api/src/action-center/`، مصرف واقعی در homeهای athlete/coach/owner و eventهای view/click بدون PII اضافه شده‌اند. پیشنهاد فعال waitlist با expiry معتبر اکنون اولویت بازیابی دارد؛ صف رزروهای pending/awaiting-payment، بدهی و عضویت‌های در آستانهٔ انقضای باشگاه‌های تحت مالکیت نیز به‌صورت bounded و بدون PII به Action Center مالک افزوده شده‌اند. UI سه نقش دادهٔ قبلی را هنگام failure به‌عنوان stale علامت می‌زند و fixture جایگزین نمی‌کند. unit/client test و سناریوی replica-set `apps/api/test/action-center-scenario.cjs` پاس‌اند. وضعیت task همچنان `BLOCKED` است: dependencyهای master plan و p95 staging هنوز بسته نشده‌اند.
 - **عدم انجام:** recommendation ML، redesign سراسری یا ایجاد dashboard service چنددامنه‌ای بزرگ.
 
 ### G4M-MKT-02 — Recovery loop رزرو و ظرفیت
@@ -117,6 +117,7 @@ Gym4Me از نظر مسئله و دامنه محصول کاربردی است: ت
 - **مرز با هسته:** state machine رزرو/waitlist و idempotency در `G4M-030/040` بسته می‌شود؛ این تسک journey بازیابی و UX یک‌لمسی روی همان مدل‌هاست.
 - **پذیرش:** لغو واجدشرایط یک offer زمان‌دار می‌سازد؛ دو claim هم‌زمان فقط یک برنده دارند؛ expiry ظرفیت را آزاد می‌کند؛ اعلان تکراری و Ledger تکراری ساخته نمی‌شود؛ policy پیش از تأیید به کاربر نمایش داده می‌شود.
 - **edge:** silent notification، timezone، offer منقضی، refund pending، ظرفیت آخر، worker retry.
+- **شواهد slice محلی (۲۰۲۶-۰۸-۲۶؛ وضعیت هنوز به‌علت dependency `G4M-031`، `BLOCKED`):** لغو رزرو club اکنون در transaction آزادسازی ظرفیت، نفر FIFO را offer و Outbox/SMS idempotent می‌سازد. endpoint اتمیک `POST /account/bookings/waitlist/:waitlistId/claim` در همان Mongo transaction اعتبار offer را بررسی، ظرفیت occurrence را اشغال، Booking با کلید مشتق‌شده از entry می‌سازد و سپس entry را `CLAIMED` می‌کند؛ replay همان Booking را برمی‌گرداند. mobile از claim مستقیماً به پرداخت mock یا جزئیات رزرو می‌رود، روی foreground/reconnect/expiry دوباره sync می‌کند و endpoint قدیمی status-only دیگر mutation انجام نمی‌دهد (`apps/api/src/account/bookings/bookings.service.ts`, `apps/api/src/waitlist/waitlist.service.ts`, `packages/api/src/waitlist/`, `apps/mobile/src/modules/athlete/lib/AthleteWaitlistGate.tsx`). unit/client tests پاس‌اند؛ سناریوی `apps/api/test/waitlist-claim-concurrency.cjs` نیز دو claim هم‌زمان را روی Mongo replica-set/Redis/API واقعی با یک Booking مشترک و `reserved=1` پاس کرد. KPI و exposure/error monitoring در staging مانده‌اند.
 
 ### G4M-MKT-03 — Trial، family و corporate membership
 
@@ -124,6 +125,7 @@ Gym4Me از نظر مسئله و دامنه محصول کاربردی است: ت
 - **Persona/value:** OWN/ATH؛ جذب کم‌اصطکاک و پوشش خرید خانوادگی/سازمانی.
 - **Scope:** trial offer نسخه‌دار، guest claim، guardian consent، sponsor/corporate credit و conversion attribution.
 - **پذیرش:** guest پس از ساخت حساب duplicate نشود؛ guardian فقط scope مجاز را ببیند؛ credit مصرف‌شده با Ledger تطبیق یابد؛ عضویت پلتفرم و باشگاه ادغام نشوند.
+- **مانع تصمیمی:** صفحه‌های فعلی family/pass فقط fixture هستند و schema/contract اجرایی ندارند. قبل از پیاده‌سازی باید ADR مالکیت و رضایت guardian، مسئولیت sponsor، allocation/expiry اعتبار corporate و نحوهٔ Ledger برای credit تصویب شود؛ این موارد از قرارداد موجود استنتاج نمی‌شوند.
 
 ### G4M-MKT-04 — Occupancy guidance و front-desk fast mode
 
@@ -139,6 +141,7 @@ Gym4Me از نظر مسئله و دامنه محصول کاربردی است: ت
 - **Persona/value:** CCH/ATH؛ تمرکز مربی روی شاگردی که به کمک نیاز دارد.
 - **Scope:** ruleهای explainable، weekly summary، feedback مرتبط با session/program و voice attachment.
 - **پذیرش:** هر signal دلیل و CTA دارد؛ قطع relationship/grant فوراً داده را پنهان می‌کند؛ media private و signed است؛ پیام خودکار opt-out و quiet-hours را رعایت می‌کند.
+- **پیشرفت محلی:** pipeline پایهٔ CoachLead اکنون list/create/stage واقعی در API، shared client و mobile دارد و ایجاد آن در retry/race idempotent است. Action Center نیز شمار همهٔ شاگردان فعال `AT_RISK` را نمایش و صف `/coach/clients?engagement=at-risk` را با فیلتر server-side باز می‌کند؛ failure در production به empty تبدیل نمی‌شود (`apps/api/src/action-center/action-center.service.ts`, `apps/mobile/src/modules/coach/lib/CoachClientsGate.tsx`). این شواهد foundation مدیریت لید و صف ریسک است؛ weekly summary، session feedback و voice attachment هنوز `BLOCKED` می‌مانند.
 
 ### G4M-MKT-06 — Public club surface و hardware adapter pilot
 

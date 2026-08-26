@@ -3,7 +3,6 @@
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import { Apple } from "@repo/icons/Apple";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { Fire1 } from "@repo/icons/Fire1";
 import { Glucose } from "@repo/icons/Glucose";
 import { HeartEcg } from "@repo/icons/HeartEcg";

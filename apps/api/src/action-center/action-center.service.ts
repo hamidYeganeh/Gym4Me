@@ -11,6 +11,7 @@ import {
   Role,
   WorkoutLogStatus,
   AnalyticsEventName,
+  WaitlistEntryStatus,
 } from '../common/enums';
 import { EventWriterService } from '../analytics/event-writer.service';
 import { ActionCenterClickDto } from './action-center.dto';
@@ -27,6 +28,7 @@ import {
 import { Debt, DebtDocument } from '../schemas/debt.schema';
 import { OwnerTask, OwnerTaskDocument } from '../schemas/owner-task.schema';
 import { WorkoutLog, WorkoutLogDocument } from '../schemas/workout-log.schema';
+import { Waitlist, WaitlistDocument } from '../schemas/waitlist.schema';
 
 export type ActionCenterItem = {
   id: string;
@@ -55,6 +57,8 @@ export class ActionCenterService {
     private readonly debts: Model<DebtDocument>,
     @InjectModel(OwnerTask.name)
     private readonly ownerTasks: Model<OwnerTaskDocument>,
+    @InjectModel(Waitlist.name)
+    private readonly waitlists: Model<WaitlistDocument>,
     private readonly events: EventWriterService,
   ) {}
 
@@ -94,50 +98,81 @@ export class ActionCenterService {
     const uid = new Types.ObjectId(userId);
     const now = new Date();
     const sevenDays = new Date(now.getTime() + 7 * 86_400_000);
-    const [payment, upcoming, workout, membership] = await Promise.all([
-      this.bookings
-        .findOne({
-          athleteId: uid,
-          status: BookingStatus.AWAITING_PAYMENT,
-          paymentExpiresAt: { $gt: now },
-        })
-        .sort({ paymentExpiresAt: 1 })
-        .select('_id code paymentExpiresAt')
-        .lean(),
-      this.bookings
-        .findOne({
-          athleteId: uid,
-          status: BookingStatus.CONFIRMED,
-          startsAt: { $gte: now },
-        })
-        .sort({ startsAt: 1 })
-        .select('_id startsAt')
-        .lean(),
-      this.workoutLogs
-        .findOne({
-          athleteId: uid,
-          status: {
-            $in: [WorkoutLogStatus.IN_PROGRESS, WorkoutLogStatus.DRAFT],
-          },
-        })
-        .sort({ updatedAt: -1 })
-        .select('_id planId status updatedAt')
-        .lean(),
-      this.memberships
-        .findOne({
-          'holder.userId': uid,
-          status: MembershipStatus.ACTIVE,
-          $or: [
-            { 'credit.remainingSessions': { $lte: 2 } },
-            { 'credit.remainingEntries': { $lte: 2 } },
-            { 'credit.expiresAt': { $lte: sevenDays } },
-          ],
-        })
-        .sort({ 'credit.expiresAt': 1 })
-        .select('_id clubId credit')
-        .lean(),
-    ]);
+    const [waitlistOffer, payment, upcoming, workout, membership] =
+      await Promise.all([
+        this.waitlists
+          .findOne({
+            entries: {
+              $elemMatch: {
+                userId: uid,
+                status: WaitlistEntryStatus.OFFERED,
+                offerExpiresAt: { $gt: now },
+              },
+            },
+          })
+          .sort({ 'entries.offerExpiresAt': 1 })
+          .select('_id entries')
+          .lean(),
+        this.bookings
+          .findOne({
+            athleteId: uid,
+            status: BookingStatus.AWAITING_PAYMENT,
+            paymentExpiresAt: { $gt: now },
+          })
+          .sort({ paymentExpiresAt: 1 })
+          .select('_id code paymentExpiresAt')
+          .lean(),
+        this.bookings
+          .findOne({
+            athleteId: uid,
+            status: BookingStatus.CONFIRMED,
+            startsAt: { $gte: now },
+          })
+          .sort({ startsAt: 1 })
+          .select('_id startsAt')
+          .lean(),
+        this.workoutLogs
+          .findOne({
+            athleteId: uid,
+            status: {
+              $in: [WorkoutLogStatus.IN_PROGRESS, WorkoutLogStatus.DRAFT],
+            },
+          })
+          .sort({ updatedAt: -1 })
+          .select('_id planId status updatedAt')
+          .lean(),
+        this.memberships
+          .findOne({
+            'holder.userId': uid,
+            status: MembershipStatus.ACTIVE,
+            $or: [
+              { 'credit.remainingSessions': { $lte: 2 } },
+              { 'credit.remainingEntries': { $lte: 2 } },
+              { 'credit.expiresAt': { $lte: sevenDays } },
+            ],
+          })
+          .sort({ 'credit.expiresAt': 1 })
+          .select('_id clubId credit')
+          .lean(),
+      ]);
     const items: ActionCenterItem[] = [];
+    const offeredEntry = waitlistOffer?.entries.find(
+      (entry) =>
+        entry.userId.toString() === userId &&
+        entry.status === WaitlistEntryStatus.OFFERED &&
+        Boolean(entry.offerExpiresAt && entry.offerExpiresAt > now),
+    );
+    if (waitlistOffer && offeredEntry) {
+      items.push({
+        id: `waitlist-offer:${waitlistOffer._id.toString()}:${offeredEntry._id.toString()}`,
+        kind: 'athlete.waitlist_offer',
+        priority: 110,
+        href: '/athlete/waitlist',
+        entityId: waitlistOffer._id.toString(),
+        dueAt: offeredEntry.offerExpiresAt?.toISOString() ?? null,
+        params: { entryId: offeredEntry._id.toString() },
+      });
+    }
     if (payment) {
       items.push({
         id: `booking-payment:${payment._id.toString()}`,
@@ -187,20 +222,16 @@ export class ActionCenterService {
 
   private async coach(userId: string): Promise<ActionCenterItem[]> {
     const uid = new Types.ObjectId(userId);
-    const [pendingCount, atRisk, newStudent] = await Promise.all([
+    const [pendingCount, atRiskCount, newStudent] = await Promise.all([
       this.bookings.countDocuments({
         coachUserId: uid,
         status: BookingStatus.PENDING,
       }),
-      this.coachStudents
-        .findOne({
-          coachUserId: uid,
-          status: CoachStudentStatus.ACTIVE,
-          'engagement.level': CoachStudentEngagementLevel.AT_RISK,
-        })
-        .sort({ 'engagement.scoredAt': 1 })
-        .select('_id')
-        .lean(),
+      this.coachStudents.countDocuments({
+        coachUserId: uid,
+        status: CoachStudentStatus.ACTIVE,
+        'engagement.level': CoachStudentEngagementLevel.AT_RISK,
+      }),
       this.coachStudents
         .findOne({
           coachUserId: uid,
@@ -223,15 +254,15 @@ export class ActionCenterService {
         params: { count: pendingCount },
       });
     }
-    if (atRisk) {
+    if (atRiskCount > 0) {
       items.push({
-        id: `coach-at-risk:${atRisk._id.toString()}`,
+        id: 'coach-at-risk-queue',
         kind: 'coach.student_at_risk',
         priority: 80,
-        href: `/coach/clients/${atRisk._id.toString()}`,
-        entityId: atRisk._id.toString(),
+        href: '/coach/clients?engagement=at-risk',
+        entityId: null,
         dueAt: null,
-        params: {},
+        params: { count: atRiskCount },
       });
     }
     if (newStudent) {
@@ -268,16 +299,29 @@ export class ActionCenterService {
       ];
     }
     const clubIds = clubs.map((club) => club._id);
-    const [debtCount, taskCount] = await Promise.all([
-      this.debts.countDocuments({
-        clubId: { $in: clubIds },
-        status: { $in: [DebtStatus.OPEN, DebtStatus.PARTIAL] },
-      }),
-      this.ownerTasks.countDocuments({
-        clubId: { $in: clubIds },
-        status: OwnerTaskStatus.OPEN,
-      }),
-    ]);
+    const sevenDays = new Date(Date.now() + 7 * 86_400_000);
+    const [debtCount, taskCount, expiringCount, pendingBookingCount] =
+      await Promise.all([
+        this.debts.countDocuments({
+          clubId: { $in: clubIds },
+          status: { $in: [DebtStatus.OPEN, DebtStatus.PARTIAL] },
+        }),
+        this.ownerTasks.countDocuments({
+          clubId: { $in: clubIds },
+          status: OwnerTaskStatus.OPEN,
+        }),
+        this.memberships.countDocuments({
+          clubId: { $in: clubIds },
+          status: MembershipStatus.ACTIVE,
+          'credit.expiresAt': { $lte: sevenDays },
+        }),
+        this.bookings.countDocuments({
+          clubId: { $in: clubIds },
+          status: {
+            $in: [BookingStatus.PENDING, BookingStatus.AWAITING_PAYMENT],
+          },
+        }),
+      ]);
     const items: ActionCenterItem[] = [];
     if (debtCount > 0) {
       items.push({
@@ -288,6 +332,28 @@ export class ActionCenterService {
         entityId: null,
         dueAt: null,
         params: { count: debtCount },
+      });
+    }
+    if (pendingBookingCount > 0) {
+      items.push({
+        id: 'owner-booking-queue',
+        kind: 'owner.booking_queue',
+        priority: 85,
+        href: '/owner/bookings',
+        entityId: null,
+        dueAt: null,
+        params: { count: pendingBookingCount },
+      });
+    }
+    if (expiringCount > 0) {
+      items.push({
+        id: 'owner-renewal-risk',
+        kind: 'owner.renewal_risk',
+        priority: 80,
+        href: '/owner/lifecycle',
+        entityId: null,
+        dueAt: sevenDays.toISOString(),
+        params: { count: expiringCount },
       });
     }
     if (taskCount > 0) {

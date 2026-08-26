@@ -24,6 +24,12 @@ export type {
   UpdateProfileSettingsInput,
 } from "./profile.dto";
 export { accountProfileKeys } from "./profile.keys";
+export type {
+  AccountDeletionRequest,
+  AccountDeletionRequestStatus,
+  RequestAccountDeletionInput,
+  CancelAccountDeletionInput,
+} from "./profile.dto";
 
 export {
   createAccountKycApi,

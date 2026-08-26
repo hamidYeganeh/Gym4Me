@@ -28,6 +28,7 @@ import {
   ListAuditLogsQueryDto,
   ListKycRequestsQueryDto,
   ListUsersQueryDto,
+  ListAccountDeletionRequestsQueryDto,
   ReviewKycDto,
   StartImpersonationDto,
   UpdateUserRolesDto,
@@ -43,6 +44,7 @@ import {
   ReviewRoleRequestDto,
 } from '../account/roles/dto/roles.dto';
 import { RoleMembershipService } from '../account/roles/role-membership.service';
+import { AccountDataRightsService } from '../account/profile/account-data-rights.service';
 
 @ApiTags('admin')
 @ApiBearerAuth('access-token')
@@ -56,7 +58,16 @@ export class AdminController {
     private readonly roleMembership: RoleMembershipService,
     private readonly impersonation: AdminImpersonationService,
     private readonly audit: AuditService,
+    private readonly dataRights: AccountDataRightsService,
   ) {}
+
+  @Get('data-rights/account-deletions')
+  @ApiOperation({ summary: 'List account deletion requests (read-only)' })
+  listAccountDeletionRequests(
+    @Query() query: ListAccountDeletionRequestsQueryDto,
+  ) {
+    return this.dataRights.listAdmin(query);
+  }
 
   // ── Users ──────────────────────────────────────
 

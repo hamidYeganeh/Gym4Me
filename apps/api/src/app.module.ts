@@ -35,6 +35,7 @@ import { CouponsModule } from './coupons/coupons.module';
 import { FinanceModule } from './finance/finance.module';
 import { GamificationModule } from './gamification/gamification.module';
 import { LifecycleModule } from './lifecycle/lifecycle.module';
+import { InventoryModule } from './inventory/inventory.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { KycGuard } from './common/guards/kyc.guard';
 import { MongoTransactionModule } from './common/mongo/mongo-transaction.module';
@@ -77,6 +78,7 @@ import { WaitlistModule } from './waitlist/waitlist.module';
       }),
     }),
     MongoTransactionModule,
+    InventoryModule,
     WorkerRuntimeModule,
     RedisModule,
     ThrottlerModule.forRootAsync({

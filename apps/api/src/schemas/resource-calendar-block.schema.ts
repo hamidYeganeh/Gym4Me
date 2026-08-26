@@ -52,6 +52,12 @@ export class ResourceCalendarBlock {
   @Prop({ type: Types.ObjectId, ref: User.name, required: true })
   createdBy!: Types.ObjectId;
 
+  @Prop({ trim: true, maxlength: 120 })
+  clientMutationId?: string;
+
+  @Prop({ trim: true, length: 64 })
+  mutationFingerprint?: string;
+
   @Prop({
     type: String,
     enum: EntityStatus,
@@ -74,3 +80,10 @@ ResourceCalendarBlockSchema.index({
   'window.from': 1,
   status: 1,
 });
+ResourceCalendarBlockSchema.index(
+  { createdBy: 1, clientMutationId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { clientMutationId: { $type: 'string' } },
+  },
+);

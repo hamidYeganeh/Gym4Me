@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@heroui/react/button";
 import { Spinner } from "@heroui/react/spinner";
 import { Typography } from "@heroui/react/typography";
 import { ApiError } from "@repo/api";
@@ -11,23 +12,17 @@ import { useAuth } from "@/shared/providers/AuthProvider";
 import { OwnerLifecycleScreen } from "../screens/OwnerLifecycleScreen";
 import type { OwnerLifecycleView } from "./owner-lifecycle-data";
 
-const SEGMENT_LABEL: Record<string, string> = {
-  expiring_soon: "نزدیک به انقضا",
-  low_credits: "اعتبار کم",
-  no_visit: "بدون حضور",
-  incomplete_payment: "پرداخت ناقص",
-  trial_unconverted: "آزمایشی تبدیل‌نشده",
-};
-
 export function OwnerLifecycleGate() {
   const t = useTranslations("OwnerLifecycle");
-  const { isAuthenticated, isReady } = useAuth();
+  const { activeRole, isAuthenticated, isReady } = useAuth();
   const [view, setView] = useState<OwnerLifecycleView | null>(null);
   const [clubId, setClubId] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
+    setLoadError(null);
     const clubs = await accountClubs.list({ page_size: 1 });
     const club = clubs.result[0];
     if (!club) {
@@ -51,43 +46,49 @@ export function OwnerLifecycleGate() {
       atRisk: [...atRisk.expiringSoon, ...atRisk.lowCredits].map((row) => ({
         id: row.id,
         userLabel: row.userId ? row.userId.slice(-6) : "مهمان",
-        statusLabel: row.status,
+        statusLabel: t(`membershipStatus.${row.status}`),
         remainingLabel:
           row.remainingSessions != null
-            ? `${row.remainingSessions} جلسه`
+            ? t("remainingSessions", { count: row.remainingSessions })
             : row.remainingEntries != null
-              ? `${row.remainingEntries} ورود`
-              : "—",
-        expiresLabel: row.expiresAt ? formatJalaliFullDate(row.expiresAt) : "—",
+              ? t("remainingEntries", { count: row.remainingEntries })
+              : t("notAvailable"),
+        expiresLabel: row.expiresAt
+          ? formatJalaliFullDate(row.expiresAt)
+          : t("notAvailable"),
       })),
       journeys: journeys.result.map((journey) => ({
         id: journey.id,
         userLabel: journey.userId.slice(-6),
-        segmentLabel: SEGMENT_LABEL[journey.segmentKind] ?? journey.segmentKind,
+        segmentLabel: t(`segment.${journey.segmentKind}`),
         status: journey.status,
-        stepLabel: `گام ${journey.step + 1}`,
+        stepLabel: t("step", { count: journey.step + 1 }),
         nextActionLabel: journey.nextActionAt
           ? formatJalaliFullDate(journey.nextActionAt)
-          : "—",
+          : t("notAvailable"),
       })),
       segments: segments.result.map((segment) => ({
         id: segment.id,
         name: segment.name,
-        kind: SEGMENT_LABEL[segment.kind] ?? segment.kind,
+        kind: t(`segment.${segment.kind}`),
         status: segment.status,
       })),
     });
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     if (!isReady) return;
-    if (!isAuthenticated) {
+    if (
+      !isAuthenticated ||
+      (activeRole !== "club_owner" && activeRole !== "club_staff")
+    ) {
       setView({
         clubName: "—",
         atRisk: [],
         journeys: [],
         segments: [],
       });
+      setLoadError(t("unauthorized"));
       return;
     }
     load().catch(() => {
@@ -97,8 +98,9 @@ export function OwnerLifecycleGate() {
         journeys: [],
         segments: [],
       });
+      setLoadError(t("loadError"));
     });
-  }, [isAuthenticated, isReady, load]);
+  }, [activeRole, isAuthenticated, isReady, load, t]);
 
   const runAction = async (action: "enroll" | "run") => {
     if (!clubId) return;
@@ -128,10 +130,29 @@ export function OwnerLifecycleGate() {
   return (
     <>
       {actionError ? (
-        <div className="px-4 pt-2 text-center">
+        <div className="px-4 pt-2 text-center" role="alert">
           <Typography className="text-danger" type="body-sm">
             {actionError}
           </Typography>
+        </div>
+      ) : null}
+      {loadError ? (
+        <div className="px-4 pt-2 text-center" role="alert">
+          <Typography className="text-danger" type="body-sm">
+            {loadError}
+          </Typography>
+          {isAuthenticated ? (
+            <Button
+              className="mt-2"
+              onPress={() =>
+                void load().catch(() => setLoadError(t("loadError")))
+              }
+              size="sm"
+              variant="secondary"
+            >
+              {t("retry")}
+            </Button>
+          ) : null}
         </div>
       ) : null}
       <OwnerLifecycleScreen

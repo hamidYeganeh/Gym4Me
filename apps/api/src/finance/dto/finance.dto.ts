@@ -338,6 +338,16 @@ export class WalletOwnerDto {
   id!: string;
 }
 
+export class ListWalletsQueryDto extends PaginationQueryDto {
+  @IsOptional()
+  @IsEnum(WalletOwnerType)
+  type?: WalletOwnerType;
+
+  @IsOptional()
+  @IsMongoId()
+  ownerId?: string;
+}
+
 // ── Ledger ────────────────────────────────────────────────────────────────
 
 export class ListLedgerQueryDto extends PaginationQueryDto {

@@ -13,6 +13,7 @@ import {
   accountProgress,
   isDiscoveryApiId,
   isDiscoveryDemoId,
+  mediaFileUrl,
 } from "@/shared/lib/api";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { CoachClientDetailScreen } from "../screens/CoachClientDetailScreen";
@@ -34,8 +35,8 @@ function mapStudentDetail(student: CoachStudent): CoachClientDetail {
   return {
     id: student.id,
     athleteUserId: student.athleteUserId,
-    name: student.athleteUserId.slice(-6),
-    avatar: PLACEHOLDER_IMAGE,
+    name: student.athlete.displayName ?? student.athleteUserId.slice(-6),
+    avatar: mediaFileUrl(student.athlete.avatarMediaId) ?? PLACEHOLDER_IMAGE,
     goalLabel: student.coaching.goalKey ?? "—",
     levelLabel: student.coaching.levelKey ?? "—",
     lastSessionLabel: student.engagement.lastSessionAt

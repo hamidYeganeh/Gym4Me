@@ -15,6 +15,8 @@ export const athleteSocialFeedScreenVariants = tv({
     body: "text-foreground whitespace-pre-wrap",
     media:
       "flex h-36 items-center justify-center rounded-[18px] border border-dashed border-border bg-background text-muted",
+    mediaGrid: "grid w-full grid-cols-2 gap-2 overflow-hidden rounded-[18px]",
+    mediaImage: "aspect-square w-full bg-background object-cover",
     actions: "flex items-center gap-1",
     empty:
       "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center",

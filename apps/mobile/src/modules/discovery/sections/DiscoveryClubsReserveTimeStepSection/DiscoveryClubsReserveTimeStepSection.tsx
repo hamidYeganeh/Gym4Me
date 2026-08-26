@@ -23,6 +23,9 @@ export function DiscoveryClubsReserveTimeStepSection({
   slots,
   selectedSlotId,
   onSlotPress,
+  onWaitlistPress,
+  waitlistPendingId,
+  waitlistResult,
 }: DiscoveryClubsReserveTimeStepSectionProps) {
   const t = useTranslations("ReserveFlow");
   const slotsStyles = styles();
@@ -77,6 +80,7 @@ export function DiscoveryClubsReserveTimeStepSection({
             slots.map((slot) => {
               const selected = selectedSlotId === slot.id;
               return (
+                <div className="flex flex-col gap-2" key={slot.id}>
                 <Button
                   className={[
                     slotsStyles.slot(),
@@ -86,7 +90,6 @@ export function DiscoveryClubsReserveTimeStepSection({
                     .filter(Boolean)
                     .join(" ")}
                   isDisabled={slot.state === "full"}
-                  key={slot.id}
                   onPress={() => onSlotPress(slot.id)}
                   size="lg"
                   variant="ghost"
@@ -129,6 +132,24 @@ export function DiscoveryClubsReserveTimeStepSection({
                     />
                   ) : null}
                 </Button>
+                {slot.state === "full" && onWaitlistPress ? (
+                  <Button
+                    isDisabled={Boolean(waitlistPendingId) || (waitlistResult?.slotId === slot.id && !waitlistResult.error)}
+                    onPress={() => onWaitlistPress(slot)}
+                    size="sm"
+                    variant="outline"
+                  >
+                    {waitlistPendingId === slot.id
+                      ? t("waitlistJoining")
+                      : waitlistResult?.slotId === slot.id && !waitlistResult.error
+                        ? t("waitlistJoined")
+                        : t("waitlistJoin")}
+                  </Button>
+                ) : null}
+                {waitlistResult?.slotId === slot.id && waitlistResult.error ? (
+                  <Typography className="text-danger" role="alert" type="body-xs">{t("waitlistError")}</Typography>
+                ) : null}
+                </div>
               );
             })
           ) : (

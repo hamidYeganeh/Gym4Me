@@ -58,6 +58,8 @@ export interface DispatchInput {
   idempotencyKey?: string;
   /** Ordered tokens for the SMS provider template; defaults to param values. */
   smsTokens?: string[];
+  /** Transactional domain requirement: send SMS regardless of template fallback policy. */
+  forceSms?: boolean;
 }
 
 export interface DispatchResult {
@@ -294,10 +296,13 @@ export class NotificationsService implements OnModuleInit {
     input: DispatchInput,
   ): Promise<NotificationDeliveryStatus | null> {
     const setting = template.channels.sms;
-    if (setting === NotificationSmsSetting.DISABLED) return null;
+    if (setting === NotificationSmsSetting.DISABLED && !input.forceSms) {
+      return null;
+    }
 
     const pushDelivered = pushStatus === NotificationDeliveryStatus.SENT;
     const shouldSend =
+      input.forceSms === true ||
       setting === NotificationSmsSetting.ALWAYS ||
       (setting === NotificationSmsSetting.CRITICAL_FALLBACK &&
         input.critical === true &&
@@ -317,8 +322,9 @@ export class NotificationsService implements OnModuleInit {
         Object.values(input.params ?? {}).map((value) => String(value));
       await this.sms.sendTemplate(
         user.phone,
-        template.smsTemplateKey ?? template.key,
+        template.smsTemplateKey,
         tokens,
+        notification.body,
       );
       notification.delivery.sms = {
         status: NotificationDeliveryStatus.SENT,

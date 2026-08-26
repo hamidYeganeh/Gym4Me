@@ -1,5 +1,6 @@
 import type { Paginated } from "../types";
 import type {
+  PlatformEntitlementContract,
   PlatformPlan,
   PlatformSubscription,
   PlatformSubscriptionStatus,
@@ -24,6 +25,10 @@ export type CreatePlatformPlanInput = {
     periodDays?: number;
   };
   features?: string[];
+  entitlementContract?: PlatformEntitlementContract;
+  contractReady?: boolean;
+  postExpirationMode?: "free_plan" | "read_only";
+  fallbackPlanId?: string;
   status?: "active" | "inactive" | "archived";
 };
 

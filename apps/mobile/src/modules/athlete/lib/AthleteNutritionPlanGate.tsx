@@ -75,6 +75,7 @@ export function AthleteNutritionPlanGate({ planId }: { planId: string }) {
       setPendingSlot(key);
       try {
         await accountNutrition.createAdherence({
+          idempotencyKey: `meal-log:${globalThis.crypto?.randomUUID?.() ?? Date.now()}`,
           mealPlanId: planId,
           slot: { dayIndex, mealIndex },
           status,

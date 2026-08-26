@@ -7,10 +7,12 @@ const WEBSITE_MESSAGE_KEYS = [
   "Api",
   "MarketingLanding",
   "PublicSite",
+  "PublicFaq",
   "PublicClasses",
   "PublicCity",
   "Articles",
   "AthleteHome",
+  "NotFound",
 ] as const;
 
 export default getRequestConfig(async () => {

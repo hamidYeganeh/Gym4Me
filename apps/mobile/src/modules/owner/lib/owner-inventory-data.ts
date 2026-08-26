@@ -9,6 +9,7 @@ export type OwnerInventoryItem = {
   quantity: number;
   condition: OwnerInventoryCondition;
   locationLabel: string;
+  version?: number;
 };
 
 export const OWNER_INVENTORY: OwnerInventoryItem[] = [

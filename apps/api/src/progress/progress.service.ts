@@ -23,6 +23,7 @@ import {
   ExerciseStatus,
   HealthSyncProvider,
   HealthSyncStatus,
+  MediaVisibility,
   MetricAggregation,
   MetricGoalStatus,
   MetricPeriodKind,
@@ -76,6 +77,8 @@ import {
   ProgressPhoto,
   ProgressPhotoDocument,
 } from '../schemas/progress-photo.schema';
+import { MediaService } from '../media/media.service';
+import { MediaPurpose } from '../schemas/media.schema';
 import { WorkoutLog, WorkoutLogDocument } from '../schemas/workout-log.schema';
 import {
   WorkoutPlan,
@@ -404,6 +407,7 @@ export class ProgressService {
     private readonly listProgressMetrics: ListProgressMetricsQuery,
     private readonly transactions: MongoTransactionService,
     private readonly outbox: OutboxService,
+    private readonly media: MediaService,
   ) {}
 
   // ── Exercises ───────────────────────────────────────────────────────────
@@ -1176,12 +1180,32 @@ export class ProgressService {
     request: Request,
   ) {
     this.assertAthleteOnlyWrite(activeRole, 'create');
-    const item = await this.photoModel.create({
-      athleteUserId: new Types.ObjectId(userId),
-      mediaId: new Types.ObjectId(dto.mediaId),
-      privacy: dto.privacy ?? Privacy.PRIVATE,
-      capturedAt: new Date(dto.capturedAt),
-      note: dto.note?.trim(),
+    await this.media.assertOwnedImage(
+      dto.mediaId,
+      userId,
+      MediaVisibility.PRIVATE,
+      MediaPurpose.PROGRESS_PHOTO,
+    );
+    const item = await this.transactions.run(async (session) => {
+      const [created] = await this.photoModel.create(
+        [
+          {
+            athleteUserId: new Types.ObjectId(userId),
+            mediaId: new Types.ObjectId(dto.mediaId),
+            privacy: dto.privacy ?? Privacy.PRIVATE,
+            capturedAt: new Date(dto.capturedAt),
+            note: dto.note?.trim(),
+          },
+        ],
+        { session },
+      );
+      await this.media.claimProgressPhoto(
+        dto.mediaId,
+        userId,
+        created._id,
+        session,
+      );
+      return created;
     });
     this.audit.log({
       action: AuditAction.PROGRESS_PHOTO_UPSERTED,
@@ -1201,13 +1225,36 @@ export class ProgressService {
   ) {
     const item = await this.findPhoto(id);
     this.assertOwnerOrAdmin(item.athleteUserId, userId, activeRole);
-    if (dto.mediaId !== undefined)
-      item.mediaId = new Types.ObjectId(dto.mediaId);
+    const previousMediaId = item.mediaId.toString();
+    const replacesMedia =
+      dto.mediaId !== undefined && dto.mediaId !== previousMediaId;
     if (dto.capturedAt !== undefined)
       item.capturedAt = new Date(dto.capturedAt);
     if (dto.note !== undefined) item.note = dto.note?.trim() || undefined;
     if (dto.privacy !== undefined) item.privacy = dto.privacy;
-    await item.save();
+    if (replacesMedia && dto.mediaId) {
+      await this.transactions.run(async (session) => {
+        await this.media.claimProgressPhoto(
+          dto.mediaId!,
+          userId,
+          item._id,
+          session,
+        );
+        item.mediaId = new Types.ObjectId(dto.mediaId);
+        await item.save({ session });
+        await this.media.releaseProgressPhoto(
+          previousMediaId,
+          userId,
+          item._id,
+          session,
+        );
+      });
+      await this.media
+        .finalizeManagedMediaDeletion(previousMediaId)
+        .catch(() => false);
+    } else {
+      await item.save();
+    }
     this.audit.log({
       action: AuditAction.PROGRESS_PHOTO_UPSERTED,
       actorId: userId,
@@ -1225,11 +1272,27 @@ export class ProgressService {
   ) {
     const item = await this.findPhoto(id);
     this.assertOwnerOrAdmin(item.athleteUserId, userId, activeRole);
-    await item.deleteOne();
+    const mediaId = item.mediaId.toString();
+    await this.transactions.run(async (session) => {
+      await this.photoModel.deleteOne({ _id: item._id }, { session });
+      await this.media.releaseProgressPhoto(
+        mediaId,
+        item.athleteUserId.toString(),
+        item._id,
+        session,
+      );
+    });
+    const mediaDeleted = await this.media
+      .finalizeManagedMediaDeletion(mediaId)
+      .catch(() => false);
     this.audit.log({
       action: AuditAction.PROGRESS_PHOTO_DELETED,
       actorId: userId,
-      metadata: { kind: 'photo_delete', photoId: id },
+      metadata: {
+        kind: 'photo_delete',
+        photoId: id,
+        mediaCleanupPending: !mediaDeleted,
+      },
       request,
     });
     return { ok: true };

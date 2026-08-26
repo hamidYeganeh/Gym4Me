@@ -16,7 +16,7 @@ import { ProfileHeader } from "@repo/ui/layout/ProfileHeader";
 import type { ActionCenterKind } from "@repo/api/action-center";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/shared/lib/app-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   accountActionCenter,
@@ -44,6 +44,8 @@ export function CoachHomeScreen() {
   const [actions, setActions] = useState<CoachAction[]>([]);
   const [actionsLoading, setActionsLoading] = useState(false);
   const [actionsError, setActionsError] = useState(false);
+  const [actionsStale, setActionsStale] = useState(false);
+  const actionsRef = useRef<CoachAction[]>([]);
 
   const loadActions = useCallback(async () => {
     if (!user) return;
@@ -51,37 +53,39 @@ export function CoachHomeScreen() {
     setActionsError(false);
     try {
       const result = await accountActionCenter.get();
-      setActions(
-        result.items.map((item) => {
-          if (item.kind === "coach.booking_requests") {
-            return {
-              id: item.id,
-              title: t("actionBookingsTitle", item.params),
-              description: t("actionBookingsBody"),
-              href: item.href,
-              kind: item.kind,
-            };
-          }
-          if (item.kind === "coach.student_at_risk") {
-            return {
-              id: item.id,
-              title: t("actionAtRiskTitle"),
-              description: t("actionAtRiskBody"),
-              href: item.href,
-              kind: item.kind,
-            };
-          }
+      setActionsStale(false);
+      const nextActions = result.items.map((item) => {
+        if (item.kind === "coach.booking_requests") {
           return {
             id: item.id,
-            title: t("actionProgramTitle"),
-            description: t("actionProgramBody"),
+            title: t("actionBookingsTitle", item.params),
+            description: t("actionBookingsBody"),
             href: item.href,
             kind: item.kind,
           };
-        }),
-      );
+        }
+        if (item.kind === "coach.student_at_risk") {
+          return {
+            id: item.id,
+            title: t("actionAtRiskTitle", item.params),
+            description: t("actionAtRiskBody"),
+            href: item.href,
+            kind: item.kind,
+          };
+        }
+        return {
+          id: item.id,
+          title: t("actionProgramTitle"),
+          description: t("actionProgramBody"),
+          href: item.href,
+          kind: item.kind,
+        };
+      });
+      actionsRef.current = nextActions;
+      setActions(nextActions);
     } catch {
       setActionsError(true);
+      setActionsStale(actionsRef.current.length > 0);
     } finally {
       setActionsLoading(false);
     }
@@ -151,11 +155,11 @@ export function CoachHomeScreen() {
             <Typography id="coach-action-center-title" type="h4" weight="semibold">{t("actionCenterTitle")}</Typography>
             <Typography className={styles.sectionDescription} type="body-sm">{t("actionCenterDescription")}</Typography>
           </div>
-          {actionsLoading ? <Typography className={styles.sectionDescription} type="body-sm">{t("actionCenterLoading")}</Typography> : null}
+          {actionsLoading ? <Typography aria-live="polite" className={styles.sectionDescription} type="body-sm">{t("actionCenterLoading")}</Typography> : null}
           {actionsError ? (
-            <div>
-              <Typography className="text-danger" type="body-sm">{t("actionCenterError")}</Typography>
-              <button className="mt-2 text-sm text-primary underline" onClick={() => void loadActions()} type="button">{t("actionCenterRetry")}</button>
+            <div role="alert">
+              <Typography className="text-danger" type="body-sm">{t(actionsStale ? "actionCenterStale" : "actionCenterError")}</Typography>
+              <button className="mt-2 min-h-11 rounded-medium px-3 text-sm text-primary underline" onClick={() => void loadActions()} type="button">{t("actionCenterRetry")}</button>
             </div>
           ) : null}
           {!actionsLoading && !actionsError && actions.length === 0 ? <Typography className={styles.sectionDescription} type="body-sm">{t("actionCenterEmpty")}</Typography> : null}

@@ -19,8 +19,9 @@ export abstract class SmsService {
   ): Promise<void>;
   abstract sendTemplate(
     phone: string,
-    template: string,
+    template: string | undefined,
     tokens: string[],
+    fallbackMessage: string,
   ): Promise<void>;
 }
 
@@ -46,11 +47,12 @@ export class MockSmsService extends SmsService {
 
   sendTemplate(
     phone: string,
-    template: string,
+    template: string | undefined,
     tokens: string[],
+    fallbackMessage: string,
   ): Promise<void> {
     this.logger.log(
-      `[TEMPLATE] to=${phone} template=${template} tokens=${tokens.join(',')}`,
+      `[TEMPLATE] to=${phone} template=${template ?? 'plain'} tokens=${tokens.join(',')} message=${fallbackMessage}`,
     );
     return Promise.resolve();
   }
@@ -129,10 +131,15 @@ export class KavenegarSmsService extends SmsService {
 
   async sendTemplate(
     phone: string,
-    template: string,
+    template: string | undefined,
     tokens: string[],
+    fallbackMessage: string,
   ): Promise<void> {
-    await this.verifyLookup(phone, template, tokens);
+    if (template) {
+      await this.verifyLookup(phone, template, tokens);
+      return;
+    }
+    await this.sendPlain(phone, fallbackMessage);
   }
 
   private async verifyLookup(

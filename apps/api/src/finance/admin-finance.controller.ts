@@ -9,6 +9,7 @@ import {
   DraftPeriodPayoutDto,
   ListLedgerQueryDto,
   ListPaymentsQueryDto,
+  ListWalletsQueryDto,
   ListPayoutsQueryDto,
   OpenPayoutDisputeDto,
   ResolvePayoutDisputeDto,
@@ -50,6 +51,12 @@ export class AdminFinanceController {
     @Req() request: Request,
   ) {
     return this.finance.rebuildWalletFromLedger(dto, adminId, request);
+  }
+
+  @Get('wallets')
+  @ApiOperation({ summary: 'List derived wallet caches for reconciliation' })
+  listWallets(@Query() query: ListWalletsQueryDto) {
+    return this.finance.listWallets(query);
   }
 
   @Get('payouts')

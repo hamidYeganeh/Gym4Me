@@ -19,6 +19,7 @@ import { ClubSlotsModule } from '../club-slots/club-slots.module';
 import { CalendarModule } from '../calendar/calendar.module';
 import { ReferralModule } from '../referral/referral.module';
 import { StaffModule } from '../staff/staff.module';
+import { WaitlistModule } from '../../waitlist/waitlist.module';
 import { AdminBookingsController } from './admin-bookings.controller';
 import { CreateClubBookingCommand } from './application/commands/create-club-booking.command';
 import { CreateCoachBookingCommand } from './application/commands/create-coach-booking.command';
@@ -46,6 +47,7 @@ import { OwnerClubBookingsController } from './owner-club-bookings.controller';
     ReferralModule,
     StaffModule,
     UsersModule,
+    WaitlistModule,
     MongooseModule.forFeature([
       { name: Booking.name, schema: BookingSchema },
       { name: CoachSlot.name, schema: CoachSlotSchema },

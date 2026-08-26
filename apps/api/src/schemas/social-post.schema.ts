@@ -40,6 +40,12 @@ export class SocialPost {
   @Prop({ default: 0, min: 0 })
   commentCount!: number;
 
+  @Prop({ required: true })
+  idempotencyKey!: string;
+
+  @Prop({ required: true })
+  idempotencyFingerprint!: string;
+
   createdAt!: Date;
   updatedAt!: Date;
 }
@@ -48,3 +54,10 @@ export const SocialPostSchema = SchemaFactory.createForClass(SocialPost);
 
 SocialPostSchema.index({ status: 1, visibility: 1, createdAt: -1 });
 SocialPostSchema.index({ authorUserId: 1, createdAt: -1 });
+SocialPostSchema.index(
+  { authorUserId: 1, idempotencyKey: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { idempotencyKey: { $type: 'string' } },
+  },
+);

@@ -14,5 +14,9 @@ export type {
   LifecycleSegmentKind,
   LifecycleSegmentsResponse,
   RunJourneysResult,
+  ClubBroadcast,
+  ClubBroadcastAudience,
+  ClubBroadcastList,
+  CreateClubBroadcastInput,
 } from "./lifecycle.dto";
 export { accountLifecycleKeys } from "./lifecycle.keys";

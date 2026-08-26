@@ -161,6 +161,23 @@ describe('CreateClubBookingCommand', () => {
     );
   });
 
+  it('joins an existing transaction without starting a nested transaction', async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2026-08-23T10:00:00.000Z'));
+    const { command, transactions, clubSlots } = setup();
+
+    const result = await command.execute(athleteId, dto, { session });
+
+    expect(result.bookings).toHaveLength(1);
+    expect(transactions.run).not.toHaveBeenCalled();
+    expect(clubSlots.occupyOccurrence).toHaveBeenCalledWith(
+      slotId,
+      occurrence.date,
+      1,
+      10,
+      session,
+    );
+  });
+
   it('creates a paid occurrence with a bounded payment deadline and no early outbox', async () => {
     jest.useFakeTimers().setSystemTime(new Date('2026-08-23T10:00:00.000Z'));
     const { bookingModel, command, outbox } = setup(150_000);

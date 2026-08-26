@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@heroui/react/button";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { Pencil1 } from "@repo/icons/Pencil1";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";

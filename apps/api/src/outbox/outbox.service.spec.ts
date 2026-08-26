@@ -9,9 +9,12 @@ function outboxMessage(attempts = 1) {
     _id: new Types.ObjectId(),
     eventName: 'booking.confirmed',
     payload: {
+      clubId: new Types.ObjectId().toString(),
       notification: {
         userId: new Types.ObjectId().toString(),
         templateKey: 'booking.confirmed',
+        forceSms: true,
+        smsTokens: ['باشگاه', '1405/06/04', '18:00'],
       },
     },
     status: OutboxMessageStatus.PROCESSING,
@@ -38,12 +41,24 @@ describe('OutboxService distributed processing', () => {
         deduplicated: false,
       }),
     };
+    const clubModel = {
+      findById: jest.fn().mockReturnValue({
+        select: jest.fn().mockResolvedValue({ ownerId: new Types.ObjectId() }),
+      }),
+    };
+    const entitlements = {
+      reserveTransactionalMessage: jest
+        .fn()
+        .mockResolvedValue({ idempotent: false }),
+    };
     const service = new OutboxService(
       outboxModel as never,
+      clubModel as never,
       notifications as never,
       { instanceId } as never,
+      entitlements as never,
     );
-    return { notifications, outboxModel, service };
+    return { clubModel, entitlements, notifications, outboxModel, service };
   }
 
   it('allows only one of two workers to deliver one atomically claimed message', async () => {
@@ -143,6 +158,35 @@ describe('OutboxService distributed processing', () => {
           status: OutboxMessageStatus.PENDING,
           nextAttemptAt: expect.any(Date),
         }),
+      }),
+    );
+  });
+
+  it('reserves a club transactional-message entitlement before dispatch', async () => {
+    const message = outboxMessage();
+    const { entitlements, notifications, outboxModel, service } =
+      setup('instance-a');
+    outboxModel.findOneAndUpdate
+      .mockResolvedValueOnce(message)
+      .mockResolvedValue(null);
+
+    await expect(service.publishPending(1)).resolves.toEqual({
+      scanned: 1,
+      published: 1,
+    });
+    expect(entitlements.reserveTransactionalMessage).toHaveBeenCalledWith({
+      ownerUserId: expect.any(String),
+      clubId: message.payload.clubId,
+      sourceId: message._id.toString(),
+    });
+    expect(
+      entitlements.reserveTransactionalMessage.mock.invocationCallOrder[0],
+    ).toBeLessThan(notifications.dispatch.mock.invocationCallOrder[0]);
+    expect(notifications.dispatch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        forceSms: true,
+        smsTokens: ['باشگاه', '1405/06/04', '18:00'],
+        idempotencyKey: `outbox:${message._id.toString()}`,
       }),
     );
   });

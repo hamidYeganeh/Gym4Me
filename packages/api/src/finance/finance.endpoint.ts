@@ -14,6 +14,8 @@ export const accountFinanceEndpoints = {
     `/account/clubs/${clubId}/finance/payments`,
   ownerPayment: (clubId: string, paymentId: string) =>
     `/account/clubs/${clubId}/finance/payments/${paymentId}`,
+  ownerInvoices: (clubId: string) =>
+    `/account/clubs/${clubId}/finance/invoices`,
   ownerManualPayment: (clubId: string) =>
     `/account/clubs/${clubId}/finance/payments/manual`,
   ownerShifts: (clubId: string) => `/account/clubs/${clubId}/finance/shifts`,

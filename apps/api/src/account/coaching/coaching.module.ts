@@ -33,6 +33,7 @@ import {
   SessionPackage,
   SessionPackageSchema,
 } from '../../schemas/session-package.schema';
+import { User, UserSchema } from '../../schemas/user.schema';
 import { AdminCoachingController } from './admin-coaching.controller';
 import { CoachingStudentsQuery } from './application/queries/coaching-students.query';
 import { AthleteCoachingController } from './athlete-coaching.controller';
@@ -51,6 +52,7 @@ import { CoachingService } from './coaching.service';
       { name: HealthAssessment.name, schema: HealthAssessmentSchema },
       { name: CoachThread.name, schema: CoachThreadSchema },
       { name: CoachMessage.name, schema: CoachMessageSchema },
+      { name: User.name, schema: UserSchema },
     ]),
   ],
   controllers: [

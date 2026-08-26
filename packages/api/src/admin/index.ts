@@ -10,6 +10,17 @@ export type {
 } from "./users.dto";
 export { adminUsersKeys } from "./users.keys";
 
+export {
+  createAdminDataRightsApi,
+  type AdminDataRightsApi,
+} from './data-rights.client';
+export { adminDataRightsEndpoints } from './data-rights.endpoint';
+export type {
+  AdminAccountDeletionRequest,
+  AdminAccountDeletionRequestsResponse,
+  ListAdminAccountDeletionRequestsQuery,
+} from './data-rights.dto';
+
 export { createAdminBasicsApi, type AdminBasicsApi } from "./basics.client";
 export { adminBasicsEndpoints } from "./basics.endpoint";
 export type {
@@ -107,9 +118,12 @@ export type {
   AdminLedgerEntry,
   AdminLedgerLine,
   AdminLedgerPage,
+  AdminWallet,
+  AdminWalletsPage,
   LedgerEntryKind,
   ListAdminLedgerQuery,
   ListAdminPaymentsQuery,
+  ListAdminWalletsQuery,
   RebuildWalletInput,
   RebuildWalletResult,
   SettlePayoutInput,

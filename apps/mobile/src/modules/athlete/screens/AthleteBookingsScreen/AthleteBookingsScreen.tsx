@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import { Compass } from "@repo/icons/Compass";
 import {

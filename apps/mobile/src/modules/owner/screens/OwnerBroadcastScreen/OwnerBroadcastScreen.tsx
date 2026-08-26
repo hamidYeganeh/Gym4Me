@@ -5,15 +5,26 @@ import { Input } from "@heroui/react/input";
 import { Label } from "@heroui/react/label";
 import { TextField } from "@heroui/react/textfield";
 import { Typography } from "@heroui/react/typography";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm } from "react-hook-form";
+import { z } from "zod";
 import { useRouter } from "@/shared/lib/app-router";
 
 import type { OwnerBroadcastAudience } from "../../lib/owner-broadcast-data";
 import { ownerBroadcastScreenVariants } from "./OwnerBroadcastScreen.styles";
-import type { OwnerBroadcastScreenProps } from "./OwnerBroadcastScreen.types";
+import type {
+  OwnerBroadcastForm,
+  OwnerBroadcastScreenProps,
+} from "./OwnerBroadcastScreen.types";
+
+const broadcastSchema = z.object({
+  title: z.string().trim().min(2).max(100),
+  body: z.string().trim().min(2).max(500),
+  audience: z.enum(["all", "active_members", "at_risk"]),
+});
 
 const AUDIENCE_KEY: Record<
   OwnerBroadcastAudience,
@@ -26,15 +37,27 @@ const AUDIENCE_KEY: Record<
 
 export function OwnerBroadcastScreen({
   broadcasts,
-  form,
   pending = false,
-  onFormChange,
   onSend,
   className,
 }: OwnerBroadcastScreenProps) {
   const t = useTranslations("OwnerBroadcast");
   const router = useRouter();
   const styles = ownerBroadcastScreenVariants();
+  const {
+    control,
+    formState: { errors, isSubmitting },
+    handleSubmit,
+    reset,
+  } = useForm<OwnerBroadcastForm>({
+    resolver: zodResolver(broadcastSchema),
+    defaultValues: { title: "", body: "", audience: "all" },
+  });
+  const submit = handleSubmit(async (form) => {
+    if (!onSend) return;
+    await onSend(form);
+    reset();
+  });
 
   return (
     <AppLayout
@@ -56,52 +79,67 @@ export function OwnerBroadcastScreen({
           </Typography>
         </section>
 
-        <section className={styles.formCard()}>
+        <form
+          className={styles.formCard()}
+          onSubmit={(event) => void submit(event)}
+        >
           <Typography type="body" weight="semibold">
             {t("composeTitle")}
           </Typography>
-          <TextField>
-            <Label>{t("titleLabel")}</Label>
-            <Input
-              onChange={(event) => onFormChange({ title: event.target.value })}
-              value={form.title}
-            />
-          </TextField>
-          <TextField>
-            <Label>{t("bodyLabel")}</Label>
-            <Input
-              onChange={(event) => onFormChange({ body: event.target.value })}
-              value={form.body}
-            />
-          </TextField>
-          <TextField>
-            <Label>{t("audienceLabel")}</Label>
-            <select
-              className={styles.select()}
-              onChange={(event) =>
-                onFormChange({
-                  audience: event.target.value as OwnerBroadcastAudience,
-                })
-              }
-              value={form.audience}
-            >
-              <option value="all">{t("audienceAll")}</option>
-              <option value="active_members">{t("audienceActive")}</option>
-              <option value="at_risk">{t("audienceAtRisk")}</option>
-            </select>
-          </TextField>
+          <Controller
+            control={control}
+            name="title"
+            render={({ field }) => (
+              <TextField isInvalid={Boolean(errors.title)}>
+                <Label>{t("titleLabel")}</Label>
+                <Input {...field} />
+                {errors.title ? (
+                  <span className="text-danger" role="alert">
+                    {t("titleError")}
+                  </span>
+                ) : null}
+              </TextField>
+            )}
+          />
+          <Controller
+            control={control}
+            name="body"
+            render={({ field }) => (
+              <TextField isInvalid={Boolean(errors.body)}>
+                <Label>{t("bodyLabel")}</Label>
+                <Input {...field} />
+                {errors.body ? (
+                  <span className="text-danger" role="alert">
+                    {t("bodyError")}
+                  </span>
+                ) : null}
+              </TextField>
+            )}
+          />
+          <Controller
+            control={control}
+            name="audience"
+            render={({ field }) => (
+              <TextField>
+                <Label>{t("audienceLabel")}</Label>
+                <select className={styles.select()} {...field}>
+                  <option value="all">{t("audienceAll")}</option>
+                  <option value="active_members">{t("audienceActive")}</option>
+                  <option value="at_risk">{t("audienceAtRisk")}</option>
+                </select>
+              </TextField>
+            )}
+          />
           <Button
-            isDisabled={
-              pending || !onSend || !form.title.trim() || !form.body.trim()
-            }
-            isPending={pending}
-            onPress={onSend}
+            isDisabled={pending || isSubmitting || !onSend}
+            isPending={pending || isSubmitting}
             size="lg"
+            type="submit"
             variant="primary"
           >
             {t("send")}
           </Button>
-        </section>
+        </form>
 
         <section className={styles.section()}>
           <Typography className={styles.sectionTitle()} type="h4" weight="semibold">

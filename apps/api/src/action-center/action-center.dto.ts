@@ -5,6 +5,7 @@ export const ACTION_CENTER_KINDS = [
   'athlete.workout_resume',
   'athlete.membership_renew',
   'athlete.booking_upcoming',
+  'athlete.waitlist_offer',
   'coach.booking_requests',
   'coach.student_at_risk',
   'coach.student_program',

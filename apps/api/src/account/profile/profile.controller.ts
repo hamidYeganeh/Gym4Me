@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Patch, Post, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Patch,
+  Post,
+  Req,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOkResponse,
@@ -19,12 +27,46 @@ import {
   UpdateProfileSettingsDto,
 } from './dto/update-profile-settings.dto';
 import { ProfileService } from './profile.service';
+import { AccountDataRightsService } from './account-data-rights.service';
+import {
+  CancelAccountDeletionDto,
+  RequestAccountDeletionDto,
+} from './dto/account-deletion.dto';
 
 @ApiTags('profile')
 @ApiBearerAuth('access-token')
 @Controller('account/profile')
 export class ProfileController {
-  constructor(private readonly profile: ProfileService) {}
+  constructor(
+    private readonly profile: ProfileService,
+    private readonly dataRights: AccountDataRightsService,
+  ) {}
+
+  @Get('data-rights/deletion')
+  @ApiOperation({ summary: 'Get current account deletion request' })
+  deletionRequest(@CurrentUser('sub') userId: string) {
+    return this.dataRights.current(userId);
+  }
+
+  @Post('data-rights/deletion')
+  @ApiOperation({ summary: 'Request account deletion and revoke sessions' })
+  requestDeletion(
+    @CurrentUser('sub') userId: string,
+    @Body() dto: RequestAccountDeletionDto,
+    @Req() request: Request,
+  ) {
+    return this.dataRights.request(userId, dto.reason, request);
+  }
+
+  @Delete('data-rights/deletion')
+  @ApiOperation({ summary: 'Cancel account deletion during cooling-off' })
+  cancelDeletion(
+    @CurrentUser('sub') userId: string,
+    @Body() _dto: CancelAccountDeletionDto,
+    @Req() request: Request,
+  ) {
+    return this.dataRights.cancel(userId, request);
+  }
 
   @Get('me')
   @ApiOperation({ summary: 'Get current user profile' })

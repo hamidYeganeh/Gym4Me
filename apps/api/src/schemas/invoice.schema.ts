@@ -107,3 +107,4 @@ export class Invoice {
 export const InvoiceSchema = SchemaFactory.createForClass(Invoice);
 
 InvoiceSchema.index({ 'party.payerUserId': 1, issuedAt: -1 });
+InvoiceSchema.index({ 'party.clubId': 1, issuedAt: -1 });

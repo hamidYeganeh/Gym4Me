@@ -73,6 +73,7 @@ export class CreateClubBookingCommand {
       source?: 'athlete' | 'desk';
       holderType?: 'member' | 'guest';
       createdBy?: Types.ObjectId;
+      session?: ClientSession;
     },
   ): Promise<CreateClubBookingResult> {
     const dates = [...new Set(dto.dates)].sort();
@@ -84,6 +85,7 @@ export class CreateClubBookingCommand {
     const replay = await this.findIdempotentBookings(
       athleteId,
       idempotencyKeys,
+      options?.session,
     );
     assertMatchingBookingFingerprint(replay, fingerprint);
     if (replay.length === dates.length && dates.length > 0) {
@@ -91,8 +93,8 @@ export class CreateClubBookingCommand {
     }
     this.assertNoPartialReplay(replay);
 
-    try {
-      return await this.transactions.run(async (session) => {
+    const run = async (session: ClientSession) => {
+      {
         const club = await this.clubModel
           .findById(new Types.ObjectId(dto.clubId))
           .session(session);
@@ -281,11 +283,18 @@ export class CreateClubBookingCommand {
         }
 
         return { recurringGroupId, bookings };
-      });
+      }
+    };
+
+    try {
+      return options?.session
+        ? await run(options.session)
+        : await this.transactions.run(run);
     } catch (error) {
       const winningReplay = await this.findIdempotentBookings(
         athleteId,
         idempotencyKeys,
+        options?.session,
       );
       assertMatchingBookingFingerprint(winningReplay, fingerprint);
       if (winningReplay.length === dates.length && dates.length > 0) {
@@ -359,6 +368,12 @@ export class CreateClubBookingCommand {
               code: booking.code,
             },
             critical: true,
+            forceSms: true,
+            smsTokens: [
+              club.identity.name,
+              booking.occurrence?.date ?? '',
+              booking.occurrence?.startTime ?? '',
+            ],
           },
         },
         idempotencyKey: `outbox:booking.confirmed:${booking._id.toString()}`,

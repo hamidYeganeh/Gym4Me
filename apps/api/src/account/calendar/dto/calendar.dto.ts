@@ -36,6 +36,11 @@ export class UpsertCalendarBlockDto {
   @IsMongoId()
   id?: string;
 
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  clientMutationId?: string;
+
   @ValidateNested()
   @Type(() => CalendarResourceDto)
   resource!: CalendarResourceDto;

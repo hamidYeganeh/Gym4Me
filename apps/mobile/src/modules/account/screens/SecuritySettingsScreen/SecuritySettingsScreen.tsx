@@ -3,11 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "@/shared/lib/app-router";
 
-import { Button } from "@heroui/react/button";
 import { Switch } from "@heroui/react/switch";
 import { ArrowSignIn1 } from "@repo/icons/ArrowSignIn1";
 import { ArrowSignOut1 } from "@repo/icons/ArrowSignOut1";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { FaceId } from "@repo/icons/FaceId";
 import { Fingerprint1 } from "@repo/icons/Fingerprint1";
 import { Key1 } from "@repo/icons/Key1";

@@ -12,6 +12,9 @@ import type {
   UpdateFavouriteLocationInput,
   UpdateMeInput,
   UpdateProfileSettingsInput,
+  AccountDeletionRequest,
+  RequestAccountDeletionInput,
+  CancelAccountDeletionInput,
 } from "./profile.dto";
 import { accountProfileEndpoints as ep } from "./profile.endpoint";
 
@@ -93,6 +96,24 @@ export function createAccountProfileApi(client: ApiClient) {
     submitCoachVerification(input: SubmitCoachVerificationInput) {
       return client.request<CoachProfile>(ep.coachVerification, {
         method: "POST",
+        body: input,
+      });
+    },
+
+    getAccountDeletionRequest() {
+      return client.request<AccountDeletionRequest | null>(ep.accountDeletion);
+    },
+
+    requestAccountDeletion(input: RequestAccountDeletionInput) {
+      return client.request<AccountDeletionRequest>(ep.accountDeletion, {
+        method: "POST",
+        body: input,
+      });
+    },
+
+    cancelAccountDeletion(input: CancelAccountDeletionInput) {
+      return client.request<AccountDeletionRequest>(ep.accountDeletion, {
+        method: "DELETE",
         body: input,
       });
     },

@@ -11,6 +11,7 @@ import { getPaymentCallbackUrl } from "@/shared/lib/payment-return";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   accountBookings,
+  accountWaitlist,
   discoveryClubSlots,
   isDiscoveryApiId,
   isDiscoveryDemoId,
@@ -233,6 +234,15 @@ export function DiscoveryClubReserveGate({ clubId }: Props) {
     }
   };
 
+  const onJoinWaitlist = async (slot: ReserveSlot) => {
+    if (!slot.api) return;
+    await accountWaitlist.join({
+      resource: { type: "slot", id: slot.api.slotId },
+      clubId,
+      occurrenceDate: slot.api.date,
+    });
+  };
+
   return (
     <DiscoveryClubsReserveScreen
       clubImage={club?.images[0] ?? PLACEHOLDER_IMAGE}
@@ -240,6 +250,7 @@ export function DiscoveryClubReserveGate({ clubId }: Props) {
       clubTitle={club?.title ?? ""}
       days={mapped.days}
       onConfirm={onConfirm}
+      onJoinWaitlist={onJoinWaitlist}
       plans={plans}
       slotsByDay={mapped.slotsByDay}
     />

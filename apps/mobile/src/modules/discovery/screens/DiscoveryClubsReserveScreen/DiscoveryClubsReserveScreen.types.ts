@@ -19,4 +19,5 @@ export type DiscoveryClubsReserveScreenProps = {
     slot: ReserveSlot;
     plan: ReservePlan;
   }) => Promise<void>;
+  onJoinWaitlist?: (slot: ReserveSlot) => Promise<void>;
 };

@@ -64,8 +64,7 @@ export class PlatformSubscriptionCheckoutService {
   ) {}
 
   async preview(userId: string, dto: PreviewPlatformSubscriptionCheckoutDto) {
-    await this.policy.assertNoCurrentSubscription(userId);
-    const snapshot = await this.policy.buildSnapshot(dto);
+    const snapshot = await this.policy.buildSnapshot(userId, dto);
     return {
       fingerprint: snapshot.fingerprint,
       consentVersion: PLATFORM_SUBSCRIPTION_CONSENT_VERSION,
@@ -75,6 +74,17 @@ export class PlatformSubscriptionCheckoutService {
         periodDays: snapshot.periodDays,
       },
       price: snapshot.price,
+      changeKind: snapshot.changeKind,
+      currentSubscriptionId: snapshot.current?._id.toString(),
+      priceReferenceAt: snapshot.referenceAt.toISOString(),
+      proration: {
+        previousNetPrice: snapshot.previousNetPrice,
+        remainingSeconds: snapshot.remainingSeconds,
+        credit: snapshot.price.credit,
+        roundingPolicy: snapshot.roundingPolicy,
+      },
+      entitlementSnapshot: snapshot.plan.entitlementContract ?? null,
+      planVersion: snapshot.plan.planVersion ?? 1,
       renewalMode: dto.renewalMode ?? SubscriptionRenewalMode.MANUAL,
     };
   }
@@ -86,14 +96,23 @@ export class PlatformSubscriptionCheckoutService {
     });
     if (replay) {
       this.policy.assertReplay(replay, dto);
+      if (replay.price.payable === 0) {
+        return this.completeZeroPayable(userId, replay, dto.callbackUrl);
+      }
       return this.ensureGatewayInitiated(replay, dto.callbackUrl);
     }
 
-    await this.policy.assertNoCurrentSubscription(userId);
-    const snapshot = await this.policy.buildSnapshot(dto);
-    if (snapshot.price.payable <= 0) {
+    const referenceAt = dto.priceReferenceAt
+      ? new Date(dto.priceReferenceAt)
+      : new Date();
+    const referenceAgeMs = Date.now() - referenceAt.getTime();
+    if (referenceAgeMs < -30_000 || referenceAgeMs > 5 * 60_000) {
+      throw new ConflictException('Platform subscription preview expired');
+    }
+    const snapshot = await this.policy.buildSnapshot(userId, dto, referenceAt);
+    if (snapshot.price.payable <= 0 && snapshot.changeKind === 'initial') {
       throw new BadRequestException(
-        'Free platform plans do not require gateway checkout',
+        'Free platform plans do not require checkout',
       );
     }
     if (dto.consentVersion !== PLATFORM_SUBSCRIPTION_CONSENT_VERSION) {
@@ -109,10 +128,24 @@ export class PlatformSubscriptionCheckoutService {
         const created = new this.checkouts({
           userId: new Types.ObjectId(userId),
           planId: snapshot.plan._id,
+          subscriptionId: snapshot.current?._id,
           planName: snapshot.plan.name,
           periodDays: snapshot.periodDays,
           renewalMode: dto.renewalMode ?? SubscriptionRenewalMode.MANUAL,
           price: snapshot.price,
+          entitlementSnapshot: snapshot.plan.entitlementContract,
+          planVersion: snapshot.plan.planVersion ?? 1,
+          postExpirationModeSnapshot: snapshot.plan.postExpirationMode,
+          fallbackPlanIdSnapshot: snapshot.plan.fallbackPlanId,
+          changeKind: snapshot.changeKind,
+          previousPlanId: snapshot.currentPlan?._id,
+          previousPeriodStart: snapshot.previousPeriodStart,
+          previousPeriodEnd: snapshot.previousPeriodEnd,
+          previousSubscriptionVersion: snapshot.previousSubscriptionVersion,
+          priceReferenceAt: snapshot.referenceAt,
+          previousNetPrice: snapshot.previousNetPrice,
+          remainingSeconds: snapshot.remainingSeconds,
+          roundingPolicy: snapshot.roundingPolicy,
           fingerprint: snapshot.fingerprint,
           consentVersion: dto.consentVersion,
           idempotencyKey: dto.idempotencyKey,
@@ -120,11 +153,13 @@ export class PlatformSubscriptionCheckoutService {
           expiresAt: new Date(Date.now() + CHECKOUT_TTL_MS),
         });
         await created.save({ session });
-        const payment = await this.finance.recordPayment(
-          this.policy.paymentDto(created),
-          { actorId: userId, session },
-        );
-        created.paymentId = payment.payment._id;
+        if (created.price.payable > 0) {
+          const payment = await this.finance.recordPayment(
+            this.policy.paymentDto(created),
+            { actorId: userId, session },
+          );
+          created.paymentId = payment.payment._id;
+        }
         await created.save({ session });
         return created;
       });
@@ -143,6 +178,9 @@ export class PlatformSubscriptionCheckoutService {
         );
       }
       throw error;
+    }
+    if (checkout.price.payable === 0) {
+      return this.completeZeroPayable(userId, checkout, dto.callbackUrl);
     }
     return this.ensureGatewayInitiated(checkout, dto.callbackUrl);
   }
@@ -322,34 +360,7 @@ export class PlatformSubscriptionCheckoutService {
       return { checkout, subscription, payment, idempotent: true as const };
     }
     this.policy.assertPending(checkout, authority, true);
-    const current = await this.subscriptions
-      .findOne({
-        userId: checkout.userId,
-        status: {
-          $in: [
-            PlatformSubscriptionStatus.ACTIVE,
-            PlatformSubscriptionStatus.TRIALING,
-          ],
-        },
-      })
-      .session(session);
-    if (current) {
-      throw new ConflictException(
-        'User already has an active platform subscription',
-      );
-    }
-
-    const start = new Date();
-    const end = new Date(start.getTime() + checkout.periodDays * 86_400_000);
-    const subscription = new this.subscriptions({
-      userId: checkout.userId,
-      currentEntitlementKey: 'current',
-      planId: checkout.planId,
-      status: PlatformSubscriptionStatus.ACTIVE,
-      period: { start, end },
-      renewal: { mode: checkout.renewalMode },
-    });
-    await subscription.save({ session });
+    const subscription = await this.applySubscriptionChange(checkout, session);
     const payment = await this.finance.capturePendingGatewayPayment(
       {
         paymentId: checkout.paymentId!,
@@ -361,7 +372,7 @@ export class PlatformSubscriptionCheckoutService {
     );
     await this.outbox.enqueue(
       {
-        eventName: 'platform_subscription.activated',
+        eventName: this.subscriptionEventName(checkout.changeKind),
         idempotencyKey: `platform-subscription-checkout:${checkout._id.toString()}`,
         payload: {
           checkoutId: checkout._id.toString(),
@@ -369,6 +380,8 @@ export class PlatformSubscriptionCheckoutService {
           planId: checkout.planId.toString(),
           userId,
           paymentId: checkout.paymentId?.toString(),
+          changeKind: checkout.changeKind ?? 'initial',
+          previousPlanId: checkout.previousPlanId?.toString(),
         },
       },
       session,
@@ -379,6 +392,184 @@ export class PlatformSubscriptionCheckoutService {
     checkout.completedAt = new Date();
     await checkout.save({ session });
     return { checkout, subscription, payment, idempotent: false as const };
+  }
+
+  private async applySubscriptionChange(
+    checkout: PlatformSubscriptionCheckoutDocument,
+    session: ClientSession,
+  ) {
+    const now = new Date();
+    const existing = checkout.subscriptionId
+      ? await this.subscriptions
+          .findById(checkout.subscriptionId)
+          .session(session)
+      : null;
+    if (checkout.changeKind && checkout.changeKind !== 'initial' && !existing) {
+      throw new ConflictException('Current platform subscription changed');
+    }
+    if (existing) {
+      if (
+        existing.userId.toString() !== checkout.userId.toString() ||
+        existing.currentEntitlementKey !== 'current'
+      ) {
+        throw new ConflictException('Current platform subscription changed');
+      }
+      if (
+        !checkout.previousPlanId ||
+        !checkout.previousPeriodStart ||
+        !checkout.previousPeriodEnd ||
+        checkout.previousSubscriptionVersion === undefined ||
+        existing.planId.toString() !== checkout.previousPlanId.toString() ||
+        existing.period.start.getTime() !==
+          checkout.previousPeriodStart.getTime() ||
+        existing.period.end.getTime() !== checkout.previousPeriodEnd.getTime()
+      ) {
+        throw new ConflictException('Current platform subscription changed');
+      }
+      const start =
+        checkout.changeKind === 'renewal' &&
+        existing.period.end.getTime() > now.getTime()
+          ? existing.period.end
+          : now;
+      const end = new Date(start.getTime() + checkout.periodDays * 86_400_000);
+      const graceEndsAt = new Date(
+        end.getTime() +
+          (checkout.entitlementSnapshot?.graceDays ?? 7) * 86_400_000,
+      );
+      const versionFilter =
+        checkout.previousSubscriptionVersion === 0
+          ? { $or: [{ __v: 0 }, { __v: { $exists: false } }] }
+          : { __v: checkout.previousSubscriptionVersion };
+      const updated = await this.subscriptions.findOneAndUpdate(
+        {
+          _id: existing._id,
+          userId: checkout.userId,
+          currentEntitlementKey: 'current',
+          planId: checkout.previousPlanId,
+          'period.start': checkout.previousPeriodStart,
+          'period.end': checkout.previousPeriodEnd,
+          ...versionFilter,
+        },
+        {
+          $set: {
+            planId: checkout.planId,
+            status: PlatformSubscriptionStatus.ACTIVE,
+            period: { start, end },
+            renewal: { mode: checkout.renewalMode },
+            entitlementSnapshot: checkout.entitlementSnapshot,
+            planVersion: checkout.planVersion,
+            postExpirationModeSnapshot: checkout.postExpirationModeSnapshot,
+            fallbackPlanIdSnapshot: checkout.fallbackPlanIdSnapshot,
+            graceEndsAt,
+          },
+          $unset: {
+            scheduledPlanId: 1,
+            scheduledPlanEffectiveAt: 1,
+            cancellationRequestedAt: 1,
+            cancellationReason: 1,
+          },
+          $inc: { __v: 1 },
+        },
+        { new: true, session },
+      );
+      if (!updated) {
+        throw new ConflictException('Current platform subscription changed');
+      }
+      return updated;
+    }
+
+    const current = await this.subscriptions
+      .findOne({
+        userId: checkout.userId,
+        currentEntitlementKey: 'current',
+      })
+      .session(session);
+    if (current) {
+      throw new ConflictException(
+        'User already has a current platform subscription',
+      );
+    }
+    const start = now;
+    const end = new Date(start.getTime() + checkout.periodDays * 86_400_000);
+    const subscription = new this.subscriptions({
+      userId: checkout.userId,
+      currentEntitlementKey: 'current',
+      planId: checkout.planId,
+      status: PlatformSubscriptionStatus.ACTIVE,
+      period: { start, end },
+      renewal: { mode: checkout.renewalMode },
+      entitlementSnapshot: checkout.entitlementSnapshot,
+      planVersion: checkout.planVersion,
+      postExpirationModeSnapshot: checkout.postExpirationModeSnapshot,
+      fallbackPlanIdSnapshot: checkout.fallbackPlanIdSnapshot,
+      graceEndsAt: new Date(
+        end.getTime() +
+          (checkout.entitlementSnapshot?.graceDays ?? 7) * 86_400_000,
+      ),
+    });
+    await subscription.save({ session });
+    checkout.subscriptionId = subscription._id;
+    return subscription;
+  }
+
+  private async completeZeroPayable(
+    userId: string,
+    checkout: PlatformSubscriptionCheckoutDocument,
+    callbackUrl: string,
+  ) {
+    const callback = new URL(assertAllowedPaymentCallbackUrl(callbackUrl));
+    let idempotent = false;
+    const committed = await this.transactions.run(async (session) => {
+      const current = await this.checkouts
+        .findById(checkout._id)
+        .session(session);
+      if (!current) {
+        throw new NotFoundException('Subscription checkout not found');
+      }
+      if (current.status === PlatformSubscriptionCheckoutStatus.COMPLETED) {
+        idempotent = true;
+        return current;
+      }
+      this.policy.assertPending(current);
+      const subscription = await this.applySubscriptionChange(current, session);
+      current.subscriptionId = subscription._id;
+      current.authority = 'ZERO_PAYABLE';
+      current.status = PlatformSubscriptionCheckoutStatus.COMPLETED;
+      current.completedAt = new Date();
+      callback.searchParams.set('platformCheckoutId', current._id.toString());
+      callback.searchParams.set('Authority', 'ZERO_PAYABLE');
+      callback.searchParams.set('Status', 'OK');
+      current.redirectUrl = callback.toString();
+      await current.save({ session });
+      await this.outbox.enqueue(
+        {
+          eventName: this.subscriptionEventName(current.changeKind),
+          idempotencyKey: `platform-subscription-checkout:${current._id.toString()}`,
+          payload: {
+            checkoutId: current._id.toString(),
+            subscriptionId: subscription._id.toString(),
+            planId: current.planId.toString(),
+            userId,
+            paymentId: null,
+            payable: 0,
+          },
+        },
+        session,
+      );
+      return current;
+    });
+    return this.initiation(committed, idempotent);
+  }
+
+  private subscriptionEventName(changeKind?: string) {
+    switch (changeKind) {
+      case 'upgrade':
+        return 'platform_subscription.upgraded';
+      case 'renewal':
+        return 'platform_subscription.renewed';
+      default:
+        return 'platform_subscription.activated';
+    }
   }
 
   private async findOwned(userId: string, checkoutId: string) {

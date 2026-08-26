@@ -27,6 +27,7 @@ import {
   ArticlesEditScreen,
   ArticlesListScreen,
   AuditLogsScreen,
+  AccountDeletionRequestsScreen,
   BannersCreateScreen,
   BannersEditScreen,
   BannersListScreen,
@@ -81,6 +82,7 @@ import {
   RefsEditScreen,
   RefsListScreen,
   RefundsListScreen,
+  WalletsScreen,
   ReleasePoliciesScreen,
   SignInScreen,
   SocialReportsScreen,
@@ -347,6 +349,10 @@ export function AppRouter() {
                 path="/dashboard/finance/refunds"
               />
               <Route
+                element={<WalletsScreen />}
+                path="/dashboard/finance/wallets"
+              />
+              <Route
                 element={<BookingsListScreen />}
                 path="/dashboard/bookings"
               />
@@ -409,6 +415,10 @@ export function AppRouter() {
               <Route
                 element={<AuditLogsScreen />}
                 path="/dashboard/ops/audit"
+              />
+              <Route
+                element={<AccountDeletionRequestsScreen />}
+                path="/dashboard/ops/deletions"
               />
               <Route
                 element={<NotificationTemplatesEditScreen />}

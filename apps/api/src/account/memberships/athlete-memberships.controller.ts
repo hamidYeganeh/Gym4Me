@@ -15,9 +15,11 @@ import {
   SubscribePlatformDto,
   VerifyMembershipCheckoutDto,
   VerifyPlatformSubscriptionCheckoutDto,
+  SchedulePlatformPlanChangeDto,
 } from './dto/membership.dto';
 import { MembershipCheckoutService } from './application/services/membership-checkout.service';
 import { PlatformSubscriptionCheckoutService } from './application/services/platform-subscription-checkout.service';
+import { PlatformEntitlementService } from './application/services/platform-entitlement.service';
 import { MembershipsService } from './memberships.service';
 
 @ApiTags('account-memberships')
@@ -127,12 +129,22 @@ export class AccountPlatformSubscriptionsController {
   constructor(
     private readonly memberships: MembershipsService,
     private readonly checkouts: PlatformSubscriptionCheckoutService,
+    private readonly entitlements: PlatformEntitlementService,
   ) {}
 
   @Get()
   @ApiOperation({ summary: 'My platform subscriptions' })
   list(@CurrentUser('sub') userId: string) {
     return this.memberships.listMyPlatformSubscriptions(userId);
+  }
+
+  @Get('entitlements/current')
+  @ApiOperation({ summary: 'My server-authoritative platform entitlements' })
+  entitlementsSummary(
+    @CurrentUser('sub') userId: string,
+    @Query('clubId') clubId?: string,
+  ) {
+    return this.entitlements.summary(userId, clubId);
   }
 
   @Post()
@@ -185,6 +197,22 @@ export class AccountPlatformSubscriptionsController {
     @Req() request: Request,
   ) {
     return this.memberships.cancelPlatformSubscription(
+      userId,
+      subscriptionId,
+      dto,
+      request,
+    );
+  }
+
+  @Post(':subscriptionId/plan-change')
+  @ApiOperation({ summary: 'Schedule a platform plan downgrade at period end' })
+  schedulePlanChange(
+    @CurrentUser('sub') userId: string,
+    @Param('subscriptionId') subscriptionId: string,
+    @Body() dto: SchedulePlatformPlanChangeDto,
+    @Req() request: Request,
+  ) {
+    return this.memberships.schedulePlatformPlanChange(
       userId,
       subscriptionId,
       dto,

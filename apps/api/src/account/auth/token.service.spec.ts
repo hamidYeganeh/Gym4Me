@@ -14,6 +14,7 @@ describe('TokenService multi-session isolation', () => {
     const refreshModel = {
       create: jest.fn().mockResolvedValue(undefined),
       findOne: jest.fn(),
+      findOneAndUpdate: jest.fn(),
       updateMany: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
     };
     const jwt = {
@@ -23,6 +24,9 @@ describe('TokenService multi-session isolation', () => {
       get: jest.fn().mockResolvedValue(null),
       set: jest.fn().mockResolvedValue('OK'),
     };
+    const transactions = {
+      run: jest.fn((work: (session: object) => Promise<unknown>) => work({})),
+    };
     const service = new TokenService(
       refreshModel as never,
       jwt as unknown as JwtService,
@@ -31,6 +35,7 @@ describe('TokenService multi-session isolation', () => {
         JWT_REFRESH_TTL_DAYS: '30',
       }),
       redis as unknown as Redis,
+      transactions as never,
     );
     return { service, refreshModel, jwt, redis };
   }
@@ -68,17 +73,72 @@ describe('TokenService multi-session isolation', () => {
       expiresAt: new Date(Date.now() + 60_000),
       save: jest.fn().mockResolvedValue(undefined),
     } as unknown as RefreshTokenDocument;
-    refreshModel.findOne.mockResolvedValue(token);
+    refreshModel.findOneAndUpdate.mockResolvedValue(token);
 
     await service.rotate(user, 'presented-token');
 
     expect(refreshModel.create).toHaveBeenCalledWith(
-      expect.objectContaining({ sessionId: 'mobile-session' }),
+      [expect.objectContaining({ sessionId: 'mobile-session' })],
+      expect.objectContaining({ session: expect.any(Object) }),
     );
     expect(jwt.signAsync).toHaveBeenCalledWith(
       expect.objectContaining({ sessionId: 'mobile-session' }),
       expect.any(Object),
     );
+  });
+
+  it('allows only one winner when the same refresh token rotates concurrently', async () => {
+    const { service, refreshModel } = createService();
+    const token = {
+      userId,
+      tokenHash: 'old-hash',
+      sessionId: 'mobile-session',
+      activeRole: Role.ATHLETE,
+      expiresAt: new Date(Date.now() + 60_000),
+      revokedAt: new Date(),
+      save: jest.fn().mockResolvedValue(undefined),
+    } as unknown as RefreshTokenDocument;
+    refreshModel.findOneAndUpdate
+      .mockResolvedValueOnce(token)
+      .mockResolvedValueOnce(null);
+    refreshModel.findOne.mockResolvedValue(token);
+
+    const results = await Promise.allSettled([
+      service.rotate(user, 'same-token'),
+      service.rotate(user, 'same-token'),
+    ]);
+
+    expect(
+      results.filter((result) => result.status === 'fulfilled'),
+    ).toHaveLength(1);
+    expect(
+      results.filter((result) => result.status === 'rejected'),
+    ).toHaveLength(1);
+    expect(refreshModel.create).toHaveBeenCalledTimes(1);
+    expect(refreshModel.updateMany).toHaveBeenCalledWith(
+      {
+        userId,
+        sessionId: 'mobile-session',
+        revokedAt: null,
+      },
+      { revokedAt: expect.any(Date) },
+    );
+  });
+
+  it('does not classify unknown or expired refresh tokens as reuse', async () => {
+    const { service, refreshModel } = createService();
+    refreshModel.findOneAndUpdate.mockResolvedValue(null);
+    refreshModel.findOne.mockResolvedValue({
+      userId,
+      tokenHash: 'expired',
+      expiresAt: new Date(Date.now() - 60_000),
+      revokedAt: undefined,
+    });
+
+    await expect(service.rotate(user, 'expired-token')).rejects.toThrow(
+      'Invalid refresh token',
+    );
+    expect(refreshModel.updateMany).not.toHaveBeenCalled();
   });
 
   it('revokes only the reused token session, not every user session', async () => {

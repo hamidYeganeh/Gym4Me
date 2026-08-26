@@ -38,6 +38,7 @@ export type ListCalendarBlocksQuery = {
 
 export type UpsertCalendarBlockInput = {
   id?: string;
+  clientMutationId?: string;
   resource: { type: CalendarResourceType; id: string };
   reason: CalendarBlockReason;
   window: { from: string; to: string };

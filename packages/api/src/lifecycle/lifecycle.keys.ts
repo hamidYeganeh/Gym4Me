@@ -6,4 +6,6 @@ export const accountLifecycleKeys = {
     [...accountLifecycleKeys.all, "at-risk", clubId] as const,
   journeys: (clubId: string) =>
     [...accountLifecycleKeys.all, "journeys", clubId] as const,
+  broadcasts: (clubId: string) =>
+    [...accountLifecycleKeys.all, "broadcasts", clubId] as const,
 };

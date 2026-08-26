@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import type {
   ArticleAudience,
@@ -9,7 +8,6 @@ import type {
   ArticleKind,
   ArticleSummary,
 } from "@repo/api";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { ArticleCard } from "@repo/ui/cards/ArticleCard";
 import { FilterChip } from "@repo/ui/kit/FilterChip";
 import { AppLayout } from "@repo/ui/layout/AppLayout";

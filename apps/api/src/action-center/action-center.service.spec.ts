@@ -64,6 +64,7 @@ describe('ActionCenterService', () => {
       {} as never,
       {} as never,
       {} as never,
+      { findOne: jest.fn().mockReturnValue(query(null)) } as never,
       events as never,
     );
 
@@ -98,6 +99,7 @@ describe('ActionCenterService', () => {
       clubs as never,
       debts as never,
       tasks as never,
+      {} as never,
       { track: jest.fn().mockResolvedValue(undefined) } as never,
     );
 
@@ -111,9 +113,113 @@ describe('ActionCenterService', () => {
     expect(tasks.countDocuments).not.toHaveBeenCalled();
   });
 
+  it('surfaces an unexpired waitlist offer ahead of other athlete recovery actions', async () => {
+    const userId = new Types.ObjectId();
+    const waitlistId = new Types.ObjectId();
+    const entryId = new Types.ObjectId();
+    const expiresAt = new Date(Date.now() + 60_000);
+    const service = new ActionCenterService(
+      { findOne: jest.fn().mockReturnValue(query(null)) } as never,
+      { findOne: jest.fn().mockReturnValue(query(null)) } as never,
+      { findOne: jest.fn().mockReturnValue(query(null)) } as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {
+        findOne: jest.fn().mockReturnValue(
+          query({
+            _id: waitlistId,
+            entries: [
+              {
+                _id: entryId,
+                userId,
+                status: 'offered',
+                offerExpiresAt: expiresAt,
+              },
+            ],
+          }),
+        ),
+      } as never,
+      { track: jest.fn().mockResolvedValue(undefined) } as never,
+    );
+
+    const result = await service.get(userId.toString(), Role.ATHLETE);
+
+    expect(result.items[0]).toEqual(
+      expect.objectContaining({
+        kind: 'athlete.waitlist_offer',
+        href: '/athlete/waitlist',
+        dueAt: expiresAt.toISOString(),
+      }),
+    );
+  });
+
+  it('prioritizes owner booking, debt, and renewal exceptions from owned clubs', async () => {
+    const clubId = new Types.ObjectId();
+    const service = new ActionCenterService(
+      { countDocuments: jest.fn().mockResolvedValue(4) } as never,
+      { countDocuments: jest.fn().mockResolvedValue(3) } as never,
+      {} as never,
+      {} as never,
+      { find: jest.fn().mockReturnValue(query([{ _id: clubId }])) } as never,
+      { countDocuments: jest.fn().mockResolvedValue(2) } as never,
+      { countDocuments: jest.fn().mockResolvedValue(1) } as never,
+      {} as never,
+      { track: jest.fn().mockResolvedValue(undefined) } as never,
+    );
+
+    const result = await service.get(
+      new Types.ObjectId().toString(),
+      Role.CLUB_OWNER,
+    );
+
+    expect(result.items.map((item) => item.kind)).toEqual([
+      'owner.debts',
+      'owner.booking_queue',
+      'owner.renewal_risk',
+    ]);
+    expect(result.items[1]?.params).toEqual({ count: 4 });
+    expect(result.items[2]?.params).toEqual({ count: 3 });
+  });
+
+  it('routes coaches to a bounded at-risk follow-up queue', async () => {
+    const coachStudents = {
+      countDocuments: jest.fn().mockResolvedValue(3),
+      findOne: jest.fn().mockReturnValue(query(null)),
+    };
+    const service = new ActionCenterService(
+      { countDocuments: jest.fn().mockResolvedValue(0) } as never,
+      {} as never,
+      {} as never,
+      coachStudents as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      { track: jest.fn().mockResolvedValue(undefined) } as never,
+    );
+
+    const result = await service.get(
+      new Types.ObjectId().toString(),
+      Role.COACH,
+    );
+
+    expect(result.items).toContainEqual(
+      expect.objectContaining({
+        id: 'coach-at-risk-queue',
+        kind: 'coach.student_at_risk',
+        href: '/coach/clients?engagement=at-risk',
+        entityId: null,
+        params: { count: 3 },
+      }),
+    );
+  });
+
   it('rejects click analytics for another role', () => {
     const events = { track: jest.fn() };
     const service = new ActionCenterService(
+      {} as never,
       {} as never,
       {} as never,
       {} as never,

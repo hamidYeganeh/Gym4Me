@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -19,6 +20,7 @@ import {
   CouponUserUsage,
   CouponUserUsageDocument,
 } from '../schemas/coupon.schema';
+import { Club, ClubDocument } from '../schemas/club.schema';
 import {
   CreateCouponDto,
   ListCouponsQueryDto,
@@ -40,6 +42,8 @@ export class CouponsService {
     private readonly redemptionModel: Model<CouponRedemptionDocument>,
     @InjectModel(CouponUserUsage.name)
     private readonly userUsageModel: Model<CouponUserUsageDocument>,
+    @InjectModel(Club.name)
+    private readonly clubModel: Model<ClubDocument>,
   ) {}
 
   // ── Evaluation ─────────────────────────────────────────────────────────
@@ -288,6 +292,136 @@ export class CouponsService {
     }
     await coupon.save();
     return this.toPublic(coupon);
+  }
+
+  async listForOwner(
+    ownerId: string,
+    clubId: string,
+    query: ListCouponsQueryDto,
+  ) {
+    await this.requireOwnedClub(ownerId, clubId);
+    return this.list({ ...query, clubId });
+  }
+
+  async createForOwner(ownerId: string, clubId: string, dto: CreateCouponDto) {
+    await this.requireOwnedClub(ownerId, clubId);
+    const code = dto.code.trim().toUpperCase();
+    const existing = await this.couponModel.findOne({ code });
+    if (existing) {
+      const expected = this.ownerCreateFingerprint(clubId, dto);
+      const actual = this.couponFingerprint(existing);
+      if (existing.clubId?.toString() !== clubId || actual !== expected) {
+        throw new BadRequestException('Coupon code already exists');
+      }
+      return this.toPublic(existing);
+    }
+    try {
+      return await this.create({ ...dto, clubId });
+    } catch (error: unknown) {
+      const winner = await this.couponModel.findOne({ code });
+      if (
+        winner &&
+        winner.clubId?.toString() === clubId &&
+        this.couponFingerprint(winner) ===
+          this.ownerCreateFingerprint(clubId, dto)
+      ) {
+        return this.toPublic(winner);
+      }
+      throw error;
+    }
+  }
+
+  async updateForOwner(
+    ownerId: string,
+    clubId: string,
+    couponId: string,
+    dto: UpdateCouponDto,
+  ) {
+    await this.requireOwnedClub(ownerId, clubId);
+    if (!Types.ObjectId.isValid(couponId)) {
+      throw new NotFoundException('Coupon not found');
+    }
+    const coupon = await this.couponModel.findOne({
+      _id: new Types.ObjectId(couponId),
+      clubId: new Types.ObjectId(clubId),
+    });
+    if (!coupon) throw new NotFoundException('Coupon not found');
+    return this.update(couponId, dto);
+  }
+
+  private async requireOwnedClub(ownerId: string, clubId: string) {
+    if (!Types.ObjectId.isValid(ownerId) || !Types.ObjectId.isValid(clubId)) {
+      throw new ForbiddenException('Club ownership required');
+    }
+    const owned = await this.clubModel.exists({
+      _id: new Types.ObjectId(clubId),
+      ownerId: new Types.ObjectId(ownerId),
+    });
+    if (!owned) throw new ForbiddenException('Club ownership required');
+  }
+
+  private ownerCreateFingerprint(clubId: string, dto: CreateCouponDto) {
+    return JSON.stringify({
+      clubId,
+      title: dto.title ?? null,
+      discount: {
+        type: dto.discount.type,
+        value: dto.discount.value,
+        ...(dto.discount.maxAmount !== undefined
+          ? { maxAmount: dto.discount.maxAmount }
+          : {}),
+      },
+      constraints: {
+        ...(dto.constraints?.validFrom
+          ? { validFrom: new Date(dto.constraints.validFrom).toISOString() }
+          : {}),
+        ...(dto.constraints?.validUntil
+          ? { validUntil: new Date(dto.constraints.validUntil).toISOString() }
+          : {}),
+        ...(dto.constraints?.maxRedemptions !== undefined
+          ? { maxRedemptions: dto.constraints.maxRedemptions }
+          : {}),
+        ...(dto.constraints?.maxPerUser !== undefined
+          ? { maxPerUser: dto.constraints.maxPerUser }
+          : {}),
+        ...(dto.constraints?.minAmount !== undefined
+          ? { minAmount: dto.constraints.minAmount }
+          : {}),
+      },
+      status: dto.status ?? EntityStatus.ACTIVE,
+    });
+  }
+
+  private couponFingerprint(coupon: CouponDocument) {
+    return JSON.stringify({
+      clubId: coupon.clubId?.toString() ?? null,
+      title: coupon.title ?? null,
+      discount: {
+        type: coupon.discount.type,
+        value: coupon.discount.value,
+        ...(coupon.discount.maxAmount !== undefined
+          ? { maxAmount: coupon.discount.maxAmount }
+          : {}),
+      },
+      constraints: {
+        ...(coupon.constraints.validFrom
+          ? { validFrom: coupon.constraints.validFrom.toISOString() }
+          : {}),
+        ...(coupon.constraints.validUntil
+          ? { validUntil: coupon.constraints.validUntil.toISOString() }
+          : {}),
+        ...(coupon.constraints.maxRedemptions !== undefined
+          ? { maxRedemptions: coupon.constraints.maxRedemptions }
+          : {}),
+        ...(coupon.constraints.maxPerUser !== undefined
+          ? { maxPerUser: coupon.constraints.maxPerUser }
+          : {}),
+        ...(coupon.constraints.minAmount !== undefined
+          ? { minAmount: coupon.constraints.minAmount }
+          : {}),
+      },
+      status: coupon.status,
+    });
   }
 
   private toPublic(coupon: CouponDocument) {

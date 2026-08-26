@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { createHash } from 'node:crypto';
 import { Model, Types, type ClientSession, type QueryFilter } from 'mongoose';
 import type { Request } from 'express';
 import { AuditService } from '../../audit/audit.service';
@@ -173,74 +174,169 @@ export class CalendarService {
       throw new BadRequestException('window.from must be before window.to');
     }
 
-    const block = await this.transactions.run(async (session) => {
-      await this.lockResource(dto.resource.type, dto.resource.id, session);
-      let current: ResourceCalendarBlockDocument | null = null;
-      if (dto.id) {
-        if (!Types.ObjectId.isValid(dto.id)) {
-          throw new NotFoundException('Calendar block not found');
+    const fingerprint =
+      dto.clientMutationId && !dto.id ? this.blockFingerprint(dto) : undefined;
+    if (fingerprint && dto.clientMutationId) {
+      const replay = await this.findMutationReplay(
+        actorId,
+        dto.clientMutationId,
+      );
+      if (replay) {
+        this.assertMutationFingerprint(replay, fingerprint);
+        return this.toPublic(replay);
+      }
+    }
+
+    let block: ResourceCalendarBlockDocument;
+    let idempotent = false;
+    try {
+      block = await this.transactions.run(async (session) => {
+        await this.lockResource(dto.resource.type, dto.resource.id, session);
+        if (fingerprint && dto.clientMutationId) {
+          const replay = await this.findMutationReplay(
+            actorId,
+            dto.clientMutationId,
+            session,
+          );
+          if (replay) {
+            this.assertMutationFingerprint(replay, fingerprint);
+            idempotent = true;
+            return replay;
+          }
         }
-        current = await this.blockModel.findById(dto.id).session(session);
-        if (!current) throw new NotFoundException('Calendar block not found');
-        if (
-          current.resource.type !== dto.resource.type ||
-          current.resource.id.toString() !== dto.resource.id
-        ) {
-          throw new BadRequestException(
-            'Cannot change block resource on upsert',
+
+        let current: ResourceCalendarBlockDocument | null = null;
+        if (dto.id) {
+          if (!Types.ObjectId.isValid(dto.id)) {
+            throw new NotFoundException('Calendar block not found');
+          }
+          current = await this.blockModel.findById(dto.id).session(session);
+          if (!current) throw new NotFoundException('Calendar block not found');
+          if (
+            current.resource.type !== dto.resource.type ||
+            current.resource.id.toString() !== dto.resource.id
+          ) {
+            throw new BadRequestException(
+              'Cannot change block resource on upsert',
+            );
+          }
+        }
+
+        const effectiveStatus =
+          dto.status ?? current?.status ?? EntityStatus.ACTIVE;
+        if (effectiveStatus === EntityStatus.ACTIVE) {
+          await this.assertNoActiveBooking(
+            dto.resource.type,
+            dto.resource.id,
+            from,
+            to,
+            session,
           );
         }
-      }
 
-      const effectiveStatus =
-        dto.status ?? current?.status ?? EntityStatus.ACTIVE;
-      if (effectiveStatus === EntityStatus.ACTIVE) {
-        await this.assertNoActiveBooking(
-          dto.resource.type,
-          dto.resource.id,
-          from,
-          to,
-          session,
-        );
-      }
+        if (current) {
+          current.reason = dto.reason;
+          current.window = { from, to };
+          if (dto.note !== undefined) current.note = dto.note;
+          if (dto.status !== undefined) current.status = dto.status;
+          await current.save({ session });
+          return current;
+        }
 
-      if (current) {
-        current.reason = dto.reason;
-        current.window = { from, to };
-        if (dto.note !== undefined) current.note = dto.note;
-        if (dto.status !== undefined) current.status = dto.status;
-        await current.save({ session });
-        return current;
-      }
-
-      const created = new this.blockModel({
-        resource: {
-          type: dto.resource.type,
-          id: new Types.ObjectId(dto.resource.id),
-        },
-        reason: dto.reason,
-        window: { from, to },
-        note: dto.note,
-        createdBy: new Types.ObjectId(actorId),
-        status: dto.status ?? EntityStatus.ACTIVE,
+        const created = new this.blockModel({
+          resource: {
+            type: dto.resource.type,
+            id: new Types.ObjectId(dto.resource.id),
+          },
+          reason: dto.reason,
+          window: { from, to },
+          note: dto.note,
+          createdBy: new Types.ObjectId(actorId),
+          clientMutationId: dto.clientMutationId,
+          mutationFingerprint: fingerprint,
+          status: dto.status ?? EntityStatus.ACTIVE,
+        });
+        await created.save({ session });
+        return created;
       });
-      await created.save({ session });
-      return created;
-    });
+    } catch (error: unknown) {
+      if (
+        !fingerprint ||
+        !dto.clientMutationId ||
+        !this.isDuplicateKey(error)
+      ) {
+        throw error;
+      }
+      const winner = await this.findMutationReplay(
+        actorId,
+        dto.clientMutationId,
+      );
+      if (!winner) throw error;
+      this.assertMutationFingerprint(winner, fingerprint);
+      block = winner;
+      idempotent = true;
+    }
 
-    this.audit.log({
-      action: AuditAction.CALENDAR_BLOCK_UPSERTED,
-      actorId,
-      metadata: {
-        blockId: block._id.toString(),
-        resourceType: dto.resource.type,
-        resourceId: dto.resource.id,
-        reason: dto.reason,
-      },
-      request,
-    });
+    if (!idempotent) {
+      this.audit.log({
+        action: AuditAction.CALENDAR_BLOCK_UPSERTED,
+        actorId,
+        metadata: {
+          blockId: block._id.toString(),
+          resourceType: dto.resource.type,
+          resourceId: dto.resource.id,
+          reason: dto.reason,
+        },
+        request,
+      });
+    }
 
     return this.toPublic(block);
+  }
+
+  private blockFingerprint(dto: UpsertCalendarBlockDto) {
+    return createHash('sha256')
+      .update(
+        JSON.stringify({
+          resource: dto.resource,
+          reason: dto.reason,
+          window: dto.window,
+          note: dto.note?.trim() ?? null,
+          status: dto.status ?? EntityStatus.ACTIVE,
+        }),
+      )
+      .digest('hex');
+  }
+
+  private findMutationReplay(
+    actorId: string,
+    clientMutationId: string,
+    session?: ClientSession,
+  ) {
+    return this.blockModel
+      .findOne({
+        createdBy: new Types.ObjectId(actorId),
+        clientMutationId,
+      })
+      .session(session ?? null);
+  }
+
+  private assertMutationFingerprint(
+    block: ResourceCalendarBlockDocument,
+    fingerprint: string,
+  ) {
+    if (block.mutationFingerprint !== fingerprint) {
+      throw new BadRequestException('clientMutationId payload mismatch');
+    }
+  }
+
+  private isDuplicateKey(error: unknown): error is { code: 11000 } {
+    return (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      error.code === 11000
+    );
   }
 
   private async softDelete(

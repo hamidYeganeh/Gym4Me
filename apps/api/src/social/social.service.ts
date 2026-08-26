@@ -5,10 +5,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { createHash } from 'crypto';
 import type { Request } from 'express';
 import { Model, Types } from 'mongoose';
 import type { QueryFilter } from 'mongoose';
 import { AuditService } from '../audit/audit.service';
+import { MongoTransactionService } from '../common/mongo/mongo-transaction.service';
 import {
   AuditAction,
   Privacy,
@@ -17,7 +19,10 @@ import {
   SocialPostStatus,
   SocialReportStatus,
   SocialReportTargetKind,
+  MediaVisibility,
 } from '../common/enums';
+import { MediaService } from '../media/media.service';
+import { MediaPurpose } from '../schemas/media.schema';
 import {
   paginatedResult,
   resolvePageSize,
@@ -70,6 +75,8 @@ export class SocialService {
     @InjectModel(SocialReport.name)
     private readonly reportModel: Model<SocialReportDocument>,
     private readonly audit: AuditService,
+    private readonly media: MediaService,
+    private readonly transactions: MongoTransactionService,
   ) {}
 
   /** Public feed: PUBLISHED + PUBLIC only. */
@@ -155,6 +162,19 @@ export class SocialService {
     return this.toPost(item.toObject(), userId);
   }
 
+  async openPostMedia(postId: string, mediaId: string, userId: string) {
+    const post = await this.getPost(postId, userId);
+    if (!post.mediaIds.includes(mediaId)) {
+      throw new NotFoundException('Media not found');
+    }
+    return this.media.openAttachedFile(
+      mediaId,
+      MediaPurpose.SOCIAL_POST,
+      'social_post',
+      new Types.ObjectId(postId),
+    );
+  }
+
   async createPost(dto: CreateSocialPostDto, userId: string, request: Request) {
     const visibility = dto.visibility ?? Privacy.FOLLOWERS;
     if (visibility !== Privacy.PUBLIC && visibility !== Privacy.FOLLOWERS) {
@@ -162,16 +182,93 @@ export class SocialService {
         'Social post visibility must be public or followers',
       );
     }
-
-    const item = await this.postModel.create({
+    const mediaIds = dto.mediaIds ?? [];
+    const fingerprint = createHash('sha256')
+      .update(
+        JSON.stringify({
+          body: dto.body.trim(),
+          mediaIds,
+          status: dto.status ?? SocialPostStatus.DRAFT,
+          visibility,
+        }),
+      )
+      .digest('hex');
+    const replay = await this.postModel.findOne({
       authorUserId: new Types.ObjectId(userId),
-      body: dto.body.trim(),
-      mediaIds: (dto.mediaIds ?? []).map((id) => new Types.ObjectId(id)),
-      status: dto.status ?? SocialPostStatus.DRAFT,
-      visibility,
-      likeCount: 0,
-      commentCount: 0,
+      idempotencyKey: dto.idempotencyKey,
     });
+    if (replay) {
+      if (replay.idempotencyFingerprint !== fingerprint) {
+        throw new BadRequestException(
+          'Idempotency key is already used with a different social post payload',
+        );
+      }
+      return this.toPost(replay.toObject(), userId);
+    }
+    await Promise.all(
+      mediaIds.map((id) =>
+        this.media.assertOwnedImage(
+          id,
+          userId,
+          MediaVisibility.PRIVATE,
+          MediaPurpose.SOCIAL_POST,
+        ),
+      ),
+    );
+
+    let item: SocialPostDocument;
+    try {
+      item = await this.transactions.run(async (session) => {
+        const [created] = await this.postModel.create(
+          [
+            {
+              authorUserId: new Types.ObjectId(userId),
+              body: dto.body.trim(),
+              mediaIds: mediaIds.map((id) => new Types.ObjectId(id)),
+              status: dto.status ?? SocialPostStatus.DRAFT,
+              visibility,
+              likeCount: 0,
+              commentCount: 0,
+              idempotencyKey: dto.idempotencyKey,
+              idempotencyFingerprint: fingerprint,
+            },
+          ],
+          { session },
+        );
+        for (const mediaId of mediaIds) {
+          await this.media.claimSocialPost(
+            mediaId,
+            userId,
+            created._id,
+            session,
+          );
+        }
+        if (mediaIds.length > 0) {
+          await this.media.setSocialPostMediaVisibility(
+            mediaIds,
+            userId,
+            created._id,
+            (dto.status ?? SocialPostStatus.DRAFT) ===
+              SocialPostStatus.PUBLISHED && visibility === Privacy.PUBLIC
+              ? MediaVisibility.PUBLIC
+              : MediaVisibility.PRIVATE,
+            session,
+          );
+        }
+        return created;
+      });
+    } catch (error) {
+      if ((error as { code?: number }).code === 11000) {
+        const raced = await this.postModel.findOne({
+          authorUserId: new Types.ObjectId(userId),
+          idempotencyKey: dto.idempotencyKey,
+        });
+        if (raced?.idempotencyFingerprint === fingerprint) {
+          return this.toPost(raced.toObject(), userId);
+        }
+      }
+      throw error;
+    }
 
     this.audit.log({
       action: AuditAction.SOCIAL_POST_UPSERTED,
@@ -192,10 +289,28 @@ export class SocialService {
     const item = await this.findPost(id);
     this.assertAuthorOrAdmin(item.authorUserId, userId, activeRole);
 
+    const currentMediaIds = (item.mediaIds ?? []).map((mediaId) =>
+      mediaId.toString(),
+    );
+    const nextMediaIds = dto.mediaIds ?? currentMediaIds;
+    const addedMediaIds = nextMediaIds.filter(
+      (mediaId) => !currentMediaIds.includes(mediaId),
+    );
+    const removedMediaIds = currentMediaIds.filter(
+      (mediaId) => !nextMediaIds.includes(mediaId),
+    );
+    await Promise.all(
+      addedMediaIds.map((mediaId) =>
+        this.media.assertOwnedImage(
+          mediaId,
+          item.authorUserId.toString(),
+          MediaVisibility.PRIVATE,
+          MediaPurpose.SOCIAL_POST,
+        ),
+      ),
+    );
+
     if (dto.body !== undefined) item.body = dto.body.trim();
-    if (dto.mediaIds !== undefined) {
-      item.mediaIds = dto.mediaIds.map((mid) => new Types.ObjectId(mid));
-    }
     if (dto.status !== undefined) item.status = dto.status;
     if (dto.visibility !== undefined) {
       if (
@@ -208,7 +323,44 @@ export class SocialService {
       }
       item.visibility = dto.visibility;
     }
-    await item.save();
+    if (dto.mediaIds !== undefined) {
+      item.mediaIds = nextMediaIds.map(
+        (mediaId) => new Types.ObjectId(mediaId),
+      );
+    }
+    if (currentMediaIds.length > 0 || nextMediaIds.length > 0) {
+      await this.transactions.run(async (session) => {
+        await item.save({ session });
+        for (const mediaId of addedMediaIds) {
+          await this.media.claimSocialPost(
+            mediaId,
+            item.authorUserId.toString(),
+            item._id,
+            session,
+          );
+        }
+        await this.media.releaseSocialPost(
+          removedMediaIds,
+          item.authorUserId.toString(),
+          item._id,
+          session,
+        );
+        if (nextMediaIds.length > 0) {
+          await this.media.setSocialPostMediaVisibility(
+            nextMediaIds,
+            item.authorUserId.toString(),
+            item._id,
+            item.status === SocialPostStatus.PUBLISHED &&
+              item.visibility === Privacy.PUBLIC
+              ? MediaVisibility.PUBLIC
+              : MediaVisibility.PRIVATE,
+            session,
+          );
+        }
+      });
+    } else {
+      await item.save();
+    }
 
     this.audit.log({
       action: AuditAction.SOCIAL_POST_UPSERTED,
@@ -228,7 +380,20 @@ export class SocialService {
     const item = await this.findPost(id);
     this.assertAuthorOrAdmin(item.authorUserId, userId, activeRole);
     item.status = SocialPostStatus.DELETED;
-    await item.save();
+    const mediaIds = (item.mediaIds ?? []).map((mediaId) => mediaId.toString());
+    if (mediaIds.length > 0) {
+      await this.transactions.run(async (session) => {
+        await item.save({ session });
+        await this.media.releaseSocialPost(
+          mediaIds,
+          item.authorUserId.toString(),
+          item._id,
+          session,
+        );
+      });
+    } else {
+      await item.save();
+    }
     this.audit.log({
       action: AuditAction.SOCIAL_POST_UPSERTED,
       actorId: userId,

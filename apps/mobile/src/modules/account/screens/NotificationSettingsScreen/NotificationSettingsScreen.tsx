@@ -1,11 +1,9 @@
 "use client";
 
-import { Button } from "@heroui/react/button";
 import { Switch } from "@heroui/react/switch";
 import { Typography } from "@heroui/react/typography";
 import { Bell1 } from "@repo/icons/Bell1";
 import { Chat } from "@repo/icons/Chat";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { Envelope1 } from "@repo/icons/Envelope1";
 import { Megaphone } from "@repo/icons/Megaphone";
 import { Telephone1 } from "@repo/icons/Telephone1";

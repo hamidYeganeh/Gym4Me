@@ -251,6 +251,11 @@ export class MealAdherenceSlotDto {
 }
 
 export class CreateMealAdherenceDto {
+  @IsString()
+  @MinLength(8)
+  @MaxLength(128)
+  idempotencyKey!: string;
+
   @IsMongoId()
   mealPlanId!: string;
 
@@ -269,6 +274,10 @@ export class CreateMealAdherenceDto {
   @IsString()
   @MaxLength(500)
   note?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  mediaId?: string;
 }
 
 export class ListMealAdherenceQueryDto extends PaginationQueryDto {

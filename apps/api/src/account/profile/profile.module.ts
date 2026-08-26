@@ -14,18 +14,38 @@ import { FavouriteLocationsController } from './favourite-locations.controller';
 import { FavouriteLocationsService } from './favourite-locations.service';
 import { ProfileController } from './profile.controller';
 import { ProfileService } from './profile.service';
+import { AuthModule } from '../auth/auth.module';
+import {
+  AccountDeletionRequest,
+  AccountDeletionRequestSchema,
+} from '../../schemas/account-deletion-request.schema';
+import { AccountDataRightsService } from './account-data-rights.service';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: AthleteProfile.name, schema: AthleteProfileSchema },
       { name: CoachProfile.name, schema: CoachProfileSchema },
+      {
+        name: AccountDeletionRequest.name,
+        schema: AccountDeletionRequestSchema,
+      },
     ]),
+    AuthModule,
     UsersModule,
     BasicsModule,
   ],
   controllers: [ProfileController, FavouriteLocationsController],
-  providers: [ProfileService, FavouriteLocationsService],
-  exports: [ProfileService, FavouriteLocationsService, MongooseModule],
+  providers: [
+    ProfileService,
+    FavouriteLocationsService,
+    AccountDataRightsService,
+  ],
+  exports: [
+    ProfileService,
+    FavouriteLocationsService,
+    AccountDataRightsService,
+    MongooseModule,
+  ],
 })
 export class ProfileModule {}

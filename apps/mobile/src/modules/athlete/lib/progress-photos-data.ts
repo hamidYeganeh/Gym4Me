@@ -6,6 +6,7 @@ export type ProgressPhotoPrivacy =
 
 export type ProgressPhotoItem = {
   id: string;
+  imageUrl?: string;
   takenAtLabel: string;
   note?: string;
   privacy: ProgressPhotoPrivacy;

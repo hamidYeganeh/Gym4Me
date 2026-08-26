@@ -2,6 +2,9 @@ export const accountCoachingEndpoints = {
   students: "/account/coaching/students",
   student: (id: string) => `/account/coaching/students/${id}`,
   analyticsOverview: "/account/coaching/analytics/overview",
+  leads: "/account/coaching/leads",
+  lead: (leadId: string) => `/account/coaching/leads/${leadId}`,
+  leadStage: (leadId: string) => `/account/coaching/leads/${leadId}/stage`,
   // ── Coach messaging ─────────────────────────────────────────────────────
   coachThreads: "/account/coaching/messages/threads",
   coachThread: (threadId: string) =>

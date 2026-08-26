@@ -848,7 +848,9 @@
       "title": "سؤالات متداول",
       "subtitle": "پاسخ پرسش‌های پرتکرار کاربران Gym4Me.",
       "back": "بازگشت",
-      "empty": "هنوز سؤالی ثبت نشده است."
+      "empty": "هنوز سؤالی ثبت نشده است.",
+      "loadError": "دریافت پرسش‌ها ممکن نشد.",
+      "retry": "تلاش دوباره"
     },
     "SupportTickets": {
       "title": "پشتیبانی",
@@ -1823,7 +1825,8 @@
         "ledger": "دفتر کل",
         "payments": "پرداخت‌ها",
         "payouts": "تسویه‌ها",
-        "refunds": "استردادها"
+        "refunds": "استردادها",
+        "wallets": "کیف پول‌ها"
       },
       "infinite": {
         "summary": "{loaded} از {total} ورودی"
@@ -1907,6 +1910,32 @@
           "refund": "استرداد",
           "refundTitle": "استرداد وجه",
           "refundBody": "مبلغ رزرو به کیف پول کاربر برگردانده می‌شود و در دفتر کل ثبت خواهد شد."
+        }
+      },
+      "wallets": {
+        "title": "کنترل کیف پول‌ها",
+        "subtitle": "موجودی cache را ببینید و فقط از دفتر کل تغییرناپذیر بازسازی کنید.",
+        "ownerType": "نوع مالک",
+        "ownerId": "شناسه مالک",
+        "ownerIdHint": "شناسه MongoDB کاربر، باشگاه یا مربی",
+        "allTypes": "همه نوع‌ها",
+        "user": "کاربر",
+        "club": "باشگاه",
+        "coach": "مربی",
+        "load": "نمایش",
+        "rebuild": "بازسازی از دفتر کل",
+        "rebuilding": "در حال بازسازی…",
+        "confirm": "بازسازی cache موجودی از Ledger انجام شود؟ تاریخچه مالی تغییر نمی‌کند.",
+        "success": "موجودی از {previous} به {balance} تومان بازسازی شد.",
+        "error": "عملیات کیف پول ناموفق بود.",
+        "invalidId": "شناسه مالک معتبر نیست.",
+        "empty": "کیف پولی پیدا نشد.",
+        "columns": {
+          "type": "نوع مالک",
+          "ownerId": "شناسه مالک",
+          "balance": "موجودی",
+          "updatedAt": "آخرین تغییر",
+          "action": "عملیات"
         }
       },
       "filters": {
@@ -2076,10 +2105,25 @@
           "code": "کد پلن",
           "name": "نام پلن",
           "description": "توضیحات",
-          "amount": "مبلغ (ریال)",
+          "amount": "مبلغ کل (تومان)",
+          "tax": "سهم مالیات از مبلغ کل (تومان)",
           "periodDays": "طول دوره (روز)",
-          "features": "امکانات (با ; جدا کنید)"
+          "features": "امکانات نمایشی (با ; جدا کنید)",
+          "audience": "مخاطب قرارداد",
+          "capabilities": "قابلیت‌های قابل اعمال (با ; جدا کنید)",
+          "graceDays": "مهلت تنفس (روز)",
+          "clubsLimit": "حداکثر باشگاه فعال؛ خالی یعنی نامحدود",
+          "staffLimit": "حداکثر کارمند فعال در هر باشگاه؛ خالی یعنی نامحدود",
+          "membersLimit": "حداکثر عضو فعال در هر باشگاه؛ خالی یعنی نامحدود",
+          "messagesLimit": "حداکثر پیام تراکنشی ماهانه؛ خالی یعنی نامحدود",
+          "studentsLimit": "حداکثر شاگرد فعال؛ خالی یعنی نامحدود",
+          "postExpirationMode": "رفتار پس از پایان مهلت تنفس",
+          "fallbackPlanId": "شناسه طرح رایگان جایگزین",
+          "contractReady": "قرارداد entitlement آماده enforcement است"
         },
+        "entitlements": { "title": "قرارداد محدودیت و دسترسی" },
+        "audience": { "owner": "مالک باشگاه", "coach": "مربی" },
+        "expiration": { "readOnly": "فقط‌خواندنی", "freePlan": "انتقال به طرح رایگان" },
         "createTitle": "افزودن پلن",
         "editTitle": "ویرایش پلن",
         "archiveTitle": "بایگانی پلن",
@@ -2221,6 +2265,7 @@
       "tabs": {
         "social": "گزارش‌های اجتماعی",
         "audit": "لاگ ممیزی",
+        "deletions": "درخواست‌های حذف حساب",
         "templates": "قالب‌های اعلان",
         "flags": "فیچر فلگ‌ها",
         "releases": "سیاست انتشار",
@@ -2283,6 +2328,27 @@
           "endTitle": "پایان جلسه ورود از طرف کاربر",
           "endBody": "جلسه فعال بسته می‌شود و توکن صادرشده باطل خواهد شد.",
           "sessionIdLabel": "شناسه جلسه"
+        }
+      },
+      "deletions": {
+        "title": "درخواست‌های حذف حساب",
+        "subtitle": "صف فقط‌خواندنی درخواست‌ها؛ پردازش نهایی تا تصویب سیاست نگهداری داده غیرفعال است.",
+        "empty": "درخواستی ثبت نشده است.",
+        "errorLoad": "بارگذاری درخواست‌های حذف حساب ناموفق بود.",
+        "summary": "{loaded} از {total} درخواست",
+        "columns": {
+          "user": "شناسه کاربر",
+          "status": "وضعیت",
+          "requestedAt": "زمان درخواست",
+          "coolingOffUntil": "پایان مهلت لغو",
+          "reason": "دلیل"
+        },
+        "status": {
+          "cooling_off": "مهلت لغو",
+          "blocked": "مسدود",
+          "processing": "در حال پردازش",
+          "completed": "تکمیل‌شده",
+          "cancelled": "لغوشده"
         }
       },
       "templates": {
@@ -3852,6 +3918,11 @@
     "bottomNavBookings": "رزروها",
     "bottomNavMarketing": "بازاریابی"
   },
+  "NotFound": {
+    "title": "صفحه پیدا نشد",
+    "description": "نشانی واردشده وجود ندارد یا این صفحه جابه‌جا شده است.",
+    "backHome": "بازگشت به صفحه اصلی"
+  },
   "CoachClients": {
     "pageTitle": "شاگردان",
     "title": "شاگردان من",
@@ -3868,8 +3939,15 @@
     "engagementAtRisk": "در معرض ریزش",
     "engagementPaused": "متوقف",
     "progressLabel": "پیشرفت {percent} درصد",
+    "followUpTitle": "صف پیگیری این هفته",
+    "followUpSummary": "{count} شاگرد نیازمند پیگیری است. تماس را از همین صف شروع کن.",
+    "followUpAction": "شروع پیگیری",
+    "followUpError": "باز کردن گفت‌وگو ممکن نشد. دوباره تلاش کن.",
     "emptyTitle": "شاگردی پیدا نشد",
-    "emptyBody": "با تغییر جست‌وجو یا فیلترها دوباره امتحان کن."
+    "emptyBody": "با تغییر جست‌وجو یا فیلترها دوباره امتحان کن.",
+    "loadError": "دریافت فهرست شاگردان ممکن نشد.",
+    "unauthorized": "برای دیدن شاگردان باید نقش فعال مربی باشد.",
+    "retry": "تلاش دوباره"
   },
   "CoachClientDetail": {
     "back": "بازگشت",
@@ -4113,6 +4191,28 @@
     "stageConverted": "تبدیل‌شده",
     "stageLost": "ازدست‌رفته",
     "moveTo": "انتقال به {stage}",
+    "loading": "در حال دریافت سرنخ‌ها",
+    "loadError": "دریافت سرنخ‌ها انجام نشد.",
+    "updateError": "تغییر مرحله سرنخ انجام نشد.",
+    "unauthorized": "برای مدیریت سرنخ‌ها، نقش فعال باید مربی باشد.",
+    "retry": "تلاش دوباره",
+    "noPhone": "شماره ثبت نشده",
+    "unknownSource": "منبع نامشخص",
+    "noNote": "بدون یادداشت",
+    "updatedAt": "آخرین تغییر: {date}",
+    "conversionRequiresAccount": "برای تبدیل سرنخ، ابتدا حساب ورزشکار باید به این سرنخ متصل شود.",
+    "createTitle": "ثبت سرنخ جدید",
+    "nameLabel": "نام",
+    "phoneLabel": "شماره همراه (اختیاری)",
+    "sourceLabel": "منبع آشنایی (اختیاری)",
+    "notesLabel": "یادداشت (اختیاری)",
+    "create": "ثبت سرنخ",
+    "creating": "در حال ثبت…",
+    "createError": "ثبت سرنخ انجام نشد.",
+    "validation": {
+      "nameRequired": "نام را وارد کنید.",
+      "phoneInvalid": "شماره همراه معتبر نیست."
+    },
     "emptyTitle": "سرنخی نیست",
     "emptyBody": "سرنخ‌های جدید اینجا ظاهر می‌شوند."
   },
@@ -4773,6 +4873,10 @@
     "cta": "قطعی‌کردن رزرو",
     "loadError": "برنامه باشگاه دریافت نشد. چند لحظه دیگر دوباره تلاش کن.",
     "submitError": "رزرو ثبت نشد. چند لحظه دیگر دوباره تلاش کن.",
+    "waitlistJoin": "افزودن به صف انتظار",
+    "waitlistJoining": "در حال ثبت…",
+    "waitlistJoined": "در صف انتظار هستید",
+    "waitlistError": "ثبت صف انتظار ناموفق بود؛ دوباره تلاش کنید.",
     "planSingleTitle": "تک‌جلسه",
     "planSingleDescription": "یک جلسه استفاده از سانس انتخابی بدون تعهد بلندمدت.",
     "planPackTitle": "بسته {count} جلسه‌ای",
@@ -4865,6 +4969,18 @@
     "position": "{count} نفر در صف · تاریخ: {date}",
     "claim": "پذیرش پیشنهاد",
     "leave": "خروج از صف",
+    "loading": "در حال بارگذاری لیست انتظار…",
+    "loadError": "بارگذاری لیست انتظار ناموفق بود.",
+    "mutationError": "عملیات انجام نشد؛ وضعیت پیشنهاد را بررسی و دوباره تلاش کن.",
+    "retry": "تلاش دوباره",
+    "offerExpires": "مهلت پذیرش: {date}",
+    "status": {
+      "waiting": "در انتظار",
+      "offered": "پیشنهاد فعال",
+      "claimed": "پذیرفته‌شده",
+      "expired": "منقضی‌شده",
+      "cancelled": "لغوشده"
+    },
     "emptyTitle": "صف انتظاری نداری",
     "emptyBody": "وقتی ظرفیت پر باشد می‌توانی به لیست انتظار بپیوند."
   },
@@ -4889,12 +5005,33 @@
     "subtitle": "روند بدنی خودت را با عکس ثبت کن. پیش‌فرض خصوصی است.",
     "back": "بازگشت",
     "addPhoto": "افزودن عکس",
+    "selectPhoto": "انتخاب عکس پیشرفت",
+    "uploadError": "بارگذاری و ثبت عکس انجام نشد. دوباره تلاش کن.",
+    "photoAlt": "عکس پیشرفت ثبت‌شده در {date}",
+    "privacyLabel": "سطح دسترسی",
+    "deletePhoto": "حذف عکس",
+    "deleteConfirm": "این عکس برای همیشه حذف شود؟",
+    "loading": "در حال بارگذاری عکس‌های پیشرفت",
+    "retry": "تلاش دوباره",
     "emptyTitle": "عکسی ثبت نشده",
     "emptyBody": "اولین عکس پیشرفت خودت را اضافه کن.",
     "privacyPrivate": "خصوصی",
     "privacyCoachOnly": "فقط مربی",
     "privacyFollowers": "دنبال‌کنندگان",
     "privacyPublic": "عمومی"
+  },
+  "AthleteDataRights": {
+    "accountDeletionTitle": "حذف حساب کاربری",
+    "accountDeletionBody": "پس از ثبت درخواست، همه نشست‌ها خارج می‌شوند و یک مهلت هفت‌روزه برای لغو خواهی داشت. حذف یا ناشناس‌سازی نهایی فقط مطابق سیاست نگهداری داده انجام می‌شود و سوابق مالی تغییرناپذیر باقی می‌مانند.",
+    "accountReasonLabel": "دلیل درخواست (اختیاری)",
+    "accountConfirmationLabel": "برای تأیید DELETE_ACCOUNT را وارد کن",
+    "accountConfirmationError": "عبارت تأیید حذف حساب صحیح نیست.",
+    "accountRequest": "ثبت درخواست حذف حساب",
+    "accountRequestError": "ثبت درخواست حذف حساب ناموفق بود.",
+    "accountCoolingOff": "درخواست ثبت شده است. تا {date} می‌توانی آن را لغو کنی.",
+    "accountCancel": "لغو درخواست حذف",
+    "accountCancelSuccess": "درخواست حذف حساب لغو شد.",
+    "accountCancelError": "لغو درخواست حذف حساب ناموفق بود."
   },
   "AthleteHealthAssessment": {
     "pageTitle": "پرسشنامه سلامت",
@@ -4948,6 +5085,42 @@
     "cancel": "انصراف",
     "pay": "پرداخت امن",
     "redirecting": "در حال انتقال…"
+    ,"processing": "در حال ثبت…"
+    ,"upgrade": "ارتقا"
+    ,"scheduleDowngrade": "زمان‌بندی کاهش طرح"
+    ,"scheduleBody": "طرح {plan} برای تمدید در پایان دوره فعلی انتخاب می‌شود؛ فعال‌سازی پس از پرداخت تمدید انجام می‌شود و محدودیت‌های فعلی تا آن زمان کاهش نمی‌یابد."
+    ,"confirmSchedule": "تأیید زمان‌بندی"
+    ,"scheduleError": "زمان‌بندی تغییر طرح انجام نشد."
+    ,"usageTitle": "وضعیت و مصرف اشتراک"
+    ,"clubScope": "باشگاه مبنای محاسبه"
+    ,"usageScoped": "انتخاب باشگاه لازم است"
+    ,"unlimited": "نامحدود"
+    ,"allowed": "مجاز"
+    ,"limitReached": "سقف پر شده"
+    ,"periodEnd": "پایان دوره: {date}"
+    ,"graceEnd": "پایان مهلت تنفس: {date}"
+    ,"scheduledChange": "تغییر طرح در {date} اعمال می‌شود."
+    ,"cancellationScheduled": "لغو در {date} ثبت شده و دسترسی تا پایان دوره حفظ می‌شود."
+    ,"cancelSubscription": "لغو تمدید اشتراک"
+    ,"cancelSubscriptionTitle": "لغو تمدید اشتراک؟"
+    ,"cancelSubscriptionBody": "اشتراک فعلی تا پایان دوره فعال می‌ماند؛ سپس تمدید نمی‌شود و سیاست grace یا حالت فقط‌خواندنی طرح اعمال خواهد شد."
+    ,"keepSubscription": "حفظ اشتراک"
+    ,"confirmCancellation": "تأیید لغو تمدید"
+    ,"cancelError": "ثبت لغو اشتراک انجام نشد. دوباره تلاش کنید."
+    ,"state": {
+      "active": "اشتراک فعال است.",
+      "grace": "اشتراک در مهلت تنفس و عملیات افزاینده متوقف است.",
+      "read_only": "اشتراک فقط خواندنی است.",
+      "legacy_unlimited": "اشتراک قدیمی تا تکمیل انتقال بدون محدودیت است.",
+      "missing": "اشتراک فعالی وجود ندارد."
+    }
+    ,"limit": {
+      "clubs.active": "باشگاه‌های فعال",
+      "staff.active_per_club": "کارکنان فعال هر باشگاه",
+      "members.active_per_club": "اعضای فعال هر باشگاه",
+      "monthly_messages.transactional": "پیام‌های ماهانه",
+      "students.active": "شاگردان فعال"
+    }
   },
   "AthleteDisputes": {
     "pageTitle": "اعتراضات",
@@ -5538,6 +5711,29 @@
     "enrollCta": "ثبت اعضای در حال انقضا",
     "runCta": "اجرای گام‌های سفر",
     "actionError": "عملیات ناموفق بود.",
+    "loadError": "دریافت اطلاعات نگهداری اعضا ناموفق بود.",
+    "unauthorized": "برای مشاهده این بخش باید با نقش مالک یا پرسنل باشگاه وارد شوی.",
+    "retry": "تلاش دوباره",
+    "notAvailable": "—",
+    "remainingSessions": "{count} جلسه",
+    "remainingEntries": "{count} ورود",
+    "step": "گام {count}",
+    "segment": {
+      "expiring_soon": "نزدیک به انقضا",
+      "low_credits": "اعتبار کم",
+      "no_visit": "بدون حضور",
+      "incomplete_payment": "پرداخت ناقص",
+      "trial_unconverted": "آزمایشی تبدیل‌نشده"
+    },
+    "membershipStatus": {
+      "pending": "در انتظار",
+      "active": "فعال",
+      "frozen": "متوقف‌شده",
+      "expired": "منقضی",
+      "cancelled": "لغوشده",
+      "transferred": "منتقل‌شده",
+      "upgraded": "ارتقایافته"
+    },
     "atRiskTitle": "اعضای در معرض ریزش",
     "atRiskEmpty": "عضو در معرض ریزشی یافت نشد.",
     "journeysTitle": "سفرهای فعال",
@@ -5632,7 +5828,14 @@
     "counted": "تورش‌شده",
     "discrepancyReason": "دلیل اختلاف",
     "discrepancyPlaceholder": "مثلاً خطای صندوق یا برگشت وجه",
-    "closeShift": "بستن شیفت"
+    "closeShift": "بستن شیفت",
+    "openShift": "باز کردن شیفت جدید",
+    "loading": "در حال دریافت شیفت صندوق",
+    "loadError": "دریافت وضعیت صندوق ممکن نشد.",
+    "openError": "باز کردن شیفت صندوق انجام نشد.",
+    "closeError": "بستن و تطبیق شیفت انجام نشد؛ مبالغ حفظ شده‌اند.",
+    "unauthorized": "برای مدیریت صندوق باید نقش فعال مالک باشگاه باشد.",
+    "retry": "تلاش دوباره"
   },
   "OwnerDebts": {
     "pageTitle": "بدهی و اقساط",
@@ -5647,8 +5850,16 @@
     "statusPartial": "پرداخت جزئی",
     "statusSettled": "تسویه‌شده",
     "statusOverdue": "معوق",
+    "statusWrittenOff": "سوخت‌شده",
     "recordPayment": "ثبت پرداخت",
-    "empty": "بدهی ثبت‌شده‌ای نیست."
+    "empty": "بدهی ثبت‌شده‌ای نیست.",
+    "loading": "در حال دریافت بدهی‌ها",
+    "loadError": "دریافت بدهی‌ها ممکن نشد.",
+    "paymentError": "ثبت پرداخت انجام نشد؛ برای جلوگیری از ثبت دوباره، همین عملیات را دوباره امتحان کن.",
+    "confirmFullPayment": "کل مانده بدهی به‌عنوان پرداخت نقدی ثبت شود؟",
+    "fullPaymentNote": "تسویه کامل از میز پذیرش",
+    "unauthorized": "برای مدیریت بدهی‌ها باید نقش فعال مالک باشگاه باشد.",
+    "retry": "تلاش دوباره"
   },
   "OwnerCoupons": {
     "pageTitle": "کدهای تخفیف",
@@ -5661,6 +5872,15 @@
     "percentLabel": "درصد تخفیف",
     "maxRedemptionsLabel": "حداکثر استفاده",
     "createSubmit": "ایجاد کد",
+    "activate": "فعال‌سازی",
+    "disable": "غیرفعال‌سازی",
+    "loading": "در حال دریافت کدهای تخفیف",
+    "loadError": "دریافت کدهای تخفیف ممکن نشد.",
+    "createError": "ایجاد کد تخفیف انجام نشد؛ فرم حفظ شده است.",
+    "updateError": "تغییر وضعیت کد تخفیف انجام نشد.",
+    "invalidForm": "درصد باید بین ۱ تا ۱۰۰ و سقف استفاده عددی مثبت باشد.",
+    "unauthorized": "برای مدیریت تخفیف‌ها باید نقش فعال مالک باشگاه باشد.",
+    "retry": "تلاش دوباره",
     "listTitle": "کدهای فعال",
     "percentOff": "{value}٪ تخفیف",
     "used": "{count} از {max}",
@@ -5677,11 +5897,24 @@
     "subtitle": "موجودی، وضعیت و محل هر تجهیز را ببین.",
     "back": "بازگشت",
     "listTitle": "فهرست تجهیزات",
+    "createTitle": "ثبت تجهیز",
+    "nameLabel": "نام تجهیز",
+    "nameError": "نام تجهیز باید حداقل دو نویسه باشد.",
+    "quantityLabel": "تعداد",
+    "quantityError": "تعداد باید یک عدد صحیح بین صفر تا صد هزار باشد.",
+    "locationLabel": "محل استقرار",
+    "createSubmit": "ثبت تجهیز",
     "quantity": "{count} عدد",
     "conditionGood": "سالم",
     "conditionNeedsRepair": "نیاز به تعمیر",
     "conditionOutOfService": "خارج از سرویس",
-    "empty": "تجهیزی ثبت نشده است."
+    "empty": "تجهیزی ثبت نشده است.",
+    "loading": "در حال دریافت تجهیزات",
+    "loadError": "دریافت تجهیزات ممکن نشد.",
+    "updateError": "تغییر وضعیت تجهیز انجام نشد؛ اطلاعات تازه‌سازی شد.",
+    "createError": "ثبت تجهیز انجام نشد؛ اطلاعات فرم حفظ شده و تلاش دوباره امن است.",
+    "unauthorized": "برای مدیریت تجهیزات باید نقش فعال مالک باشگاه باشد.",
+    "retry": "تلاش دوباره"
   },
   "OwnerShifts": {
     "pageTitle": "شیفت و مرخصی",
@@ -5708,6 +5941,15 @@
     "dateLabel": "تاریخ شمسی",
     "datePlaceholder": "مثلاً ۱۴۰۳/۰۶/۱۵",
     "addSubmit": "افزودن",
+    "remove": "حذف تعطیلی",
+    "customFallback": "تعطیلی باشگاه",
+    "loading": "در حال دریافت تقویم تعطیلی",
+    "loadError": "دریافت تعطیلی‌ها ممکن نشد.",
+    "createError": "ثبت تعطیلی انجام نشد.",
+    "removeError": "حذف تعطیلی انجام نشد.",
+    "dateError": "تاریخ شمسی معتبر وارد کن؛ نمونه ۱۴۰۵/۰۶/۱۵.",
+    "unauthorized": "برای مدیریت تعطیلی‌ها باید نقش فعال مالک باشگاه باشد.",
+    "retry": "تلاش دوباره",
     "holidaysTitle": "تعطیلات",
     "official": "رسمی",
     "custom": "اختصاصی",
@@ -5721,7 +5963,9 @@
     "back": "بازگشت",
     "composeTitle": "نوشتن پیام",
     "titleLabel": "عنوان",
+    "titleError": "عنوان باید بین ۲ تا ۱۰۰ نویسه باشد.",
     "bodyLabel": "متن پیام",
+    "bodyError": "متن باید بین ۲ تا ۵۰۰ نویسه باشد.",
     "audienceLabel": "مخاطب",
     "audienceAll": "همه اعضا",
     "audienceActive": "اعضای فعال",
@@ -5729,7 +5973,12 @@
     "send": "ارسال",
     "pastTitle": "پیام‌های قبلی",
     "recipients": "{count} گیرنده",
-    "empty": "پیامی ارسال نشده است."
+    "empty": "پیامی ارسال نشده است.",
+    "loading": "در حال دریافت پیام‌ها",
+    "retry": "تلاش دوباره",
+    "loadError": "دریافت پیام‌ها ناموفق بود.",
+    "sendError": "ثبت پیام ناموفق بود؛ دوباره تلاش کن.",
+    "unauthorized": "برای مدیریت پیام‌ها باید با نقش مالک باشگاه وارد شوی."
   },
   "OwnerWalkInBooking": {
     "pageTitle": "رزرو تلفنی / حضوری",
@@ -5792,7 +6041,16 @@
     "statusIssued": "صادرشده",
     "statusPaid": "پرداخت‌شده",
     "statusVoid": "باطل",
-    "empty": "فاکتوری ثبت نشده است."
+    "empty": "فاکتوری ثبت نشده است.",
+    "loading": "در حال دریافت فاکتورها",
+    "retry": "تلاش دوباره",
+    "loadError": "دریافت فاکتورها ناموفق بود.",
+    "unauthorized": "برای مشاهده فاکتورها باید با نقش مالک باشگاه وارد شوی.",
+    "unknownCustomer": "عضو باشگاه",
+    "csvNumber": "شماره فاکتور",
+    "csvCustomer": "مشتری",
+    "csvAmount": "مبلغ",
+    "csvDate": "تاریخ"
   },
   "OwnerCoaches": {
     "pageTitle": "مربیان باشگاه",
@@ -5848,6 +6106,11 @@
     "statViewsValue": "۸۰۸k",
     "statViewsAction": "مشاهده آمار",
     "notifications": "اعلان‌ها",
+    "loading": "در حال بارگذاری خانه باشگاه…",
+    "actionCenterLoading": "در حال بررسی اقدام‌های حساب…",
+    "actionCenterError": "دریافت اقدام‌های حساب ممکن نشد.",
+    "actionCenterStale": "اتصال برقرار نیست؛ اقدام‌های قبلی ممکن است به‌روز نباشند.",
+    "actionCenterRetry": "تلاش دوباره",
     "navLabel": "ناوبری پایین",
     "home": "خانه",
     "resources": "منابع",
@@ -5946,7 +6209,11 @@
     "action_debts_title": "{count} بدهی باز",
     "action_debts_description": "سررسیدها و پرداخت‌های جزئی اعضا را پیگیری کنید.",
     "action_tasks_title": "{count} کار عملیاتی باز",
-    "action_tasks_description": "کارهای عقب‌افتاده و موارد نیازمند پیگیری را مرور کنید."
+    "action_tasks_description": "کارهای عقب‌افتاده و موارد نیازمند پیگیری را مرور کنید.",
+    "action_booking_queue_title": "{count} رزرو نیازمند پیگیری",
+    "action_booking_queue_description": "درخواست‌ها و پرداخت‌های معلق را پیش از انقضا بررسی کنید.",
+    "action_renewal_risk_title": "{count} عضویت نزدیک پایان",
+    "action_renewal_risk_description": "برای تمدید اعضایی که تا هفت روز آینده منقضی می‌شوند اقدام کنید."
   },
   "CoachHome": {
     "title": "خانه مربی",
@@ -6011,12 +6278,13 @@
     "actionCenterDescription": "درخواست‌ها و شاگردانی که امروز به توجه نیاز دارند.",
     "actionCenterLoading": "در حال بررسی اقدام‌ها…",
     "actionCenterError": "دریافت اقدام‌ها ممکن نشد.",
+    "actionCenterStale": "اتصال برقرار نیست؛ اقدام‌های قبلی ممکن است به‌روز نباشند.",
     "actionCenterRetry": "تلاش دوباره",
     "actionCenterEmpty": "فعلاً اقدام فوری نداری.",
     "actionCenterOpen": "رسیدگی",
     "actionBookingsTitle": "{count} درخواست رزرو در انتظار",
     "actionBookingsBody": "پیش از پایان مهلت تصمیم، درخواست‌ها را تأیید یا رد کن.",
-    "actionAtRiskTitle": "پیگیری شاگرد در معرض ریزش",
+    "actionAtRiskTitle": "پیگیری {count} شاگرد در معرض ریزش",
     "actionAtRiskBody": "روند حضور یا فعالیت این شاگرد افت کرده است؛ جزئیات را بررسی کن.",
     "actionProgramTitle": "شروع برنامه شاگرد جدید",
     "actionProgramBody": "برای شاگردی که هنوز جلسه‌ای ثبت نکرده برنامه مناسب اختصاص بده."
@@ -6099,11 +6367,14 @@
     "actionCenterDescription": "کارهایی که برای حفظ رزرو، تمرین و عضویت باید زودتر انجام شوند.",
     "actionCenterLoading": "در حال بررسی اقدام‌های حساب…",
     "actionCenterError": "دریافت اقدام‌های حساب ممکن نشد.",
+    "actionCenterStale": "اتصال برقرار نیست؛ اقدام‌های قبلی ممکن است به‌روز نباشند.",
     "actionCenterRetry": "تلاش دوباره",
     "actionCenterEmpty": "فعلاً اقدام فوری نداری.",
     "actionCenterOpen": "ادامه",
     "actionPaymentTitle": "تکمیل پرداخت رزرو",
     "actionPaymentBody": "رزرو {code} تا پایان مهلت پرداخت برایت نگه داشته شده است.",
+    "actionWaitlistTitle": "ظرفیت برایت آزاد شد",
+    "actionWaitlistBody": "پیشنهاد لیست انتظار تا {due} معتبر است؛ برای دریافت ظرفیت اقدام کن.",
     "actionWorkoutTitle": "ادامه تمرین نیمه‌تمام",
     "actionWorkoutBody": "ست‌های ثبت‌شده حفظ شده‌اند؛ جلسه را از همان‌جا ادامه بده.",
     "actionMembershipTitle": "بررسی تمدید عضویت",
@@ -6163,12 +6434,17 @@
     "createSubtitle": "تجربه تمرین، تغذیه یا پیشرفت خودت را به اشتراک بگذار.",
     "bodyLabel": "متن پست",
     "bodyPlaceholder": "امروز چه کردی؟",
-    "mediaHint": "افزودن رسانه به‌زودی فعال می‌شود.",
+    "mediaHint": "حداکثر ۴ تصویر JPEG، PNG یا WebP. تصاویر پست عمومی خواهند بود.",
+    "selectMedia": "انتخاب تصاویر پست",
+    "addMedia": "افزودن تصویر ({count}/۴)",
+    "mediaPreviewAlt": "پیش‌نمایش تصویر شماره {index}",
+    "removeMedia": "حذف تصویر شماره {index}",
     "publish": "انتشار",
     "createError": "انتشار پست ناموفق بود. دوباره تلاش کن.",
     "emptyTitle": "هنوز پستی نیست",
     "emptyBody": "اولین پست را بساز یا بعداً دوباره سر بزن.",
     "mediaPlaceholder": "{count} رسانه",
+    "postMediaAlt": "تصویر شماره {index} پست",
     "commentLabel": "نظر تو",
     "commentPlaceholder": "نظرتان را بنویسید…",
     "sendComment": "ارسال نظر",
@@ -6209,7 +6485,12 @@
     "adherenceFollowed": "انجام‌شده",
     "adherencePartial": "ناقص",
     "adherenceSkipped": "رد شده",
-    "adherenceSubstituted": "جایگزین"
+    "adherenceSubstituted": "جایگزین",
+    "mealPhotoHint": "در صورت نیاز یک عکس خصوصی از وعده اضافه کن.",
+    "mealPhotoSelect": "انتخاب عکس وعده",
+    "mealPhotoPreview": "پیش‌نمایش عکس وعده",
+    "mealPhotoRemove": "حذف عکس",
+    "mealPhotoAlt": "عکس خصوصی وعده"
   },
   "AthleteCheckInHistory": {
     "pageTitle": "تاریخچه ورود",
@@ -7232,6 +7513,13 @@
       "club_owner": "باشگاه‌دار"
     }
   },
+  "PublicFaq": {
+    "title": "سؤالات متداول",
+    "subtitle": "پاسخ پرسش‌های پرتکرار کاربران Gym4Me.",
+    "empty": "هنوز سؤالی ثبت نشده است.",
+    "loadError": "دریافت پرسش‌ها ممکن نشد.",
+    "retry": "تلاش دوباره"
+  },
   "PublicSite": {
     "brand": "Gym4Me",
     "navAria": "ناوبری اصلی",
@@ -7243,6 +7531,7 @@
     "forClubs": "برای باشگاه‌دار",
     "pricing": "تعرفه",
     "articles": "مقالات",
+    "faq": "سؤالات متداول",
     "tagline": "مدیریت باشگاه، رزرو مربی و عضویت در یک جریان یکپارچه",
     "themeToggle": "تغییر حالت روشن و تاریک",
     "copyright": "© ۲۰۲۶ Gym4Me"

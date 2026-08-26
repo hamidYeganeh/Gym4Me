@@ -7,6 +7,8 @@ export type SubscriptionPlan = {
   priceLabel: string;
   periodLabel: string;
   features: string[];
+  amount?: number;
+  actionLabel?: string;
 };
 
 export type AthleteSubscriptionState = {

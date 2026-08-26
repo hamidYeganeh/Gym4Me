@@ -48,6 +48,12 @@ export class CoachLead {
   @Prop({ type: Types.ObjectId, ref: CoachStudent.name })
   convertedStudentId?: Types.ObjectId;
 
+  @Prop({ trim: true, maxlength: 200 })
+  idempotencyKey?: string;
+
+  @Prop({ select: false })
+  idempotencyFingerprint?: string;
+
   createdAt!: Date;
   updatedAt!: Date;
 }
@@ -55,3 +61,10 @@ export class CoachLead {
 export const CoachLeadSchema = SchemaFactory.createForClass(CoachLead);
 
 CoachLeadSchema.index({ coachUserId: 1, stage: 1, updatedAt: -1 });
+CoachLeadSchema.index(
+  { coachUserId: 1, idempotencyKey: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { idempotencyKey: { $type: 'string' } },
+  },
+);

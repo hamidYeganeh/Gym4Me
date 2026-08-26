@@ -9,6 +9,7 @@ import {
   parseFeatures,
   PlatformPlansForm,
   type PlatformPlansFormValues,
+  formValuesToEntitlement,
 } from "../../components/PlatformPlansForm";
 import { platformPlansCreateScreenVariants } from "./PlatformPlansCreateScreen.styles";
 import type { PlatformPlansCreateScreenProps } from "./PlatformPlansCreateScreen.types";
@@ -31,9 +32,15 @@ export function PlatformPlansCreateScreen({
       description: values.description.trim() || undefined,
       pricing: {
         amount: Number.parseInt(values.amount, 10) || 0,
+        tax: Number.parseInt(values.tax, 10) || 0,
         periodDays: Number.parseInt(values.periodDays, 10) || 30,
+        currency: "IRT",
       },
       features: parseFeatures(values.features),
+      entitlementContract: formValuesToEntitlement(values),
+      contractReady: values.contractReady,
+      postExpirationMode: values.postExpirationMode,
+      fallbackPlanId: values.fallbackPlanId.trim() || undefined,
     });
     toast.success(tForm("created"));
     if (intent === "saveAndCreateNew") return;

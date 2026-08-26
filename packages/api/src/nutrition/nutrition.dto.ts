@@ -128,16 +128,19 @@ export type MealAdherence = {
   loggedAt: string;
   privacy: Privacy;
   note: string | null;
+  mediaId: string | null;
   createdAt: string;
   updatedAt: string;
 };
 
 export type CreateMealAdherenceInput = {
+  idempotencyKey: string;
   mealPlanId: string;
   slot: MealAdherenceSlot;
   status: MealAdherenceStatus;
   loggedAt?: string;
   note?: string;
+  mediaId?: string;
 };
 
 export type ListMealAdherenceQuery = {

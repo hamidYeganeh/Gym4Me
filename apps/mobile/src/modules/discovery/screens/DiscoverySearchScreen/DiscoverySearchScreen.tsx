@@ -2,7 +2,6 @@
 
 import { Button } from "@heroui/react/button";
 import { SearchField } from "@heroui/react/search-field";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { Gear1 } from "@repo/icons/Gear1";
 import { SliderDotThreeHorizontal } from "@repo/icons/SliderDotThreeHorizontal";
 import { AppLayout } from "@repo/ui/layout/AppLayout";

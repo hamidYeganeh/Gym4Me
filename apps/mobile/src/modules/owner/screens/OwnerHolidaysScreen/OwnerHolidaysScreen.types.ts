@@ -11,5 +11,7 @@ export type OwnerHolidaysScreenProps = {
   pending?: boolean;
   onFormChange: (patch: Partial<OwnerHolidayForm>) => void;
   onAddHoliday?: () => void;
+  onRemoveHoliday?: (id: string) => void;
+  pendingHolidayId?: string | null;
   className?: string;
 };

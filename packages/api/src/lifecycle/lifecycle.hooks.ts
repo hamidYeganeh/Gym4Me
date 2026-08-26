@@ -12,6 +12,8 @@ import {
 } from "./lifecycle.client";
 import type {
   AtRiskMembersResponse,
+  ClubBroadcastList,
+  CreateClubBroadcastInput,
   LifecycleJourneysResponse,
   LifecycleSegmentsResponse,
 } from "./lifecycle.dto";
@@ -91,6 +93,36 @@ export function useRunLifecycleJourneys(clubId: string) {
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: accountLifecycleKeys.all,
+      });
+    },
+  });
+}
+
+export function useClubBroadcasts(
+  clubId: string,
+  options?: Omit<
+    UseQueryOptions<ClubBroadcastList, Error>,
+    "queryKey" | "queryFn"
+  >,
+) {
+  const api = useAccountLifecycleApi();
+  return useQuery({
+    queryKey: accountLifecycleKeys.broadcasts(clubId),
+    queryFn: () => api.listBroadcasts(clubId),
+    ...options,
+    enabled: Boolean(clubId) && (options?.enabled ?? true),
+  });
+}
+
+export function useCreateClubBroadcast(clubId: string) {
+  const api = useAccountLifecycleApi();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreateClubBroadcastInput) =>
+      api.createBroadcast(clubId, input),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: accountLifecycleKeys.broadcasts(clubId),
       });
     },
   });

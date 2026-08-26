@@ -41,6 +41,8 @@ export const accountMembershipsEndpoints = {
   // ── Platform SaaS subscriptions ───────────────────────────────────────────
   platformPlans: "/account/platform-plans",
   platformSubscriptions: "/account/platform-subscriptions",
+  platformEntitlements:
+    "/account/platform-subscriptions/entitlements/current",
   platformSubscriptionCheckoutPreview:
     "/account/platform-subscriptions/checkouts/preview",
   platformSubscriptionCheckoutInitiate:
@@ -49,4 +51,6 @@ export const accountMembershipsEndpoints = {
     `/account/platform-subscriptions/checkouts/${checkoutId}/verify`,
   cancelPlatformSubscription: (subscriptionId: string) =>
     `/account/platform-subscriptions/${subscriptionId}/cancel`,
+  schedulePlatformPlanChange: (subscriptionId: string) =>
+    `/account/platform-subscriptions/${subscriptionId}/plan-change`,
 } as const;

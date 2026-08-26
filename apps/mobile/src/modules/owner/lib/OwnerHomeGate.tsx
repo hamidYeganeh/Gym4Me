@@ -4,7 +4,8 @@ import { Spinner } from "@heroui/react/spinner";
 import type { Club } from "@repo/api";
 import type { ActionCenterKind } from "@repo/api/action-center";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   accountActionCenter,
   accountClubs,
@@ -35,20 +36,26 @@ function mapHomeClub(club: Club): OwnerHomeClub {
 }
 
 export function OwnerHomeGate() {
+  const t = useTranslations("OwnerHome");
   const { isAuthenticated, isReady } = useAuth();
   const [ready, setReady] = useState(false);
   const [tasksNewCount, setTasksNewCount] = useState(0);
   const [clubs, setClubs] = useState<OwnerHomeClub[]>([]);
   const [stats, setStats] = useState<OwnerHomeStat[]>([]);
+  const [actionsError, setActionsError] = useState(false);
+  const [actionsStale, setActionsStale] = useState(false);
+  const [actionsLoading, setActionsLoading] = useState(false);
+  const [actionsRefresh, setActionsRefresh] = useState(0);
   const [actions, setActions] = useState<
     Array<{
       id: string;
-      kind: "create_club" | "debts" | "tasks";
+      kind: "create_club" | "debts" | "booking_queue" | "renewal_risk" | "tasks";
       count?: number;
       href: string;
       sourceKind: ActionCenterKind;
     }>
   >([]);
+  const actionsRef = useRef<typeof actions>([]);
 
   useEffect(() => {
     if (!isReady) return;
@@ -61,17 +68,24 @@ export function OwnerHomeGate() {
     }
 
     let cancelled = false;
-    accountClubs
-      .list({ page_size: 20 })
-      .then(async (clubs) => {
+    setActionsLoading(true);
+    setActionsError(false);
+    Promise.allSettled([
+      accountClubs.list({ page_size: 20 }),
+      accountActionCenter.get(),
+    ]).then(([clubsResult, actionCenterResult]) => {
         if (cancelled) return;
-        setClubs(clubs.result.map(mapHomeClub));
+        setClubs(
+          clubsResult.status === "fulfilled"
+            ? clubsResult.value.result.map(mapHomeClub)
+            : [],
+        );
         setStats([]);
-        const actionCenter = await accountActionCenter.get();
-        if (!cancelled) {
+        if (actionCenterResult.status === "fulfilled") {
+          const actionCenter = actionCenterResult.value;
           const next: Array<{
             id: string;
-            kind: "create_club" | "debts" | "tasks";
+            kind: "create_club" | "debts" | "booking_queue" | "renewal_risk" | "tasks";
             count?: number;
             href: string;
             sourceKind: ActionCenterKind;
@@ -81,6 +95,10 @@ export function OwnerHomeGate() {
                 ? "create_club"
                 : item.kind === "owner.debts"
                   ? "debts"
+                  : item.kind === "owner.booking_queue"
+                    ? "booking_queue"
+                    : item.kind === "owner.renewal_risk"
+                      ? "renewal_risk"
                   : item.kind === "owner.tasks"
                     ? "tasks"
                     : null;
@@ -104,27 +122,26 @@ export function OwnerHomeGate() {
             typeof task?.params.count === "number" ? task.params.count : 0,
           );
           setActions(next);
-          setReady(true);
+          actionsRef.current = next;
+          setActionsError(false);
+          setActionsStale(false);
+        } else {
+          setActionsStale(actionsRef.current.length > 0);
+          setActionsError(true);
         }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setTasksNewCount(0);
-          setClubs([]);
-          setStats([]);
-          setReady(true);
-        }
+        setActionsLoading(false);
+        setReady(true);
       });
 
     return () => {
       cancelled = true;
     };
-  }, [isAuthenticated, isReady]);
+  }, [actionsRefresh, isAuthenticated, isReady]);
 
   if (!ready) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <Spinner size="lg" />
+        <Spinner aria-label={t("loading")} size="lg" />
       </div>
     );
   }
@@ -135,6 +152,10 @@ export function OwnerHomeGate() {
       stats={stats}
       tasksNewCount={tasksNewCount}
       actions={actions}
+      actionsError={actionsError}
+      actionsLoading={actionsLoading}
+      actionsStale={actionsStale}
+      onActionsRetry={() => setActionsRefresh((value) => value + 1)}
     />
   );
 }

@@ -1,4 +1,9 @@
-export type OwnerDebtStatus = "open" | "partial" | "settled" | "overdue";
+export type OwnerDebtStatus =
+  | "open"
+  | "partial"
+  | "settled"
+  | "overdue"
+  | "written-off";
 
 export type OwnerDebtEntry = {
   id: string;

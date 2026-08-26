@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import type { Request } from 'express';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums';
@@ -14,6 +15,7 @@ import {
   RescheduleBookingDto,
   VerifyBookingPaymentDto,
 } from './dto/booking.dto';
+import { ClaimWaitlistDto } from '../../waitlist/dto/waitlist.dto';
 
 @ApiTags('bookings')
 @ApiBearerAuth('access-token')
@@ -37,6 +39,22 @@ export class AthleteBookingsController {
     @Body() dto: CreateClubBookingDto,
   ) {
     return this.bookings.createClubBooking(userId, dto);
+  }
+
+  @Post('waitlist/:waitlistId/claim')
+  @ApiOperation({ summary: 'Atomically claim a waitlist offer and reserve it' })
+  claimWaitlist(
+    @CurrentUser('sub') userId: string,
+    @Param('waitlistId') waitlistId: string,
+    @Body() dto: ClaimWaitlistDto,
+    @Req() request: Request,
+  ) {
+    return this.bookings.claimWaitlistOffer(
+      userId,
+      waitlistId,
+      dto.entryId,
+      request,
+    );
   }
 
   @Post('series/:groupId/cancel')

@@ -7,10 +7,10 @@ import { Label } from "@heroui/react/label";
 import { TextField } from "@heroui/react/textfield";
 import { Typography } from "@heroui/react/typography";
 import type { ConsentHistoryEvent } from "@repo/api";
-import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useRouter } from "@/shared/lib/app-router";
+import { useTranslations } from "next-intl";
 
 import { useState } from "react";
 import { athleteDataRightsScreenVariants } from "./AthleteDataRightsScreen.styles";
@@ -42,10 +42,16 @@ export function AthleteDataRightsScreen({
   lastExportSummary,
   onExport,
   onDeleteMetrics,
+  deletionRequest,
+  onRequestAccountDeletion,
+  onCancelAccountDeletion,
 }: AthleteDataRightsScreenProps) {
+  const t = useTranslations("AthleteDataRights");
   const router = useRouter();
   const styles = athleteDataRightsScreenVariants();
   const [confirmText, setConfirmText] = useState("");
+  const [accountConfirmText, setAccountConfirmText] = useState("");
+  const [deletionReason, setDeletionReason] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -78,6 +84,35 @@ export function AthleteDataRightsScreen({
     }
   }
 
+  async function handleAccountDeletion() {
+    if (accountConfirmText !== "DELETE_ACCOUNT") {
+      setError(t("accountConfirmationError"));
+      return;
+    }
+    setMessage(null);
+    setError(null);
+    try {
+      await onRequestAccountDeletion(deletionReason.trim() || undefined);
+    } catch (caught) {
+      setError(
+        caught instanceof Error ? caught.message : t("accountRequestError"),
+      );
+    }
+  }
+
+  async function handleCancelAccountDeletion() {
+    setMessage(null);
+    setError(null);
+    try {
+      await onCancelAccountDeletion();
+      setMessage(t("accountCancelSuccess"));
+    } catch (caught) {
+      setError(
+        caught instanceof Error ? caught.message : t("accountCancelError"),
+      );
+    }
+  }
+
   return (
     <AppLayout
       className={styles.root()}
@@ -106,6 +141,61 @@ export function AthleteDataRightsScreen({
               {lastExportSummary}
             </Typography>
           ) : null}
+        </section>
+
+        <section className={styles.card()}>
+          <Typography type="h3" weight="semibold">
+            {t("accountDeletionTitle")}
+          </Typography>
+          {deletionRequest?.status === "cooling_off" ? (
+            <>
+              <Typography className={styles.meta()} type="body-sm">
+                {t("accountCoolingOff", {
+                  date: formatDate(deletionRequest.coolingOffUntil),
+                })}
+              </Typography>
+              <Button
+                fullWidth
+                isDisabled={pending}
+                onPress={() => void handleCancelAccountDeletion()}
+                variant="secondary"
+              >
+                {t("accountCancel")}
+              </Button>
+            </>
+          ) : (
+            <>
+              <Typography className={styles.meta()} type="body-sm">
+                {t("accountDeletionBody")}
+              </Typography>
+              <TextField>
+                <Label>{t("accountReasonLabel")}</Label>
+                <Input
+                  onChange={(event) => setDeletionReason(event.target.value)}
+                  value={deletionReason}
+                />
+              </TextField>
+              <TextField>
+                <Label>{t("accountConfirmationLabel")}</Label>
+                <Input
+                  autoCapitalize="characters"
+                  onChange={(event) =>
+                    setAccountConfirmText(event.target.value.trim())
+                  }
+                  placeholder="DELETE_ACCOUNT"
+                  value={accountConfirmText}
+                />
+              </TextField>
+              <Button
+                fullWidth
+                isDisabled={pending || accountConfirmText !== "DELETE_ACCOUNT"}
+                onPress={() => void handleAccountDeletion()}
+                variant="danger"
+              >
+                {t("accountRequest")}
+              </Button>
+            </>
+          )}
         </section>
 
         <section className={styles.card()}>

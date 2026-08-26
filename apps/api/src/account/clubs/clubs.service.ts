@@ -88,6 +88,8 @@ import {
   mapDiscoveryCategoryFacetRows,
 } from './discovery-club-facets';
 import { ClubsListQuery } from './application/queries/clubs-list.query';
+import { PlatformEntitlementService } from '../memberships/application/services/platform-entitlement.service';
+import { MongoTransactionService } from '../../common/mongo/mongo-transaction.service';
 import { approvedCoachVerificationFilter } from '../coaches/coach-verification-visibility';
 
 type ClubWriteDto = CreateClubDto | UpdateClubDto;
@@ -133,6 +135,8 @@ export class ClubsService {
     private readonly events: EventWriterService,
     private readonly gamification: GamificationService,
     private readonly clubsListQuery: ClubsListQuery,
+    private readonly entitlements: PlatformEntitlementService,
+    private readonly transactions: MongoTransactionService,
   ) {}
 
   // ── Owner ──────────────────────────────────────
@@ -393,21 +397,33 @@ export class ClubsService {
     adminId: string,
     request: Request,
   ) {
-    const club = await this.findClubOrFail(clubId);
-    if (club.review.status !== ClubLifecycleStatus.PENDING_REVIEW) {
-      throw new ConflictException('Club is not pending review');
-    }
+    const club = await this.transactions.run(async (session) => {
+      const current = await this.clubModel.findById(clubId).session(session);
+      if (!current) throw new NotFoundException('Club not found');
+      if (current.review.status !== ClubLifecycleStatus.PENDING_REVIEW) {
+        throw new ConflictException('Club is not pending review');
+      }
 
-    club.review.status =
-      action === 'approve'
-        ? ClubLifecycleStatus.APPROVED
-        : ClubLifecycleStatus.REJECTED;
-    club.review.reviewedAt = new Date();
-    club.review.reviewedBy = new Types.ObjectId(adminId);
-    club.review.reviewNote =
-      action === 'reject' ? (reviewNote ?? 'Rejected') : reviewNote;
-    club.markModified('review');
-    await club.save();
+      if (action === 'approve') {
+        await this.entitlements.serializeAndAssertIncrement({
+          userId: current.ownerId.toString(),
+          key: 'clubs.active',
+          session,
+        });
+      }
+
+      current.review.status =
+        action === 'approve'
+          ? ClubLifecycleStatus.APPROVED
+          : ClubLifecycleStatus.REJECTED;
+      current.review.reviewedAt = new Date();
+      current.review.reviewedBy = new Types.ObjectId(adminId);
+      current.review.reviewNote =
+        action === 'reject' ? (reviewNote ?? 'Rejected') : reviewNote;
+      current.markModified('review');
+      await current.save({ session });
+      return current;
+    });
 
     this.audit.log({
       action: AuditAction.CLUB_REVIEWED,

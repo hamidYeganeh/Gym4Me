@@ -24,6 +24,7 @@ const NAV_ITEMS = [
   { href: "/for-clubs", key: "forClubs" },
   { href: "/pricing", key: "pricing" },
   { href: "/articles", key: "articles" },
+  { href: "/faq", key: "faq" },
 ] as const;
 
 function SiteThemeToggle() {

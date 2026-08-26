@@ -5,6 +5,9 @@ import type {
   LifecycleJourneysResponse,
   LifecycleSegmentsResponse,
   RunJourneysResult,
+  ClubBroadcast,
+  ClubBroadcastList,
+  CreateClubBroadcastInput,
 } from "./lifecycle.dto";
 import { accountLifecycleEndpoints as ep } from "./lifecycle.endpoint";
 
@@ -33,6 +36,19 @@ export function createAccountLifecycleApi(client: ApiClient) {
       return client.request<RunJourneysResult>(ep.runJourneys(clubId), {
         method: "POST",
         body: {},
+      });
+    },
+
+    listBroadcasts(clubId: string, page = 1, pageSize = 20) {
+      return client.request<ClubBroadcastList>(
+        ep.broadcasts(clubId, page, pageSize),
+      );
+    },
+
+    createBroadcast(clubId: string, input: CreateClubBroadcastInput) {
+      return client.request<ClubBroadcast>(ep.createBroadcast(clubId), {
+        method: "POST",
+        body: input,
       });
     },
   };
