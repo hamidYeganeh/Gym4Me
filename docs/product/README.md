@@ -4,6 +4,7 @@
 |-----|--------|
 | [competitive-product-review-2026-08.md](./competitive-product-review-2026-08.md) | بررسی رقبا، ارزیابی کاربردی بودن محصول و backlog قابلیت‌های مناسب با معماری |
 | [cursor-implementation-master-plan.md](./cursor-implementation-master-plan.md) | backlog اجرایی اولویت‌بندی‌شده برای تکمیل محصول توسط Cursor |
+| [cursor-service-completion-tasks.md](./cursor-service-completion-tasks.md) | تسک‌های اجرایی تکمیل سرویس‌ها، گیت‌های تصمیم و verification خارجی برای Cursor |
 | [architecture-completion-guardrails.md](./architecture-completion-guardrails.md) | ADR و guardrailهای معماری، تراکنش، تست، امنیت و نگهداری |
 | [prd-gym4me.md](./prd-gym4me.md) | PRD جامع محصول، شکاف‌ها، اولویت‌ها، KPI و معیار پذیرش |
 | [architecture-mobile-api-delivery.md](./architecture-mobile-api-delivery.md) | معماری پیشنهادی Capacitor، متریک، API versioning و انتشار پویا |

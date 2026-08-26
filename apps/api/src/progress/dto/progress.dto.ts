@@ -1149,6 +1149,54 @@ export class ListAthleteDataGrantsQueryDto extends PaginationQueryDto {
 
 // ── Health sync ───────────────────────────────────────────────────────────
 
+export class HealthSyncOpsTelemetryDto {
+  @IsOptional()
+  @IsIn([
+    'queue_flush',
+    'disconnect_purge',
+    'scope_purge',
+    'retry',
+    'poison',
+  ])
+  kind?:
+    | 'queue_flush'
+    | 'disconnect_purge'
+    | 'scope_purge'
+    | 'retry'
+    | 'poison';
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(10_000)
+  queueDepth?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(3_600_000)
+  syncLatencyMs?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(100)
+  retryCount?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(10_000)
+  purgedCount?: number;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(20)
+  @IsString({ each: true })
+  @MaxLength(80, { each: true })
+  rejectedReasons?: string[];
+}
+
 export class UpsertHealthSyncStateDto {
   @IsEnum(HealthSyncStatus)
   status!: HealthSyncStatus;
@@ -1172,6 +1220,12 @@ export class UpsertHealthSyncStateDto {
   @IsString()
   @MaxLength(80)
   lastErrorCode?: string | null;
+
+  /** Not persisted — forwarded to analytics Audit only. */
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => HealthSyncOpsTelemetryDto)
+  ops?: HealthSyncOpsTelemetryDto;
 }
 
 export class ListHealthSyncStatesQueryDto {

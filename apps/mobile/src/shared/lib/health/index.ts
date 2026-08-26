@@ -6,18 +6,34 @@ export {
   hasAnyReadAccess,
 } from "./health-metrics";
 export {
+  advanceCursorForAcknowledged,
   authorizedMetricKeysFromAuth,
+  clearHealthSyncQueue,
   disconnectHealthProvider,
   flushHealthSamples,
   HEALTH_TYPE_TO_METRIC_KEY,
   readHealthSamples,
   resolveHealthProvider,
+  summarizeHealthSyncQueue,
   upsertConnectedHealthState,
 } from "./health-sync";
 export type {
   HealthSampleReadMode,
   HealthSyncFlushResult,
 } from "./health-sync";
+export {
+  discardHealthSyncQueueItems,
+  enqueueHealthSyncSamples,
+  flushHealthSyncQueue,
+  healthSampleFingerprint,
+  purgeHealthSyncQueue,
+  retryPoisonHealthSyncItems,
+} from "./health-sync-queue";
+export type {
+  HealthSyncQueueFlushResult,
+  HealthSyncQueueItem,
+  HealthSyncQueueSummary,
+} from "./health-sync-queue.types";
 export type {
   HealthMetricsAuthorization,
   HealthMetricsConnectResult,

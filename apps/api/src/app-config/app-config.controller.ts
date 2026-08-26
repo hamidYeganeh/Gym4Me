@@ -14,6 +14,7 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '../common/enums';
 import {
   FeatureFlagKeyParamDto,
+  ArchiveExpiredFeatureFlagsDto,
   ListAppConfigQueryDto,
   MobileBootstrapQueryDto,
   UpsertFeatureFlagDto,
@@ -68,5 +69,14 @@ export class AdminAppConfigController {
     @CurrentUser('sub') adminId: string,
   ) {
     return this.appConfig.upsertReleasePolicy(dto, adminId);
+  }
+
+  @Put('feature-flags/archive-expired')
+  @ApiOperation({ summary: 'Archive feature flags past exposureEndsAt' })
+  archiveExpiredFeatureFlags(
+    @Body() dto: ArchiveExpiredFeatureFlagsDto,
+    @CurrentUser('sub') adminId: string,
+  ) {
+    return this.appConfig.archiveExpiredFeatureFlags(adminId, dto.reason);
   }
 }

@@ -374,14 +374,29 @@ export function OwnerPlatformSubscriptionGate() {
                 {t(`limit.${limit.key}`)}: {limit.usage === null ? t("usageScoped") : new Intl.NumberFormat("fa-IR").format(limit.usage)} / {limit.value === null ? t("unlimited") : new Intl.NumberFormat("fa-IR").format(limit.value)}
               </Typography>
               <Typography
-                className={limit.allowed ? "text-success" : "text-danger"}
+                className={
+                  limit.allowed && limit.reasonCode !== "soft_limit_exceeded"
+                    ? "text-success"
+                    : limit.reasonCode === "soft_limit_exceeded"
+                      ? "text-warning"
+                      : "text-danger"
+                }
                 type="body-sm"
                 weight="semibold"
               >
-                {limit.allowed ? t("allowed") : t("limitReached")}
+                {limit.reasonCode === "soft_limit_exceeded"
+                  ? t("softLimitExceeded")
+                  : limit.allowed
+                    ? t("allowed")
+                    : t("limitReached")}
               </Typography>
             </div>
           ))}
+          {entitlements.upgradePlanIds.length > 0 ? (
+            <Typography className="mt-3 text-warning" type="body-sm">
+              {t("upgradeAvailable")}
+            </Typography>
+          ) : null}
           {currentSubscription &&
           !entitlements.cancellationRequestedAt &&
           (currentSubscription.status === "active" ||

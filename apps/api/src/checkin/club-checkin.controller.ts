@@ -141,7 +141,10 @@ export class ClubCheckinController {
 @RequireStaffPermission(StaffPermissionKey.MEMBERS_CHECKIN)
 @Controller('account/clubs/:clubId/checkin-devices')
 export class ClubCheckinDevicesController {
-  constructor(private readonly checkin: CheckinService) {}
+  constructor(
+    private readonly checkin: CheckinService,
+    private readonly offlineCheckin: OfflineCheckinService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'List provisioned check-in hardware' })
@@ -161,22 +164,34 @@ export class ClubCheckinDevicesController {
 
   @Post(':deviceId/rotate-secret')
   @ApiOperation({ summary: 'Rotate hardware secret; returned once' })
-  rotate(
+  async rotate(
     @CurrentUser('sub') actorId: string,
     @Param('clubId') clubId: string,
     @Param('deviceId') deviceId: string,
   ) {
-    return this.checkin.rotateDeviceSecret(clubId, deviceId, actorId);
+    const result = await this.checkin.rotateDeviceSecret(clubId, deviceId, actorId);
+    await this.offlineCheckin.invalidateSnapshotsAfterCredentialRotation(
+      clubId,
+      deviceId,
+      actorId,
+    );
+    return result;
   }
 
   @Post(':deviceId/revoke')
   @ApiOperation({ summary: 'Revoke a check-in device and its offline access' })
-  revoke(
+  async revoke(
     @CurrentUser('sub') actorId: string,
     @Param('clubId') clubId: string,
     @Param('deviceId') deviceId: string,
   ) {
-    return this.checkin.revokeDevice(clubId, deviceId, actorId);
+    const result = await this.checkin.revokeDevice(clubId, deviceId, actorId);
+    await this.offlineCheckin.revokeActiveSnapshotsForDevice(
+      clubId,
+      deviceId,
+      actorId,
+    );
+    return result;
   }
 }
 

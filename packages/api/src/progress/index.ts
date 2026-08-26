@@ -83,6 +83,7 @@ export type {
   UpdateWorkoutPlanInput,
   UpdateWorkoutProgramInput,
   UpsertHealthSyncStateInput,
+  HealthSyncOpsTelemetry,
   UpsertMetricReminderInput,
   WorkoutLog,
   WorkoutLogPain,

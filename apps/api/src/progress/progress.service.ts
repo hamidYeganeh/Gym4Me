@@ -3326,9 +3326,34 @@ export class ProgressService {
     this.audit.log({
       action: AuditAction.PROGRESS_HEALTH_SYNC_UPDATED,
       actorId: userId,
-      metadata: { kind: 'health_sync_state', provider, status: dto.status },
+      metadata: {
+        kind: 'health_sync_state',
+        provider,
+        status: dto.status,
+        ...(dto.ops
+          ? {
+              queueDepth: dto.ops.queueDepth,
+              syncLatencyMs: dto.ops.syncLatencyMs,
+              retryCount: dto.ops.retryCount,
+              purgedCount: dto.ops.purgedCount,
+              rejectedReasonCount: dto.ops.rejectedReasons?.length,
+              opsKind: dto.ops.kind,
+            }
+          : {}),
+      },
       request,
     });
+
+    const opsProperties = dto.ops
+      ? {
+          queueDepth: dto.ops.queueDepth ?? null,
+          syncLatencyMs: dto.ops.syncLatencyMs ?? null,
+          retryCount: dto.ops.retryCount ?? null,
+          purgedCount: dto.ops.purgedCount ?? null,
+          rejectedReasons: dto.ops.rejectedReasons ?? [],
+          opsKind: dto.ops.kind ?? null,
+        }
+      : {};
 
     if (
       dto.status === HealthSyncStatus.CONNECTED ||
@@ -3340,6 +3365,7 @@ export class ProgressService {
         properties: {
           provider,
           authorizedMetricKeyCount: (dto.authorizedMetricKeys ?? []).length,
+          ...opsProperties,
         },
       });
     } else if (dto.status === HealthSyncStatus.PARTIAL) {
@@ -3349,6 +3375,7 @@ export class ProgressService {
         properties: {
           provider,
           lastErrorCode: dto.lastErrorCode ?? null,
+          ...opsProperties,
         },
       });
     } else if (dto.status === HealthSyncStatus.ERROR) {
@@ -3358,13 +3385,23 @@ export class ProgressService {
         properties: {
           provider,
           lastErrorCode: dto.lastErrorCode ?? null,
+          ...opsProperties,
         },
       });
     } else if (dto.status === HealthSyncStatus.DISCONNECTED) {
       void this.events.track({
         eventName: AnalyticsEventName.HEALTH_SYNC_DISCONNECTED,
         actor: { userId, activeRole: Role.ATHLETE },
-        properties: { provider },
+        properties: { provider, ...opsProperties },
+      });
+    } else if (
+      dto.status === HealthSyncStatus.SYNCED &&
+      dto.ops?.kind === 'queue_flush'
+    ) {
+      void this.events.track({
+        eventName: AnalyticsEventName.HEALTH_SYNC_COMPLETED,
+        actor: { userId, activeRole: Role.ATHLETE },
+        properties: { provider, ...opsProperties },
       });
     }
 

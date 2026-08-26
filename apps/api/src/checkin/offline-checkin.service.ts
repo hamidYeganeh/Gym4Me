@@ -12,6 +12,7 @@ import { Model, Types } from 'mongoose';
 import { BookingStatus, MembershipStatus } from '../common/enums';
 import { AuditAction } from '../common/enums';
 import { AuditService } from '../audit/audit.service';
+import { EventWriterService } from '../analytics/event-writer.service';
 import { MongoTransactionService } from '../common/mongo/mongo-transaction.service';
 import {
   paginatedResult,
@@ -38,6 +39,8 @@ import {
   ClubMembershipDocument,
 } from '../schemas/club-membership.schema';
 import { CheckinService } from './checkin.service';
+import { trackCheckinOfflineOps } from './offline-checkin-ops-telemetry';
+import { throwIfOfflineCheckinTestFailure } from './offline-checkin-test-failures';
 import {
   IssueOfflineSnapshotDto,
   ListOfflineReconciliationsQueryDto,
@@ -70,6 +73,7 @@ type SnapshotTokenPayload = {
 @Injectable()
 export class OfflineCheckinService {
   private readonly signingSecret: string;
+  private readonly nodeEnv: string;
 
   constructor(
     @InjectModel(CheckinOfflineSnapshot.name)
@@ -85,8 +89,10 @@ export class OfflineCheckinService {
     private readonly checkin: CheckinService,
     private readonly transactions: MongoTransactionService,
     private readonly audit: AuditService,
+    private readonly events: EventWriterService,
     config: ConfigService,
   ) {
+    this.nodeEnv = config.get<string>('NODE_ENV') ?? 'development';
     const configuredSecret = config.get<string>(
       'OFFLINE_CHECKIN_SIGNING_SECRET',
     );
@@ -188,10 +194,54 @@ export class OfflineCheckinService {
       status: CheckinOfflineSnapshotStatus.ACTIVE,
     });
     const payload = this.snapshotTokenPayload(snapshot);
+    await trackCheckinOfflineOps(this.events, {
+      actorId,
+      eventId: `checkin_offline_snapshot:${snapshot._id.toString()}`,
+      properties: {
+        kind: 'snapshot_issued',
+        clubId,
+        snapshotId: snapshot._id.toString(),
+        deviceId: device._id.toString(),
+        itemCount: bookings.length + memberships.length,
+      },
+    });
     return {
       snapshotToken: this.signToken(payload),
       snapshot: this.toSnapshotPublic(snapshot),
     };
+  }
+
+  async revokeActiveSnapshotsForDevice(clubId: string, deviceId: string, actorId: string) {
+    if (!Types.ObjectId.isValid(deviceId)) return { revoked: 0 };
+    const result = await this.snapshotModel.updateMany(
+      {
+        clubId: new Types.ObjectId(clubId),
+        deviceId: new Types.ObjectId(deviceId),
+        status: CheckinOfflineSnapshotStatus.ACTIVE,
+      },
+      { $set: { status: CheckinOfflineSnapshotStatus.REVOKED } },
+    );
+    if (result.modifiedCount > 0) {
+      await trackCheckinOfflineOps(this.events, {
+        actorId,
+        eventId: `checkin_offline_revoke:${clubId}:${deviceId}`,
+        properties: {
+          kind: 'revoke',
+          clubId,
+          deviceId,
+          itemCount: result.modifiedCount,
+        },
+      });
+    }
+    return { revoked: result.modifiedCount };
+  }
+
+  async invalidateSnapshotsAfterCredentialRotation(
+    clubId: string,
+    deviceId: string,
+    actorId: string,
+  ) {
+    return this.revokeActiveSnapshotsForDevice(clubId, deviceId, actorId);
   }
 
   async syncBatch(
@@ -201,6 +251,8 @@ export class OfflineCheckinService {
     request?: Request,
   ) {
     await this.checkin.assertDeskAccess(clubId, actorId);
+    throwIfOfflineCheckinTestFailure('sync_before_response', this.nodeEnv);
+    const startedAt = Date.now();
     const payload = this.verifyToken(dto.snapshotToken);
     if (payload.clubId !== clubId || payload.actorId !== actorId) {
       throw new UnauthorizedException('Offline snapshot binding mismatch');
@@ -227,13 +279,61 @@ export class OfflineCheckinService {
     }
 
     const items: Array<Record<string, unknown>> = [];
+    const reasonCodes: string[] = [];
     for (const item of dto.items) {
-      items.push(await this.reconcileItem(snapshot, item, request));
+      const outcome = await this.reconcileItem(snapshot, item, request);
+      if (
+        typeof outcome.reasonCode === 'string' &&
+        !reasonCodes.includes(outcome.reasonCode)
+      ) {
+        reasonCodes.push(outcome.reasonCode);
+      }
+      items.push(outcome);
     }
+    throwIfOfflineCheckinTestFailure('partial_response', this.nodeEnv);
     await this.deviceModel.updateOne(
       { _id: snapshot.deviceId },
       { $set: { lastSeenAt: new Date() } },
     );
+    const reasonCodesFromItems = items
+      .map((entry) =>
+        typeof (entry as { reasonCode?: string }).reasonCode === 'string'
+          ? (entry as { reasonCode: string }).reasonCode
+          : undefined,
+      )
+      .filter((code): code is string => Boolean(code));
+    await trackCheckinOfflineOps(this.events, {
+      actorId,
+      eventId: `checkin_offline_sync:${snapshot._id.toString()}:${dto.items[0]?.sequence ?? 0}`,
+      properties: {
+        kind: 'sync_batch',
+        clubId,
+        snapshotId: snapshot._id.toString(),
+        deviceId: snapshot.deviceId.toString(),
+        itemCount: dto.items.length,
+        queueDepth: dto.ops?.queueDepth,
+        syncLatencyMs: dto.ops?.syncLatencyMs ?? Date.now() - startedAt,
+        retryCount: dto.ops?.retryCount,
+        acceptedCount: items.filter((entry) => entry.status === 'created').length,
+        duplicateCount: items.filter((entry) => entry.status === 'duplicate').length,
+        reviewCount: items.filter((entry) => entry.status === 'review').length,
+        rejectedCount: items.filter((entry) => entry.status === 'rejected').length,
+        reasonCodes: reasonCodesFromItems.length ? reasonCodesFromItems : reasonCodes,
+      },
+    });
+    if (dto.ops?.kind === 'clock_skew' && dto.ops.syncLatencyMs !== undefined) {
+      await trackCheckinOfflineOps(this.events, {
+        actorId,
+        eventId: `checkin_offline_clock_skew:${snapshot._id.toString()}`,
+        properties: {
+          kind: 'clock_skew',
+          clubId,
+          snapshotId: snapshot._id.toString(),
+          clockSkewMs: dto.ops.syncLatencyMs,
+        },
+      });
+    }
+    throwIfOfflineCheckinTestFailure('sync_after_response', this.nodeEnv);
     return { items };
   }
 
@@ -401,6 +501,17 @@ export class OfflineCheckinService {
         checkInId: new Types.ObjectId(result.checkIn.id),
       });
       this.auditResolution(resolved, actorId, dto, request);
+      await trackCheckinOfflineOps(this.events, {
+        actorId,
+        eventId: `checkin_offline_resolution:${resolved._id.toString()}:${mutationId}`,
+        properties: {
+          kind:
+            dto.action === CheckinOfflineResolutionAction.RETRY ? 'retry' : 'reject',
+          clubId,
+          snapshotId: resolved.snapshotId.toString(),
+          reasonCodes: resolved.reasonCode ? [resolved.reasonCode] : undefined,
+        },
+      });
       return this.toReconciliationPublic(resolved);
     } catch (error) {
       const reason =
@@ -494,7 +605,10 @@ export class OfflineCheckinService {
       reconciliation.reasonCode = eligibilityError.code;
       reconciliation.reconciledAt = new Date();
       await reconciliation.save();
-      return this.toSyncResult(reconciliation, false);
+      return {
+        ...this.toSyncResult(reconciliation, false),
+        reasonCode: eligibilityError.code,
+      };
     }
 
     const idempotencyKey = this.serverIdempotencyKey(
@@ -515,6 +629,7 @@ export class OfflineCheckinService {
       reconciliation.reconciledAt = new Date();
       reconciliation.reason = undefined;
       await reconciliation.save();
+      throwIfOfflineCheckinTestFailure('sync_after_commit', this.nodeEnv);
       return {
         clientIdempotencyKey: item.clientIdempotencyKey,
         sequence: item.sequence,
@@ -530,7 +645,10 @@ export class OfflineCheckinService {
       reconciliation.reasonCode = 'authoritative_state_conflict';
       reconciliation.reconciledAt = new Date();
       await reconciliation.save();
-      return this.toSyncResult(reconciliation, false);
+      return {
+        ...this.toSyncResult(reconciliation, false),
+        reasonCode: 'authoritative_state_conflict',
+      };
     }
   }
 
@@ -816,6 +934,7 @@ export class OfflineCheckinService {
           : row.status,
       checkInId: row.checkInId?.toString() ?? null,
       error: row.reason ?? undefined,
+      reasonCode: row.reasonCode ?? undefined,
     };
   }
 

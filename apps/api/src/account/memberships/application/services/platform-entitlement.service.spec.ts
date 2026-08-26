@@ -5,8 +5,27 @@ import { PlatformEntitlementService } from './platform-entitlement.service';
 describe('PlatformEntitlementService', () => {
   const userId = new Types.ObjectId().toString();
   const clubId = new Types.ObjectId().toString();
+  const upgradePlanId = new Types.ObjectId().toString();
 
-  function service(subscription: unknown, usage = 0, ownsClub = true) {
+  function service(
+    subscription: unknown,
+    usage = 0,
+    ownsClub = true,
+    upgradePlans: Array<{
+      _id: Types.ObjectId;
+      pricing: { amount: number };
+      entitlementContract: { limits: Array<{ key: string; value: number | null; mode: string }> };
+    }> = [],
+  ) {
+    const plansFind = jest.fn().mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        session: jest.fn().mockResolvedValue({ pricing: { amount: 100 } }),
+        lean: jest.fn().mockResolvedValue({ pricing: { amount: 100 } }),
+      }),
+      session: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue(upgradePlans),
+      }),
+    });
     return new PlatformEntitlementService(
       { findOne: jest.fn().mockResolvedValue(subscription) } as never,
       {
@@ -15,7 +34,20 @@ describe('PlatformEntitlementService', () => {
       } as never,
       { countDocuments: jest.fn().mockResolvedValue(usage) } as never,
       { countDocuments: jest.fn().mockResolvedValue(usage) } as never,
-      { exists: jest.fn().mockResolvedValue(true) } as never,
+      {
+        exists: jest.fn().mockResolvedValue(true),
+        findById: plansFind,
+        find: jest.fn().mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            sort: jest.fn().mockReturnValue({
+              session: jest.fn().mockReturnValue({
+                lean: jest.fn().mockResolvedValue(upgradePlans),
+              }),
+              lean: jest.fn().mockResolvedValue(upgradePlans),
+            }),
+          }),
+        }),
+      } as never,
       { updateOne: jest.fn().mockResolvedValue({ modifiedCount: 1 }) } as never,
       {
         aggregate: jest.fn().mockReturnValue({
@@ -23,10 +55,12 @@ describe('PlatformEntitlementService', () => {
         }),
       } as never,
       { run: jest.fn() } as never,
+      { track: jest.fn().mockResolvedValue(undefined) } as never,
     );
   }
 
   const active = {
+    planId: new Types.ObjectId(),
     period: {
       start: new Date('2026-08-01T00:00:00.000Z'),
       end: new Date('2026-09-01T00:00:00.000Z'),
@@ -127,5 +161,90 @@ describe('PlatformEntitlementService', () => {
     expect(
       service(active).tehranMonthBucket(new Date('2026-08-31T20:30:00.000Z')),
     ).toBe('2026-09');
+  });
+
+  it('allows soft-limit overage and resolves upgrade plans', async () => {
+    const softSubscription = {
+      ...active,
+      entitlementSnapshot: {
+        ...active.entitlementSnapshot,
+        limits: [{ key: 'staff.active_per_club', value: 2, mode: 'soft' }],
+      },
+    };
+    const svc = service(softSubscription, 2, true, [
+      {
+        _id: upgradePlanId,
+        pricing: { amount: 200 },
+        entitlementContract: {
+          limits: [{ key: 'staff.active_per_club', value: 5, mode: 'hard' }],
+        },
+      },
+    ]);
+    const decision = await svc.evaluate({
+      userId,
+      clubId,
+      key: 'staff.active_per_club',
+      incrementBy: 1,
+    });
+    expect(decision).toMatchObject({
+      allowed: true,
+      reasonCode: 'soft_limit_exceeded',
+      upgradePlanIds: [upgradePlanId.toString()],
+    });
+  });
+
+  it('records a monthly soft-limit exposure event once', async () => {
+    const softSubscription = {
+      ...active,
+      entitlementSnapshot: {
+        ...active.entitlementSnapshot,
+        limits: [{ key: 'staff.active_per_club', value: 1, mode: 'soft' }],
+      },
+    };
+    const events = { track: jest.fn().mockResolvedValue(undefined) };
+    const svc = new PlatformEntitlementService(
+      { findOne: jest.fn().mockResolvedValue(softSubscription) } as never,
+      {
+        countDocuments: jest.fn().mockResolvedValue(1),
+        exists: jest.fn().mockResolvedValue(true),
+      } as never,
+      { countDocuments: jest.fn().mockResolvedValue(1) } as never,
+      { countDocuments: jest.fn().mockResolvedValue(1) } as never,
+      {
+        exists: jest.fn().mockResolvedValue(true),
+        findById: jest.fn().mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            lean: jest.fn().mockResolvedValue({ pricing: { amount: 100 } }),
+          }),
+        }),
+        find: jest.fn().mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            sort: jest.fn().mockReturnValue({
+              lean: jest.fn().mockResolvedValue([]),
+            }),
+          }),
+        }),
+      } as never,
+      { updateOne: jest.fn().mockResolvedValue({ modifiedCount: 1 }) } as never,
+      {
+        aggregate: jest.fn().mockReturnValue({
+          session: jest.fn().mockResolvedValue([{ total: 0 }]),
+        }),
+      } as never,
+      { run: jest.fn() } as never,
+      events as never,
+    );
+    await svc.assertIncrementAllowed({
+      userId,
+      clubId,
+      key: 'staff.active_per_club',
+      incrementBy: 1,
+    });
+    expect(events.track).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventName: 'platform_entitlement_soft_limit',
+        properties: expect.objectContaining({ key: 'staff.active_per_club' }),
+      }),
+    );
   });
 });

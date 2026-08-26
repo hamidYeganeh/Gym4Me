@@ -411,6 +411,8 @@ export enum AnalyticsEventName {
   HEALTH_SYNC_DISCONNECTED = 'health_sync_disconnected',
   PROGRESS_EXPORTED = 'progress_exported',
   PROGRESS_METRICS_DELETED = 'progress_metrics_deleted',
+  PLATFORM_ENTITLEMENT_SOFT_LIMIT = 'platform_entitlement_soft_limit',
+  CHECKIN_OFFLINE_OPS = 'checkin_offline_ops',
 }
 
 /** Lifecycle of a mock-gateway payment session (dev/test only). */

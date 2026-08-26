@@ -2,6 +2,8 @@ const mockReadSamples = jest.fn();
 const mockSyncMetrics = jest.fn();
 const mockUpsertHealthSyncState = jest.fn();
 
+const queueStored = new Map<string, string>();
+
 jest.mock("./health-metrics", () => ({
   loadHealthPlugin: jest.fn(async () => ({
     Capacitor: { isNativePlatform: () => true },
@@ -13,6 +15,21 @@ jest.mock("./health-metrics", () => ({
   normalizePlatform: (value: string) => value,
 }));
 
+jest.mock("./health-sync-queue.storage", () => ({
+  healthSyncQueueStorage: {
+    loadJson: jest.fn(async (userId: string) => queueStored.get(userId) ?? null),
+    saveJson: jest.fn(async (userId: string, value: string) => {
+      queueStored.set(userId, value);
+    }),
+    clearUser: jest.fn(async (userId: string) => {
+      queueStored.delete(userId);
+    }),
+    clearAll: jest.fn(async () => {
+      queueStored.clear();
+    }),
+  },
+}));
+
 jest.mock("@/shared/lib/api", () => ({
   accountProgress: {
     syncMetrics: mockSyncMetrics,
@@ -21,12 +38,20 @@ jest.mock("@/shared/lib/api", () => ({
 }));
 
 import {
+  advanceCursorForAcknowledged,
   authorizedMetricKeysFromAuth,
   flushHealthSamples,
   HEALTH_SYNC_OVERLAP_MS,
   HealthSyncError,
 } from "./health-sync";
+import {
+  __resetHealthSyncQueueMemoryForTests,
+  clearHealthSyncQueue,
+  listHealthSyncQueue,
+} from "./health-sync-queue";
 import type { HealthMetricsAuthorization } from "./health-metrics.types";
+
+const USER = "athlete-health-sync";
 
 function authorization(
   readAuthorized: HealthMetricsAuthorization["readAuthorized"],
@@ -40,8 +65,11 @@ function authorization(
 }
 
 describe("health sync", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks();
+    queueStored.clear();
+    __resetHealthSyncQueueMemoryForTests();
+    await clearHealthSyncQueue(USER);
     mockUpsertHealthSyncState.mockResolvedValue({});
   });
 
@@ -53,7 +81,22 @@ describe("health sync", () => {
     ).toEqual(["steps", "heart_rate_bpm"]);
   });
 
-  it("reads only authorized types using an overlap from the successful cursor", async () => {
+  it("advances cursor only for acknowledged recordedAt values", () => {
+    expect(
+      advanceCursorForAcknowledged({
+        cursorByMetric: { steps: "2026-08-24T10:00:00.000Z" },
+        acknowledged: [
+          { metricKey: "steps", recordedAt: "2026-08-24T10:05:00.000Z" },
+          { metricKey: "heart_rate_bpm", recordedAt: "2026-08-24T09:00:00.000Z" },
+        ],
+      }),
+    ).toEqual({
+      steps: "2026-08-24T10:05:00.000Z",
+      heart_rate_bpm: "2026-08-24T09:00:00.000Z",
+    });
+  });
+
+  it("queues plugin samples then uploads and advances cursor after ack", async () => {
     mockReadSamples.mockResolvedValue({
       samples: [
         {
@@ -75,6 +118,7 @@ describe("health sync", () => {
     });
 
     await flushHealthSamples({
+      userId: USER,
       provider: "apple_health",
       authorization: authorization(["steps"]),
       cursorByMetric: { steps: "2026-08-24T10:00:00.000Z" },
@@ -97,6 +141,7 @@ describe("health sync", () => {
           source: "apple_health",
           sourceRecordId:
             "steps|2026-08-24T09:00:00.000Z|2026-08-24T10:05:00.000Z|watch.bundle|120",
+          clientMutationId: expect.stringMatching(/^health_/),
         }),
       ],
     });
@@ -107,8 +152,10 @@ describe("health sync", () => {
         authorizedMetricKeys: ["steps"],
         cursorByMetric: { steps: "2026-08-24T10:05:00.000Z" },
         lastErrorCode: null,
+        ops: expect.objectContaining({ kind: "queue_flush", queueDepth: 0 }),
       }),
     );
+    expect(await listHealthSyncQueue(USER)).toHaveLength(0);
   });
 
   it("records a provider error without uploading or advancing sync state", async () => {
@@ -116,6 +163,7 @@ describe("health sync", () => {
 
     await expect(
       flushHealthSamples({
+        userId: USER,
         provider: "apple_health",
         authorization: authorization(["steps"]),
         cursorByMetric: { steps: "2026-08-24T10:00:00.000Z" },
@@ -125,34 +173,54 @@ describe("health sync", () => {
     });
 
     expect(mockSyncMetrics).not.toHaveBeenCalled();
-    expect(mockUpsertHealthSyncState).toHaveBeenCalledWith("apple_health", {
-      status: "error",
-      lastErrorCode: "health_sync_read_failed",
-    });
+    expect(mockUpsertHealthSyncState).toHaveBeenCalledWith(
+      "apple_health",
+      expect.objectContaining({
+        status: "error",
+        lastErrorCode: "health_sync_read_failed",
+      }),
+    );
   });
 
-  it("does not advance the cursor when any uploaded sample is rejected", async () => {
+  it("keeps rejected queue items and only advances cursor for acknowledged", async () => {
     mockReadSamples.mockResolvedValue({
       samples: [
         {
           dataType: "steps",
-          value: -1,
+          value: 10,
           unit: "count",
           startDate: "2026-08-24T09:00:00.000Z",
           endDate: "2026-08-24T10:05:00.000Z",
           sourceName: "Watch",
-          sourceId: "watch.bundle",
+          sourceId: "watch.ok",
+        },
+        {
+          dataType: "steps",
+          value: -1,
+          unit: "count",
+          startDate: "2026-08-24T09:10:00.000Z",
+          endDate: "2026-08-24T10:10:00.000Z",
+          sourceName: "Watch",
+          sourceId: "watch.bad",
         },
       ],
     });
-    mockSyncMetrics.mockResolvedValue({
-      accepted: 0,
-      created: 0,
+    mockSyncMetrics.mockImplementation(async ({ entries }) => ({
+      accepted: 1,
+      created: 1,
       deduplicated: 0,
-      rejected: [{ index: 0, reason: "invalid value" }],
-    });
+      rejected: [
+        {
+          index: 1,
+          reason: "invalid value",
+          clientMutationId: entries[1]?.clientMutationId,
+          sourceRecordId: entries[1]?.sourceRecordId,
+        },
+      ],
+    }));
 
     const result = await flushHealthSamples({
+      userId: USER,
       provider: "apple_health",
       authorization: authorization(["steps"]),
       cursorByMetric: { steps: "2026-08-24T10:00:00.000Z" },
@@ -161,17 +229,22 @@ describe("health sync", () => {
     expect(result.rejected).toBe(1);
     expect(mockUpsertHealthSyncState).toHaveBeenLastCalledWith(
       "apple_health",
-      {
+      expect.objectContaining({
         status: "partial",
         lastErrorCode: "health_sync_partial_rejection",
-      },
+        cursorByMetric: { steps: "2026-08-24T10:05:00.000Z" },
+      }),
     );
+    const remaining = await listHealthSyncQueue(USER);
+    expect(remaining).toHaveLength(1);
+    expect(remaining[0]?.status).toBe("rejected_needs_user");
   });
 
   it("advances lastSyncAt after a successful native read with no new samples", async () => {
     mockReadSamples.mockResolvedValue({ samples: [] });
 
     await flushHealthSamples({
+      userId: USER,
       provider: "apple_health",
       authorization: authorization(["steps"]),
       cursorByMetric: { steps: "2026-08-24T10:00:00.000Z" },
@@ -192,6 +265,7 @@ describe("health sync", () => {
   it("refuses to sync when the user granted no read scope", async () => {
     await expect(
       flushHealthSamples({
+        userId: USER,
         provider: "apple_health",
         authorization: authorization([]),
       }),
@@ -201,5 +275,40 @@ describe("health sync", () => {
 
     expect(mockReadSamples).not.toHaveBeenCalled();
     expect(mockSyncMetrics).not.toHaveBeenCalled();
+  });
+
+  it("keeps samples in the queue when upload fails so reconnect can flush", async () => {
+    mockReadSamples.mockResolvedValue({
+      samples: [
+        {
+          dataType: "steps",
+          value: 50,
+          unit: "count",
+          startDate: "2026-08-24T09:00:00.000Z",
+          endDate: "2026-08-24T10:00:00.000Z",
+          sourceName: "Watch",
+          sourceId: "watch.offline",
+        },
+      ],
+    });
+    mockSyncMetrics.mockRejectedValue(new TypeError("Failed to fetch"));
+
+    const result = await flushHealthSamples({
+      userId: USER,
+      provider: "apple_health",
+      authorization: authorization(["steps"]),
+    });
+
+    expect(result.queue.pending + result.queue.retryable + result.queue.poison).toBeGreaterThan(
+      0,
+    );
+    expect(await listHealthSyncQueue(USER)).toHaveLength(1);
+    expect(mockUpsertHealthSyncState).toHaveBeenLastCalledWith(
+      "apple_health",
+      expect.objectContaining({
+        status: "error",
+        lastErrorCode: "health_sync_queue_pending",
+      }),
+    );
   });
 });

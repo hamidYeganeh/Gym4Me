@@ -216,9 +216,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { revokeCurrentDeviceToken } = await import("@/shared/lib/push");
     await revokeCurrentDeviceToken();
 
-    // Never leak offline metric queue across accounts.
+    // Never leak offline metric / health queues across accounts.
     const { clearOfflineQueue } = await import("@/shared/lib/offline-queue");
     await clearOfflineQueue();
+    const { clearAllHealthSyncQueues } = await import(
+      "@/shared/lib/health/health-sync-queue"
+    );
+    await clearAllHealthSyncQueues();
     const { clearWorkoutPlanCache } = await import(
       "@/shared/lib/workout-plan-cache"
     );

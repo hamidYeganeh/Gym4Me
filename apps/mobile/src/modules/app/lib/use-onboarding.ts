@@ -61,6 +61,7 @@ import type { OnboardingGoalOption } from "@/modules/app/sections/OnboardingGoal
 import type { OnboardingSportOption } from "@/modules/app/sections/OnboardingSportsSection";
 import {
   accountProfile,
+  basicsChoices,
   basicsSports,
   mediaApi,
   mediaFileUrl,
@@ -202,7 +203,9 @@ export function useOnboarding() {
     setDietStatus("loading");
     void (async () => {
       try {
-        const groups = await loadChoiceGroups();
+        const groups = await loadChoiceGroups({
+          requireKeys: ["athlete_goal", "athlete_level", "athlete_diet"],
+        });
         if (cancelled) return;
         const byKey = new Map(groups.map((group) => [group.value, group]));
 
@@ -220,7 +223,14 @@ export function useOnboarding() {
           if (nextGender.length > 0) setApiGenderOptions(nextGender);
         }
 
-        const goals = byKey.get("athlete_goal");
+        let goals = byKey.get("athlete_goal");
+        if (!goals) {
+          try {
+            goals = await basicsChoices.get("athlete_goal");
+          } catch {
+            goals = undefined;
+          }
+        }
         if (goals) {
           const nextGoals = goals.options
             .filter((option) => option.isActive !== false)
@@ -234,7 +244,7 @@ export function useOnboarding() {
           setGoals((current) =>
             current.filter((id) => nextGoals.some((option) => option.id === id)),
           );
-          setGoalsStatus("ready");
+          setGoalsStatus(nextGoals.length > 0 ? "ready" : "error");
         } else {
           setGoalOptions([]);
           setGoalsStatus("error");

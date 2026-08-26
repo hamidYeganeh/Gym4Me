@@ -56,6 +56,7 @@ type LeanFeatureFlag = {
   defaultVariant?: string;
   payload?: Record<string, unknown>;
   description?: string;
+  exposureEndsAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;
 };
@@ -87,6 +88,7 @@ export class AppConfigService {
   async bootstrap(query: MobileBootstrapQueryDto) {
     await this.ensureDefaultFlags();
     const channel = query.channel ?? 'production';
+    const now = new Date();
     const [flags, policy] = await Promise.all([
       this.featureFlagModel
         .find({
@@ -96,6 +98,15 @@ export class AppConfigService {
           ],
           platforms: query.platform,
           channels: channel,
+          $and: [
+            {
+              $or: [
+                { exposureEndsAt: { $exists: false } },
+                { exposureEndsAt: null },
+                { exposureEndsAt: { $gt: now } },
+              ],
+            },
+          ],
         })
         .sort({ key: 1 })
         .lean<LeanFeatureFlag[]>(),
@@ -179,7 +190,7 @@ export class AppConfigService {
     const before = await this.featureFlagModel
       .findOne({ key })
       .lean<LeanFeatureFlag | null>();
-    const { reason, ...fields } = dto;
+    const { reason, exposureEndsAt, ...fields } = dto;
     const item = await this.featureFlagModel.findOneAndUpdate(
       { key },
       {
@@ -191,8 +202,12 @@ export class AppConfigService {
           defaultVariant: fields.defaultVariant?.trim() || undefined,
           rules: fields.rules ?? [],
           payload: fields.payload ?? {},
+          exposureEndsAt: exposureEndsAt ? new Date(exposureEndsAt) : undefined,
         },
-        $unset: { enabled: 1 },
+        $unset: {
+          enabled: 1,
+          ...(exposureEndsAt ? {} : { exposureEndsAt: 1 }),
+        },
         $setOnInsert: { key },
       },
       { upsert: true, new: true, runValidators: true },
@@ -272,6 +287,35 @@ export class AppConfigService {
       },
     });
     return this.serializeReleasePolicy(after);
+  }
+
+  async archiveExpiredFeatureFlags(adminId: string, reason: string) {
+    const now = new Date();
+    const expired = await this.featureFlagModel
+      .find({
+        status: 'active',
+        exposureEndsAt: { $lte: now },
+      })
+      .lean<LeanFeatureFlag[]>();
+    if (expired.length === 0) {
+      return { archived: 0, keys: [] as string[] };
+    }
+    const keys = expired.map((flag) => flag.key);
+    await this.featureFlagModel.updateMany(
+      { key: { $in: keys } },
+      { $set: { status: 'archived' } },
+    );
+    this.audit.log({
+      action: AuditAction.APP_CONFIG_UPDATED,
+      actorId: adminId,
+      metadata: {
+        kind: 'feature_flag_cleanup',
+        keys,
+        reason: reason.trim(),
+        exposureEndsAtBefore: now.toISOString(),
+      },
+    });
+    return { archived: keys.length, keys };
   }
 
   private resolveFlagEvaluation(
@@ -354,6 +398,7 @@ export class AppConfigService {
       defaultVariant: item.defaultVariant ?? null,
       payload: item.payload ?? {},
       description: item.description ?? null,
+      exposureEndsAt: toIso(item.exposureEndsAt),
       createdAt: toIso(item.createdAt),
       updatedAt: toIso(item.updatedAt),
     };

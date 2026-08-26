@@ -9,8 +9,11 @@ import {
   disconnectHealthProvider,
   flushHealthSamples,
   resolveHealthProvider,
+  retryPoisonHealthSyncItems,
+  summarizeHealthSyncQueue,
   upsertConnectedHealthState,
   useHealthMetricsConnect,
+  type HealthSyncQueueSummary,
 } from "@/shared/lib/health";
 import { accountProgress } from "@/shared/lib/api";
 import { useFeatureFlag } from "@/shared/providers/AppConfigProvider";
@@ -18,22 +21,35 @@ import { useAuth } from "@/shared/providers/AuthProvider";
 import { AthleteHealthSyncScreen } from "../screens/AthleteHealthSyncScreen";
 
 export function AthleteHealthSyncGate() {
-  const { isAuthenticated, isReady } = useAuth();
+  const { isAuthenticated, isReady, user } = useAuth();
+  const userId = user?.id ?? null;
   const deviceSyncEnabled = useFeatureFlag("health.device_sync");
   const health = useHealthMetricsConnect();
   const [syncStates, setSyncStates] = useState<HealthSyncState[] | null>(null);
+  const [queueSummary, setQueueSummary] =
+    useState<HealthSyncQueueSummary | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [lastFlushSummary, setLastFlushSummary] = useState<string | null>(null);
 
+  const loadQueue = useCallback(async () => {
+    if (!userId) {
+      setQueueSummary(null);
+      return;
+    }
+    setQueueSummary(await summarizeHealthSyncQueue(userId));
+  }, [userId]);
+
   const load = useCallback(async () => {
     if (!isAuthenticated) {
       setSyncStates([]);
+      setQueueSummary(null);
       return;
     }
     try {
       const result = await accountProgress.listHealthSyncStates();
       setSyncStates(result.items);
+      await loadQueue();
       setLoadError(null);
     } catch (error) {
       setLoadError(
@@ -41,7 +57,7 @@ export function AthleteHealthSyncGate() {
       );
       throw error;
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, loadQueue]);
 
   useEffect(() => {
     if (!isReady || !deviceSyncEnabled) return;
@@ -92,6 +108,10 @@ export function AthleteHealthSyncGate() {
       connectStatus={health.status}
       lastFlushSummary={lastFlushSummary}
       onConnect={async () => {
+        if (!userId) {
+          setLastFlushSummary("برای اتصال باید وارد حساب شوید.");
+          return;
+        }
         setPending(true);
         setLastFlushSummary(null);
         try {
@@ -102,6 +122,7 @@ export function AthleteHealthSyncGate() {
               await upsertConnectedHealthState({
                 provider,
                 authorization: result.authorization,
+                userId,
               });
               await load();
               setLastFlushSummary("مجوز ثبت و وضعیت اتصال به‌روز شد.");
@@ -120,10 +141,12 @@ export function AthleteHealthSyncGate() {
       onDisconnect={async (provider: HealthSyncProvider) => {
         setPending(true);
         try {
-          await disconnectHealthProvider(provider);
+          await disconnectHealthProvider(provider, {
+            userId: userId ?? undefined,
+          });
           await load();
           setLastFlushSummary(
-            "اتصال قطع شد؛ نمونه‌های قبلی حذف نشدند.",
+            "اتصال قطع شد؛ صف ارسال‌نشده پاک شد و نمونه‌های قبلی روی سرور حذف نشدند.",
           );
         } finally {
           setPending(false);
@@ -136,10 +159,50 @@ export function AthleteHealthSyncGate() {
             }
           : undefined
       }
+      onRecoverQueue={async () => {
+        if (!userId) return;
+        setPending(true);
+        try {
+          const recovered = await retryPoisonHealthSyncItems({ userId });
+          const provider = resolveHealthProvider(health.platform);
+          if (provider && health.authorization && health.isConnected) {
+            const currentState = syncStates.find(
+              (state) => state.provider === provider,
+            );
+            const flush = await flushHealthSamples({
+              userId,
+              provider,
+              authorization: health.authorization,
+              cursorByMetric: currentState?.cursorByMetric,
+            });
+            await load();
+            setLastFlushSummary(
+              `بازیابی ${recovered} مورد · صف باقی‌مانده ${flush.queue.pending}`,
+            );
+            return;
+          }
+          await loadQueue();
+          setLastFlushSummary(
+            recovered > 0
+              ? `${recovered} مورد برای تلاش دوباره آماده شد.`
+              : "موردی برای بازیابی نبود.",
+          );
+        } catch (error) {
+          setLastFlushSummary(
+            error instanceof Error ? error.message : "بازیابی صف ناموفق بود.",
+          );
+        } finally {
+          setPending(false);
+        }
+      }}
       onSync={async () => {
         setPending(true);
         setLastFlushSummary(null);
         try {
+          if (!userId) {
+            setLastFlushSummary("برای همگام‌سازی باید وارد حساب شوید.");
+            return;
+          }
           const provider = resolveHealthProvider(health.platform);
           if (!provider || !health.authorization || !health.isConnected) {
             setLastFlushSummary(
@@ -151,6 +214,7 @@ export function AthleteHealthSyncGate() {
             (state) => state.provider === provider,
           );
           const flush = await flushHealthSamples({
+            userId,
             provider,
             authorization: health.authorization,
             cursorByMetric: currentState?.cursorByMetric,
@@ -158,7 +222,13 @@ export function AthleteHealthSyncGate() {
           await load();
           if (flush.rejected > 0) {
             setLastFlushSummary(
-              `${flush.sampleCount} نمونه خوانده شد؛ ${flush.rejected} نمونه پذیرفته نشد و نشانگر همگام‌سازی جلو نرفت.`,
+              `${flush.sampleCount} نمونه خوانده شد؛ ${flush.rejected} مورد رد شد. موارد پذیرفته‌شده از صف حذف شدند.`,
+            );
+            return;
+          }
+          if (flush.queue.pending > 0 || flush.queue.retryable > 0) {
+            setLastFlushSummary(
+              `${flush.created} ذخیره شد · ${flush.queue.pending} در صف برای تلاش دوباره.`,
             );
             return;
           }
@@ -175,6 +245,7 @@ export function AthleteHealthSyncGate() {
       }}
       pending={pending}
       platform={health.platform}
+      queueSummary={queueSummary}
       syncStates={syncStates}
     />
   );

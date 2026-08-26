@@ -51,6 +51,22 @@ export type OfflineCheckInItemInput = {
 export type SyncOfflineBatchInput = {
   snapshotToken: string;
   items: OfflineCheckInItemInput[];
+  ops?: CheckinOfflineOpsTelemetry;
+};
+
+export type CheckinOfflineOpsTelemetry = {
+  kind?:
+    | "snapshot_issued"
+    | "sync_batch"
+    | "replay"
+    | "review"
+    | "reject"
+    | "retry"
+    | "revoke"
+    | "clock_skew";
+  queueDepth?: number;
+  syncLatencyMs?: number;
+  retryCount?: number;
 };
 
 export type SyncOfflineBatchItemResult = {

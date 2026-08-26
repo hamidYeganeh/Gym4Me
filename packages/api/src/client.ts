@@ -233,6 +233,8 @@ export class ApiClient {
       headers,
       body,
       signal: options.signal,
+      // Avoid browser HTTP cache of GETs (API may send long max-age on catalogs).
+      cache: "no-store",
     });
   }
 

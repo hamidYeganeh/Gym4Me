@@ -27,6 +27,7 @@ function createService(config: Record<string, string>) {
     {} as CheckinService,
     {} as MongoTransactionService,
     {} as AuditService,
+    { track: jest.fn().mockResolvedValue(undefined) } as never,
     new ConfigService(config),
   );
 }
@@ -176,6 +177,7 @@ describe('OfflineCheckinService reconciliation resolution', () => {
       checkin,
       {} as MongoTransactionService,
       audit,
+      { track: jest.fn().mockResolvedValue(undefined) } as never,
       new ConfigService({
         NODE_ENV: 'test',
         OFFLINE_CHECKIN_SIGNING_SECRET:

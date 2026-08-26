@@ -5097,6 +5097,8 @@
     ,"unlimited": "نامحدود"
     ,"allowed": "مجاز"
     ,"limitReached": "سقف پر شده"
+    ,"softLimitExceeded": "از سقف توصیه‌شده عبور کرده‌اید"
+    ,"upgradeAvailable": "طرح‌های بالاتر برای افزایش سقف در دسترس است."
     ,"periodEnd": "پایان دوره: {date}"
     ,"graceEnd": "پایان مهلت تنفس: {date}"
     ,"scheduledChange": "تغییر طرح در {date} اعمال می‌شود."
@@ -5115,11 +5117,21 @@
       "missing": "اشتراک فعالی وجود ندارد."
     }
     ,"limit": {
-      "clubs.active": "باشگاه‌های فعال",
-      "staff.active_per_club": "کارکنان فعال هر باشگاه",
-      "members.active_per_club": "اعضای فعال هر باشگاه",
-      "monthly_messages.transactional": "پیام‌های ماهانه",
-      "students.active": "شاگردان فعال"
+      "clubs": {
+        "active": "باشگاه‌های فعال"
+      },
+      "staff": {
+        "active_per_club": "کارکنان فعال هر باشگاه"
+      },
+      "members": {
+        "active_per_club": "اعضای فعال هر باشگاه"
+      },
+      "monthly_messages": {
+        "transactional": "پیام‌های ماهانه"
+      },
+      "students": {
+        "active": "شاگردان فعال"
+      }
     }
   },
   "AthleteDisputes": {
@@ -5783,6 +5795,12 @@
     "alreadyQueued": "این کد از قبل در صف همگام‌سازی است.",
     "offlineNotEligible": "این کد در آخرین فهرست امن پذیرش نبود؛ پس از اتصال دوباره تلاش کن.",
     "queuePending": "{count, plural, one {یک حضور در انتظار همگام‌سازی است} other {# حضور در انتظار همگام‌سازی است}}",
+    "recoveryTitle": "بازیابی صف آفلاین",
+    "recoveryStaleSnapshot": "فهرست امن آفلاین منقضی شده است. برای ادامه، صف را پاک کن و فهرست تازه دریافت کن.",
+    "recoveryCorruptState": "دادهٔ محلی آفلاین خراب است. صف را پاک کن و دوباره تلاش کن.",
+    "recoveryRevokedDevice": "دستگاه پذیرش لغو شده است. صف محلی پاک شد؛ دستگاه را دوباره فعال کن.",
+    "recoveryAction": "پاک‌سازی و دریافت فهرست تازه",
+    "recoveryDone": "صف آفلاین پاک شد. فهرست امن تازه آماده است.",
     "reviewTitle": "بررسی حضورهای آفلاین",
     "reviewHint": "موارد ناموفق را با وضعیت اصلی رزرو یا عضویت تطبیق بده. رد کردن، هیچ حضور یا مصرف اعتباری ایجاد نمی‌کند.",
     "reviewEmpty": "موردی برای بررسی وجود ندارد.",

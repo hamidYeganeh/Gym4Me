@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { HealthSyncProvider, HealthSyncStatus } from '../common/enums';
 import { validate } from 'class-validator';
-import { UpsertHealthSyncStateDto } from './dto/progress.dto';
+import { UpsertHealthSyncStateDto, HealthSyncOpsTelemetryDto } from './dto/progress.dto';
 import { buildHealthSyncStateUpdate } from './health-sync-state-update';
 
 const userId = '665f0a1b2c3d4e5f67890101';
@@ -105,5 +105,29 @@ describe('buildHealthSyncStateUpdate', () => {
         expect.objectContaining({ property: 'authorizedMetricKeys' }),
       ]),
     );
+  });
+
+  it('accepts ops telemetry without persisting it into the state update', async () => {
+    const ops = Object.assign(new HealthSyncOpsTelemetryDto(), {
+      kind: 'queue_flush' as const,
+      queueDepth: 2,
+      syncLatencyMs: 120,
+      rejectedReasons: ['health_sync_metric_scope_not_authorized'],
+    });
+    const dto = Object.assign(new UpsertHealthSyncStateDto(), {
+      status: HealthSyncStatus.SYNCED,
+      ops,
+    });
+
+    expect(await validate(dto)).toEqual([]);
+
+    const update = buildHealthSyncStateUpdate({
+      provider: HealthSyncProvider.APPLE_HEALTH,
+      userId,
+      dto,
+    });
+
+    expect(JSON.stringify(update)).not.toContain('queueDepth');
+    expect(JSON.stringify(update)).not.toContain('rejectedReasons');
   });
 });

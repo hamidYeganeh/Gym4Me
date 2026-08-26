@@ -84,6 +84,10 @@ export class FeatureFlag {
   @Prop({ trim: true, maxlength: 500 })
   description?: string;
 
+  /** When set, bootstrap stops exposing this flag after the timestamp. */
+  @Prop({ type: Date, index: true })
+  exposureEndsAt?: Date;
+
   /** Legacy dual-read only — prefer `status`. */
   enabled?: boolean;
 

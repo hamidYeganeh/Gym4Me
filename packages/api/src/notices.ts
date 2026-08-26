@@ -113,7 +113,7 @@ function fromExactOrPattern(
 ): Pick<ApiNotice, "messageKey" | "params"> {
   // New API responses return next-intl keys directly. Keep the legacy literal
   // catalog below for rolling deployments and older endpoints.
-  if (/^(?:errors|success|exact|patterns)\.[a-zA-Z0-9.]+$/.test(text)) {
+  if (/^(?:errors|success|exact|patterns|platform_subscription)\.[a-zA-Z0-9_.]+$/.test(text)) {
     return { messageKey: text };
   }
   const exact = EXACT_API_MESSAGES[normalize(text)];

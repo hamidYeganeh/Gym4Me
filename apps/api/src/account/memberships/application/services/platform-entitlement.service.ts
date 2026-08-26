@@ -1,10 +1,13 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ClientSession, Model, Types } from 'mongoose';
+import { EventWriterService } from '../../../../analytics/event-writer.service';
 import { MongoTransactionService } from '../../../../common/mongo/mongo-transaction.service';
 import {
+  AnalyticsEventName,
   ClubLifecycleStatus,
   ClubStaffStatus,
+  EntityStatus,
   MembershipStatus,
   PlatformSubscriptionStatus,
 } from '../../../../common/enums';
@@ -37,18 +40,25 @@ import {
 } from '../../../../schemas/platform-entitlement-usage.schema';
 
 export type PlatformEntitlementState =
-  'active' | 'grace' | 'read_only' | 'legacy_unlimited' | 'missing';
+  | 'active'
+  | 'grace'
+  | 'read_only'
+  | 'legacy_unlimited'
+  | 'missing';
+
+export type PlatformEntitlementReasonCode =
+  | 'allowed'
+  | 'legacy_unlimited'
+  | 'subscription_required'
+  | 'subscription_grace_read_only'
+  | 'subscription_expired'
+  | 'entitlement_not_included'
+  | 'entitlement_limit_reached'
+  | 'soft_limit_exceeded';
 
 export type PlatformEntitlementDecision = {
   allowed: boolean;
-  reasonCode:
-    | 'allowed'
-    | 'legacy_unlimited'
-    | 'subscription_required'
-    | 'subscription_grace_read_only'
-    | 'subscription_expired'
-    | 'entitlement_not_included'
-    | 'entitlement_limit_reached';
+  reasonCode: PlatformEntitlementReasonCode;
   usage: number | null;
   limit: number | null;
   state: PlatformEntitlementState;
@@ -75,6 +85,7 @@ export class PlatformEntitlementService {
     @InjectModel(PlatformEntitlementUsage.name)
     private readonly usageFacts: Model<PlatformEntitlementUsageDocument>,
     private readonly transactions: MongoTransactionService,
+    private readonly events: EventWriterService,
   ) {}
 
   async evaluate(input: {
@@ -118,7 +129,11 @@ export class PlatformEntitlementService {
           upgradePlanIds: [],
         };
       }
-      return this.denied('subscription_required', 'missing');
+      return this.denied('subscription_required', 'missing', undefined, {
+        userId: input.userId,
+        key: input.key,
+        session: input.session,
+      });
     }
 
     const state = this.resolveState(subscription, now);
@@ -134,17 +149,32 @@ export class PlatformEntitlementService {
       };
     }
     if (state === 'grace') {
-      return this.denied('subscription_grace_read_only', state);
+      return this.denied('subscription_grace_read_only', state, undefined, {
+        userId: input.userId,
+        key: input.key,
+        subscription,
+        session: input.session,
+      });
     }
     if (state === 'read_only') {
-      return this.denied('subscription_expired', state);
+      return this.denied('subscription_expired', state, undefined, {
+        userId: input.userId,
+        key: input.key,
+        subscription,
+        session: input.session,
+      });
     }
 
     const configured = subscription.entitlementSnapshot.limits.find(
       (limit) => limit.key === input.key,
     );
     if (!configured) {
-      return this.denied('entitlement_not_included', state);
+      return this.denied('entitlement_not_included', state, undefined, {
+        userId: input.userId,
+        key: input.key,
+        subscription,
+        session: input.session,
+      });
     }
     const usage = await this.usage(
       input.userId,
@@ -154,18 +184,34 @@ export class PlatformEntitlementService {
       now,
     );
     const incrementBy = input.incrementBy ?? 1;
-    const allowed =
-      configured.value === null ||
-      configured.mode === 'soft' ||
-      usage + incrementBy <= configured.value;
+    const projected = usage + incrementBy;
+    const hardBlocked =
+      configured.value !== null &&
+      configured.mode === 'hard' &&
+      projected > configured.value;
+    const softExceeded =
+      configured.value !== null &&
+      configured.mode === 'soft' &&
+      projected > configured.value;
+    const allowed = configured.value === null || configured.mode === 'soft' || projected <= configured.value;
+    const upgradePlanIds = await this.resolveUpgradePlanIds({
+      userId: input.userId,
+      key: input.key,
+      subscription,
+      session: input.session,
+    });
     return {
       allowed,
-      reasonCode: allowed ? 'allowed' : 'entitlement_limit_reached',
+      reasonCode: hardBlocked
+        ? 'entitlement_limit_reached'
+        : softExceeded
+          ? 'soft_limit_exceeded'
+          : 'allowed',
       usage,
       limit: configured.value,
       state,
       mode: configured.mode,
-      upgradePlanIds: [],
+      upgradePlanIds,
     };
   }
 
@@ -190,35 +236,62 @@ export class PlatformEntitlementService {
         graceEndsAt: null,
         scheduledPlanId: null,
         limits: [],
+        upgradePlanIds: [],
       };
     }
     const now = new Date();
     const state = subscription.entitlementSnapshot
       ? this.resolveState(subscription, now)
       : ('legacy_unlimited' as const);
+    const upgradePlanIds = await this.resolveUpgradePlanIds({
+      userId,
+      key: 'clubs.active',
+      subscription,
+    });
     const limits = await Promise.all(
       (subscription.entitlementSnapshot?.limits ?? []).map(async (limit) => {
         const requiresClub =
           limit.key === 'staff.active_per_club' ||
-          limit.key === 'members.active_per_club';
+          limit.key === 'members.active_per_club' ||
+          limit.key === 'monthly_messages.transactional';
         const usage =
           requiresClub && !clubId
             ? null
             : await this.usage(userId, limit.key, clubId);
+        const reasonCode = this.summaryLimitReasonCode(state, limit, usage);
+        const allowed =
+          state === 'active' &&
+          (limit.value === null ||
+            limit.mode === 'soft' ||
+            usage === null ||
+            usage < limit.value);
         return {
           key: limit.key,
           value: limit.value,
           mode: limit.mode,
           usage,
-          allowed:
-            state === 'active' &&
-            (limit.value === null ||
-              limit.mode === 'soft' ||
-              usage === null ||
-              usage < limit.value),
+          allowed,
+          reasonCode,
         };
       }),
     );
+    const limitUpgradePlanIds =
+      limits.some(
+        (limit) =>
+          limit.reasonCode === 'entitlement_limit_reached' ||
+          limit.reasonCode === 'soft_limit_exceeded',
+      )
+        ? await this.resolveUpgradePlanIds({
+            userId,
+            key:
+              limits.find(
+                (limit) =>
+                  limit.reasonCode === 'entitlement_limit_reached' ||
+                  limit.reasonCode === 'soft_limit_exceeded',
+              )?.key ?? 'clubs.active',
+            subscription,
+          })
+        : upgradePlanIds;
     return {
       subscriptionId: subscription._id.toString(),
       planId: subscription.planId.toString(),
@@ -229,6 +302,7 @@ export class PlatformEntitlementService {
       scheduledPlanEffectiveAt: subscription.scheduledPlanEffectiveAt ?? null,
       cancellationRequestedAt: subscription.cancellationRequestedAt ?? null,
       limits,
+      upgradePlanIds: limitUpgradePlanIds,
     };
   }
 
@@ -247,6 +321,7 @@ export class PlatformEntitlementService {
         entitlement: decision,
       });
     }
+    await this.recordSoftLimitExposureIfNeeded(input, decision);
     return decision;
   }
 
@@ -307,6 +382,110 @@ export class PlatformEntitlementService {
       );
       return { idempotent: false };
     });
+  }
+
+  private async recordSoftLimitExposureIfNeeded(
+    input: {
+      userId: string;
+      key: PlatformEntitlementKey;
+      clubId?: string;
+      incrementBy?: number;
+    },
+    decision: PlatformEntitlementDecision,
+  ) {
+    if (
+      decision.reasonCode !== 'soft_limit_exceeded' ||
+      decision.limit === null ||
+      decision.usage === null
+    ) {
+      return;
+    }
+    const scope = input.clubId ?? 'global';
+    const bucket = this.tehranMonthBucket(new Date());
+    await this.events.track({
+      eventId: `platform_soft_limit:${input.userId}:${input.key}:${scope}:${bucket}`,
+      eventName: AnalyticsEventName.PLATFORM_ENTITLEMENT_SOFT_LIMIT,
+      actor: { userId: input.userId },
+      context: input.clubId ? { clubId: input.clubId } : undefined,
+      properties: {
+        key: input.key,
+        usage: decision.usage,
+        limit: decision.limit,
+        incrementBy: input.incrementBy ?? 1,
+        upgradePlanIds: decision.upgradePlanIds,
+      },
+    });
+  }
+
+  private summaryLimitReasonCode(
+    state: PlatformEntitlementState,
+    limit: PlatformEntitlementLimit,
+    usage: number | null,
+  ): PlatformEntitlementReasonCode {
+    if (state === 'grace') return 'subscription_grace_read_only';
+    if (state === 'read_only') return 'subscription_expired';
+    if (state === 'missing') return 'subscription_required';
+    if (limit.value === null || usage === null) return 'allowed';
+    if (usage >= limit.value && limit.mode === 'hard') {
+      return 'entitlement_limit_reached';
+    }
+    if (usage >= limit.value && limit.mode === 'soft') {
+      return 'soft_limit_exceeded';
+    }
+    return 'allowed';
+  }
+
+  private async resolveUpgradePlanIds(input: {
+    userId: string;
+    key: PlatformEntitlementKey;
+    subscription?: PlatformSubscriptionDocument | null;
+    session?: ClientSession;
+  }): Promise<string[]> {
+    const audience = input.key === 'students.active' ? 'coach' : 'club_owner';
+    let currentAmount = 0;
+    const currentPlanId = input.subscription?.planId?.toString();
+    if (currentPlanId) {
+      const currentPlanQuery = this.plans
+        .findById(currentPlanId)
+        .select('pricing.amount');
+      if (input.session) currentPlanQuery.session(input.session);
+      const currentPlan = await currentPlanQuery.lean<{ pricing?: { amount?: number } }>();
+      currentAmount = currentPlan?.pricing?.amount ?? 0;
+    }
+
+    const plansQuery = this.plans
+      .find({
+        contractReady: true,
+        status: EntityStatus.ACTIVE,
+        'entitlementContract.audience': audience,
+        'pricing.amount': { $gt: currentAmount },
+      })
+      .select('_id pricing entitlementContract')
+      .sort({ 'pricing.amount': 1 });
+    if (input.session) plansQuery.session(input.session);
+    const candidates = await plansQuery.lean<
+      Array<{
+        _id: Types.ObjectId;
+        entitlementContract?: { limits?: PlatformEntitlementLimit[] };
+      }>
+    >();
+
+    const currentLimit = input.subscription?.entitlementSnapshot?.limits.find(
+      (entry) => entry.key === input.key,
+    );
+
+    return candidates
+      .filter((plan) => {
+        const candidateLimit = plan.entitlementContract?.limits?.find(
+          (entry) => entry.key === input.key,
+        );
+        if (!candidateLimit) return false;
+        if (candidateLimit.value === null) return true;
+        if (currentLimit?.value === null) return false;
+        if (currentLimit?.value === undefined) return true;
+        return candidateLimit.value > currentLimit.value;
+      })
+      .map((plan) => plan._id.toString());
   }
 
   private resolveState(
@@ -403,11 +582,23 @@ export class PlatformEntitlementService {
     return `${value.year}-${value.month}`;
   }
 
-  private denied(
-    reasonCode: PlatformEntitlementDecision['reasonCode'],
+  private async denied(
+    reasonCode: Exclude<
+      PlatformEntitlementReasonCode,
+      'allowed' | 'legacy_unlimited' | 'soft_limit_exceeded'
+    >,
     state: PlatformEntitlementState,
     limit?: PlatformEntitlementLimit,
-  ): PlatformEntitlementDecision {
+    upgradeContext?: {
+      userId: string;
+      key: PlatformEntitlementKey;
+      subscription?: PlatformSubscriptionDocument | null;
+      session?: ClientSession;
+    },
+  ): Promise<PlatformEntitlementDecision> {
+    const upgradePlanIds = upgradeContext
+      ? await this.resolveUpgradePlanIds(upgradeContext)
+      : [];
     return {
       allowed: false,
       reasonCode,
@@ -415,7 +606,7 @@ export class PlatformEntitlementService {
       limit: limit?.value ?? null,
       state,
       mode: limit?.mode ?? null,
-      upgradePlanIds: [],
+      upgradePlanIds,
     };
   }
 }

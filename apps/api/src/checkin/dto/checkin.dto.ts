@@ -5,6 +5,7 @@ import {
   IsArray,
   IsDateString,
   IsEnum,
+  IsIn,
   IsInt,
   IsMongoId,
   IsOptional,
@@ -104,6 +105,53 @@ export class SyncOfflineBatchDto {
   @ValidateNested({ each: true })
   @Type(() => OfflineCheckInItemDto)
   items!: OfflineCheckInItemDto[];
+
+  /** Client ops counters only — never booking codes, secrets, or raw payloads. */
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CheckinOfflineOpsTelemetryDto)
+  ops?: CheckinOfflineOpsTelemetryDto;
+}
+
+export class CheckinOfflineOpsTelemetryDto {
+  @IsOptional()
+  @IsIn([
+    'snapshot_issued',
+    'sync_batch',
+    'replay',
+    'review',
+    'reject',
+    'retry',
+    'revoke',
+    'clock_skew',
+  ])
+  kind?:
+    | 'snapshot_issued'
+    | 'sync_batch'
+    | 'replay'
+    | 'review'
+    | 'reject'
+    | 'retry'
+    | 'revoke'
+    | 'clock_skew';
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(100)
+  queueDepth?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(3_600_000)
+  syncLatencyMs?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(100)
+  retryCount?: number;
 }
 
 export class IssueOfflineSnapshotDto {

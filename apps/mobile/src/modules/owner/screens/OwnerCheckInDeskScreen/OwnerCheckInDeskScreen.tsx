@@ -44,6 +44,9 @@ export function OwnerCheckInDeskScreen({
   reconciliationsLoading = false,
   resolutionPendingId,
   onResolve,
+  queueSummary,
+  onRecoverQueue,
+  recoveryPending = false,
   className,
 }: OwnerCheckInDeskScreenProps) {
   const t = useTranslations("OwnerCheckInDesk");
@@ -114,6 +117,31 @@ export function OwnerCheckInDeskScreen({
           <Typography className={styles.danger()} type="body-sm">
             {error}
           </Typography>
+        ) : null}
+
+        {queueSummary?.needsRecovery ? (
+          <section className={styles.section()}>
+            <Typography type="h4" weight="semibold">
+              {t("recoveryTitle")}
+            </Typography>
+            <Typography className="mt-2 text-warning" type="body-sm">
+              {queueSummary.recoveryReason === "corrupt_state"
+                ? t("recoveryCorruptState")
+                : queueSummary.recoveryReason === "revoked_device"
+                  ? t("recoveryRevokedDevice")
+                  : t("recoveryStaleSnapshot")}
+            </Typography>
+            {onRecoverQueue ? (
+              <Button
+                className="mt-3"
+                isDisabled={recoveryPending}
+                onPress={() => void onRecoverQueue()}
+                variant="secondary"
+              >
+                {t("recoveryAction")}
+              </Button>
+            ) : null}
+          </section>
         ) : null}
 
         <section aria-labelledby="offline-review-title" className={styles.section()}>

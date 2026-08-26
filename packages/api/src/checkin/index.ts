@@ -23,5 +23,6 @@ export type {
   SyncOfflineBatchInput,
   SyncOfflineBatchItemResult,
   SyncOfflineBatchResult,
+  CheckinOfflineOpsTelemetry,
 } from "./checkin.dto";
 export { accountCheckinKeys } from "./checkin.keys";

@@ -20,6 +20,7 @@ import type {
   PlatformPlansResponse,
   PlatformSubscriptionsResponse,
   PreviewPlatformSubscriptionCheckoutInput,
+  PlatformEntitlementSummary,
   SelfPurchaseMembershipInput,
   SubscribePlatformInput,
   VerifyPlatformSubscriptionCheckoutInput,
@@ -118,6 +119,21 @@ export function useMyPlatformSubscriptions(
   return useQuery({
     queryKey: accountMembershipsKeys.platformSubscriptions(),
     queryFn: () => api.listPlatformSubscriptions(),
+    ...options,
+  });
+}
+
+export function usePlatformEntitlements(
+  clubId?: string,
+  options?: Omit<
+    UseQueryOptions<PlatformEntitlementSummary, Error>,
+    "queryKey" | "queryFn"
+  >,
+) {
+  const api = useAccountMembershipsApi();
+  return useQuery({
+    queryKey: accountMembershipsKeys.platformEntitlements(clubId),
+    queryFn: () => api.getPlatformEntitlements(clubId),
     ...options,
   });
 }

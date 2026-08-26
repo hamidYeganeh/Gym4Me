@@ -1,10 +1,15 @@
 import { accountCheckin } from "@/shared/lib/api";
+import { ApiError } from "@repo/api/client";
 import { getNativeSecureStore } from "@/shared/lib/native-secure-store";
 import {
   applyOfflineReconciliationResults,
+  clearOfflineCheckinQueues,
+  getOfflineCheckinQueueSummary,
   offlineCheckinQueueCount,
   prepareOfflineCheckin,
+  purgeExpiredOfflineCheckinState,
   queueOfflineBookingCheckin,
+  resetOfflineCheckinState,
   syncOfflineCheckins,
 } from "./offline-checkin-queue";
 
@@ -96,6 +101,7 @@ describe("secure offline check-in queue", () => {
     expect(await syncOfflineCheckins("club-a", "user-a")).toEqual({
       synced: 1,
       remaining: 0,
+      needsRecovery: false,
     });
     expect(await offlineCheckinQueueCount("club-a", "user-a")).toBe(0);
   });
@@ -115,6 +121,7 @@ describe("secure offline check-in queue", () => {
     expect(await syncOfflineCheckins("club-a", "user-a")).toEqual({
       synced: 0,
       remaining: 1,
+      needsRecovery: false,
     });
     expect(await offlineCheckinQueueCount("club-a", "user-a")).toBe(1);
 
@@ -146,6 +153,87 @@ describe("secure offline check-in queue", () => {
         createdAt: "2026-08-25T08:05:00.000Z",
       },
     ]);
+    expect(await offlineCheckinQueueCount("club-a", "user-a")).toBe(0);
+  });
+
+  it("reports stale snapshot recovery when sync deadline passed with pending queue", async () => {
+    await prepareOfflineCheckin("club-a", "user-a");
+    await queueOfflineBookingCheckin("club-a", "user-a", "G4M-1234");
+    const store = await getNativeSecureStore();
+    const raw = await store.getItem("gym4me.owner.checkin.club-a.user-a");
+    expect(raw).toBeTruthy();
+    const state = JSON.parse(raw!) as {
+      snapshot: { syncDeadline: string; expiresAt: string };
+    };
+    state.snapshot.syncDeadline = "2020-01-01T00:00:00.000Z";
+    state.snapshot.expiresAt = "2020-01-01T00:00:00.000Z";
+    await store.setItem(
+      "gym4me.owner.checkin.club-a.user-a",
+      JSON.stringify(state),
+    );
+    const summary = await getOfflineCheckinQueueSummary("club-a", "user-a");
+    expect(summary?.needsRecovery).toBe(true);
+    expect(summary?.recoveryReason).toBe("stale_snapshot");
+  });
+
+  it("clears all offline queues on logout purge", async () => {
+    await prepareOfflineCheckin("club-a", "user-a");
+    await queueOfflineBookingCheckin("club-a", "user-a", "G4M-1234");
+    await clearOfflineCheckinQueues();
+    expect(await offlineCheckinQueueCount("club-a", "user-a")).toBe(0);
+  });
+
+  it("purges expired empty snapshot state", async () => {
+    await prepareOfflineCheckin("club-a", "user-a");
+    const store = await getNativeSecureStore();
+    const raw = await store.getItem("gym4me.owner.checkin.club-a.user-a");
+    const state = JSON.parse(raw!) as {
+      queue: unknown[];
+      snapshot: { syncDeadline: string; expiresAt: string };
+    };
+    state.queue = [];
+    state.snapshot.syncDeadline = "2020-01-01T00:00:00.000Z";
+    state.snapshot.expiresAt = "2020-01-01T00:00:00.000Z";
+    await store.setItem(
+      "gym4me.owner.checkin.club-a.user-a",
+      JSON.stringify(state),
+    );
+    expect(await purgeExpiredOfflineCheckinState("club-a", "user-a")).toEqual({
+      purged: true,
+    });
+    expect(await getOfflineCheckinQueueSummary("club-a", "user-a")).toBeNull();
+  });
+
+  it("sends ops telemetry with sync batch", async () => {
+    await prepareOfflineCheckin("club-a", "user-a");
+    await queueOfflineBookingCheckin("club-a", "user-a", "G4M-1234");
+    checkin.syncOfflineBatch.mockImplementation(async (_clubId, input) => {
+      expect(input.ops).toMatchObject({
+        kind: "sync_batch",
+        queueDepth: 1,
+      });
+      return {
+        items: input.items.map((item) => ({
+          clientIdempotencyKey: item.clientIdempotencyKey,
+          sequence: item.sequence,
+          status: "created" as const,
+        })),
+      };
+    });
+    await syncOfflineCheckins("club-a", "user-a");
+  });
+
+  it("resets local state when sync is forbidden after device revoke", async () => {
+    await prepareOfflineCheckin("club-a", "user-a");
+    await queueOfflineBookingCheckin("club-a", "user-a", "G4M-1234");
+    checkin.syncOfflineBatch.mockRejectedValue(
+      new ApiError(403, null, "forbidden"),
+    );
+    const result = await syncOfflineCheckins("club-a", "user-a");
+    expect(result).toMatchObject({
+      needsRecovery: true,
+      recoveryReason: "revoked_device",
+    });
     expect(await offlineCheckinQueueCount("club-a", "user-a")).toBe(0);
   });
 });

@@ -12,8 +12,11 @@ import { OwnerCheckInDeskScreen } from "../screens/OwnerCheckInDeskScreen";
 import {
   offlineCheckinQueueCount,
   applyOfflineReconciliationResults,
+  getOfflineCheckinQueueSummary,
   prepareOfflineCheckin,
+  purgeExpiredOfflineCheckinState,
   queueOfflineBookingCheckin,
+  resetOfflineCheckinState,
   syncOfflineCheckins,
 } from "./offline-checkin-queue";
 
@@ -33,6 +36,9 @@ export function OwnerCheckInDeskGate() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [queueCount, setQueueCount] = useState(0);
+  const [queueSummary, setQueueSummary] =
+    useState<Awaited<ReturnType<typeof getOfflineCheckinQueueSummary>>>(null);
+  const [recoveryPending, setRecoveryPending] = useState(false);
   const [reconciliations, setReconciliations] = useState<
     OfflineCheckinReconciliation[]
   >([]);
@@ -65,6 +71,13 @@ export function OwnerCheckInDeskGate() {
     };
   }, [isAuthenticated, isReady]);
 
+  const refreshQueueState = useCallback(async () => {
+    if (!clubId || !user?.id) return;
+    await purgeExpiredOfflineCheckinState(clubId, user.id);
+    setQueueSummary(await getOfflineCheckinQueueSummary(clubId, user.id));
+    setQueueCount(await offlineCheckinQueueCount(clubId, user.id));
+  }, [clubId, user?.id]);
+
   const refreshReconciliations = useCallback(async () => {
     if (!clubId || !user?.id) return;
     setReconciliationsLoading(true);
@@ -76,6 +89,7 @@ export function OwnerCheckInDeskGate() {
         ["processing", "review", "rejected"].includes(row.status),
       );
       setReconciliations(actionable);
+      await refreshQueueState();
       setQueueCount(
         await applyOfflineReconciliationResults(
           clubId,
@@ -86,7 +100,7 @@ export function OwnerCheckInDeskGate() {
     } finally {
       setReconciliationsLoading(false);
     }
-  }, [clubId, user?.id]);
+  }, [clubId, refreshQueueState, user?.id]);
 
   useEffect(() => {
     if (!clubId || !user?.id) return;
@@ -96,12 +110,22 @@ export function OwnerCheckInDeskGate() {
         await prepareOfflineCheckin(clubId, user.id);
         const result = await syncOfflineCheckins(clubId, user.id);
         if (!cancelled) {
+          if (result.needsRecovery) {
+            setError(
+              t(
+                result.recoveryReason === "revoked_device"
+                  ? "recoveryRevokedDevice"
+                  : "recoveryStaleSnapshot",
+              ),
+            );
+          }
           setQueueCount(result.remaining);
+          await refreshQueueState();
           await refreshReconciliations();
         }
       } catch {
         if (!cancelled) {
-          setQueueCount(await offlineCheckinQueueCount(clubId, user.id));
+          await refreshQueueState();
         }
       }
     };
@@ -112,7 +136,23 @@ export function OwnerCheckInDeskGate() {
       cancelled = true;
       window.removeEventListener("online", handleOnline);
     };
-  }, [clubId, refreshReconciliations, user?.id]);
+  }, [clubId, refreshQueueState, refreshReconciliations, user?.id]);
+
+  const handleRecoverQueue = useCallback(async () => {
+    if (!clubId || !user?.id) return;
+    setRecoveryPending(true);
+    setError(null);
+    try {
+      await resetOfflineCheckinState(clubId, user.id);
+      await prepareOfflineCheckin(clubId, user.id);
+      await refreshQueueState();
+      setMessage(t("recoveryDone"));
+    } catch {
+      setError(t("resolutionFailed"));
+    } finally {
+      setRecoveryPending(false);
+    }
+  }, [clubId, refreshQueueState, t, user?.id]);
 
   const handleResolve = useCallback(
     async (
@@ -173,9 +213,11 @@ export function OwnerCheckInDeskGate() {
             code,
           );
           if (queued.queued) {
-            const count = await offlineCheckinQueueCount(clubId, user.id);
-            setQueueCount(count);
+            await refreshQueueState();
             setMessage(t(queued.duplicate ? "alreadyQueued" : "queuedOffline"));
+          } else if (queued.reason === "stale_snapshot") {
+            setError(t("recoveryStaleSnapshot"));
+            await refreshQueueState();
           } else {
             setError(t("offlineNotEligible"));
           }
@@ -186,7 +228,7 @@ export function OwnerCheckInDeskGate() {
         setPending(false);
       }
     },
-    [clubId, t, user?.id],
+    [clubId, refreshQueueState, t, user?.id],
   );
 
   if (loading) {
@@ -214,6 +256,17 @@ export function OwnerCheckInDeskGate() {
       onSubmit={handleSubmit}
       pending={pending}
       onResolve={handleResolve}
+      queueSummary={
+        queueSummary
+          ? {
+              queueDepth: queueSummary.queueDepth,
+              needsRecovery: queueSummary.needsRecovery,
+              recoveryReason: queueSummary.recoveryReason,
+            }
+          : null
+      }
+      onRecoverQueue={handleRecoverQueue}
+      recoveryPending={recoveryPending}
       reconciliations={reconciliations}
       reconciliationsLoading={reconciliationsLoading}
       resolutionPendingId={resolutionPendingId}

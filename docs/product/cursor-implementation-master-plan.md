@@ -99,7 +99,7 @@ G4M-002 → G4M-010 ┬→ G4M-011 ─┐                                ├→ 
 | G4M-002    | P0     | DONE        | CI کامل، test pyramid و محیط integration              | G4M-001                      |
 | G4M-003    | P0     | DONE        | شکستن God Serviceها و تعریف transaction boundary      | G4M-002                      |
 | G4M-010    | P0     | VERIFY      | اصلاح permission و failure semantics در Health Sync   | G4M-002                      |
-| G4M-011    | P0     | BLOCKED     | incremental Health Sync، cursor و offline queue واقعی | G4M-010                      |
+| G4M-011    | P0     | VERIFY      | incremental Health Sync، cursor و offline queue واقعی | G4M-010                      |
 | G4M-012    | P1     | BLOCKED     | حقوق داده و حذف حساب با retention روشن                | G4M-010                      |
 | G4M-013    | P1     | BLOCKED     | observability و امنیت دادهٔ سلامت                     | G4M-011, G4M-012             |
 | G4M-020    | P0     | DONE        | حذف mock از مسیرهای production و demo isolation       | G4M-002                      |
@@ -208,6 +208,7 @@ G4M-002 → G4M-010 ┬→ G4M-011 ─┐                                ├→ 
 
 ### G4M-011 — incremental Health Sync، cursor و offline queue واقعی
 
+- **وضعیت:** `VERIFY` در ۲۰۲۶-۰۸-۲۷؛ بسته‌شدن نهایی منوط به device matrix و smoke integration در staging.
 - **Persona/value:** ATH؛ sync بدون duplicate و بدون از دست‌دادن sample.
 - **استوری/سناریو:** H9/H10، S18/S19.
 - **کار:**
@@ -217,6 +218,7 @@ G4M-002 → G4M-010 ┬→ G4M-011 ─┐                                ├→ 
   - queue به user id scope شود و در logout/account switch رمزگذاری/پاک شود.
 - **معیار پذیرش:** retry duplicate نسازد؛ crash وسط batch قابل resume؛ sample ردشده دلیل و CTA اصلاح داشته باشد.
 - **تست:** duplicate concurrent، cursor migration، clock skew، timezone boundary، logout leakage.
+- **شواهد VERIFY:** secure queue per-user با fingerprint/clientMutationId، flush ordered/single-flight، partial reconcile و cursor فقط پس از ack، purge disconnect/scope، poison+retry CTA در `/athlete/health-sync`، ops telemetry بدون PII (`HealthSyncOpsTelemetry`). mobile health tests `15/15`، API health-sync-state `6/6`. **مانده:** kill/relaunch native، device permission matrix، smoke replica-set در این اجرا.
 
 ### G4M-012 — حقوق داده و حذف حساب با retention روشن
 

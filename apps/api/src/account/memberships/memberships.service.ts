@@ -79,6 +79,7 @@ import {
 } from './dto/membership.dto';
 import { SellMembershipCommand } from './application/commands/sell-membership.command';
 import { RenewMembershipCommand } from './application/commands/renew-membership.command';
+import { PlatformEntitlementService } from './application/services/platform-entitlement.service';
 
 type ActorRef = {
   userId: string;
@@ -107,6 +108,7 @@ export class MembershipsService {
     private readonly renewMembershipCommand: RenewMembershipCommand,
     private readonly transactions: MongoTransactionService,
     private readonly outbox: OutboxService,
+    private readonly entitlements: PlatformEntitlementService,
   ) {}
 
   // ── Access ──────────────────────────────────────────────────────────────
@@ -688,6 +690,19 @@ export class MembershipsService {
       if (current.status !== MembershipStatus.FROZEN) {
         throw new BadRequestException('Membership is not frozen');
       }
+
+      const club = await this.clubModel
+        .findById(current.clubId)
+        .select('ownerId')
+        .session(session);
+      if (!club) throw new NotFoundException('Club not found');
+
+      await this.entitlements.serializeAndAssertIncrement({
+        userId: club.ownerId.toString(),
+        clubId: current.clubId.toString(),
+        key: 'members.active_per_club',
+        session,
+      });
 
       if (current.freeze?.frozenAt && current.credit?.expiresAt) {
         const frozenMs =

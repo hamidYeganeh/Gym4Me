@@ -666,6 +666,7 @@ export {
   type PlatformPlan,
   type PlatformEntitlementContract,
   type PlatformEntitlementKey,
+  type PlatformEntitlementReasonCode,
   type PlatformEntitlementSummary,
   type PlatformSubscription,
   type PlatformSubscriptionCheckoutInitiation,
@@ -706,6 +707,7 @@ export {
   type SyncOfflineBatchInput,
   type SyncOfflineBatchItemResult,
   type SyncOfflineBatchResult,
+  type CheckinOfflineOpsTelemetry,
 } from "./checkin";
 export {
   createAccountWaitlistApi,

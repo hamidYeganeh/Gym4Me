@@ -16,6 +16,7 @@ function formatDate(value: string | null | undefined) {
   return new Intl.DateTimeFormat("fa-IR", {
     dateStyle: "medium",
     timeStyle: "short",
+    timeZone: "Asia/Tehran",
   }).format(new Date(value));
 }
 
@@ -46,9 +47,11 @@ export function AthleteHealthSyncScreen({
   platform,
   pending = false,
   lastFlushSummary,
+  queueSummary,
   onConnect,
   onSync,
   onDisconnect,
+  onRecoverQueue,
   onOpenSettings,
 }: AthleteHealthSyncScreenProps) {
   const router = useRouter();
@@ -56,6 +59,8 @@ export function AthleteHealthSyncScreen({
   const active = syncStates.find(
     (item) => item.status !== "disconnected",
   );
+  const needsRecovery =
+    (queueSummary?.poison ?? 0) > 0 || (queueSummary?.rejected ?? 0) > 0;
 
   return (
     <AppLayout
@@ -85,6 +90,20 @@ export function AthleteHealthSyncScreen({
           <Typography className={styles.meta()} type="body-sm">
             پلتفرم: {platform} · وضعیت اتصال: {connectStatus}
           </Typography>
+          {queueSummary ? (
+            <Typography className={styles.meta()} type="body-sm">
+              صف آفلاین: {queueSummary.pending} در انتظار
+              {queueSummary.retryable > 0
+                ? ` · ${queueSummary.retryable} تلاش دوباره`
+                : ""}
+              {queueSummary.poison > 0
+                ? ` · ${queueSummary.poison} نیازمند بازیابی`
+                : ""}
+              {queueSummary.rejected > 0
+                ? ` · ${queueSummary.rejected} ردشده`
+                : ""}
+            </Typography>
+          ) : null}
           <div className={styles.actions()}>
             <Button
               fullWidth
@@ -102,6 +121,16 @@ export function AthleteHealthSyncScreen({
             >
               همگام‌سازی الان
             </Button>
+            {needsRecovery && onRecoverQueue ? (
+              <Button
+                fullWidth
+                isDisabled={pending}
+                onPress={() => void onRecoverQueue()}
+                variant="tertiary"
+              >
+                بازیابی صف خراب
+              </Button>
+            ) : null}
             {active ? (
               <Button
                 fullWidth
@@ -146,9 +175,10 @@ export function AthleteHealthSyncScreen({
                     </Typography>
                     <Chip
                       color={
-                        state.status === "connected"
+                        state.status === "connected" || state.status === "synced"
                           ? "success"
-                          : state.status === "error"
+                          : state.status === "error" ||
+                              state.status === "partial"
                             ? "danger"
                             : "default"
                       }
@@ -159,7 +189,7 @@ export function AthleteHealthSyncScreen({
                     </Chip>
                   </div>
                   <Typography className={styles.meta()} type="body-sm">
-                    آخرین همگام‌سازی: {formatDate(state.lastSyncAt)}
+                    آخرین موفقیت: {formatDate(state.lastSyncAt)}
                   </Typography>
                   <Typography className={styles.meta()} type="body-sm">
                     متریک‌های مجاز:{" "}

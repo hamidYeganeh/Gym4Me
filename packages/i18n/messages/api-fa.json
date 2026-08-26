@@ -394,5 +394,17 @@
     "youCannotBookYourself": "نمی‌توانید برای خودتان رزرو کنید.",
     "youCannotChangeYourOwnStatus": "نمی‌توانید وضعیت خودتان را تغییر دهید.",
     "youHaveAlreadyUsedThisCoupon": "قبلاً از این کوپن استفاده کرده‌اید."
+  },
+  "platform_subscription": {
+    "allowed": "این عملیات در محدوده اشتراک شما مجاز است.",
+    "legacy_unlimited": "اشتراک فعلی بدون سقف اعمال‌شده است.",
+    "subscription_required": "برای این عملیات به اشتراک پلتفرم نیاز دارید.",
+    "subscription_grace_read_only": "دوره مهلت اشتراک تمام شده؛ فقط مشاهده و خروجی داده مجاز است.",
+    "subscription_expired": "اشتراک پلتفرم منقضی شده است.",
+    "entitlement_not_included": "پلن فعلی این قابلیت را شامل نمی‌شود.",
+    "entitlement_limit_reached": "به سقف مجاز پلن رسیده‌اید. برای ادامه، اشتراک را ارتقا دهید.",
+    "soft_limit_exceeded": "از سقف توصیه‌شده پلن عبور کرده‌اید؛ برای جلوگیری از محدودیت، ارتقا را در نظر بگیرید.",
+    "club_scope_required": "برای این محدودیت باید باشگاه مشخص شود.",
+    "club_scope_forbidden": "به محدودیت این باشگاه دسترسی ندارید."
   }
 }

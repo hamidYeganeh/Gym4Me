@@ -24,6 +24,7 @@ export type FeatureFlag = {
   defaultVariant: string | null;
   payload: Record<string, unknown>;
   description: string | null;
+  exposureEndsAt: string | null;
   createdAt: string | null;
   updatedAt: string | null;
 };
@@ -98,6 +99,7 @@ export type UpsertFeatureFlagInput = {
   defaultVariant?: string;
   payload?: Record<string, unknown>;
   description?: string;
+  exposureEndsAt?: string;
   reason: string;
 };
 

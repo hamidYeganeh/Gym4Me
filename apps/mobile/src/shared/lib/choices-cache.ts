@@ -4,7 +4,8 @@ import type { PublicChoiceGroup } from "@repo/api";
 import { ApiError } from "@repo/api";
 import { basicsChoices } from "@/shared/lib/api";
 
-const CACHE_KEY = "gym4me.basics.choices.v1";
+/** Bump when public choice shape / required keys change so stale Preferences entries are ignored. */
+const CACHE_KEY = "gym4me.basics.choices.v2";
 
 type CachedChoices = {
   expiresAt: number;
@@ -30,6 +31,15 @@ function isValidCache(value: unknown): value is CachedChoices {
   );
 }
 
+function hasRequiredKeys(
+  groups: PublicChoiceGroup[],
+  requiredKeys: readonly string[],
+): boolean {
+  if (requiredKeys.length === 0) return true;
+  const present = new Set(groups.map((group) => group.value));
+  return requiredKeys.every((key) => present.has(key));
+}
+
 async function readPersisted(): Promise<CachedChoices | null> {
   try {
     const { value } = await Preferences.get({ key: CACHE_KEY });
@@ -52,28 +62,7 @@ async function writePersisted(cached: CachedChoices) {
   }
 }
 
-/**
- * Loads every active choice group via `GET /basics/choices` and caches for 4h
- * (memory + Preferences). Concurrent callers share one in-flight request.
- */
-export async function loadChoiceGroups(
-  options?: { force?: boolean },
-): Promise<PublicChoiceGroup[]> {
-  const force = options?.force === true;
-  const now = Date.now();
-
-  if (!force && memory && memory.expiresAt > now) {
-    return memory.groups;
-  }
-
-  if (!force) {
-    const persisted = await readPersisted();
-    if (persisted && persisted.expiresAt > now) {
-      memory = persisted;
-      return persisted.groups;
-    }
-  }
-
+async function fetchAndCache(): Promise<PublicChoiceGroup[]> {
   if (!inflight) {
     inflight = basicsChoices
       .listAll()
@@ -90,12 +79,48 @@ export async function loadChoiceGroups(
         inflight = null;
       });
   }
-
   return inflight;
 }
 
+/**
+ * Loads every active choice group via `GET /basics/choices` and caches for 4h
+ * (memory + Preferences). Concurrent callers share one in-flight request.
+ *
+ * Pass `requireKeys` so a stale cache that predates a newly seeded catalog
+ * (e.g. `athlete_goal`) is discarded and refetched once.
+ */
+export async function loadChoiceGroups(options?: {
+  force?: boolean;
+  requireKeys?: readonly string[];
+}): Promise<PublicChoiceGroup[]> {
+  const force = options?.force === true;
+  const requiredKeys = options?.requireKeys ?? [];
+  const now = Date.now();
+
+  if (!force && memory && memory.expiresAt > now) {
+    if (hasRequiredKeys(memory.groups, requiredKeys)) {
+      return memory.groups;
+    }
+    memory = null;
+  }
+
+  if (!force) {
+    const persisted = await readPersisted();
+    if (persisted && persisted.expiresAt > now) {
+      if (hasRequiredKeys(persisted.groups, requiredKeys)) {
+        memory = persisted;
+        return persisted.groups;
+      }
+      await Preferences.remove({ key: CACHE_KEY }).catch(() => undefined);
+    }
+  }
+
+  const groups = await fetchAndCache();
+  return groups;
+}
+
 export async function getChoiceGroup(key: string): Promise<PublicChoiceGroup> {
-  const groups = await loadChoiceGroups();
+  const groups = await loadChoiceGroups({ requireKeys: [key] });
   const group = groups.find((item) => item.value === key);
   if (!group) {
     throw new ApiError(404, null, `Choice group not found: ${key}`);
@@ -114,4 +139,6 @@ export async function listUnitChoiceGroups(): Promise<PublicChoiceGroup[]> {
 export function clearChoiceGroupsCache() {
   memory = null;
   void Preferences.remove({ key: CACHE_KEY });
+  // Drop legacy v1 entries left from earlier builds.
+  void Preferences.remove({ key: "gym4me.basics.choices.v1" });
 }

@@ -13,5 +13,12 @@ export type OwnerCheckInDeskScreenProps = {
     action: "retry" | "dismiss",
     reason: string,
   ) => Promise<void> | void;
+  queueSummary?: {
+    queueDepth: number;
+    needsRecovery: boolean;
+    recoveryReason: string | null;
+  } | null;
+  onRecoverQueue?: () => Promise<void> | void;
+  recoveryPending?: boolean;
   className?: string;
 };

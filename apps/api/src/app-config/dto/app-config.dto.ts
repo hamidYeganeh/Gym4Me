@@ -4,6 +4,7 @@ import {
   ArrayMinSize,
   IsArray,
   IsBoolean,
+  IsDateString,
   IsIn,
   IsInt,
   IsObject,
@@ -132,6 +133,10 @@ export class UpsertFeatureFlagDto {
   @MaxLength(500)
   description?: string;
 
+  @IsOptional()
+  @IsDateString()
+  exposureEndsAt?: string;
+
   @IsString()
   @MinLength(3)
   @MaxLength(500)
@@ -143,6 +148,13 @@ export class FeatureFlagKeyParamDto {
   @Matches(FEATURE_KEY_PATTERN)
   @MaxLength(120)
   key!: string;
+}
+
+export class ArchiveExpiredFeatureFlagsDto {
+  @IsString()
+  @MinLength(3)
+  @MaxLength(500)
+  reason!: string;
 }
 
 export class ReleaseNotesDto {

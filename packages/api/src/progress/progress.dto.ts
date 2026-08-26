@@ -675,12 +675,28 @@ export type HealthSyncState = {
   updatedAt: string;
 };
 
+/** Operational telemetry for health sync — never include metric values/notes. */
+export type HealthSyncOpsTelemetry = {
+  kind?:
+    | "queue_flush"
+    | "disconnect_purge"
+    | "scope_purge"
+    | "retry"
+    | "poison";
+  queueDepth?: number;
+  syncLatencyMs?: number;
+  retryCount?: number;
+  purgedCount?: number;
+  rejectedReasons?: string[];
+};
+
 export type UpsertHealthSyncStateInput = {
   status: HealthSyncStatus;
   authorizedMetricKeys?: string[];
   cursorByMetric?: Record<string, string>;
   lastSyncAt?: string;
   lastErrorCode?: string | null;
+  ops?: HealthSyncOpsTelemetry;
 };
 
 export type ListHealthSyncStatesQuery = {

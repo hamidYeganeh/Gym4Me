@@ -20,4 +20,6 @@ export const accountMembershipsKeys = {
     [...accountMembershipsKeys.all, "platform-plans"] as const,
   platformSubscriptions: () =>
     [...accountMembershipsKeys.all, "platform-subscriptions"] as const,
+  platformEntitlements: (clubId?: string) =>
+    [...accountMembershipsKeys.all, "platform-entitlements", clubId ?? "global"] as const,
 };

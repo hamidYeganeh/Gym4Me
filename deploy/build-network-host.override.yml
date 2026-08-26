@@ -1,0 +1,21 @@
+services:
+  website:
+    build:
+      network: host
+      extra_hosts:
+        - "registry.npmjs.org=104.16.8.34"
+  mobile:
+    build:
+      network: host
+      extra_hosts:
+        - "registry.npmjs.org=104.16.8.34"
+  admin:
+    build:
+      network: host
+      extra_hosts:
+        - "registry.npmjs.org=104.16.8.34"
+  api:
+    build:
+      network: host
+      extra_hosts:
+        - "registry.npmjs.org=104.16.8.34"

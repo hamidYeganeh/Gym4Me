@@ -363,6 +363,16 @@ export type PlatformSubscription = {
 export type PlatformPlansResponse = { result: PlatformPlan[] };
 export type PlatformSubscriptionsResponse = { result: PlatformSubscription[] };
 
+export type PlatformEntitlementReasonCode =
+  | "allowed"
+  | "legacy_unlimited"
+  | "subscription_required"
+  | "subscription_grace_read_only"
+  | "subscription_expired"
+  | "entitlement_not_included"
+  | "entitlement_limit_reached"
+  | "soft_limit_exceeded";
+
 export type PlatformEntitlementSummary = {
   subscriptionId: string | null;
   planId: string | null;
@@ -372,12 +382,14 @@ export type PlatformEntitlementSummary = {
   scheduledPlanId: string | null;
   scheduledPlanEffectiveAt?: string | null;
   cancellationRequestedAt?: string | null;
+  upgradePlanIds: string[];
   limits: Array<{
     key: PlatformEntitlementKey;
     value: number | null;
     mode: "hard" | "soft";
     usage: number | null;
     allowed: boolean;
+    reasonCode: PlatformEntitlementReasonCode;
   }>;
 };
 

@@ -36,6 +36,7 @@ export type {
   PlatformPlan,
   PlatformEntitlementContract,
   PlatformEntitlementKey,
+  PlatformEntitlementReasonCode,
   PlatformEntitlementSummary,
   PlatformPlansResponse,
   PlatformSubscription,

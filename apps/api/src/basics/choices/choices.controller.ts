@@ -4,8 +4,11 @@ import { Public } from '../../common/decorators/public.decorator';
 import { asSinglePageResult } from '../../common/utils/pagination.util';
 import { ChoicesService } from './choices.service';
 
-/** Choice catalogs change rarely; browsers/CDNs and clients may cache for 4h. */
-const CHOICES_CACHE_CONTROL = 'public, max-age=14400';
+/**
+ * Choice catalogs change rarely. Prefer revalidation over long immutable TTL so
+ * newly seeded groups (e.g. athlete_goal) are not stuck in browser HTTP caches.
+ */
+const CHOICES_CACHE_CONTROL = 'public, max-age=60, stale-while-revalidate=86400';
 
 @ApiTags('basics')
 @Public()

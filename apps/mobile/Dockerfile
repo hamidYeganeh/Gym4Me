@@ -25,7 +25,8 @@ RUN --mount=type=cache,id=gym4me-npm-v2,target=/root/.npm,sharing=locked printf 
   'fetch-retries=8' \
   'fetch-retry-mintimeout=20000' \
   'fetch-retry-maxtimeout=180000' \
-  'maxsockets=3' \
+  'fetch-timeout=30000' \
+  'maxsockets=10' \
   'audit=false' \
   'fund=false' \
   > .npmrc \
