@@ -34,7 +34,12 @@ import { ZarinpalPaymentGatewayService } from './zarinpal.service';
         const isProduction =
           (config.get<string>('NODE_ENV', 'development') ?? 'development') ===
           'production';
-        if (provider !== 'mock' || isProduction) {
+        const allowProductionMock =
+          (
+            config.get<string>('ALLOW_MOCK_PAYMENT_IN_PRODUCTION', 'false') ??
+            'false'
+          ).toLowerCase() === 'true';
+        if (provider !== 'mock' || (isProduction && !allowProductionMock)) {
           throw new Error(`Unsupported PAYMENT_PROVIDER=${provider}`);
         }
         return mock;
