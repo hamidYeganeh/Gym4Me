@@ -24,10 +24,14 @@ export class AppService {
     };
     const production =
       this.config.get<string>('NODE_ENV', 'development') === 'production';
+    const productionMockPaymentApproved =
+      providers.payment === 'mock' &&
+      this.config.get<string>('ALLOW_MOCK_PAYMENT_IN_PRODUCTION', 'false') ===
+        'true';
     const providersReady =
       !production ||
       (providers.sms === 'kavenegar' &&
-        providers.payment === 'zarinpal' &&
+        (providers.payment === 'zarinpal' || productionMockPaymentApproved) &&
         providers.push === 'fcm' &&
         ['api_ir', 'api.ir', 'finnotech'].includes(providers.kyc ?? ''));
     return {
