@@ -60,10 +60,21 @@ export function assertSecurityConfig(
     if (isMissingCredential(env.KAVENEGAR_API_KEY)) {
       throw new Error('Production requires a valid KAVENEGAR_API_KEY');
     }
-    if ((env.PAYMENT_PROVIDER ?? '').toLowerCase() !== 'zarinpal') {
-      throw new Error('Production requires PAYMENT_PROVIDER=zarinpal');
+    const paymentProvider = (env.PAYMENT_PROVIDER ?? '').toLowerCase();
+    const allowProductionMockPayment =
+      (env.ALLOW_MOCK_PAYMENT_IN_PRODUCTION ?? '').toLowerCase() === 'true';
+    if (
+      paymentProvider !== 'zarinpal' &&
+      !(paymentProvider === 'mock' && allowProductionMockPayment)
+    ) {
+      throw new Error(
+        'Production requires PAYMENT_PROVIDER=zarinpal unless the explicit mock-payment override is enabled',
+      );
     }
-    if (isMissingCredential(env.ZARINPAL_MERCHANT_ID)) {
+    if (
+      paymentProvider === 'zarinpal' &&
+      isMissingCredential(env.ZARINPAL_MERCHANT_ID)
+    ) {
       throw new Error('Production requires a valid ZARINPAL_MERCHANT_ID');
     }
     if ((env.PUSH_PROVIDER ?? '').toLowerCase() !== 'fcm') {
