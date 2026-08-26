@@ -25,6 +25,7 @@ RUN --mount=type=cache,target=/root/.npm printf '%s\n' \
   'fetch-retries=8' \
   'fetch-retry-mintimeout=20000' \
   'fetch-retry-maxtimeout=180000' \
+  'maxsockets=3' \
   > .npmrc \
   && npm ci --workspace=mobile --include-workspace-root --omit=dev --ignore-scripts \
   && npm install --no-save --ignore-scripts --workspaces=false \
