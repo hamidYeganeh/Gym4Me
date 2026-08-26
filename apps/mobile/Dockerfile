@@ -26,6 +26,8 @@ RUN --mount=type=cache,id=gym4me-npm-v2,target=/root/.npm,sharing=locked printf 
   'fetch-retry-mintimeout=20000' \
   'fetch-retry-maxtimeout=180000' \
   'maxsockets=3' \
+  'audit=false' \
+  'fund=false' \
   > .npmrc \
   && npm ci --workspace=mobile --include-workspace-root --omit=dev --ignore-scripts \
   && npm install --no-save --ignore-scripts --workspaces=false \

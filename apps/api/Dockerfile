@@ -30,6 +30,8 @@ RUN --mount=type=cache,id=gym4me-npm-v2,target=/root/.npm,sharing=locked printf 
   'fetch-retry-mintimeout=20000' \
   'fetch-retry-maxtimeout=180000' \
   'maxsockets=3' \
+  'audit=false' \
+  'fund=false' \
   > .npmrc \
   && npm ci --workspace=api --include-workspace-root
 
