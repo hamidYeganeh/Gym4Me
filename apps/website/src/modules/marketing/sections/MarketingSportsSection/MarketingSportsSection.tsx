@@ -1,5 +1,6 @@
 "use client";
 
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import { Button } from "@heroui/react/button";
 import { BarbellHorizontal } from "@repo/icons/BarbellHorizontal";
 import { Basketball } from "@repo/icons/Basketball";
@@ -215,7 +216,7 @@ export function MarketingSportsSection({
           transition={{ delay: 0.08, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           className={slots.subtitle()}
         >
-          {t("subtitle")}
+          <TextWithBrand>{t("subtitle")}</TextWithBrand>
         </motion.p>
 
         <motion.div

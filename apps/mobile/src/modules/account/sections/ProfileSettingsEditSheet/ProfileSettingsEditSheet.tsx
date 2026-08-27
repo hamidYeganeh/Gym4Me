@@ -51,6 +51,7 @@ export function ProfileSettingsEditSheet({
   kind,
   values,
   provinces,
+  levelOptions,
   onClose,
   onChange,
   onPatchAthlete,
@@ -74,7 +75,9 @@ export function ProfileSettingsEditSheet({
     values.address,
   );
   const [bio, setBio] = useState(values.athlete?.bio ?? values.coach?.bio ?? "");
-  const [levelKey, setLevelKey] = useState(values.athlete?.levelKey ?? "");
+  const [levelKey, setLevelKey] = useState(
+    values.athlete?.levelKey ?? values.coach?.levelKey ?? "",
+  );
   const [heightCm, setHeightCm] = useState(
     Number(values.athlete?.heightCm) || DEFAULT_HEIGHT,
   );
@@ -94,7 +97,7 @@ export function ProfileSettingsEditSheet({
     setProvinceId(values.address.provinceId);
     setAddress(values.address);
     setBio(values.athlete?.bio ?? values.coach?.bio ?? "");
-    setLevelKey(values.athlete?.levelKey ?? "");
+    setLevelKey(values.athlete?.levelKey ?? values.coach?.levelKey ?? "");
     setHeightCm(Number(values.athlete?.heightCm) || DEFAULT_HEIGHT);
     setWeightKg(Number(values.athlete?.weightKg) || DEFAULT_WEIGHT);
     setHeadline(values.coach?.headline ?? "");
@@ -118,11 +121,13 @@ export function ProfileSettingsEditSheet({
                   ? tAthlete("bio")
                   : kind === "athleteLevel"
                     ? tAthlete("levelKey")
-                    : kind === "athleteBody"
-                      ? t("editBodyTitle")
-                      : kind === "coachExperience"
-                        ? t("editExperienceTitle")
-                        : "";
+                    : kind === "coachLevel"
+                      ? tCoach("levelKey")
+                      : kind === "athleteBody"
+                        ? t("editBodyTitle")
+                        : kind === "coachExperience"
+                          ? t("editExperienceTitle")
+                          : "";
 
   const confirm = () => {
     if (kind === "name") {
@@ -151,7 +156,7 @@ export function ProfileSettingsEditSheet({
     } else if (kind === "athleteBio") {
       onPatchAthlete({ bio: bio.trim() });
     } else if (kind === "athleteLevel") {
-      onPatchAthlete({ levelKey: levelKey.trim() });
+      onPatchAthlete({ levelKey });
     } else if (kind === "athleteBody") {
       onPatchAthlete({
         heightCm: String(heightCm),
@@ -159,6 +164,8 @@ export function ProfileSettingsEditSheet({
       });
     } else if (kind === "coachBio") {
       onPatchCoach({ bio: bio.trim() });
+    } else if (kind === "coachLevel") {
+      onPatchCoach({ levelKey });
     } else if (kind === "coachExperience") {
       onPatchCoach({ headline: headline.trim(), years: years.trim() });
     }
@@ -319,7 +326,6 @@ export function ProfileSettingsEditSheet({
                     }
                     value={address.mapPoint}
                     zoomInLabel={t("zoomIn")}
-                    zoomLabel={t("zoom")}
                     zoomOutLabel={t("zoomOut")}
                   />
                 </div>
@@ -386,17 +392,38 @@ export function ProfileSettingsEditSheet({
               </TextField>
             ) : null}
 
-            {kind === "athleteLevel" ? (
-              <TextField
-                className={styles.field()}
-                fullWidth
-                name="levelDraft"
-                onChange={setLevelKey}
-                value={levelKey}
-              >
-                <Label className={styles.label()}>{tAthlete("levelKey")}</Label>
-                <Input className={styles.input()} />
-              </TextField>
+            {kind === "athleteLevel" || kind === "coachLevel" ? (
+              levelOptions.length > 0 ? (
+                <div
+                  aria-label={title}
+                  className={styles.wheel()}
+                  role="listbox"
+                >
+                  {levelOptions.map((option) => (
+                    <Button
+                      aria-selected={levelKey === option.value}
+                      className={styles.wheelItem()}
+                      data-selected={levelKey === option.value || undefined}
+                      key={option.value}
+                      onPress={() => setLevelKey(option.value)}
+                      variant="ghost"
+                    >
+                      <span className="flex flex-col gap-0.5">
+                        <span>{option.name}</span>
+                        {option.description ? (
+                          <span className="text-xs font-normal text-muted">
+                            {option.description}
+                          </span>
+                        ) : null}
+                      </span>
+                    </Button>
+                  ))}
+                </div>
+              ) : (
+                <Typography className={styles.hint()} type="body-sm">
+                  {t("levelEmpty")}
+                </Typography>
+              )
             ) : null}
 
             {kind === "athleteBody" ? (

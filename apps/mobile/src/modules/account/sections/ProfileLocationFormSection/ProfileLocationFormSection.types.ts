@@ -1,6 +1,8 @@
 import type { HTMLAttributes, ReactNode } from "react";
 import type { FavouriteLocationKind } from "@repo/api";
 import type { FavouriteLocationFormValues } from "@/modules/account/lib/profile-locations";
+import type { ProfileProvinceOption } from "@/modules/account/lib/profile-settings";
+import type { ProfileLocationOption } from "@/modules/account/lib/use-profile-locations";
 
 export type ProfileLocationKindOption = {
   id: FavouriteLocationKind;
@@ -11,6 +13,9 @@ export type ProfileLocationKindOption = {
 export type ProfileLocationFormSectionProps = HTMLAttributes<HTMLFormElement> & {
   values: FavouriteLocationFormValues;
   kinds: readonly ProfileLocationKindOption[];
+  provinces: readonly ProfileProvinceOption[];
+  cities: readonly ProfileLocationOption[];
+  districts: readonly ProfileLocationOption[];
   error: string | null;
   isPending: boolean;
   isDeleting: boolean;

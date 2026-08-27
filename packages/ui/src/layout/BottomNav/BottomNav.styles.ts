@@ -58,7 +58,6 @@ export const bottomNavVariants = tv({
     holdMenu: [
       "z-50 w-[min(18rem,calc(100vw-2rem))] overflow-visible",
       "rounded-[1.75rem] border-0 bg-surface p-0",
-      "shadow-[0_18px_48px_color-mix(in_oklch,var(--foreground)_14%,transparent)]",
     ].join(" "),
     holdMenuDialog: "relative p-4 sm:p-5",
     holdMenuList: "flex flex-col gap-2.5",

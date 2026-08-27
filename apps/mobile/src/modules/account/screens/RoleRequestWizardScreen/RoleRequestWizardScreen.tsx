@@ -10,7 +10,6 @@ import { TextField } from "@heroui/react/textfield";
 import { Typography } from "@heroui/react/typography";
 import type { Role, RoleRequest } from "@repo/api";
 import { ApiError } from "@repo/api";
-import { Note1 } from "@repo/icons/Note1";
 import { FileItem, type FileItemStatus } from "@repo/ui/kit/FileItem";
 import { Uploader } from "@repo/ui/kit/Uploader";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
@@ -23,8 +22,6 @@ import {
 } from "@/shared/components/ImageCropperSheet";
 import { roleRequestWizardScreenVariants } from "./RoleRequestWizardScreen.styles";
 import type { RoleRequestWizardScreenProps } from "./RoleRequestWizardScreen.types";
-
-const FIELD_ICON = 18;
 
 const DOCUMENT_ACCEPT = {
   "image/jpeg": [".jpg", ".jpeg"],
@@ -59,7 +56,6 @@ export function RoleRequestWizardScreen({
   const [bio, setBio] = useState("");
   const [headline, setHeadline] = useState("");
   const [years, setYears] = useState("");
-  const [note, setNote] = useState("");
   const [documentId, setDocumentId] = useState<string | null>(null);
   const [documentUpload, setDocumentUpload] =
     useState<DocumentUploadState | null>(null);
@@ -90,7 +86,6 @@ export function RoleRequestWizardScreen({
               ? String(next.application.yearsExperience)
               : "",
           );
-          setNote(next.application.note ?? "");
           setDocumentId(next.application.documentMediaIds[0] ?? null);
         }
       } catch (err) {
@@ -180,7 +175,6 @@ export function RoleRequestWizardScreen({
         headline: isCoach ? headline.trim() || undefined : undefined,
         yearsExperience: isCoach && years.trim() ? Number(years) : undefined,
         documentMediaIds: [documentId],
-        note: note.trim() || undefined,
       });
       setRequest(result.request);
       setNotice(t("submitted"));
@@ -235,9 +229,6 @@ export function RoleRequestWizardScreen({
               >
                 <Label>{t("headline")}</Label>
                 <InputGroup variant="secondary">
-                  <InputGroup.Prefix>
-                    <Note1 size={FIELD_ICON} />
-                  </InputGroup.Prefix>
                   <InputGroup.Input />
                 </InputGroup>
               </TextField>
@@ -267,23 +258,6 @@ export function RoleRequestWizardScreen({
             onChange={setBio}
           >
             <Label>{t("bio")}</Label>
-            <InputGroup variant="secondary">
-              <InputGroup.Prefix>
-                <Note1 size={FIELD_ICON} />
-              </InputGroup.Prefix>
-              <InputGroup.Input />
-            </InputGroup>
-          </TextField>
-
-          <TextField
-            className={styles.field()}
-            fullWidth
-            isDisabled={isLocked}
-            name="note"
-            value={note}
-            onChange={setNote}
-          >
-            <Label>{t("note")}</Label>
             <InputGroup variant="secondary">
               <InputGroup.Input />
             </InputGroup>

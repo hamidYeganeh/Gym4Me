@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { Button } from "@heroui/react/button";
 import { FieldError } from "@heroui/react/field-error";
@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "@repo/icons/ArrowRight";
 import { InputOTP } from "@repo/ui/kit/InputOTP";
 import { useTranslations } from "next-intl";
+import { OtpCountdownTimer } from "@/modules/auth/components/OtpCountdownTimer";
 import {
   normalizeOtpDigits,
   OTP_LENGTH,
@@ -23,13 +24,39 @@ import {
 import { authLoginOtpFormVariants } from "./AuthLoginOtpForm.styles";
 import type { AuthLoginOtpFormProps } from "./AuthLoginOtpForm.types";
 
-function formatTimer(seconds: number) {
-  const minutes = Math.floor(seconds / 60);
-  const remainder = seconds % 60;
-  return `${minutes.toLocaleString("fa-IR")}:${remainder
-    .toLocaleString("fa-IR", { minimumIntegerDigits: 2 })
-    .replace(/\u200e/g, "")}`;
-}
+const AuthLoginOtpResendSection = memo(function AuthLoginOtpResendSection({
+  remainingSeconds,
+  isResending,
+  onResend,
+}: Pick<
+  AuthLoginOtpFormProps,
+  "remainingSeconds" | "isResending" | "onResend"
+>) {
+  const t = useTranslations("Mobile.Otp");
+  const styles = authLoginOtpFormVariants();
+
+  return (
+    <div className={styles.resendRow()}>
+      {remainingSeconds > 0 ? (
+        <p className={styles.resendCountdown()}>
+          <span>{t("resendIn")}</span>
+          <OtpCountdownTimer remainingSeconds={remainingSeconds} />
+        </p>
+      ) : (
+        <Button
+          className={styles.resend()}
+          isPending={isResending}
+          size="lg"
+          type="button"
+          variant="ghost"
+          onPress={onResend}
+        >
+          {t("resendPrompt")}
+        </Button>
+      )}
+    </div>
+  );
+});
 
 export function AuthLoginOtpForm({
   className,
@@ -88,36 +115,11 @@ export function AuthLoginOtpForm({
           )}
         />
 
-        <div className={styles.resendRow()}>
-          {remainingSeconds > 0 ? (
-            <Typography className={styles.resendMuted()} type="body-sm">
-              {t("resendIn")}{" "}
-              <Typography
-                className={styles.timer()}
-                render={({ children, ...domProps }) => (
-                  <span {...domProps}>{children}</span>
-                )}
-                weight="bold"
-              >
-                {formatTimer(remainingSeconds)}
-              </Typography>
-            </Typography>
-          ) : (
-            <Typography className={styles.resendLine()} type="body-sm">
-              {t("didNotReceive")}{" "}
-              <Button
-                className={styles.resend()}
-                isPending={isResending}
-                size="sm"
-                type="button"
-                variant="ghost"
-                onPress={onResend}
-              >
-                {t("resend")}
-              </Button>
-            </Typography>
-          )}
-        </div>
+        <AuthLoginOtpResendSection
+          isResending={isResending}
+          remainingSeconds={remainingSeconds}
+          onResend={onResend}
+        />
       </div>
 
       {debugCode ? (

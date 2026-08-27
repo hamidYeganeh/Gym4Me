@@ -8,7 +8,11 @@ jest.mock("@/modules/app/lib/onboarding-storage", () => ({
 const completeSession = {
   activeRole: "coach" as const,
   isNewUser: false,
-  user: { id: "user-1", name: { first: "مهدی", last: null } },
+  user: {
+    id: "user-1",
+    name: { first: "مهدی", last: null },
+    credentials: { password: "set" as const },
+  },
 };
 
 describe("decideAuthGate", () => {
@@ -97,5 +101,50 @@ describe("decideAuthGate", () => {
         session: completeSession,
       }),
     ).toEqual({ render: "children", redirect: null });
+  });
+
+  it("sends OTP-only accounts to set-password before the rest of the app", () => {
+    const otpOnly = {
+      ...completeSession,
+      user: {
+        ...completeSession.user,
+        credentials: { password: "unset" as const },
+      },
+    };
+
+    expect(
+      decideAuthGate({
+        guestOnly: false,
+        isAuthenticated: true,
+        isReady: true,
+        pathname: "/athlete",
+        session: otpOnly,
+      }),
+    ).toEqual({
+      render: "shell",
+      redirect: "/auth/set-password?next=%2Fathlete",
+    });
+
+    expect(
+      decideAuthGate({
+        guestOnly: false,
+        isAuthenticated: true,
+        isReady: true,
+        pathname: "/auth/set-password",
+        session: otpOnly,
+      }),
+    ).toEqual({ render: "children", redirect: null });
+  });
+
+  it("skips set-password once a password is configured", () => {
+    expect(
+      decideAuthGate({
+        guestOnly: false,
+        isAuthenticated: true,
+        isReady: true,
+        pathname: "/auth/set-password",
+        session: completeSession,
+      }),
+    ).toEqual({ render: "shell", redirect: "/coach" });
   });
 });

@@ -1,5 +1,6 @@
 "use client";
 
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
@@ -77,7 +78,7 @@ export function MarketingDownloadSection({
           className={slots.ctaDescription()}
           weight="semibold"
         >
-          {t("ctaDescription")}
+          <TextWithBrand>{t("ctaDescription")}</TextWithBrand>
         </Typography>
         <div className={slots.storeRow()}>
           <Button

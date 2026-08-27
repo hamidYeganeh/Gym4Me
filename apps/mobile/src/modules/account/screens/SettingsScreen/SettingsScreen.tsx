@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@heroui/react/button";
 import { Door } from "@repo/icons/Door";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
@@ -7,6 +8,7 @@ import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useRouter } from "@/shared/lib/app-router";
 
 import { useSettingsNav } from "@/modules/account/lib/use-settings-nav";
+import { ExitAppSheet } from "@/modules/app/components/ExitAppSheet";
 import { SettingsNavGroupSection } from "@/modules/account/sections/SettingsNavGroupSection";
 import { SettingsPreferencesSection } from "@/modules/account/sections/SettingsPreferencesSection";
 import { SettingsSupportSection } from "@/modules/account/sections/SettingsSupportSection";
@@ -25,6 +27,7 @@ export function SettingsScreen({
   const { logout } = useAuth();
   const deviceSyncEnabled = useFeatureFlag("health.device_sync");
   const nav = useSettingsNav(roleSegment, deviceSyncEnabled);
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
 
   return (
     <AppLayout
@@ -83,15 +86,29 @@ export function SettingsScreen({
           fullWidth
           size="lg"
           variant="danger"
-          onPress={async () => {
-            await logout();
-            router.replace("/auth");
+          onPress={() => {
+            setLogoutConfirmOpen(true);
           }}
         >
           <Door size={SETTINGS_ROW_ICON_SIZE} />
           {nav.t("logout")}
         </Button>
       </div>
+
+      <ExitAppSheet
+        isOpen={logoutConfirmOpen}
+        onLeave={() => {
+          setLogoutConfirmOpen(false);
+          void (async () => {
+            await logout();
+            router.replace("/auth");
+          })();
+        }}
+        onOpenChange={setLogoutConfirmOpen}
+        onStay={() => {
+          setLogoutConfirmOpen(false);
+        }}
+      />
     </AppLayout>
   );
 }

@@ -240,18 +240,22 @@ export class AuthService {
 
   async setPassword(userId: string, dto: SetPasswordDto, request: Request) {
     const user = await this.users.findById(userId);
+    const hadPassword = Boolean(user.passwordHash);
 
-    if (user.passwordHash) {
-      if (!dto.currentPassword) {
+    if (hadPassword) {
+      const passwordHash = user.passwordHash;
+      if (!dto.currentPassword || !passwordHash) {
         throw new BadRequestException('currentPassword is required');
       }
-      const valid = await argon2.verify(user.passwordHash, dto.currentPassword);
+      const valid = await argon2.verify(passwordHash, dto.currentPassword);
       if (!valid) throw new UnauthorizedException('Wrong current password');
     }
 
     user.passwordHash = await argon2.hash(dto.password);
     await user.save();
-    await this.tokens.revokeAll(user._id);
+    if (hadPassword) {
+      await this.tokens.revokeAll(user._id);
+    }
 
     this.audit.log({
       action: AuditAction.PASSWORD_SET,

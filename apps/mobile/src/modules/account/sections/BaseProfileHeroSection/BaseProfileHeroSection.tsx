@@ -25,7 +25,7 @@ import type { BaseProfileHeroSectionProps } from "./BaseProfileHeroSection.types
 
 const ICON = 20;
 const AVATAR_ICON = 40;
-const COVER_SRC = "/welcome/hero-athletes.png";
+const COVER_SRC = "/profile/profile-hero-men.png";
 
 /** Scroll distance over which the morph completes — same as ProfileHeader. */
 const SCROLL_RANGE = 160;

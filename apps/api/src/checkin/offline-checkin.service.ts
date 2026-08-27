@@ -283,6 +283,7 @@ export class OfflineCheckinService {
     for (const item of dto.items) {
       const outcome = await this.reconcileItem(snapshot, item, request);
       if (
+        'reasonCode' in outcome &&
         typeof outcome.reasonCode === 'string' &&
         !reasonCodes.includes(outcome.reasonCode)
       ) {
@@ -451,7 +452,7 @@ export class OfflineCheckinService {
             },
           },
         },
-        { new: true },
+        { returnDocument: 'after' },
       );
       if (!row) {
         const concurrent = await this.reconciliationModel.findOne({
@@ -559,7 +560,7 @@ export class OfflineCheckinService {
               syncDeadline: { $gte: new Date() },
             },
             { $inc: { lastSequence: 1 } },
-            { new: true, session },
+            { returnDocument: 'after', session },
           );
           if (!claimed) {
             throw new ConflictException('Offline events must sync in sequence');
@@ -879,7 +880,7 @@ export class OfflineCheckinService {
         'resolutionClaim.clientMutationId': resolution.mutationId,
       },
       { $set, $unset, $push: { resolutions: resolutionEvent } },
-      { new: true },
+      { returnDocument: 'after' },
     );
     if (!resolved) {
       const concurrent = await this.reconciliationModel.findOne({

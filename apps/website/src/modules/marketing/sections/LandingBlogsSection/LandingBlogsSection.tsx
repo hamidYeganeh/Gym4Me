@@ -1,5 +1,6 @@
 "use client";
 
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import { Typography } from "@heroui/react/typography";
 import { ArrowUpRight } from "@repo/icons/ArrowUpRight";
 import { ArticleCard } from "@repo/ui/cards/ArticleCard";
@@ -56,8 +57,10 @@ export function LandingBlogsSection({ className }: LandingBlogsSectionProps) {
           </Reveal>
           <Reveal delay={0.2}>
             <Typography className={slots.sub()} type="body">
-              گرم‌کردن، تغذیه و ریکاوری. همان کارت مقاله کشف Gym4Me، برای تمرین
-              هوشمندانه‌تر.
+              <TextWithBrand>
+                گرم‌کردن، تغذیه و ریکاوری. همان کارت مقاله کشف Gym4Me، برای تمرین
+                هوشمندانه‌تر.
+              </TextWithBrand>
             </Typography>
           </Reveal>
           <Reveal delay={0.3}>

@@ -128,6 +128,16 @@ export function AuthSelectScreen({ className }: AuthSelectScreenProps) {
         ) : null}
 
         <Button
+          className={`${styles.method()} ${styles.methodOtp()}`}
+          fullWidth
+          size="lg"
+          variant="primary"
+          onPress={() => router.push(withAuthNext("/auth/otp", next))}
+        >
+          <Telephone1 aria-hidden className={styles.methodIcon()} size={20} />
+          {t("continueWithOtp")}
+        </Button>
+        <Button
           className={`${styles.method()} ${styles.methodLogin()}`}
           fullWidth
           size="lg"
@@ -138,16 +148,6 @@ export function AuthSelectScreen({ className }: AuthSelectScreenProps) {
           {t("continueWithLogin")}
         </Button>
 
-        <Button
-          className={`${styles.method()} ${styles.methodOtp()}`}
-          fullWidth
-          size="lg"
-          variant="primary"
-          onPress={() => router.push(withAuthNext("/auth/otp", next))}
-        >
-          <Telephone1 aria-hidden className={styles.methodIcon()} size={20} />
-          {t("continueWithOtp")}
-        </Button>
       </div>
     </AuthLayout>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { BrandText, TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import { Anchor } from "@repo/icons/Anchor";
 import { Building2 } from "@repo/icons/Building2";
 import { Eye } from "@repo/icons/Eye";
@@ -65,7 +66,7 @@ export function MarketingPerksSection() {
                     {item.title}
                   </p>
                   <p className="c-list_description || c-text -body-regular">
-                    {item.description}
+                    <TextWithBrand>{item.description}</TextWithBrand>
                   </p>
                 </div>
               </li>
@@ -75,7 +76,9 @@ export function MarketingPerksSection() {
 
         <div className="o-grid -gutters -col-4@from-medium || u-margin-top-xl u-margin-bottom-3xl">
           <div className="o-grid_item u-gc-2/5@from-medium">
-            <p className="c-heading -h2">{t("rewrite")}</p>
+            <p className="c-heading -h2">
+              <TextWithBrand>{t("rewrite")}</TextWithBrand>
+            </p>
           </div>
         </div>
 
@@ -108,7 +111,9 @@ export function MarketingPerksSection() {
                 >
                   <span className="c-cascade_line">
                     <span className="c-cascade_word">
-                      <Ltr>{t("cascadeBrand")}</Ltr>
+                      <Ltr>
+                        <BrandText shadow="onBrand">{t("cascadeBrand")}</BrandText>
+                      </Ltr>
                     </span>
                   </span>
                   <span className="c-cascade_line">

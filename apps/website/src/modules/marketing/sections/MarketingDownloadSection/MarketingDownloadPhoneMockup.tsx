@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@heroui/react/button";
+import { BrandText } from "@repo/ui/kit/LineShadowText";
 import { Typography } from "@heroui/react/typography";
 import { Check } from "@repo/icons/Check";
 import { CheckCircle } from "@repo/icons/CheckCircle";
@@ -29,9 +30,11 @@ export function MarketingDownloadPhoneMockup({
 
         <div className={slots.cardInner()}>
           <div className={slots.brandCol()}>
-            <Typography type="h2" weight="bold" className={slots.brandName()}>
-              {t("brandName")}
-            </Typography>
+            <BrandText
+              as="h2"
+              className={slots.brandName()}
+              shadow="foreground"
+            />
           </div>
 
           <div className={slots.mockupWrap()} style={{ perspective: "1000px" }}>
@@ -230,9 +233,7 @@ export function MarketingDownloadPhoneMockup({
               {t("cardHeading")}
             </Typography>
             <Typography type="body" className={slots.cardDescription()}>
-              <span className="font-semibold text-foreground">
-                {t("cardDescriptionBrand")}
-              </span>
+              <BrandText className="font-semibold text-foreground" shadow="foreground" />
               {t("cardDescriptionAfter")}
             </Typography>
           </div>

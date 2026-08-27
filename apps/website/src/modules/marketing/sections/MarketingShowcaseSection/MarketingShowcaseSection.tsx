@@ -1,5 +1,6 @@
 "use client";
 
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import { Anchor } from "@repo/icons/Anchor";
 import { useTranslations } from "next-intl";
 import type { CSSProperties } from "react";
@@ -43,7 +44,7 @@ export function MarketingShowcaseSection() {
                   data-scroll-offset="0, 25%"
                   data-scroll-event-progress="fadeinTextProgress"
                 >
-                  {t("description")}
+                  <TextWithBrand>{t("description")}</TextWithBrand>
                 </div>
               </div>
             </div>

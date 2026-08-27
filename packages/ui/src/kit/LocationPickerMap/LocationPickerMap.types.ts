@@ -29,8 +29,6 @@ export type LocationPickerMapProps = Omit<
   zoomInLabel?: string;
   /** Accessible label for zoom out. */
   zoomOutLabel?: string;
-  /** Accessible label for the zoom slider. */
-  zoomLabel?: string;
   /**
    * Optional custom tile URL template (`{z}/{x}/{y}` or `{s}` subdomain).
    * Defaults to Carto/OSM basemaps (no API key; suitable for Iran).

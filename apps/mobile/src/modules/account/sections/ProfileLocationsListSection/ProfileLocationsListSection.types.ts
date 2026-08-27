@@ -17,7 +17,9 @@ export type ProfileLocationsListSectionProps = Omit<
   error: string | null;
   emptyLabel: string;
   emptyHint: string;
+  addLabel: string;
   retryLabel: string;
   onRetry: () => void;
+  onAdd?: () => void;
   onSelect: (item: FavouriteLocation) => void;
 };

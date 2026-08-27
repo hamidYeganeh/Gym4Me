@@ -3,7 +3,7 @@ import { tv } from "tailwind-variants";
 
 export const toastVariants = tv({
   slots: {
-    root: "items-center gap-3 rounded-full px-5 py-3.5 text-start text-[var(--toast-foreground)] shadow-[0_10px_28px_rgba(15,15,15,0.18)]",
+    root: "items-center gap-3 px-4 py-2 text-start text-[var(--toast-foreground)] shadow-[0_10px_28px_rgba(15,15,15,0.18)]",
     indicator:
       "shrink-0 p-0 text-[var(--toast-foreground)] [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-5",
     content: "min-w-0 flex-1 items-start gap-0 self-center text-start",

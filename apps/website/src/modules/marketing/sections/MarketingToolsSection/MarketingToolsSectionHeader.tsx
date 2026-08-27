@@ -1,3 +1,4 @@
+import { BrandText, TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import { ShapeCircle } from "@repo/icons/ShapeCircle";
 import { useTranslations } from "next-intl";
 import { Ltr } from "../../lib/marketing-bidi";
@@ -18,7 +19,9 @@ export function MarketingToolsSectionHeader() {
 
       <h2 className="c-heading-serif -large || c-section-heading || u-padding-bottom-3xl u-padding-top-md">
         <span className="c-section-heading_line">
-          <span className="c-section-heading_word">{t("titleLine1")}</span>
+          <span className="c-section-heading_word">
+            <BrandText shadow="foreground">{t("titleLine1")}</BrandText>
+          </span>
         </span>
         <span className="c-section-heading_line">
           <span className="c-section-heading_word">{t("titleLine2")}</span>
@@ -52,7 +55,9 @@ export function MarketingToolPanelHead({ item }: { item: MarketingToolItem }) {
         <Ltr>{item.index}</Ltr>
       </span>
       <span className="c-tool_label">{item.label}</span>
-      <span className="c-tool_description">{item.description}</span>
+      <span className="c-tool_description">
+        <TextWithBrand>{item.description}</TextWithBrand>
+      </span>
       <h3 className="c-tool_title || c-heading -h2">{item.title}</h3>
     </div>
   );

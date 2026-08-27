@@ -36,7 +36,7 @@ export class NotificationPreferencesService {
     const doc = await this.preferenceModel.findOneAndUpdate(
       { userId: objectId },
       { $setOnInsert: { userId: objectId } },
-      { upsert: true, new: true, setDefaultsOnInsert: true },
+      { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true },
     );
     return this.toPublic(doc);
   }
@@ -68,7 +68,7 @@ export class NotificationPreferencesService {
         },
         $setOnInsert: { userId: new Types.ObjectId(userId) },
       },
-      { upsert: true, new: true },
+      { upsert: true, returnDocument: 'after' },
     );
     return this.toPublic(doc);
   }

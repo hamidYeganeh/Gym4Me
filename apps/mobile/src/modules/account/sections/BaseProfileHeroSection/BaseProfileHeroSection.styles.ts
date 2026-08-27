@@ -5,12 +5,12 @@ export const baseProfileHeroSectionVariants = tv({
     spacer: "pointer-events-none shrink-0",
     root: [
       "fixed top-0 left-1/2 z-30 w-full max-w-xl -translate-x-1/2",
-      "overflow-hidden rounded-b-[2rem]",
+      "overflow-hidden rounded-b-3xl",
       "pt-[env(safe-area-inset-top)]",
     ].join(" "),
     cover: [
       "pointer-events-none absolute inset-x-0 top-0 z-0 overflow-hidden",
-      "rounded-b-[2rem] bg-foreground [contain:paint]",
+      "bg-foreground rounded-b-3xl object-cover",
     ].join(" "),
     coverMedia: "absolute inset-0",
     coverImage:
@@ -18,7 +18,7 @@ export const baseProfileHeroSectionVariants = tv({
     /** Collapsed shell — solid surface behind the compact toolbar. */
     shell: [
       "pointer-events-none absolute inset-0 z-[1]",
-      "rounded-b-[2rem] bg-surface",
+      "bg-surface-tertiary",
     ].join(" "),
     stage: "relative z-10 w-full",
     control: "absolute z-20",

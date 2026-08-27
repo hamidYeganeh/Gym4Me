@@ -3,7 +3,9 @@
 import { Button } from "@heroui/react/button";
 import { Spinner } from "@heroui/react/spinner";
 import { Typography } from "@heroui/react/typography";
-import type { ReferralInvite } from "@repo/api";
+import { ApiError, type ReferralInvite } from "@repo/api";
+import { toast } from "@repo/ui/kit/Toast";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { accountReferral } from "@/shared/lib/api";
 import { DEMO_MODE } from "@/shared/lib/runtime-mode";
@@ -34,10 +36,11 @@ function mapInvite(invite: ReferralInvite): AthleteReferralInvite {
 }
 
 export function AthleteReferralGate() {
+  const t = useTranslations("AthleteReferral");
   const { isAuthenticated, isReady } = useAuth();
   const [view, setView] = useState<AthleteReferralView | null>(null);
   const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<"auth" | "load" | null>(null);
 
   const reload = useCallback(async () => {
     setError(null);
@@ -78,30 +81,31 @@ export function AthleteReferralGate() {
     async (phones: string[]) => {
       if (!isAuthenticated) return;
       setPending(true);
-      setError(null);
       try {
         await accountReferral.invite({ phones });
         await reload();
-      } catch {
-        setError("invite");
+      } catch (err) {
+        if (!(err instanceof ApiError)) {
+          toast.error(t("toastErrorTitle"), {
+            description: t("inviteError"),
+          });
+        }
       } finally {
         setPending(false);
       }
     },
-    [isAuthenticated, reload],
+    [isAuthenticated, reload, t],
   );
 
   if (!view && error) {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3 px-6 text-center">
         <Typography className="text-danger" type="body">
-          {error === "auth"
-            ? "برای مشاهده دعوت‌ها وارد حساب شوید."
-            : "بارگذاری دعوت‌ها ناموفق بود."}
+          {error === "auth" ? t("authRequired") : t("loadError")}
         </Typography>
         {error === "load" ? (
           <Button onPress={() => void reload()} variant="secondary">
-            تلاش دوباره
+            {t("retry")}
           </Button>
         ) : null}
       </div>
@@ -117,19 +121,10 @@ export function AthleteReferralGate() {
   }
 
   return (
-    <>
-      {error ? (
-        <div className="px-4 pt-2 text-center">
-          <Typography className="text-danger" type="body-sm">
-            ارسال دعوت ناموفق بود.
-          </Typography>
-        </div>
-      ) : null}
-      <AthleteReferralScreen
-        onInvite={isAuthenticated ? handleInvite : undefined}
-        pending={pending}
-        view={view}
-      />
-    </>
+    <AthleteReferralScreen
+      onInvite={isAuthenticated ? handleInvite : undefined}
+      pending={pending}
+      view={view}
+    />
   );
 }

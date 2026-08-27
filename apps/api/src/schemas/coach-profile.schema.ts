@@ -118,6 +118,10 @@ export class CoachProfile {
   @Prop({ trim: true })
   bio?: string;
 
+  /** Choice-group key from `coach_level` (e.g. junior / mid / senior / master). */
+  @Prop({ trim: true, maxlength: 60 })
+  levelKey?: string;
+
   @Prop({ type: CoachExperienceSchema, default: () => ({}) })
   experience!: CoachExperience;
 

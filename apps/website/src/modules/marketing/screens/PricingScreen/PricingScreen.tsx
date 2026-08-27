@@ -1,3 +1,4 @@
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import type { PlatformPlan } from "@repo/api";
 import { Typography } from "@heroui/react/typography";
 import { getTranslations } from "next-intl/server";
@@ -48,7 +49,7 @@ export async function PricingScreen() {
               {t("title")}
             </Typography>
             <Typography className={slots.description()} type="body">
-              {t("description")}
+              <TextWithBrand>{t("description")}</TextWithBrand>
             </Typography>
           </header>
           {plans.length ? (

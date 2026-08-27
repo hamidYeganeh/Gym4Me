@@ -5,6 +5,7 @@ import { Card } from "@heroui/react/card";
 import { Chip } from "@heroui/react/chip";
 import { Typography } from "@heroui/react/typography";
 import { Check } from "@repo/icons/Check";
+import { brandAwareText } from "../../kit/LineShadowText";
 import { clubSubscriptionCardVariants } from "./ClubSubscriptionCard.styles";
 import type { ClubSubscriptionCardProps } from "./ClubSubscriptionCard.types";
 
@@ -94,7 +95,7 @@ export function ClubSubscriptionCard({
               slot={null}
               type="body"
             >
-              {description}
+              {brandAwareText(description)}
             </Typography>
           ) : null}
 

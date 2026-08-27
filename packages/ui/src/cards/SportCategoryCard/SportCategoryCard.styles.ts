@@ -13,13 +13,13 @@ export const sportCategoryCardVariants = tv({
     backgroundImage:
       "pointer-events-none absolute inset-0 size-full object-cover select-none",
     overlay: "pointer-events-none absolute inset-0",
-    body: "relative z-10 flex h-full min-h-0 flex-col justify-between",
+    body: "relative z-10 flex flex-col justify-between gap-4",
     action:
       "flex shrink-0 items-center justify-center self-end rounded-full",
-    content: "flex min-w-0 flex-col",
+    content: "flex min-w-0 shrink-0 flex-col",
     icon: "",
     subtitle: "opacity-95",
-    title: "leading-tight tracking-tight",
+    title: "line-clamp-2 leading-snug tracking-tight",
   },
   variants: {
     size: {
@@ -32,7 +32,7 @@ export const sportCategoryCardVariants = tv({
         title: "text-base",
       },
       md: {
-        root: "h-[190px] w-[280px] rounded-[32px] p-6",
+        root: "min-h-[220px] w-[280px] rounded-[32px] p-6",
         action: "size-12 [&_svg]:!size-[22px]",
         content: "gap-1",
         icon: "mb-1 [&_svg]:!size-8",

@@ -1,5 +1,6 @@
 "use client";
 
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import { Chat } from "@repo/icons/Chat";
 import { FaceHappy } from "@repo/icons/FaceHappy";
 import { QuestionMark } from "@repo/icons/QuestionMark";
@@ -41,12 +42,11 @@ export function HelpCenterScreen({
             onPress={() => router.push(`/${roleSegment}/profile/help/faq`)}
           />
           <ProfileMenuRow
-            hint={t("chatHint")}
+            hint={<TextWithBrand>{t("chatHint")}</TextWithBrand>}
             icon={<Chat size={ICON} />}
+            isDisabled
             label={t("liveChat")}
-            onPress={() => {
-              window.location.href = `tel:${t("supportPhone")}`;
-            }}
+            showChevron={false}
           />
           <ProfileMenuRow
             hint={t("feedbackHint")}

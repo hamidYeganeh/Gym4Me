@@ -4,10 +4,10 @@ import { tv } from "tailwind-variants";
 export const profileMenuRowVariants = tv({
   slots: {
     root: [
-      "flex h-14 min-h-14 w-full items-center gap-3 overflow-hidden rounded-2xl",
-      "bg-surface px-4 text-start shadow-none",
+      "flex h-16 min-h-16 w-full items-center gap-3 overflow-hidden rounded-2xl",
+      "bg-surface-secondary px-4 text-start shadow-none",
     ].join(" "),
-    pressable: "h-14 min-h-14 justify-start px-4 font-normal",
+    pressable: "h-16 min-h-16 justify-start px-4 font-normal",
     icon: "flex size-6 shrink-0 items-center justify-center text-accent",
     body: "flex min-w-0 flex-1 flex-col justify-center gap-0.5",
     label: "truncate leading-none text-foreground",
@@ -25,9 +25,18 @@ export const profileMenuRowVariants = tv({
         icon: "text-danger",
       },
     },
+    isDisabled: {
+      true: {
+        root: "pointer-events-none select-none opacity-50",
+        icon: "text-muted",
+        label: "text-muted",
+      },
+      false: {},
+    },
   },
   defaultVariants: {
     tone: "default",
+    isDisabled: false,
   },
 });
 

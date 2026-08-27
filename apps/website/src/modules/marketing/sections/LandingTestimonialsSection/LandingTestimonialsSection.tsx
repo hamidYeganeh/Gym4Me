@@ -1,6 +1,7 @@
 "use client";
 
 import { Typography } from "@heroui/react/typography";
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
@@ -192,7 +193,7 @@ export function LandingTestimonialsSection({
                   })}
                   type="body"
                 >
-                  «{card.quote}»
+                  «<TextWithBrand shadow="onBrand">{card.quote}</TextWithBrand>»
                 </Typography>
                 <div className={slots.authorRow()}>
                   <img
@@ -216,7 +217,7 @@ export function LandingTestimonialsSection({
                       type="body-sm"
                       weight="semibold"
                     >
-                      {card.authorName}
+                      <TextWithBrand shadow="onBrand">{card.authorName}</TextWithBrand>
                     </Typography>
                     <Typography
                       className={slots.authorRole({

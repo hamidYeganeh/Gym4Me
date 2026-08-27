@@ -1,5 +1,6 @@
 "use client";
 
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import { Anchor } from "@repo/icons/Anchor";
 import { useTranslations } from "next-intl";
 import { Ltr } from "../../lib/marketing-bidi";
@@ -120,7 +121,7 @@ export function MarketingFeaturesSection() {
               data-scroll-offset="0, 25%"
               data-scroll-event-progress="fadeinTextProgress"
             >
-              {t("intro")}
+              <TextWithBrand shadow="inverse">{t("intro")}</TextWithBrand>
             </div>
           </div>
         </div>
@@ -173,7 +174,7 @@ export function MarketingFeaturesSection() {
                           {item.title}
                         </span>
                         <span className="c-features-grid_desc || c-text -body-regular">
-                          {item.description}
+                          <TextWithBrand>{item.description}</TextWithBrand>
                         </span>
                       </span>
                     </span>
@@ -208,7 +209,7 @@ export function MarketingFeaturesSection() {
                         </h3>
                       )}
                       <p className="c-features-grid_desc || c-text -body-regular">
-                        {item.description}
+                        <TextWithBrand>{item.description}</TextWithBrand>
                       </p>
                     </div>
                   </div>

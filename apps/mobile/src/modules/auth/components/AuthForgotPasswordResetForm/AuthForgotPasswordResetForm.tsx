@@ -46,11 +46,18 @@ export function AuthForgotPasswordResetForm({
   });
 
   const password = useWatch({ control: form.control, name: "password" }) ?? "";
+  const confirmPassword =
+    useWatch({ control: form.control, name: "confirmPassword" }) ?? "";
   const strength = useMemo(
     () => evaluatePasswordStrength(password),
     [password],
   );
   const strengthKey = passwordStrengthMessageKey(strength);
+  const passwordsMatch =
+    password.length > 0 &&
+    confirmPassword.length > 0 &&
+    password === confirmPassword;
+  const canSubmit = strength.isValid && passwordsMatch;
 
   const handleSubmit = form.handleSubmit(async (values) => {
     await onSubmit(toAuthForgotPasswordResetPayload(values, resetToken));
@@ -104,9 +111,11 @@ export function AuthForgotPasswordResetForm({
         <div className={styles.strengthBars()}>
           {Array.from({ length: 4 }, (_, index) => (
             <span
-              className={`${styles.strengthBar()} ${
-                index < strength.segments ? styles.strengthBarActive() : ""
-              }`}
+              className={
+                index < strength.segments
+                  ? styles.strengthBarActive()
+                  : styles.strengthBar()
+              }
               key={index}
             />
           ))}
@@ -121,7 +130,7 @@ export function AuthForgotPasswordResetForm({
       <Button
         className={styles.submit()}
         fullWidth
-        isDisabled={!strength.isValid}
+        isDisabled={!canSubmit}
         isPending={isPending}
         size="lg"
         type="submit"

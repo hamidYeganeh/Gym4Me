@@ -22,6 +22,8 @@ export function DiscoveryHomeArticlesSection({
   title,
   hint,
   seeAllHref = "/discovery/articles",
+  seeAllLabel,
+  seeAllVariant,
 }: DiscoveryHomeArticlesSectionProps) {
   const t = useTranslations("DiscoveryHome");
   const tArticles = useTranslations("Articles");
@@ -34,7 +36,8 @@ export function DiscoveryHomeArticlesSection({
     <DiscoverySectionRail
       ariaLabel={title ?? t("articlesTitle")}
       hint={hint ?? t("articlesHint")}
-      seeAllLabel={t("seeAll")}
+      seeAllLabel={seeAllLabel ?? t("seeAll")}
+      seeAllVariant={seeAllVariant}
       sheet
       slideClassName={slots.slide()}
       title={title ?? t("articlesTitle")}

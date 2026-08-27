@@ -22,7 +22,8 @@ export const profileSettingsEditSheetVariants = tv({
       "overscroll-contain py-2 [-webkit-overflow-scrolling:touch]",
     ].join(" "),
     wheelItem: [
-      "w-full rounded-2xl px-4 py-3 text-center text-base font-medium text-muted",
+      "flex h-auto min-h-0 w-full flex-col items-center justify-center gap-0.5",
+      "rounded-2xl px-4 py-3 text-center text-base font-medium text-muted",
       "outline-none transition-colors",
       "data-[selected=true]:bg-accent/10 data-[selected=true]:font-semibold",
       "data-[selected=true]:text-accent data-[selected=true]:ring-1",

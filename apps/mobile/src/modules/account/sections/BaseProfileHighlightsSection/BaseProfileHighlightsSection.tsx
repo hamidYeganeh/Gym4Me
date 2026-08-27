@@ -1,3 +1,4 @@
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import { ChevronRight } from "@repo/icons/ChevronRight";
@@ -14,7 +15,7 @@ import {
 import { baseProfileHighlightsSectionVariants } from "./BaseProfileHighlightsSection.styles";
 import type { BaseProfileHighlightsSectionProps } from "./BaseProfileHighlightsSection.types";
 
-const INVITE_SRC = "/profile/invite-friends.png";
+const INVITE_SRC = "/profile/invite-friends.jpg";
 const PREVIEW_COUNT = 4;
 
 export function BaseProfileHighlightsSection({
@@ -41,12 +42,13 @@ export function BaseProfileHighlightsSection({
               type="body"
               weight="bold"
             >
-              {t("inviteTitle")}
+              <TextWithBrand>{t("inviteTitle")}</TextWithBrand>
             </Typography>
             <Button
               className={styles.inviteCta()}
               onPress={() => router.push(inviteHref)}
-              variant="ghost"
+              variant="tertiary"
+              size="sm"
             >
               {t("inviteCta")}
               <ChevronRight size={16} />
@@ -64,7 +66,7 @@ export function BaseProfileHighlightsSection({
         </article>
       ) : null}
 
-      <section className={styles.block()}>
+      {/* <section className={styles.block()}>
         <div className={styles.blockHeader()}>
           <Typography className={styles.blockTitle()} type="body" weight="bold">
             {t("streakTitle")}
@@ -123,14 +125,14 @@ export function BaseProfileHighlightsSection({
                 <AchievementTag
                   color={
                     ACHIEVEMENT_TAG_COLORS[
-                      index % ACHIEVEMENT_TAG_COLORS.length
+                    index % ACHIEVEMENT_TAG_COLORS.length
                     ]
                   }
                   key={item.id}
                   size="md"
                   variant={
                     ACHIEVEMENT_TAG_VARIANTS[
-                      index % ACHIEVEMENT_TAG_VARIANTS.length
+                    index % ACHIEVEMENT_TAG_VARIANTS.length
                     ]
                   }
                 />
@@ -154,7 +156,7 @@ export function BaseProfileHighlightsSection({
             </Typography>
           </div>
         </div>
-      </section>
+      </section> */}
     </div>
   );
 }

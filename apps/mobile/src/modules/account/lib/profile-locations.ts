@@ -7,7 +7,6 @@ import type {
 import {
   composeAddressLine,
   emptyAddressValues,
-  normalizeDigits,
   type ProfileAddressFormValues,
 } from "./profile-settings";
 
@@ -24,18 +23,19 @@ export type FavouriteLocationFormValues = {
   kind: FavouriteLocationKind;
   label: string;
   address: ProfileAddressFormValues;
+  cityId: string | null;
+  districtId: string | null;
 };
 
-export type FavouriteLocationFormError =
-  | "label"
-  | "postalCode"
-  | "content";
+export type FavouriteLocationFormError = "label" | "content";
 
 export const emptyFavouriteLocationFormValues =
   (): FavouriteLocationFormValues => ({
     kind: "home",
     label: "",
     address: emptyAddressValues(),
+    cityId: null,
+    districtId: null,
   });
 
 export function formValuesFromFavouriteLocation(
@@ -47,11 +47,14 @@ export function formValuesFromFavouriteLocation(
     address: {
       provinceId: item.address.provinceId,
       street: item.address.street ?? "",
-      apartment: item.address.apartment ?? "",
+      apartment: "",
       city: item.address.city ?? "",
-      postalCode: item.address.postalCode ?? "",
+      district: item.address.district ?? "",
+      postalCode: "",
       mapPoint: item.address.point,
     },
+    cityId: null,
+    districtId: null,
   };
 }
 
@@ -61,10 +64,9 @@ export function favouriteLocationLine(
 ): string {
   return composeAddressLine({
     street: item.address.street,
-    apartment: item.address.apartment,
     city: item.address.city,
+    district: item.address.district,
     provinceName,
-    postalCode: item.address.postalCode,
   });
 }
 
@@ -73,8 +75,8 @@ export function favouriteLocationHasContent(
 ): boolean {
   return Boolean(
     address.city.trim() ||
+      address.district.trim() ||
       address.street.trim() ||
-      address.apartment.trim() ||
       address.mapPoint,
   );
 }
@@ -85,14 +87,12 @@ function optionalText(value: string): string | undefined {
 }
 
 function addressInput(address: ProfileAddressFormValues) {
-  const postal = normalizeDigits(address.postalCode).replace(/\D/g, "");
   return {
-    provinceId: address.provinceId,
+    provinceId: address.provinceId ?? null,
     city: optionalText(address.city),
+    district: optionalText(address.district),
     street: optionalText(address.street),
-    apartment: optionalText(address.apartment),
-    postalCode: postal || undefined,
-    point: address.mapPoint,
+    point: address.mapPoint ?? null,
   };
 }
 
@@ -101,10 +101,6 @@ export function buildFavouriteLocationInput(
 ):
   | { ok: true; input: CreateFavouriteLocationInput }
   | { ok: false; error: FavouriteLocationFormError } {
-  const postal = normalizeDigits(values.address.postalCode).replace(/\D/g, "");
-  if (postal && postal.length !== 10) {
-    return { ok: false, error: "postalCode" };
-  }
   if (values.kind === "other" && !values.label.trim()) {
     return { ok: false, error: "label" };
   }

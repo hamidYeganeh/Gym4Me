@@ -125,6 +125,7 @@ export function CoachHomeScreen() {
   return (
     <AppLayout
       className={styles.root}
+      headerClassName="shadow-none"
       header={
         <ProfileHeader
           avatarAlt={firstName}

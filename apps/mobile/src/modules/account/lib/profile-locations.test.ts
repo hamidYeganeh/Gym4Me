@@ -21,6 +21,7 @@ function location(
     address: {
       apartment: "۱۲",
       city: "تهران",
+      district: "ونک",
       point: { lat: 35.7, lng: 51.4 },
       postalCode: "1234567890",
       provinceId: "prov-1",
@@ -36,6 +37,7 @@ describe("profile-locations", () => {
     expect(values.kind).toBe("home");
     expect(values.label).toBe("خانه");
     expect(values.address.city).toBe("تهران");
+    expect(values.address.district).toBe("ونک");
     expect(values.address.mapPoint).toEqual({ lat: 35.7, lng: 51.4 });
 
     const built = buildFavouriteLocationInput(values);
@@ -44,6 +46,9 @@ describe("profile-locations", () => {
       expect(built.input.kind).toBe("home");
       expect(built.input.label).toBe("خانه");
       expect(built.input.address?.city).toBe("تهران");
+      expect(built.input.address?.district).toBe("ونک");
+      expect(built.input.address?.apartment).toBeUndefined();
+      expect(built.input.address?.postalCode).toBeUndefined();
       expect(built.input.address?.point).toEqual({ lat: 35.7, lng: 51.4 });
     }
   });
@@ -73,25 +78,17 @@ describe("profile-locations", () => {
         address: {
           provinceId: null,
           city: "اصفهان",
+          district: undefined,
           street: undefined,
-          apartment: undefined,
-          postalCode: undefined,
           point: null,
         },
       });
     }
   });
 
-  it("rejects a short postal code and clears label on update", () => {
+  it("clears label on update when empty", () => {
     const values = emptyFavouriteLocationFormValues();
     values.address.city = "شیراز";
-    values.address.postalCode = "123";
-    expect(buildFavouriteLocationInput(values)).toEqual({
-      ok: false,
-      error: "postalCode",
-    });
-
-    values.address.postalCode = "";
     const updated = buildFavouriteLocationUpdateInput(values);
     expect(updated.ok).toBe(true);
     if (updated.ok) {
@@ -101,5 +98,6 @@ describe("profile-locations", () => {
 
   it("formats the saved address line", () => {
     expect(favouriteLocationLine(location(), "تهران")).toContain("ولیعصر");
+    expect(favouriteLocationLine(location(), "تهران")).toContain("ونک");
   });
 });

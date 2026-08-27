@@ -2,7 +2,6 @@
 
 import { Button } from "@heroui/react/button";
 import { Skeleton } from "@heroui/react/skeleton";
-import { Slider } from "@heroui/react/slider";
 import { Minus } from "@repo/icons/Minus";
 import { Plus } from "@repo/icons/Plus";
 import {
@@ -98,7 +97,6 @@ export function LocationPickerMap({
   maxZoom = DEFAULT_MAX_ZOOM,
   zoomInLabel = "Zoom in",
   zoomOutLabel = "Zoom out",
-  zoomLabel = "Map zoom",
   tileUrl,
   className,
   ...props
@@ -323,26 +321,6 @@ export function LocationPickerMap({
         >
           <Plus size={18} />
         </Button>
-
-        <Slider
-          aria-label={zoomLabel}
-          className={slots.zoomSlider()}
-          maxValue={maxZoom}
-          minValue={minZoom}
-          onChange={(value) => {
-            const next = Array.isArray(value) ? value[0] : value;
-            if (typeof next === "number") applyZoom(next);
-          }}
-          orientation="vertical"
-          step={1}
-          value={zoom}
-        >
-          <Slider.Track className={slots.zoomTrack()}>
-            <Slider.Fill className={slots.zoomFill()} />
-            <Slider.Thumb className={slots.zoomThumb()} />
-          </Slider.Track>
-        </Slider>
-
         <Button
           aria-label={zoomOutLabel}
           className={slots.zoomButton()}

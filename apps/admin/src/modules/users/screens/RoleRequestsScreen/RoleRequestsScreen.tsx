@@ -353,18 +353,18 @@ export function RoleRequestsScreen({ className }: RoleRequestsScreenProps) {
                     )}
                   </dd>
                 </div>
-                <div className="rounded-xl border border-border/70 bg-surface/60 p-3">
-                  <dt className="text-sm text-muted">
-                    {t("roleRequests.experience")}
-                  </dt>
-                  <dd className="mt-1 font-medium">
-                    {selected.application.yearsExperience != null
-                      ? t("coachColumns.years", {
-                          count: selected.application.yearsExperience,
-                        })
-                      : "—"}
-                  </dd>
-                </div>
+                {selected.application.yearsExperience != null ? (
+                  <div className="rounded-xl border border-border/70 bg-surface/60 p-3">
+                    <dt className="text-sm text-muted">
+                      {t("roleRequests.experience")}
+                    </dt>
+                    <dd className="mt-1 font-medium">
+                      {t("coachColumns.years", {
+                        count: selected.application.yearsExperience,
+                      })}
+                    </dd>
+                  </div>
+                ) : null}
               </dl>
             </section>
 
@@ -398,33 +398,14 @@ export function RoleRequestsScreen({ className }: RoleRequestsScreenProps) {
               </section>
             ) : null}
 
-            {selected.application.note || selected.review.reason ? (
-              <section className="flex flex-col gap-3">
-                <Typography className="font-semibold">
-                  {t("roleRequests.notes")}
+            {selected.review.reason ? (
+              <section className="rounded-xl border border-danger/30 bg-danger/5 p-3.5">
+                <Typography className="text-sm text-danger">
+                  {t("roleRequests.reviewNote")}
                 </Typography>
-                <dl className="flex flex-col gap-3">
-                  {selected.application.note ? (
-                    <div className="rounded-xl border border-border/70 bg-surface/60 p-3.5">
-                      <dt className="text-sm text-muted">
-                        {t("roleRequests.applicationNote")}
-                      </dt>
-                      <dd className="mt-1 whitespace-pre-wrap leading-7">
-                        {selected.application.note}
-                      </dd>
-                    </div>
-                  ) : null}
-                  {selected.review.reason ? (
-                    <div className="rounded-xl border border-danger/30 bg-danger/5 p-3.5">
-                      <dt className="text-sm text-danger">
-                        {t("roleRequests.reviewNote")}
-                      </dt>
-                      <dd className="mt-1 whitespace-pre-wrap leading-7">
-                        {selected.review.reason}
-                      </dd>
-                    </div>
-                  ) : null}
-                </dl>
+                <Typography className="mt-1 whitespace-pre-wrap leading-7">
+                  {selected.review.reason}
+                </Typography>
               </section>
             ) : null}
 

@@ -5,4 +5,5 @@ export type AppLayoutProps = {
   footer?: ReactNode;
   children: ReactNode;
   className?: string;
+  headerClassName?: string;
 };

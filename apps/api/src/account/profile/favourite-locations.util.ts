@@ -18,6 +18,7 @@ export type ExclusiveFavouriteLocationKind =
 export type FavouriteLocationAddressPublic = {
   provinceId: string | null;
   city: string | null;
+  district: string | null;
   street: string | null;
   apartment: string | null;
   postalCode: string | null;
@@ -34,6 +35,7 @@ export type FavouriteLocationPublic = {
 export type FavouriteLocationAddressPatch = {
   provinceId?: string | null;
   city?: string;
+  district?: string;
   street?: string;
   apartment?: string;
   postalCode?: string;
@@ -68,6 +70,7 @@ export function toPublicAddress(
   return {
     provinceId: address?.provinceId?.toString() ?? null,
     city: address?.city ?? null,
+    district: address?.district ?? null,
     street: address?.street ?? null,
     apartment: address?.apartment ?? null,
     postalCode: address?.postalCode ?? null,
@@ -93,6 +96,7 @@ export function applyAddressPatch(
   const next: UserAddress = {
     provinceId: current?.provinceId,
     city: current?.city,
+    district: current?.district,
     street: current?.street,
     apartment: current?.apartment,
     postalCode: current?.postalCode,
@@ -105,6 +109,7 @@ export function applyAddressPatch(
       : undefined;
   }
   if (patch.city !== undefined) next.city = patch.city;
+  if (patch.district !== undefined) next.district = patch.district;
   if (patch.street !== undefined) next.street = patch.street;
   if (patch.apartment !== undefined) next.apartment = patch.apartment;
   if (patch.postalCode !== undefined) next.postalCode = patch.postalCode;
@@ -119,9 +124,10 @@ export function favouriteLocationHasContent(
 ): boolean {
   return Boolean(
     address.city?.trim() ||
-    address.street?.trim() ||
-    address.apartment?.trim() ||
-    address.point,
+      address.district?.trim() ||
+      address.street?.trim() ||
+      address.apartment?.trim() ||
+      address.point,
   );
 }
 

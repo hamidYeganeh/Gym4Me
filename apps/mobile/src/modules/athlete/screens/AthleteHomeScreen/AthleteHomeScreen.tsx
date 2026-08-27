@@ -1,5 +1,6 @@
 "use client";
 
+import { BrandText } from "@repo/ui/kit/LineShadowText";
 import { Calendar1 } from "@repo/icons/Calendar1";
 import { Ticket } from "@repo/icons/Ticket";
 import { Wallet } from "@repo/icons/Wallet";
@@ -125,6 +126,7 @@ export function AthleteHomeScreen() {
   return (
     <AppLayout
       className={styles.root}
+      headerClassName="shadow-none"
       header={
         <ProfileHeader
           avatarAlt={firstName}
@@ -149,7 +151,7 @@ export function AthleteHomeScreen() {
               actionAriaLabel={t("heroAction")}
               actionLabel={t("heroAction")}
               description={t("heroDescription")}
-              eyebrow={t("heroEyebrow")}
+              eyebrow={<BrandText />}
               onAction={() => router.push("/athlete/workouts")}
               progress={72}
               progressLabel={t("heroProgressLabel")}

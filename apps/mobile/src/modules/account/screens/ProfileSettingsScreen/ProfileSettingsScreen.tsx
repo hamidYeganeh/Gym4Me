@@ -54,7 +54,9 @@ export function ProfileSettingsScreen({
           }}
           phoneDisplay={settings.phoneDisplay}
           provinces={settings.provinces}
+          levelOptions={settings.levelOptions}
           referralCodeDisplay={settings.referralCodeDisplay}
+          roleSegment={roleSegment}
           values={settings.values}
         />
 

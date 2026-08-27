@@ -35,6 +35,7 @@ import { UsersThree } from "@repo/icons/UsersThree";
 import { Wallet } from "@repo/icons/Wallet";
 import { useTheme } from "@repo/theme";
 import { Logo } from "../../common/Logo";
+import { BrandText } from "../../kit/LineShadowText";
 import { adminDashboardLayoutVariants } from "./AdminDashboardLayout.styles";
 import type {
   AdminDashboardLayoutProps,
@@ -154,7 +155,7 @@ export function AdminDashboardLayout({
           </Button>
           <Tooltip.Content placement="end" showArrow>
             <Tooltip.Arrow />
-            {APP_NAME}
+            <BrandText>{APP_NAME}</BrandText>
           </Tooltip.Content>
         </Tooltip>
 

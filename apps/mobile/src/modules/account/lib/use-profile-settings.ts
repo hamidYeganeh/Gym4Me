@@ -10,6 +10,7 @@ import {
   mediaApi,
   mediaFileUrl,
 } from "@/shared/lib/api";
+import { getChoiceGroup } from "@/shared/lib/choices-cache";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import {
   buildUpdateAthleteInput,
@@ -19,12 +20,33 @@ import {
   formatIranPhoneDisplay,
   formValuesFromUser,
   joinFullName,
+  type ProfileLevelOption,
   type ProfileProvinceOption,
   type ProfileSettingsFormValues,
   type ProfileSettingsSaveError,
 } from "./profile-settings";
 
 export type ProfileSettingsRoleSegment = "athlete" | "coach" | "owner";
+
+function mapLevelOptions(group: {
+  options: Array<{
+    value: string;
+    name: string;
+    description?: string | null;
+    isActive?: boolean;
+    order?: number;
+  }>;
+}): ProfileLevelOption[] {
+  return group.options
+    .filter((option) => option.isActive !== false)
+    .slice()
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    .map((option) => ({
+      value: option.value,
+      name: option.name,
+      description: option.description?.trim() || undefined,
+    }));
+}
 
 export function useProfileSettings(
   roleSegment: ProfileSettingsRoleSegment = "athlete",
@@ -39,6 +61,7 @@ export function useProfileSettings(
     emptyProfileSettingsValues(),
   );
   const [provinces, setProvinces] = useState<ProfileProvinceOption[]>([]);
+  const [levelOptions, setLevelOptions] = useState<ProfileLevelOption[]>([]);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isAvatarUploading, setIsAvatarUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -98,6 +121,7 @@ export function useProfileSettings(
             athlete: null,
             coach: {
               bio: profile.bio ?? "",
+              levelKey: profile.levelKey ?? "",
               headline: profile.experience.headline ?? "",
               years:
                 profile.experience.years != null
@@ -137,6 +161,32 @@ export function useProfileSettings(
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const choiceKey =
+      roleSegment === "athlete"
+        ? "athlete_level"
+        : roleSegment === "coach"
+          ? "coach_level"
+          : null;
+    if (!choiceKey) {
+      setLevelOptions([]);
+      return;
+    }
+    void (async () => {
+      try {
+        const group = await getChoiceGroup(choiceKey);
+        if (cancelled) return;
+        setLevelOptions(mapLevelOptions(group));
+      } catch {
+        if (!cancelled) setLevelOptions([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [roleSegment]);
 
   useEffect(() => {
     return () => {
@@ -268,6 +318,7 @@ export function useProfileSettings(
   return {
     values,
     provinces,
+    levelOptions,
     phoneDisplay,
     nationalIdDisplay,
     referralCodeDisplay,

@@ -5,26 +5,20 @@ export const profileHeaderVariants = tv({
     spacer: "pointer-events-none shrink-0",
     root: [
       "fixed top-0 left-1/2 z-40 w-full max-w-xl -translate-x-1/2",
-      "overflow-hidden",
+      "overflow-hidden bg-surface-secondary rounded-b-3xl",
       "pt-[env(safe-area-inset-top)]",
     ].join(" "),
-    backdrop: "pointer-events-none absolute inset-0 z-0 [contain:paint]",
+    backdrop: "pointer-events-none absolute inset-0 z-0",
     backdropBlur: "absolute inset-0",
-    backdropFade: [
-      "pointer-events-none absolute inset-0",
-      "bg-linear-to-t from-transparent via-background/70 to-background",
-    ].join(" "),
-    cover: "pointer-events-none absolute inset-0 z-0 [contain:paint]",
+    backdropFade: ["pointer-events-none absolute inset-0"].join(" "),
+    cover: "pointer-events-none absolute inset-0 z-0",
     coverImage: "object-cover",
-    coverFade: [
-      "pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-[55%]",
-      "bg-linear-to-t from-background via-background/80 to-transparent",
-    ].join(" "),
+    coverFade: "pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-[55%]",
     coverBlur: "pointer-events-none absolute inset-x-0 bottom-0 z-[2] h-[55%]",
     /** Collapsed shell — solid surface (no gradient). */
     shell: [
       "pointer-events-none absolute inset-0 z-[3]",
-      "rounded-b-[2.5rem] bg-surface",
+      "rounded-b-[2.5rem]",
     ].join(" "),
     stage: "relative z-10 w-full",
     avatar: [

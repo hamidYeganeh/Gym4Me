@@ -40,6 +40,45 @@ export type DiscoverySourceStrategy =
 
 export type DiscoveryEmptyBehavior = "hide" | "show_empty" | "fallback";
 
+/** HeroUI Button variants for discovery section “see all” actions. */
+export const DISCOVERY_ACTION_BUTTON_VARIANTS = [
+  "primary",
+  "secondary",
+  "tertiary",
+  "outline",
+  "ghost",
+  "danger",
+] as const;
+
+export type DiscoveryActionButtonVariant =
+  (typeof DISCOVERY_ACTION_BUTTON_VARIANTS)[number];
+
+export type DiscoverySectionAction = {
+  label?: string;
+  link: string;
+  variant?: DiscoveryActionButtonVariant | string;
+};
+
+/** Maps stored / legacy action.variant values onto HeroUI Button variants. */
+export function resolveDiscoveryActionButtonVariant(
+  value?: string,
+): DiscoveryActionButtonVariant {
+  switch (value) {
+    case "primary":
+    case "secondary":
+    case "tertiary":
+    case "outline":
+    case "ghost":
+    case "danger":
+      return value;
+    case "button":
+      return "primary";
+    case "link":
+    default:
+      return "ghost";
+  }
+}
+
 export type DiscoverySectionDefinition = {
   id: string;
   kind: DiscoverySectionKind;
@@ -47,7 +86,7 @@ export type DiscoverySectionDefinition = {
     title: string;
     subtitle?: string;
     icon?: string;
-    action?: { label?: string; link: string; variant?: string };
+    action?: DiscoverySectionAction;
   };
   source: {
     strategy: DiscoverySourceStrategy;

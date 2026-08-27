@@ -441,7 +441,7 @@ export class RoleMembershipService {
       const doc = await this.roleRequests.findOneAndUpdate(
         filter,
         { $setOnInsert: insert },
-        { upsert: true, new: true },
+        { upsert: true, returnDocument: 'after' },
       );
       if (!doc) {
         throw new Error('Role request upsert returned null');

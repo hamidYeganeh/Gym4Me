@@ -109,7 +109,6 @@ export function EmptyState({
           ) : null}
           {secondaryAction ? (
             <Button
-              className={slots.secondaryAction()}
               onPress={secondaryAction.onPress}
               size="md"
               variant={secondaryAction.variant ?? "ghost"}

@@ -13,6 +13,7 @@ export const supportTicketsScreenVariants = tv({
     itemMeta: "text-muted",
     empty: "py-16 text-center text-muted",
     form: "flex flex-col gap-3 rounded-[1.5rem] border-0 bg-surface p-4",
+    bodyField: "resize-none",
     actions: "mt-2 flex flex-col gap-2",
   },
 });

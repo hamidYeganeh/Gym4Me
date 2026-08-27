@@ -3,6 +3,7 @@
 import { Button } from "@heroui/react/button";
 import { ScrollShadow, type ScrollShadowVisibility } from "@heroui/react/scroll-shadow";
 import { ClubCard } from "@repo/ui/cards/ClubCard";
+import { BrandText } from "@repo/ui/kit/LineShadowText";
 import { swiperOptions } from "@repo/ui/lib/swiper";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
@@ -124,7 +125,7 @@ export function LandingHeroSection({ className }: LandingHeroSectionProps) {
 
         <div className={slots.brand()}>
           <BrandMark size={20} instanceId="hero-brand" />
-          <span>Gym4Me</span>
+          <BrandText shadow="onBrand" />
         </div>
 
         <div className={slots.navRight()}>

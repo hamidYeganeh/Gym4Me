@@ -18,14 +18,13 @@ export const emptyStateVariants = tv({
     badgeIcon: "size-3.5 shrink-0",
     copy: "flex w-full max-w-md flex-col items-center gap-2 px-1",
     title: "max-w-sm tracking-tight text-foreground",
-    description: "text-balance text-muted",
+    description: "text-balance text-muted text-center",
     actions: "mt-8 flex w-full max-w-md flex-col items-center gap-3",
-    primaryAction: "rounded-[1rem]",
+    primaryAction: "",
     secondaryAction: [
-      "h-auto min-h-0 w-fit rounded-md !px-0 !py-0",
+      "h-auto w-fit",
       "text-sm font-semibold text-accent shadow-none",
       "hover:bg-transparent hover:opacity-90",
-      "data-[pressed=true]:bg-transparent data-[pressed=true]:scale-[0.98]",
     ].join(" "),
     suggestions:
       "mt-8 flex w-full max-w-lg flex-wrap items-center justify-center gap-2",

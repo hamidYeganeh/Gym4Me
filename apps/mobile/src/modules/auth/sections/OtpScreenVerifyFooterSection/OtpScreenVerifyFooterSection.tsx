@@ -1,5 +1,4 @@
-import { Link } from "@heroui/react/link";
-import { Typography } from "@heroui/react/typography";
+import { Button } from "@heroui/react/button";
 import { Lock1 } from "@repo/icons/Lock1";
 import { otpScreenVerifyFooterSectionVariants } from "./OtpScreenVerifyFooterSection.styles";
 import type { OtpScreenVerifyFooterSectionProps } from "./OtpScreenVerifyFooterSection.types";
@@ -12,11 +11,17 @@ export function OtpScreenVerifyFooterSection({
   const styles = otpScreenVerifyFooterSectionVariants();
 
   return (
-    <Typography className={className} type="body-sm">
-      <Link className={styles.link()} onPress={onPress}>
-        <Lock1 size={18} />
+    <div className={styles.root({ className })}>
+      <Button
+        className={styles.button()}
+        onPress={onPress}
+        size="lg"
+        type="button"
+        variant="ghost"
+      >
+        <Lock1 aria-hidden size={18} />
         {label}
-      </Link>
-    </Typography>
+      </Button>
+    </div>
   );
 }

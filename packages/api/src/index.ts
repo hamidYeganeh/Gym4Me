@@ -16,6 +16,7 @@ export {
 export {
   flattenApiMessage,
   isAbortError,
+  isConnectionErrorNotice,
   isNetworkError,
   resolveApiNotice,
   resolveNetworkNotice,

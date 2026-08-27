@@ -1,5 +1,6 @@
 "use client";
 
+import { BrandText, TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import { Typography } from "@heroui/react/typography";
 import { ArrowRecycle } from "@repo/icons/ArrowRecycle";
 import { Kettlebell } from "@repo/icons/Kettlebell";
@@ -63,7 +64,7 @@ export function MarketingFooterSection() {
           data-scroll-offset="100px, 75%"
           className="c-footer_thanks || c-hero_title || c-heading -h1"
         >
-          {t("thanks")}
+          <TextWithBrand>{t("thanks")}</TextWithBrand>
         </Typography>
       </div>
 
@@ -94,7 +95,9 @@ export function MarketingFooterSection() {
               style={{ "--index": "1" } as CSSProperties}
             >
               <span className="c-hero_word || -footer">
-                <Ltr>{t("titleLine1")}</Ltr>
+                <Ltr>
+                  <BrandText shadow="onBrand">{t("titleLine1")}</BrandText>
+                </Ltr>
               </span>
             </span>
             <span
@@ -118,7 +121,9 @@ export function MarketingFooterSection() {
               href="https://gym4me.ir"
               target="_blank"
             >
-              <Ltr>{t("madeByLink")}</Ltr>
+              <Ltr>
+                <BrandText shadow="onBrand">{t("madeByLink")}</BrandText>
+              </Ltr>
             </a>
           </Typography>
         </div>

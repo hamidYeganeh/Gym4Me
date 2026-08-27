@@ -1,5 +1,6 @@
 "use client";
 
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import { ClubClassCard } from "@repo/ui/cards/ClubClassCard";
@@ -32,7 +33,7 @@ export function LandingClassesSection({
           text={t("title")}
         />
         <Typography className={slots.hint()} type="body">
-          {t("hint")}
+          <TextWithBrand>{t("hint")}</TextWithBrand>
         </Typography>
       </header>
 

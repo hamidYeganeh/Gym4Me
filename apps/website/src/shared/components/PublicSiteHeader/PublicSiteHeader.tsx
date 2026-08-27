@@ -6,6 +6,7 @@ import { MenuLeft } from "@repo/icons/MenuLeft";
 import { Moon } from "@repo/icons/Moon";
 import { Sun } from "@repo/icons/Sun";
 import { Logo } from "@repo/ui/common/Logo";
+import { BrandText, TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import { useThemeTransition } from "@repo/theme";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -55,7 +56,7 @@ export function PublicSiteHeader() {
       <div className={header.inner()}>
         <Link className={header.brand()} href="/">
           <Logo className={header.brandMark()} size="sm" title={t("brand")} />
-          <span>{t("brand")}</span>
+          <BrandText shadow="foreground">{t("brand")}</BrandText>
         </Link>
         <nav aria-label={t("navAria")} className={header.nav()}>
           {NAV_ITEMS.map((item) => (
@@ -115,7 +116,9 @@ export function PublicSiteFooter() {
   return (
     <footer className={footer.root()}>
       <div className={footer.inner()}>
-        <span>{t("copyright")}</span>
+        <span>
+          <TextWithBrand>{t("copyright")}</TextWithBrand>
+        </span>
         <span>{t("tagline")}</span>
       </div>
     </footer>

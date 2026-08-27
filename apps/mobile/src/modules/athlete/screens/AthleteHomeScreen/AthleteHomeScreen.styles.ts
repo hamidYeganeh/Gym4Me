@@ -1,5 +1,5 @@
 export const athleteHomeScreenStyles = {
-  root: "bg-background",
+  root: "bg-surface",
   content: "flex flex-1 flex-col gap-9 pb-32 pt-3",
   section: "flex flex-col gap-4",
   metricsGrid: "flex flex-col gap-3",

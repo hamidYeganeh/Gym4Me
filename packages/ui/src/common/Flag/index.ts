@@ -9,4 +9,5 @@ export {
   normalizeFlagCode,
   resolveFlagSize,
 } from "./Flag";
+export { IranFlag } from "./IranFlag";
 export type { FlagCode, FlagProps, FlagSize, FlagSizeToken } from "./Flag.types";

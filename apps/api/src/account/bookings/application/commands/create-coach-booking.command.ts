@@ -123,7 +123,7 @@ export class CreateCoachBookingCommand {
             startsAt: { $gt: new Date() },
           },
           { $set: { status: CoachSlotStatus.BOOKED } },
-          { new: true, session },
+          { returnDocument: 'after', session },
         );
         if (!slot) {
           throw new ConflictException('Slot is no longer available');

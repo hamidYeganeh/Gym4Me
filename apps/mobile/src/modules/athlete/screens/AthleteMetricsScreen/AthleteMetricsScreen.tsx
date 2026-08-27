@@ -103,13 +103,6 @@ export function AthleteMetricsScreen({
               >
                 اهداف و یادآوری
               </Button>
-              <Button
-                onPress={() => router.push("/athlete/data-rights")}
-                size="sm"
-                variant="tertiary"
-              >
-                حقوق داده
-              </Button>
             </div>
           </>
         ) : (
@@ -120,13 +113,6 @@ export function AthleteMetricsScreen({
               variant="tertiary"
             >
               اهداف و یادآوری
-            </Button>
-            <Button
-              onPress={() => router.push("/athlete/data-rights")}
-              size="sm"
-              variant="tertiary"
-            >
-              حقوق داده
             </Button>
           </div>
         )}

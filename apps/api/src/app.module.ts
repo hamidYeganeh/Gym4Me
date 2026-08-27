@@ -48,6 +48,7 @@ import { PaymentModule } from './common/payment/payment.module';
 import { MalwareModule } from './common/malware/malware.module';
 import { StorageModule } from './common/storage/storage.module';
 import {
+  AUTH_THROTTLE,
   AUTH_THROTTLE_DAY,
   AUTH_THROTTLE_MINUTE,
   skipUnlessAuthThrottleNamed,
@@ -105,8 +106,8 @@ import { WaitlistModule } from './waitlist/waitlist.module';
             },
             {
               name: AUTH_THROTTLE_DAY,
-              limit: 7,
-              ttl: 86_400_000,
+              limit: AUTH_THROTTLE[AUTH_THROTTLE_DAY].limit,
+              ttl: AUTH_THROTTLE[AUTH_THROTTLE_DAY].ttl,
               skipIf: (ctx) => disabled || skipDay(ctx),
             },
           ],

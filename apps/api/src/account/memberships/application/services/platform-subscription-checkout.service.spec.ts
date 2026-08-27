@@ -247,7 +247,7 @@ describe('PlatformSubscriptionCheckoutService', () => {
         'period.end': previousEnd,
       }),
       expect.objectContaining({ $inc: { __v: 1 } }),
-      { new: true, session },
+      { returnDocument: 'after', session },
     );
     expect(result).toBe(updated);
   });

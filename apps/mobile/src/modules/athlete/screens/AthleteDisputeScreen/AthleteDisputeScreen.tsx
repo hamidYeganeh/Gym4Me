@@ -81,19 +81,11 @@ export function AthleteDisputeScreen({
         <SecondaryPageHeader
           backAriaLabel={t("back")}
           onBack={() => router.back()}
+          title={t("title")}
         />
       }
     >
       <div className={styles.content()}>
-        <section className={styles.intro()}>
-          <Typography className={styles.introTitle()} type="h1" weight="bold">
-            {t("title")}
-          </Typography>
-          <Typography className={styles.introSubtitle()} type="body">
-            {t("subtitle")}
-          </Typography>
-        </section>
-
         <section className={styles.card()}>
           <Typography type="h3" weight="semibold">
             {t("formTitle")}

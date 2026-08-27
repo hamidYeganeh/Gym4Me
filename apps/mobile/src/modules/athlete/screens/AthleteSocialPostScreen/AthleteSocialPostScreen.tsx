@@ -1,5 +1,6 @@
 "use client";
 
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import { useState } from "react";
 import { Button } from "@heroui/react/button";
 import { Label } from "@heroui/react/label";
@@ -52,7 +53,7 @@ export function AthleteSocialPostScreen({
             {detail.createdLabel}
           </Typography>
           <Typography className={styles.body()} type="body">
-            {detail.body}
+            <TextWithBrand>{detail.body}</TextWithBrand>
           </Typography>
           {detail.mediaUrls.length > 0 ? (
             <div className={styles.mediaGrid()}>

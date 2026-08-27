@@ -1,5 +1,6 @@
 "use client";
 
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import { Typography } from "@heroui/react/typography";
 import { ClubSubscriptionCard } from "@repo/ui/cards/ClubSubscriptionCard";
 import { useTranslations } from "next-intl";
@@ -28,7 +29,7 @@ export function LandingProgramsSection({
         className={slots.title()}
       />
       <Typography type="body" className={slots.hint()}>
-        {t("hint")}
+        <TextWithBrand>{t("hint")}</TextWithBrand>
       </Typography>
       <div className={slots.list()}>
         {LANDING_MEMBERSHIPS.map((plan, i) => (

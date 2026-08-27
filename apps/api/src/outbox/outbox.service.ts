@@ -156,7 +156,7 @@ export class OutboxService {
         },
         $inc: { replayCount: 1 },
       },
-      { new: true },
+      { returnDocument: 'after' },
     );
     if (!replayed) {
       throw new NotFoundException('Dead-letter outbox message not found');
@@ -205,7 +205,7 @@ export class OutboxService {
         },
         $inc: { attempts: 1 },
       },
-      { new: true, sort: { createdAt: 1 } },
+      { returnDocument: 'after', sort: { createdAt: 1 } },
     );
   }
 

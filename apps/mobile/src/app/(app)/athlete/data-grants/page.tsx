@@ -1,8 +1,5 @@
-import type { Metadata } from "next";
-import { AthleteDataGrantsGate } from "@/modules/athlete/lib/AthleteDataGrantsGate";
-
-export const metadata: Metadata = { title: "اشتراک‌گذاری داده با مربی" };
+import { redirect } from "next/navigation";
 
 export default function AthleteDataGrantsPage() {
-  return <AthleteDataGrantsGate />;
+  redirect("/athlete/profile");
 }

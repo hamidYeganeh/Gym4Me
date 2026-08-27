@@ -19,6 +19,8 @@ export function DiscoveryHomeSportsSection({
   title,
   hint,
   seeAllHref = "/discovery/sports",
+  seeAllLabel,
+  seeAllVariant,
 }: DiscoveryHomeSportsSectionProps) {
   const t = useTranslations("DiscoveryHome");
   const router = useRouter();
@@ -31,7 +33,8 @@ export function DiscoveryHomeSportsSection({
       ariaLabel={title ?? t("sportsTitle")}
       hint={hint ?? t("sportsHint")}
       pattern
-      seeAllLabel={t("seeAll")}
+      seeAllLabel={seeAllLabel ?? t("seeAll")}
+      seeAllVariant={seeAllVariant}
       sheet
       slideClassName={slots.slide()}
       title={title ?? t("sportsTitle")}

@@ -22,7 +22,7 @@ export const profileSettingsFieldRowVariants = tv({
   variants: {
     locked: {
       true: {
-        trigger: "opacity-80 data-[hovered=true]:bg-transparent",
+        trigger: "opacity-80",
       },
       false: {},
     },
@@ -37,6 +37,14 @@ export const profileSettingsFieldRowVariants = tv({
       },
     },
   },
+  compoundVariants: [
+    {
+      locked: true,
+      class: {
+        trigger: "data-[hovered=true]:bg-default/30",
+      },
+    },
+  ],
   defaultVariants: {
     locked: false,
     multiline: false,

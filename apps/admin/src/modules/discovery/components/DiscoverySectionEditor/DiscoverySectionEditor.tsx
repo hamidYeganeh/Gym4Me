@@ -16,13 +16,15 @@ import {
 import { FieldError } from "@heroui/react/field-error";
 import type { Key } from "react";
 import type { Role, SportNode } from "@repo/api";
-import type {
-  DiscoverySectionDefinition,
-  DiscoverySourceStrategy,
+import {
+  resolveDiscoveryActionButtonVariant,
+  type DiscoverySectionDefinition,
+  type DiscoverySourceStrategy,
 } from "@repo/api/discovery";
 import { AdminIconField } from "@/shared/components";
 import { DiscoverySportAutocomplete } from "../DiscoverySportAutocomplete";
 import {
+  DISCOVERY_ACTION_VARIANT_OPTIONS,
   DISCOVERY_KIND_META,
   DISCOVERY_STRATEGIES,
 } from "./discovery-section-options";
@@ -716,13 +718,12 @@ export function DiscoverySectionEditor({
                   }
                 />
                 <SelectField
+                  description="نوع دکمه HeroUI برای «مشاهده همه»"
                   label="ظاهر دکمه"
-                  options={[
-                    { value: "link", label: "لینک ساده" },
-                    { value: "button", label: "دکمه" },
-                    { value: "outline", label: "دکمه خطی" },
-                  ]}
-                  value={section.content.action.variant ?? "link"}
+                  options={DISCOVERY_ACTION_VARIANT_OPTIONS}
+                  value={resolveDiscoveryActionButtonVariant(
+                    section.content.action.variant,
+                  )}
                   onChange={(variant) =>
                     patch({
                       content: {

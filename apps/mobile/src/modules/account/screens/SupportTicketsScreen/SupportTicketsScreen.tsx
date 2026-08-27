@@ -72,6 +72,7 @@ export function SupportTicketsScreen({
             <TextField>
               <Label>{t("bodyLabel")}</Label>
               <TextArea
+                className={styles.bodyField()}
                 onChange={(e) => setBody(e.target.value)}
                 placeholder={t("bodyPlaceholder")}
                 rows={4}

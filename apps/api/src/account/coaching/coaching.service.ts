@@ -286,7 +286,7 @@ export class CoachingService {
             weeklyHours: dto.weeklyHours ?? [],
           },
         },
-        { upsert: true, new: true, setDefaultsOnInsert: true },
+        { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true },
       )
       .lean();
 
@@ -548,7 +548,7 @@ export class CoachingService {
             athleteUserId: this.oid(dto.athleteUserId),
           },
         },
-        { upsert: true, new: true, setDefaultsOnInsert: true },
+        { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true },
       );
 
       this.audit.log({
@@ -871,7 +871,7 @@ export class CoachingService {
             ...(dto.limitations === undefined ? { limitations: [] } : {}),
           },
         },
-        { upsert: true, new: true, setDefaultsOnInsert: true },
+        { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true },
       )
       .lean();
 
@@ -949,7 +949,7 @@ export class CoachingService {
           reviewedAt: new Date(),
         },
       },
-      { new: true },
+      { returnDocument: 'after' },
     );
     if (!item) throw new NotFoundException('Health assessment not found');
 
@@ -1090,7 +1090,7 @@ export class CoachingService {
           status: CoachStudentStatus.ACTIVE,
         },
       },
-      { upsert: true, new: true, setDefaultsOnInsert: true },
+      { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true },
     );
     return existing;
   }

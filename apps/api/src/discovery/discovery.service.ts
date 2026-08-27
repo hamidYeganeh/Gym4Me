@@ -257,7 +257,7 @@ export class DiscoveryService {
         },
         $setOnInsert: { publishedSections: [], publishedRevision: 0 },
       },
-      { new: true, upsert: true },
+      { returnDocument: 'after', upsert: true },
     );
     this.audit.log({
       action: AuditAction.DISCOVERY_PAGE_DRAFT_UPDATED,

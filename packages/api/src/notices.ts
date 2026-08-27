@@ -13,6 +13,10 @@ export type ApiNotice = {
   params?: Record<string, string | number>;
   /** Original payload text; used when the active locale is not `fa`. */
   sourceText?: string;
+  /** HTTP status when the notice came from an API response. */
+  statusCode?: number;
+  /** HTTP method for the request that produced this notice. */
+  method?: HttpMethod;
 };
 
 export type ResolveApiNoticeInput = {
@@ -26,11 +30,16 @@ export type ResolveApiNoticeInput = {
 function notice(
   variant: ApiNoticeVariant,
   messageKey: string,
-  extra: Pick<ApiNotice, "params" | "sourceText"> = {},
+  extra: Pick<
+    ApiNotice,
+    "params" | "sourceText" | "statusCode" | "method"
+  > = {},
 ): ApiNotice {
   const result: ApiNotice = { variant, messageKey };
   if (extra.params) result.params = extra.params;
   if (extra.sourceText) result.sourceText = extra.sourceText;
+  if (extra.statusCode != null) result.statusCode = extra.statusCode;
+  if (extra.method) result.method = extra.method;
   return result;
 }
 
@@ -152,6 +161,18 @@ function payloadCode(body: unknown): string | undefined {
   return typeof code === "string" ? code : undefined;
 }
 
+const CONNECTION_ERROR_MESSAGE_KEYS = new Set([
+  "errors.network",
+  "errors.server",
+  "errors.unavailable",
+]);
+
+/** Notices covered by mobile full-screen offline / server error UI — skip duplicate toasts. */
+export function isConnectionErrorNotice(notice: ApiNotice): boolean {
+  if (CONNECTION_ERROR_MESSAGE_KEYS.has(notice.messageKey)) return true;
+  return notice.statusCode != null && notice.statusCode >= 500;
+}
+
 export function resolveNetworkNotice(): ApiNotice {
   return { variant: "danger", messageKey: "errors.network" };
 }
@@ -167,11 +188,17 @@ export function resolveApiNotice(
     if (!text || GENERIC_SUCCESS.has(normalize(text))) return null;
     const resolved = fromExactOrPattern(text);
     if (resolved.messageKey === "errors.generic") {
-      return notice("success", "success.generic", { sourceText: text });
+      return notice("success", "success.generic", {
+        sourceText: text,
+        statusCode: input.status,
+        method: input.method,
+      });
     }
     return notice("success", resolved.messageKey, {
       params: resolved.params,
       sourceText: text,
+      statusCode: input.status,
+      method: input.method,
     });
   }
 
@@ -179,6 +206,8 @@ export function resolveApiNotice(
   if (code === KYC_REQUIRED_CODE) {
     return notice("warning", "errors.kycRequired", {
       sourceText: flattenApiMessage(payloadMessage(input.body)) ?? undefined,
+      statusCode: input.status,
+      method: input.method,
     });
   }
 
@@ -186,6 +215,8 @@ export function resolveApiNotice(
   if (isValidationMessage(rawMessage)) {
     return notice("warning", "errors.validation", {
       sourceText: flattenApiMessage(rawMessage) ?? undefined,
+      statusCode: input.status,
+      method: input.method,
     });
   }
 
@@ -203,7 +234,26 @@ export function resolveApiNotice(
   return notice(errorVariant(input.status, code), messageKey, {
     params: resolved.params,
     sourceText: text ?? undefined,
+    statusCode: input.status,
+    method: input.method,
   });
+}
+
+const GLOBAL_SERVER_FAILURE_STATUSES = new Set([502, 503, 504]);
+
+/** True when a full-screen server outage overlay should replace the current view. */
+export function isGlobalServerFailureNotice(notice: ApiNotice): boolean {
+  const status = notice.statusCode;
+  if (status != null) {
+    if (GLOBAL_SERVER_FAILURE_STATUSES.has(status)) return true;
+    if (status >= 500 && notice.method === "GET") return true;
+  }
+
+  return (
+    notice.method === "GET" &&
+    (notice.messageKey === "errors.server" ||
+      notice.messageKey === "errors.unavailable")
+  );
 }
 
 export function isAbortError(error: unknown): boolean {

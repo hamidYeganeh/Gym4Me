@@ -91,7 +91,7 @@ export class WalletTopUpService {
           gatewayInitiationClaimedAt: now,
         },
       },
-      { new: true },
+      { returnDocument: 'after' },
     );
     if (!claimed) {
       payment = await this.payments.findById(payment._id);
@@ -126,7 +126,7 @@ export class WalletTopUpService {
             gatewayInitiationClaimedAt: 1,
           },
         },
-        { new: true },
+        { returnDocument: 'after' },
       );
       if (!initiated) {
         throw new ConflictException('Wallet top-up initiation lease was lost');

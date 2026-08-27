@@ -7,20 +7,39 @@ export function authHref(returnPath?: string | null): string {
   return withAuthNext("/auth", returnPath);
 }
 
+export const AUTH_SET_PASSWORD_PATH = "/auth/set-password";
+
+type AuthNextPath =
+  | "/auth"
+  | "/auth/login"
+  | "/auth/otp"
+  | "/auth/forgot-password"
+  | typeof AUTH_SET_PASSWORD_PATH;
+
 /** Append `?next=` when `returnPath` is an in-app path. */
 export function withAuthNext(
-  path: "/auth" | "/auth/login" | "/auth/otp" | "/auth/forgot-password",
+  path: AuthNextPath,
   returnPath?: string | null,
 ): string {
   if (!returnPath || !returnPath.startsWith("/")) return path;
   return `${path}?next=${encodeURIComponent(returnPath)}`;
 }
 
+/** Post-login password setup for OTP-only accounts. */
+export function setPasswordHref(returnPath?: string | null): string {
+  return withAuthNext(AUTH_SET_PASSWORD_PATH, returnPath);
+}
+
 export type PostAuthSession = {
   activeRole: Role | null | undefined;
   isNewUser?: boolean;
-  user?: Pick<PublicUser, "id" | "name"> | null;
+  user?: Pick<PublicUser, "id" | "name" | "credentials"> | null;
 };
+
+/** OTP-only accounts that have not chosen a password yet. */
+export function needsPasswordSetup(session: PostAuthSession): boolean {
+  return session.user?.credentials?.password === "unset";
+}
 
 /**
  * New OTP registrations, or accounts that never finished the wizard
@@ -49,6 +68,10 @@ export function postAuthPath(
 ): string {
   const returnPath =
     next && next.startsWith("/") ? next : roleHomePath(session.activeRole);
+
+  if (needsPasswordSetup(session)) {
+    return setPasswordHref(returnPath);
+  }
 
   if (needsProfileOnboarding(session)) {
     return `/onboarding?next=${encodeURIComponent(returnPath)}`;

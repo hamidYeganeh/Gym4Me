@@ -156,7 +156,7 @@ export class InventoryService {
           ...(Object.keys(unset).length > 0 ? { $unset: unset } : {}),
           $inc: { version: 1 },
         },
-        { new: true, session },
+        { returnDocument: 'after', session },
       );
       if (!item) {
         const exists = await this.items
@@ -199,7 +199,7 @@ export class InventoryService {
           },
           $inc: { version: 1 },
         },
-        { new: true, session },
+        { returnDocument: 'after', session },
       );
       if (!item)
         throw new ConflictException('Inventory item changed or was archived');

@@ -60,13 +60,19 @@ export { discoveryCoachesKeys } from "./coaches.keys";
 
 export { createDiscoveryFeedApi, type DiscoveryFeedApi } from "./feed.client";
 export { discoveryFeedEndpoints } from "./feed.endpoint";
+export {
+  DISCOVERY_ACTION_BUTTON_VARIANTS,
+  resolveDiscoveryActionButtonVariant,
+} from "./feed.dto";
 export type {
+  DiscoveryActionButtonVariant,
   DiscoveryArticleCard,
   DiscoveryClubCard,
   DiscoveryEmptyBehavior,
   DiscoveryFeedQuery,
   DiscoveryFeedResponse,
   DiscoveryMembershipPlanCard,
+  DiscoverySectionAction,
   DiscoverySectionDefinition,
   DiscoverySectionItem,
   DiscoverySectionKind,

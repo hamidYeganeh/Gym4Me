@@ -1,8 +1,19 @@
 "use client";
 
 import { Typography } from "@heroui/react/typography";
+import { useTheme } from "@repo/theme";
+import {
+  BrandText,
+  containsBrandName,
+  TextWithBrand,
+} from "../../kit/LineShadowText";
+import {
+  estimateTextEffectDelay,
+  TextEffect,
+} from "../../kit/TextEffect";
 import { Logo } from "../../common/Logo";
 import { MediaImage } from "../../common/MediaImage";
+import { ProgressiveBlur } from "../../kit/ProgressiveBlur";
 import { authLayoutVariants } from "./AuthLayout.styles";
 import type { AuthLayoutProps, AuthLayoutTone } from "./AuthLayout.types";
 
@@ -18,23 +29,23 @@ export function AuthLayout({
   figurePlacement = "afterHeader",
   footer,
   belowForm,
+  animateCopy = false,
   className,
 }: AuthLayoutProps) {
+  const { resolvedTheme } = useTheme();
   const tone: AuthLayoutTone = heroSrc
     ? (toneProp ?? "hero")
     : (toneProp ?? "plain");
+  const colorScheme = resolvedTheme === "dark" ? "dark" : "light";
   const framed = framedProp ?? tone !== "hero";
   const figureFirst = figurePlacement === "beforeHeader";
-  const styles = authLayoutVariants({ tone, framed, figureFirst });
+  const styles = authLayoutVariants({ tone, colorScheme, framed, figureFirst });
   const showBrandName = showBrand && !labels.title;
+  const inverseCopy =
+    colorScheme === "dark" && (tone === "hero" || tone === "dark");
 
   return (
-    <div
-      className={styles.shell({ className })}
-      {...(tone === "dark" || tone === "hero"
-        ? { "data-theme": "dark" as const }
-        : {})}
-    >
+    <div className={styles.shell({ className })}>
       {heroSrc ? (
         <div aria-hidden className={styles.media()}>
           <MediaImage
@@ -45,8 +56,15 @@ export function AuthLayout({
             priority
             sizes="100vw"
           />
-          <div className={styles.mediaOverlay()} />
-          <div className={styles.mediaVignette()} />
+          <div className={styles.mediaFade()}>
+            <ProgressiveBlur
+              blurIntensity={2}
+              blurLayers={8}
+              className={styles.mediaBlur()}
+              direction="bottom"
+            />
+            <div className={styles.mediaWash()} />
+          </div>
         </div>
       ) : null}
 
@@ -63,9 +81,13 @@ export function AuthLayout({
               title={labels.brandAriaLabel}
             />
             {showBrandName ? (
-              <Typography className={styles.brandName()} type="h1" weight="bold">
+              <BrandText
+                as="h1"
+                className={styles.brandName()}
+                shadow={inverseCopy ? "inverse" : "foreground"}
+              >
                 {labels.brandAriaLabel}
-              </Typography>
+              </BrandText>
             ) : null}
           </div>
         ) : null}
@@ -83,20 +105,52 @@ export function AuthLayout({
         {labels.title || labels.subtitle ? (
           <header className={styles.header()}>
             {labels.title ? (
-              <Typography className={styles.title()} type="h1" weight="bold">
-                {labels.title}
-              </Typography>
+              animateCopy && !containsBrandName(labels.title) ? (
+                <TextEffect
+                  as="h1"
+                  className={styles.title()}
+                  per="word"
+                  preset="fade-in-blur"
+                >
+                  {labels.title}
+                </TextEffect>
+              ) : (
+                <TextWithBrand
+                  as="h1"
+                  className={styles.title()}
+                  shadow={inverseCopy ? "inverse" : "foreground"}
+                >
+                  {labels.title}
+                </TextWithBrand>
+              )
             ) : null}
             {labels.subtitle ? (
               <div data-keyboard-hide="">
-                <Typography
-                  className={styles.subtitle()}
-                  {...(tone === "dark" || tone === "hero"
-                    ? {}
-                    : { color: "muted" as const })}
-                >
-                  {labels.subtitle}
-                </Typography>
+                {animateCopy && !containsBrandName(labels.subtitle) ? (
+                  <TextEffect
+                    as="p"
+                    className={styles.subtitle()}
+                    delay={
+                      labels.title
+                        ? estimateTextEffectDelay(labels.title, {
+                            per: "word",
+                          })
+                        : 0
+                    }
+                    per="word"
+                    preset="fade-in-blur"
+                  >
+                    {labels.subtitle}
+                  </TextEffect>
+                ) : (
+                  <TextWithBrand
+                    as="p"
+                    className={styles.subtitle()}
+                    shadow={inverseCopy ? "inverse" : "foreground"}
+                  >
+                    {labels.subtitle}
+                  </TextWithBrand>
+                )}
               </div>
             ) : null}
           </header>

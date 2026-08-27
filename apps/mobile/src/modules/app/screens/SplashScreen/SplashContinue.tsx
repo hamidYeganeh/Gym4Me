@@ -7,9 +7,8 @@ import {
   hydrateOnboardingProfileFlag,
 } from "@/modules/app/lib/onboarding-storage";
 import { hasSeenWelcome } from "@/modules/app/lib/welcome-storage";
-import { needsProfileOnboarding } from "@/shared/lib/auth-redirect";
+import { postAuthPath } from "@/shared/lib/auth-redirect";
 import { hydrateFlags } from "@/shared/lib/flag-storage";
-import { roleHomePath } from "@/shared/lib/role-routes";
 import { useAuth } from "@/shared/providers/AuthProvider";
 
 const CONTINUE_DELAY_MS = 2800;
@@ -40,17 +39,13 @@ export function SplashContinue({ guestHref = "/discovery" }: SplashContinueProps
         if (cancelled) return;
 
         if (isAuthenticated) {
-          if (
-            needsProfileOnboarding({
+          router.replace(
+            postAuthPath({
               activeRole: session?.activeRole ?? activeRole,
               isNewUser: session?.isNewUser,
               user: session?.user,
-            })
-          ) {
-            router.replace("/onboarding");
-            return;
-          }
-          router.replace(roleHomePath(activeRole));
+            }),
+          );
           return;
         }
         if (!hasSeenWelcome()) {

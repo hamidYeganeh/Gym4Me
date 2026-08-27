@@ -14,17 +14,13 @@ export const authLoginOtpFormVariants = tv({
       "text-lg font-black tracking-[0.25em] text-foreground [direction:ltr] [font-variant-numeric:tabular-nums]",
     debugAction:
       "shrink-0 font-semibold text-warning data-[hovered=true]:bg-warning/10",
-    submit:
-      "mt-2 min-h-14 rounded-2xl bg-accent text-base font-bold text-accent-foreground data-[hovered=true]:opacity-90",
+    submit: "mt-2 min-h-14 font-bold",
     submitIcon: "ms-2 size-5",
     resendRow:
-      "flex min-h-8 flex-col items-center justify-center gap-1 text-center",
-    resendLine: "text-stats-blue",
-    resend:
-      "inline h-auto min-h-0 px-0 py-0 font-bold text-stats-blue outline-none data-[hovered=true]:bg-transparent data-[hovered=true]:opacity-80 data-[hovered=true]:underline",
-    resendMuted: "text-muted",
-    timer:
-      "text-foreground [direction:ltr] [font-variant-numeric:tabular-nums]",
+      "flex min-h-8 w-full flex-col items-center justify-center gap-1 text-center",
+    resend: "font-bold text-stats-blue",
+    resendCountdown:
+      "inline-flex items-baseline justify-center gap-1 text-center text-sm text-muted sm:text-base",
   },
 });
 

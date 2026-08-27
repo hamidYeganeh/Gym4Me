@@ -17,6 +17,7 @@ import { CallToActionCard } from "@repo/ui/cards/CallToActionCard";
 import { MetricCard } from "@repo/ui/cards/MetricCard";
 import { QuickActionCard } from "@repo/ui/cards/QuickActionCard";
 import { SpotlightCard } from "@repo/ui/cards/SpotlightCard";
+import { BrandText } from "@repo/ui/kit/LineShadowText";
 import { TodoCard, type TodoCardItem } from "@repo/ui/cards/TodoCard";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
@@ -163,7 +164,7 @@ export function LandingDownloadPhoneMockup({
                 actionAriaLabel={app("heroAction")}
                 actionLabel={app("heroAction")}
                 className={slots.phoneSpotlight()}
-                eyebrow={app("heroEyebrow")}
+                eyebrow={<BrandText shadow="onBrand">{app("heroEyebrow")}</BrandText>}
                 progress={72}
                 progressLabel={app("heroProgressLabel")}
                 title={app("heroTitle")}

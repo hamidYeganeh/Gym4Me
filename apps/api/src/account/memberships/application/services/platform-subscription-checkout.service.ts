@@ -275,7 +275,7 @@ export class PlatformSubscriptionCheckoutService {
         ],
       },
       { $set: { initiationClaimId: claimId, initiationClaimedAt: now } },
-      { new: true },
+      { returnDocument: 'after' },
     );
     if (!claimed) {
       const raced = await this.checkouts.findById(checkout._id);
@@ -302,7 +302,7 @@ export class PlatformSubscriptionCheckoutService {
           },
           $unset: { initiationClaimId: 1, initiationClaimedAt: 1 },
         },
-        { new: true },
+        { returnDocument: 'after' },
       );
       if (!initiated) {
         throw new ConflictException('Checkout initiation lease was lost');
@@ -470,7 +470,7 @@ export class PlatformSubscriptionCheckoutService {
           },
           $inc: { __v: 1 },
         },
-        { new: true, session },
+        { returnDocument: 'after', session },
       );
       if (!updated) {
         throw new ConflictException('Current platform subscription changed');

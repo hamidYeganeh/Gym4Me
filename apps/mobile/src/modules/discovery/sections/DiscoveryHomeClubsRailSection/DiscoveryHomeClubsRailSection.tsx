@@ -17,6 +17,8 @@ export function DiscoveryHomeClubsRailSection({
   hint,
   ariaLabel,
   seeAllHref,
+  seeAllLabel,
+  seeAllVariant,
   orientation = "vertical",
   keyPrefix,
   isLoading = false,
@@ -39,7 +41,8 @@ export function DiscoveryHomeClubsRailSection({
       ariaLabel={ariaLabel}
       hint={hint}
       pattern={pattern}
-      seeAllLabel={seeAllHref ? t("seeAll") : undefined}
+      seeAllLabel={seeAllHref ? (seeAllLabel ?? t("seeAll")) : undefined}
+      seeAllVariant={seeAllVariant}
       sheet
       slideClassName={slideClass}
       title={title}

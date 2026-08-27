@@ -1,3 +1,4 @@
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import { Typography } from "@heroui/react/typography";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
@@ -33,7 +34,7 @@ export async function AudienceLandingScreen({
               {t("title")}
             </Typography>
             <Typography className={slots.description()} type="body">
-              {t("description")}
+              <TextWithBrand>{t("description")}</TextWithBrand>
             </Typography>
             <div className={slots.actions()}>
               <Link className={slots.primaryCta()} href={t("primaryHref")}>
@@ -59,7 +60,7 @@ export async function AudienceLandingScreen({
                     {item.title}
                   </Typography>
                   <Typography className={slots.capabilityBody()} type="body-sm">
-                    {item.description}
+                    <TextWithBrand>{item.description}</TextWithBrand>
                   </Typography>
                 </article>
               ))}
@@ -72,7 +73,9 @@ export async function AudienceLandingScreen({
             <ul className={slots.outcomesGrid()}>
               {outcomes.map((outcome) => (
                 <li className={slots.outcomeItem()} key={outcome}>
-                  <Typography type="body-sm">{outcome}</Typography>
+                  <Typography type="body-sm">
+                    <TextWithBrand>{outcome}</TextWithBrand>
+                  </Typography>
                 </li>
               ))}
             </ul>

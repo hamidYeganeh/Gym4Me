@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@heroui/react/button";
+import { BrandText } from "@repo/ui/kit/LineShadowText";
 import { useTranslations } from "next-intl";
 import { useEffect } from "react";
 import {
@@ -62,7 +63,7 @@ export function LandingMenuOverlay({ className }: LandingMenuOverlayProps) {
         <div className={slots.top()}>
           <div className={slots.brand()}>
             <BrandMark size={20} instanceId="menu-brand" />
-            <span>Gym4Me</span>
+            <BrandText shadow="onBrand" />
           </div>
           <CloseIconButton
             label={shared("close")}

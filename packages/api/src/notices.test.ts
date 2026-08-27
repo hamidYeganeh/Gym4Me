@@ -1,5 +1,9 @@
 import { KYC_REQUIRED_CODE } from "./errors";
-import { resolveApiNotice, resolveNetworkNotice } from "./notices";
+import {
+  isConnectionErrorNotice,
+  resolveApiNotice,
+  resolveNetworkNotice,
+} from "./notices";
 
 describe("resolveApiNotice", () => {
   it("skips GET success envelopes", () => {
@@ -104,5 +108,29 @@ describe("resolveApiNotice", () => {
       variant: "danger",
       messageKey: "errors.network",
     });
+  });
+
+  it("flags connection error notices for full-screen UI", () => {
+    expect(isConnectionErrorNotice(resolveNetworkNotice())).toBe(true);
+    expect(
+      isConnectionErrorNotice(
+        resolveApiNotice({
+          ok: false,
+          status: 503,
+          method: "GET",
+          body: null,
+        })!,
+      ),
+    ).toBe(true);
+    expect(
+      isConnectionErrorNotice(
+        resolveApiNotice({
+          ok: false,
+          status: 404,
+          method: "GET",
+          body: { message: "Club not found" },
+        })!,
+      ),
+    ).toBe(false);
   });
 });

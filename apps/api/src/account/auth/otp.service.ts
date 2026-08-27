@@ -19,7 +19,7 @@ const RESEND_COOLDOWN_SECONDS = 20;
 const MAX_ATTEMPTS = 5;
 const OTP_DIGITS = 5;
 /** Max OTP SMS sends per phone per rolling 24h (all purposes). */
-const DAILY_OTP_LIMIT = 7;
+const DAILY_OTP_LIMIT = 10;
 const DAILY_OTP_WINDOW_SECONDS = 86_400;
 
 @Injectable()
@@ -65,7 +65,7 @@ export class OtpService {
     const cooldownTtl = await this.redis.ttl(this.cooldownKey(purpose, phone));
     if (cooldownTtl > 0) {
       throw new HttpException(
-        `OTP recently sent, retry in ${cooldownTtl}s`,
+        'exact.otpRecentlySent',
         HttpStatus.TOO_MANY_REQUESTS,
       );
     }
@@ -76,7 +76,7 @@ export class OtpService {
     }
     if (dailyCount > DAILY_OTP_LIMIT) {
       throw new HttpException(
-        'OTP daily limit reached, try again tomorrow',
+        'exact.otpDailyLimitReachedTryAgainTomorrow',
         HttpStatus.TOO_MANY_REQUESTS,
       );
     }

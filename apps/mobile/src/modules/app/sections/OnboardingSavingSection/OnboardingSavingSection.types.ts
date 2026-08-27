@@ -10,6 +10,8 @@ export type OnboardingSavingStepView = OnboardingSaveStepView & {
 export type OnboardingSavingSectionProps = {
   ariaLabel: string;
   steps: OnboardingSavingStepView[];
+  loopWords: string[];
+  headlinePrefix: string;
   retryLabel: string;
   errorLabel: string;
   onRetry: () => void;

@@ -1,3 +1,4 @@
+import type { DiscoveryActionButtonVariant } from "@repo/api/discovery";
 import type { DiscoverySectionSheetTone } from "../DiscoverySectionRail";
 
 export type DiscoveryHomeCatalogRailItem = {
@@ -16,6 +17,8 @@ export type DiscoveryHomeCatalogRailSectionProps = {
   title: string;
   hint?: string;
   seeAllHref?: string;
+  seeAllLabel?: string;
+  seeAllVariant?: DiscoveryActionButtonVariant;
   items: DiscoveryHomeCatalogRailItem[];
   tone?: DiscoverySectionSheetTone;
   pattern?: boolean;

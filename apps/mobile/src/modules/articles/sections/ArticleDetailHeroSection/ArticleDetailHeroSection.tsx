@@ -1,5 +1,6 @@
 import { Avatar } from "@heroui/react/avatar";
 import { Typography } from "@heroui/react/typography";
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import {
   formatArticleDate,
   formatCategoryLabel,
@@ -37,9 +38,7 @@ export function ArticleDetailHeroSection({
             {article.author.name.slice(0, 1)}
           </Avatar.Fallback>
         </Avatar>
-        <Typography className={styles.authorName()} type="body-sm">
-          {article.author.name}
-        </Typography>
+        <TextWithBrand className={styles.authorName()}>{article.author.name}</TextWithBrand>
       </div>
     </section>
   );

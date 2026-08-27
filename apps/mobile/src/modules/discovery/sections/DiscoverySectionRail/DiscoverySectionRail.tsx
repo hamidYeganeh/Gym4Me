@@ -1,6 +1,6 @@
 "use client";
 
-import { Link } from "@heroui/react/link";
+import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import { Sparkle1 } from "@repo/icons/Sparkle1";
 import { useId } from "react";
@@ -53,6 +53,7 @@ export function DiscoverySectionRail({
   hint,
   ariaLabel,
   seeAllLabel,
+  seeAllVariant = "ghost",
   onSeeAll,
   children,
   scrollerClassName,
@@ -97,6 +98,9 @@ export function DiscoverySectionRail({
                   {title}
                 </Typography>
               ) : null}
+              {title && hint ? (
+                <span aria-hidden className={slots.spacer()} />
+              ) : null}
               {hint ? (
                 <Typography className={slots.hint()} type="body-xs">
                   {hint}
@@ -105,9 +109,14 @@ export function DiscoverySectionRail({
             </div>
           </div>
           {seeAllLabel && onSeeAll ? (
-            <Link className={slots.seeAll()} onPress={onSeeAll}>
+            <Button
+              className={slots.seeAll()}
+              size="sm"
+              variant={seeAllVariant}
+              onPress={onSeeAll}
+            >
               {seeAllLabel}
-            </Link>
+            </Button>
           ) : null}
         </div>
       ) : null}

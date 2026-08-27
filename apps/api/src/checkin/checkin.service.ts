@@ -268,7 +268,7 @@ export class CheckinService {
         $set: { keyHash: this.hashDeviceSecret(secret) },
         $inc: { credentialVersion: 1 },
       },
-      { new: true },
+      { returnDocument: 'after' },
     );
     if (!device) throw new NotFoundException('Check-in device not found');
     return { device: this.toDevicePublic(device), secret };
@@ -282,7 +282,7 @@ export class CheckinService {
     const device = await this.deviceModel.findOneAndUpdate(
       { _id: new Types.ObjectId(deviceId), clubId: new Types.ObjectId(clubId) },
       { $set: { status: 'revoked' } },
-      { new: true },
+      { returnDocument: 'after' },
     );
     if (!device) throw new NotFoundException('Check-in device not found');
     return { device: this.toDevicePublic(device) };

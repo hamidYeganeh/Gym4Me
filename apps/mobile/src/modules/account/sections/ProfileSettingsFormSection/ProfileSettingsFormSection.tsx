@@ -6,12 +6,12 @@ import { Typography } from "@heroui/react/typography";
 import { Building1 } from "@repo/icons/Building1";
 import { Calendar1 } from "@repo/icons/Calendar1";
 import { Check } from "@repo/icons/Check";
-import { Flag1 } from "@repo/icons/Flag1";
 import { GenderFemale } from "@repo/icons/GenderFemale";
 import { GenderMale } from "@repo/icons/GenderMale";
 import { GenderTransgender } from "@repo/icons/GenderTransgender";
 import { Gift } from "@repo/icons/Gift";
 import { IdentityCard1 } from "@repo/icons/IdentityCard1";
+import { InfoCircle } from "@repo/icons/InfoCircle";
 import { MapPin1 } from "@repo/icons/MapPin1";
 import { MedicalCard1 } from "@repo/icons/MedicalCard1";
 import { Note1 } from "@repo/icons/Note1";
@@ -19,12 +19,14 @@ import { Ruler1 } from "@repo/icons/Ruler1";
 import { SealCheck } from "@repo/icons/SealCheck";
 import { User } from "@repo/icons/User";
 import { UserCheck } from "@repo/icons/UserCheck";
+import { IranFlag } from "@repo/ui/common/Flag";
 import { useTranslations } from "next-intl";
 import { ProfileSettingsFieldRow } from "@/modules/account/components/ProfileSettingsFieldRow";
 import {
   composeAddressLine,
   joinFullName,
 } from "@/modules/account/lib/profile-settings";
+import { useRouter } from "@/shared/lib/app-router";
 import { ProfileSettingsEditSheet } from "../ProfileSettingsEditSheet";
 import type { ProfileSettingsSheetKind } from "../ProfileSettingsEditSheet";
 import { profileSettingsFormSectionVariants } from "./ProfileSettingsFormSection.styles";
@@ -40,9 +42,11 @@ const GENDER_ICONS = {
 export function ProfileSettingsFormSection({
   values,
   provinces,
+  levelOptions,
   phoneDisplay,
   nationalIdDisplay,
   referralCodeDisplay,
+  roleSegment = "athlete",
   error,
   notice,
   isPending,
@@ -57,10 +61,19 @@ export function ProfileSettingsFormSection({
   const tAthlete = useTranslations("Mobile.AthleteProfile");
   const tCoach = useTranslations("Mobile.CoachProfile");
   const styles = profileSettingsFormSectionVariants();
+  const router = useRouter();
   const [sheet, setSheet] = useState<ProfileSettingsSheetKind>(null);
 
   const provinceName =
     provinces.find((item) => item.id === values.address.provinceId)?.name ?? "";
+  const levelLabel = (key: string) =>
+    levelOptions.find((option) => option.value === key)?.name ?? key;
+  const athleteLevelLabel = values.athlete?.levelKey
+    ? levelLabel(values.athlete.levelKey)
+    : "";
+  const coachLevelLabel = values.coach?.levelKey
+    ? levelLabel(values.coach.levelKey)
+    : "";
   const addressLine = composeAddressLine({
     street: values.address.street,
     apartment: values.address.apartment,
@@ -113,7 +126,9 @@ export function ProfileSettingsFormSection({
           <ProfileSettingsFieldRow
             icon={<GenderIcon size={FIELD_ICON} />}
             label={t("gender")}
-            onPress={() => setSheet("gender")}
+            onPress={() =>
+              router.push(`/${roleSegment}/profile/edit/gender`)
+            }
             placeholder={t("genderPlaceholder")}
             value={genderLabel}
           />
@@ -141,25 +156,40 @@ export function ProfileSettingsFormSection({
               {t("sectionContact")}
             </Typography>
           </div>
-          <ProfileSettingsFieldRow
-            icon={
-              <span className={styles.phonePrefix()}>
-                <Flag1 size={FIELD_ICON} />
-                IR
+          <div className={styles.phoneField()}>
+            <Typography className={styles.phoneLabel()}>{t("phone")}</Typography>
+            <div
+              aria-label={t("phoneLocked")}
+              className={styles.phoneTrigger()}
+              dir="ltr"
+              lang="en"
+              title={t("phoneLocked")}
+            >
+              <span className={styles.phoneCountry()}>
+                <span className={styles.phoneFlag()}>
+                  <IranFlag size="lg" />
+                </span>
+                <span aria-hidden className={styles.phoneDivider()} />
+                <span className={styles.phoneCode()}>+98</span>
               </span>
-            }
-            label={t("phone")}
-            locked
-            lockedAriaLabel={t("phoneLocked")}
-            placeholder={t("phonePlaceholder")}
-            value={phoneDisplay}
-            valueDir="ltr"
-          />
+              <span className={styles.phoneValue()}>
+                {phoneDisplay || t("phonePlaceholder")}
+              </span>
+              <span
+                aria-label={t("phoneLocked")}
+                className={styles.phoneHelp()}
+                title={t("phoneLocked")}
+              >
+                <InfoCircle size={14} />
+              </span>
+            </div>
+          </div>
           <ProfileSettingsFieldRow
             icon={<IdentityCard1 size={FIELD_ICON} />}
             label={t("nationalId")}
             locked
             lockedAriaLabel={t("nationalIdLocked")}
+            onPress={() => router.push(`/${roleSegment}/kyc`)}
             placeholder={t("nationalIdEmpty")}
             value={nationalIdDisplay}
             valueDir="ltr"
@@ -220,7 +250,7 @@ export function ProfileSettingsFormSection({
               label={tAthlete("levelKey")}
               onPress={() => setSheet("athleteLevel")}
               placeholder={t("levelPlaceholder")}
-              value={values.athlete.levelKey}
+              value={athleteLevelLabel}
             />
             <ProfileSettingsFieldRow
               icon={<Ruler1 size={FIELD_ICON} />}
@@ -247,6 +277,13 @@ export function ProfileSettingsFormSection({
               onPress={() => setSheet("coachBio")}
               placeholder={t("bioPlaceholder")}
               value={values.coach.bio}
+            />
+            <ProfileSettingsFieldRow
+              icon={<SealCheck size={FIELD_ICON} />}
+              label={tCoach("levelKey")}
+              onPress={() => setSheet("coachLevel")}
+              placeholder={t("levelPlaceholder")}
+              value={coachLevelLabel}
             />
             <ProfileSettingsFieldRow
               icon={<SealCheck size={FIELD_ICON} />}
@@ -286,6 +323,7 @@ export function ProfileSettingsFormSection({
 
       <ProfileSettingsEditSheet
         kind={sheet}
+        levelOptions={levelOptions}
         onChange={onChange}
         onClose={() => setSheet(null)}
         onPatchAthlete={onPatchAthlete}

@@ -32,7 +32,6 @@ export function AthleteSelfTrackingScreen(props: AthleteSelfTrackingScreenProps)
     >
       <div className={styles.content}>
         <AthleteSelfTrackingIntroSection
-          onDataRightsPress={() => router.push("/athlete/data-rights")}
           onGoalsPress={() => router.push("/athlete/goals")}
           onHealthSyncPress={() => router.push("/athlete/health-sync")}
         />

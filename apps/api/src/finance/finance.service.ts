@@ -173,7 +173,7 @@ export class FinanceService {
             currency: 'IRT',
           },
         },
-        { upsert: true, new: true, setDefaultsOnInsert: true, session },
+        { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true, session },
       )
       .lean();
     if (!wallet) throw new Error('Wallet upsert did not return a document');
@@ -588,7 +588,7 @@ export class FinanceService {
           cancelledAt: new Date(),
         },
       },
-      { new: true },
+      { returnDocument: 'after' },
     );
     if (cancelled) return cancelled.toObject();
 
@@ -2129,7 +2129,7 @@ export class FinanceService {
             clubId: payload.clubId,
           },
           { $set: payload },
-          { new: true },
+          { returnDocument: 'after' },
         )
         .lean();
       if (!updated) throw new NotFoundException('Compensation rule not found');

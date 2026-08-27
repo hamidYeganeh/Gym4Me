@@ -8,6 +8,7 @@ import { Typography } from "@heroui/react/typography";
 import { ArrowUpRight } from "@repo/icons/ArrowUpRight";
 import { Clock } from "@repo/icons/Clock";
 import { User } from "@repo/icons/User";
+import { brandAwareText } from "../../kit/LineShadowText";
 import { articleEditorialCardVariants } from "./ArticleEditorialCard.styles";
 import type { ArticleEditorialCardProps } from "./ArticleEditorialCard.types";
 
@@ -80,9 +81,7 @@ export function ArticleEditorialCard({
                 className={slots.metaIcon()}
                 size={META_ICON_SIZE}
               />
-              <Typography className={slots.metaText()} type="body-xs">
-                {author}
-              </Typography>
+              {brandAwareText(author)}
             </div>
           ) : null}
           {readingTimeLabel != null && readingTimeLabel !== "" ? (

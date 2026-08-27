@@ -21,7 +21,7 @@ describe('NotificationPreferencesService', () => {
     expect(findOneAndUpdate).toHaveBeenCalledWith(
       { userId: new Types.ObjectId(userId) },
       { $setOnInsert: { userId: new Types.ObjectId(userId) } },
-      { upsert: true, new: true, setDefaultsOnInsert: true },
+      { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true },
     );
     expect(result).toMatchObject({
       userId,

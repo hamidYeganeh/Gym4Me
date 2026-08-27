@@ -60,7 +60,6 @@ export function OwnerClubsCreateLocationSection({
                   <LocationPickerMap
                     value={field.value}
                     zoomInLabel={t("mapZoomIn")}
-                    zoomLabel={t("mapZoom")}
                     zoomOutLabel={t("mapZoomOut")}
                     onChange={field.onChange}
                   />

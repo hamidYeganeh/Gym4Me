@@ -3,16 +3,17 @@ import { tv } from "tailwind-variants";
 export const baseProfileHighlightsSectionVariants = tv({
   slots: {
     root: "flex flex-col gap-5",
-    invite: [
-      "relative flex min-h-[7.5rem] overflow-hidden rounded-2xl",
-      "bg-surface",
+    invite: ["relative flex overflow-hidden rounded-3xl", "bg-surface"].join(
+      " ",
+    ),
+    inviteCopy:
+      "relative z-10 flex min-w-0 flex-1 flex-col justify-center gap-4 p-4 h-42",
+    inviteTitle: "max-w-1/2 text-start leading-snug text-white",
+    inviteCta: "",
+    inviteMedia: [
+      "absolute inset-0 bg-black",
+      "after:absolute after:inset-0 after:bg-gradient-to-l after:from-black/80 after:via-black/40 after:to-transparent",
     ].join(" "),
-    inviteCopy: "z-10 flex min-w-0 flex-1 flex-col justify-center gap-2 p-4",
-    inviteTitle: "max-w-[11.5rem] text-start leading-snug text-foreground",
-    inviteCta:
-      "h-auto min-h-0 justify-start px-0 py-0 font-semibold text-accent",
-    inviteMedia:
-      "relative min-h-[7.5rem] w-[42%] shrink-0 self-stretch bg-black",
     inviteImage: "object-cover object-top",
     block: "flex flex-col gap-2",
     blockHeader: "flex items-center justify-between gap-3 px-1",

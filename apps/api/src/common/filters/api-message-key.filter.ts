@@ -14,6 +14,7 @@ const STANDARD_MESSAGES: Record<string, string> = {
   'not found': 'errors.notFound',
   conflict: 'errors.conflict',
   'too many requests': 'errors.rateLimited',
+  'throttlerexception: too many requests': 'errors.rateLimited',
   'internal server error': 'errors.server',
   'service unavailable': 'errors.unavailable',
 };
@@ -23,8 +24,10 @@ export function toApiMessageKey(message: unknown): string {
   if (typeof message !== 'string') return 'errors.validation';
   const trimmed = message.trim();
   if (MESSAGE_KEY.test(trimmed)) return trimmed;
-  const standard = STANDARD_MESSAGES[trimmed.toLowerCase()];
+  const normalized = trimmed.toLowerCase();
+  const standard = STANDARD_MESSAGES[normalized];
   if (standard) return standard;
+  if (normalized.includes('too many requests')) return 'errors.rateLimited';
 
   const words = trimmed
     .toLowerCase()

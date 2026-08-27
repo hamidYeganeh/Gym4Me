@@ -74,13 +74,12 @@ export default async function RootLayout({
       lang={locale}
       dir="rtl"
       className={`${iranSansX.variable} ${roboto.variable} h-full`}
-      data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
       <body
-        className={`${iranSansX.className} min-h-full bg-background text-foreground antialiased`}
+        className={`${iranSansX.className} min-h-full bg-surface text-foreground antialiased`}
       >
-        <div className="relative mx-auto min-h-full w-full max-w-xl">
+        <div suppressHydrationWarning className="relative mx-auto min-h-full w-full max-w-xl">
           <ThemeProvider>
             <CapacitorProvider />
             <NextIntlClientProvider>

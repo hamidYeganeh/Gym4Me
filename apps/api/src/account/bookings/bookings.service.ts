@@ -392,7 +392,7 @@ export class BookingsService {
           'payment.initiationClaimedAt': now,
         },
       },
-      { new: true },
+      { returnDocument: 'after' },
     );
     if (!claim) {
       const raced = await this.bookingModel.findById(booking._id);
@@ -434,7 +434,7 @@ export class BookingsService {
             'payment.initiationClaimedAt': 1,
           },
         },
-        { new: true },
+        { returnDocument: 'after' },
       );
       if (!stored) {
         throw new ConflictException(
@@ -525,7 +525,7 @@ export class BookingsService {
           startsAt: { $gt: new Date() },
         },
         { $set: { status: CoachSlotStatus.BOOKED } },
-        { new: true, session },
+        { returnDocument: 'after', session },
       );
       if (!newSlot) {
         throw new ConflictException('Selected slot is no longer available');

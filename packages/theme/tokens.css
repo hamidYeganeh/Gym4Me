@@ -273,6 +273,19 @@
 }
 
 /* Discovery map — expanding ring behind the nearest club pin */
+@keyframes line-shadow {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 100% 100%;
+  }
+}
+
+@utility animate-line-shadow {
+  animation: line-shadow 2s linear infinite;
+}
+
 @keyframes g4m-map-pin-pulse {
   0% {
     transform: translate(-50%, -50%) scale(0.45);

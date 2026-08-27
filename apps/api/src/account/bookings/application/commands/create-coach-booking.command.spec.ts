@@ -134,7 +134,7 @@ describe('CreateCoachBookingCommand', () => {
         status: CoachSlotStatus.OPEN,
       }),
       { $set: { status: CoachSlotStatus.BOOKED } },
-      { new: true, session },
+      { returnDocument: 'after', session },
     );
     expect(bookingModel.create).toHaveBeenCalledWith(
       [

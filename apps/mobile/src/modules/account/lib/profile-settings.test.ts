@@ -26,6 +26,7 @@ function user(overrides: Partial<PublicUser> = {}): PublicUser {
     roles: ["athlete"],
     status: "active",
     favouriteLocations: [],
+    credentials: { password: "set" },
     ...rest,
     avatar: { mediaId: null, ...avatar },
     kyc: { status: "none", verifiedAt: null, ...kyc },
@@ -34,6 +35,7 @@ function user(overrides: Partial<PublicUser> = {}): PublicUser {
     address: {
       apartment: null,
       city: null,
+      district: null,
       point: null,
       postalCode: null,
       provinceId: null,
@@ -96,7 +98,8 @@ describe("profile-settings", () => {
   });
 
   it("formats Iran phone and validates handle / jalali helpers", () => {
-    expect(formatIranPhoneDisplay("+989990000001")).toBe("0999 000 0001");
+    expect(formatIranPhoneDisplay("+989990000001")).toBe("999 0000 001");
+    expect(formatIranPhoneDisplay("09120000001")).toBe("912 0000 001");
     expect(joinFullName("حمیدرضا", "یگانه")).toBe("حمیدرضا یگانه");
     expect(isValidUserCode("mahdi-fit")).toBe(true);
     expect(isValidUserCode("Bad Code")).toBe(false);
@@ -137,6 +140,7 @@ describe("profile-settings", () => {
     expect(
       buildUpdateCoachInput({
         bio: "مربی",
+        levelKey: "senior",
         headline: "قدرت",
         years: "8",
       }),
@@ -144,11 +148,12 @@ describe("profile-settings", () => {
       ok: true,
       input: {
         bio: "مربی",
+        levelKey: "senior",
         experience: { headline: "قدرت", years: 8 },
       },
     });
     expect(
-      buildUpdateCoachInput({ bio: "", headline: "", years: "99" }),
+      buildUpdateCoachInput({ bio: "", levelKey: "", headline: "", years: "99" }),
     ).toEqual({ ok: false, error: "years" });
   });
 });

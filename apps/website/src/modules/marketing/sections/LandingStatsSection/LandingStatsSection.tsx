@@ -1,5 +1,6 @@
 "use client";
 
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import { Typography } from "@heroui/react/typography";
 import { Fire1 } from "@repo/icons/Fire1";
 import { FootSteps } from "@repo/icons/FootSteps";
@@ -40,7 +41,7 @@ export function LandingStatsSection({ className }: LandingStatsSectionProps) {
             className={slots.title()}
           />
           <Typography type="body" className={slots.hint()}>
-            {t("hint")}
+            <TextWithBrand shadow="onBrand">{t("hint")}</TextWithBrand>
           </Typography>
         </div>
 

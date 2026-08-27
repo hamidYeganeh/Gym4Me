@@ -8,7 +8,7 @@ export const authSetPasswordFormVariants = tv({
     strength: "flex flex-col gap-2",
     strengthBars: "grid grid-cols-4 gap-2",
     strengthBar: "h-1.5 rounded-full bg-white/15",
-    strengthBarActive: "bg-accent",
+    strengthBarActive: "h-1.5 rounded-full bg-accent",
     strengthMessage: "text-foreground/90",
     submit:
       "min-h-14 rounded-full text-base font-bold text-accent-foreground",

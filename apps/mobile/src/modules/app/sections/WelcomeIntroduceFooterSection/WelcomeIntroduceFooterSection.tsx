@@ -1,12 +1,16 @@
 "use client";
 
 import { Button } from "@heroui/react/button";
-import { Typography } from "@heroui/react/typography";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { ChevronRight } from "@repo/icons/ChevronRight";
 import { spring } from "@repo/theme";
 import { ProgressiveBlur } from "@repo/ui/kit/ProgressiveBlur";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import {
+  estimateTextEffectDelay,
+  TextEffect,
+} from "@repo/ui/kit/TextEffect";
+import { motion, useReducedMotion } from "motion/react";
+import { useMemo } from "react";
 import { welcomeIntroduceFooterSectionVariants } from "./WelcomeIntroduceFooterSection.styles";
 import type { WelcomeIntroduceFooterSectionProps } from "./WelcomeIntroduceFooterSection.types";
 
@@ -24,6 +28,10 @@ export function WelcomeIntroduceFooterSection({
 }: WelcomeIntroduceFooterSectionProps) {
   const styles = welcomeIntroduceFooterSectionVariants();
   const reduceMotion = useReducedMotion();
+  const subtitleDelay = useMemo(
+    () => estimateTextEffectDelay(title, { per: "word" }),
+    [title],
+  );
 
   return (
     <div className={styles.root({ className })}>
@@ -38,32 +46,27 @@ export function WelcomeIntroduceFooterSection({
           <div className={styles.wash()} />
         </div>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            animate={{ opacity: 1, y: 0 }}
-            className={styles.copy()}
-            exit={{ opacity: 0, y: 8 }}
-            initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-            key={slide}
-            transition={reduceMotion ? { duration: 0 } : spring.snap}
+        <div className={styles.copy()} key={slide}>
+          <TextEffect
+            as="h1"
+            className={styles.title()}
+            key={`title-${slide}`}
+            per="word"
+            preset="fade-in-blur"
           >
-            <Typography
-              align="center"
-              className={styles.title()}
-              type="h1"
-              weight="bold"
-            >
-              {title}
-            </Typography>
-            <Typography
-              align="center"
-              className={styles.subtitle()}
-              type="body"
-            >
-              {subtitle}
-            </Typography>
-          </motion.div>
-        </AnimatePresence>
+            {title}
+          </TextEffect>
+          <TextEffect
+            as="p"
+            className={styles.subtitle()}
+            delay={subtitleDelay}
+            key={`subtitle-${slide}`}
+            per="word"
+            preset="fade-in-blur"
+          >
+            {subtitle}
+          </TextEffect>
+        </div>
       </div>
 
       <div className={styles.sheet()}>

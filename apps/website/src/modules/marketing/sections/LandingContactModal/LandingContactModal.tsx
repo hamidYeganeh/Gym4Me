@@ -1,5 +1,6 @@
 "use client";
 
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import { Check } from "@repo/icons/Check";
@@ -120,7 +121,7 @@ export function LandingContactModal({ className }: LandingContactModalProps) {
               {t("successTitle")}
             </Typography>
             <Typography type="body-sm" color="muted" className={slots.successBody()}>
-              {t("successBody", { name: successName })}
+              <TextWithBrand>{t("successBody", { name: successName })}</TextWithBrand>
             </Typography>
             <LandingPillButton variant="solid" onPress={closeContact}>
               {t("done")}

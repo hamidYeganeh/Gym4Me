@@ -9,11 +9,16 @@ export const authLayoutVariants = tv({
      */
     shell:
       "relative flex min-h-dvh flex-col bg-background text-foreground",
-    media: "pointer-events-none fixed inset-0",
+    media: "pointer-events-none fixed inset-0 z-0 overflow-hidden",
     mediaImage:
       "absolute inset-0 size-full object-cover object-[center_45%] grayscale",
-    mediaOverlay: "pointer-events-none absolute inset-0",
-    mediaVignette: "pointer-events-none absolute inset-0",
+    mediaFade:
+      "pointer-events-none absolute inset-x-0 bottom-0 h-[55%] [contain:paint]",
+    mediaBlur: "pointer-events-none absolute inset-0",
+    mediaWash: [
+      "absolute inset-0",
+      "bg-[linear-gradient(to_top,var(--background)_0%,color-mix(in_oklch,var(--background)_72%,transparent)_32%,color-mix(in_oklch,var(--background)_28%,transparent)_58%,transparent_78%)]",
+    ].join(" "),
     panel: [
       "relative z-10 mx-auto flex min-h-dvh w-full max-w-md flex-col",
       "px-6 pb-[max(1.75rem,env(safe-area-inset-bottom))] pt-[max(2.5rem,env(safe-area-inset-top))]",
@@ -49,49 +54,44 @@ export const authLayoutVariants = tv({
         brand: "mb-2",
         header: "mb-6",
         footer: "text-muted",
-        mediaOverlay:
-          "bg-[linear-gradient(to_bottom,color-mix(in_oklch,var(--background)_92%,transparent)_0%,color-mix(in_oklch,var(--background)_78%,transparent)_45%,color-mix(in_oklch,var(--background)_94%,transparent)_100%)]",
-        mediaVignette:
-          "bg-[radial-gradient(120%_70%_at_50%_0%,transparent_0%,color-mix(in_oklch,var(--background)_55%,transparent)_100%)]",
       },
       dark: {
-        shell: "dark bg-black text-white",
+        shell: "bg-background text-foreground",
         brand: "mb-2",
-        brandName: "text-white",
+        brandName: "text-foreground",
         header: "mb-8",
-        title: "text-white",
-        subtitle: "text-white/65",
-        footer: "text-white/65",
-        mediaOverlay:
-          "bg-[linear-gradient(to_bottom,color-mix(in_oklch,black_88%,transparent)_0%,color-mix(in_oklch,black_72%,transparent)_50%,color-mix(in_oklch,black_92%,transparent)_100%)]",
-        mediaVignette:
-          "bg-[radial-gradient(140%_50%_at_50%_100%,black_0%,transparent_60%)]",
+        title: "text-foreground",
+        subtitle: "text-muted",
+        footer: "text-muted",
       },
       hero: {
-        /** Welcome hero — black stage; photo only in upper band. */
-        shell: "h-dvh max-h-dvh overflow-hidden bg-black text-white",
+        /** Welcome hero — photo in upper band; shell colors follow theme. */
+        shell: "h-dvh max-h-dvh overflow-hidden",
         brand: "mb-1",
         header: "mb-6 max-w-none self-stretch items-center gap-4 text-center",
-        brandName: "text-white",
+        brandName: "text-foreground",
         title:
-          "max-w-[21.5rem] text-balance text-center text-[2rem] leading-[1.2] font-bold tracking-tight text-white",
+          "max-w-[21.5rem] text-balance text-center text-[2rem] leading-[1.2] font-bold tracking-tight text-foreground",
         subtitle:
-          "max-w-[21.5rem] text-pretty text-center text-[0.9375rem] leading-[1.4] text-white/70",
+          "max-w-[21.5rem] text-pretty text-center text-[0.9375rem] leading-[1.4] text-muted",
         spacer: "min-h-0 flex-1",
-        body: "shrink-0 gap-0 overflow-visible bg-transparent p-0 text-white shadow-none backdrop-blur-none",
+        body: "shrink-0 gap-0 overflow-visible bg-transparent p-0 shadow-none backdrop-blur-none",
         formSlot: "gap-0",
-        footer: "pt-5 text-center text-[0.875rem] text-white/70",
-        media: "pointer-events-none absolute inset-x-0 top-0 h-[58dvh]",
-        mediaOverlay:
-          "bg-[linear-gradient(to_bottom,transparent_0%,transparent_55%,rgba(0,0,0,0.65)_78%,#000_100%)]",
-        mediaVignette: "bg-transparent",
+        footer: "pt-5 text-center text-[0.875rem] text-muted",
+        media: "pointer-events-none absolute inset-x-0 top-0 z-0 h-[58dvh] overflow-hidden",
+        mediaFade:
+          "pointer-events-none absolute inset-x-0 bottom-0 h-[52%] [contain:paint]",
+        mediaImage: "absolute inset-0 size-full object-cover object-top",
         panel: [
           "relative z-10 mx-auto flex h-full min-h-0 w-full max-w-md flex-col overflow-hidden",
           "px-4 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(0.5rem,env(safe-area-inset-top))]",
           "sm:max-w-lg",
         ].join(" "),
-        mediaImage: "absolute inset-0 size-full object-cover object-top",
       },
+    },
+    colorScheme: {
+      light: {},
+      dark: {},
     },
     framed: {
       true: {},
@@ -123,12 +123,50 @@ export const authLayoutVariants = tv({
       tone: "dark",
       framed: true,
       class: {
+        body: "rounded-[1.75rem] bg-foreground/6 p-4 shadow-2xl backdrop-blur-xl sm:p-5",
+      },
+    },
+    {
+      tone: "hero",
+      colorScheme: "dark",
+      class: {
+        shell: "bg-black text-white",
+        brandName: "text-white",
+        title: "text-white",
+        subtitle: "text-white/70",
+        body: "text-white",
+        footer: "text-white/70",
+        mediaWash: [
+          "bg-[linear-gradient(to_top,#000_0%,color-mix(in_oklch,black_72%,transparent)_32%,color-mix(in_oklch,black_28%,transparent)_58%,transparent_78%)]",
+        ].join(" "),
+      },
+    },
+    {
+      tone: "dark",
+      colorScheme: "dark",
+      class: {
+        shell: "bg-black text-white",
+        brandName: "text-white",
+        title: "text-white",
+        subtitle: "text-white/65",
+        footer: "text-white/65",
+        mediaWash: [
+          "bg-[linear-gradient(to_top,#000_0%,color-mix(in_oklch,black_72%,transparent)_32%,color-mix(in_oklch,black_28%,transparent)_58%,transparent_78%)]",
+        ].join(" "),
+      },
+    },
+    {
+      tone: "dark",
+      framed: true,
+      colorScheme: "dark",
+      class: {
         body: "rounded-[1.75rem] bg-white/6 p-4 shadow-2xl backdrop-blur-xl sm:p-5",
       },
     },
   ],
   defaultVariants: {
     tone: "plain",
+    colorScheme: "light",
     framed: true,
     figureFirst: false,
   },

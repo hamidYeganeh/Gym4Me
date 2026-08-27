@@ -8,7 +8,7 @@ export const profileLocationsScreenVariants = tv({
     intro: "flex flex-col gap-1 px-1",
     introTitle: "text-foreground",
     introSubtitle: "text-muted",
-    add: "min-h-12",
+    add: "h-14 min-h-14 rounded-2xl",
   },
 });
 

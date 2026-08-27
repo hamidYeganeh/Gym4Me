@@ -14,6 +14,7 @@ import { Eye } from "@repo/icons/Eye";
 import { Heart } from "@repo/icons/Heart";
 import { ShapeCircle } from "@repo/icons/ShapeCircle";
 import { MediaImage } from "../../common/MediaImage";
+import { brandAwareText } from "../../kit/LineShadowText";
 import { articleCardVariants } from "./ArticleCard.styles";
 import type {
   ArticleCardAuthor,
@@ -291,7 +292,7 @@ export function ArticleCard({
               dotClassName={slots.authorDot()}
               itemClassName={slots.authorItem()}
               items={[
-                showAuthor ? author.name : publishedAtLabel,
+                showAuthor ? brandAwareText(author.name) : publishedAtLabel,
                 readingTimeLabel,
               ]}
               textClassName={slots.authorItemText()}

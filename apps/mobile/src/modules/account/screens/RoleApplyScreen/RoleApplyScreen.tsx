@@ -160,12 +160,6 @@ export function RoleApplyScreen({
       }
     >
       <div className={styles.content()}>
-        <header className={styles.header()}>
-          <Typography className={styles.subtitle()} color="muted" type="body">
-            {t("subtitle")}
-          </Typography>
-        </header>
-
         <section className={styles.section()} aria-labelledby="roles-available">
           <Typography
             className={styles.sectionTitle()}

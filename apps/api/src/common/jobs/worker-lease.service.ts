@@ -101,7 +101,7 @@ export class WorkerLeaseService {
           $unset: { lastError: 1 },
           $inc: { runCount: 1 },
         },
-        { upsert: true, new: true },
+        { upsert: true, returnDocument: 'after' },
       );
       return Boolean(lease);
     } catch (error: unknown) {

@@ -11,6 +11,7 @@ import { StarFull } from "@repo/icons/StarFull";
 import { Target1 } from "@repo/icons/Target1";
 import { Telephone1 } from "@repo/icons/Telephone1";
 import { UsersThree } from "@repo/icons/UsersThree";
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -430,7 +431,11 @@ export async function SeoClubDetailScreen({
                   <MapPin1 aria-hidden size={24} />
                   <div>
                     <strong>{location}</strong>
-                    <p>برای مسیریابی و رزرو، اپ Gym4Me را باز کنید.</p>
+                    <p>
+                      <TextWithBrand>
+                        برای مسیریابی و رزرو، اپ Gym4Me را باز کنید.
+                      </TextWithBrand>
+                    </p>
                   </div>
                 </div>
               </Section>
@@ -438,7 +443,9 @@ export async function SeoClubDetailScreen({
 
             <aside className={styles.aside}>
               <div className={styles.bookingCard}>
-                <p className={styles.bookingEyebrow}>رزرو در Gym4Me</p>
+                <p className={styles.bookingEyebrow}>
+                  <TextWithBrand>رزرو در Gym4Me</TextWithBrand>
+                </p>
                 {lowestPlan ? (
                   <div className={styles.bookingPrice}>
                     <span>شروع از</span>
@@ -453,7 +460,9 @@ export async function SeoClubDetailScreen({
                   </h2>
                 )}
                 <p className={styles.bookingHint}>
-                  رزرو، پرداخت و مدیریت عضویت در اپ Gym4Me انجام می‌شود.
+                  <TextWithBrand>
+                    رزرو، پرداخت و مدیریت عضویت در اپ Gym4Me انجام می‌شود.
+                  </TextWithBrand>
                 </p>
                 <Link className={styles.primaryCta} href={ctaHref}>
                   مشاهده در اپ

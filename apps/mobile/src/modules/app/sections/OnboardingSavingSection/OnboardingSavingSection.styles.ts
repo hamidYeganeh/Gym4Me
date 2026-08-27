@@ -22,6 +22,10 @@ export const onboardingSavingSectionVariants = tv({
       "px-6",
     ],
     panel: "flex w-full max-w-sm flex-col items-stretch gap-3",
+    headline: "mb-1 flex flex-wrap items-baseline justify-center gap-x-2 text-center",
+    headlinePrefix: "font-medium tracking-tight",
+    headlineWord:
+      "text-2xl font-bold tracking-tight text-accent sm:text-3xl",
     list: "m-0 flex w-full list-none flex-col items-stretch gap-3 p-0",
     row: [
       "flex w-full items-center gap-3 rounded-2xl px-3.5 py-3.5",

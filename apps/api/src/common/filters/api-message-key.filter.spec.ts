@@ -8,4 +8,11 @@ describe('toApiMessageKey', () => {
     );
     expect(toApiMessageKey(['must be valid'])).toBe('errors.validation');
   });
+
+  it('maps Nest throttler copy to rateLimited', () => {
+    expect(toApiMessageKey('Too Many Requests')).toBe('errors.rateLimited');
+    expect(toApiMessageKey('ThrottlerException: Too Many Requests')).toBe(
+      'errors.rateLimited',
+    );
+  });
 });

@@ -19,6 +19,7 @@ function user(overrides: Partial<PublicUser> = {}): PublicUser {
     referralCode: null,
     roles: ["athlete"],
     status: "active",
+    credentials: { password: "set" },
     ...userOverrides,
     address: {
       apartment: null,

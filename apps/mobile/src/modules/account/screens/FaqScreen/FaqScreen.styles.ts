@@ -12,7 +12,7 @@ export const faqScreenVariants = tv({
     item: "rounded-[1.25rem] border-0 bg-surface px-4 py-3",
     question: "text-foreground",
     answer: "mt-2 text-muted whitespace-pre-wrap",
-    empty: "py-16 text-center text-muted",
+    empty: "py-8",
   },
 });
 

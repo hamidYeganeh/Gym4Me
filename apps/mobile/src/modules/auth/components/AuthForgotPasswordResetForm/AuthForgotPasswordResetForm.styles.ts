@@ -7,7 +7,7 @@ export const authForgotPasswordResetFormVariants = tv({
     strength: "flex flex-col gap-2",
     strengthBars: "grid grid-cols-4 gap-2",
     strengthBar: "h-1.5 rounded-full bg-separator",
-    strengthBarActive: "bg-accent",
+    strengthBarActive: "h-1.5 rounded-full bg-accent",
     strengthMessage: "text-foreground/90",
     submit:
       "min-h-14 bg-accent text-base font-bold text-accent-foreground data-[hovered=true]:opacity-90",

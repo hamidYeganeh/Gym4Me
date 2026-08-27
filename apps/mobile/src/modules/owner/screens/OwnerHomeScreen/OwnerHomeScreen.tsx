@@ -42,6 +42,7 @@ export function OwnerHomeScreen({
   return (
     <AppLayout
       className={styles.root}
+      headerClassName="shadow-none"
       header={
         <ProfileHeader
           avatarAlt={firstName}

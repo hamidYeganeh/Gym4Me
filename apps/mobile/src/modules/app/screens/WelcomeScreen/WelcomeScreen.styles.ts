@@ -3,7 +3,7 @@ import { tv } from "tailwind-variants";
 /** Sandow welcome CTA — orange rounded rect, not pill. */
 export const welcomeScreenVariants = tv({
   slots: {
-    primary: ["min-h-12 w-full"],
+    primary: ["min-h-14 w-full"],
     primaryIcon: "ms-2 size-5",
     footer: "text-[0.875rem] leading-normal text-white/70",
     signIn: [

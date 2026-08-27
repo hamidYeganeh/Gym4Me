@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Avatar } from "@heroui/react/avatar";
 import { Typography } from "@heroui/react/typography";
 import { ArticleCard } from "@repo/ui/cards/ArticleCard";
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import {
@@ -60,9 +61,7 @@ export function ArticleDetailScreen({
               ) : null}
               <Avatar.Fallback>{article.author.name.slice(0, 1)}</Avatar.Fallback>
             </Avatar>
-            <Typography className={styles.authorName} type="body-sm">
-              {article.author.name}
-            </Typography>
+            <TextWithBrand className={styles.authorName}>{article.author.name}</TextWithBrand>
           </div>
         </section>
 

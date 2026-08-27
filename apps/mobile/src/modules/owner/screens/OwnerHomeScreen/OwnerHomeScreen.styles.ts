@@ -1,3 +1,3 @@
 export const ownerHomeScreenStyles = {
-  root: "bg-background",
+  root: "bg-surface",
 } as const;

@@ -25,6 +25,8 @@ export function AuthSetPasswordForm({
   className,
   isPending = false,
   onSubmit,
+  requireCurrentPassword = true,
+  showReloginNote = true,
 }: AuthSetPasswordFormProps) {
   const t = useTranslations("Mobile.SetPassword");
   const styles = authSetPasswordFormVariants();
@@ -45,11 +47,18 @@ export function AuthSetPasswordForm({
   });
 
   const password = useWatch({ control: form.control, name: "password" }) ?? "";
+  const confirmPassword =
+    useWatch({ control: form.control, name: "confirmPassword" }) ?? "";
   const strength = useMemo(
     () => evaluatePasswordStrength(password),
     [password],
   );
   const strengthKey = passwordStrengthMessageKey(strength);
+  const passwordsMatch =
+    password.length > 0 &&
+    confirmPassword.length > 0 &&
+    password === confirmPassword;
+  const canSubmit = strength.isValid && passwordsMatch;
 
   const handleSubmit = form.handleSubmit(async (values) => {
     await onSubmit(toAuthSetPasswordPayload(values));
@@ -57,29 +66,33 @@ export function AuthSetPasswordForm({
 
   return (
     <form autoComplete="off" className={styles.form({ className })} onSubmit={handleSubmit}>
-      <Typography className={styles.notice()} type="body-sm">
-        {t("reloginNote")}
-      </Typography>
+      {showReloginNote ? (
+        <Typography className={styles.notice()} type="body-sm">
+          {t("reloginNote")}
+        </Typography>
+      ) : null}
 
-      <Controller
-        control={form.control}
-        name="currentPassword"
-        render={({ field, fieldState }) => (
-          <PasswordField
-            errorMessage={fieldState.error?.message}
-            hidePasswordLabel={t("hidePassword")}
-            inputRef={field.ref}
-            isInvalid={fieldState.invalid}
-            label={t("currentPasswordLabel")}
-            name={field.name}
-            placeholder={t("currentPasswordPlaceholder")}
-            showPasswordLabel={t("showPassword")}
-            value={field.value}
-            onBlur={field.onBlur}
-            onChange={field.onChange}
-          />
-        )}
-      />
+      {requireCurrentPassword ? (
+        <Controller
+          control={form.control}
+          name="currentPassword"
+          render={({ field, fieldState }) => (
+            <PasswordField
+              errorMessage={fieldState.error?.message}
+              hidePasswordLabel={t("hidePassword")}
+              inputRef={field.ref}
+              isInvalid={fieldState.invalid}
+              label={t("currentPasswordLabel")}
+              name={field.name}
+              placeholder={t("currentPasswordPlaceholder")}
+              showPasswordLabel={t("showPassword")}
+              value={field.value}
+              onBlur={field.onBlur}
+              onChange={field.onChange}
+            />
+          )}
+        />
+      ) : null}
 
       <Controller
         control={form.control}
@@ -127,9 +140,11 @@ export function AuthSetPasswordForm({
         <div className={styles.strengthBars()}>
           {Array.from({ length: 4 }, (_, index) => (
             <span
-              className={`${styles.strengthBar()} ${
-                index < strength.segments ? styles.strengthBarActive() : ""
-              }`}
+              className={
+                index < strength.segments
+                  ? styles.strengthBarActive()
+                  : styles.strengthBar()
+              }
               key={index}
             />
           ))}
@@ -144,7 +159,7 @@ export function AuthSetPasswordForm({
       <Button
         className={styles.submit()}
         fullWidth
-        isDisabled={!strength.isValid}
+        isDisabled={!canSubmit}
         isPending={isPending}
         size="lg"
         type="submit"

@@ -37,7 +37,7 @@ export function WelcomeScreen({ className }: WelcomeScreenProps) {
 
   const goSignIn = () => {
     markWelcomeSeen();
-    router.replace("/auth");
+    router.replace("/auth/otp");
   };
 
   const labels: AuthLayoutLabels = {
@@ -49,6 +49,7 @@ export function WelcomeScreen({ className }: WelcomeScreenProps) {
 
   return (
     <AuthLayout
+      animateCopy
       className={className}
       footer={
         <Button onPress={goSignIn} variant="ghost">

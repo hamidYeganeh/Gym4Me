@@ -192,7 +192,7 @@ export class TokenService {
             expiresAt: { $gt: new Date() },
           },
           { $set: { revokedAt: new Date() } },
-          { new: true, session: mongoSession },
+          { returnDocument: 'after', session: mongoSession },
         );
         if (!doc) throw new RefreshRotationClaimFailed();
 

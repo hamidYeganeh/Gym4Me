@@ -12,6 +12,9 @@ export const EMPTY_STATE_ILLUSTRATIONS = {
   warning: "/empty-states/warning.png",
   locked: "/empty-states/locked.png",
   equipment: "/empty-states/equipment.png",
+  offline: "/empty-states/offline-wifi.png",
+  serverError: "/empty-states/server-error.png",
+  locations: "/empty-states/locations-empty.png",
 } as const;
 
 export type EmptyStateIllustrationKey = keyof typeof EMPTY_STATE_ILLUSTRATIONS;

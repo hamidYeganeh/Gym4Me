@@ -8,14 +8,14 @@ export const discoverySectionRailVariants = tv({
     pattern:
       "pointer-evesnts-none absolute inset-0 z-0 size-full text-white opacity-[0.16]",
     header: "relative z-10 flex items-start justify-between gap-3",
-    titleRow: "flex min-w-0 flex-1 items-center gap-2",
-    accent: "mt-0.5 shrink-0 text-accent",
-    titleBlock: "min-w-0 flex-1",
+    titleRow: "flex min-w-0 flex-1 items-start gap-2",
+    accent: "mt-1 shrink-0 text-accent",
+    titleBlock: "flex min-w-0 flex-1 flex-col",
     title:
       "min-w-0 flex-1 text-[1.35rem] leading-tight tracking-tight text-foreground",
-    hint: "mt-1 text-muted",
-    seeAll:
-      "shrink-0 cursor-pointer text-sm font-semibold text-accent no-underline shadow-none",
+    hint: "text-muted",
+    spacer: "block h-2 w-full shrink-0",
+    seeAll: "shrink-0",
     scroller: discoveryHomeCarouselClassNames.carousel,
   },
   variants: {
@@ -54,14 +54,12 @@ export const discoverySectionRailVariants = tv({
         title: "text-warning-foreground",
         hint: "text-warning-foreground/70",
         accent: "text-warning-foreground",
-        seeAll: "text-warning-foreground",
       },
       accent: {
         root: "bg-accent text-accent-foreground",
         title: "text-accent-foreground",
         hint: "text-accent-foreground/70",
         accent: "text-accent-foreground",
-        seeAll: "text-accent-foreground",
       },
       muted: {
         root: "bg-surface-secondary",

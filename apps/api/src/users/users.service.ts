@@ -35,6 +35,7 @@ export interface PublicUser {
   address: {
     provinceId: string | null;
     city: string | null;
+    district: string | null;
     street: string | null;
     apartment: string | null;
     postalCode: string | null;
@@ -53,6 +54,7 @@ export interface PublicUser {
   status: string;
   kyc: { status: string; verifiedAt: Date | null };
   phoneVerifiedAt: Date | null;
+  credentials: { password: 'set' | 'unset' };
   createdAt: Date;
 }
 
@@ -250,6 +252,9 @@ export class UsersService {
         verifiedAt: user.kycVerifiedAt ?? null,
       },
       phoneVerifiedAt: user.phoneVerifiedAt ?? null,
+      credentials: {
+        password: user.passwordHash ? "set" : "unset",
+      },
       createdAt: user.createdAt,
     };
   }
@@ -275,6 +280,7 @@ export class UsersService {
     return {
       provinceId: address?.provinceId?.toString() ?? null,
       city: address?.city ?? null,
+      district: address?.district ?? null,
       street: address?.street ?? null,
       apartment: address?.apartment ?? null,
       postalCode: address?.postalCode ?? null,

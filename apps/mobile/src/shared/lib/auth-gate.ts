@@ -1,7 +1,10 @@
 import {
+  AUTH_SET_PASSWORD_PATH,
   authHref,
+  needsPasswordSetup,
   needsProfileOnboarding,
   postAuthPath,
+  setPasswordHref,
   type PostAuthSession,
 } from "@/shared/lib/auth-redirect";
 
@@ -36,6 +39,26 @@ export function decideAuthGate(input: AuthGateInput): AuthGateDecision {
     return {
       render: "shell",
       redirect: authHref(input.pathname || "/"),
+    };
+  }
+
+  if (input.pathname?.startsWith(AUTH_SET_PASSWORD_PATH)) {
+    return needsPasswordSetup(input.session)
+      ? { render: "children", redirect: null }
+      : {
+          render: "shell",
+          redirect: postAuthPath(input.session, input.next),
+        };
+  }
+
+  if (needsPasswordSetup(input.session)) {
+    const returnPath =
+      input.pathname && input.pathname.startsWith("/")
+        ? input.pathname
+        : null;
+    return {
+      render: "shell",
+      redirect: setPasswordHref(returnPath),
     };
   }
 

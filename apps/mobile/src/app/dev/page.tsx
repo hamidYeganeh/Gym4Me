@@ -1,4 +1,5 @@
 import { Logo } from "@repo/ui/common/Logo";
+import { BrandText } from "@repo/ui/kit/LineShadowText";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { BiometricAuthButton } from "@/shared/components/biometric-auth-button";
@@ -15,9 +16,13 @@ export default async function Home() {
       <header className="flex flex-col gap-3">
         <div className="flex items-center gap-3">
           <Logo size="lg" gradient={false} />
-          <p className="text-lg font-semibold tracking-tight text-foreground">
+          <BrandText
+            as="p"
+            className="text-lg font-semibold tracking-tight text-foreground"
+            shadow="foreground"
+          >
             {t("brand")}
-          </p>
+          </BrandText>
         </div>
         <h1 className="text-4xl font-semibold tracking-tight text-foreground">
           {t("title")}

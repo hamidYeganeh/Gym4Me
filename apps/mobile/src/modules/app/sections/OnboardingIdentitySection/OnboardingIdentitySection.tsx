@@ -9,6 +9,7 @@ import { InputGroup } from "@heroui/react/input-group";
 import { Label } from "@heroui/react/label";
 import { TextArea } from "@heroui/react/textarea";
 import { TextField } from "@heroui/react/textfield";
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import { Typography } from "@heroui/react/typography";
 import { Building1 } from "@repo/icons/Building1";
 import { Calendar1 } from "@repo/icons/Calendar1";
@@ -386,7 +387,7 @@ export function OnboardingIdentitySection({
 
       <Typography className={styles.security()} type="body-sm">
         <Lock1 aria-hidden className={styles.securityIcon()} size={16} />
-        {labels.securityNote}
+        <TextWithBrand>{labels.securityNote}</TextWithBrand>
       </Typography>
 
       <Drawer.Backdrop
@@ -475,7 +476,6 @@ export function OnboardingIdentitySection({
                   className="size-full"
                   value={draftPoint}
                   zoomInLabel={labels.zoomIn}
-                  zoomLabel={labels.zoom}
                   zoomOutLabel={labels.zoomOut}
                   onChange={setDraftPoint}
                 />

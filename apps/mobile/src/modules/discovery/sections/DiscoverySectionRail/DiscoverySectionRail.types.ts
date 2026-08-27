@@ -1,3 +1,4 @@
+import type { DiscoveryActionButtonVariant } from "@repo/api/discovery";
 import type { ReactNode } from "react";
 
 export type DiscoverySectionSheetTone = "surface" | "warning" | "accent" | "muted";
@@ -7,6 +8,8 @@ export type DiscoverySectionRailProps = {
   hint?: string;
   ariaLabel: string;
   seeAllLabel?: string;
+  /** HeroUI Button variant for the see-all control. Default `ghost`. */
+  seeAllVariant?: DiscoveryActionButtonVariant;
   onSeeAll?: () => void;
   children: ReactNode;
   scrollerClassName?: string;

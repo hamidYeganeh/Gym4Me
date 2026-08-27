@@ -20,6 +20,10 @@ export function OnboardingScreen({ className }: OnboardingScreenProps) {
         <OnboardingSavingSection
           ariaLabel={onboarding.t("saving.aria")}
           errorLabel={onboarding.t("saving.error")}
+          headlinePrefix={onboarding.t("saving.headlinePrefix")}
+          loopWords={onboarding.saveSteps.map((step) =>
+            onboarding.t(`saving.loopWords.${step.id}`),
+          )}
           retryLabel={onboarding.t("saving.retry")}
           steps={onboarding.saveSteps}
           onRetry={onboarding.retrySave}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { isConnectionErrorNotice } from "@repo/api";
 import type { ApiClient, ApiNotice } from "@repo/api/client";
 import { toastNotice } from "@repo/ui/kit/Toast";
 import { useLocale, useTranslations } from "next-intl";
@@ -64,6 +65,8 @@ export function ApiToastBridge({ client }: { client: ApiClient }) {
       translateNotice(t, locale, messageKey),
     );
     const unsubscribe = client.subscribeNotices((notice: ApiNotice) => {
+      if (isConnectionErrorNotice(notice)) return;
+
       toastNotice(
         notice.variant,
         <ApiNoticeCopy messageKey={`titles.${notice.variant}`} />,

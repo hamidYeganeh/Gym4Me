@@ -1,7 +1,23 @@
-import type {
-  DiscoverySectionKind,
-  DiscoverySourceStrategy,
+import {
+  DISCOVERY_ACTION_BUTTON_VARIANTS,
+  type DiscoveryActionButtonVariant,
+  type DiscoverySectionKind,
+  type DiscoverySourceStrategy,
 } from "@repo/api/discovery";
+
+export const DISCOVERY_ACTION_VARIANT_OPTIONS: Array<{
+  value: DiscoveryActionButtonVariant;
+  label: string;
+}> = [
+  { value: "primary", label: "اصلی (Primary)" },
+  { value: "secondary", label: "ثانویه (Secondary)" },
+  { value: "tertiary", label: "سوم (Tertiary)" },
+  { value: "outline", label: "خطی (Outline)" },
+  { value: "ghost", label: "شبح (Ghost)" },
+  { value: "danger", label: "خطر (Danger)" },
+];
+
+export { DISCOVERY_ACTION_BUTTON_VARIANTS };
 
 export const DISCOVERY_KIND_META: Record<
   DiscoverySectionKind,

@@ -35,6 +35,7 @@ export type ProfileAddressFormValues = {
   street: string;
   apartment: string;
   city: string;
+  district: string;
   postalCode: string;
   mapPoint: ProfileMapPoint | null;
 };
@@ -48,8 +49,15 @@ export type ProfileAthleteFormValues = {
 
 export type ProfileCoachFormValues = {
   bio: string;
+  levelKey: string;
   headline: string;
   years: string;
+};
+
+export type ProfileLevelOption = {
+  value: string;
+  name: string;
+  description?: string;
 };
 
 export type ProfileSettingsFormValues = {
@@ -75,6 +83,7 @@ export const emptyAddressValues = (): ProfileAddressFormValues => ({
   street: "",
   apartment: "",
   city: "",
+  district: "",
   postalCode: "",
   mapPoint: null,
 });
@@ -88,6 +97,7 @@ export const emptyAthleteValues = (): ProfileAthleteFormValues => ({
 
 export const emptyCoachValues = (): ProfileCoachFormValues => ({
   bio: "",
+  levelKey: "",
   headline: "",
   years: "",
 });
@@ -119,28 +129,43 @@ export function normalizeDigits(value: string): string {
     .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)));
 }
 
+/** Groups a national mobile like auth `PhoneField`: `912 0000 000`. */
 export function formatIranPhoneDisplay(phone: string): string {
-  const digits = normalizeDigits(phone).replace(/\D/g, "");
-  if (digits.startsWith("98") && digits.length === 12) {
-    const local = `0${digits.slice(2)}`;
-    return `${local.slice(0, 4)} ${local.slice(4, 7)} ${local.slice(7)}`;
+  let digits = normalizeDigits(phone).replace(/\D/g, "");
+
+  if (digits.startsWith("0098") && digits.length > 4) {
+    digits = digits.slice(4);
+  } else if (digits.startsWith("98") && digits.length >= 12) {
+    digits = digits.slice(2);
   }
-  if (digits.startsWith("0") && digits.length === 11) {
-    return `${digits.slice(0, 4)} ${digits.slice(4, 7)} ${digits.slice(7)}`;
+
+  while (digits.startsWith("0")) {
+    digits = digits.slice(1);
   }
-  return phone;
+
+  digits = digits.slice(0, 10);
+  if (!digits) return phone;
+
+  const parts = [
+    digits.slice(0, 3),
+    digits.slice(3, 7),
+    digits.slice(7, 10),
+  ].filter((part) => part.length > 0);
+  return parts.join(" ");
 }
 
 export function composeAddressLine(parts: {
   street?: string | null;
   apartment?: string | null;
   city?: string | null;
+  district?: string | null;
   provinceName?: string | null;
   postalCode?: string | null;
 }): string {
   return [
     parts.street,
     parts.apartment,
+    parts.district,
     parts.city,
     parts.provinceName,
     parts.postalCode,
@@ -200,6 +225,7 @@ export function formValuesFromUser(
       street: user.address.street ?? "",
       apartment: user.address.apartment ?? "",
       city: user.address.city ?? "",
+      district: user.address.district ?? "",
       postalCode: user.address.postalCode ?? "",
       mapPoint: user.address.point
         ? { lat: user.address.point.lat, lng: user.address.point.lng }
@@ -236,6 +262,9 @@ export function buildUpdateMeInput(
     address.provinceId = values.address.provinceId;
   }
   if (values.address.city.trim()) address.city = values.address.city.trim();
+  if (values.address.district.trim()) {
+    address.district = values.address.district.trim();
+  }
   if (values.address.street.trim()) {
     address.street = values.address.street.trim();
   }
@@ -315,6 +344,7 @@ export function buildUpdateCoachInput(
     ok: true,
     input: {
       bio: values.bio.trim() || undefined,
+      levelKey: values.levelKey.trim() || undefined,
       experience: {
         headline: values.headline.trim() || undefined,
         years,

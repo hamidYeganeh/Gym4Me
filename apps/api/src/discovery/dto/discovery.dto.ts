@@ -43,6 +43,7 @@ export class DiscoveryActionDto {
   @IsOptional()
   @IsString()
   @MaxLength(40)
+  /** HeroUI Button variant (`primary`…`danger`); legacy `link` / `button` still accepted. */
   variant?: string;
 }
 

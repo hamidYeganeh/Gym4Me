@@ -2,6 +2,10 @@
 
 import { Spinner } from "@heroui/react/spinner";
 import { Typography } from "@heroui/react/typography";
+import {
+  EMPTY_STATE_ILLUSTRATIONS,
+  EmptyState,
+} from "@repo/ui/kit/EmptyState";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
@@ -37,9 +41,13 @@ export function FaqScreen({
             <Spinner size="lg" />
           </div>
         ) : items.length === 0 ? (
-          <Typography className={styles.empty()} type="body">
-            {t("empty")}
-          </Typography>
+          <EmptyState
+            className={styles.empty()}
+            illustration={EMPTY_STATE_ILLUSTRATIONS.search}
+            illustrationAlt=""
+            layout="media"
+            title={t("empty")}
+          />
         ) : (
           <div className={styles.list()}>
             {items.map((item) => (

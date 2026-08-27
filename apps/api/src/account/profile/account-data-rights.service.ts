@@ -136,7 +136,7 @@ export class AccountDataRightsService {
           cancelledAt: new Date(),
         },
       },
-      { new: true },
+      { returnDocument: 'after' },
     );
     if (!current) {
       throw new ConflictException('account_deletion.not_cancellable');

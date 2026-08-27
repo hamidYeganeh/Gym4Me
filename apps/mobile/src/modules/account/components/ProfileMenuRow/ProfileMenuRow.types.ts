@@ -6,10 +6,11 @@ export type ProfileMenuRowProps = Omit<
 > & {
   icon: ReactNode;
   label: string;
-  hint?: string;
+  hint?: ReactNode;
   badge?: string | number;
   trailing?: ReactNode;
   showChevron?: boolean;
   tone?: "default" | "danger";
+  isDisabled?: boolean;
   onPress?: () => void;
 };

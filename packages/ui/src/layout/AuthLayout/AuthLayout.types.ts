@@ -49,5 +49,7 @@ export type AuthLayoutProps = {
   footer?: ReactNode;
   /** Optional content between form and footer (e.g. social providers) */
   belowForm?: ReactNode;
+  /** Animate title/subtitle with staggered word reveal. */
+  animateCopy?: boolean;
   className?: string;
 };

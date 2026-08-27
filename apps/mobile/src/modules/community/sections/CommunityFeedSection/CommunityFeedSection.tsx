@@ -1,5 +1,6 @@
 "use client";
 
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import { Bookmark } from "@repo/icons/Bookmark";
@@ -69,7 +70,7 @@ export function CommunityFeedSection({
                 </Typography>
               </div>
               <Typography className={slots.body()} type="body">
-                {post.body}
+                <TextWithBrand>{post.body}</TextWithBrand>
               </Typography>
               {post.mediaCount > 0 ? (
                 <div className={slots.media()}>

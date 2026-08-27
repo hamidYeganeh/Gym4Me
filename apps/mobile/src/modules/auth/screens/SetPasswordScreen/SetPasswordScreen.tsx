@@ -49,7 +49,7 @@ export function SetPasswordScreen({
       header={
         <SecondaryPageHeader
           backAriaLabel={t("back")}
-          onBack={() => router.push(`/${roleSegment}/profile/security`)}
+          onBack={() => router.push(`/${roleSegment}/profile`)}
           title={t("title")}
         />
       }

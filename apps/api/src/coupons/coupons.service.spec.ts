@@ -73,7 +73,7 @@ describe('CouponsService atomic redemption limits', () => {
         count: { $lt: 2 },
       },
       { $inc: { count: 1 } },
-      expect.objectContaining({ upsert: true, new: true }),
+      expect.objectContaining({ upsert: true, returnDocument: 'after' }),
     );
   });
 

@@ -998,7 +998,7 @@ export class MembershipsService {
         [creditField]: { $gte: amount },
       },
       { $inc: { [creditField]: -amount } },
-      { new: true, session },
+      { returnDocument: 'after', session },
     );
     if (!updated) {
       throw new BadRequestException(

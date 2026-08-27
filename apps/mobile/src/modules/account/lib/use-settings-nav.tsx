@@ -10,10 +10,8 @@ import { Headset1 } from "@repo/icons/Headset1";
 import { HeartEcg } from "@repo/icons/HeartEcg";
 import { InfoCircle } from "@repo/icons/InfoCircle";
 import { Leaf } from "@repo/icons/Leaf";
-import { Lock1 } from "@repo/icons/Lock1";
 import { Moon } from "@repo/icons/Moon";
 import { Pencil1 } from "@repo/icons/Pencil1";
-import { PiggyBank } from "@repo/icons/PiggyBank";
 import { QrCode } from "@repo/icons/QrCode";
 import { Scan1 } from "@repo/icons/Scan1";
 import { ShieldCheck } from "@repo/icons/ShieldCheck";
@@ -76,13 +74,6 @@ export function useSettingsNav(
               onPress: () => router.push("/athlete/nutrition"),
             },
             {
-              key: "data-grants",
-              icon: <Lock1 size={icon} />,
-              label: t("dataGrants"),
-              hint: t("dataGrantsHint"),
-              onPress: () => router.push("/athlete/data-grants"),
-            },
-            {
               key: "goals",
               icon: <Trophy1 size={icon} />,
               label: t("goals"),
@@ -118,13 +109,6 @@ export function useSettingsNav(
               onPress: () => router.push("/athlete/qr-check-in"),
             },
             {
-              key: "subscription",
-              icon: <PiggyBank size={icon} />,
-              label: t("subscription"),
-              hint: t("subscriptionHint"),
-              onPress: () => router.push("/athlete/subscription"),
-            },
-            {
               key: "disputes",
               icon: <ShieldExclamationMark size={icon} />,
               label: t("disputes"),
@@ -144,13 +128,6 @@ export function useSettingsNav(
               label: t("passes"),
               hint: t("passesHint"),
               onPress: () => router.push("/athlete/passes"),
-            },
-            {
-              key: "data-rights",
-              icon: <ShieldCheck size={icon} />,
-              label: t("dataRights"),
-              hint: t("dataRightsHint"),
-              onPress: () => router.push("/athlete/data-rights"),
             },
             ...(deviceSyncEnabled
               ? [
@@ -240,14 +217,13 @@ export function useSettingsNav(
     serviceRows: rowsByKeys([
       "messages",
       "qr-check-in",
-      "subscription",
       "disputes",
       "family",
       "passes",
       "referral",
       "social",
     ]),
-    privacyRows: rowsByKeys(["data-grants", "data-rights"]),
+    privacyRows: [] as SettingsNavRow[],
     supportRows,
     preferenceIcons: {
       bell: <Bell1 size={icon} />,

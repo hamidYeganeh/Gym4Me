@@ -1,5 +1,6 @@
 "use client";
 
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import { Archery } from "@repo/icons/Archery";
@@ -206,7 +207,7 @@ export function LandingSportsSection({ className }: LandingSportsSectionProps) {
             {titleLines[1]}
           </Typography>
           <Typography className={slots.hint()} type="body">
-            {t("hint")}
+            <TextWithBrand shadow="onBrand">{t("hint")}</TextWithBrand>
           </Typography>
         </motion.div>
 

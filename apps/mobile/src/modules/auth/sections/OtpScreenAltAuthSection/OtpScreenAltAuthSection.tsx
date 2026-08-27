@@ -25,7 +25,7 @@ export function OtpScreenAltAuthSection({
         onPress={onPress}
         size="lg"
         type="button"
-        variant="secondary"
+        variant="outline"
       >
         <span aria-hidden className={styles.icon()}>
           {icon ?? <Lock1 size={20} />}

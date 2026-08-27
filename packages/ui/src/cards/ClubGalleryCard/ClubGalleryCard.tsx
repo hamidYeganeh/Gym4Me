@@ -6,6 +6,7 @@ import { Eye } from "@repo/icons/Eye";
 import { File1 } from "@repo/icons/File1";
 import { Play } from "@repo/icons/Play";
 import { MediaImage } from "../../common/MediaImage";
+import { brandAwareText } from "../../kit/LineShadowText";
 import { clubGalleryCardVariants } from "./ClubGalleryCard.styles";
 import type {
   ClubGalleryCardMediaKind,
@@ -76,7 +77,7 @@ export function ClubGalleryCard({
 
           {author != null && author !== "" ? (
             <Typography className={slots.author()} type="body-xs">
-              {author}
+              {brandAwareText(author)}
             </Typography>
           ) : null}
 

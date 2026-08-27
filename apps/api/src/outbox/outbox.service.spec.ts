@@ -107,7 +107,7 @@ describe('OutboxService distributed processing', () => {
         ]),
       }),
       expect.any(Object),
-      expect.objectContaining({ new: true }),
+      expect.objectContaining({ returnDocument: 'after' }),
     );
   });
 

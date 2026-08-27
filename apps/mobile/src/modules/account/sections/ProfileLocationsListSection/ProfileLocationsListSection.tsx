@@ -4,6 +4,11 @@ import { Button } from "@heroui/react/button";
 import { Spinner } from "@heroui/react/spinner";
 import { Typography } from "@heroui/react/typography";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
+import { Plus } from "@repo/icons/Plus";
+import {
+  EMPTY_STATE_ILLUSTRATIONS,
+  EmptyState,
+} from "@repo/ui/kit/EmptyState";
 import { profileLocationsListSectionVariants } from "./ProfileLocationsListSection.styles";
 import type { ProfileLocationsListSectionProps } from "./ProfileLocationsListSection.types";
 
@@ -13,8 +18,10 @@ export function ProfileLocationsListSection({
   error,
   emptyLabel,
   emptyHint,
+  addLabel,
   retryLabel,
   onRetry,
+  onAdd,
   onSelect,
   className,
 }: ProfileLocationsListSectionProps) {
@@ -43,14 +50,23 @@ export function ProfileLocationsListSection({
 
   if (items.length === 0) {
     return (
-      <div className={styles.empty({ className })}>
-        <Typography className={styles.emptyText()} type="body">
-          {emptyLabel}
-        </Typography>
-        <Typography className={styles.emptyText()} type="body-sm">
-          {emptyHint}
-        </Typography>
-      </div>
+      <EmptyState
+        className={className}
+        description={emptyHint}
+        illustration={EMPTY_STATE_ILLUSTRATIONS.locations}
+        illustrationAlt=""
+        layout="media"
+        primaryAction={
+          onAdd
+            ? {
+                label: addLabel,
+                onPress: onAdd,
+                endContent: <Plus size={18} />,
+              }
+            : undefined
+        }
+        title={emptyLabel}
+      />
     );
   }
 

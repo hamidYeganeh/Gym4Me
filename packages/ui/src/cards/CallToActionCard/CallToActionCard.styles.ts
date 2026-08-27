@@ -22,7 +22,7 @@ export const callToActionCardVariants = tv({
         subtitle: "text-accent-foreground/95",
       },
       outlined: {
-        root: "border border-accent/70 bg-accent/5 text-accent",
+        root: "border border-accent/70 bg-transparent text-accent",
         title: "text-accent",
         subtitle: "text-accent/95",
       },

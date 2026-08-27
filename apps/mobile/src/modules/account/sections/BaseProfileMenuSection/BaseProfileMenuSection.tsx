@@ -23,6 +23,7 @@ export function BaseProfileMenuSection({
                   badge={item.badge}
                   hint={item.hint}
                   icon={item.icon}
+                  isDisabled={item.isDisabled}
                   key={item.key}
                   label={item.label}
                   onPress={item.onPress}

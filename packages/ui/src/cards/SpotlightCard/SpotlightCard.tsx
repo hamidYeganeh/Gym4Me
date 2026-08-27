@@ -3,6 +3,7 @@
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import { LightningBolt2 } from "@repo/icons/LightningBolt2";
+import { brandAwareText } from "../../kit/LineShadowText";
 import { spotlightCardVariants } from "./SpotlightCard.styles";
 import type { SpotlightCardProps } from "./SpotlightCard.types";
 
@@ -33,7 +34,7 @@ export function SpotlightCard({
     <div className={slots.root({ className })} {...props}>
       <div className={slots.header()}>
         {eyebrow != null ? (
-          <span className={slots.eyebrow()}>{eyebrow}</span>
+          <span className={slots.eyebrow()}>{brandAwareText(eyebrow)}</span>
         ) : (
           <span />
         )}
@@ -48,7 +49,7 @@ export function SpotlightCard({
         </Typography>
         {description != null ? (
           <Typography className={slots.description()} type="body-sm">
-            {description}
+            {brandAwareText(description)}
           </Typography>
         ) : null}
       </div>

@@ -92,6 +92,9 @@ export class ProfileService {
           : undefined;
       }
       if (address.city !== undefined) user.address.city = address.city;
+      if (address.district !== undefined) {
+        user.address.district = address.district;
+      }
       if (address.street !== undefined) user.address.street = address.street;
       if (address.apartment !== undefined) {
         user.address.apartment = address.apartment;
@@ -201,7 +204,7 @@ export class ProfileService {
     return this.athleteModel.findOneAndUpdate(
       { userId: new Types.ObjectId(userId) },
       { $setOnInsert: { userId: new Types.ObjectId(userId) } },
-      { new: true, upsert: true },
+      { returnDocument: 'after', upsert: true },
     );
   }
 
@@ -209,7 +212,7 @@ export class ProfileService {
     return this.coachModel.findOneAndUpdate(
       { userId: new Types.ObjectId(userId) },
       { $setOnInsert: { userId: new Types.ObjectId(userId) } },
-      { new: true, upsert: true },
+      { returnDocument: 'after', upsert: true },
     );
   }
 
@@ -304,6 +307,7 @@ export class ProfileService {
     const profile = await this.ensureCoachProfile(jwt.sub);
 
     if (dto.bio !== undefined) profile.bio = dto.bio;
+    if (dto.levelKey !== undefined) profile.levelKey = dto.levelKey;
     if (dto.experience) {
       if (dto.experience.years !== undefined) {
         profile.experience.years = dto.experience.years;
@@ -447,6 +451,7 @@ export class ProfileService {
       id: profile._id.toString(),
       userId: profile.userId.toString(),
       bio: profile.bio ?? null,
+      levelKey: profile.levelKey ?? null,
       experience: {
         years: profile.experience?.years ?? null,
         headline: profile.experience?.headline ?? null,

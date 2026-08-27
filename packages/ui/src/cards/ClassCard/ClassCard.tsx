@@ -11,6 +11,7 @@ import { ShapeCircle } from "@repo/icons/ShapeCircle";
 import { StarFull } from "@repo/icons/StarFull";
 import type { KeyboardEvent, ReactNode } from "react";
 import { MediaImage } from "../../common/MediaImage";
+import { brandAwareText } from "../../kit/LineShadowText";
 import { classCardVariants } from "./ClassCard.styles";
 import type { ClassCardProps } from "./ClassCard.types";
 
@@ -166,9 +167,7 @@ export function ClassCard({
             ) : null}
             <Avatar.Fallback>{authorInitial(author.name)}</Avatar.Fallback>
           </Avatar>
-          <Typography className={slots.authorName()} type="body-sm">
-            {author.name}
-          </Typography>
+          {brandAwareText(author.name)}
         </div>
 
         <div className={slots.stats()}>

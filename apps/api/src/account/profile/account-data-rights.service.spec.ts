@@ -105,7 +105,7 @@ describe('AccountDataRightsService', () => {
         coolingOffUntil: { $gt: expect.any(Date) },
       }),
       expect.any(Object),
-      { new: true },
+      { returnDocument: 'after' },
     );
     expect(audit.log).toHaveBeenCalled();
   });

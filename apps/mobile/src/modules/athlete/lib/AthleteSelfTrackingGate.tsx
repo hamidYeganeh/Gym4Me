@@ -2,6 +2,7 @@
 
 import { Button } from "@heroui/react/button";
 import { Spinner } from "@heroui/react/spinner";
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import { Typography } from "@heroui/react/typography";
 import type {
   MetricType,
@@ -100,7 +101,9 @@ export function AthleteSelfTrackingGate() {
           ثبت فعالیت فعلاً در دسترس نیست
         </Typography>
         <Typography className="text-muted" type="body">
-          این قابلیت می‌تواند از پنل انتشار Gym4Me دوباره فعال شود.
+          <TextWithBrand>
+            این قابلیت می‌تواند از پنل انتشار Gym4Me دوباره فعال شود.
+          </TextWithBrand>
         </Typography>
         <Button onPress={() => history.back()} variant="secondary">
           بازگشت

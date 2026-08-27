@@ -170,7 +170,7 @@ export class ArticlesService {
           publishStatus: PublishStatus.PUBLISHED,
         },
         { $inc: { 'engagement.viewsCount': 1 } },
-        { new: true },
+        { returnDocument: 'after' },
       )
       .lean();
     if (!item) throw new NotFoundException('Article not found');

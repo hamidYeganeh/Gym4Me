@@ -952,7 +952,7 @@ export class ClubSlotsService {
       const updated = await this.occupancyModel.findOneAndUpdate(
         { slotId, date, reserved: { $lte: capacity - seats } },
         { $inc: { reserved: seats } },
-        { upsert: true, new: true, session },
+        { upsert: true, returnDocument: 'after', session },
       );
       return Boolean(updated);
     } catch (error: unknown) {

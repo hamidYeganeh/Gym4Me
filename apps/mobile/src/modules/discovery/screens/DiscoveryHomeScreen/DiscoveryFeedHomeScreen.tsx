@@ -2,15 +2,16 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import type { Banner } from "@repo/api/banners";
-import type {
-  DiscoveryArticleCard,
-  DiscoveryClubCard,
-  DiscoveryCoach,
-  DiscoveryClass,
-  DiscoveryMembershipPlanCard,
-  DiscoverySlotCard,
-  DiscoverySpaceCard,
-  ResolvedDiscoverySection,
+import {
+  resolveDiscoveryActionButtonVariant,
+  type DiscoveryArticleCard,
+  type DiscoveryClubCard,
+  type DiscoveryCoach,
+  type DiscoveryClass,
+  type DiscoveryMembershipPlanCard,
+  type DiscoverySlotCard,
+  type DiscoverySpaceCard,
+  type ResolvedDiscoverySection,
 } from "@repo/api/discovery";
 import type { RefItem, SportNode } from "@repo/api";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
@@ -29,6 +30,9 @@ import {
 } from "../../lib/sports-home";
 import { mapClubCategoryRefsToHomeItems } from "../../lib/club-categories-home";
 import { useDiscoveryFeed } from "../../lib/use-discovery-feed";
+import { ConnectionErrorState } from "@/shared/components/ConnectionErrorState";
+import { useNetworkStatus } from "@/shared/hooks/useNetworkStatus";
+import type { ConnectionErrorKind } from "@/shared/lib/classify-connection-error";
 import { DiscoveryHomeArticlesSection } from "../../sections/DiscoveryHomeArticlesSection";
 import { DiscoveryHomeBannersSection } from "../../sections/DiscoveryHomeBannersSection";
 import { DiscoveryHomeClubCategoriesSection } from "../../sections/DiscoveryHomeClubCategoriesSection";
@@ -212,12 +216,15 @@ function catalogSection(
   items: DiscoveryHomeCatalogRailItem[],
   variant: DiscoveryHomeCatalogRailVariant,
 ) {
+  const action = section.content.action;
   return (
     <DiscoveryHomeCatalogRailSection
       hint={section.content.subtitle}
       items={items}
       pattern={Boolean(section.presentation.background?.pattern)}
-      seeAllHref={section.content.action?.link}
+      seeAllHref={action?.link}
+      seeAllLabel={action?.label}
+      seeAllVariant={resolveDiscoveryActionButtonVariant(action?.variant)}
       title={section.content.title}
       tone={toneOf(section)}
       variant={variant}
@@ -226,7 +233,10 @@ function catalogSection(
 }
 
 function DynamicSection({ section }: { section: ResolvedDiscoverySection }) {
-  const actionHref = section.content.action?.link;
+  const action = section.content.action;
+  const actionHref = action?.link;
+  const seeAllLabel = action?.label;
+  const seeAllVariant = resolveDiscoveryActionButtonVariant(action?.variant);
   switch (section.kind) {
     case "banners":
       return <DiscoveryHomeBannersSection banners={bannerSlides(section)} />;
@@ -252,6 +262,8 @@ function DynamicSection({ section }: { section: ResolvedDiscoverySection }) {
           )}
           hint={section.content.subtitle}
           seeAllHref={actionHref}
+          seeAllLabel={seeAllLabel}
+          seeAllVariant={seeAllVariant}
           title={section.content.title}
         />
       );
@@ -260,6 +272,8 @@ function DynamicSection({ section }: { section: ResolvedDiscoverySection }) {
         <DiscoveryHomeSportsSection
           hint={section.content.subtitle}
           seeAllHref={actionHref}
+          seeAllLabel={seeAllLabel}
+          seeAllVariant={seeAllVariant}
           sports={mapSportNodesToHomeItems(
             section.items as SportNode[],
             (sport) => mediaFileUrl(sport.coverMediaId) ?? undefined,
@@ -276,6 +290,8 @@ function DynamicSection({ section }: { section: ResolvedDiscoverySection }) {
           keyPrefix={section.id}
           pattern={Boolean(section.presentation.background?.pattern)}
           seeAllHref={actionHref}
+          seeAllLabel={seeAllLabel}
+          seeAllVariant={seeAllVariant}
           title={section.content.title}
           tone={toneOf(section)}
         />
@@ -306,6 +322,8 @@ function DynamicSection({ section }: { section: ResolvedDiscoverySection }) {
           articles={articleCards(section)}
           hint={section.content.subtitle}
           seeAllHref={actionHref}
+          seeAllLabel={seeAllLabel}
+          seeAllVariant={seeAllVariant}
           title={section.content.title}
         />
       );
@@ -317,8 +335,15 @@ function DynamicSection({ section }: { section: ResolvedDiscoverySection }) {
 export function DiscoveryFeedHomeScreen() {
   const t = useTranslations("DiscoveryHome");
   const feed = useDiscoveryFeed();
+  const { isOnline } = useNetworkStatus();
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const loadMore = feed.loadMore;
+
+  const errorKind: ConnectionErrorKind | null = !isOnline
+    ? "network"
+    : feed.error;
+  const showConnectionError =
+    errorKind != null && feed.sections.length === 0 && !feed.isLoading;
 
   useEffect(() => {
     const node = sentinelRef.current;
@@ -361,6 +386,13 @@ export function DiscoveryFeedHomeScreen() {
         <div className={styles.sheets}>
           {feed.isLoading && feed.sections.length === 0 ? (
             <DiscoveryFeedSkeleton />
+          ) : showConnectionError ? (
+            <ConnectionErrorState
+              kind={errorKind}
+              statusCode={feed.errorStatusCode}
+              onDashboard={() => void feed.reload()}
+              onRetry={() => void feed.reload()}
+            />
           ) : (
             content
           )}
@@ -373,15 +405,6 @@ export function DiscoveryFeedHomeScreen() {
               ? t("loadingMore")
               : ""}
         </span>
-        {feed.error && feed.sections.length === 0 ? (
-          <button
-            className="mx-auto my-8 block rounded-full bg-primary px-5 py-3 text-primary-foreground"
-            type="button"
-            onClick={() => void feed.reload()}
-          >
-            تلاش دوباره
-          </button>
-        ) : null}
         <div aria-hidden className="h-1" ref={sentinelRef} />
       </div>
     </AppLayout>

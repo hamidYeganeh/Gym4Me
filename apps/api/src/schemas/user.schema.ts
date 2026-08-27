@@ -54,6 +54,9 @@ export class UserAddress {
   city?: string;
 
   @Prop({ trim: true })
+  district?: string;
+
+  @Prop({ trim: true })
   street?: string;
 
   @Prop({ trim: true })

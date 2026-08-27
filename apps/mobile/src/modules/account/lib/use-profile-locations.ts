@@ -2,11 +2,20 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ApiError } from "@repo/api";
-import type { FavouriteLocation } from "@repo/api";
+import type {
+  CreateFavouriteLocationInput,
+  FavouriteLocation,
+  UpdateFavouriteLocationInput,
+} from "@repo/api";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import { accountProfile } from "@/shared/lib/api";
+import {
+  accountProfile,
+  basicsLocations,
+  isDiscoveryApiId,
+} from "@/shared/lib/api";
 import { useAuth } from "@/shared/providers/AuthProvider";
+import type { ProfileProvinceOption } from "./profile-settings";
 import {
   buildFavouriteLocationInput,
   buildFavouriteLocationUpdateInput,
@@ -19,12 +28,16 @@ import {
 
 export type ProfileLocationsMode = "list" | "form";
 
+export type ProfileLocationOption = {
+  id: string;
+  name: string;
+};
+
 function formErrorMessage(
   error: FavouriteLocationFormError,
-  t: (key: "labelRequired" | "postalCodeHint" | "contentRequired") => string,
+  t: (key: "labelRequired" | "contentRequired") => string,
 ) {
   if (error === "label") return t("labelRequired");
-  if (error === "postalCode") return t("postalCodeHint");
   return t("contentRequired");
 }
 
@@ -49,12 +62,26 @@ function apiErrorMessage(
   return typeof message === "string" && message.trim() ? message : fallback;
 }
 
+function sanitizeLocationInput<
+  T extends CreateFavouriteLocationInput | UpdateFavouriteLocationInput,
+>(input: T): T {
+  if (!input.address) return input;
+  const address = { ...input.address };
+  if (address.provinceId && !isDiscoveryApiId(address.provinceId)) {
+    delete address.provinceId;
+  }
+  return { ...input, address };
+}
+
 export function useProfileLocations() {
   const t = useTranslations("Mobile.ProfileLocations");
   const searchParams = useSearchParams();
   const { refreshUser } = useAuth();
 
   const [items, setItems] = useState<FavouriteLocation[]>([]);
+  const [provinces, setProvinces] = useState<ProfileProvinceOption[]>([]);
+  const [cities, setCities] = useState<ProfileLocationOption[]>([]);
+  const [districts, setDistricts] = useState<ProfileLocationOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<ProfileLocationsMode>("list");
@@ -89,6 +116,127 @@ export function useProfileLocations() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const countries = await basicsLocations.listCountries();
+        const iran =
+          countries.result.find((item) => item.slug === "iran") ??
+          countries.result[0];
+        if (!iran || cancelled) return;
+        const page = await basicsLocations.listProvinces(iran.id);
+        if (cancelled || page.result.length === 0) return;
+        setProvinces(
+          page.result.map((item) => ({ id: item.id, name: item.name })),
+        );
+      } catch {
+        // Keep an empty province list; the field stays selectable when data arrives.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (mode !== "form") {
+      setCities([]);
+      setDistricts([]);
+      return;
+    }
+    const provinceId = values.address.provinceId;
+    if (!provinceId || !isDiscoveryApiId(provinceId)) {
+      setCities([]);
+      setDistricts([]);
+      return;
+    }
+
+    let cancelled = false;
+    void (async () => {
+      try {
+        const page = await basicsLocations.listCities(provinceId);
+        if (cancelled) return;
+        const next = page.result.map((item) => ({
+          id: item.id,
+          name: item.name,
+        }));
+        setCities(next);
+        setValues((current) => {
+          if (
+            current.cityId &&
+            next.some((item) => item.id === current.cityId)
+          ) {
+            return current;
+          }
+          const byName = next.find(
+            (item) => item.name === current.address.city.trim(),
+          );
+          if (!byName) {
+            return current.cityId
+              ? { ...current, cityId: null, districtId: null }
+              : current;
+          }
+          return { ...current, cityId: byName.id };
+        });
+      } catch {
+        if (!cancelled) setCities([]);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [mode, values.address.provinceId]);
+
+  useEffect(() => {
+    if (mode !== "form") {
+      setDistricts([]);
+      return;
+    }
+    const cityId = values.cityId;
+    if (!cityId || !isDiscoveryApiId(cityId)) {
+      setDistricts([]);
+      return;
+    }
+
+    let cancelled = false;
+    void (async () => {
+      try {
+        const page = await basicsLocations.listDistricts(cityId);
+        if (cancelled) return;
+        const next = page.result.map((item) => ({
+          id: item.id,
+          name: item.name,
+        }));
+        setDistricts(next);
+        setValues((current) => {
+          if (
+            current.districtId &&
+            next.some((item) => item.id === current.districtId)
+          ) {
+            return current;
+          }
+          const byName = next.find(
+            (item) => item.name === current.address.district.trim(),
+          );
+          if (!byName) {
+            return current.districtId
+              ? { ...current, districtId: null }
+              : current;
+          }
+          return { ...current, districtId: byName.id };
+        });
+      } catch {
+        if (!cancelled) setDistricts([]);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [mode, values.cityId]);
 
   const openCreate = useCallback(() => {
     setEditingId(null);
@@ -146,15 +294,17 @@ export function useProfileLocations() {
         setFormError(formErrorMessage(built.error, t));
         return false;
       }
+      const input = sanitizeLocationInput(built.input);
       saveLocation = () =>
-        accountProfile.updateFavouriteLocation(editingId, built.input);
+        accountProfile.updateFavouriteLocation(editingId, input);
     } else {
       const built = buildFavouriteLocationInput(values);
       if (!built.ok) {
         setFormError(formErrorMessage(built.error, t));
         return false;
       }
-      saveLocation = () => accountProfile.createFavouriteLocation(built.input);
+      const input = sanitizeLocationInput(built.input);
+      saveLocation = () => accountProfile.createFavouriteLocation(input);
     }
 
     setIsPending(true);
@@ -208,6 +358,9 @@ export function useProfileLocations() {
   return useMemo(
     () => ({
       items,
+      provinces,
+      cities,
+      districts,
       loading,
       error,
       mode,
@@ -227,7 +380,9 @@ export function useProfileLocations() {
     }),
     [
       atLimit,
+      cities,
       closeForm,
+      districts,
       editingId,
       error,
       formError,
@@ -240,6 +395,7 @@ export function useProfileLocations() {
       openCreate,
       openEdit,
       patchValues,
+      provinces,
       remove,
       save,
       values,

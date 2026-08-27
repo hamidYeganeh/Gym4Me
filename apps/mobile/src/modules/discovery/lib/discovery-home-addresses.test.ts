@@ -22,6 +22,7 @@ function user(overrides: Partial<PublicUser> = {}): PublicUser {
     roles: ["athlete"],
     status: "active",
     favouriteLocations: [],
+    credentials: { password: "set" },
     avatar: { mediaId: null },
     kyc: { status: "none", verifiedAt: null },
     name: { first: null, last: null },

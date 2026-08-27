@@ -1,15 +1,10 @@
 "use client";
 
-import { ArrowRecycle } from "@repo/icons/ArrowRecycle";
 import { Bell1 } from "@repo/icons/Bell1";
 import { BracketsCurly } from "@repo/icons/BracketsCurly";
 import { Chat } from "@repo/icons/Chat";
 import { CreditCard } from "@repo/icons/CreditCard";
-import { Envelope1 } from "@repo/icons/Envelope1";
 import { Equalizer } from "@repo/icons/Equalizer";
-import { Folder } from "@repo/icons/Folder";
-import { HealthCross1 } from "@repo/icons/HealthCross1";
-import { Key1 } from "@repo/icons/Key1";
 import { Lock1 } from "@repo/icons/Lock1";
 import { MapPin1 } from "@repo/icons/MapPin1";
 import { Megaphone } from "@repo/icons/Megaphone";
@@ -38,6 +33,7 @@ export type ProfileMenuItem = {
   tone?: "default" | "danger";
   showChevron?: boolean;
   trailing?: ReactNode;
+  isDisabled?: boolean;
   onPress?: () => void;
 };
 
@@ -67,7 +63,7 @@ export function useProfileMenu({
         ? "/owner/subscription"
         : roleSegment === "coach"
           ? "/coach/earnings"
-          : "/athlete/subscription";
+          : null;
 
     const general: ProfileMenuItem[] = [
       {
@@ -93,12 +89,16 @@ export function useProfileMenu({
             } satisfies ProfileMenuItem,
           ]
         : []),
-      {
-        key: "billing",
-        icon: <CreditCard size={icon} />,
-        label: t("subscription"),
-        onPress: () => router.push(billingHref),
-      },
+      ...(billingHref
+        ? [
+            {
+              key: "billing",
+              icon: <CreditCard size={icon} />,
+              label: t("subscription"),
+              onPress: () => router.push(billingHref),
+            } satisfies ProfileMenuItem,
+          ]
+        : []),
       {
         key: "units",
         icon: <Ruler1 size={icon} />,
@@ -121,12 +121,6 @@ export function useProfileMenu({
 
     const notifications: ProfileMenuItem[] = [
       {
-        key: "health-reminder",
-        icon: <HealthCross1 size={icon} />,
-        label: t("healthReminder"),
-        onPress: () => router.push(path("notification-settings")),
-      },
-      {
         key: "insight",
         icon: <Sparkle1 size={icon} />,
         label: t("insightUpdate"),
@@ -136,12 +130,6 @@ export function useProfileMenu({
         key: "general-notification",
         icon: <Bell1 size={icon} />,
         label: t("generalNotification"),
-        onPress: () => router.push(path("notification-settings")),
-      },
-      {
-        key: "email-notification",
-        icon: <Envelope1 size={icon} />,
-        label: t("emailNotification"),
         onPress: () => router.push(path("notification-settings")),
       },
       {
@@ -163,28 +151,6 @@ export function useProfileMenu({
         label: t("changePassword"),
         onPress: () => router.push(path("security/password")),
       },
-      {
-        key: "passcode",
-        icon: <Key1 size={icon} />,
-        label: t("changePasscode"),
-        onPress: () => router.push(path("security")),
-      },
-      ...(roleSegment === "athlete"
-        ? [
-            {
-              key: "data-sharing",
-              icon: <Folder size={icon} />,
-              label: t("dataSharing"),
-              onPress: () => router.push("/athlete/data-grants"),
-            } satisfies ProfileMenuItem,
-            {
-              key: "clear-reset",
-              icon: <ArrowRecycle size={icon} />,
-              label: t("clearReset"),
-              onPress: () => router.push("/athlete/data-rights"),
-            } satisfies ProfileMenuItem,
-          ]
-        : []),
     ];
 
     const help: ProfileMenuItem[] = [
@@ -199,9 +165,8 @@ export function useProfileMenu({
         icon: <Chat size={icon} />,
         label: t("liveChat"),
         hint: t("liveChatHint"),
-        onPress: () => {
-          window.location.href = `tel:${t("supportPhone")}`;
-        },
+        isDisabled: true,
+        showChevron: false,
       },
       {
         key: "feature-request",
@@ -224,10 +189,6 @@ export function useProfileMenu({
         label: t("deleteAccount"),
         tone: "danger",
         onPress: () => {
-          if (roleSegment === "athlete") {
-            router.push("/athlete/data-rights");
-            return;
-          }
           toast.info(t("deleteAccountSoon"));
         },
       },

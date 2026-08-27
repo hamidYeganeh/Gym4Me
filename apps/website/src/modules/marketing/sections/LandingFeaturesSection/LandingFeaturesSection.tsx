@@ -1,5 +1,6 @@
 "use client";
 
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import { ArrowRight } from "@repo/icons/ArrowRight";
@@ -88,7 +89,7 @@ export function LandingFeaturesSection({
 
           <blockquote className={slots.quoteCard()}>
             <Typography className={slots.quote()} type="body" weight="medium">
-              {t("quote")}
+              <TextWithBrand>{t("quote")}</TextWithBrand>
             </Typography>
             <footer className={slots.authorRow()}>
               <img

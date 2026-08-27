@@ -20,7 +20,8 @@ import { profileLocationsScreenVariants } from "./ProfileLocationsScreen.styles"
 import type { ProfileLocationsScreenProps } from "./ProfileLocationsScreen.types";
 import { useRouter } from "@/shared/lib/app-router";
 
-const ICON = 20;
+const CHIP_ICON = 16;
+const LIST_ICON = 20;
 
 export function ProfileLocationsScreen({
   className,
@@ -38,29 +39,58 @@ export function ProfileLocationsScreen({
     return t("kindOther");
   };
 
-  const kindIcon = (kind: FavouriteLocationKind) => {
-    if (kind === "home") return <House1 size={ICON} />;
-    if (kind === "work") return <Briefcase1 size={ICON} />;
-    if (kind === "gym") return <BarbellHorizontal size={ICON} />;
-    return <MapPin1 size={ICON} />;
+  const kindIcon = (kind: FavouriteLocationKind, size: number) => {
+    if (kind === "home") return <House1 size={size} />;
+    if (kind === "work") return <Briefcase1 size={size} />;
+    if (kind === "gym") return <BarbellHorizontal size={size} />;
+    return <MapPin1 size={size} />;
   };
 
   const kinds = useMemo(
     () =>
       [
-        { id: "home" as const, label: t("kindHome"), icon: kindIcon("home") },
-        { id: "work" as const, label: t("kindWork"), icon: kindIcon("work") },
-        { id: "gym" as const, label: t("kindGym"), icon: kindIcon("gym") },
-        { id: "other" as const, label: t("kindOther"), icon: kindIcon("other") },
+        {
+          id: "home" as const,
+          label: t("kindHome"),
+          icon: kindIcon("home", CHIP_ICON),
+        },
+        {
+          id: "work" as const,
+          label: t("kindWork"),
+          icon: kindIcon("work", CHIP_ICON),
+        },
+        {
+          id: "gym" as const,
+          label: t("kindGym"),
+          icon: kindIcon("gym", CHIP_ICON),
+        },
+        {
+          id: "other" as const,
+          label: t("kindOther"),
+          icon: kindIcon("other", CHIP_ICON),
+        },
       ] as const,
     [t],
   );
 
+  const provinceNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const province of locations.provinces) {
+      map.set(province.id, province.name);
+    }
+    return map;
+  }, [locations.provinces]);
+
   const listItems = locations.items.map((item) => ({
     item,
     title: item.label?.trim() || kindLabel(item.kind),
-    line: favouriteLocationLine(item),
-    icon: kindIcon(item.kind),
+    line: favouriteLocationLine(
+      item,
+      item.address.provinceId
+        ? provinceNameById.get(item.address.provinceId)
+        : undefined,
+    ),
+    icon: kindIcon(item.kind, LIST_ICON),
   }));
 
   const isForm = locations.mode === "form";
@@ -104,6 +134,8 @@ export function ProfileLocationsScreen({
         {isForm ? (
           <ProfileLocationFormSection
             canDelete={Boolean(locations.editingId)}
+            cities={locations.cities}
+            districts={locations.districts}
             error={locations.formError}
             isDeleting={locations.isDeleting}
             isPending={locations.isPending}
@@ -115,6 +147,7 @@ export function ProfileLocationsScreen({
             onSubmit={() => {
               void locations.save();
             }}
+            provinces={locations.provinces}
             values={locations.values}
           />
         ) : (
@@ -128,18 +161,25 @@ export function ProfileLocationsScreen({
               </Typography>
             </div>
             <ProfileLocationsListSection
+              addLabel={t("add")}
               emptyHint={t("emptyHint")}
               emptyLabel={t("empty")}
               error={locations.error}
               items={listItems}
               loading={locations.loading}
+              onAdd={
+                locations.atLimit ? undefined : locations.openCreate
+              }
               onRetry={() => {
                 void locations.load();
               }}
               onSelect={locations.openEdit}
               retryLabel={t("retry")}
             />
-            {!locations.loading && !locations.error && !locations.atLimit ? (
+            {!locations.loading &&
+            !locations.error &&
+            !locations.atLimit &&
+            listItems.length > 0 ? (
               <Button
                 className={styles.add()}
                 fullWidth

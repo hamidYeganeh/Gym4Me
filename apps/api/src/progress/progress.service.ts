@@ -3159,7 +3159,7 @@ export class ProgressService {
           metricKey: key,
         },
       },
-      { upsert: true, new: true },
+      { upsert: true, returnDocument: 'after' },
     );
     this.audit.log({
       action: AuditAction.PROGRESS_REMINDER_UPSERTED,
@@ -3321,7 +3321,7 @@ export class ProgressService {
         provider,
       },
       update,
-      { upsert: true, new: true },
+      { upsert: true, returnDocument: 'after' },
     );
     this.audit.log({
       action: AuditAction.PROGRESS_HEALTH_SYNC_UPDATED,

@@ -5,7 +5,6 @@ import type { AthleteSelfTrackingIntroSectionProps } from "./AthleteSelfTracking
 
 export function AthleteSelfTrackingIntroSection({
   onGoalsPress,
-  onDataRightsPress,
   onHealthSyncPress,
   className,
 }: AthleteSelfTrackingIntroSectionProps) {
@@ -23,9 +22,6 @@ export function AthleteSelfTrackingIntroSection({
       <div className={styles.actions()}>
         <Button onPress={onGoalsPress} size="sm" variant="secondary">
           اهداف و یادآوری
-        </Button>
-        <Button onPress={onDataRightsPress} size="sm" variant="tertiary">
-          حقوق داده
         </Button>
         <Button onPress={onHealthSyncPress} size="sm" variant="tertiary">
           همگام‌سازی دستگاه

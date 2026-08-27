@@ -21,13 +21,6 @@ export const locationPickerMapVariants = tv({
       "bg-overlay text-overlay-foreground shadow-sm",
       "hover:bg-overlay data-[hovered=true]:bg-overlay",
     ].join(" "),
-    zoomSlider: "h-28 w-10",
-    zoomTrack: ["w-2 rounded-full bg-default", "before:bg-default"].join(" "),
-    zoomFill: "rounded-full bg-accent",
-    zoomThumb: [
-      "size-4 rounded-full border-2 border-accent bg-overlay",
-      "shadow-sm",
-    ].join(" "),
   },
 });
 

@@ -1,8 +1,5 @@
-import type { Metadata } from "next";
-import { AthleteDataRightsGate } from "@/modules/athlete/lib/AthleteDataRightsGate";
-
-export const metadata: Metadata = { title: "حقوق داده" };
+import { redirect } from "next/navigation";
 
 export default function AthleteDataRightsPage() {
-  return <AthleteDataRightsGate />;
+  redirect("/athlete/profile");
 }

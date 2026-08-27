@@ -10,6 +10,7 @@ import { Clock } from "@repo/icons/Clock";
 import { User } from "@repo/icons/User";
 import type { CSSProperties } from "react";
 import { MediaImage } from "../../common/MediaImage";
+import { brandAwareText } from "../../kit/LineShadowText";
 import { clubClassCardVariants } from "./ClubClassCard.styles";
 import type { ClubClassCardProps, ClubClassCardSize } from "./ClubClassCard.types";
 
@@ -146,7 +147,7 @@ export function ClubClassCard({
                 className={slots.metaIcon()}
                 size={metaIconSize}
               />
-              <Typography type={META_TYPE[size]}>{author}</Typography>
+              {brandAwareText(author)}
             </span>
             <span className={slots.metaItem()}>
               <Clock

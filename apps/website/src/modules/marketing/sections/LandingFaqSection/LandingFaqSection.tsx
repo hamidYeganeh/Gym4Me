@@ -1,5 +1,6 @@
 "use client";
 
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import { Accordion } from "@heroui/react/accordion";
 import { Typography } from "@heroui/react/typography";
 import { Plus } from "@repo/icons/Plus";
@@ -50,7 +51,9 @@ export function LandingFaqSection({ className }: LandingFaqSectionProps) {
                 <Accordion.Heading>
                   <Accordion.Trigger className={slots.trigger()}>
                     <span className={slots.heading()}>
-                      <span className={slots.question()}>{item.question}</span>
+                      <span className={slots.question()}>
+                        <TextWithBrand>{item.question}</TextWithBrand>
+                      </span>
                       <span className={slots.number()}>{item.number}</span>
                     </span>
                     <Plus aria-hidden className={slots.plus()} size={24} />
@@ -58,7 +61,7 @@ export function LandingFaqSection({ className }: LandingFaqSectionProps) {
                 </Accordion.Heading>
                 <Accordion.Panel>
                   <Accordion.Body className={slots.body()}>
-                    {item.answer}
+                    <TextWithBrand>{item.answer}</TextWithBrand>
                   </Accordion.Body>
                 </Accordion.Panel>
               </Accordion.Item>

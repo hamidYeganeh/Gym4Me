@@ -10,6 +10,7 @@ import { useRouter } from "@/shared/lib/app-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatMemberSince } from "@/modules/account/lib/profile-demographics";
 import { useProfileMenu } from "@/modules/account/lib/use-profile-menu";
+import { ExitAppSheet } from "@/modules/app/components/ExitAppSheet";
 import { BaseProfileFooterSection } from "../../sections/BaseProfileFooterSection";
 import { BaseProfileHeroSection } from "../../sections/BaseProfileHeroSection";
 import { BaseProfileHighlightsSection } from "../../sections/BaseProfileHighlightsSection";
@@ -41,6 +42,7 @@ export function BaseProfileScreen({
   const [achievements, setAchievements] = useState<MyAchievement[]>([]);
   const [soundEnabled, setSoundEnabled] = useState<boolean | null>(null);
   const [soundPending, setSoundPending] = useState(false);
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
 
   const displayName = useMemo(() => {
     const first = user?.name.first?.trim();
@@ -162,12 +164,26 @@ export function BaseProfileScreen({
         <BaseProfileMenuSection groups={menuGroups} />
 
         <BaseProfileFooterSection
-          onSignOut={async () => {
-            await logout();
-            router.replace("/auth");
+          onSignOut={() => {
+            setLogoutConfirmOpen(true);
           }}
         />
       </div>
+
+      <ExitAppSheet
+        isOpen={logoutConfirmOpen}
+        onLeave={() => {
+          setLogoutConfirmOpen(false);
+          void (async () => {
+            await logout();
+            router.replace("/auth");
+          })();
+        }}
+        onOpenChange={setLogoutConfirmOpen}
+        onStay={() => {
+          setLogoutConfirmOpen(false);
+        }}
+      />
     </AppLayout>
   );
 }

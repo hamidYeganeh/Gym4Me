@@ -37,7 +37,7 @@ describe('WorkerLeaseService', () => {
         ]),
       }),
       expect.any(Object),
-      expect.objectContaining({ upsert: true, new: true }),
+      expect.objectContaining({ upsert: true, returnDocument: 'after' }),
     );
     expect(leaseModel.updateOne).toHaveBeenCalledWith(
       expect.objectContaining({

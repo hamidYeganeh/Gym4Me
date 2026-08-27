@@ -1,3 +1,4 @@
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import { Button } from "@heroui/react/button";
 import { Spinner } from "@heroui/react/spinner";
 import { Typography } from "@heroui/react/typography";
@@ -25,7 +26,7 @@ export function DashboardHomeHeaderSection({
     <section className={styles.intro({ className })}>
       <div className={styles.introCopy()}>
         <Typography className={styles.title()} type="h1" weight="bold">
-          {t("Dashboard.title", { name: displayName })}
+          <TextWithBrand>{t("Dashboard.title", { name: displayName })}</TextWithBrand>
         </Typography>
         <Typography className={styles.subtitle()}>
           {t("Dashboard.subtitle")}

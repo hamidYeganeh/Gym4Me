@@ -3,7 +3,7 @@ import { tv } from "tailwind-variants";
 
 export const baseProfileScreenVariants = tv({
   slots: {
-    root: "bg-background before:hidden",
+    root: "bg-surface before:hidden",
     content: "flex flex-col gap-6 pb-14",
   },
 });

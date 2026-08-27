@@ -76,6 +76,11 @@ export class UpdateAddressDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(120)
+  district?: string;
+
+  @IsOptional()
+  @IsString()
   @MaxLength(300)
   street?: string;
 
@@ -316,6 +321,11 @@ export class UpdateCoachProfileDto {
   @IsString()
   @MaxLength(2000)
   bio?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(60)
+  levelKey?: string;
 
   @IsOptional()
   @ValidateNested()

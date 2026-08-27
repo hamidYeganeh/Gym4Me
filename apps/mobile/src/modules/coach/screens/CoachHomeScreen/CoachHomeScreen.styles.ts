@@ -1,5 +1,5 @@
 export const coachHomeScreenStyles = {
-  root: "bg-background",
+  root: "bg-surface",
   content: "flex flex-1 flex-col gap-8 pb-32 pt-3",
   section: "flex flex-col gap-4",
   sectionHeader: "flex flex-col gap-1",

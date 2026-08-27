@@ -178,6 +178,7 @@ export const EXACT_API_MESSAGES: Record<string, string> = {
   "only linked coaches can view this health assessment": "onlyLinkedCoachesCanViewThisHealthAssessment",
   "option values must be unique": "optionValuesMustBeUnique",
   "otp daily limit reached, try again tomorrow": "otpDailyLimitReachedTryAgainTomorrow",
+  "otp recently sent": "otpRecentlySent",
   "package expired while frozen": "packageExpiredWhileFrozen",
   "package is cancelled": "packageIsCancelled",
   "package is exhausted": "packageIsExhausted",

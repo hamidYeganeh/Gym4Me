@@ -1,3 +1,4 @@
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import {
@@ -48,7 +49,9 @@ export async function SeoClassesListScreen({
           <header className={slots.header()}>
             <p className={slots.eyebrow()}>{t("eyebrow")}</p>
             <h1 className={slots.title()}>{t("title")}</h1>
-            <p className={slots.description()}>{t("description")}</p>
+            <p className={slots.description()}>
+              <TextWithBrand>{t("description")}</TextWithBrand>
+            </p>
           </header>
           <form className={slots.searchForm()} method="get" role="search">
             <input

@@ -6,6 +6,7 @@ import { Typography } from "@heroui/react/typography";
 import { Check } from "@repo/icons/Check";
 import { spring } from "@repo/theme";
 import { LogoMark } from "@repo/ui/common/LogoMark";
+import { LoopingWords } from "@repo/ui/kit/LoopingWords";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import Image from "next/image";
 import {
@@ -20,6 +21,8 @@ const SAVING_BG_SRC = "/onboarding-review.png";
 export function OnboardingSavingSection({
   ariaLabel,
   steps,
+  loopWords,
+  headlinePrefix,
   retryLabel,
   errorLabel,
   onRetry,
@@ -57,6 +60,23 @@ export function OnboardingSavingSection({
 
       <div className={base.stage()}>
         <div className={base.panel()}>
+          {loopWords.length > 0 ? (
+            <h2 className={base.headline()}>
+              <Typography
+                className={base.headlinePrefix()}
+                color="muted"
+                type="body-sm"
+              >
+                {headlinePrefix}
+              </Typography>
+              <LoopingWords
+                as="span"
+                className={base.headlineWord()}
+                shadowColor="color-mix(in oklab, var(--accent) 50%, transparent)"
+                words={loopWords}
+              />
+            </h2>
+          ) : null}
           <ul className={base.list()}>
             <AnimatePresence initial={false} mode="popLayout">
               {visible.map((step) => {

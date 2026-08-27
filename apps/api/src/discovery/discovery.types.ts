@@ -7,10 +7,19 @@ import type {
   DiscoverySourceStrategy,
 } from './discovery.constants';
 
+export type DiscoveryActionButtonVariant =
+  | 'primary'
+  | 'secondary'
+  | 'tertiary'
+  | 'outline'
+  | 'ghost'
+  | 'danger';
+
 export type DiscoveryAction = {
   label?: string;
   link: string;
-  variant?: string;
+  /** HeroUI Button variant; legacy `link` / `button` are normalized on the client. */
+  variant?: DiscoveryActionButtonVariant | string;
 };
 
 export type DiscoverySectionDefinition = {

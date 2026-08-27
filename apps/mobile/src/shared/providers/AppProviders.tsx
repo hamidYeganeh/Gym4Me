@@ -10,6 +10,7 @@ import { AuthProvider } from "./AuthProvider";
 import { AppConfigProvider } from "./AppConfigProvider";
 import { DevicePermissionsProvider } from "./DevicePermissionsProvider";
 import { ExitAppProvider } from "./ExitAppProvider";
+import { NetworkOfflineProvider } from "./NetworkOfflineProvider";
 import { NextMediaImageAdapter } from "./NextMediaImageAdapter";
 import { PushNotificationsProvider } from "./PushNotificationsProvider";
 import { PaymentReturnProvider } from "./PaymentReturnProvider";
@@ -26,7 +27,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
               <PushNotificationsProvider />
               <PaymentReturnProvider />
               <ExitAppProvider />
-              {children}
+              <NetworkOfflineProvider>{children}</NetworkOfflineProvider>
             </DevicePermissionsProvider>
           </Toaster>
         </AuthProvider>

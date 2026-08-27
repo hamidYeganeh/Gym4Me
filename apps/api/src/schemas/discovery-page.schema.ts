@@ -169,7 +169,6 @@ export class DiscoveryPage {
 }
 
 export const DiscoveryPageSchema = SchemaFactory.createForClass(DiscoveryPage);
-DiscoveryPageSchema.index({ pageKey: 1 }, { unique: true });
 
 @Schema({ timestamps: true, collection: 'discovery_page_revisions' })
 export class DiscoveryPageRevision {

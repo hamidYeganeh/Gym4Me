@@ -6,8 +6,9 @@ import { Chip } from "@heroui/react/chip";
 import { Input } from "@heroui/react/input";
 import { Label } from "@heroui/react/label";
 import { TextField } from "@heroui/react/textfield";
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import { Typography } from "@heroui/react/typography";
-import { Share1 } from "@repo/icons/Share1";
+import { ReferralInviteCard } from "@repo/ui/cards/ReferralInviteCard";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
@@ -44,17 +45,10 @@ export function AthleteReferralScreen({
   className,
 }: AthleteReferralScreenProps) {
   const t = useTranslations("AthleteReferral");
+  const tHome = useTranslations("AthleteHome");
   const styles = athleteReferralScreenVariants();
   const router = useRouter();
   const [phone, setPhone] = useState("");
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(view.referralCode);
-    } catch {
-      // ignore clipboard failures
-    }
-  };
 
   const handleShare = async () => {
     const text = t("shareText", {
@@ -75,45 +69,28 @@ export function AthleteReferralScreen({
   return (
     <AppLayout
       className={styles.root({ className })}
+      headerClassName="shadow-none"
       header={
         <SecondaryPageHeader
           backAriaLabel={t("back")}
           onBack={() => router.back()}
+          title={t("title")}
         />
       }
     >
       <div className={styles.content()}>
-        <section className={styles.intro()}>
-          <Typography className={styles.introTitle()} type="h1" weight="bold">
-            {t("title")}
-          </Typography>
-          <Typography className={styles.introSubtitle()} type="body">
-            {t("subtitle")}
-          </Typography>
-        </section>
-
-        <section className={styles.codeCard()}>
-          <Typography type="body-sm">{t("codeLabel")}</Typography>
-          <Typography
-            className={styles.codeValue()}
-            type="h2"
-            weight="bold"
-          >
-            {view.referralCode}
-          </Typography>
-          <div className={styles.actions()}>
-            <Button fullWidth onPress={() => void handleCopy()} variant="secondary">
-              {t("copyCode")}
-            </Button>
-            <Button fullWidth onPress={() => void handleShare()} variant="primary">
-              <Share1 size={18} />
-              {t("shareInvite")}
-            </Button>
-          </div>
-          <Typography className={styles.meta()} type="body-sm">
-            {view.inviteUrl}
-          </Typography>
-        </section>
+        <ReferralInviteCard
+          actionLabel={tHome("referralAction")}
+          codeLabel={tHome("referralCodeLabel")}
+          copiedCodeLabel={tHome("referralCopiedCode")}
+          copyCodeLabel={tHome("referralCopyCode")}
+          description={tHome("referralDescription")}
+          onAction={() => void handleShare()}
+          referralCode={view.referralCode}
+          successCount={toPersianDigits(view.stats.invitesJoined)}
+          successLabel={tHome("referralSuccessLabel")}
+          title={tHome("referralCardTitle")}
+        />
 
         <div className={styles.stats()}>
           <div className={styles.stat()}>
@@ -145,7 +122,7 @@ export function AthleteReferralScreen({
         {onInvite ? (
           <section className={styles.inviteForm()}>
             <Typography type="body" weight="semibold">
-              {t("inviteTitle")}
+              <TextWithBrand>{t("inviteTitle")}</TextWithBrand>
             </Typography>
             <TextField>
               <Label>{t("phoneLabel")}</Label>

@@ -124,7 +124,7 @@ export class CouponsService {
             count: { $lt: perUserLimit },
           },
           { $inc: { count: 1 } },
-          { session, upsert: true, new: true, setDefaultsOnInsert: true },
+          { session, upsert: true, returnDocument: 'after', setDefaultsOnInsert: true },
         );
         if (!usage) {
           throw new BadRequestException('You have already used this coupon');

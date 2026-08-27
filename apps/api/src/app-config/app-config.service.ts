@@ -210,7 +210,7 @@ export class AppConfigService {
         },
         $setOnInsert: { key },
       },
-      { upsert: true, new: true, runValidators: true },
+      { upsert: true, returnDocument: 'after', runValidators: true },
     );
     const after = item.toObject() as LeanFeatureFlag;
     this.audit.log({
@@ -271,7 +271,7 @@ export class AppConfigService {
         },
         ...(releaseNotes ? {} : { $unset: { releaseNotes: 1 } }),
       },
-      { upsert: true, new: true, runValidators: true },
+      { upsert: true, returnDocument: 'after', runValidators: true },
     );
     const after = item.toObject() as LeanReleasePolicy;
     this.audit.log({

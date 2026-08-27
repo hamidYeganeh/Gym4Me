@@ -55,9 +55,7 @@ export function ProfileSettingsFieldRow({
   return (
     <div className={styles.root({ className })}>
       <Typography className={styles.label()}>{label}</Typography>
-      {locked || !onPress ? (
-        <div className={styles.trigger()}>{content}</div>
-      ) : (
+      {onPress ? (
         <Button
           className={styles.trigger()}
           onPress={onPress}
@@ -66,6 +64,8 @@ export function ProfileSettingsFieldRow({
         >
           {content}
         </Button>
+      ) : (
+        <div className={styles.trigger()}>{content}</div>
       )}
     </div>
   );

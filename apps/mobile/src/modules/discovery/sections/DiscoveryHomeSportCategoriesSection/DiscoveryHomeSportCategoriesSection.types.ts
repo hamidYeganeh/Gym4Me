@@ -1,3 +1,4 @@
+import type { DiscoveryActionButtonVariant } from "@repo/api/discovery";
 import type { HomeSportCategoryItem } from "../../lib/sports-home";
 
 export type DiscoveryHomeSportCategoriesSectionProps = {
@@ -6,4 +7,6 @@ export type DiscoveryHomeSportCategoriesSectionProps = {
   title?: string;
   hint?: string;
   seeAllHref?: string;
+  seeAllLabel?: string;
+  seeAllVariant?: DiscoveryActionButtonVariant;
 };

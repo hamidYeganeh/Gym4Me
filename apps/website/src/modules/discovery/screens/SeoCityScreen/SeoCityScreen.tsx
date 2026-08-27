@@ -1,3 +1,4 @@
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import {
   PublicSiteFooter,
   PublicSiteHeader,
@@ -118,7 +119,7 @@ export async function SeoCityScreen({ locationId }: SeoCityScreenProps) {
                         className={styles.link}
                         href={`/coaches/${coach.userId}`}
                       >
-                        {name}
+                        <TextWithBrand>{name}</TextWithBrand>
                       </Link>
                       <p className={styles.address}>
                         {coach.experience.headline ?? coach.bio}

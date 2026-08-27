@@ -28,7 +28,12 @@ export const discoveryLocationSheetVariants = tv({
       "flex size-6 shrink-0 items-center justify-center rounded-[0.375rem]",
       "border-2 border-border bg-transparent text-accent-foreground",
     ].join(" "),
-    empty: "py-6 text-center text-muted",
+    empty: [
+      "py-1",
+      "[&>div:first-child]:mb-3 [&>div:first-child]:max-w-[12rem]",
+      "[&_img]:max-h-28 sm:[&_img]:max-h-32",
+      "[&>div:last-child]:mt-5",
+    ].join(" "),
     addRow: "flex justify-center pt-1",
     addButton: [
       "h-auto min-h-0 gap-1.5 px-2 py-1",

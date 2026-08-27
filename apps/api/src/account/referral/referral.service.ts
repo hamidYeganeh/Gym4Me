@@ -195,7 +195,7 @@ export class ReferralService {
             reward: { status: ReferralRewardStatus.PENDING },
           },
         },
-        { upsert: true, new: true },
+        { upsert: true, returnDocument: 'after' },
       );
     }
 

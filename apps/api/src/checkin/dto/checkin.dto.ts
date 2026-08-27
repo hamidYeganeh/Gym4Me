@@ -10,6 +10,7 @@ import {
   IsMongoId,
   IsOptional,
   IsString,
+  Max,
   MaxLength,
   Min,
   MinLength,
@@ -93,26 +94,6 @@ export class OfflineCheckInItemDto {
   userId?: string;
 }
 
-export class SyncOfflineBatchDto {
-  @IsString()
-  @MinLength(32)
-  @MaxLength(4096)
-  snapshotToken!: string;
-
-  @IsArray()
-  @ArrayMinSize(1)
-  @ArrayMaxSize(100)
-  @ValidateNested({ each: true })
-  @Type(() => OfflineCheckInItemDto)
-  items!: OfflineCheckInItemDto[];
-
-  /** Client ops counters only — never booking codes, secrets, or raw payloads. */
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => CheckinOfflineOpsTelemetryDto)
-  ops?: CheckinOfflineOpsTelemetryDto;
-}
-
 export class CheckinOfflineOpsTelemetryDto {
   @IsOptional()
   @IsIn([
@@ -152,6 +133,26 @@ export class CheckinOfflineOpsTelemetryDto {
   @Min(0)
   @Max(100)
   retryCount?: number;
+}
+
+export class SyncOfflineBatchDto {
+  @IsString()
+  @MinLength(32)
+  @MaxLength(4096)
+  snapshotToken!: string;
+
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(100)
+  @ValidateNested({ each: true })
+  @Type(() => OfflineCheckInItemDto)
+  items!: OfflineCheckInItemDto[];
+
+  /** Client ops counters only — never booking codes, secrets, or raw payloads. */
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CheckinOfflineOpsTelemetryDto)
+  ops?: CheckinOfflineOpsTelemetryDto;
 }
 
 export class IssueOfflineSnapshotDto {

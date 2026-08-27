@@ -1,5 +1,6 @@
 "use client";
 
+import { BrandText, TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
 import { BrandMark, LandingPillButton } from "../../lib/landing-controls";
@@ -47,7 +48,7 @@ export function LandingFooterSection({ className }: LandingFooterSectionProps) {
         <div className={slots.brandCol()}>
           <div className={slots.brandRow()}>
             <BrandMark size={22} instanceId="footer-brand" />
-            <span>Gym4Me</span>
+            <BrandText shadow="onBrand" />
           </div>
           <Typography type="body" className={slots.blurb()}>
             {t("blurb")}
@@ -94,7 +95,9 @@ export function LandingFooterSection({ className }: LandingFooterSectionProps) {
       </div>
 
       <div className={slots.bottom()}>
-        <Typography type="body-sm">{t("copyright")}</Typography>
+        <Typography type="body-sm">
+          <TextWithBrand shadow="onBrand">{t("copyright")}</TextWithBrand>
+        </Typography>
         <nav className={slots.social()} aria-label={t("socialAria")}>
           <a href="#instagram">{social.instagram}</a>
           <a href="#x">{social.x}</a>

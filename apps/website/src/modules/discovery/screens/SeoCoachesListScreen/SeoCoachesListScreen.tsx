@@ -1,3 +1,4 @@
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import {
@@ -91,7 +92,9 @@ export async function SeoCoachesListScreen({
                       href={`/coaches/${coach.userId}`}
                     >
                       <div className={slots.cardHeader()}>
-                        <h2 className={slots.cardTitle()}>{name}</h2>
+                        <h2 className={slots.cardTitle()}>
+                          <TextWithBrand>{name}</TextWithBrand>
+                        </h2>
                         <span className={slots.badge()}>تأییدشده</span>
                       </div>
                       <p className={slots.cardBody()}>

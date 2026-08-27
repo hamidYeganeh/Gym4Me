@@ -9,6 +9,8 @@ export function DiscoveryHomeCatalogRailSection({
   title,
   hint,
   seeAllHref,
+  seeAllLabel = "مشاهده همه",
+  seeAllVariant,
   items,
   tone = "surface",
   pattern,
@@ -23,7 +25,8 @@ export function DiscoveryHomeCatalogRailSection({
       ariaLabel={title}
       hint={hint}
       pattern={pattern}
-      seeAllLabel={seeAllHref ? "مشاهده همه" : undefined}
+      seeAllLabel={seeAllHref ? seeAllLabel : undefined}
+      seeAllVariant={seeAllVariant}
       sheet
       title={title}
       tone={tone}

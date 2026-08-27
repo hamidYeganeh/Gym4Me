@@ -295,6 +295,7 @@
     "onlyLinkedCoachesCanViewThisHealthAssessment": "فقط مربیان مرتبط می‌توانند این ارزیابی سلامت را ببینند.",
     "optionValuesMustBeUnique": "مقادیر گزینه‌ها باید یکتا باشند.",
     "otpDailyLimitReachedTryAgainTomorrow": "سقف روزانه کد یکبارمصرف پر شده است. فردا دوباره تلاش کنید.",
+    "otpRecentlySent": "کد تأیید اخیراً ارسال شده است. کمی بعد دوباره تلاش کنید.",
     "packageExpiredWhileFrozen": "بسته هنگام توقف منقضی شد.",
     "packageIsCancelled": "بسته لغو شده است.",
     "packageIsExhausted": "ظرفیت بسته تمام شده است.",

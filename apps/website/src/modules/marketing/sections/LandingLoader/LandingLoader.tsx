@@ -1,5 +1,6 @@
 "use client";
 
+import { BrandText } from "@repo/ui/kit/LineShadowText";
 import { useEffect, useRef, useState } from "react";
 import { BrandMark } from "../../lib/landing-controls";
 import { EASE, LANDING_DURATION_MS, tween, usePrefersReducedMotion } from "../../lib/landing-motion";
@@ -79,7 +80,7 @@ export function LandingLoader({ className }: LandingLoaderProps) {
         }}
       >
         <BrandMark size={28} instanceId="loader-brand" />
-        <span>Gym4Me</span>
+        <BrandText shadow="onBrand" />
       </div>
       <div className={slots.track()} role="progressbar" aria-valuenow={Math.round(progress * 100)}>
         <div

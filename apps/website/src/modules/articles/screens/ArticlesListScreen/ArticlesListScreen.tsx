@@ -1,5 +1,6 @@
 "use client";
 
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import Link from "next/link";
 import { Typography } from "@heroui/react/typography";
 import { ArticleCard } from "@repo/ui/cards/ArticleCard";
@@ -46,7 +47,7 @@ export function ArticlesListScreen({
         <div className={styles.container}>
         <header className={styles.intro}>
           <Typography className={styles.title} type="h1" weight="bold">
-            {t("listTitle")}
+            <TextWithBrand>{t("listTitle")}</TextWithBrand>
           </Typography>
           <Typography className={styles.subtitle} type="body">
             {t("listSubtitle")}

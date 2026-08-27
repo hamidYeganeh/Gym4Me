@@ -1,5 +1,6 @@
 "use client";
 
+import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import type { PublicFaqItem } from "@repo/api";
 import { Accordion } from "@heroui/react/accordion";
 import { Button } from "@heroui/react/button";
@@ -19,7 +20,9 @@ export function FaqScreen({ items = [], error = false }: { items?: PublicFaqItem
       <main className="mx-auto w-full max-w-5xl flex-1 px-5 py-12 sm:px-10 sm:py-20" dir="rtl">
         <header className="mb-10 text-center">
           <Typography type="h1" weight="bold">{t("title")}</Typography>
-          <Typography className="mt-3 text-muted" type="body">{t("subtitle")}</Typography>
+          <Typography className="mt-3 text-muted" type="body">
+            <TextWithBrand>{t("subtitle")}</TextWithBrand>
+          </Typography>
         </header>
         {error ? (
           <div className="rounded-(--radius-card-lg) border border-danger/30 bg-danger/10 p-8 text-center" role="alert">

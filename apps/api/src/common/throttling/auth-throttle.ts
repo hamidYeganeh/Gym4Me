@@ -6,7 +6,7 @@ export const AUTH_THROTTLE_DAY = 'authDay';
 
 export const AUTH_THROTTLE = {
   [AUTH_THROTTLE_MINUTE]: { limit: 3, ttl: 60_000 },
-  [AUTH_THROTTLE_DAY]: { limit: 7, ttl: 86_400_000 },
+  [AUTH_THROTTLE_DAY]: { limit: 10, ttl: 86_400_000 },
 } as const;
 
 /**

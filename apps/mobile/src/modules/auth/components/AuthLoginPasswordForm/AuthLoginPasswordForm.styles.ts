@@ -9,7 +9,7 @@ export const authLoginPasswordFormVariants = tv({
     forgot:
       "shrink-0 text-sm font-bold text-accent outline-none data-[hovered=true]:opacity-80",
     submit:
-      "mt-2 min-h-14 rounded-2xl bg-accent text-base font-bold text-accent-foreground data-[hovered=true]:opacity-90",
+      "mt-2 min-h-14 bg-accent text-base font-bold text-accent-foreground data-[hovered=true]:opacity-90",
     submitIcon: "ms-2 size-5",
   },
 });

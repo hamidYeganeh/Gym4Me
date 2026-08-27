@@ -6,6 +6,7 @@ export function AppLayout({
   footer,
   children,
   className,
+  headerClassName,
 }: AppLayoutProps) {
   const hasHeader = Boolean(header);
   const hasFooter = Boolean(footer);
@@ -13,7 +14,11 @@ export function AppLayout({
 
   return (
     <div className={slots.root({ className })}>
-      {header ? <div className={slots.header()}>{header}</div> : null}
+      {header ? (
+        <div className={slots.header({ className: headerClassName })}>
+          {header}
+        </div>
+      ) : null}
       <main className={slots.main()}>{children}</main>
       {footer ? <div className={slots.footer()}>{footer}</div> : null}
     </div>

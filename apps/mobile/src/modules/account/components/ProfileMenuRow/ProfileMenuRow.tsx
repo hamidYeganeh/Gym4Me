@@ -14,11 +14,13 @@ export function ProfileMenuRow({
   trailing,
   showChevron = true,
   tone = "default",
+  isDisabled = false,
   onPress,
   className,
   ...props
 }: ProfileMenuRowProps) {
-  const styles = profileMenuRowVariants({ tone });
+  const styles = profileMenuRowVariants({ tone, isDisabled });
+  const canPress = Boolean(onPress) && !isDisabled;
 
   const content = (
     <>
@@ -40,14 +42,14 @@ export function ProfileMenuRow({
           <span className={styles.badge()}>{badge}</span>
         ) : null}
         {trailing}
-        {showChevron && !trailing ? (
+        {showChevron && !trailing && canPress ? (
           <ChevronRight className={styles.chevron()} size={18} />
         ) : null}
       </span>
     </>
   );
 
-  if (onPress) {
+  if (canPress) {
     return (
       <Button
         className={styles.pressable({ className: styles.root({ className }) })}
@@ -61,7 +63,11 @@ export function ProfileMenuRow({
   }
 
   return (
-    <div className={styles.root({ className })} {...props}>
+    <div
+      aria-disabled={isDisabled || undefined}
+      className={styles.root({ className })}
+      {...props}
+    >
       {content}
     </div>
   );

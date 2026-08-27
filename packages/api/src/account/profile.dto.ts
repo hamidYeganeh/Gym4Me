@@ -14,6 +14,7 @@ import type {
 export type UpdateAddressInput = {
   provinceId?: string | null;
   city?: string;
+  district?: string;
   street?: string;
   apartment?: string;
   postalCode?: string;
@@ -123,6 +124,7 @@ export type CoachProfile = {
   id: string;
   userId: string;
   bio: string | null;
+  levelKey: string | null;
   experience: { years: number | null; headline: string | null };
   verification: {
     status: VerificationStatus;
@@ -148,6 +150,7 @@ export type CoachVerificationCredential = {
 
 export type UpdateCoachProfileInput = {
   bio?: string;
+  levelKey?: string;
   experience?: { years?: number; headline?: string };
   serviceArea?: { cityId?: string | null };
   sportIds?: string[];

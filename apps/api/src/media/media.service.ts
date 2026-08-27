@@ -270,7 +270,7 @@ export class MediaService {
           },
         },
       },
-      { new: true, session },
+      { returnDocument: 'after', session },
     );
     if (!media) {
       throw new ForbiddenException('Media cannot be attached to this photo');
@@ -306,7 +306,7 @@ export class MediaService {
           },
         },
       },
-      { new: true, session },
+      { returnDocument: 'after', session },
     );
     if (!media) {
       throw new ForbiddenException('Media cannot be attached to this post');
@@ -363,7 +363,7 @@ export class MediaService {
           },
         },
       },
-      { new: true, session },
+      { returnDocument: 'after', session },
     );
     if (!media) {
       throw new ForbiddenException('Media cannot be attached to this meal log');
@@ -476,7 +476,7 @@ export class MediaService {
             attachment: { $exists: false },
           },
           { $set: { deletingAt: candidate.deletingAt ?? now } },
-          { new: true },
+          { returnDocument: 'after' },
         );
         if (!claimed) continue;
         if (await this.finalizeManagedMediaDeletion(claimed._id.toString())) {
@@ -530,7 +530,7 @@ export class MediaService {
           'scan.status': candidate.scan?.status,
         },
         { $inc: { 'scan.attempts': 1 } },
-        { new: true },
+        { returnDocument: 'after' },
       );
       if (!claimed) continue;
 

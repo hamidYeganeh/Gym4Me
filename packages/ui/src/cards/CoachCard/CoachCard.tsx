@@ -9,6 +9,7 @@ import { ShapeCircle } from "@repo/icons/ShapeCircle";
 import { StarSolid } from "@repo/icons/StarSolid";
 import type { KeyboardEvent } from "react";
 import { MediaImage } from "../../common/MediaImage";
+import { brandAwareText } from "../../kit/LineShadowText";
 import { coachCardVariants } from "./CoachCard.styles";
 import type { CoachCardProps } from "./CoachCard.types";
 
@@ -261,9 +262,7 @@ export function CoachCard({
                 {typeof author.name === "string" ? author.name.slice(0, 1) : "A"}
               </Avatar.Fallback>
             </Avatar>
-            <Typography className={slots.authorName()} type="body-sm">
-              {author.name}
-            </Typography>
+            {brandAwareText(author.name)}
           </div>
         ) : null}
       </div>

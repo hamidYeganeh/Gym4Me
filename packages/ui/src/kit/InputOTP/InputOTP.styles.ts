@@ -24,7 +24,8 @@ export const inputOTPVariants = tv({
         slot: [
           "!h-[var(--otp-slot-lg-height)] !w-[var(--otp-slot-lg-width)] !grow-0 !shrink-0 !flex-none !basis-auto",
           "!rounded-[var(--otp-slot-lg-radius)]",
-          "!text-[length:var(--otp-slot-lg-font)]",
+          "text-4xl",
+          // "!text-[length:var(--otp-slot-lg-font)]",
         ].join(" "),
       },
       /** Auth — equal square slots (`flex-1` + `aspect-square`) */

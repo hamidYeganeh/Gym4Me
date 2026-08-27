@@ -100,6 +100,7 @@ export type FavouriteLocationKind = "home" | "work" | "gym" | "other";
 export type PublicAddress = {
   provinceId: string | null;
   city: string | null;
+  district: string | null;
   street: string | null;
   apartment: string | null;
   postalCode: string | null;
@@ -139,6 +140,9 @@ export type PublicUser = {
     verifiedAt: string | null;
   };
   phoneVerifiedAt: string | null;
+  credentials: {
+    password: "set" | "unset";
+  };
   createdAt: string;
 };
 

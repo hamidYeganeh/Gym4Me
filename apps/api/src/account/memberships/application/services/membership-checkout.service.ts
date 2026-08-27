@@ -441,7 +441,7 @@ export class MembershipCheckoutService {
         ],
       },
       { $set: { initiationClaimId: claimId, initiationClaimedAt: now } },
-      { new: true },
+      { returnDocument: 'after' },
     );
     if (!claimed) {
       const raced = await this.checkouts.findById(checkout._id);
@@ -468,7 +468,7 @@ export class MembershipCheckoutService {
           },
           $unset: { initiationClaimId: 1, initiationClaimedAt: 1 },
         },
-        { new: true },
+        { returnDocument: 'after' },
       );
       if (!initiated) {
         throw new ConflictException('Checkout initiation lease was lost');

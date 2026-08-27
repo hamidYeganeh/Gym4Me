@@ -1,6 +1,6 @@
 "use client";
 
-import { Typography } from "@heroui/react/typography";
+import { BrandText } from "@repo/ui/kit/LineShadowText";
 import { Logo } from "@repo/ui/common/Logo";
 import { splashScreenVariants } from "./SplashScreen.styles";
 import type { SplashScreenProps } from "./SplashScreen.types";
@@ -9,7 +9,7 @@ import type { SplashScreenProps } from "./SplashScreen.types";
 const SPLASH_INK = "var(--background)";
 
 /** Matches native splash.png logo size (LOGO_SIZES 5xl = 180). */
-export const SPLASH_LOGO_SIZE = "5xl" as const;
+export const SPLASH_LOGO_SIZE = "3xl" as const;
 
 export function SplashScreen({ brand }: SplashScreenProps) {
   const styles = splashScreenVariants();
@@ -24,14 +24,14 @@ export function SplashScreen({ brand }: SplashScreenProps) {
           size={SPLASH_LOGO_SIZE}
         />
         <div className={styles.copy()}>
-          <Typography
+          <BrandText
+            as="h1"
             className={styles.brand()}
+            shadowColor="color-mix(in oklab, var(--foreground) 30%, transparent)"
             style={{ color: SPLASH_INK }}
-            type="h1"
-            weight="bold"
           >
             {brand}
-          </Typography>
+          </BrandText>
         </div>
       </div>
     </main>

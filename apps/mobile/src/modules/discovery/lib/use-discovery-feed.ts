@@ -1,12 +1,16 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ApiError } from "@repo/api";
 import type {
   DiscoveryFeedResponse,
   ResolvedDiscoverySection,
 } from "@repo/api/discovery";
-import { ApiError } from "@repo/api";
 import { discoveryFeed } from "@/shared/lib/api";
+import {
+  classifyConnectionError,
+  type ConnectionErrorKind,
+} from "@/shared/lib/classify-connection-error";
 import { createInFlightRequestDeduper } from "@/shared/lib/in-flight-request";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { originFromUser } from "./nearby-clubs-home";
@@ -16,7 +20,8 @@ export type DiscoveryFeedState = {
   isLoading: boolean;
   isLoadingMore: boolean;
   hasMore: boolean;
-  error: string | null;
+  error: ConnectionErrorKind | null;
+  errorStatusCode?: number;
   loadMore: () => Promise<void>;
   reload: () => Promise<void>;
 };
@@ -35,7 +40,8 @@ export function useDiscoveryFeed(): DiscoveryFeedState {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ConnectionErrorKind | null>(null);
+  const [errorStatusCode, setErrorStatusCode] = useState<number | undefined>();
   const responseRef = useRef<DiscoveryFeedResponse | null>(null);
   const requestRef = useRef(0);
 
@@ -44,6 +50,7 @@ export function useDiscoveryFeed(): DiscoveryFeedState {
     const requestId = ++requestRef.current;
     setIsLoading(true);
     setError(null);
+    setErrorStatusCode(undefined);
     try {
       const response = await dedupeFirstPageRequest(requestContext, () =>
         discoveryFeed.get({
@@ -61,9 +68,9 @@ export function useDiscoveryFeed(): DiscoveryFeedState {
       if (requestRef.current !== requestId) return;
       setSections([]);
       setHasMore(false);
-      setError(
-        cause instanceof Error ? cause.message : "discovery.load_failed",
-      );
+      const classified = classifyConnectionError(cause);
+      setError(classified.kind);
+      setErrorStatusCode(classified.statusCode);
     } finally {
       if (requestRef.current === requestId) setIsLoading(false);
     }
@@ -82,6 +89,7 @@ export function useDiscoveryFeed(): DiscoveryFeedState {
     if (!current || !nextPage || isLoadingMore) return;
     setIsLoadingMore(true);
     setError(null);
+    setErrorStatusCode(undefined);
     try {
       const response = await discoveryFeed.get({
         page: nextPage,
@@ -100,9 +108,9 @@ export function useDiscoveryFeed(): DiscoveryFeedState {
         await fetchFirstPage();
         return;
       }
-      setError(
-        cause instanceof Error ? cause.message : "discovery.load_failed",
-      );
+      const classified = classifyConnectionError(cause);
+      setError(classified.kind);
+      setErrorStatusCode(classified.statusCode);
     } finally {
       setIsLoadingMore(false);
     }
@@ -114,6 +122,7 @@ export function useDiscoveryFeed(): DiscoveryFeedState {
     isLoadingMore,
     hasMore,
     error,
+    errorStatusCode,
     loadMore,
     reload: fetchFirstPage,
   };

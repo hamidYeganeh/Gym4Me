@@ -24,6 +24,7 @@ describe('favourite-locations.util', () => {
       favouriteLocationHasContent({
         provinceId: null,
         city: null,
+        district: null,
         street: null,
         apartment: null,
         postalCode: null,
@@ -34,6 +35,7 @@ describe('favourite-locations.util', () => {
       favouriteLocationHasContent({
         provinceId: null,
         city: 'تهران',
+        district: null,
         street: null,
         apartment: null,
         postalCode: null,
@@ -44,6 +46,7 @@ describe('favourite-locations.util', () => {
       favouriteLocationHasContent({
         provinceId: null,
         city: null,
+        district: null,
         street: null,
         apartment: null,
         postalCode: null,

@@ -13,6 +13,7 @@ import {
   saveOtpPending,
   type OtpPendingState,
 } from "@/modules/auth/lib/otp-pending";
+import { maskPhoneForDisplay } from "@/modules/auth/lib/phone";
 import { postAuthPath, withAuthNext } from "@/shared/lib/auth-redirect";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { useRouter } from "@/shared/lib/app-router";
@@ -25,11 +26,6 @@ function getOtpPendingSnapshot() {
 
 function getOtpPendingServerSnapshot(): OtpPendingState | null {
   return null;
-}
-
-export function maskPhone(phone: string) {
-  if (phone.length < 8) return phone;
-  return `••${phone.slice(-4)}`;
 }
 
 type OtpSession = {
@@ -100,7 +96,7 @@ export function useOtpScreen() {
     step === "verify"
       ? {
           title: t("title"),
-          subtitle: t("sentToMasked", { phone: maskPhone(phone) }),
+          subtitle: t("sentToMasked", { phone: maskPhoneForDisplay(phone) }),
           brandAriaLabel: t("brandAriaLabel"),
           heroAlt: t("heroAlt"),
         }

@@ -16,7 +16,7 @@ export function BaseProfileFooterSection({
 
   return (
     <footer className={styles.root({ className })}>
-      <Button className={styles.signOut()} onPress={onSignOut} variant="ghost">
+      <Button className={styles.signOut()} onPress={onSignOut} variant="ghost" size="sm">
         <ArrowSignOut1 size={PROFILE_ROW_ICON_SIZE} />
         {t("logout")}
       </Button>

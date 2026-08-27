@@ -1,5 +1,6 @@
 "use client";
 
+import { BrandText } from "@repo/ui/kit/LineShadowText";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { Ltr } from "../../lib/marketing-bidi";
@@ -12,7 +13,9 @@ export function MarketingHeaderSection() {
     <header className="c-header">
       <div className="c-header_col">
         <p className="c-text -body-regular">
-          <Ltr>{t("brand")}</Ltr>
+          <Ltr>
+            <BrandText shadow="foreground">{t("brand")}</BrandText>
+          </Ltr>
         </p>
         <p className="c-text -body-regular || u-hidden-md">{t("version")}</p>
       </div>

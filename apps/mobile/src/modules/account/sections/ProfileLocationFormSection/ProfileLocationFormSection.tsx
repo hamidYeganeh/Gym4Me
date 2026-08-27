@@ -1,20 +1,21 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import dynamic from "next/dynamic";
 import { AlertDialog } from "@heroui/react/alert-dialog";
 import { Button } from "@heroui/react/button";
+import { Chip } from "@heroui/react/chip";
 import { Input } from "@heroui/react/input";
-import { InputGroup } from "@heroui/react/input-group";
 import { Label } from "@heroui/react/label";
 import { TextField } from "@heroui/react/textfield";
 import { Typography } from "@heroui/react/typography";
-import { Building1 } from "@repo/icons/Building1";
 import { Check } from "@repo/icons/Check";
 import { MapPin1 } from "@repo/icons/MapPin1";
 import { Trash1 } from "@repo/icons/Trash1";
 import type { LocationPickerLatLng } from "@repo/ui/kit/LocationPickerMap";
 import { useTranslations } from "next-intl";
+import { ProfileSettingsFieldRow } from "@/modules/account/components/ProfileSettingsFieldRow";
+import { ProfileLocationChoiceSheet } from "../ProfileLocationChoiceSheet";
 import { profileLocationFormSectionVariants } from "./ProfileLocationFormSection.styles";
 import type { ProfileLocationFormSectionProps } from "./ProfileLocationFormSection.types";
 
@@ -28,9 +29,14 @@ const LocationPickerMap = dynamic(
   { ssr: false },
 );
 
+type LocationSheetKind = "province" | "city" | "district" | null;
+
 export function ProfileLocationFormSection({
   values,
   kinds,
+  provinces,
+  cities,
+  districts,
   error,
   isPending,
   isDeleting,
@@ -43,10 +49,42 @@ export function ProfileLocationFormSection({
   const t = useTranslations("Mobile.ProfileLocations");
   const styles = profileLocationFormSectionVariants();
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [sheet, setSheet] = useState<LocationSheetKind>(null);
+
+  const kindLabels = useMemo(
+    () => new Set(kinds.map((kind) => kind.label)),
+    [kinds],
+  );
+
+  const provinceName =
+    provinces.find((item) => item.id === values.address.provinceId)?.name ??
+    "";
+  const cityName =
+    cities.find((item) => item.id === values.cityId)?.name ??
+    values.address.city;
+  const districtName =
+    districts.find((item) => item.id === values.districtId)?.name ??
+    values.address.district;
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     onSubmit();
+  };
+
+  const selectKind = (kind: (typeof kinds)[number]) => {
+    const currentLabel = values.label.trim();
+    const labelMatchesKind = kindLabels.has(currentLabel);
+    if (kind.id === "other") {
+      onChange({
+        kind: kind.id,
+        label: labelMatchesKind ? "" : values.label,
+      });
+      return;
+    }
+    onChange({
+      kind: kind.id,
+      label: !currentLabel || labelMatchesKind ? kind.label : values.label,
+    });
   };
 
   return (
@@ -54,22 +92,36 @@ export function ProfileLocationFormSection({
       <form className={styles.root({ className })} onSubmit={handleSubmit}>
         <div className={styles.field()}>
           <Typography className={styles.label()}>{t("kindLabel")}</Typography>
-          <div className={styles.kinds()}>
-            {kinds.map((kind) => (
-              <Button
-                className={styles.kindButton()}
-                data-selected={values.kind === kind.id || undefined}
-                key={kind.id}
-                onPress={() => onChange({ kind: kind.id })}
-                type="button"
-                variant="ghost"
-              >
-                {kind.icon}
-                <Typography type="body-xs" weight="semibold">
-                  {kind.label}
-                </Typography>
-              </Button>
-            ))}
+          <div
+            aria-label={t("kindLabel")}
+            className={styles.kinds()}
+            role="group"
+          >
+            {kinds.map((kind) => {
+              const selected = values.kind === kind.id;
+              return (
+                <Button
+                  aria-pressed={selected}
+                  className={styles.kindChipButton()}
+                  key={kind.id}
+                  onPress={() => selectKind(kind)}
+                  type="button"
+                  variant="ghost"
+                >
+                  <Chip
+                    className={styles.kindChip()}
+                    color={selected ? "accent" : "default"}
+                    size="lg"
+                    variant={selected ? "primary" : "secondary"}
+                  >
+                    <span aria-hidden className="inline-flex shrink-0">
+                      {kind.icon}
+                    </span>
+                    <Chip.Label>{kind.label}</Chip.Label>
+                  </Chip>
+                </Button>
+              );
+            })}
           </div>
         </div>
 
@@ -81,26 +133,35 @@ export function ProfileLocationFormSection({
           value={values.label}
         >
           <Label className={styles.label()}>{t("label")}</Label>
-          <Input className={styles.input()} placeholder={t("labelPlaceholder")} />
+          <Input
+            className={styles.input()}
+            placeholder={t("labelPlaceholder")}
+          />
         </TextField>
 
-        <TextField
-          className={styles.field()}
-          fullWidth
-          name="street"
-          onChange={(street) =>
-            onChange({ address: { ...values.address, street } })
-          }
-          value={values.address.street}
-        >
-          <Label className={styles.label()}>{t("street")}</Label>
-          <InputGroup className={styles.inputGroup()} variant="secondary">
-            <InputGroup.Prefix>
-              <MapPin1 className={styles.icon()} size={FIELD_ICON} />
-            </InputGroup.Prefix>
-            <InputGroup.Input className={styles.input()} />
-          </InputGroup>
-        </TextField>
+        <ProfileSettingsFieldRow
+          icon={<MapPin1 size={FIELD_ICON} />}
+          label={t("province")}
+          onPress={() => setSheet("province")}
+          placeholder={t("provincePlaceholder")}
+          value={provinceName}
+        />
+
+        <ProfileSettingsFieldRow
+          icon={<MapPin1 size={FIELD_ICON} />}
+          label={t("city")}
+          onPress={() => setSheet("city")}
+          placeholder={t("cityPlaceholder")}
+          value={cityName}
+        />
+
+        <ProfileSettingsFieldRow
+          icon={<MapPin1 size={FIELD_ICON} />}
+          label={t("district")}
+          onPress={() => setSheet("district")}
+          placeholder={t("districtPlaceholder")}
+          value={districtName}
+        />
 
         <div className={styles.field()}>
           <Typography className={styles.hint()} type="body-sm">
@@ -115,68 +176,10 @@ export function ProfileLocationFormSection({
               }
               value={values.address.mapPoint}
               zoomInLabel={t("zoomIn")}
-              zoomLabel={t("zoom")}
               zoomOutLabel={t("zoomOut")}
             />
           </div>
-          <Typography className={styles.mapStatus()} role="status" type="body-sm">
-            {values.address.mapPoint
-              ? `${t("coordinatesReady")} (${values.address.mapPoint.lat.toFixed(5)}, ${values.address.mapPoint.lng.toFixed(5)})`
-              : t("coordinatesMissing")}
-          </Typography>
         </div>
-
-        <TextField
-          className={styles.field()}
-          fullWidth
-          name="city"
-          onChange={(city) =>
-            onChange({ address: { ...values.address, city } })
-          }
-          value={values.address.city}
-        >
-          <Label className={styles.label()}>{t("city")}</Label>
-          <Input className={styles.input()} />
-        </TextField>
-
-        <div className={styles.row()}>
-          <TextField
-            className={styles.field()}
-            fullWidth
-            name="apartment"
-            onChange={(apartment) =>
-              onChange({ address: { ...values.address, apartment } })
-            }
-            value={values.address.apartment}
-          >
-            <Label className={styles.label()}>{t("apartment")}</Label>
-            <InputGroup className={styles.inputGroup()} variant="secondary">
-              <InputGroup.Prefix>
-                <Building1 className={styles.icon()} size={FIELD_ICON} />
-              </InputGroup.Prefix>
-              <InputGroup.Input className={styles.input()} />
-            </InputGroup>
-          </TextField>
-          <TextField
-            className={styles.field()}
-            fullWidth
-            name="postalCode"
-            onChange={(postalCode) =>
-              onChange({ address: { ...values.address, postalCode } })
-            }
-            value={values.address.postalCode}
-          >
-            <Label className={styles.label()}>{t("postalCode")}</Label>
-            <Input
-              className={styles.input()}
-              inputMode="numeric"
-              maxLength={10}
-            />
-          </TextField>
-        </div>
-        <Typography className={styles.hint()} type="body-sm">
-          {t("postalCodeHint")}
-        </Typography>
 
         {error ? (
           <Typography className={styles.error()} role="alert" type="body-sm">
@@ -211,6 +214,74 @@ export function ProfileLocationFormSection({
           ) : null}
         </div>
       </form>
+
+      <ProfileLocationChoiceSheet
+        emptyLabel={t("provinceEmpty")}
+        isOpen={sheet === "province"}
+        onClose={() => setSheet(null)}
+        onSelect={(option) => {
+          onChange({
+            cityId: null,
+            districtId: null,
+            address: {
+              ...values.address,
+              provinceId: option.id,
+              city: "",
+              district: "",
+            },
+          });
+          setSheet(null);
+        }}
+        options={provinces}
+        title={t("province")}
+        value={values.address.provinceId}
+      />
+
+      <ProfileLocationChoiceSheet
+        emptyLabel={
+          values.address.provinceId
+            ? t("cityEmpty")
+            : t("cityNeedsProvince")
+        }
+        isOpen={sheet === "city"}
+        onClose={() => setSheet(null)}
+        onSelect={(option) => {
+          onChange({
+            cityId: option.id,
+            districtId: null,
+            address: {
+              ...values.address,
+              city: option.name,
+              district: "",
+            },
+          });
+          setSheet(null);
+        }}
+        options={cities}
+        title={t("city")}
+        value={values.cityId}
+      />
+
+      <ProfileLocationChoiceSheet
+        emptyLabel={
+          values.cityId ? t("districtEmpty") : t("districtNeedsCity")
+        }
+        isOpen={sheet === "district"}
+        onClose={() => setSheet(null)}
+        onSelect={(option) => {
+          onChange({
+            districtId: option.id,
+            address: {
+              ...values.address,
+              district: option.name,
+            },
+          });
+          setSheet(null);
+        }}
+        options={districts}
+        title={t("district")}
+        value={values.districtId}
+      />
 
       <AlertDialog>
         <AlertDialog.Backdrop isOpen={confirmOpen} onOpenChange={setConfirmOpen}>
