@@ -11,7 +11,7 @@ import { useRouter } from "@/shared/lib/app-router";
 import { DiscoveryBrowseCoachesAllSection } from "../../sections/DiscoveryBrowseCoachesAllSection";
 import { DiscoveryBrowseCoachesEmptySection } from "../../sections/DiscoveryBrowseCoachesEmptySection";
 import { DiscoveryBrowseCoachesLoadingSection } from "../../sections/DiscoveryBrowseCoachesLoadingSection";
-import { DiscoveryBrowseCoachesLocationsSection } from "../../sections/DiscoveryBrowseCoachesLocationsSection";
+import { DiscoveryPopularLocationsSection } from "../../sections/DiscoveryPopularLocationsSection";
 import { DiscoveryBrowseCoachesRailSection } from "../../sections/DiscoveryBrowseCoachesRailSection";
 import { discoveryCoachesScreenStyles as styles } from "./DiscoveryCoachesScreen.styles";
 import type { DiscoveryCoachesScreenProps } from "./DiscoveryCoachesScreen.types";
@@ -90,25 +90,28 @@ export function DiscoveryCoachesScreen({
               coaches={coaches}
               variant="featured"
             />
-            <DiscoveryBrowseCoachesLocationsSection
-              items={provinces}
-              variant="provinces"
+            <DiscoveryPopularLocationsSection
+              kind="province"
+              locations={provinces}
+              target="coaches"
             />
             <DiscoveryBrowseCoachesRailSection
               coaches={coaches}
               variant="nearby"
             />
-            <DiscoveryBrowseCoachesLocationsSection
-              items={cities}
-              variant="cities"
+            <DiscoveryPopularLocationsSection
+              kind="city"
+              locations={cities}
+              target="coaches"
             />
             <DiscoveryBrowseCoachesRailSection
               coaches={coaches}
               variant="remote"
             />
-            <DiscoveryBrowseCoachesLocationsSection
-              items={districts}
-              variant="districts"
+            <DiscoveryPopularLocationsSection
+              kind="district"
+              locations={districts}
+              target="coaches"
             />
             <DiscoveryBrowseCoachesRailSection
               coaches={coaches}

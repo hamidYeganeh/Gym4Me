@@ -3,20 +3,38 @@
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { EMPTY_STATE_ILLUSTRATIONS, EmptyState } from "@repo/ui/kit/EmptyState";
 import { useTranslations } from "next-intl";
+import { useMemo } from "react";
 
 import { districtClubsSeeAllHref } from "../../lib/district-clubs-home";
+import type { BrowseClub } from "../../lib/clubs-browse-data";
 import { DiscoveryBrowseClubsEmptySection } from "../../sections/DiscoveryBrowseClubsEmptySection";
 import { DiscoveryHomeArticlesSection } from "../../sections/DiscoveryHomeArticlesSection";
 import { DiscoveryHomeBannersSection } from "../../sections/DiscoveryHomeBannersSection";
-import { DiscoveryHomeCitiesSection } from "../../sections/DiscoveryHomeCitiesSection";
+import { DiscoveryPopularLocationsSection } from "../../sections/DiscoveryPopularLocationsSection";
 import { DiscoveryHomeClassesSection } from "../../sections/DiscoveryHomeClassesSection";
 import { DiscoveryHomeClubCategoriesSection } from "../../sections/DiscoveryHomeClubCategoriesSection";
+import { DiscoveryHomeClubsColumnSection } from "../../sections/DiscoveryHomeClubsColumnSection";
 import { DiscoveryHomeClubsRailSection } from "../../sections/DiscoveryHomeClubsRailSection";
 import { DiscoveryHomeHeaderSection } from "../../sections/DiscoveryHomeHeaderSection";
 import { DiscoveryHomeSportCategoriesSection } from "../../sections/DiscoveryHomeSportCategoriesSection";
 import { DiscoveryHomeSportsSection } from "../../sections/DiscoveryHomeSportsSection";
 import { discoveryClubsScreenStyles as styles } from "./DiscoveryClubsScreen.styles";
 import type { DiscoveryClubsScreenProps } from "./DiscoveryClubsScreen.types";
+
+function uniqueListingClubs(groups: BrowseClub[][]) {
+  const seen = new Set<string>();
+  const clubs: BrowseClub[] = [];
+
+  for (const group of groups) {
+    for (const club of group) {
+      if (seen.has(club.id)) continue;
+      seen.add(club.id);
+      clubs.push(club);
+    }
+  }
+
+  return clubs.slice(0, 6);
+}
 
 export function DiscoveryClubsScreen({
   banners = [],
@@ -59,6 +77,16 @@ export function DiscoveryClubsScreen({
   const districtSeeAllHref = districtLocationId
     ? districtClubsSeeAllHref(districtLocationId)
     : undefined;
+  const listingClubs = useMemo(
+    () =>
+      uniqueListingClubs([
+        districtClubs,
+        nearbyClubs,
+        topRatedClubs,
+        openNowClubs,
+      ]),
+    [districtClubs, nearbyClubs, openNowClubs, topRatedClubs],
+  );
 
   return (
     <AppLayout
@@ -87,10 +115,10 @@ export function DiscoveryClubsScreen({
             isLoading={sportsLoading}
             sports={sports}
           />
-          <DiscoveryHomeCitiesSection
-            cities={cities}
+          <DiscoveryPopularLocationsSection
             isLoading={citiesLoading}
-            seeAllHref={null}
+            kind="city"
+            locations={cities}
           />
           {hideDistrictRail ? null : (
             <DiscoveryHomeClubsRailSection
@@ -159,6 +187,16 @@ export function DiscoveryClubsScreen({
             articles={articles}
             isLoading={articlesLoading}
           />
+          {listingClubs.length > 0 ? (
+            <DiscoveryHomeClubsColumnSection
+              ariaLabel={tHome("listingClubsTitle")}
+              clubs={listingClubs}
+              hint={tHome("listingClubsHint")}
+              keyPrefix="listing"
+              title={tHome("listingClubsTitle")}
+              tone="surface"
+            />
+          ) : null}
         </div>
         <div className={styles.empty}>
           <DiscoveryBrowseClubsEmptySection

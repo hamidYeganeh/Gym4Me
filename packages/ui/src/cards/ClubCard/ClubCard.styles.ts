@@ -50,6 +50,26 @@ export const clubCardVariants = tv({
     priceSuffix: "text-xs font-normal text-muted",
     action: "shrink-0",
     ctaGroup: "flex shrink-0 flex-col items-end gap-2",
+    badges: "flex flex-wrap items-center gap-2",
+    statusBadge: [
+      "inline-flex h-8 max-w-full items-center gap-2 rounded-full px-3",
+      "border-0 backdrop-blur-md",
+      "[--chip-bg:color-mix(in_oklch,var(--background)_82%,transparent)]",
+      "[--chip-fg:var(--foreground)]",
+      "[&_.chip__label]:text-xs [&_.chip__label]:font-medium",
+    ].join(" "),
+    statusDot: "size-1.5 shrink-0 rounded-full bg-foreground",
+    titleRow: "flex w-full min-w-0 items-start justify-between gap-3",
+    listingFeature: [
+      "h-7 max-w-full gap-1 border border-border/80 bg-background/90 px-2.5",
+      "[--chip-bg:transparent] [--chip-fg:var(--muted)]",
+      "[&_.chip__label]:text-xs [&_.chip__label]:font-medium",
+    ].join(" "),
+    shareButton: [
+      "shrink-0 rounded-full bg-foreground text-background",
+      "[--button-bg:var(--foreground)] [--button-fg:var(--background)]",
+    ].join(" "),
+    favoriteButton: "shrink-0 rounded-full border border-border/70 bg-background/85 backdrop-blur-md",
   },
   variants: {
     orientation: {
@@ -94,6 +114,24 @@ export const clubCardVariants = tv({
           "[--button-bg:var(--accent)] [--button-fg:var(--accent-foreground)]",
           "bg-accent text-accent-foreground",
         ].join(" "),
+      },
+      listing: {
+        root: [
+          "aspect-auto min-h-[22rem] w-full max-w-none flex-col rounded-[1.75rem]",
+          "bg-background shadow-sm",
+        ].join(" "),
+        mediaScrim: [
+          "bg-linear-to-t from-background from-30% via-background/92 via-52%",
+          "to-transparent to-72%",
+        ].join(" "),
+        topBar: "absolute inset-x-0 top-0 z-20 flex w-full items-start justify-end gap-2 p-4",
+        body: "gap-3 px-4 pb-4 pt-1",
+        badges: "pb-0.5",
+        titleRow: "items-baseline",
+        title: "min-w-0 flex-1 text-lg font-semibold leading-tight text-foreground",
+        price: "shrink-0 text-lg font-semibold leading-none text-foreground",
+        subtitle: "text-sm text-muted",
+        features: "gap-1.5",
       },
     },
   },

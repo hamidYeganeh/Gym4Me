@@ -8,12 +8,16 @@ const CITY_IMAGE_TEHRAN = "/demo/cities/tehran.png";
 const CITY_IMAGE_ISFAHAN = "/demo/cities/isfahan.png";
 const CITY_IMAGE_TABRIZ = "/demo/cities/tabriz.png";
 
+export type HomeLocationKind = "province" | "city" | "district";
+
 export type HomeLocationItem = {
   id: string;
   name: string;
   slug: string;
   image: string;
   subtitle?: string;
+  kind?: HomeLocationKind;
+  count?: number;
 };
 
 export type HomeSportItem = {
@@ -108,6 +112,7 @@ export function mapLocationToHomeItem(
   node: LocationNode,
   imageFallback = PLACEHOLDER_IMAGE,
   subtitle?: string,
+  kind?: HomeLocationKind,
 ): HomeLocationItem {
   return {
     id: node.id,
@@ -115,7 +120,19 @@ export function mapLocationToHomeItem(
     slug: node.slug,
     image: imageFallback,
     subtitle,
+    kind: kind ?? locationKindFromNode(node),
   };
+}
+
+function locationKindFromNode(node: LocationNode): HomeLocationKind {
+  switch (node.kind) {
+    case "province":
+      return "province";
+    case "district":
+      return "district";
+    default:
+      return "city";
+  }
 }
 
 export function mapSportToHomeItem(

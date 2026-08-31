@@ -5,6 +5,7 @@ import { Card } from "@heroui/react/card";
 import { Chip } from "@heroui/react/chip";
 import { Separator } from "@heroui/react/separator";
 import { ArrowUpload } from "@repo/icons/ArrowUpload";
+import { ArrowUpRight } from "@repo/icons/ArrowUpRight";
 import { Heart } from "@repo/icons/Heart";
 import { MapPin1 } from "@repo/icons/MapPin1";
 import { StarFull } from "@repo/icons/StarFull";
@@ -65,6 +66,7 @@ export function ClubCard({
   maxRating = DEFAULT_MAX_RATING,
   ratingCount,
   features,
+  statusLabel,
   pricePrefix,
   price,
   priceSuffix,
@@ -77,18 +79,24 @@ export function ClubCard({
   favoriteLabel = "Favorite",
   imageClassName,
   className,
+  onClick,
+  onKeyDown,
   ...props
 }: ClubCardProps) {
   const slots = clubCardVariants({ orientation });
   const isVertical = orientation === "vertical";
+  const isListing = orientation === "listing";
   const showTopBar = !isVertical;
   const showRating = rating != null;
+  const showStatus = statusLabel != null && statusLabel !== "";
   const showSubtitle = subtitle != null && subtitle !== "";
   const showFeatures = features != null && features.length > 0;
   const showPrice =
     (price != null && price !== "") ||
     (pricePrefix != null && pricePrefix !== "") ||
     (priceSuffix != null && priceSuffix !== "");
+  const showListingFooter =
+    isListing && (title != null || showPrice || showSubtitle || showFeatures);
 
   return (
     <Card
@@ -96,6 +104,24 @@ export function ClubCard({
       data-orientation={orientation}
       variant="transparent"
       {...props}
+      {...(isListing && onAction
+        ? {
+            onClick: (event) => {
+              onClick?.(event);
+              if (!event.defaultPrevented) onAction();
+            },
+            role: "button",
+            tabIndex: 0,
+            onKeyDown: (event) => {
+              onKeyDown?.(event);
+              if (event.defaultPrevented) return;
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onAction();
+              }
+            },
+          }
+        : { onClick, onKeyDown })}
     >
       <div className={slots.media()}>
         <MediaImage
@@ -109,7 +135,9 @@ export function ClubCard({
 
       {showTopBar ? (
         <div className={slots.topBar()}>
-          {showRating ? (
+          {isListing ? (
+            <span />
+          ) : showRating ? (
             <Chip className={slots.ratingChip()} size="sm" variant="primary">
               <StarFull className={slots.ratingChipIcon()} size={14} />
               <Chip.Label>
@@ -126,24 +154,39 @@ export function ClubCard({
           <div className={slots.actions()}>
             <Button
               aria-label={shareLabel}
-              className={slots.iconButton()}
+              className={
+                isListing ? slots.shareButton() : slots.iconButton()
+              }
               isIconOnly
               onPress={onShare}
               size="lg"
-              variant="secondary"
+              variant={isListing ? "primary" : "secondary"}
             >
-              <ArrowUpload size={16} />
+              {isListing ? <ArrowUpRight size={16} /> : <ArrowUpload size={16} />}
             </Button>
             <Button
               aria-label={favoriteLabel}
               aria-pressed={isFavorite}
               className={slots.iconButton({
-                className: isFavorite ? "text-danger" : undefined,
+                className: [
+                  isListing ? slots.favoriteButton() : undefined,
+                  isFavorite ? "text-danger" : undefined,
+                ]
+                  .filter(Boolean)
+                  .join(" "),
               })}
               isIconOnly
               onPress={onFavorite}
               size="lg"
-              variant={isFavorite ? "danger" : "danger-soft"}
+              variant={
+                isListing
+                  ? isFavorite
+                    ? "danger"
+                    : "tertiary"
+                  : isFavorite
+                    ? "danger"
+                    : "danger-soft"
+              }
             >
               <Heart size={16} />
             </Button>
@@ -152,7 +195,71 @@ export function ClubCard({
       ) : null}
 
       <div className={slots.body()}>
-        {isVertical ? (
+        {isListing ? (
+          <>
+            {showStatus || showRating ? (
+              <div className={slots.badges()}>
+                {showStatus ? (
+                  <Chip className={slots.statusBadge()} size="sm" variant="primary">
+                    <span aria-hidden className={slots.statusDot()} />
+                    <Chip.Label>{statusLabel}</Chip.Label>
+                  </Chip>
+                ) : null}
+                {showRating ? (
+                  <Chip className={slots.statusBadge()} size="sm" variant="primary">
+                    <StarFull className="size-3.5 shrink-0 text-accent" size={14} />
+                    <Chip.Label>{formatRating(rating)}</Chip.Label>
+                  </Chip>
+                ) : null}
+              </div>
+            ) : null}
+
+            {showListingFooter ? (
+              <>
+                <div className={slots.titleRow()}>
+                  <Card.Title className={slots.title()}>{title}</Card.Title>
+                  {showPrice ? (
+                    <div className={slots.priceGroup()}>
+                      {pricePrefix != null && pricePrefix !== "" ? (
+                        <span className={slots.pricePrefix()}>{pricePrefix}</span>
+                      ) : null}
+                      {price != null && price !== "" ? (
+                        <span className={slots.price()}>{price}</span>
+                      ) : null}
+                      {priceSuffix != null && priceSuffix !== "" ? (
+                        <span className={slots.priceSuffix()}>{priceSuffix}</span>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
+
+                {showSubtitle ? (
+                  <Card.Description className={slots.subtitle()}>
+                    {subtitle}
+                  </Card.Description>
+                ) : null}
+
+                {showFeatures ? (
+                  <div className={slots.features()}>
+                    {features.map((feature, index) => (
+                      <Chip
+                        className={slots.listingFeature()}
+                        key={index}
+                        size="sm"
+                        variant="primary"
+                      >
+                        {feature.icon != null ? (
+                          <span aria-hidden>{feature.icon}</span>
+                        ) : null}
+                        <Chip.Label>{feature.label}</Chip.Label>
+                      </Chip>
+                    ))}
+                  </div>
+                ) : null}
+              </>
+            ) : null}
+          </>
+        ) : isVertical ? (
           <>
             {showRating ? (
               <StarRow
@@ -214,9 +321,11 @@ export function ClubCard({
                   ) : (
                     <span />
                   )}
-                  <Button onPress={onAction} size="sm" variant="primary">
-                    {actionLabel}
-                  </Button>
+                  {actionLabel ? (
+                    <Button onPress={onAction} size="sm" variant="primary">
+                      {actionLabel}
+                    </Button>
+                  ) : null}
                 </div>
               </>
             ) : null}
@@ -246,14 +355,16 @@ export function ClubCard({
                   ) : null}
                 </span>
               ) : null}
-              <Button
-                className={slots.action()}
-                onPress={onAction}
-                size="sm"
-                variant="primary"
-              >
-                {actionLabel}
-              </Button>
+              {actionLabel ? (
+                <Button
+                  className={slots.action()}
+                  onPress={onAction}
+                  size="sm"
+                  variant="primary"
+                >
+                  {actionLabel}
+                </Button>
+              ) : null}
             </div>
           </>
         )}

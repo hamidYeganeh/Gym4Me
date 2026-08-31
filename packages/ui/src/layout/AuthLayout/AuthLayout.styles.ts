@@ -66,9 +66,9 @@ export const authLayoutVariants = tv({
       },
       hero: {
         /** Welcome hero — photo in upper band; shell colors follow theme. */
-        shell: "h-dvh max-h-dvh overflow-hidden",
+        shell: "min-h-dvh",
         brand: "mb-1",
-        header: "mb-6 max-w-none self-stretch items-center gap-4 text-center",
+        header: "mb-4 max-w-none self-stretch items-center gap-3 text-center",
         brandName: "text-foreground",
         title:
           "max-w-[21.5rem] text-balance text-center text-[2rem] leading-[1.2] font-bold tracking-tight text-foreground",
@@ -78,12 +78,14 @@ export const authLayoutVariants = tv({
         body: "shrink-0 gap-0 overflow-visible bg-transparent p-0 shadow-none backdrop-blur-none",
         formSlot: "gap-0",
         footer: "pt-5 text-center text-[0.875rem] text-muted",
+        figure: "mx-auto mt-0 mb-5 flex w-full max-w-[8rem] shrink-0 items-center justify-center",
         media: "pointer-events-none absolute inset-x-0 top-0 z-0 h-[58dvh] overflow-hidden",
         mediaFade:
           "pointer-events-none absolute inset-x-0 bottom-0 h-[52%] [contain:paint]",
         mediaImage: "absolute inset-0 size-full object-cover object-top",
         panel: [
-          "relative z-10 mx-auto flex h-full min-h-0 w-full max-w-md flex-col overflow-hidden",
+          "relative z-10 mx-auto flex min-h-dvh w-full max-w-md flex-col",
+          "overflow-y-auto overscroll-y-contain",
           "px-4 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(0.5rem,env(safe-area-inset-top))]",
           "sm:max-w-lg",
         ].join(" "),

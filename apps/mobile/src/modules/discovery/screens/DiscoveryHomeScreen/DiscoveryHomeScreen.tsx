@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { districtClubsSeeAllHref } from "../../lib/district-clubs-home";
 import { DiscoveryHomeArticlesSection } from "../../sections/DiscoveryHomeArticlesSection";
 import { DiscoveryHomeBannersSection } from "../../sections/DiscoveryHomeBannersSection";
-import { DiscoveryHomeCitiesSection } from "../../sections/DiscoveryHomeCitiesSection";
+import { DiscoveryPopularLocationsSection } from "../../sections/DiscoveryPopularLocationsSection";
 import { DiscoveryHomeClubCategoriesSection } from "../../sections/DiscoveryHomeClubCategoriesSection";
 import { DiscoveryHomeClubsRailSection } from "../../sections/DiscoveryHomeClubsRailSection";
 import { DiscoveryHomeHeaderSection } from "../../sections/DiscoveryHomeHeaderSection";
@@ -73,9 +73,13 @@ export function DiscoveryHomeScreen({
             isLoading={sportsLoading}
             sports={sports}
           />
-          <DiscoveryHomeCitiesSection
-            cities={cities}
+          <DiscoveryPopularLocationsSection
             isLoading={citiesLoading}
+            kind="city"
+            locations={cities}
+            seeAllHref="/discovery/clubs"
+            title={t("popularLocationsTitle")}
+            hint={t("popularLocationsHint")}
           />
           <DiscoveryHomeClubsRailSection
             ariaLabel={districtTitle}

@@ -11,26 +11,40 @@ export function DiscoveryClubRailCard({
   actionLabel,
   pricePrefix,
   priceSuffix,
+  statusOpenLabel,
+  statusClosedLabel,
   favoriteLabel,
   shareLabel,
   onOpen,
 }: DiscoveryClubRailCardProps) {
+  const isListing = orientation === "listing";
+
   return (
     <ClubCard
-      actionLabel={actionLabel}
+      actionLabel={isListing ? undefined : actionLabel}
       className={className}
       favoriteLabel={favoriteLabel}
       features={club.featureLabels.map((label) => ({ label }))}
       image={club.image || PLACEHOLDER_IMAGE}
       imageAlt={club.title}
       onAction={onOpen}
+      onShare={onOpen}
       orientation={orientation}
-      price={pricePrefix || priceSuffix ? club.price : undefined}
-      pricePrefix={pricePrefix}
-      priceSuffix={club.priceSuffix ?? priceSuffix}
+      price={
+        isListing || pricePrefix || priceSuffix ? club.price : undefined
+      }
+      pricePrefix={!isListing ? pricePrefix : undefined}
+      priceSuffix={priceSuffix ?? club.priceSuffix}
       rating={club.rating}
       ratingCount={club.ratingCount}
       shareLabel={shareLabel}
+      statusLabel={
+        isListing
+          ? club.openState === "open"
+            ? statusOpenLabel
+            : statusClosedLabel
+          : undefined
+      }
       subtitle={club.location}
       title={club.title}
     />

@@ -1,7 +1,11 @@
 import type { ButtonProps } from "@heroui/react/button";
 import type { HTMLAttributes, ReactNode } from "react";
 
-export type ClubCardOrientation = "horizontal" | "vertical" | "fullWidth";
+export type ClubCardOrientation =
+  | "horizontal"
+  | "vertical"
+  | "fullWidth"
+  | "listing";
 
 export type ClubCardFeature = {
   /** Feature chip label (e.g. `"Dining"`). */
@@ -19,6 +23,7 @@ export type ClubCardProps = Omit<
    * - `horizontal` — landscape cover (`aspect-ratio: 4/3`, max-width)
    * - `vertical` — portrait cover with stars, features, and footer CTA
    * - `fullWidth` — edge-to-edge landscape hero cover (no max-width)
+   * - `listing` — portrait showcase with status badges, title/price row, and feature pills
    */
   orientation?: ClubCardOrientation;
   /**
@@ -40,16 +45,18 @@ export type ClubCardProps = Omit<
   maxRating?: number;
   /** Number of ratings shown next to the score in `horizontal` (e.g. `146`). */
   ratingCount?: number;
-  /** Feature chips shown under the location (primarily for `vertical`). */
+  /** Feature chips shown under the location (`vertical` and `listing`). */
   features?: ClubCardFeature[];
+  /** Status pill label shown in `listing` (e.g. `"Open now"`). */
+  statusLabel?: ReactNode;
   /** Dimmed text before the price amount (e.g. `"From"`). */
   pricePrefix?: ReactNode;
   /** Price amount / line (e.g. `"$760"` or `"₹42,000 / month"`). */
   price?: ReactNode;
   /** Dimmed text after the price amount (e.g. `"/night"`). */
   priceSuffix?: ReactNode;
-  /** Primary CTA label (e.g. `"VIEW DETAILS"`). */
-  actionLabel: string;
+  /** Primary CTA label (e.g. `"VIEW DETAILS"`). Hidden for `listing`. */
+  actionLabel?: string;
   /** Called when the primary CTA is pressed. */
   onAction?: ButtonProps["onPress"];
   /** Called when the share control is pressed (`horizontal` only). */

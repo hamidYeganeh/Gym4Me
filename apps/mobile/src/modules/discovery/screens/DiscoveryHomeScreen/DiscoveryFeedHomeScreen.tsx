@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "@/shared/lib/app-router";
 import type { Banner } from "@repo/api/banners";
 import {
   resolveDiscoveryActionButtonVariant,
@@ -30,12 +31,14 @@ import {
 } from "../../lib/sports-home";
 import { mapClubCategoryRefsToHomeItems } from "../../lib/club-categories-home";
 import { useDiscoveryFeed } from "../../lib/use-discovery-feed";
+import { useDiscoveryHomeCities } from "../../lib/use-discovery-home-cities";
 import { ConnectionErrorState } from "@/shared/components/ConnectionErrorState";
 import { useNetworkStatus } from "@/shared/hooks/useNetworkStatus";
 import type { ConnectionErrorKind } from "@/shared/lib/classify-connection-error";
 import { DiscoveryHomeArticlesSection } from "../../sections/DiscoveryHomeArticlesSection";
 import { DiscoveryHomeBannersSection } from "../../sections/DiscoveryHomeBannersSection";
 import { DiscoveryHomeClubCategoriesSection } from "../../sections/DiscoveryHomeClubCategoriesSection";
+import { DiscoveryHomeClubsColumnSection } from "../../sections/DiscoveryHomeClubsColumnSection";
 import { DiscoveryHomeClubsRailSection } from "../../sections/DiscoveryHomeClubsRailSection";
 import {
   DiscoveryHomeCatalogRailSection,
@@ -43,6 +46,8 @@ import {
   type DiscoveryHomeCatalogRailVariant,
 } from "../../sections/DiscoveryHomeCatalogRailSection";
 import { DiscoveryHomeHeaderSection } from "../../sections/DiscoveryHomeHeaderSection";
+import { DiscoveryLocationMapCtaSection } from "../../sections/DiscoveryLocationMapCtaSection";
+import { DiscoveryPopularLocationsSection } from "../../sections/DiscoveryPopularLocationsSection";
 import { DiscoveryHomeSportCategoriesSection } from "../../sections/DiscoveryHomeSportCategoriesSection";
 import { DiscoveryHomeSportsSection } from "../../sections/DiscoveryHomeSportsSection";
 import type { DiscoverySectionSheetTone } from "../../sections/DiscoverySectionRail";
@@ -110,6 +115,24 @@ function articleCards(
     ),
     readingTimeMinutes: article.readingTimeMinutes,
   }));
+}
+
+function listingClubsFromSections(
+  sections: ResolvedDiscoverySection[],
+): BrowseClub[] {
+  const seen = new Set<string>();
+  const clubs: BrowseClub[] = [];
+
+  for (const section of sections) {
+    if (section.kind !== "clubs") continue;
+    for (const club of clubCards(section)) {
+      if (seen.has(club.id)) continue;
+      seen.add(club.id);
+      clubs.push(club);
+    }
+  }
+
+  return clubs.slice(0, 6);
 }
 
 function toneOf(section: ResolvedDiscoverySection): DiscoverySectionSheetTone {
@@ -337,11 +360,13 @@ function DynamicSection({ section }: { section: ResolvedDiscoverySection }) {
 
 export function DiscoveryFeedHomeScreen() {
   const t = useTranslations("DiscoveryHome");
+  const router = useRouter();
   const [selectedLocation, setSelectedLocation] = useState<{
     lat: number;
     lng: number;
   } | null>(null);
   const feed = useDiscoveryFeed(selectedLocation);
+  const cities = useDiscoveryHomeCities();
   const { isOnline } = useNetworkStatus();
 
   const errorKind: ConnectionErrorKind | null = !isOnline
@@ -349,6 +374,11 @@ export function DiscoveryFeedHomeScreen() {
     : feed.error;
   const showConnectionError =
     errorKind != null && feed.sections.length === 0 && !feed.isLoading;
+
+  const listingClubs = useMemo(
+    () => listingClubsFromSections(feed.sections),
+    [feed.sections],
+  );
 
   const content = useMemo(
     () =>
@@ -376,6 +406,20 @@ export function DiscoveryFeedHomeScreen() {
     >
       <div aria-busy={feed.isLoading} className={styles.content}>
         <div className={styles.sheets}>
+          <DiscoveryLocationMapCtaSection
+            ctaLabel={t("mapCta")}
+            subtitle={t("mapSubtitle")}
+            title={t("mapTitle")}
+            onPress={() => router.push("/discovery/map")}
+          />
+          <DiscoveryPopularLocationsSection
+            isLoading={cities.isLoading}
+            kind="city"
+            locations={cities.cities}
+            seeAllHref="/discovery/clubs"
+            title={t("popularLocationsTitle")}
+            hint={t("popularLocationsHint")}
+          />
           {feed.isLoading && feed.sections.length === 0 ? (
             <DiscoveryFeedSkeleton />
           ) : showConnectionError ? (
@@ -386,7 +430,20 @@ export function DiscoveryFeedHomeScreen() {
               onRetry={() => void feed.reload()}
             />
           ) : (
-            content
+            <>
+              {content}
+              {listingClubs.length > 0 ? (
+                <DiscoveryHomeClubsColumnSection
+                  ariaLabel={t("listingClubsTitle")}
+                  clubs={listingClubs}
+                  hint={t("listingClubsHint")}
+                  keyPrefix="listing"
+                  seeAllHref="/discovery/clubs"
+                  title={t("listingClubsTitle")}
+                  tone="surface"
+                />
+              ) : null}
+            </>
           )}
         </div>
         <span aria-live="polite" className="sr-only" role="status">

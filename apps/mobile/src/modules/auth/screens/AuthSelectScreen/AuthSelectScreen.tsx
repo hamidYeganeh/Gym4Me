@@ -98,35 +98,34 @@ export function AuthSelectScreen({ className }: AuthSelectScreenProps) {
     }
   };
 
-  return (
-    <AuthLayout className={className} heroSrc={HERO_SRC} labels={labels}>
-      <div className={styles.actions()}>
-        {showBiometric ? (
-          <div className={styles.biometric()}>
-            <Button
-              aria-label={t("continueWithBiometric")}
-              className={styles.biometricButton()}
-              isIconOnly
-              isPending={isBiometricPending}
-              size="lg"
-              variant="ghost"
-              onPress={() => void handleBiometric()}
-            >
-              <span aria-hidden className={styles.biometricMark()}>
-                <BiometricFrame
-                  className={styles.biometricFrame()}
-                  size={160}
-                />
-                <FingerprintScan
-                  className={styles.biometricGlyph()}
-                  height={140}
-                  width={112}
-                />
-              </span>
-            </Button>
-          </div>
-        ) : null}
+  const biometricFigure = showBiometric ? (
+    <Button
+      aria-label={t("continueWithBiometric")}
+      className={styles.biometricButton()}
+      isPending={isBiometricPending}
+      size="lg"
+      variant="ghost"
+      onPress={() => void handleBiometric()}
+    >
+      <span aria-hidden className={styles.biometricMark()}>
+        <BiometricFrame className={styles.biometricFrame()} size={128} />
+        <FingerprintScan
+          className={styles.biometricGlyph()}
+          height={112}
+          width={88}
+        />
+      </span>
+    </Button>
+  ) : null;
 
+  return (
+    <AuthLayout
+      className={className}
+      figure={biometricFigure}
+      heroSrc={HERO_SRC}
+      labels={labels}
+    >
+      <div className={styles.actions()}>
         <Button
           className={`${styles.method()} ${styles.methodOtp()}`}
           fullWidth

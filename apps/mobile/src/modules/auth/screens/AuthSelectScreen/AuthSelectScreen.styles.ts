@@ -4,16 +4,15 @@ import { tv } from "tailwind-variants";
 export const authSelectScreenVariants = tv({
   slots: {
     actions: "flex w-full flex-col gap-3",
-    biometric: "mb-5 flex flex-col items-center",
     biometricButton: [
-      "relative overflow-visible bg-transparent text-foreground shadow-none",
+      "h-auto min-h-0 w-auto min-w-0 bg-transparent p-0 text-foreground shadow-none",
       "data-[hovered=true]:bg-transparent data-[hovered=true]:text-foreground/80",
-      "data-[pressed=true]:scale-95 data-[pressed=true]:opacity-90",
+      "data-[pressed=true]:scale-[0.98] data-[pressed=true]:opacity-90",
       "[&_svg]:pointer-events-none [&_svg]:m-0 [&_svg]:shrink-0",
     ],
-    biometricMark: "relative flex size-40 items-center justify-center",
-    biometricFrame: "absolute inset-0 !size-40 text-foreground",
-    biometricGlyph: "relative z-[1] !h-[8.75rem] !w-[7rem] text-zinc-800",
+    biometricMark: "relative flex size-32 items-center justify-center",
+    biometricFrame: "absolute inset-0 !size-32 text-foreground",
+    biometricGlyph: "relative z-[1] !size-28 text-zinc-500 dark:text-zinc-400",
     method:
       "w-full justify-center gap-3 text-center text-base font-semibold",
     methodLogin:

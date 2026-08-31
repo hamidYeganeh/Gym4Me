@@ -41,6 +41,7 @@ export * from "./MetricReorderItem";
 export * from "./BodyTypeCard";
 export * from "./MuscleCard";
 export * from "./NotificationCard";
+export * from "./PopularLocationCard";
 export * from "./QuickActionCard";
 export * from "./ReadingTimeCard";
 export * from "./ReferralInviteCard";

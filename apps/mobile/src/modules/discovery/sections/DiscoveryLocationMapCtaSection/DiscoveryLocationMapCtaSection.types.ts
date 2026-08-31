@@ -1,5 +1,4 @@
-export type DiscoveryHomeMapCtaSectionProps = {
-  eyebrow: string;
+export type DiscoveryLocationMapCtaSectionProps = {
   title: string;
   subtitle: string;
   ctaLabel: string;

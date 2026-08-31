@@ -27,6 +27,8 @@ import {
   type DiscoverySearchTopic,
   type DiscoverySearchUser,
 } from "../../lib/discovery-search-data";
+import { useDiscoveryHomeCities } from "../../lib/use-discovery-home-cities";
+import { DiscoveryPopularLocationsSection } from "../../sections/DiscoveryPopularLocationsSection";
 import { DiscoverySearchTopicsSection } from "../../sections/DiscoverySearchTopicsSection";
 import { DiscoverySearchUsersSection } from "../../sections/DiscoverySearchUsersSection";
 import { discoverySearchScreenVariants } from "./DiscoverySearchScreen.styles";
@@ -38,7 +40,9 @@ export function DiscoverySearchScreen({
   className,
 }: DiscoverySearchScreenProps) {
   const t = useTranslations("DiscoverySearch");
+  const tHome = useTranslations("DiscoveryHome");
   const router = useRouter();
+  const cities = useDiscoveryHomeCities();
   const { isAuthenticated, activeRole } = useAuth();
   const slots = discoverySearchScreenVariants();
 
@@ -260,6 +264,17 @@ export function DiscoverySearchScreen({
           onFollow={toggleFollow}
           onOpen={openUser}
         />
+
+        {!query.trim() ? (
+          <DiscoveryPopularLocationsSection
+            isLoading={cities.isLoading}
+            kind="city"
+            locations={cities.cities}
+            seeAllHref="/discovery/clubs"
+            title={tHome("popularLocationsTitle")}
+            hint={tHome("popularLocationsHint")}
+          />
+        ) : null}
       </div>
     </AppLayout>
   );

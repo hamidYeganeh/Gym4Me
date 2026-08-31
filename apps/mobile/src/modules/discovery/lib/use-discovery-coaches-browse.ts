@@ -84,7 +84,9 @@ export function useDiscoveryCoachesBrowse(
       const provincesRes = await basicsLocations.listProvinces(iran.id);
       const nextProvinces = provincesRes.result
         .slice(0, 12)
-        .map((p) => mapLocationToHomeItem(p, locationImage(p), "استان"));
+        .map((p) =>
+          mapLocationToHomeItem(p, locationImage(p), "استان", "province"),
+        );
       if (nextProvinces.length > 0) setProvinces(nextProvinces);
 
       const cityMap = new Map<string, HomeLocationItem>();
