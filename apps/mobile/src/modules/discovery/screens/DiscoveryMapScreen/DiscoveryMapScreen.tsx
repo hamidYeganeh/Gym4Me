@@ -5,7 +5,7 @@ import { Skeleton } from "@heroui/react/skeleton";
 import { MagnifyingGlass } from "@repo/icons/MagnifyingGlass";
 import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
-import { EMPTY_STATE_ILLUSTRATIONS, EmptyState } from "@repo/ui/kit/EmptyState";
+import { EmptyState } from "@repo/ui/kit/EmptyState";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/shared/lib/app-router";
 
@@ -14,6 +14,8 @@ import { DiscoveryMapCanvasSection } from "../../sections/DiscoveryMapCanvasSect
 import { DiscoveryMapCoachSection } from "../../sections/DiscoveryMapCoachSection";
 import { discoveryMapScreenStyles as styles } from "./DiscoveryMapScreen.styles";
 import type { DiscoveryMapScreenProps } from "./DiscoveryMapScreen.types";
+
+const MAP_EMPTY_STATE_ILLUSTRATION = "/discovery/map-empty-state.png";
 
 export function DiscoveryMapScreen({
   coaches,
@@ -86,7 +88,7 @@ export function DiscoveryMapScreen({
           <div className={styles.state}>
             <EmptyState
               description={t("errorBody")}
-              illustration={EMPTY_STATE_ILLUSTRATIONS.warning}
+              illustration={MAP_EMPTY_STATE_ILLUSTRATION}
               illustrationAlt=""
               primaryAction={{ label: t("retry"), onPress: onRetry }}
               status="danger"
@@ -97,7 +99,7 @@ export function DiscoveryMapScreen({
           <div className={styles.state}>
             <EmptyState
               description={t("emptyBody")}
-              illustration={EMPTY_STATE_ILLUSTRATIONS.empty}
+              illustration={MAP_EMPTY_STATE_ILLUSTRATION}
               illustrationAlt=""
               title={t("emptyTitle")}
             />
