@@ -14,7 +14,7 @@ export const authLoginOtpFormVariants = tv({
       "text-lg font-black tracking-[0.25em] text-foreground [direction:ltr] [font-variant-numeric:tabular-nums]",
     debugAction:
       "shrink-0 font-semibold text-warning data-[hovered=true]:bg-warning/10",
-    submit: "mt-2 min-h-14 font-bold",
+    submit: "mt-2 font-bold",
     submitIcon: "ms-2 size-5",
     resendRow:
       "flex min-h-8 w-full flex-col items-center justify-center gap-1 text-center",

@@ -40,8 +40,8 @@ export const discoveryClubsReserveTimeStepSectionVariants = tv({
     slotCapacityFull: "text-danger",
     slotCheck: "shrink-0 text-accent",
     empty: [
-      "flex w-full flex-col items-center gap-2 rounded-2xl border border-border/60",
-      "bg-surface px-6 py-10 text-center",
+      "flex w-full flex-col items-center gap-2 border border-border/60",
+      "bg-surface text-center",
     ].join(" "),
     emptyBody: "text-muted",
   },

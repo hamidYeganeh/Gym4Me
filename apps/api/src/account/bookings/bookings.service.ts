@@ -1440,14 +1440,24 @@ export class BookingsService {
     if (query.resource_type) filter['resource.type'] = query.resource_type;
 
     if (query.search?.trim()) {
+      const athleteIds = await this.users.findIdsBySearch(query.search);
+      const bookingSearch = createSearchFilter(query.search, [
+        'code',
+        'resource.title',
+        'intake.note',
+        'pricing.couponCode',
+        'cancellation.reasonKey',
+        'cancellation.note',
+      ]) as { $or?: Array<Record<string, unknown>> };
       filter.$and = [
-        createSearchFilter(query.search, [
-          'code',
-          'intake.note',
-          'pricing.couponCode',
-          'cancellation.reasonKey',
-          'cancellation.note',
-        ]),
+        {
+          $or: [
+            ...(bookingSearch.$or ?? []),
+            ...(athleteIds.length > 0
+              ? [{ athleteId: { $in: athleteIds } }]
+              : []),
+          ],
+        },
       ];
     }
 

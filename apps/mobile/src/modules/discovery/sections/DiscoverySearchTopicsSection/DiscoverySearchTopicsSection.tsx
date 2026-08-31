@@ -33,7 +33,7 @@ export function DiscoverySearchTopicsSection({
             const selected = topic.id === selectedTopicId;
             return (
               <div key={topic.id} role="listitem">
-                <Button
+                <Button size="lg"
                   aria-label={topicAria(topic.label)}
                   aria-pressed={selected}
                   className={slots.topicButton()}

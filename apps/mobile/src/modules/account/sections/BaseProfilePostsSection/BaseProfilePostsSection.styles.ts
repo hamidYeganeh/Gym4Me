@@ -10,6 +10,6 @@ export const baseProfilePostsSectionVariants = tv({
     title: "max-w-[16rem] text-balance text-foreground",
     hint: "max-w-[18rem] text-pretty text-muted",
     footer: "border-t border-border px-4 py-3",
-    createPost: "mx-auto h-auto min-h-0 px-0 py-0 font-semibold text-accent",
+    createPost: "mx-auto font-semibold text-accent",
   },
 });

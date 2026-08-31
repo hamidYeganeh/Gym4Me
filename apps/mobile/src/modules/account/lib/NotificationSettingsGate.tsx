@@ -92,7 +92,7 @@ export function NotificationSettingsGate({
             : "بارگذاری تنظیمات اعلان ناموفق بود."}
         </Typography>
         {error === "load" ? (
-          <Button onPress={() => void load()} variant="secondary">
+          <Button size="lg" onPress={() => void load()} variant="secondary">
             تلاش دوباره
           </Button>
         ) : null}

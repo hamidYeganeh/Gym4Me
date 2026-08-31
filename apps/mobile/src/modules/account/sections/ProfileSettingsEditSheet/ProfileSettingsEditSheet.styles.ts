@@ -31,8 +31,7 @@ export const profileSettingsEditSheetVariants = tv({
     ].join(" "),
     sliderBlock:
       "flex flex-col gap-2 overflow-hidden rounded-2xl border border-accent/25 bg-accent/[0.04] px-3 py-3",
-    confirm:
-      "h-[var(--field-height)] min-h-[var(--field-height)] w-full rounded-2xl text-base font-bold",
+    confirm: "w-full text-base font-bold",
     confirmIcon: "ms-2 size-5",
   },
 });

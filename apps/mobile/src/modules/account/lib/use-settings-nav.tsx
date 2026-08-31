@@ -30,7 +30,8 @@ export type SettingsNavRow = {
   icon: ReactNode;
   label: string;
   hint?: string;
-  onPress: () => void;
+  isDisabled?: boolean;
+  onPress?: () => void;
 };
 
 export function useSettingsNav(
@@ -57,7 +58,7 @@ export function useSettingsNav(
               icon: <BarbellHorizontal size={icon} />,
               label: t("workouts"),
               hint: t("workoutsHint"),
-              onPress: () => router.push("/athlete/workouts"),
+              isDisabled: true,
             },
             {
               key: "social",
@@ -71,7 +72,7 @@ export function useSettingsNav(
               icon: <Leaf size={icon} />,
               label: t("nutrition"),
               hint: t("nutritionHint"),
-              onPress: () => router.push("/athlete/nutrition"),
+              isDisabled: true,
             },
             {
               key: "goals",
@@ -81,25 +82,18 @@ export function useSettingsNav(
               onPress: () => router.push("/athlete/goals"),
             },
             {
-              key: "messages",
-              icon: <Chat size={icon} />,
-              label: t("messages"),
-              hint: t("messagesHint"),
-              onPress: () => router.push("/athlete/messages"),
-            },
-            {
               key: "progress-photos",
               icon: <Camera1 size={icon} />,
               label: t("progressPhotos"),
               hint: t("progressPhotosHint"),
-              onPress: () => router.push("/athlete/progress-photos"),
+              isDisabled: true,
             },
             {
               key: "health-assessment",
               icon: <HeartEcg size={icon} />,
               label: t("healthAssessment"),
               hint: t("healthAssessmentHint"),
-              onPress: () => router.push("/athlete/health-assessment"),
+              isDisabled: true,
             },
             {
               key: "qr-check-in",
@@ -114,20 +108,6 @@ export function useSettingsNav(
               label: t("disputes"),
               hint: t("disputesHint"),
               onPress: () => router.push("/athlete/disputes"),
-            },
-            {
-              key: "family",
-              icon: <UsersTwo size={icon} />,
-              label: t("family"),
-              hint: t("familyHint"),
-              onPress: () => router.push("/athlete/family"),
-            },
-            {
-              key: "passes",
-              icon: <Gift size={icon} />,
-              label: t("passes"),
-              hint: t("passesHint"),
-              onPress: () => router.push("/athlete/passes"),
             },
             ...(deviceSyncEnabled
               ? [
@@ -177,7 +157,7 @@ export function useSettingsNav(
         icon: <Trophy1 size={icon} />,
         label: t("achievements"),
         hint: t("achievementsHint"),
-        onPress: () => router.push(`/${roleSegment}/achievements`),
+        isDisabled: true,
       },
       ...athleteRows,
     ];
@@ -215,11 +195,8 @@ export function useSettingsNav(
       "nutrition",
     ]),
     serviceRows: rowsByKeys([
-      "messages",
       "qr-check-in",
       "disputes",
-      "family",
-      "passes",
       "referral",
       "social",
     ]),

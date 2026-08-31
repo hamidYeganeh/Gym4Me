@@ -42,7 +42,7 @@ export const discoveryClubsDetailHeroSectionLightboxVariants = tv({
     navNext:
       "pointer-events-auto absolute end-[calc(var(--spacing-screen)+0.5rem)] top-1/2 z-20 -translate-y-1/2",
     navButton: [
-      "size-11 min-w-11 rounded-full",
+      "min-w-11",
       "bg-foreground text-background shadow-md",
       "hover:opacity-90 data-[hovered=true]:opacity-90",
       "data-[pressed=true]:scale-[0.96]",
@@ -60,8 +60,7 @@ export const discoveryClubsDetailHeroSectionLightboxVariants = tv({
     ].join(" "),
     thumbSlide: "!w-auto !h-auto",
     thumbButton: [
-      "relative !size-16 min-h-16 min-w-16",
-      "overflow-hidden rounded-[16px] border-2 bg-transparent p-0",
+      "relative overflow-hidden border-2 bg-transparent",
     ].join(" "),
     thumbActive: "border-accent",
     thumbIdle: "border-border opacity-90",

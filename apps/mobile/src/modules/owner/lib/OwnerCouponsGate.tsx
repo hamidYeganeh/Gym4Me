@@ -162,7 +162,7 @@ export function OwnerCouponsGate() {
             {error}
           </Typography>
           {clubId ? (
-            <Button onPress={() => void load()} size="sm" variant="secondary">
+            <Button onPress={() => void load()} size="lg" variant="secondary">
               {t("retry")}
             </Button>
           ) : null}

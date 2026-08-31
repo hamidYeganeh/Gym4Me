@@ -185,7 +185,7 @@ export function ProfileLocationsScreen({
                 fullWidth
                 onPress={locations.openCreate}
                 variant="primary"
-              >
+               size="lg">
                 {t("add")}
                 <Plus size={18} />
               </Button>

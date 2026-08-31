@@ -27,6 +27,7 @@ export function BookingsListTableSection({
   loading,
   error,
   onPageChange,
+  onView,
   onCancel,
   onRefund,
   className,
@@ -51,6 +52,13 @@ export function BookingsListTableSection({
           (row) => row.resource.title ?? row.resource.type,
           { id: "resource", header: t("columns.resource") },
         ),
+        columnHelper.accessor(
+          (row) =>
+            [row.athlete?.name.first, row.athlete?.name.last]
+              .filter(Boolean)
+              .join(" ") || row.athlete?.phone || "—",
+          { id: "athlete", header: t("columns.athlete") },
+        ),
         columnHelper.accessor((row) => row.club?.name ?? "—", {
           id: "club",
           header: t("columns.club"),
@@ -62,6 +70,8 @@ export function BookingsListTableSection({
         columnHelper.accessor((row) => row.pricing.total, {
           id: "total",
           header: t("columns.total"),
+          cell: ({ getValue }) =>
+            `${new Intl.NumberFormat("fa-IR").format(getValue())} تومان`,
         }),
         columnHelper.display({
           id: "actions",
@@ -74,9 +84,15 @@ export function BookingsListTableSection({
             const canCancel = CANCELLABLE.includes(row.status);
             const canRefund =
               REFUNDABLE.includes(row.status) && Boolean(row.payment?.paidAt);
-            if (!canCancel && !canRefund) return null;
             return (
               <div className={meta.actionsClassName}>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onPress={() => meta.onView(row)}
+                >
+                  {t("actions.view")}
+                </Button>
                 {canCancel ? (
                   <Button
                     size="sm"
@@ -105,6 +121,7 @@ export function BookingsListTableSection({
 
   const meta: BookingTableMeta = {
     actionsClassName: styles.actions(),
+    onView,
     onCancel,
     onRefund,
   };

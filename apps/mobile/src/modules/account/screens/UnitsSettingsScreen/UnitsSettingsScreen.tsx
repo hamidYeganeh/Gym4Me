@@ -62,7 +62,7 @@ export function UnitsSettingsScreen({
             <Typography className={styles.empty()} type="body">
               {settings.error}
             </Typography>
-            <Button
+            <Button size="lg"
               className={styles.retry()}
               onPress={() => {
                 void settings.load();

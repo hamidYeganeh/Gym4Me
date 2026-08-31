@@ -85,7 +85,7 @@ export function AthleteProgressPhotosScreen({
             }}
             type="file"
           />
-          <Button
+          <Button size="lg"
             fullWidth
             isDisabled={pending || !onAddPhoto}
             onPress={() => fileInputRef.current?.click()}
@@ -100,7 +100,7 @@ export function AthleteProgressPhotosScreen({
                 {t("uploadError")}
               </Typography>
               {onRetry ? (
-                <Button onPress={() => void onRetry()} variant="secondary">
+                <Button size="lg" onPress={() => void onRetry()} variant="secondary">
                   {t("retry")}
                 </Button>
               ) : null}
@@ -192,7 +192,7 @@ export function AthleteProgressPhotosScreen({
                       </ListBox>
                     </Select.Popover>
                   </Select>
-                  <Button
+                  <Button size="lg"
                     fullWidth
                     isDisabled={pendingPhotoId === photo.id || !onDeletePhoto}
                     onPress={() => {

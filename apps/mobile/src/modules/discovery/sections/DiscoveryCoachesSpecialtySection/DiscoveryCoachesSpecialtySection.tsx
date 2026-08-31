@@ -58,7 +58,7 @@ export function DiscoveryCoachesSpecialtySection({
 
       <div className={styles.scroller}>
         {specialties.map((specialty) => (
-          <Button
+          <Button size="lg"
             key={specialty.id}
             className={styles.chip}
             onPress={() => onSpecialtyPress?.(specialty.id)}

@@ -21,8 +21,7 @@ export const ownerMembersListSectionVariants = tv({
     progressFill: "block h-full rounded-full bg-accent",
     rowEnd: "flex shrink-0 flex-col items-end gap-2",
     divider: "mx-4 h-px bg-border",
-    empty:
-      "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center",
+    empty: "flex flex-col items-center gap-2 border-0 bg-surface text-center",
     emptyTitle: "text-foreground",
     emptyBody: "text-muted",
   },

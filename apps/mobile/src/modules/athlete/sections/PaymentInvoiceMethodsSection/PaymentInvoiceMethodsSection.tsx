@@ -24,9 +24,7 @@ export function PaymentInvoiceMethodsSection({
 
           return (
             <Button
-              className={`${styles.methodCard()} ${
-                isSelected ? styles.methodCardSelected() : ""
-              }`}
+              className={`${styles.methodCard()} ${ isSelected ? styles.methodCardSelected() : "" }`}
               key={method.id}
               onPress={() => onSelectMethod(method.id)}
               size="lg"

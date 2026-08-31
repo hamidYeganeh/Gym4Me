@@ -279,7 +279,7 @@ function DescriptionDisclosure({ text }: { text: string }) {
           aria-expanded={isExpanded}
           className={styles.seeMoreTrigger}
           onPress={() => setIsExpanded((prev) => !prev)}
-          size="sm"
+          size="lg"
           variant={isExpanded ? "tertiary" : "secondary"}
         >
           {isExpanded ? t("seeLess") : t("seeMore")}
@@ -316,7 +316,7 @@ function EquipmentSection({ equipment }: { equipment: ClubDetailEquipment[] }) {
         ))}
 
         {hasMore ? (
-          <Button
+          <Button size="lg"
             className={styles.equipmentSeeAll}
             onPress={() => setIsOpen(true)}
             variant="secondary"
@@ -431,7 +431,7 @@ function CoachesSection({ coaches }: { coaches: ClubDetailCoach[] }) {
         ))}
 
         {hasMore ? (
-          <Button
+          <Button size="lg"
             className={styles.coachSeeAll}
             onPress={() => router.push("/discovery/coaches")}
             variant="secondary"
@@ -1059,7 +1059,7 @@ export function DiscoveryClubsDetailBodySection({
                 />
               </div>
             ))}
-            <Button
+            <Button size="lg"
               className={styles.sportSeeAll}
               onPress={() => router.push(sportsPath)}
               variant="secondary"
@@ -1123,7 +1123,7 @@ export function DiscoveryClubsDetailBodySection({
                 />
               </div>
             ))}
-            <Button
+            <Button size="lg"
               className={styles.branchSeeAll}
               onPress={() => router.push(branchesPath)}
               variant="secondary"
@@ -1179,7 +1179,7 @@ export function DiscoveryClubsDetailBodySection({
               );
             })}
 
-            <Button
+            <Button size="lg"
               className={styles.classSeeAll}
               onPress={() => router.push(classesPath)}
               variant="secondary"
@@ -1220,7 +1220,7 @@ export function DiscoveryClubsDetailBodySection({
               </div>
             ))}
 
-            <Button
+            <Button size="lg"
               className={styles.reviewSeeAll}
               onPress={() => router.push(reviewsPath)}
               variant="secondary"

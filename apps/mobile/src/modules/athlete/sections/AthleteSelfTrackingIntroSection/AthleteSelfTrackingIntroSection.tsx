@@ -20,10 +20,10 @@ export function AthleteSelfTrackingIntroSection({
         خصوصی نگه دار.
       </Typography>
       <div className={styles.actions()}>
-        <Button onPress={onGoalsPress} size="sm" variant="secondary">
+        <Button onPress={onGoalsPress} size="lg" variant="secondary">
           اهداف و یادآوری
         </Button>
-        <Button onPress={onHealthSyncPress} size="sm" variant="tertiary">
+        <Button onPress={onHealthSyncPress} size="lg" variant="tertiary">
           همگام‌سازی دستگاه
         </Button>
       </div>

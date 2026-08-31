@@ -7,7 +7,7 @@ export const unitsSettingsScreenVariants = tv({
     content: "flex flex-col gap-6 pb-12 pt-2",
     status: "flex flex-col items-center gap-3 py-16",
     empty: "text-center text-muted",
-    retry: "min-h-12",
+    retry: "",
   },
 });
 

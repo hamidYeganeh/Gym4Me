@@ -126,7 +126,7 @@ export function OwnerShiftsScreen({
                           <Button
                             isDisabled={pendingId === request.id}
                             onPress={() => onApprove?.(request)}
-                            size="sm"
+                            size="lg"
                             variant="primary"
                           >
                             {t("approve")}
@@ -134,7 +134,7 @@ export function OwnerShiftsScreen({
                           <Button
                             isDisabled={pendingId === request.id}
                             onPress={() => onReject?.(request)}
-                            size="sm"
+                            size="lg"
                             variant="outline"
                           >
                             {t("reject")}

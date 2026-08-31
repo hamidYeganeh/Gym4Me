@@ -49,7 +49,7 @@ export function OnboardingHeader({
 
       <Button
         className={styles.skip()}
-        size="sm"
+        size="lg"
         variant="ghost"
         onPress={onSkip}
       >

@@ -51,13 +51,13 @@ export function OptionalUpdateBanner({
         <div className={styles.actions()}>
           <Button
             isDisabled={!updateUrl}
-            size="sm"
+            size="lg"
             variant="primary"
             onPress={onUpdate}
           >
             {t("update")}
           </Button>
-          <Button size="sm" variant="tertiary" onPress={onDismiss}>
+          <Button size="lg" variant="tertiary" onPress={onDismiss}>
             {t("later")}
           </Button>
         </div>

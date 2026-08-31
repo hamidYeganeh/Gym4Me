@@ -17,7 +17,7 @@ export const exitAppSheetVariants = tv({
     title: "text-[1.45rem] leading-tight text-foreground sm:text-[1.6rem]",
     subtitle: "max-w-[18rem] text-sm leading-relaxed text-muted",
     footer: "flex w-full flex-col gap-3 px-6 pt-1",
-    stay: "min-h-14 w-full rounded-[1.35rem] text-base font-bold",
+    stay: "w-full text-base font-bold",
     leave: [
       "text-sm font-bold text-muted outline-none",
       "data-[hovered=true]:bg-transparent data-[hovered=true]:opacity-80",

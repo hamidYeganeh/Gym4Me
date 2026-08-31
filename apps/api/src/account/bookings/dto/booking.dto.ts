@@ -231,28 +231,11 @@ export class SettleBookingRefundDto {
   method?: PaymentRefundMethod;
 }
 
-export class ListBookingsQueryDto {
+export class ListBookingsQueryDto extends PaginationQueryDto {
   @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  page?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  page_size?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  limit?: number;
-
-  @IsOptional()
-  @IsEnum(BookingStatus)
-  status?: BookingStatus;
+  @Transform(toStringArray)
+  @IsEnum(BookingStatus, { each: true })
+  status?: BookingStatus[];
 
   /** UI bucket filter — upcoming | past | cancelled. */
   @IsOptional()

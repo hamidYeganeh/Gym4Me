@@ -25,6 +25,7 @@ function user(overrides: Partial<PublicUser> = {}): PublicUser {
     address: {
       apartment: null,
       city: "تهران",
+      district: null,
       point: null,
       postalCode: null,
       provinceId: null,
@@ -42,6 +43,7 @@ describe("originFromUser", () => {
           address: {
             provinceId: null,
             city: "تهران",
+            district: null,
             street: null,
             apartment: null,
             postalCode: null,
@@ -55,6 +57,7 @@ describe("originFromUser", () => {
               address: {
                 provinceId: null,
                 city: "تهران",
+                district: null,
                 street: "ولیعصر",
                 apartment: null,
                 postalCode: null,
@@ -74,6 +77,7 @@ describe("originFromUser", () => {
           address: {
             provinceId: null,
             city: "اصفهان",
+            district: null,
             street: null,
             apartment: null,
             postalCode: null,

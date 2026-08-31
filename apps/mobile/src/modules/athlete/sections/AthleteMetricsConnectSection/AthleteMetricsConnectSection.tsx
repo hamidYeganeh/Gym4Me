@@ -82,7 +82,7 @@ export function AthleteMetricsConnectSection({
           <Button
             isPending={isBusy}
             onPress={onConnect}
-            size="md"
+            size="lg"
             variant={isConnected ? "secondary" : "primary"}
           >
             {({ isPending }) => (
@@ -93,7 +93,7 @@ export function AthleteMetricsConnectSection({
             )}
           </Button>
           {showDenied && onOpenSettings && settingsLabel ? (
-            <Button onPress={onOpenSettings} size="sm" variant="ghost">
+            <Button onPress={onOpenSettings} size="lg" variant="ghost">
               {settingsLabel}
             </Button>
           ) : null}

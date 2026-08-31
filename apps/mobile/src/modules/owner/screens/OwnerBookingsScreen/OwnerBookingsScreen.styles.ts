@@ -1,0 +1,31 @@
+import { tv } from "tailwind-variants";
+
+export const ownerBookingsScreenVariants = tv({
+  slots: {
+    root: "min-h-dvh bg-background",
+    content: "mx-auto flex w-full max-w-lg flex-col gap-5 px-4 pb-28 pt-2",
+    intro: "flex flex-col gap-1",
+    introTitle: "text-foreground",
+    introSubtitle: "text-muted",
+    toolbar: "flex flex-col gap-3 rounded-[24px] bg-surface p-4",
+    select: "w-full border border-border bg-background text-sm",
+    filters: "grid grid-cols-4 gap-1 bg-default",
+    filter: "min-w-0 text-xs",
+    list: "flex flex-col gap-3",
+    card: "flex flex-col gap-3 rounded-[24px] bg-surface p-4",
+    cardTop: "flex items-start justify-between gap-3",
+    identity: "flex min-w-0 flex-1 flex-col gap-1",
+    title: "truncate text-foreground",
+    meta: "text-muted",
+    facts: "grid grid-cols-2 gap-2 rounded-2xl bg-default/60 p-3",
+    fact: "flex min-w-0 flex-col gap-0.5",
+    factLabel: "text-xs text-muted",
+    factValue: "truncate text-sm text-foreground",
+    note: "rounded-xl border border-border px-3 py-2 text-sm text-muted",
+    actions: "flex flex-wrap gap-2 border-t border-border pt-3",
+    empty: "flex flex-col items-center gap-3 bg-surface text-center",
+    error: "rounded-2xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger",
+    footer: "flex justify-center pt-1",
+    dialogBody: "flex flex-col gap-3",
+  },
+});

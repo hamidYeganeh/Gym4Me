@@ -6,7 +6,7 @@ export const ownerClubsScreenStyles = {
   introSubtitle: "text-muted",
   list: "flex flex-col gap-4",
   clubCard:
-    "h-auto w-full items-stretch justify-start gap-0 rounded-[24px] border-0 bg-surface p-4 text-start font-normal",
+    "w-full items-stretch justify-start gap-0 border-0 bg-surface text-start font-normal",
   clubBody: "flex w-full flex-col gap-3",
   clubTop: "flex items-center gap-3",
   clubThumb:
@@ -24,8 +24,7 @@ export const ownerClubsScreenStyles = {
   occupancyTrack: "block h-1.5 w-full overflow-hidden rounded-full bg-default",
   occupancyFill: "block h-full rounded-full bg-accent",
   revenue: "text-muted",
-  empty:
-    "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center",
+  empty: "flex flex-col items-center gap-2 border-0 bg-surface text-center",
   emptyTitle: "text-foreground",
   emptyBody: "text-muted",
 } as const;

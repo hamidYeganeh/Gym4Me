@@ -52,7 +52,7 @@ export function WelcomeScreen({ className }: WelcomeScreenProps) {
       animateCopy
       className={className}
       footer={
-        <Button onPress={goSignIn} variant="ghost">
+        <Button onPress={goSignIn} variant="ghost" size="lg">
           <span>{t("alreadyHaveAccount")}</span>{" "}
           <span className={styles.signIn()}>{t("ctaSignIn")}</span>
         </Button>

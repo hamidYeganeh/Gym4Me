@@ -55,6 +55,7 @@ describe("profile-settings", () => {
         address: {
           provinceId: "prov-1",
           city: "تهران",
+          district: "منطقه ۶",
           street: "ولیعصر",
           apartment: "۱۲",
           postalCode: "1234567890",

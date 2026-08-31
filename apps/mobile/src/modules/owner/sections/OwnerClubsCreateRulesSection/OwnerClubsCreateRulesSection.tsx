@@ -82,6 +82,8 @@ export function OwnerClubsCreateRulesSection({
 
               <Button
                 aria-label={t("removeRule")}
+                className={styles.removeButton()}
+                fullWidth
                 size="lg"
                 variant="danger"
                 onPress={() => onRemoveRule(rule.id)}

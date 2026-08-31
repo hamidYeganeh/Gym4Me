@@ -99,7 +99,7 @@ export function CoachProgramsListSection({
               onKeyDown={(event) => event.stopPropagation()}
               role="presentation"
             >
-              <Button
+              <Button size="lg"
                 fullWidth
                 isDisabled={publishingId === program.id}
                 onPress={() => void onPublishProgram(program.id)}

@@ -168,7 +168,7 @@ export function OwnerMembersListSection({
                         onPress={() => {
                           void onRenew(member);
                         }}
-                        size="sm"
+                        size="lg"
                         variant="primary"
                       >
                         {renewAction}
@@ -180,7 +180,7 @@ export function OwnerMembersListSection({
                         onPress={() => {
                           void onUnfreeze(member);
                         }}
-                        size="sm"
+                        size="lg"
                         variant="secondary"
                       >
                         {unfreezeAction}
@@ -194,7 +194,7 @@ export function OwnerMembersListSection({
                         onPress={() => {
                           void onFreeze(member);
                         }}
-                        size="sm"
+                        size="lg"
                         variant="outline"
                       >
                         {freezeAction}

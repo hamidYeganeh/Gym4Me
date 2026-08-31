@@ -79,21 +79,21 @@ export function AthleteNutritionLogScreen({
         </section>
 
         <div className={styles.quickActions()}>
-          <Button
+          <Button size="lg"
             isDisabled={pending}
             onPress={() => void submit("followed")}
             variant="primary"
           >
             {t("quickFollowed")}
           </Button>
-          <Button
+          <Button size="lg"
             isDisabled={pending}
             onPress={() => void submit("partial")}
             variant="secondary"
           >
             {t("quickPartial")}
           </Button>
-          <Button
+          <Button size="lg"
             isDisabled={pending}
             onPress={() => void submit("skipped")}
             variant="outline"
@@ -122,7 +122,7 @@ export function AthleteNutritionLogScreen({
             <Button
               isDisabled={pending}
               onPress={() => setPhoto(null)}
-              size="sm"
+              size="lg"
               variant="ghost"
             >
               {t("mealPhotoRemove")}

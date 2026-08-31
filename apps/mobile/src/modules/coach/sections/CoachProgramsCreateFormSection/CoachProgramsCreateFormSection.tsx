@@ -52,14 +52,14 @@ export function CoachProgramsCreateFormSection({
         </Typography>
       ) : null}
       <div className={styles.actions()}>
-        <Button isDisabled={creating} onPress={onCancel} variant="ghost">
+        <Button isDisabled={creating} onPress={onCancel} variant="ghost" size="lg">
           {t("createCancel")}
         </Button>
         <Button
           isDisabled={creating || !title.trim()}
           type="submit"
           variant="primary"
-        >
+         size="lg">
           {creating ? t("creating") : t("createSubmit")}
         </Button>
       </div>

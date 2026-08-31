@@ -233,7 +233,7 @@ export function ProfileSettingsEditSheet({
                         ? tProfile("genderFemale")
                         : tProfile("genderOther");
                   return (
-                    <Button
+                    <Button size="lg"
                       aria-selected={gender === item}
                       className={styles.wheelItem()}
                       data-selected={gender === item || undefined}
@@ -282,7 +282,7 @@ export function ProfileSettingsEditSheet({
                 role="listbox"
               >
                 {provinces.map((item) => (
-                  <Button
+                  <Button size="lg"
                     aria-selected={provinceId === item.id}
                     className={styles.wheelItem()}
                     data-selected={provinceId === item.id || undefined}
@@ -400,7 +400,7 @@ export function ProfileSettingsEditSheet({
                   role="listbox"
                 >
                   {levelOptions.map((option) => (
-                    <Button
+                    <Button size="lg"
                       aria-selected={levelKey === option.value}
                       className={styles.wheelItem()}
                       data-selected={levelKey === option.value || undefined}

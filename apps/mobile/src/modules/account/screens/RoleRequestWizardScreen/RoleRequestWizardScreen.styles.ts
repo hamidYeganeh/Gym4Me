@@ -8,10 +8,10 @@ export const roleRequestWizardScreenVariants = tv({
     subtitle: "max-w-[21rem] text-pretty leading-relaxed text-muted",
     form: "flex flex-col gap-4",
     field: "w-full",
-    upload: "flex flex-col gap-2 rounded-2xl border border-border/60 p-4",
+    upload: "flex flex-col gap-2 border border-border/60",
     error: "text-sm text-danger",
     notice: "text-sm text-success",
-    reject: "rounded-2xl bg-danger/10 p-3 text-sm text-danger",
+    reject: "bg-danger/10 text-sm text-danger",
   },
 });
 

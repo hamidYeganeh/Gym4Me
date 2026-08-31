@@ -4,7 +4,7 @@ export const paymentInvoiceScreenStyles = {
     "flex flex-col gap-6 pt-1",
     "pb-[calc(6.5rem+env(safe-area-inset-bottom))]",
   ].join(" "),
-  payCta: "h-14 w-full",
+  payCta: "w-full",
   intro: "flex flex-col gap-2",
   introTitle: "tracking-tight text-foreground",
   introSubtitle: "text-muted",
@@ -33,7 +33,6 @@ export const paymentInvoiceScreenStyles = {
     "flex size-5 shrink-0 items-center justify-center rounded-full border-2 border-border",
   methodRadioSelected: "border-accent",
   methodRadioDot: "size-2.5 rounded-full bg-accent",
-  empty:
-    "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center",
+  empty: "flex flex-col items-center gap-2 border-0 bg-surface text-center",
   emptyTitle: "text-foreground",
 } as const;

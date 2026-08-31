@@ -6,9 +6,8 @@ export const forgotPasswordScreenVariants = tv({
     form: "flex w-full flex-col gap-5",
     figureImage:
       "h-auto w-full max-w-[11.5rem] object-contain sm:max-w-[13rem]",
-    submit:
-      "min-h-14 bg-accent text-base font-bold text-accent-foreground data-[hovered=true]:opacity-90",
-    submitIcon: "ms-2 size-5",
+    submit: "bg-accent text-base font-bold text-accent-foreground data-[hovered=true]:opacity-90",
+    submitIcon: "ms-2",
     backButton: "outline-none",
     footerCopy: "flex flex-col items-center gap-1 text-sm text-muted sm:text-base",
     footerLink:

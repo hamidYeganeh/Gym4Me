@@ -147,7 +147,7 @@ export function OwnerLifecycleGate() {
               onPress={() =>
                 void load().catch(() => setLoadError(t("loadError")))
               }
-              size="sm"
+              size="lg"
               variant="secondary"
             >
               {t("retry")}

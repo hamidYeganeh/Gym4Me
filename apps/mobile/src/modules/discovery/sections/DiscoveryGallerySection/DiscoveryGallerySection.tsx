@@ -101,7 +101,7 @@ export function DiscoveryGallerySection({
         ))}
 
         <SwiperSlide className={styles.swiperSlide}>
-          <Button
+          <Button size="lg"
             className={styles.seeAll}
             onPress={() => openLightbox(0)}
             variant="secondary"

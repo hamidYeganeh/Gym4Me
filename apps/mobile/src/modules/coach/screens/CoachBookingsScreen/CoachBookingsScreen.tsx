@@ -35,7 +35,9 @@ function tabOf(status: BookingStatus): BookingsTab | undefined {
 
 export function CoachBookingsScreen({
   bookings,
+  error,
   onAction,
+  onRetry,
 }: CoachBookingsScreenProps) {
   const t = useTranslations("CoachBookings");
   const router = useRouter();
@@ -43,6 +45,7 @@ export function CoachBookingsScreen({
   const [tab, setTab] = useState<BookingsTab>("requests");
   const [items, setItems] = useState<CoachBookingRequest[]>(bookings);
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string>();
 
   useEffect(() => {
     setItems(bookings);
@@ -62,8 +65,11 @@ export function CoachBookingsScreen({
   const runAction = async (id: string, action: CoachBookingAction) => {
     if (!onAction) return;
     setPendingId(id);
+    setActionError(undefined);
     try {
       await onAction(id, action);
+    } catch {
+      setActionError(t("actionError"));
     } finally {
       setPendingId(null);
     }
@@ -95,13 +101,24 @@ export function CoachBookingsScreen({
               className={styles.tabChip()}
               key={item}
               onPress={() => setTab(item)}
-              size="sm"
+              size="lg"
               variant={tab === item ? "primary" : "ghost"}
             >
               {t(TAB_LABEL_KEY[item])}
             </Button>
           ))}
         </div>
+
+        {error || actionError ? (
+          <div className={styles.error()} role="alert">
+            <span>{actionError ?? error}</span>
+            {error && onRetry ? (
+              <Button size="lg" variant="secondary" onPress={() => void onRetry()}>
+                {t("retry")}
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
 
         <CoachBookingsListSection
           hasApiActions={Boolean(onAction)}

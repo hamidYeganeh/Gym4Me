@@ -54,7 +54,7 @@ export function ExitAppSheet({
             </Button>
             <Button
               className={styles.leave()}
-              size="sm"
+              size="lg"
               variant="ghost"
               onPress={onLeave}
             >

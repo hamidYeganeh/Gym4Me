@@ -122,7 +122,7 @@ export function AthleteNutritionPlanScreen({
                         onPress={() =>
                           void onLogMeal(day.dayIndex, mealIndex, "followed")
                         }
-                        size="sm"
+                        size="lg"
                         variant="secondary"
                       >
                         {t("logFollowed")}
@@ -132,7 +132,7 @@ export function AthleteNutritionPlanScreen({
                         onPress={() =>
                           void onLogMeal(day.dayIndex, mealIndex, "skipped")
                         }
-                        size="sm"
+                        size="lg"
                         variant="outline"
                       >
                         {t("logSkipped")}

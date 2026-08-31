@@ -39,7 +39,7 @@ export function OnboardingFooterSection({
           </Button>
           <Button
             className={styles.secondaryAction()}
-            size="sm"
+            size="lg"
             variant="ghost"
             onPress={handleCaloriesUnknown}
           >

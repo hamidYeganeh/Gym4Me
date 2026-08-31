@@ -131,7 +131,7 @@ export function CoachVideoFeedbackScreen({
                       }
                       type="submit"
                       variant="primary"
-                    >
+                     size="lg">
                       {reviewingId === submission.id
                         ? t("submittingReview")
                         : t("submitReview")}

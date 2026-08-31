@@ -11,7 +11,7 @@ export const supportTicketsScreenVariants = tv({
     list: "flex flex-col gap-3",
     item: "flex flex-col gap-1 rounded-[1.25rem] border-0 bg-surface px-4 py-3 text-start",
     itemMeta: "text-muted",
-    empty: "py-16 text-center text-muted",
+    empty: "text-center text-muted",
     form: "flex flex-col gap-3 rounded-[1.5rem] border-0 bg-surface p-4",
     bodyField: "resize-none",
     actions: "mt-2 flex flex-col gap-2",

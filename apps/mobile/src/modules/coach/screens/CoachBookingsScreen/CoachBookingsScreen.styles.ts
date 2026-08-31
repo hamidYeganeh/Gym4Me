@@ -9,5 +9,6 @@ export const coachBookingsScreenVariants = tv({
     introSubtitle: "text-muted",
     tabs: "-mx-screen flex gap-2.5 overflow-x-auto px-screen pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
     tabChip: "shrink-0 rounded-full",
+    error: "flex items-center justify-between gap-3 rounded-2xl border border-danger/30 bg-danger/10 px-4 py-3 text-danger",
   },
 });

@@ -7,8 +7,7 @@ export const athleteRoleUpgradeSectionVariants = tv({
     heading: "flex min-w-0 flex-1 flex-col gap-1.5",
     title: "text-balance text-xl leading-tight tracking-tight text-foreground",
     description: "max-w-[21rem] text-pretty text-sm leading-relaxed text-muted",
-    close:
-      "size-10 shrink-0 rounded-full text-muted data-[hovered=true]:bg-default data-[pressed=true]:scale-[0.96]",
+    close: "shrink-0 text-muted data-[hovered=true]:bg-default data-[pressed=true]:scale-[0.96]",
     list: "flex flex-col gap-3 overflow-visible pt-1",
     card: "relative",
     cardBody: "pe-16",

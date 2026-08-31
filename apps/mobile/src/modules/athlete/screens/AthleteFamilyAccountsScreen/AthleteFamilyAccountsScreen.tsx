@@ -87,7 +87,7 @@ export function AthleteFamilyAccountsScreen({
                 value={birthDate}
               />
             </TextField>
-            <Button
+            <Button size="lg"
               fullWidth
               isDisabled={pending || !name.trim() || !birthDate}
               onPress={() => {

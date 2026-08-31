@@ -34,7 +34,7 @@ export function CommunityStoriesSection({
               delay: reduceMotion ? 0 : index * stagger.children,
             }}
           >
-            <Button
+            <Button size="lg"
               className={slots.item()}
               onPress={() => onMemberPress?.(member.id)}
               variant="ghost"

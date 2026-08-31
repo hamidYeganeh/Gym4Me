@@ -29,11 +29,11 @@ export function ArticleDetailEngagementSection({
         isDisabled={actionPending}
         variant="secondary"
         onPress={onToggleLike}
-      >
+       size="lg">
         <Heart size={18} />
         {article.engagement.likesCount}
       </Button>
-      <Button
+      <Button size="lg"
         aria-label={t("comments", {
           count: article.engagement.commentsCount,
         })}
@@ -53,7 +53,7 @@ export function ArticleDetailEngagementSection({
         isDisabled={actionPending}
         variant="secondary"
         onPress={onToggleSave}
-      >
+       size="lg">
         <Bookmark size={18} />
         {article.engagement.savesCount}
       </Button>

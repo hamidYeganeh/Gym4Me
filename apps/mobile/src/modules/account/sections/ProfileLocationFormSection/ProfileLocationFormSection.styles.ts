@@ -10,7 +10,7 @@ export const profileLocationFormSectionVariants = tv({
       "h-[var(--field-height)] min-h-[var(--field-height)] min-w-0 flex-1 bg-transparent text-sm shadow-none",
     kinds: "flex flex-wrap gap-2",
     kindChipButton: [
-      "h-auto min-h-0 p-0 shadow-none",
+      "shadow-none",
       "hover:bg-transparent data-[hovered=true]:bg-transparent",
       "data-[pressed=true]:scale-[0.98]",
     ].join(" "),
@@ -20,8 +20,8 @@ export const profileLocationFormSectionVariants = tv({
       "h-72 w-full overflow-hidden rounded-[var(--field-radius)] border border-border",
     error: "text-sm text-danger",
     actions: "flex flex-col gap-3 pt-2",
-    submit: "h-14 min-h-14 w-full rounded-2xl text-base font-bold",
-    delete: "h-14 min-h-14 w-full rounded-2xl",
+    submit: "w-full text-base font-bold",
+    delete: "w-full",
   },
 });
 

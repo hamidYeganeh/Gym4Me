@@ -22,7 +22,7 @@ export function OwnerClubDetailTabsSection({
           className={styles.tabChip()}
           key={tab.id}
           onPress={() => onTabChange(tab.id)}
-          size="sm"
+          size="lg"
           variant={activeTab === tab.id ? "primary" : "ghost"}
         >
           {tab.label}

@@ -280,7 +280,7 @@ export function DiscoveryClubsDetailCalendarSection({
           const selected = day.date === selectedDate;
           const closed = isWeekdayClosed(club.operatingHours, day.weekday);
           return (
-            <Button
+            <Button size="lg"
               aria-disabled={closed || undefined}
               aria-selected={selected && !closed}
               className={[

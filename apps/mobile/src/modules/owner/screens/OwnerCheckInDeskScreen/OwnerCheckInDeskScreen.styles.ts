@@ -24,6 +24,6 @@ export const ownerCheckInDeskScreenVariants = tv({
     reviewMeta: "text-muted",
     reviewReason: "text-danger",
     reviewActions: "flex flex-wrap justify-end gap-2",
-    empty: "rounded-[24px] bg-surface p-4 text-center text-muted",
+    empty: "bg-surface text-center text-muted",
   },
 });

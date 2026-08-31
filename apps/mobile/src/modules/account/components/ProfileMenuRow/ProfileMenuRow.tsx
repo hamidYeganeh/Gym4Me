@@ -56,7 +56,7 @@ export function ProfileMenuRow({
         fullWidth
         onPress={onPress}
         variant="ghost"
-      >
+       size="lg">
         {content}
       </Button>
     );

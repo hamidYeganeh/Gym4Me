@@ -61,7 +61,7 @@ export function ProfileSettingsFieldRow({
           onPress={onPress}
           type="button"
           variant="ghost"
-        >
+         size="lg">
           {content}
         </Button>
       ) : (

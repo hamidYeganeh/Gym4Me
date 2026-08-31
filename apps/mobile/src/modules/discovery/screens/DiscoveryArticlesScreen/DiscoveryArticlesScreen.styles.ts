@@ -7,7 +7,6 @@ export const discoveryArticlesScreenStyles = {
   introSubtitle: "max-w-[22rem] text-pretty leading-relaxed text-muted",
   meta: "text-muted",
   list: "flex flex-col gap-4",
-  empty:
-    "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center",
+  empty: "flex flex-col items-center gap-2 border-0 bg-surface text-center",
   sentinel: "flex min-h-12 items-center justify-center py-4",
 } as const;

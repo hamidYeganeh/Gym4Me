@@ -21,6 +21,7 @@ export function DiscoveryHomeHeaderSection({
   locationLabel: locationFallback,
   coachCityName,
   citiesFallbackName,
+  onLocationChange,
 }: DiscoveryHomeHeaderSectionProps) {
   const t = useTranslations("DiscoveryHome");
   const router = useRouter();
@@ -72,7 +73,7 @@ export function DiscoveryHomeHeaderSection({
             aria-label={t("locationChipAria", { location: locationLabel })}
             className={slots.locationChip()}
             onPress={() => setIsLocationOpen(true)}
-            size="sm"
+            size="lg"
             variant="secondary"
           >
             <MapPin1 size={16} />
@@ -96,7 +97,11 @@ export function DiscoveryHomeHeaderSection({
           )
         }
         onOpenChange={setIsLocationOpen}
-        onSelect={setSelectedAddressId}
+        onSelect={(addressId) => {
+          setSelectedAddressId(addressId);
+          const address = addresses.find((item) => item.id === addressId);
+          if (address) onLocationChange?.(address);
+        }}
         selectedId={selectedAddress?.id ?? ""}
         title={t("locationSheetTitle")}
         updateLabel={t("locationSheetUpdate")}

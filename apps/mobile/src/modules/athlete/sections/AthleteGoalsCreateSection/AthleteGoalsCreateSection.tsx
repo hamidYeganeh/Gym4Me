@@ -90,7 +90,7 @@ export function AthleteGoalsCreateSection({
             ))}
           </select>
         </label>
-        <Button
+        <Button size="lg"
           fullWidth
           isDisabled={pending}
           onPress={() => void onSubmit()}

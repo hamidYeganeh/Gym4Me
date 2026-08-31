@@ -81,7 +81,7 @@ export function AchievementsScreen({ className }: AchievementsScreenProps) {
             <Typography type="body-sm">{t("error")}</Typography>
             <Button
               className="mt-4"
-              size="sm"
+              size="lg"
               variant="secondary"
               onPress={() => void load()}
             >

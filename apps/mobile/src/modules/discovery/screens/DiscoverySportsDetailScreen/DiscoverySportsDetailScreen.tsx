@@ -102,7 +102,7 @@ export function DiscoverySportsDetailScreen({
           )}
         </section>
 
-        <Button
+        <Button size="lg"
           className="self-start"
           variant="secondary"
           onPress={() => router.push(clubsHref)}

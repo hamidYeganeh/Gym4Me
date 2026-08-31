@@ -27,7 +27,7 @@ export function BaseProfilePostsSection({
           className={styles.createPost()}
           onPress={onCreatePost}
           variant="ghost"
-        >
+         size="lg">
           {t("createPost")}
           <Plus size={16} />
         </Button>

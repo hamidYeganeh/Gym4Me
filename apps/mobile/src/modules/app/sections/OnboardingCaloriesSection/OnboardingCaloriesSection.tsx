@@ -86,7 +86,7 @@ export function OnboardingCaloriesSection({
             <Button
               key={preset}
               className={presetStyles.preset()}
-              size="sm"
+              size="lg"
               variant="ghost"
               onPress={() => onChange(preset)}
             >

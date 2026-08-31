@@ -104,7 +104,7 @@ export function AthleteReferralGate() {
           {error === "auth" ? t("authRequired") : t("loadError")}
         </Typography>
         {error === "load" ? (
-          <Button onPress={() => void reload()} variant="secondary">
+          <Button size="lg" onPress={() => void reload()} variant="secondary">
             {t("retry")}
           </Button>
         ) : null}

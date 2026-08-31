@@ -34,7 +34,9 @@ export function DiscoveryHomeCatalogRailSection({
     >
       {items.map((item) => (
         <button
-          aria-label={item.title}
+          aria-label={
+            [item.title, item.eyebrow, item.meta].filter(Boolean).join("، ")
+          }
           className={slots.card()}
           key={item.id}
           type="button"

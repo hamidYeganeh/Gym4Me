@@ -127,7 +127,7 @@ export function OnboardingSavingSection({
               className={base.retry()}
               variant="secondary"
               onPress={onRetry}
-            >
+             size="lg">
               {retryLabel}
             </Button>
           </>

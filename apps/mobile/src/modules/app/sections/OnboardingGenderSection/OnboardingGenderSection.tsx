@@ -45,7 +45,7 @@ export function OnboardingGenderSection({
           );
 
           return (
-            <Button
+            <Button size="lg"
               aria-checked={selected}
               aria-label={option.label}
               className={styles.card()}

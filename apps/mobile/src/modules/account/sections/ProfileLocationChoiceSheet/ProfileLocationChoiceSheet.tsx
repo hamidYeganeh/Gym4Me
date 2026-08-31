@@ -39,7 +39,7 @@ export function ProfileLocationChoiceSheet({
             ) : (
               <div aria-label={title} className={styles.wheel()} role="listbox">
                 {options.map((option) => (
-                  <Button
+                  <Button size="lg"
                     aria-selected={value === option.id}
                     className={styles.wheelItem()}
                     data-selected={value === option.id || undefined}

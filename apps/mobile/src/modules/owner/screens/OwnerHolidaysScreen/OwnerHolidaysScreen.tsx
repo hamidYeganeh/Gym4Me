@@ -108,7 +108,7 @@ export function OwnerHolidaysScreen({
                       isDisabled={Boolean(pendingHolidayId)}
                       isPending={pendingHolidayId === holiday.id}
                       onPress={() => onRemoveHoliday(holiday.id)}
-                      size="sm"
+                      size="lg"
                       variant="secondary"
                     >
                       {t("remove")}

@@ -3,8 +3,7 @@ import { tv } from "tailwind-variants";
 export const athleteBookingDetailActionsSectionVariants = tv({
   slots: {
     actions: "flex flex-col gap-3",
-    cancelConfirm:
-      "flex flex-col gap-3 rounded-[24px] border border-danger/30 bg-danger/10 p-5",
+    cancelConfirm: "flex flex-col gap-3 -[24px] border border-danger/30 bg-danger/10",
     cancelConfirmTitle: "text-foreground",
     cancelConfirmBody: "text-muted",
     cancelConfirmActions: "flex gap-3",

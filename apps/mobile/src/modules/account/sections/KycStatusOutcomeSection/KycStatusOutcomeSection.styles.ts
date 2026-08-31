@@ -14,8 +14,7 @@ export const kycStatusOutcomeSectionVariants = tv({
     subtitle:
       "max-w-xs text-pretty text-[0.95rem] leading-relaxed text-muted",
     actions: "flex w-full flex-col items-center gap-4 pb-2",
-    primary:
-      "min-h-14 w-full rounded-full text-base font-bold text-accent-foreground",
-    primaryIcon: "ms-2 size-5",
+    primary: "w-full text-base font-bold text-accent-foreground",
+    primaryIcon: "ms-2",
   },
 });

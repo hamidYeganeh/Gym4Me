@@ -27,7 +27,7 @@ export function CoachCalendarWeeklyDaysSection({
             <Typography className={styles.dayTitle}>
               {dayLabels[day.dayKey]}
             </Typography>
-            <Button onPress={() => onAddDay?.(day.id)} variant="ghost">
+            <Button size="lg" onPress={() => onAddDay?.(day.id)} variant="ghost">
               {addLabel}
             </Button>
           </div>

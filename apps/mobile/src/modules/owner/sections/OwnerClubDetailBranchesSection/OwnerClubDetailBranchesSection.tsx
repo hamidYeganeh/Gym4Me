@@ -21,7 +21,7 @@ export function OwnerClubDetailBranchesSection({
         <Typography className={styles.title()} type="h4" weight="semibold">
           {title}
         </Typography>
-        <Button size="sm" variant="ghost">
+        <Button size="lg" variant="ghost">
           <Plus aria-hidden size={16} />
           {addBranchLabel}
         </Button>

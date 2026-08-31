@@ -57,7 +57,7 @@ export function BiometricAuthButton({
 
   return (
     <div className="flex flex-col gap-2">
-      <Button
+      <Button size="lg"
         variant="primary"
         className="w-fit gap-2"
         isDisabled={isAuthenticating}

@@ -24,6 +24,7 @@ export function CoachBookingsGate() {
   const isLive = isAuthenticated && activeRole === "coach";
 
   const [bookings, setBookings] = useState<CoachBookingRequest[] | null>(null);
+  const [error, setError] = useState<string>();
 
   const copy = useMemo<CoachBookingCopy>(
     () => ({
@@ -34,13 +35,19 @@ export function CoachBookingsGate() {
   );
 
   const load = useCallback(async () => {
-    const result = await coachBookings.list({ page_size: 100 });
-    setBookings(
-      result.result.map((booking) =>
-        mapApiBookingToCoachRequest(booking, copy),
-      ),
-    );
-  }, [copy]);
+    setError(undefined);
+    try {
+      const result = await coachBookings.list({ page_size: 100 });
+      setBookings(
+        result.result.map((booking) =>
+          mapApiBookingToCoachRequest(booking, copy),
+        ),
+      );
+    } catch {
+      setBookings([]);
+      setError(t("loadError"));
+    }
+  }, [copy, t]);
 
   useEffect(() => {
     if (!isReady) return;
@@ -48,7 +55,7 @@ export function CoachBookingsGate() {
       setBookings(DEMO_MODE ? COACH_BOOKING_REQUESTS : []);
       return;
     }
-    load().catch(() => setBookings([]));
+    void load();
   }, [isLive, isReady, load]);
 
   const onAction = useCallback(
@@ -85,7 +92,9 @@ export function CoachBookingsGate() {
   return (
     <CoachBookingsScreen
       bookings={bookings}
+      error={error}
       onAction={isLive ? onAction : undefined}
+      onRetry={isLive ? load : undefined}
     />
   );
 }

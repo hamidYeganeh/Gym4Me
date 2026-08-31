@@ -43,7 +43,7 @@ export function AthleteMetricsReorderScreen({
       className={styles.root}
       footer={
         <div className={styles.footer}>
-          <Button
+          <Button size="lg"
             className={styles.saveButton}
             isDisabled={saving}
             onPress={() => {

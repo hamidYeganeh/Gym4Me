@@ -123,7 +123,7 @@ export function AthleteDisputeScreen({
                 value={body}
               />
             </TextField>
-            <Button
+            <Button size="lg"
               fullWidth
               isDisabled={pending || !body.trim()}
               onPress={() =>

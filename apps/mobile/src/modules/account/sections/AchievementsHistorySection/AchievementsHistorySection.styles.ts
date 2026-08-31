@@ -12,6 +12,6 @@ export const achievementsHistorySectionVariants = tv({
     amountPositive: "shrink-0 text-sm font-bold tabular-nums text-success",
     amountNegative: "shrink-0 text-sm font-bold tabular-nums text-danger",
     divider: "mx-4 h-px bg-border last:hidden",
-    empty: "py-16 text-center text-muted",
+    empty: "text-center text-muted",
   },
 });

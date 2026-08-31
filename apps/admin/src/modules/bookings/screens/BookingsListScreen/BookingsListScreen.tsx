@@ -20,6 +20,7 @@ import {
   type BookingBucketFilter,
 } from "../../sections/BookingsListFiltersSection";
 import { BookingsListHeaderSection } from "../../sections/BookingsListHeaderSection";
+import { BookingDetailDrawerSection } from "../../sections/BookingDetailDrawerSection";
 import { BookingsListModalsSection } from "../../sections/BookingsListModalsSection";
 import { BookingsListTableSection } from "../../sections/BookingsListTableSection";
 import { bookingsListScreenVariants } from "./BookingsListScreen.styles";
@@ -71,6 +72,7 @@ export function BookingsListScreen({ className }: BookingsListScreenProps) {
   const styles = bookingsListScreenVariants();
 
   const [cancelling, setCancelling] = useState<Booking | null>(null);
+  const [selected, setSelected] = useState<Booking | null>(null);
   const [cancelReason, setCancelReason] = useState("");
   const [refunding, setRefunding] = useState<Booking | null>(null);
   const [pending, setPending] = useState(false);
@@ -215,6 +217,7 @@ export function BookingsListScreen({ className }: BookingsListScreenProps) {
             setCancelReason("");
             setActionError(null);
           }}
+          onView={setSelected}
           onPageChange={changePage}
           onRefund={(row) => {
             setRefunding(row);
@@ -237,6 +240,12 @@ export function BookingsListScreen({ className }: BookingsListScreenProps) {
         onRefundConfirm={() => void handleRefund()}
         onRefundingOpenChange={(open) => {
           if (!open) setRefunding(null);
+        }}
+      />
+      <BookingDetailDrawerSection
+        booking={selected}
+        onOpenChange={(open) => {
+          if (!open) setSelected(null);
         }}
       />
     </AdminShell>

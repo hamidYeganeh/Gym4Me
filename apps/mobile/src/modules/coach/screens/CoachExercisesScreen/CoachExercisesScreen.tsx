@@ -69,7 +69,7 @@ export function CoachExercisesScreen({
         {onSubmitExercise ? (
           <>
             {!showForm ? (
-              <Button onPress={() => setShowForm(true)} variant="primary">
+              <Button size="lg" onPress={() => setShowForm(true)} variant="primary">
                 {t("createAction")}
               </Button>
             ) : (
@@ -117,7 +117,7 @@ export function CoachExercisesScreen({
                   />
                 </TextField>
                 <div className={styles.formActions}>
-                  <Button
+                  <Button size="lg"
                     isDisabled={submitting}
                     onPress={() => setShowForm(false)}
                     variant="ghost"
@@ -128,7 +128,7 @@ export function CoachExercisesScreen({
                     isDisabled={submitting || !name.trim() || !muscleGroup.trim()}
                     type="submit"
                     variant="primary"
-                  >
+                   size="lg">
                     {submitting ? t("submitting") : t("createSubmit")}
                   </Button>
                 </div>

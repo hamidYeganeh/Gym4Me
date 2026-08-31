@@ -8,7 +8,7 @@ export const discoveryClubsClassDetailActionsSectionStyles = {
     "[font-variant-numeric:tabular-nums]",
   ].join(" "),
   priceSuffix: "text-xs font-normal text-muted",
-  confirm: "min-w-0 h-14 w-1/2",
+  confirm: "min-w-0 w-1/2",
   confirmLabel: "truncate text-background",
   confirmIcon: "shrink-0 text-background",
 } as const;

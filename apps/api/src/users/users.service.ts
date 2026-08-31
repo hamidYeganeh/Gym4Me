@@ -9,6 +9,7 @@ import * as argon2 from 'argon2';
 import { AuditService } from '../audit/audit.service';
 import { AuditAction, InviteStatus, Role } from '../common/enums';
 import { buildReferralCode, buildUserCode } from '../common/utils/slug.util';
+import { createSearchFilter } from '../common/utils/list-query.util';
 import {
   AthleteProfile,
   AthleteProfileDocument,
@@ -91,6 +92,26 @@ export class UsersService {
       .find({ _id: { $in: ids } })
       .select('phone name code kycStatus')
       .lean();
+  }
+
+  /** Bounded identity lookup used by operational booking/member searches. */
+  async findIdsBySearch(
+    search: string,
+    limit = 200,
+  ): Promise<Types.ObjectId[]> {
+    const users = await this.userModel
+      .find(
+        createSearchFilter(search, [
+          'phone',
+          'name.first',
+          'name.last',
+          'code',
+        ]),
+      )
+      .select('_id')
+      .limit(limit)
+      .lean();
+    return users.map((user) => user._id);
   }
 
   async findByPhone(phone: string): Promise<UserDocument | null> {

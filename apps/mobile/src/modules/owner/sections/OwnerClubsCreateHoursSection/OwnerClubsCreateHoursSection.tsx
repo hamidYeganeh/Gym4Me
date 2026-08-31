@@ -154,7 +154,7 @@ export function OwnerClubsCreateHoursSection({
                   >
                     {t(`weekdays.${dayKey}`)}
                   </Typography>
-                  <div className={styles.chips()}>
+                  <div className={styles.hourStatusChips()}>
                     <FilterChip
                       selected={hour.status === "open"}
                       onPress={() =>

@@ -103,7 +103,7 @@ export function OwnerCheckInDeskScreen({
             isDisabled={pending || !code.trim()}
             type="submit"
             variant="primary"
-          >
+           size="lg">
             {t("submit")}
           </Button>
         </form>
@@ -132,7 +132,7 @@ export function OwnerCheckInDeskScreen({
                   : t("recoveryStaleSnapshot")}
             </Typography>
             {onRecoverQueue ? (
-              <Button
+              <Button size="lg"
                 className="mt-3"
                 isDisabled={recoveryPending}
                 onPress={() => void onRecoverQueue()}
@@ -230,7 +230,7 @@ export function OwnerCheckInDeskScreen({
                               onPress={() =>
                                 void onResolve(reconciliation, "retry", reason.trim())
                               }
-                              size="sm"
+                              size="lg"
                               variant="secondary"
                             >
                               {t("retryResolution")}
@@ -242,7 +242,7 @@ export function OwnerCheckInDeskScreen({
                             onPress={() =>
                               void onResolve(reconciliation, "dismiss", reason.trim())
                             }
-                            size="sm"
+                            size="lg"
                             variant="ghost"
                           >
                             {t("dismissResolution")}

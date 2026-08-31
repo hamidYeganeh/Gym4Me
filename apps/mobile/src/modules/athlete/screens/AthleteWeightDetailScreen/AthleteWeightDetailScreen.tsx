@@ -25,15 +25,15 @@ export function AthleteWeightDetailScreen({
       className="bg-background"
       footer={
         <div className="flex flex-col gap-3 border-t border-border bg-background px-screen py-4">
-          <Button
-            className="h-12 w-full border-stats-orange bg-transparent text-stats-orange"
+          <Button size="lg"
+            className="w-full border-stats-orange bg-transparent text-stats-orange"
             onPress={() => undefined}
             variant="outline"
           >
             {t("viewInsight")}
           </Button>
-          <Button
-            className="h-12 w-full gap-2 bg-stats-orange text-stats-foreground data-[hovered=true]:bg-stats-orange/90"
+          <Button size="lg"
+            className="w-full gap-2 bg-stats-orange text-stats-foreground data-[hovered=true]:bg-stats-orange/90"
             onPress={() => router.push("/athlete/metrics/weight/history")}
           >
             {t("viewHistory")}

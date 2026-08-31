@@ -236,7 +236,7 @@ export function DiscoveryComposerScreen() {
       setDirty(false);
       const next = await adminDiscovery.preview(pageKey, {
         page: 1,
-        page_size: 8,
+        page_size: 64,
         context: {
           authenticated: authenticatedPreview,
           activeRole: authenticatedPreview ? "athlete" : undefined,
@@ -276,10 +276,7 @@ export function DiscoveryComposerScreen() {
     }
   };
 
-  const summary = useMemo(
-    () => `${sections.length} سکشن · ${Math.ceil(sections.length / 8)} صفحه`,
-    [sections.length],
-  );
+  const summary = useMemo(() => `${sections.length} سکشن`, [sections.length]);
   const validationErrors = useMemo(
     () =>
       Object.fromEntries(

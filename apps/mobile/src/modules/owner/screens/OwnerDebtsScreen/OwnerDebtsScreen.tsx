@@ -92,7 +92,7 @@ export function OwnerDebtsScreen({
                           isDisabled={pendingId === debt.id}
                           isPending={pendingId === debt.id}
                           onPress={() => onRecordPayment(debt)}
-                          size="sm"
+                          size="lg"
                           variant="secondary"
                         >
                           {t("recordPayment")}

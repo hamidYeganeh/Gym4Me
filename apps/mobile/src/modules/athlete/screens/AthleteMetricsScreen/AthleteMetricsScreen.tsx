@@ -91,14 +91,14 @@ export function AthleteMetricsScreen({
             <div className="flex flex-wrap gap-2 px-0">
               <Button
                 onPress={() => router.push("/athlete/health-sync")}
-                size="sm"
+                size="lg"
                 variant="secondary"
               >
                 مدیریت همگام‌سازی
               </Button>
               <Button
                 onPress={() => router.push("/athlete/goals")}
-                size="sm"
+                size="lg"
                 variant="tertiary"
               >
                 اهداف و یادآوری
@@ -109,7 +109,7 @@ export function AthleteMetricsScreen({
           <div className="flex flex-wrap gap-2">
             <Button
               onPress={() => router.push("/athlete/goals")}
-              size="sm"
+              size="lg"
               variant="tertiary"
             >
               اهداف و یادآوری

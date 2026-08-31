@@ -16,7 +16,7 @@ export const profileLocationChoiceSheetVariants = tv({
       "data-[selected=true]:text-accent data-[selected=true]:ring-1",
       "data-[selected=true]:ring-accent",
     ].join(" "),
-    empty: "py-6 text-center text-sm text-muted",
+    empty: "text-center text-sm text-muted",
   },
 });
 

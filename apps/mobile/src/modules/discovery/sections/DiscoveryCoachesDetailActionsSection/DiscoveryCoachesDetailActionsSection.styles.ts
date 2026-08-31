@@ -9,7 +9,7 @@ export const discoveryCoachesDetailActionsSectionStyles = {
   ].join(" "),
   priceSuffix: "text-xs font-normal text-muted",
   priceLabel: "text-muted",
-  confirm: "min-w-0 h-full shrink-0 px-5",
+  confirm: "min-w-0 shrink-0",
   confirmLabel: "truncate text-accent-foreground",
   confirmIcon: "shrink-0 text-accent-foreground",
 } as const;

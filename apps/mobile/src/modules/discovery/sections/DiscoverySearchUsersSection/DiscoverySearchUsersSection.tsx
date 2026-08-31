@@ -48,7 +48,7 @@ export function DiscoverySearchUsersSection({
             return (
               <Card className={slots.card()} key={user.id} variant="transparent">
                 <div className={slots.row()} role="listitem">
-                  <Button
+                  <Button size="lg"
                     aria-label={openUserAria(user.name)}
                     className={slots.identity()}
                     variant="ghost"
@@ -82,7 +82,7 @@ export function DiscoverySearchUsersSection({
                       following ? unfollowAria(user.name) : followAria(user.name)
                     }
                     className={slots.follow()}
-                    size="sm"
+                    size="lg"
                     variant={following ? "outline" : "primary"}
                     onPress={() => onFollow(user)}
                   >

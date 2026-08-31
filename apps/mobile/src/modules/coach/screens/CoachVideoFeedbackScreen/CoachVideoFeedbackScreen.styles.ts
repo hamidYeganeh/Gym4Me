@@ -11,6 +11,5 @@ export const coachVideoFeedbackScreenStyles = {
   thumb: "flex h-24 items-center justify-center rounded-[12px] bg-background text-muted",
   form: "flex flex-col gap-2",
   reviewNote: "rounded-[12px] bg-background p-3 text-foreground",
-  empty:
-    "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center",
+  empty: "flex flex-col items-center gap-2 border-0 bg-surface text-center",
 } as const;

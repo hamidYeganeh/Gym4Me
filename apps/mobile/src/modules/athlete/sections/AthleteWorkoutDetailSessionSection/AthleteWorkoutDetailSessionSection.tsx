@@ -71,7 +71,7 @@ export function AthleteWorkoutDetailSessionSection({
   return (
     <section className={styles.root({ className })}>
       {onStartSession ? (
-        <Button
+        <Button size="lg"
           isDisabled={pending}
           onPress={() => void onStartSession()}
           variant="primary"
@@ -201,12 +201,13 @@ export function AthleteWorkoutDetailSessionSection({
                     rpe: rpe.trim() === "" ? undefined : Number(rpe),
                   })
                 }
+                size="lg"
                 variant="secondary"
               >
                 {editingSetIndex == null ? addSetLabel : saveSetLabel}
               </Button>
               {editingSetIndex != null ? (
-                <Button onPress={onCancelEdit} variant="ghost">
+                <Button onPress={onCancelEdit} variant="ghost" size="lg">
                   {cancelEditLabel}
                 </Button>
               ) : null}
@@ -226,8 +227,8 @@ export function AthleteWorkoutDetailSessionSection({
                     {set.rpe != null ? ` · RPE ${toPersianDigits(set.rpe)}` : ""}
                   </Typography>
                   <div className="mt-2 flex gap-2">
-                    <Button isDisabled={pending} onPress={() => onEditSet?.(index)} size="sm" variant="ghost">{editSetLabel}</Button>
-                    <Button className="text-danger" isDisabled={pending} onPress={() => void onRemoveSet?.(index)} size="sm" variant="ghost">{removeSetLabel}</Button>
+                    <Button isDisabled={pending} onPress={() => onEditSet?.(index)} size="lg" variant="ghost">{editSetLabel}</Button>
+                    <Button className="text-danger" isDisabled={pending} onPress={() => void onRemoveSet?.(index)} size="lg" variant="ghost">{removeSetLabel}</Button>
                   </div>
                 </div>
               ))}
@@ -275,7 +276,7 @@ export function AthleteWorkoutDetailSessionSection({
                   value={sessionNote}
                 />
               </TextField>
-              <Button
+              <Button size="lg"
                 isDisabled={
                   pending ||
                   (painScore.trim() !== "" &&
@@ -301,6 +302,7 @@ export function AthleteWorkoutDetailSessionSection({
                           },
                   })
                 }
+                size="lg"
                 variant="secondary"
               >
                 {saveSessionDetailsLabel}
@@ -309,7 +311,7 @@ export function AthleteWorkoutDetailSessionSection({
           ) : null}
 
           {onCompleteSession ? (
-            <Button
+            <Button size="lg"
               isDisabled={pending}
               onPress={() => void onCompleteSession()}
               variant="primary"
@@ -322,14 +324,14 @@ export function AthleteWorkoutDetailSessionSection({
 
       {onLogSession && !activeSession ? (
         <div className={styles.quickLog()}>
-          <Button
+          <Button size="lg"
             isDisabled={pending}
             onPress={() => void onLogSession("completed")}
             variant="outline"
           >
             {markCompletedLabel}
           </Button>
-          <Button
+          <Button size="lg"
             isDisabled={pending}
             onPress={() => void onLogSession("skipped")}
             variant="outline"

@@ -46,7 +46,7 @@ export function AthleteGoalsListSection({
                   onPress={() =>
                     void onUpdateGoalStatus(goal.id, "paused" as MetricGoalStatus)
                   }
-                  size="sm"
+                  size="lg"
                   variant="secondary"
                 >
                   توقف
@@ -57,7 +57,7 @@ export function AthleteGoalsListSection({
                   onPress={() =>
                     void onUpdateGoalStatus(goal.id, "active" as MetricGoalStatus)
                   }
-                  size="sm"
+                  size="lg"
                   variant="secondary"
                 >
                   فعال‌سازی

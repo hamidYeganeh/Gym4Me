@@ -76,14 +76,14 @@ export function CoachProgramEditorScreen({
 
         <div className={styles.linkRow}>
           {!isEdit ? (
-            <Button
+            <Button size="lg"
               onPress={() => router.push(`/coach/programs/${program.id}/edit`)}
               variant="secondary"
             >
               {t("editAction")}
             </Button>
           ) : null}
-          <Button
+          <Button size="lg"
             onPress={() =>
               router.push(`/coach/programs/${program.id}/revisions`)
             }
@@ -146,7 +146,7 @@ export function CoachProgramEditorScreen({
                             onAddExercise(session.id),
                           ).finally(() => setAddingSessionId(null));
                         }}
-                        size="sm"
+                        size="lg"
                         variant="ghost"
                       >
                         <Plus size={16} />
@@ -164,7 +164,7 @@ export function CoachProgramEditorScreen({
 
         {program.state === "draft" && onPublish ? (
           <section className={styles.actions}>
-            <Button
+            <Button size="lg"
               fullWidth
               isDisabled={publishing}
               onPress={() => {

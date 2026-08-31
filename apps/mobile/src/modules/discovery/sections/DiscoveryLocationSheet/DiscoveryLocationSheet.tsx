@@ -84,21 +84,23 @@ export function DiscoveryLocationSheet({
               />
             ) : (
               <>
-                <div className={styles.list()} role="listbox">
+                <div
+                  aria-label={description}
+                  className={styles.list()}
+                  role="group"
+                >
                   {addresses.map((address) => {
                     const selected = address.id === draftId;
                     const itemSlots = discoveryLocationSheetVariants({
                       selected,
                     });
                     return (
-                      <div
-                        key={address.id}
-                        role="option"
-                        aria-selected={selected}
-                      >
+                      <div key={address.id}>
                         <Button
+                          aria-pressed={selected}
                           className={itemSlots.item()}
                           onPress={() => setDraftId(address.id)}
+                          size="lg"
                           variant="ghost"
                         >
                           <span aria-hidden className={styles.itemIcon()}>
@@ -132,6 +134,7 @@ export function DiscoveryLocationSheet({
                   <Button
                     className={styles.addButton()}
                     onPress={handleAddNew}
+                    size="lg"
                     variant="ghost"
                   >
                     <Typography className={styles.addLabel()} type="body-sm">
@@ -148,6 +151,7 @@ export function DiscoveryLocationSheet({
               <Button
                 className={styles.updateButton()}
                 isDisabled={!draftId}
+                size="lg"
                 variant="primary"
                 onPress={() => {
                   if (!draftId) return;

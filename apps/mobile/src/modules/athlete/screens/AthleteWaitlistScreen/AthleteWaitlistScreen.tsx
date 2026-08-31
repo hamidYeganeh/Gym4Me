@@ -101,7 +101,7 @@ export function AthleteWaitlistScreen({
                         onPress={() => {
                           void onClaim(item.id, myEntry.id);
                         }}
-                        size="sm"
+                        size="lg"
                         variant="primary"
                       >
                         {t("claim")}
@@ -116,7 +116,7 @@ export function AthleteWaitlistScreen({
                         onPress={() => {
                           void onLeave(item.id);
                         }}
-                        size="sm"
+                        size="lg"
                         variant="outline"
                       >
                         {t("leave")}

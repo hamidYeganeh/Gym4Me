@@ -157,7 +157,7 @@ export function DiscoveryArticlesScreen({
             {isFetchingMore ? (
               <Spinner aria-label={t("loadingMore")} size="sm" />
             ) : error ? (
-              <Button variant="primary" onPress={onLoadMore}>
+              <Button variant="primary" onPress={onLoadMore} size="lg">
                 {t("retry")}
               </Button>
             ) : null}

@@ -8,9 +8,8 @@ export const authLoginPasswordFormVariants = tv({
     remember: "text-sm text-foreground",
     forgot:
       "shrink-0 text-sm font-bold text-accent outline-none data-[hovered=true]:opacity-80",
-    submit:
-      "mt-2 min-h-14 bg-accent text-base font-bold text-accent-foreground data-[hovered=true]:opacity-90",
-    submitIcon: "ms-2 size-5",
+    submit: "mt-2 bg-accent text-base font-bold text-accent-foreground data-[hovered=true]:opacity-90",
+    submitIcon: "ms-2",
   },
 });
 

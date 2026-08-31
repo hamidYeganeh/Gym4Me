@@ -22,7 +22,7 @@ export const onboardingPhaseIntroSectionVariants = tv({
       "px-5 pt-[calc(3.5rem+env(safe-area-inset-top))]",
     ],
     stepper: "w-full",
-    copy: "flex flex-col items-center gap-3 px-2 text-center",
+    copy: "flex flex-col items-center gap-3 text-center",
     title:
       "text-balance text-[1.55rem] leading-tight font-bold text-foreground drop-shadow-[0_1px_12px_color-mix(in_oklch,var(--background)_70%,transparent)] sm:text-[1.75rem]",
     subtitle:

@@ -302,7 +302,7 @@ export function OwnerPlatformSubscriptionGate() {
             className="mt-2"
             isDisabled={pending}
             onPress={() => void reload()}
-            size="sm"
+            size="lg"
             variant="secondary"
           >
             {t("retry")}
@@ -406,7 +406,7 @@ export function OwnerPlatformSubscriptionGate() {
               className="mt-4"
               isDisabled={pending}
               onPress={() => setCancelDialogOpen(true)}
-              size="sm"
+              size="lg"
               variant="outline"
             >
               {t("cancelSubscription")}
@@ -449,14 +449,14 @@ export function OwnerPlatformSubscriptionGate() {
                 ) : null}
               </AlertDialog.Body>
               <AlertDialog.Footer>
-                <Button
+                <Button size="lg"
                   isDisabled={pending}
                   onPress={() => setDialogOpen(false)}
                   variant="secondary"
                 >
                   {t("cancel")}
                 </Button>
-                <Button
+                <Button size="lg"
                   isDisabled={pending || (!preview && !scheduleTarget)}
                   onPress={() => void confirmCheckout()}
                   variant="primary"
@@ -491,14 +491,14 @@ export function OwnerPlatformSubscriptionGate() {
                 </Typography>
               </AlertDialog.Body>
               <AlertDialog.Footer>
-                <Button
+                <Button size="lg"
                   isDisabled={pending}
                   onPress={() => setCancelDialogOpen(false)}
                   variant="secondary"
                 >
                   {t("keepSubscription")}
                 </Button>
-                <Button
+                <Button size="lg"
                   isDisabled={pending}
                   onPress={() => void confirmCancellation()}
                   variant="danger"

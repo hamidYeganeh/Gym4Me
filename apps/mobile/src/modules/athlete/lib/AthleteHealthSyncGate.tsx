@@ -87,7 +87,7 @@ export function AthleteHealthSyncGate() {
           <Typography className="text-muted" type="body">
             {loadError}
           </Typography>
-          <Button
+          <Button size="lg"
             onPress={() => void load().catch(() => undefined)}
             variant="tertiary"
           >

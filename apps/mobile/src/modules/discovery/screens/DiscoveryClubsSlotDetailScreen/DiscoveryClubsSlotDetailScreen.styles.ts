@@ -48,5 +48,5 @@ export const discoveryClubsSlotDetailScreenStyles = {
   upcomingScheduled: "text-success",
   upcomingCancelled: "text-danger",
   viewClass: "w-full",
-  footerButton: "h-14 w-full",
+  footerButton: "w-full",
 } as const;

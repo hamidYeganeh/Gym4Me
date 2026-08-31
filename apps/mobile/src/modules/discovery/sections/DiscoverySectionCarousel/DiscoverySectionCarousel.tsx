@@ -41,7 +41,9 @@ export function DiscoverySectionCarousel({
     >
       {slides.map((child, index) => (
         <SwiperSlide
+          aria-label={`${index + 1} از ${slides.length}`}
           className={slots.slide({ className: slideClassName ?? "!w-auto" })}
+          role="group"
           key={
             isValidElement(child) && child.key != null
               ? String(child.key)

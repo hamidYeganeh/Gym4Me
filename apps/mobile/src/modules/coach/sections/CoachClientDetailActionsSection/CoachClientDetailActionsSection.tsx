@@ -21,10 +21,10 @@ export function CoachClientDetailActionsSection({
         isDisabled={sessionLogged}
         onPress={onLogSession}
         variant="primary"
-      >
+       size="lg">
         {sessionLogged ? t("logSessionDone") : t("logSession")}
       </Button>
-      <Button
+      <Button size="lg"
         fullWidth
         isDisabled={messaging}
         onPress={() => {

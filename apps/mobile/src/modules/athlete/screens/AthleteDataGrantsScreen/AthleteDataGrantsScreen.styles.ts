@@ -17,8 +17,7 @@ export const athleteDataGrantsScreenVariants = tv({
       "flex flex-col gap-2 rounded-2xl border border-border bg-surface p-3",
     grantTop: "flex items-start justify-between gap-2",
     meta: "text-muted",
-    empty:
-      "rounded-2xl border border-dashed border-border p-5 text-center text-muted",
+    empty: "border border-dashed border-border text-center text-muted",
     feedback: "rounded-xl bg-success/10 px-3 py-2 text-sm text-success",
     error: "rounded-xl bg-danger/10 px-3 py-2 text-sm text-danger",
   },

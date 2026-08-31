@@ -16,6 +16,7 @@ import {
   ONBOARDING_DEFAULT_SLEEP,
   ONBOARDING_DEFAULT_WEIGHT_KG,
   ONBOARDING_GENDERS,
+  ONBOARDING_HIDDEN_STEPS,
   ONBOARDING_MOODS,
   ONBOARDING_SLEEP_LEVELS,
   ONBOARDING_SLIDE_COUNT,
@@ -584,9 +585,13 @@ export function useOnboarding() {
       ...(diet && isAthleteDiet(diet) ? { diet } : {}),
       dailyCalories: caloriesKnown && calories > 0 ? calories : null,
     },
-    health: {
-      bloodType: { group: bloodGroup, rh: bloodRh },
-    },
+    ...(ONBOARDING_HIDDEN_STEPS.includes("bloodType")
+      ? {}
+      : {
+          health: {
+            bloodType: { group: bloodGroup, rh: bloodRh },
+          },
+        }),
   });
 
   const snapshotSaveContext = (): OnboardingSaveContext => ({

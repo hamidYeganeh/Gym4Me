@@ -31,7 +31,7 @@ export function SettingsPreferencesSection({
           fullWidth
           onPress={onNotificationsPress}
           variant="ghost"
-        >
+         size="lg">
           <span aria-hidden className={styles.rowIcon()}>
             {icons.bell}
           </span>

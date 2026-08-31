@@ -17,6 +17,6 @@ export const ownerInvoicesScreenVariants = tv({
     rowValue: "shrink-0 text-sm font-medium text-foreground",
     divider: "mx-4 h-px bg-border",
     actions: "flex gap-2 px-4 pb-4",
-    empty: "rounded-2xl border border-dashed border-border px-4 py-8 text-center text-muted",
+    empty: "border border-dashed border-border text-center text-muted",
   },
 });

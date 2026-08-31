@@ -8,6 +8,8 @@ export type DiscoveryAddressItem = {
   line: string;
   /** City used for discovery context (chip + filters). */
   city: string;
+  /** Coordinates used to refresh nearby discovery sections. */
+  point: { lat: number; lng: number } | null;
 };
 
 export function formatAddressLine(parts: {

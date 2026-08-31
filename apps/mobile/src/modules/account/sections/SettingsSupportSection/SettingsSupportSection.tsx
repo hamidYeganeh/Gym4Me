@@ -27,7 +27,7 @@ export function SettingsSupportSection({
             fullWidth
             onPress={row.onPress}
             variant="ghost"
-          >
+           size="lg">
             <span aria-hidden className={styles.rowIcon()}>
               {row.icon}
             </span>

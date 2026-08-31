@@ -193,10 +193,10 @@ export function RoleAppNavigation({
           href: "/owner/members",
         },
         {
-          key: "finance",
-          label: t("finance"),
-          icon: <PaperMoney size={ICON_SIZE} />,
-          href: "/owner/finance",
+          key: "bookings",
+          label: t("bookings"),
+          icon: <Calendar1 size={ICON_SIZE} />,
+          href: "/owner/bookings",
         },
         {
           key: "profile",
@@ -206,6 +206,12 @@ export function RoleAppNavigation({
         },
       ],
       actions: [
+        {
+          key: "finance",
+          label: t("finance"),
+          icon: <PaperMoney size={ICON_SIZE} />,
+          href: "/owner/finance",
+        },
         {
           key: "walk-in",
           label: t("walkIn"),

@@ -128,7 +128,7 @@ export function AthleteDataRightsScreen({
           <Typography type="h3" weight="semibold">
             خروجی داده
           </Typography>
-          <Button
+          <Button size="lg"
             fullWidth
             isDisabled={pending}
             onPress={() => void handleExport()}
@@ -154,7 +154,7 @@ export function AthleteDataRightsScreen({
                   date: formatDate(deletionRequest.coolingOffUntil),
                 })}
               </Typography>
-              <Button
+              <Button size="lg"
                 fullWidth
                 isDisabled={pending}
                 onPress={() => void handleCancelAccountDeletion()}
@@ -186,7 +186,7 @@ export function AthleteDataRightsScreen({
                   value={accountConfirmText}
                 />
               </TextField>
-              <Button
+              <Button size="lg"
                 fullWidth
                 isDisabled={pending || accountConfirmText !== "DELETE_ACCOUNT"}
                 onPress={() => void handleAccountDeletion()}
@@ -214,7 +214,7 @@ export function AthleteDataRightsScreen({
               value={confirmText}
             />
           </TextField>
-          <Button
+          <Button size="lg"
             fullWidth
             isDisabled={pending || confirmText !== "DELETE_METRICS"}
             onPress={() => void handleDelete()}
@@ -261,7 +261,7 @@ export function AthleteDataRightsScreen({
         <div className={styles.links()}>
           <Button
             onPress={() => router.push("/athlete/data-grants")}
-            size="sm"
+            size="lg"
             variant="secondary"
           >
             مدیریت دسترسی مربی

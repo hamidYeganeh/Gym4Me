@@ -6,7 +6,6 @@ import { useTranslations } from "next-intl";
 import {
   accountProfile,
   basicsLocations,
-  isDiscoveryApiId,
   mediaApi,
   mediaFileUrl,
 } from "@/shared/lib/api";
@@ -274,7 +273,12 @@ export function useProfileSettings(
     }
 
     const athleteBuilt = values.athlete
-      ? buildUpdateAthleteInput(values.athlete)
+      ? buildUpdateAthleteInput({
+          ...values.athlete,
+          // Height/weight are hidden on this screen — never validate or send them.
+          heightCm: "",
+          weightKg: "",
+        })
       : null;
     if (athleteBuilt && !athleteBuilt.ok) {
       setError(saveErrors[athleteBuilt.error]);
@@ -290,19 +294,16 @@ export function useProfileSettings(
     }
 
     const input = { ...built.input };
-    if (
-      input.address?.provinceId &&
-      !isDiscoveryApiId(input.address.provinceId)
-    ) {
-      delete input.address.provinceId;
-    }
+    // Address / body metrics are hidden on profile edit — do not overwrite them.
+    delete input.address;
 
     setIsPending(true);
     try {
       const next = await accountProfile.updateMe(input);
       refreshUser(next);
       if (athleteBuilt?.ok) {
-        await accountProfile.updateAthlete(athleteBuilt.input);
+        const { body: _omitBody, ...athleteInput } = athleteBuilt.input;
+        await accountProfile.updateAthlete(athleteInput);
       }
       if (coachBuilt?.ok) {
         await accountProfile.updateCoach(coachBuilt.input);

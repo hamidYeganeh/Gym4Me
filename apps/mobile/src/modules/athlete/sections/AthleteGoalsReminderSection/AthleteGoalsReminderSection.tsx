@@ -82,7 +82,7 @@ export function AthleteGoalsReminderSection({
           />
           این یادآوری را فعال کن
         </label>
-        <Button
+        <Button size="lg"
           fullWidth
           isDisabled={pending}
           onPress={() => void onSubmit()}

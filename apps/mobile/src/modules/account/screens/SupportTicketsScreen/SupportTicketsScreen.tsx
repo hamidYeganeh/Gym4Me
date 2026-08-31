@@ -89,7 +89,7 @@ export function SupportTicketsScreen({
                 isDisabled={creating || !subject.trim() || !body.trim()}
                 type="submit"
                 variant="primary"
-              >
+               size="lg">
                 {creating ? t("submitting") : t("submit")}
               </Button>
             </div>

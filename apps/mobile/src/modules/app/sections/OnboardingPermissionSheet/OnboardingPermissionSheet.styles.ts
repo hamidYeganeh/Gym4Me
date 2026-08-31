@@ -34,9 +34,8 @@ export const onboardingPermissionSheetVariants = tv({
     infoIcon: "size-4 shrink-0 text-muted",
     infoText: "text-xs leading-relaxed text-muted",
     footer: "flex w-full flex-col items-center gap-3 px-6 pt-2",
-    continue:
-      "min-h-14 w-full rounded-[1.35rem] text-base font-bold text-accent-foreground",
-    continueIcon: "ms-2 size-5",
+    continue: "w-full text-base font-bold text-accent-foreground",
+    continueIcon: "ms-2",
     skip: "text-sm font-bold text-accent outline-none data-[hovered=true]:bg-transparent data-[hovered=true]:opacity-80",
   },
 });

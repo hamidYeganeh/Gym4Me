@@ -15,8 +15,7 @@ export const athleteProgressPhotosScreenVariants = tv({
     error: "text-danger",
     skeleton: "aspect-square animate-pulse rounded-xl bg-surface-secondary",
     meta: "text-muted",
-    empty:
-      "flex flex-col items-center gap-2 rounded-[1.25rem] border-0 bg-surface px-6 py-10 text-center",
+    empty: "flex flex-col items-center gap-2 border-0 bg-surface text-center",
     actions: "flex flex-col gap-2",
     cardActions: "flex flex-col gap-2",
   },

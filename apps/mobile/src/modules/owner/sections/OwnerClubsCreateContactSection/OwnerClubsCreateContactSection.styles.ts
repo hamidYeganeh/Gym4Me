@@ -11,9 +11,16 @@ export const ownerClubsCreateContactSectionVariants = tv({
     group: "flex flex-col gap-3",
     groupTitle: "text-foreground",
     row: "flex flex-col gap-3 rounded-[1.25rem] border-0 bg-surface-secondary/40 p-3",
-    rowFields: "flex flex-col gap-3 sm:flex-row",
-    field: "flex w-full flex-col gap-2",
+    rowFields: "flex w-full flex-col gap-3",
+    field: "flex w-full min-w-0 flex-col gap-2",
+    platformField: "flex w-full min-w-0 flex-col gap-2",
+    platformLabel: "flex h-5 items-center text-foreground",
+    platformTrigger:
+      "h-[var(--field-height)] min-h-[var(--field-height)] w-full",
+    platformOption: "flex items-center gap-2",
+    phoneField: "flex w-full min-w-0 flex-col gap-2",
     rowActions: "flex justify-end",
+    addButton: "w-full",
   },
 });
 

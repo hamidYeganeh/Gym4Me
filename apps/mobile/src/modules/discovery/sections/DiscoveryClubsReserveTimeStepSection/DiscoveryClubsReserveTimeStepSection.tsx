@@ -136,7 +136,7 @@ export function DiscoveryClubsReserveTimeStepSection({
                   <Button
                     isDisabled={Boolean(waitlistPendingId) || (waitlistResult?.slotId === slot.id && !waitlistResult.error)}
                     onPress={() => onWaitlistPress(slot)}
-                    size="sm"
+                    size="lg"
                     variant="outline"
                   >
                     {waitlistPendingId === slot.id

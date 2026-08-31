@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -129,6 +130,7 @@ const DEFAULT_PAGE_KEY = 'discovery_home';
 
 @Injectable()
 export class DiscoveryService {
+  private readonly logger = new Logger(DiscoveryService.name);
   constructor(
     @InjectModel(DiscoveryPage.name)
     private readonly pageModel: Model<DiscoveryPageDocument>,
@@ -404,7 +406,14 @@ export class DiscoveryService {
     const definitions = session.sections.slice(start, start + pageSize);
     const resolved = await Promise.all(
       definitions.map((section) =>
-        this.resolveSection(section, session).catch(() => null),
+        this.resolveSection(section, session).catch((error: unknown) => {
+          const message = error instanceof Error ? error.message : String(error);
+          this.logger.error(
+            `Discovery section failed: page=${session.pageKey} revision=${session.revision} id=${section.id} kind=${section.kind} strategy=${section.source.strategy}: ${message}`,
+            error instanceof Error ? error.stack : undefined,
+          );
+          return null;
+        }),
       ),
     );
     const result = resolved.filter(
@@ -715,6 +724,25 @@ export class DiscoveryService {
     const amenityNames = new Map(
       amenities.map((item) => [item._id.toString(), item.name]),
     );
+    const clubIds = clubs.map((club) => club._id);
+    const plans = clubIds.length
+      ? await this.membershipPlanModel
+          .find({
+            clubId: { $in: clubIds },
+            status: EntityStatus.ACTIVE,
+            publishStatus: PublishStatus.PUBLISHED,
+          })
+          .select({ clubId: 1, 'pricing.amount': 1 })
+          .lean()
+      : [];
+    const startingPriceByClub = new Map<string, number>();
+    for (const plan of plans) {
+      const clubId = plan.clubId.toString();
+      const current = startingPriceByClub.get(clubId);
+      if (current === undefined || plan.pricing.amount < current) {
+        startingPriceByClub.set(clubId, plan.pricing.amount);
+      }
+    }
 
     return {
       items: clubs.map((club) => ({
@@ -731,6 +759,7 @@ export class DiscoveryService {
           .map((entry) => amenityNames.get(entry.amenityId.toString()))
           .filter((name): name is string => Boolean(name))
           .slice(0, 3),
+        startingPriceAmount: startingPriceByClub.get(club._id.toString()) ?? null,
       })),
     };
   }
@@ -939,19 +968,29 @@ export class DiscoveryService {
     const clubs = await this.visibleClubs(
       Math.max(12, section.source.limit * 3),
     );
-    const calendars = await Promise.all(
-      clubs.map(async (club) => {
-        try {
-          const calendar = (await this.clubSlots.getCalendar(
-            club._id.toString(),
-            { from, to },
-          )) as unknown as DiscoveryCalendarResult;
-          return { club, calendar };
-        } catch {
-          return null;
-        }
-      }),
-    );
+    const calendars: Array<{
+      club: (typeof clubs)[number];
+      calendar: DiscoveryCalendarResult;
+    } | null> = [];
+    const calendarConcurrency = 6;
+    for (let index = 0; index < clubs.length; index += calendarConcurrency) {
+      const batch = clubs.slice(index, index + calendarConcurrency);
+      calendars.push(
+        ...(await Promise.all(
+          batch.map(async (club) => {
+            try {
+              const calendar = (await this.clubSlots.getCalendar(
+                club._id.toString(),
+                { from, to },
+              )) as unknown as DiscoveryCalendarResult;
+              return { club, calendar };
+            } catch {
+              return null;
+            }
+          }),
+        )),
+      );
+    }
     const now = new Date();
     let items = calendars.flatMap((entry) => {
       if (!entry) return [];

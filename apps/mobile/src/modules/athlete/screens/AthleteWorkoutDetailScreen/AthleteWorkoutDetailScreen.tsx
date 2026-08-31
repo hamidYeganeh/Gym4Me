@@ -115,7 +115,7 @@ export function AthleteWorkoutDetailScreen({
                 : "syncPendingBody",
             )}</p>
             <div className="mt-2 flex gap-2">
-              <Button onPress={() => void onRetryOfflineSync?.()} size="sm" variant="secondary">{t("retrySync")}</Button>
+              <Button onPress={() => void onRetryOfflineSync?.()} size="lg" variant="secondary">{t("retrySync")}</Button>
               <Button
                 className="text-danger"
                 onPress={() => {
@@ -123,7 +123,7 @@ export function AthleteWorkoutDetailScreen({
                     void onDiscardOfflineChanges?.();
                   }
                 }}
-                size="sm"
+                size="lg"
                 variant="ghost"
               >{t("discardOffline")}</Button>
             </div>

@@ -5,6 +5,7 @@ export type OwnerClubsCreateWizardSectionProps = Pick<
   | "t"
   | "control"
   | "setValue"
+  | "getValues"
   | "step"
   | "stepDirection"
   | "club"

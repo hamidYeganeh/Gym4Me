@@ -201,10 +201,10 @@ export function DiscoveryClubsDetailScreen({
                 ) : null}
               </AlertDialog.Body>
               <AlertDialog.Footer>
-                <Button slot="close" variant="tertiary">
+                <Button slot="close" variant="tertiary" size="lg">
                   {t("purchaseMembershipCancel")}
                 </Button>
-                <Button
+                <Button size="lg"
                   isDisabled={!checkoutPreview}
                   isPending={pending}
                   onPress={() => {

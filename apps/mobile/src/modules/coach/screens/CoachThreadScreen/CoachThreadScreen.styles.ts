@@ -11,7 +11,7 @@ export const coachThreadScreenVariants = tv({
     bubbleAthlete:
       "me-8 flex flex-col gap-1 rounded-[1.25rem] rounded-ss-md border-0 bg-surface px-3 py-2 text-foreground",
     bubbleMeta: "opacity-70",
-    empty: "py-16 text-center text-muted",
+    empty: "text-center text-muted",
     composer: "sticky bottom-0 flex items-end gap-2 bg-background pt-2",
     composerField: "min-w-0 flex-1",
   },

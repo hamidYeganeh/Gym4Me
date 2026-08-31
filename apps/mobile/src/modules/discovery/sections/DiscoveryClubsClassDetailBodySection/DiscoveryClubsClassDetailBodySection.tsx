@@ -223,7 +223,7 @@ function DescriptionDisclosure({ text }: { text: string }) {
           aria-expanded={isExpanded}
           className={styles.seeMoreTrigger}
           onPress={() => setIsExpanded((prev) => !prev)}
-          size="sm"
+          size="lg"
           variant={isExpanded ? "tertiary" : "secondary"}
         >
           {isExpanded ? t("seeLess") : t("seeMore")}
@@ -416,7 +416,7 @@ function EquipmentSection({ equipment }: { equipment: ClubDetailEquipment[] }) {
         ))}
 
         {hasMore ? (
-          <Button
+          <Button size="lg"
             className={styles.equipmentSeeAll}
             onPress={() => setIsOpen(true)}
             variant="secondary"

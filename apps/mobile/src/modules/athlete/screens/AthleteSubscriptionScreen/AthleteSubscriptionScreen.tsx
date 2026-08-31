@@ -81,7 +81,7 @@ export function AthleteSubscriptionScreen({
                 </ul>
                 {!isCurrent && onUpgrade ? (
                   <div className={styles.actions()}>
-                    <Button
+                    <Button size="lg"
                       fullWidth
                       isDisabled={pending}
                       onPress={() => void onUpgrade(plan.id)}

@@ -9,10 +9,15 @@ import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/shared/lib/app-router";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { roleAppPath } from "@/shared/lib/role-routes";
 import { DEMO_MODE } from "@/shared/lib/runtime-mode";
 import { useAuth } from "@/shared/providers/AuthProvider";
+import {
+  accountSocial,
+  discoveryCoaches,
+  mediaFileUrl,
+} from "@/shared/lib/api";
 import {
   DISCOVERY_SEARCH_TOPICS,
   DISCOVERY_SEARCH_USERS,
@@ -27,8 +32,7 @@ import { DiscoverySearchUsersSection } from "../../sections/DiscoverySearchUsers
 import { discoverySearchScreenVariants } from "./DiscoverySearchScreen.styles";
 import type { DiscoverySearchScreenProps } from "./DiscoverySearchScreen.types";
 
-const SEARCH_TOPICS = DEMO_MODE ? DISCOVERY_SEARCH_TOPICS : [];
-const SEARCH_USERS = DEMO_MODE ? DISCOVERY_SEARCH_USERS : [];
+const SEARCH_TOPICS = DISCOVERY_SEARCH_TOPICS;
 
 export function DiscoverySearchScreen({
   className,
@@ -43,6 +47,57 @@ export function DiscoverySearchScreen({
   const [followingIds, setFollowingIds] = useState<Set<string>>(
     () => new Set(),
   );
+  const [remoteUsers, setRemoteUsers] = useState<DiscoverySearchUser[]>(
+    DEMO_MODE ? DISCOVERY_SEARCH_USERS : [],
+  );
+
+  useEffect(() => {
+    if (DEMO_MODE) return;
+    let cancelled = false;
+    const timer = window.setTimeout(async () => {
+      try {
+        const response = await discoveryCoaches.list({
+          page_size: 20,
+          ...(query.trim() ? { q: query.trim() } : {}),
+        });
+        if (cancelled) return;
+        setRemoteUsers(
+          response.result.map((coach) => ({
+            id: coach.userId,
+            name:
+              [coach.user.name.first, coach.user.name.last]
+                .filter(Boolean)
+                .join(" ") || t("coachFallback"),
+            image: mediaFileUrl(coach.user.avatar.mediaId) ?? "",
+            joinedYear: new Date(coach.createdAt).getFullYear(),
+            topicIds: [],
+          })),
+        );
+      } catch {
+        if (!cancelled) setRemoteUsers([]);
+      }
+    }, 300);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [query, t]);
+
+  useEffect(() => {
+    if (!isAuthenticated || DEMO_MODE) return;
+    let cancelled = false;
+    void accountSocial
+      .listFollowing({ page_size: 100, followeeKind: "user" })
+      .then((page) => {
+        if (!cancelled) {
+          setFollowingIds(new Set(page.result.map((item) => item.followeeId)));
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated]);
 
   const topics = useMemo(
     () => filterDiscoverySearchTopics(SEARCH_TOPICS, query, selectedTopicId),
@@ -50,8 +105,13 @@ export function DiscoverySearchScreen({
   );
 
   const users = useMemo(
-    () => filterDiscoverySearchUsers(SEARCH_USERS, query, selectedTopicId),
-    [query, selectedTopicId],
+    () =>
+      filterDiscoverySearchUsers(
+        remoteUsers,
+        query,
+        DEMO_MODE ? selectedTopicId : null,
+      ),
+    [query, remoteUsers, selectedTopicId],
   );
 
   const updateQuery = (value: string) => {
@@ -82,17 +142,31 @@ export function DiscoverySearchScreen({
     router.push(`/discovery/coaches/${user.id}`);
   };
 
-  const toggleFollow = (user: DiscoverySearchUser) => {
+  const toggleFollow = async (user: DiscoverySearchUser) => {
     if (!isAuthenticated) {
       router.push("/auth/login");
       return;
     }
+    const wasFollowing = followingIds.has(user.id);
     setFollowingIds((current) => {
       const next = new Set(current);
-      if (next.has(user.id)) next.delete(user.id);
+      if (wasFollowing) next.delete(user.id);
       else next.add(user.id);
       return next;
     });
+    if (DEMO_MODE) return;
+    try {
+      const input = { followeeId: user.id, followeeKind: "user" as const };
+      if (wasFollowing) await accountSocial.unfollow(input);
+      else await accountSocial.follow(input);
+    } catch {
+      setFollowingIds((current) => {
+        const next = new Set(current);
+        if (wasFollowing) next.add(user.id);
+        else next.delete(user.id);
+        return next;
+      });
+    }
   };
 
   return (

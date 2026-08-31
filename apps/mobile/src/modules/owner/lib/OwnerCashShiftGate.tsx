@@ -170,7 +170,7 @@ export function OwnerCashShiftGate() {
       {error ? (
         <div className="flex flex-col items-center gap-2 px-4 pt-3" role="alert">
           <Typography className="text-danger" type="body-sm">{error}</Typography>
-          <Button onPress={() => void load()} size="sm" variant="secondary">
+          <Button onPress={() => void load()} size="lg" variant="secondary">
             {t("retry")}
           </Button>
         </div>

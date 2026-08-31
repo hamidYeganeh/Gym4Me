@@ -26,7 +26,7 @@ export function OnboardingBloodTypeSection({
           const selected = item === group;
           const styles = onboardingBloodTypeSectionVariants({ selected });
           return (
-            <Button
+            <Button size="lg"
               key={item}
               aria-pressed={selected}
               className={styles.groupItem()}
@@ -56,7 +56,7 @@ export function OnboardingBloodTypeSection({
           const styles = onboardingBloodTypeSectionVariants({ selected });
           const Icon = factor === "positive" ? Plus : Minus;
           return (
-            <Button
+            <Button size="lg"
               key={factor}
               aria-pressed={selected}
               className={styles.rhItem()}

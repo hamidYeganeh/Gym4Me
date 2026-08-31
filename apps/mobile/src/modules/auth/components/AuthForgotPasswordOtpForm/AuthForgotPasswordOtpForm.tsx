@@ -130,7 +130,7 @@ export function AuthForgotPasswordOtpForm({
           <Button
             className={styles.resend()}
             isPending={isPending}
-            size="sm"
+            size="lg"
             type="button"
             variant="ghost"
             onPress={onResend}

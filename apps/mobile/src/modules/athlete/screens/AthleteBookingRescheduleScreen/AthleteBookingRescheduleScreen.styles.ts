@@ -11,7 +11,7 @@ export const athleteBookingRescheduleScreenStyles = {
   weekRow: "flex items-center justify-between gap-3",
   weekLabel: "text-foreground",
   weekNav: "flex items-center gap-2",
-  weekButton: "size-10 min-w-10 rounded-full bg-default p-0",
+  weekButton: "min-w-10 bg-default",
   weekButtonIcon: "text-foreground",
   emptySlots:
     "flex min-h-32 items-center justify-center rounded-[24px] border border-dashed border-border text-muted",

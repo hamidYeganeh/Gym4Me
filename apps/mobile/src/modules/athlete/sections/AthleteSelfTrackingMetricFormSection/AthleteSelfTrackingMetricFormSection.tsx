@@ -73,6 +73,7 @@ export function AthleteSelfTrackingMetricFormSection({
             Number(value) > metric.max
           }
           onPress={() => void onSubmit()}
+          size="lg"
           variant="primary"
         >
           {t("submit")}

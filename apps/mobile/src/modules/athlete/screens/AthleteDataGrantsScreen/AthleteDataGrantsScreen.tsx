@@ -143,7 +143,7 @@ export function AthleteDataGrantsScreen({
                 />
               </TextField>
 
-              <Button
+              <Button size="lg"
                 fullWidth
                 isDisabled={pending || scopes.length === 0 || !selectedCoach}
                 onPress={() => void submit()}
@@ -214,7 +214,7 @@ export function AthleteDataGrantsScreen({
                     <Button
                       isDisabled={pending}
                       onPress={() => void onRevoke(grant.id)}
-                      size="sm"
+                      size="lg"
                       variant="danger"
                     >
                       لغو دسترسی

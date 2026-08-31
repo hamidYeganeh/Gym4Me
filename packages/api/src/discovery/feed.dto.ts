@@ -127,6 +127,7 @@ export type DiscoveryClubCard = {
   operationalStatus: string;
   sportIds: string[];
   amenityNames: string[];
+  startingPriceAmount: number | null;
 };
 
 export type DiscoveryArticleCard = {

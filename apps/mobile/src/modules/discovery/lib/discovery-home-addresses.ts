@@ -27,6 +27,7 @@ export function favouriteLocationToAddressItem(
     label: favouriteLocationTitle(item, labels),
     line,
     city: item.address.city?.trim() || favouriteLocationTitle(item, labels),
+    point: item.address.point,
   };
 }
 
@@ -42,6 +43,7 @@ export function profileAddressItem(
     label,
     line,
     city: user.address.city?.trim() || label,
+    point: user.address.point,
   };
 }
 

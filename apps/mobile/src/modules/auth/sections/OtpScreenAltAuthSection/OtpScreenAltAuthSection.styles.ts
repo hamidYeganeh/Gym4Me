@@ -7,8 +7,7 @@ export const otpScreenAltAuthSectionVariants = tv({
     dividerLine: "h-px flex-1 bg-separator",
     dividerLabel:
       "shrink-0 text-xs font-medium tracking-wide text-muted sm:text-sm",
-    button:
-      "min-h-14 w-full justify-center gap-3",
+    button: "w-full justify-center gap-3",
     icon: "size-5 shrink-0",
   },
 });

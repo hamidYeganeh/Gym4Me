@@ -97,7 +97,7 @@ export function OwnerClubsCreateCatalogSection({
   return (
     <section className={styles.root({ className })}>
       <div className={styles.header()}>
-        <div>
+        <div className={styles.headerCopy()}>
           <Typography className={styles.title()} type="h4" weight="bold">
             {title}
           </Typography>
@@ -105,7 +105,13 @@ export function OwnerClubsCreateCatalogSection({
             {hint}
           </Typography>
         </div>
-        <Button size="md" variant="secondary" onPress={openPicker}>
+        <Button
+          className={styles.addButton()}
+          fullWidth
+          size="lg"
+          variant="secondary"
+          onPress={openPicker}
+        >
           <Plus aria-hidden size={18} />
           {t("catalogAdd")}
         </Button>
@@ -116,7 +122,7 @@ export function OwnerClubsCreateCatalogSection({
           {t("catalogLoading")}
         </Typography>
       ) : selections.length === 0 ? (
-        <Button className={styles.empty()} variant="ghost" onPress={openPicker}>
+        <Button className={styles.empty()} variant="ghost" onPress={openPicker} size="lg">
           <Plus aria-hidden size={22} />
           <span>{t("catalogSelectHint")}</span>
         </Button>
@@ -147,7 +153,7 @@ export function OwnerClubsCreateCatalogSection({
                     name: option?.name ?? selection.id,
                   })}
                   isIconOnly
-                  size="sm"
+                  size="lg"
                   variant="ghost"
                   onPress={() => openEditor(selection)}
                 >
@@ -220,7 +226,7 @@ export function OwnerClubsCreateCatalogSection({
               </div>
             </Drawer.Body>
             <Drawer.Footer className={styles.drawerFooter()}>
-              <Button
+              <Button size="lg"
                 fullWidth
                 variant="primary"
                 onPress={() => {
@@ -279,7 +285,7 @@ export function OwnerClubsCreateCatalogSection({
               </TextField>
             </Drawer.Body>
             <Drawer.Footer className={styles.drawerFooter()}>
-              <Button
+              <Button size="lg"
                 fullWidth
                 variant="primary"
                 onPress={() => {

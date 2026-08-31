@@ -28,8 +28,7 @@ export const athleteMembershipsScreenStyles = {
   pastTitles: "flex min-w-0 flex-col gap-0.5",
   pastPlan: "text-foreground",
   pastMeta: "text-muted",
-  empty:
-    "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center",
+  empty: "flex flex-col items-center gap-2 border-0 bg-surface text-center",
   emptyTitle: "text-foreground",
   emptyBody: "text-muted",
 } as const;

@@ -130,7 +130,7 @@ export function OwnerDebtsGate() {
             {error}
           </Typography>
           {isAuthenticated && activeRole === "club_owner" ? (
-            <Button onPress={() => void load()} size="sm" variant="secondary">
+            <Button onPress={() => void load()} size="lg" variant="secondary">
               {t("retry")}
             </Button>
           ) : null}

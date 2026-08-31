@@ -5,7 +5,7 @@ export const onboardingAthleteLevelSectionVariants = tv({
     root: "flex w-full max-w-md flex-col items-center gap-6",
     badge: "rounded-full px-3 py-1 text-sm font-semibold",
     slider: "w-full",
-    copy: "flex flex-col items-center gap-1.5 px-2 text-center",
+    copy: "flex flex-col items-center gap-1.5 text-center",
     name: "text-xl font-bold text-foreground sm:text-2xl",
     description: "min-h-12 text-sm leading-6 text-muted",
     hint: "mt-2 flex items-center gap-2 text-sm text-muted",

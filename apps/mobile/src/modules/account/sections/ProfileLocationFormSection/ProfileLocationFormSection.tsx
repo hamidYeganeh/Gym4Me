@@ -100,7 +100,7 @@ export function ProfileLocationFormSection({
             {kinds.map((kind) => {
               const selected = values.kind === kind.id;
               return (
-                <Button
+                <Button size="lg"
                   aria-pressed={selected}
                   className={styles.kindChipButton()}
                   key={kind.id}
@@ -200,7 +200,7 @@ export function ProfileLocationFormSection({
             <Check size={18} />
           </Button>
           {canDelete ? (
-            <Button
+            <Button size="lg"
               className={styles.delete()}
               fullWidth
               isDisabled={isPending}
@@ -294,10 +294,10 @@ export function ProfileLocationFormSection({
                 <Typography type="body-sm">{t("deleteBody")}</Typography>
               </AlertDialog.Body>
               <AlertDialog.Footer>
-                <Button slot="close" variant="tertiary">
+                <Button slot="close" variant="tertiary" size="lg">
                   {t("cancel")}
                 </Button>
-                <Button
+                <Button size="lg"
                   isPending={isDeleting}
                   variant="danger"
                   onPress={() => {

@@ -213,7 +213,7 @@ export function BottomNavDemo({ labels }: { labels: BottomNavDemoLabels }) {
               setRole(item.key);
               setActive("home");
             }}
-            size="sm"
+            size="lg"
             variant={role === item.key ? "primary" : "secondary"}
           >
             {item.label}

@@ -132,7 +132,7 @@ export function AuthLoginOtpForm({
           </div>
           <Button
             className={styles.debugAction()}
-            size="sm"
+            size="lg"
             type="button"
             variant="ghost"
             onPress={() =>

@@ -10,8 +10,11 @@ export const discoverySearchScreenVariants = tv({
       "shadow-none",
     ].join(" "),
     filterButton: [
-      "me-0.5 size-10 min-h-10 min-w-10 shrink-0 text-muted",
+
+      "me-0.5 min-w-10 shrink-0 text-muted",
+
       "shadow-none",
+
     ].join(" "),
   },
 });

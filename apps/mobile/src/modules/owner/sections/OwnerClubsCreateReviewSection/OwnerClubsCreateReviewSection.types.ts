@@ -1,3 +1,5 @@
+import type { DisclosureCardCollection } from "@repo/ui/cards/DisclosureCard";
+
 export type OwnerClubsCreateReviewField = {
   key: string;
   label: string;
@@ -34,7 +36,7 @@ export type OwnerClubsCreateReviewSectionBlock = {
   key: string;
   title: string;
   fields?: OwnerClubsCreateReviewField[];
-  chips?: string[];
+  collections?: DisclosureCardCollection[];
   list?: OwnerClubsCreateReviewListItem[];
   media?: OwnerClubsCreateReviewMediaItem[];
   hourGroups?: OwnerClubsCreateReviewHourGroup[];

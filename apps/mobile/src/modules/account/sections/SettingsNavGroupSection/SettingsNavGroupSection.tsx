@@ -9,24 +9,21 @@ export function SettingsNavGroupSection({
   rows,
   className,
 }: SettingsNavGroupSectionProps) {
-  const styles = settingsNavGroupSectionVariants();
+  const base = settingsNavGroupSectionVariants();
 
   if (rows.length === 0) return null;
 
   return (
-    <section className={styles.group({ className })}>
-      <Typography className={styles.groupTitle()} type="body-sm">
+    <section className={base.group({ className })}>
+      <Typography className={base.groupTitle()} type="body-sm">
         {title}
       </Typography>
-      <div className={styles.groupCard()}>
-        {rows.map((row, index) => (
-          <div key={row.key}>
-            <Button
-              className={styles.rowPressable({ className: styles.row() })}
-              fullWidth
-              onPress={row.onPress}
-              variant="ghost"
-            >
+      <div className={base.groupCard()}>
+        {rows.map((row, index) => {
+          const isDisabled = Boolean(row.isDisabled) || !row.onPress;
+          const styles = settingsNavGroupSectionVariants({ isDisabled });
+          const content = (
+            <>
               <span aria-hidden className={styles.rowIcon()}>
                 {row.icon}
               </span>
@@ -44,13 +41,34 @@ export function SettingsNavGroupSection({
                   </Typography>
                 ) : null}
               </span>
-              <ChevronRight className={styles.rowChevron()} size={18} />
-            </Button>
-            {index < rows.length - 1 ? (
-              <div aria-hidden className={styles.divider()} />
-            ) : null}
-          </div>
-        ))}
+              {!isDisabled ? (
+                <ChevronRight className={styles.rowChevron()} size={18} />
+              ) : null}
+            </>
+          );
+
+          return (
+            <div key={row.key}>
+              {isDisabled ? (
+                <div aria-disabled className={styles.row()}>
+                  {content}
+                </div>
+              ) : (
+                <Button
+                  className={styles.rowPressable({ className: styles.row() })}
+                  fullWidth
+                  onPress={row.onPress}
+                  variant="ghost"
+                 size="lg">
+                  {content}
+                </Button>
+              )}
+              {index < rows.length - 1 ? (
+                <div aria-hidden className={styles.divider()} />
+              ) : null}
+            </div>
+          );
+        })}
       </div>
     </section>
   );

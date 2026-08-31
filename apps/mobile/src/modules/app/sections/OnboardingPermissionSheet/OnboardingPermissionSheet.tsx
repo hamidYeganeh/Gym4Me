@@ -129,7 +129,7 @@ export function OnboardingPermissionSheet({
             <Button
               className={styles.skip()}
               isDisabled={isRequesting}
-              size="sm"
+              size="lg"
               variant="ghost"
               onPress={onSkip}
             >

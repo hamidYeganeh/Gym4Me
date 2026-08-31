@@ -3,7 +3,6 @@
 import { useState, type FormEvent } from "react";
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
-import { Building1 } from "@repo/icons/Building1";
 import { Calendar1 } from "@repo/icons/Calendar1";
 import { Check } from "@repo/icons/Check";
 import { GenderFemale } from "@repo/icons/GenderFemale";
@@ -12,20 +11,15 @@ import { GenderTransgender } from "@repo/icons/GenderTransgender";
 import { Gift } from "@repo/icons/Gift";
 import { IdentityCard1 } from "@repo/icons/IdentityCard1";
 import { InfoCircle } from "@repo/icons/InfoCircle";
-import { MapPin1 } from "@repo/icons/MapPin1";
 import { MedicalCard1 } from "@repo/icons/MedicalCard1";
 import { Note1 } from "@repo/icons/Note1";
-import { Ruler1 } from "@repo/icons/Ruler1";
 import { SealCheck } from "@repo/icons/SealCheck";
 import { User } from "@repo/icons/User";
 import { UserCheck } from "@repo/icons/UserCheck";
 import { IranFlag } from "@repo/ui/common/Flag";
 import { useTranslations } from "next-intl";
 import { ProfileSettingsFieldRow } from "@/modules/account/components/ProfileSettingsFieldRow";
-import {
-  composeAddressLine,
-  joinFullName,
-} from "@/modules/account/lib/profile-settings";
+import { joinFullName } from "@/modules/account/lib/profile-settings";
 import { useRouter } from "@/shared/lib/app-router";
 import { ProfileSettingsEditSheet } from "../ProfileSettingsEditSheet";
 import type { ProfileSettingsSheetKind } from "../ProfileSettingsEditSheet";
@@ -64,8 +58,6 @@ export function ProfileSettingsFormSection({
   const router = useRouter();
   const [sheet, setSheet] = useState<ProfileSettingsSheetKind>(null);
 
-  const provinceName =
-    provinces.find((item) => item.id === values.address.provinceId)?.name ?? "";
   const levelLabel = (key: string) =>
     levelOptions.find((option) => option.value === key)?.name ?? key;
   const athleteLevelLabel = values.athlete?.levelKey
@@ -74,13 +66,6 @@ export function ProfileSettingsFormSection({
   const coachLevelLabel = values.coach?.levelKey
     ? levelLabel(values.coach.levelKey)
     : "";
-  const addressLine = composeAddressLine({
-    street: values.address.street,
-    apartment: values.address.apartment,
-    city: values.address.city,
-    provinceName,
-    postalCode: values.address.postalCode,
-  });
   const fullName = joinFullName(values.name.first, values.name.last);
   const GenderIcon = values.gender ? GENDER_ICONS[values.gender] : GenderFemale;
   const genderLabel =
@@ -91,12 +76,6 @@ export function ProfileSettingsFormSection({
         : values.gender === "other"
           ? tProfile("genderOther")
           : "";
-  const bodyLabel = [values.athlete?.heightCm, values.athlete?.weightKg]
-    .filter(Boolean)
-    .map((part, index) =>
-      index === 0 ? `${part} ${t("cm")}` : `${part} ${t("kg")}`,
-    )
-    .join(" · ");
   const experienceLabel = [values.coach?.headline, values.coach?.years]
     .filter(Boolean)
     .join(" · ");
@@ -205,30 +184,6 @@ export function ProfileSettingsFormSection({
           />
         </section>
 
-        <section className={styles.section()}>
-          <div className={styles.sectionHead()}>
-            <Building1 aria-hidden className={styles.sectionIcon()} size={20} />
-            <Typography className={styles.sectionTitle()}>
-              {t("sectionAddress")}
-            </Typography>
-          </div>
-          <ProfileSettingsFieldRow
-            icon={<MapPin1 size={FIELD_ICON} />}
-            label={t("province")}
-            onPress={() => setSheet("province")}
-            placeholder={t("provincePlaceholder")}
-            value={provinceName}
-          />
-          <ProfileSettingsFieldRow
-            icon={<MapPin1 size={FIELD_ICON} />}
-            label={t("homeAddress")}
-            multiline
-            onPress={() => setSheet("address")}
-            placeholder={t("homeAddressPlaceholder")}
-            value={addressLine}
-          />
-        </section>
-
         {values.athlete ? (
           <section className={styles.section()}>
             <div className={styles.sectionHead()}>
@@ -251,13 +206,6 @@ export function ProfileSettingsFormSection({
               onPress={() => setSheet("athleteLevel")}
               placeholder={t("levelPlaceholder")}
               value={athleteLevelLabel}
-            />
-            <ProfileSettingsFieldRow
-              icon={<Ruler1 size={FIELD_ICON} />}
-              label={t("body")}
-              onPress={() => setSheet("athleteBody")}
-              placeholder={t("bodyPlaceholder")}
-              value={bodyLabel}
             />
           </section>
         ) : null}

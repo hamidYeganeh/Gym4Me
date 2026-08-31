@@ -86,6 +86,7 @@ export function AthleteSocialCreateScreen({
           <Button
             isDisabled={pending || files.length >= 4}
             onPress={() => fileInputRef.current?.click()}
+            size="lg"
             variant="secondary"
           >
             {t("addMedia", { count: files.length })}
@@ -112,7 +113,7 @@ export function AthleteSocialCreateScreen({
                         current.filter((_, itemIndex) => itemIndex !== index),
                       )
                     }
-                    size="sm"
+                    size="lg"
                     variant="danger"
                   >
                     ×
@@ -126,7 +127,7 @@ export function AthleteSocialCreateScreen({
               {t("createError")}
             </Typography>
           ) : null}
-          <Button
+          <Button size="lg"
             fullWidth
             isDisabled={pending || body.trim().length === 0}
             onPress={() => void onSubmit(body, files)}

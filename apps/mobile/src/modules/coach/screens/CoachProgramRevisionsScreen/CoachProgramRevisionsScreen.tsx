@@ -76,7 +76,7 @@ export function CoachProgramRevisionsScreen({
           {revisions.map((revision) => {
             const selected = selectedIds.includes(revision.id);
             return (
-              <Button
+              <Button size="lg"
                 className={`${styles.revisionCard} ${selected ? styles.revisionSelected : ""}`}
                 key={revision.id}
                 variant="ghost"

@@ -14,8 +14,8 @@ export const discoveryLocationSheetVariants = tv({
     body: "flex flex-col gap-5 px-screen pt-3",
     list: "flex flex-col gap-3",
     item: [
-      "flex h-auto min-h-[4.5rem] w-full items-center justify-start gap-3.5",
-      "rounded-2xl border border-border/80 bg-surface px-4 py-3.5 text-start",
+      "flex w-full items-center justify-start gap-3.5",
+      "border border-border/80 bg-surface text-start",
       "shadow-none transition-[border-color,background-color] duration-fast",
       "hover:bg-surface data-[hovered=true]:bg-surface",
       "pressed:scale-[0.99] data-[pressed=true]:scale-[0.99]",
@@ -36,13 +36,13 @@ export const discoveryLocationSheetVariants = tv({
     ].join(" "),
     addRow: "flex justify-center pt-1",
     addButton: [
-      "h-auto min-h-0 gap-1.5 px-2 py-1",
+      "gap-1.5",
       "text-accent shadow-none",
       "data-[hovered=true]:bg-transparent data-[hovered=true]:opacity-80",
     ].join(" "),
     addLabel: "font-semibold text-accent",
     footer: "px-screen pt-3",
-    updateButton: "h-14 w-full gap-2 rounded-full text-base font-semibold",
+    updateButton: "w-full gap-2 text-base font-semibold",
   },
   variants: {
     selected: {

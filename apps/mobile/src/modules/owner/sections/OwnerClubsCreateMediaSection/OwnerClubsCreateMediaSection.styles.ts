@@ -10,8 +10,7 @@ export const ownerClubsCreateMediaSectionVariants = tv({
     group: "flex flex-col gap-3",
     groupTitle: "text-foreground",
     stack: "flex flex-col gap-3",
-    preview:
-      "relative overflow-hidden rounded-[1.25rem] border-0 bg-surface-secondary",
+    preview: "relative overflow-hidden border-0 bg-surface-secondary",
     image: "aspect-[16/9] w-full object-cover",
   },
 });

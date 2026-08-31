@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo, useState } from "react";
 import type { Banner } from "@repo/api/banners";
 import {
   resolveDiscoveryActionButtonVariant,
@@ -85,7 +85,10 @@ function clubCards(section: ResolvedDiscoverySection): BrowseClub[] {
       PLACEHOLDER_IMAGE,
     rating: club.rating,
     ratingCount: club.reviewCount,
-    price: "—",
+    price:
+      club.startingPriceAmount == null
+        ? "قیمت نامشخص"
+        : `از ${club.startingPriceAmount.toLocaleString("fa-IR")} تومان`,
     featureLabels: club.amenityNames,
     sportIds: club.sportIds,
     distanceLabel: "",
@@ -334,29 +337,18 @@ function DynamicSection({ section }: { section: ResolvedDiscoverySection }) {
 
 export function DiscoveryFeedHomeScreen() {
   const t = useTranslations("DiscoveryHome");
-  const feed = useDiscoveryFeed();
+  const [selectedLocation, setSelectedLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+  const feed = useDiscoveryFeed(selectedLocation);
   const { isOnline } = useNetworkStatus();
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
-  const loadMore = feed.loadMore;
 
   const errorKind: ConnectionErrorKind | null = !isOnline
     ? "network"
     : feed.error;
   const showConnectionError =
     errorKind != null && feed.sections.length === 0 && !feed.isLoading;
-
-  useEffect(() => {
-    const node = sentinelRef.current;
-    if (!node || !feed.hasMore) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) void loadMore();
-      },
-      { rootMargin: "500px 0px" },
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [feed.hasMore, loadMore]);
 
   const content = useMemo(
     () =>
@@ -376,13 +368,13 @@ export function DiscoveryFeedHomeScreen() {
     <AppLayout
       className={styles.root}
       header={
-        <DiscoveryHomeHeaderSection locationLabel={t("locationFallback")} />
+        <DiscoveryHomeHeaderSection
+          locationLabel={t("locationFallback")}
+          onLocationChange={(address) => setSelectedLocation(address.point)}
+        />
       }
     >
-      <div
-        aria-busy={feed.isLoading || feed.isLoadingMore}
-        className={styles.content}
-      >
+      <div aria-busy={feed.isLoading} className={styles.content}>
         <div className={styles.sheets}>
           {feed.isLoading && feed.sections.length === 0 ? (
             <DiscoveryFeedSkeleton />
@@ -396,16 +388,10 @@ export function DiscoveryFeedHomeScreen() {
           ) : (
             content
           )}
-          {feed.isLoadingMore ? <DiscoveryFeedSkeleton mode="more" /> : null}
         </div>
         <span aria-live="polite" className="sr-only" role="status">
-          {feed.isLoading
-            ? t("loading")
-            : feed.isLoadingMore
-              ? t("loadingMore")
-              : ""}
+          {feed.isLoading ? t("loading") : ""}
         </span>
-        <div aria-hidden className="h-1" ref={sentinelRef} />
       </div>
     </AppLayout>
   );

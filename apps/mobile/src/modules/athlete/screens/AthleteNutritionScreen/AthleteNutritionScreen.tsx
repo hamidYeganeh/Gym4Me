@@ -57,7 +57,7 @@ export function AthleteNutritionScreen({
         </section>
 
         <div className={styles.toolbar()}>
-          <Button
+          <Button size="lg"
             fullWidth
             onPress={() => router.push("/athlete/nutrition/log")}
             variant="secondary"
@@ -78,7 +78,7 @@ export function AthleteNutritionScreen({
         ) : (
           <div className={styles.list()}>
             {plans.map((plan) => (
-              <Button
+              <Button size="lg"
                 className={styles.card()}
                 key={plan.id}
                 variant="ghost"

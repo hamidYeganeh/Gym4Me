@@ -16,8 +16,7 @@ export const kycStatusScanSectionVariants = tv({
       "aspect-square w-full max-w-[18rem] rounded-[2rem] border-[3px] border-dashed border-white/90 shadow-[0_0_0_999px_rgb(0_0_0/0.35)]",
     footer:
       "relative z-10 flex flex-col items-center gap-4 pb-[max(2rem,env(safe-area-inset-bottom))] pt-4",
-    captureButton:
-      "flex size-20 items-center justify-center rounded-full bg-accent text-accent-foreground shadow-[0_0_0_8px_color-mix(in_oklch,var(--accent)_35%,transparent)] outline-none data-[pressed=true]:scale-95",
+    captureButton: "flex items-center justify-center bg-accent text-accent-foreground shadow-[0_0_0_8px_color-mix(in_oklch,var(--accent)_35%,transparent)] outline-none data-[pressed=true]:scale-95",
     back:
       "absolute start-4 top-[max(1.25rem,env(safe-area-inset-top))] z-20 text-white outline-none data-[hovered=true]:bg-white/10",
     hint: "text-sm text-white/75",

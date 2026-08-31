@@ -15,7 +15,6 @@ export const athleteNutritionLogScreenVariants = tv({
     cardTop: "flex items-start justify-between gap-2",
     mealImage: "aspect-video w-full rounded-2xl object-cover",
     meta: "text-muted",
-    empty:
-      "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center",
+    empty: "flex flex-col items-center gap-2 border-0 bg-surface text-center",
   },
 });

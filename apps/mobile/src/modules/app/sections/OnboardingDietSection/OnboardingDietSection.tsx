@@ -88,7 +88,7 @@ export function OnboardingDietSection({
           const Icon = resolveDietIcon(option.id, option.icon);
 
           return (
-            <Button
+            <Button size="lg"
               key={option.id}
               aria-pressed={selected}
               className={styles.card()}

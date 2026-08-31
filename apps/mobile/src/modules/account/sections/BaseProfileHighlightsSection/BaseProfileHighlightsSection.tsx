@@ -48,7 +48,7 @@ export function BaseProfileHighlightsSection({
               className={styles.inviteCta()}
               onPress={() => router.push(inviteHref)}
               variant="tertiary"
-              size="sm"
+              size="lg"
             >
               {t("inviteCta")}
               <ChevronRight size={16} />
@@ -71,7 +71,7 @@ export function BaseProfileHighlightsSection({
           <Typography className={styles.blockTitle()} type="body" weight="bold">
             {t("streakTitle")}
           </Typography>
-          <Button
+          <Button size="lg"
             className={styles.blockLink()}
             onPress={() => router.push(streakHref)}
             variant="ghost"
@@ -110,7 +110,7 @@ export function BaseProfileHighlightsSection({
           <Typography className={styles.blockTitle()} type="body" weight="bold">
             {t("achievementsTitle")}
           </Typography>
-          <Button
+          <Button size="lg"
             className={styles.blockLink()}
             onPress={() => router.push(achievementsHref)}
             variant="ghost"

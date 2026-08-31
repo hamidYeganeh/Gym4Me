@@ -87,9 +87,9 @@ export function AthleteWeightHistoryScreen({
           </Typography>
           <Button
             aria-label={t("filter")}
-            className="min-w-0 gap-1 px-2 text-stats-orange"
+            className="min-w-0 gap-1 text-stats-orange"
             onPress={() => undefined}
-            size="sm"
+            size="lg"
             variant="ghost"
           >
             <Calendar1 size={18} />

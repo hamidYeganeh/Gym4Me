@@ -183,7 +183,7 @@ export function CoachLeadsScreen({
                 </TextField>
               )}
             />
-            <Button isPending={creating} type="submit" variant="primary">
+            <Button isPending={creating} type="submit" variant="primary" size="lg">
               {creating ? t("creating") : t("create")}
             </Button>
           </form>
@@ -254,7 +254,7 @@ export function CoachLeadsScreen({
                               onChangeStage(lead.id, stage),
                             );
                           }}
-                          size="sm"
+                          size="lg"
                           variant="ghost"
                         >
                           {t("moveTo", { stage: t(STAGE_LABEL_KEY[stage]) })}

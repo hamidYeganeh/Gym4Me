@@ -126,7 +126,7 @@ export function CoachClientsGate() {
       >
         <Typography type="body">{error}</Typography>
         {isAuthenticated && activeRole === "coach" ? (
-          <Button onPress={() => void reload()} variant="secondary">
+          <Button size="lg" onPress={() => void reload()} variant="secondary">
             {t("retry")}
           </Button>
         ) : null}

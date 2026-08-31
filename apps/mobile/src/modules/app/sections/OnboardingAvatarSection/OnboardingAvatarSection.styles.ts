@@ -5,15 +5,13 @@ export const onboardingAvatarSectionVariants = tv({
     root: "flex w-full max-w-md flex-col items-center gap-8 px-1",
     title:
       "text-balance text-center text-[1.55rem] font-bold leading-tight text-foreground",
-    preview:
-      "relative flex size-44 items-center justify-center overflow-hidden rounded-full bg-accent/15 text-accent",
+    preview: "relative flex items-center justify-center overflow-hidden bg-accent/15 text-accent",
     previewImage: "size-full object-cover",
     previewIcon: "size-20",
     actions: "flex w-full flex-col gap-3",
-    uploadBtn:
-      "min-h-14 w-full rounded-[1.35rem] text-base font-bold text-accent-foreground",
-    uploadIcon: "ms-2 size-5",
-    uploading: "flex flex-col items-center gap-5 py-10",
+    uploadBtn: "w-full text-base font-bold text-accent-foreground",
+    uploadIcon: "ms-2",
+    uploading: "flex flex-col items-center gap-5",
     progress: "size-28 text-accent",
     track: "stroke-default",
     fill: "stroke-accent",

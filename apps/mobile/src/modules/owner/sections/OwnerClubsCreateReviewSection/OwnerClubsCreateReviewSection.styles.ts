@@ -19,8 +19,6 @@ export const ownerClubsCreateReviewSectionVariants = tv({
     reviewValue:
       "min-w-0 whitespace-pre-wrap break-words text-end text-sm text-foreground",
     reviewDivider: "h-px bg-border",
-    chips: "flex flex-wrap gap-2",
-    chip: "rounded-full border border-border bg-background px-3 py-1 text-sm text-foreground",
     list: "flex flex-col gap-2",
     listItem:
       "flex flex-col gap-0.5 rounded-xl border border-border/60 bg-background px-3 py-2.5",

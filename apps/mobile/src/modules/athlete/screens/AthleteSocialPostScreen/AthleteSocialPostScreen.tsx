@@ -119,7 +119,7 @@ export function AthleteSocialPostScreen({
               value={draft}
             />
           </TextField>
-          <Button
+          <Button size="lg"
             fullWidth
             isDisabled={commentPending || draft.trim().length === 0}
             onPress={() => {

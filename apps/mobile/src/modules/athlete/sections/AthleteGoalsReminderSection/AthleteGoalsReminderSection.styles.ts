@@ -12,7 +12,6 @@ export const athleteGoalsReminderSectionVariants = tv({
     list: "flex flex-col gap-3",
     row: "flex flex-col gap-2 rounded-2xl border border-border bg-surface p-3",
     rowTop: "flex items-start justify-between gap-2",
-    empty:
-      "rounded-2xl border border-dashed border-border p-5 text-center text-muted",
+    empty: "border border-dashed border-border text-center text-muted",
   },
 });

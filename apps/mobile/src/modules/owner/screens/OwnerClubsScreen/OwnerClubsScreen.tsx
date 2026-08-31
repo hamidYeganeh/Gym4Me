@@ -70,7 +70,7 @@ export function OwnerClubsScreen({ clubs, className }: OwnerClubsScreenProps) {
         {clubs.length > 0 ? (
           <div aria-label={t("listLabel")} className={styles.list} role="list">
             {clubs.map((club) => (
-              <Button
+              <Button size="lg"
                 key={club.id}
                 aria-label={`${t("viewClub")}: ${club.name}`}
                 className={styles.clubCard}

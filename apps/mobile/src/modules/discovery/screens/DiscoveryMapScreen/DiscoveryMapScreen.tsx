@@ -61,6 +61,7 @@ export function DiscoveryMapScreen({
             <Button
               aria-label={t("search")}
               isIconOnly
+              onPress={() => router.push("/discovery/search")}
               size="lg"
               variant="ghost"
             >

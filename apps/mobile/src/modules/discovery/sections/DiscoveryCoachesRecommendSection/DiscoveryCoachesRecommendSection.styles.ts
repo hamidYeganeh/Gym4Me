@@ -15,5 +15,5 @@ export const discoveryCoachesRecommendSectionStyles = {
     "duration-fast ease-app",
   ].join(" "),
   dotActive: "w-5 bg-accent",
-  empty: "px-screen text-sm text-muted",
+  empty: "text-sm text-muted",
 } as const;

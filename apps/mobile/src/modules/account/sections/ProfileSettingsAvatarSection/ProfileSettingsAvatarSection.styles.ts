@@ -15,7 +15,7 @@ export const profileSettingsAvatarSectionVariants = tv({
       "bg-background/60",
     ].join(" "),
     edit: [
-      "absolute -bottom-0.5 -end-0.5 !size-8 min-h-8 min-w-8 rounded-full",
+      "absolute -bottom-0.5 -end-0.5 min-w-8",
       "!bg-foreground !text-background shadow-sm",
     ].join(" "),
     hiddenInput: "sr-only",

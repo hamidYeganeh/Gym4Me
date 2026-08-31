@@ -30,6 +30,7 @@ function user(overrides: Partial<PublicUser> = {}): PublicUser {
     address: {
       apartment: null,
       city: null,
+      district: null,
       point: null,
       postalCode: null,
       provinceId: null,
@@ -51,6 +52,7 @@ describe("buildDiscoveryAddresses", () => {
             address: {
               apartment: null,
               city: "تهران",
+              district: null,
               point: null,
               postalCode: null,
               provinceId: null,
@@ -67,6 +69,7 @@ describe("buildDiscoveryAddresses", () => {
         label: "خانه",
         line: "سعادت‌آباد، تهران",
         city: "تهران",
+        point: null,
       },
     ]);
   });
@@ -77,6 +80,7 @@ describe("buildDiscoveryAddresses", () => {
         address: {
           apartment: "۱۲",
           city: "اصفهان",
+          district: null,
           point: null,
           postalCode: null,
           provinceId: null,
@@ -91,6 +95,7 @@ describe("buildDiscoveryAddresses", () => {
         label: "آدرس پروفایل",
         line: "چهارباغ، ۱۲، اصفهان",
         city: "اصفهان",
+        point: null,
       },
     ]);
   });

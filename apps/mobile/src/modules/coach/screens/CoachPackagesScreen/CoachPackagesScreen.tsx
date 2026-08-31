@@ -63,7 +63,7 @@ export function CoachPackagesScreen({
         {onCreatePackage ? (
           <>
             {!showForm ? (
-              <Button onPress={() => setShowForm(true)} variant="primary">
+              <Button size="lg" onPress={() => setShowForm(true)} variant="primary">
                 {t("createAction")}
               </Button>
             ) : (
@@ -113,7 +113,7 @@ export function CoachPackagesScreen({
                   />
                 </TextField>
                 <div className={styles.formActions}>
-                  <Button
+                  <Button size="lg"
                     isDisabled={creating}
                     onPress={() => setShowForm(false)}
                     variant="ghost"
@@ -129,7 +129,7 @@ export function CoachPackagesScreen({
                     }
                     type="submit"
                     variant="primary"
-                  >
+                   size="lg">
                     {creating ? t("creating") : t("createSubmit")}
                   </Button>
                 </div>

@@ -13,7 +13,7 @@ export function AthleteSelfTrackingMetricSelectorSection({
   return (
     <div className={styles.root({ className })}>
       {catalog.map((metric) => (
-        <Button
+        <Button size="lg"
           className={styles.metricButton()}
           key={metric.key}
           onPress={() => onSelect(metric.key)}

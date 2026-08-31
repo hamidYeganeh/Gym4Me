@@ -111,7 +111,7 @@ export function DiscoverySectionRail({
           {seeAllLabel && onSeeAll ? (
             <Button
               className={slots.seeAll()}
-              size="sm"
+              size="lg"
               variant={seeAllVariant}
               onPress={onSeeAll}
             >

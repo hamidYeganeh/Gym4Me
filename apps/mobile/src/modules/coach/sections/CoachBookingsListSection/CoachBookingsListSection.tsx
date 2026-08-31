@@ -99,7 +99,7 @@ export function CoachBookingsListSection({
           {booking.api && hasApiActions && onAction && booking.api.actions.length > 0 ? (
             <div className={styles.actions()}>
               {booking.api.actions.map((action) => (
-                <Button
+                <Button size="lg"
                   className={
                     action === "cancel" || action === "noShow"
                       ? styles.rejectButton()
@@ -125,7 +125,7 @@ export function CoachBookingsListSection({
             </div>
           ) : !booking.api && booking.status === "PENDING" ? (
             <div className={styles.actions()}>
-              <Button
+              <Button size="lg"
                 className={styles.acceptButton()}
                 onPress={() => onAcceptMock(booking.id)}
                 variant="primary"
@@ -133,7 +133,7 @@ export function CoachBookingsListSection({
                 <Check size={18} />
                 {t("accept")}
               </Button>
-              <Button
+              <Button size="lg"
                 className={styles.rejectButton()}
                 onPress={() => onRejectMock(booking.id)}
                 variant="ghost"

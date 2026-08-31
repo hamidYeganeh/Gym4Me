@@ -39,7 +39,7 @@ export function CommunityFeedSection({
           {t("emptyBody")}
         </Typography>
         {canCreate ? (
-          <Button onPress={onCreatePress} variant="primary">
+          <Button onPress={onCreatePress} variant="primary" size="lg">
             {t("createPost")}
           </Button>
         ) : null}
@@ -52,7 +52,7 @@ export function CommunityFeedSection({
       <div className={slots.list()}>
         {posts.map((post) => (
           <article className={slots.card()} key={post.id}>
-            <Button
+            <Button size="lg"
               className="flex w-full flex-col gap-3 text-start"
               onPress={() => onPostPress?.(post.id)}
               variant="ghost"

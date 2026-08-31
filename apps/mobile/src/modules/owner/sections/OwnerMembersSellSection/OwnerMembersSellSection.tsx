@@ -176,7 +176,7 @@ export function OwnerMembersSellSection({
             </TextField>
           </div>
         ) : null}
-        <Button
+        <Button size="lg"
           isDisabled={pending || sellDisabled}
           onPress={() => void submitSale()}
           variant="primary"

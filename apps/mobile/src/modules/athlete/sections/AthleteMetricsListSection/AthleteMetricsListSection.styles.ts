@@ -3,7 +3,7 @@ export const athleteMetricsListSectionStyles = {
   header: "flex items-center justify-between gap-3",
   title: "text-foreground",
   viewButton: [
-    "inline-flex h-auto min-h-0 items-center gap-1.5 rounded-md !px-0 !py-0",
+    "inline-flex items-center gap-1.5",
     "text-sm font-semibold text-accent shadow-none",
     "hover:bg-transparent hover:opacity-90",
     "pressed:bg-transparent data-[pressed=true]:bg-transparent",

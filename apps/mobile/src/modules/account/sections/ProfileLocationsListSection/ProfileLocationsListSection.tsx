@@ -33,7 +33,7 @@ export function ProfileLocationsListSection({
         <Typography className={styles.emptyText()} type="body">
           {error}
         </Typography>
-        <Button className={styles.retry()} onPress={onRetry} variant="outline">
+        <Button className={styles.retry()} onPress={onRetry} variant="outline" size="lg">
           {retryLabel}
         </Button>
       </div>
@@ -74,7 +74,7 @@ export function ProfileLocationsListSection({
     <section className={styles.root({ className })}>
       <div className={styles.list()}>
         {items.map(({ item, title, line, icon }) => (
-          <Button
+          <Button size="lg"
             className={styles.item()}
             key={item.id}
             onPress={() => onSelect(item)}

@@ -1,36 +1,82 @@
 "use client";
 
+import { useEffect, useState, type ComponentType } from "react";
 import { ChevronRight } from "@repo/icons/ChevronRight";
 import { CloseX } from "@repo/icons/CloseX";
+import type { IconProps } from "@repo/icons/create-icon";
+import { Sparkle1 } from "@repo/icons/Sparkle1";
+import { getCachedIcon, loadIcon } from "@repo/icons/load-icon";
+import { spring } from "@repo/theme";
 import {
   AnimatePresence,
   motion,
   MotionConfig,
   type Transition,
 } from "motion/react";
-import { useState } from "react";
 import useMeasure from "react-use-measure";
 import { disclosureCardVariants } from "./DisclosureCard.styles";
 import type {
   DisclosureCardCollection,
+  DisclosureCardIcon,
   DisclosureCardItem,
   DisclosureCardProps,
 } from "./DisclosureCard.types";
 
 const springConfig: Transition = {
-  type: "spring",
-  stiffness: 200,
-  damping: 20,
+  ...spring.gentle,
   mass: 1.1,
 };
 
+const PREVIEW_ICON_COUNT = 4;
 const defaultFormatItemsCount = (count: number) => `${count} Items`;
 const defaultFormatPrice = (price: number) => `$${price}`;
+
+function itemSecondary(
+  item: DisclosureCardItem,
+  formatPrice: (price: number) => string,
+) {
+  if (item.detail?.trim()) return item.detail.trim();
+  if (typeof item.price === "number") return formatPrice(item.price);
+  return undefined;
+}
+
+function DisclosureIcon({
+  icon,
+  size,
+}: {
+  icon: DisclosureCardItem["icon"];
+  size: number;
+}) {
+  const catalogName = typeof icon === "string" ? icon : null;
+  const [Loaded, setLoaded] = useState<ComponentType<IconProps> | null>(() =>
+    catalogName ? (getCachedIcon(catalogName) ?? null) : null,
+  );
+
+  useEffect(() => {
+    if (!catalogName) {
+      setLoaded(null);
+      return;
+    }
+    let active = true;
+    void loadIcon(catalogName).then((next) => {
+      if (active) setLoaded(() => next);
+    });
+    return () => {
+      active = false;
+    };
+  }, [catalogName]);
+
+  const Icon: DisclosureCardIcon =
+    typeof icon === "string" ? (Loaded ?? Sparkle1) : icon;
+
+  return <Icon aria-hidden size={size} />;
+}
 
 export function DisclosureCard({
   collections,
   formatItemsCount = defaultFormatItemsCount,
   formatPrice = defaultFormatPrice,
+  closeLabel = "Close",
   onItemPress,
   className,
   ...props
@@ -47,6 +93,7 @@ export function DisclosureCard({
         {collections.map((collection) => (
           <GridContainer
             key={collection.id}
+            closeLabel={closeLabel}
             collection={collection}
             formatItemsCount={formatItemsCount}
             formatPrice={formatPrice}
@@ -65,18 +112,21 @@ function GridContainer({
   collection,
   formatItemsCount,
   formatPrice,
+  closeLabel,
   onItemPress,
   slots,
 }: {
   collection: DisclosureCardCollection;
   formatItemsCount: (count: number) => string;
   formatPrice: (price: number) => string;
+  closeLabel: string;
   onItemPress?: DisclosureCardProps["onItemPress"];
   slots: Slots;
 }) {
   const { name: title, items } = collection;
   const [isExpanded, setIsExpanded] = useState(false);
   const [ref, bounds] = useMeasure({ offsetSize: true });
+  const previewItems = items.slice(0, PREVIEW_ICON_COUNT);
 
   return (
     <MotionConfig transition={springConfig}>
@@ -93,24 +143,36 @@ function GridContainer({
             propagate
           >
             {!isExpanded ? (
-              <motion.div
+              <motion.button
                 key="collapsed"
+                aria-expanded={false}
                 className={slots.collapsed()}
                 exit={{ opacity: 0 }}
-                onClick={() => setIsExpanded(true)}
                 transition={{ duration: 0.1, ease: "easeOut" }}
+                type="button"
+                onClick={() => setIsExpanded(true)}
               >
                 <div className={slots.iconGrid()}>
-                  {items.map((item, index) => (
-                    <motion.div
-                      key={`${item.name}-${index}`}
-                      className={slots.iconTileCollapsed()}
-                      layoutId={`${collection.id}-${item.id}`}
-                      transition={{ ...springConfig, delay: 0.01 }}
+                  {previewItems.length > 0 ? (
+                    previewItems.map((item) => (
+                      <motion.div
+                        key={item.id}
+                        className={slots.iconTileCollapsed()}
+                        layoutId={`${collection.id}-${item.id}`}
+                        transition={{ ...springConfig, delay: 0.01 }}
+                      >
+                        <DisclosureIcon icon={item.icon} size={16} />
+                      </motion.div>
+                    ))
+                  ) : (
+                    <div
+                      className={slots.iconTileCollapsed({
+                        className: slots.iconTileMuted(),
+                      })}
                     >
-                      <item.icon className="size-4" size={16} />
-                    </motion.div>
-                  ))}
+                      <Sparkle1 aria-hidden size={16} />
+                    </div>
+                  )}
                 </div>
 
                 <div className={slots.meta()}>
@@ -127,7 +189,7 @@ function GridContainer({
                 </div>
 
                 <ChevronRight className={slots.chevron()} size={24} />
-              </motion.div>
+              </motion.button>
             ) : (
               <motion.div
                 key="expanded"
@@ -144,29 +206,33 @@ function GridContainer({
                     {title}
                   </motion.span>
                   <button
-                    aria-label="Close"
+                    aria-label={closeLabel}
                     className={slots.closeButton()}
-                    onClick={() => setIsExpanded(false)}
                     type="button"
+                    onClick={() => setIsExpanded(false)}
                   >
                     <CloseX className="text-current" size={16} />
                   </button>
                 </motion.div>
 
-                <div className={slots.rows()}>
-                  <AnimatePresence mode="popLayout">
-                    {items.map((item) => (
-                      <ItemRow
-                        key={item.id}
-                        collection={collection}
-                        formatPrice={formatPrice}
-                        item={item}
-                        onItemPress={onItemPress}
-                        slots={slots}
-                      />
-                    ))}
-                  </AnimatePresence>
-                </div>
+                {items.length === 0 ? (
+                  <p className={slots.empty()}>{collection.emptyLabel}</p>
+                ) : (
+                  <div className={slots.rows()}>
+                    <AnimatePresence mode="popLayout">
+                      {items.map((item) => (
+                        <ItemRow
+                          key={item.id}
+                          collection={collection}
+                          formatPrice={formatPrice}
+                          item={item}
+                          onItemPress={onItemPress}
+                          slots={slots}
+                        />
+                      ))}
+                    </AnimatePresence>
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
@@ -190,10 +256,13 @@ function ItemRow({
   slots: Slots;
 }) {
   const interactive = typeof onItemPress === "function";
+  const secondary = itemSecondary(item, formatPrice);
 
   return (
     <div
-      className={slots.row()}
+      className={slots.row({
+        className: interactive ? slots.rowInteractive() : undefined,
+      })}
       onClick={
         interactive
           ? () => {
@@ -218,7 +287,7 @@ function ItemRow({
         className={slots.iconTileExpanded()}
         layoutId={`${collection.id}-${item.id}`}
       >
-        <item.icon className="size-6" size={24} />
+        <DisclosureIcon icon={item.icon} size={24} />
       </motion.div>
       <motion.div
         animate={{ opacity: 1 }}
@@ -226,9 +295,11 @@ function ItemRow({
         initial={{ opacity: 0 }}
       >
         <motion.p className={slots.itemName()}>{item.name}</motion.p>
-        <p className={slots.itemPrice()}>{formatPrice(item.price)}</p>
+        {secondary ? <p className={slots.itemDetail()}>{secondary}</p> : null}
       </motion.div>
-      <ChevronRight className={slots.rowChevron()} size={24} />
+      {interactive ? (
+        <ChevronRight className={slots.rowChevron()} size={24} />
+      ) : null}
     </div>
   );
 }

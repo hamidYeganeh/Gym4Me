@@ -93,7 +93,7 @@ export function OnboardingGoalsSection({
             const Icon = resolveGoalIcon(option.id);
 
             return (
-              <Button
+              <Button size="lg"
                 key={option.id}
                 aria-pressed={isSelected}
                 className={styles.option()}

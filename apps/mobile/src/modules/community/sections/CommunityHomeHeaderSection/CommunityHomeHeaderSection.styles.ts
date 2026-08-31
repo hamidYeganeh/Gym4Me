@@ -16,10 +16,10 @@ export const communityHomeHeaderSectionVariants = tv({
     proIcon: "shrink-0 text-warning",
     actions: "flex shrink-0 items-center gap-2",
     notifyButton: [
-      "rounded-full border border-border bg-surface text-foreground shadow-none",
+      "border border-border bg-surface text-foreground shadow-none",
     ].join(" "),
     searchButton: [
-      "rounded-full bg-foreground text-background shadow-none",
+      "bg-foreground text-background shadow-none",
       "hover:bg-foreground/90 data-[hovered=true]:bg-foreground/90",
       "[&_svg]:text-background",
     ].join(" "),

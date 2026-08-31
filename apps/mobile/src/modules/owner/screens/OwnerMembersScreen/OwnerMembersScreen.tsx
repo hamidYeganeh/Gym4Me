@@ -202,7 +202,7 @@ export function OwnerMembersScreen({
           endContent={
             <Button
               onPress={() => router.push("/owner/check-in")}
-              size="sm"
+              size="lg"
               variant="secondary"
             >
               {t("checkInDeskLink")}
@@ -422,10 +422,10 @@ export function OwnerMembersScreen({
                 ) : null}
               </AlertDialog.Body>
               <AlertDialog.Footer>
-                <Button slot="close" variant="tertiary">
+                <Button slot="close" variant="tertiary" size="lg">
                   {t("renewCancel")}
                 </Button>
-                <Button
+                <Button size="lg"
                   isDisabled={
                     !renewalPreview ||
                     renewalPreviewPending ||

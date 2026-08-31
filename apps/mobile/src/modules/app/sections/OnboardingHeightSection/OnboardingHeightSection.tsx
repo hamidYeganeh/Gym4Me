@@ -38,7 +38,7 @@ export function OnboardingHeightSection({
           const selected = option.id === unit;
           const styles = onboardingHeightSectionVariants({ selected });
           return (
-            <Button
+            <Button size="lg"
               key={option.id}
               aria-pressed={selected}
               className={styles.unitItem()}

@@ -11,8 +11,7 @@ export const coachProgramsListSectionVariants = tv({
     metaItem: "inline-flex items-center gap-1.5 text-muted",
     metaIcon: "shrink-0 text-muted",
     updated: "text-muted",
-    empty:
-      "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center",
+    empty: "flex flex-col items-center gap-2 border-0 bg-surface text-center",
     emptyTitle: "text-foreground",
     emptyBody: "text-muted",
   },

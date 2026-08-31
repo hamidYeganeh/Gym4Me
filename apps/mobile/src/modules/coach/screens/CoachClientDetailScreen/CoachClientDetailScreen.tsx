@@ -69,7 +69,7 @@ export function CoachClientDetailScreen({
           {workoutLogsError ? (
             <div className="mt-3">
               <p className="text-sm text-danger">{t("workoutReviewsError")}</p>
-              <Button className="mt-2" onPress={onRetryWorkoutLogs} size="sm" variant="secondary">{t("retry")}</Button>
+              <Button className="mt-2" onPress={onRetryWorkoutLogs} size="lg" variant="secondary">{t("retry")}</Button>
             </div>
           ) : null}
           {!workoutLogsLoading && !workoutLogsError && workoutLogs.length === 0 ? (
@@ -105,7 +105,7 @@ export function CoachClientDetailScreen({
                       setReviewErrorId(log.id);
                     }
                   }}
-                  size="sm"
+                  size="lg"
                 >{t("submitWorkoutReview")}</Button>
               </article>
             ))}

@@ -34,7 +34,7 @@ export const profileSettingsFormSectionVariants = tv({
     error: "text-sm text-danger",
     notice: "text-sm text-success",
     actions: "flex flex-col gap-3 pt-2",
-    submit: "h-14 min-h-14 rounded-2xl",
+    submit: "",
   },
 });
 

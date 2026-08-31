@@ -105,7 +105,7 @@ export function AthleteSelfTrackingGate() {
             این قابلیت می‌تواند از پنل انتشار Gym4Me دوباره فعال شود.
           </TextWithBrand>
         </Typography>
-        <Button onPress={() => history.back()} variant="secondary">
+        <Button size="lg" onPress={() => history.back()} variant="secondary">
           بازگشت
         </Button>
       </main>

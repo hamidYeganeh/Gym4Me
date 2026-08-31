@@ -15,6 +15,7 @@ import {
   buildCreateClubPayload,
   CLUB_CREATE_STEP_COUNT,
   createEmptyClubCreateForm,
+  resultFromSettled,
   type ClubCreateFormState,
   type ClubCreateWizardStep,
 } from "@/modules/owner/lib/club-create-form";
@@ -86,7 +87,7 @@ export function useOwnerClubsCreate() {
   useEffect(() => {
     let cancelled = false;
     setIsCatalogLoading(true);
-    Promise.all([
+    Promise.allSettled([
       basicsRefs.list("club_category"),
       basicsRefs.list("amenity"),
       basicsRefs.list("equipment"),
@@ -94,18 +95,10 @@ export function useOwnerClubsCreate() {
     ])
       .then(([categoryRes, amenityRes, equipmentRes, sportsRes]) => {
         if (cancelled) return;
-        setCategories(categoryRes.result);
-        setAmenities(amenityRes.result);
-        setEquipment(equipmentRes.result);
-        setSports(sportsRes.result);
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setCategories([]);
-          setAmenities([]);
-          setEquipment([]);
-          setSports([]);
-        }
+        setCategories(resultFromSettled(categoryRes));
+        setAmenities(resultFromSettled(amenityRes));
+        setEquipment(resultFromSettled(equipmentRes));
+        setSports(resultFromSettled(sportsRes));
       })
       .finally(() => {
         if (!cancelled) setIsCatalogLoading(false);
@@ -270,6 +263,7 @@ export function useOwnerClubsCreate() {
     form,
     control,
     setValue,
+    getValues,
     step,
     stepDirection,
     club,

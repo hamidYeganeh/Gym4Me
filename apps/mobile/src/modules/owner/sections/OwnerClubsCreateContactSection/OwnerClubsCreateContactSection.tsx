@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { Controller, useFieldArray } from "react-hook-form";
 import { Button } from "@heroui/react/button";
 import { Input } from "@heroui/react/input";
@@ -8,8 +9,14 @@ import { ListBox } from "@heroui/react/list-box";
 import { Select } from "@heroui/react/select";
 import { TextField } from "@heroui/react/textfield";
 import { Typography } from "@heroui/react/typography";
+import { Globe } from "@repo/icons/Globe";
+import { LogoInstagram } from "@repo/icons/LogoInstagram";
+import { LogoTelegram } from "@repo/icons/LogoTelegram";
+import { LogoWhatsapp } from "@repo/icons/LogoWhatsapp";
+import { LogoX } from "@repo/icons/LogoX";
 import { Plus } from "@repo/icons/Plus";
 import { Trash1 } from "@repo/icons/Trash1";
+import { PhoneField } from "@repo/ui/kit/PhoneField";
 import { useTranslations } from "next-intl";
 import {
   createPhoneDraft,
@@ -18,6 +25,39 @@ import {
 } from "../../lib/club-create-form";
 import { ownerClubsCreateContactSectionVariants } from "./OwnerClubsCreateContactSection.styles";
 import type { OwnerClubsCreateContactSectionProps } from "./OwnerClubsCreateContactSection.types";
+
+const PLATFORM_ICON_SIZE = 20;
+
+type SocialPlatform = (typeof SOCIAL_PLATFORM_OPTIONS)[number];
+
+function isSocialPlatform(value: string): value is SocialPlatform {
+  return (SOCIAL_PLATFORM_OPTIONS as readonly string[]).includes(value);
+}
+
+function SocialPlatformIcon({
+  platform,
+  size = PLATFORM_ICON_SIZE,
+}: {
+  platform: string;
+  size?: number;
+}): ReactNode {
+  if (!isSocialPlatform(platform)) {
+    return <Globe size={size} />;
+  }
+
+  switch (platform) {
+    case "instagram":
+      return <LogoInstagram size={size} />;
+    case "telegram":
+      return <LogoTelegram size={size} />;
+    case "whatsapp":
+      return <LogoWhatsapp size={size} />;
+    case "website":
+      return <Globe size={size} />;
+    case "x":
+      return <LogoX size={size} />;
+  }
+}
 
 export function OwnerClubsCreateContactSection({
   control,
@@ -53,22 +93,18 @@ export function OwnerClubsCreateContactSection({
                   control={control}
                   name={`phones.${index}.number`}
                   render={({ field: phoneField }) => (
-                    <TextField
-                      className={styles.field()}
-                      fullWidth
+                    <PhoneField
+                      className={styles.phoneField()}
+                      countryCode="+98"
+                      inputRef={phoneField.ref}
+                      label={t("phone")}
                       name={phoneField.name}
+                      placeholder={t("phonePlaceholder")}
+                      showCountryChevron
                       value={phoneField.value}
                       onBlur={phoneField.onBlur}
                       onChange={phoneField.onChange}
-                    >
-                      <Label>{t("phone")}</Label>
-                      <Input
-                        dir="ltr"
-                        placeholder={t("phonePlaceholder")}
-                        ref={phoneField.ref}
-                        type="tel"
-                      />
-                    </TextField>
+                    />
                   )}
                 />
                 <Controller
@@ -109,7 +145,9 @@ export function OwnerClubsCreateContactSection({
           ))}
 
           <Button
-            size="md"
+            className={styles.addButton()}
+            fullWidth
+            size="lg"
             variant="outline"
             onPress={() => phones.append(createPhoneDraft())}
           >
@@ -129,36 +167,53 @@ export function OwnerClubsCreateContactSection({
                 <Controller
                   control={control}
                   name={`socials.${index}.platform`}
-                  render={({ field: platformField }) => (
-                    <Select
-                      className={styles.field()}
-                      placeholder={t("socialPlatform")}
-                      value={platformField.value || null}
-                      onChange={(value) =>
-                        platformField.onChange(String(value ?? "instagram"))
-                      }
-                    >
-                      <Label>{t("socialPlatform")}</Label>
-                      <Select.Trigger>
-                        <Select.Value />
-                        <Select.Indicator />
-                      </Select.Trigger>
-                      <Select.Popover>
-                        <ListBox>
-                          {SOCIAL_PLATFORM_OPTIONS.map((platform) => (
-                            <ListBox.Item
-                              key={platform}
-                              id={platform}
-                              textValue={t(`socialPlatforms.${platform}`)}
-                            >
-                              {t(`socialPlatforms.${platform}`)}
-                              <ListBox.ItemIndicator />
-                            </ListBox.Item>
-                          ))}
-                        </ListBox>
-                      </Select.Popover>
-                    </Select>
-                  )}
+                  render={({ field: platformField }) => {
+                    const platform = platformField.value || "instagram";
+                    const platformName = isSocialPlatform(platform)
+                      ? t(`socialPlatforms.${platform}`)
+                      : t("socialPlatform");
+
+                    return (
+                      <Select
+                        aria-label={platformName}
+                        className={styles.platformField()}
+                        fullWidth
+                        placeholder={t("socialPlatform")}
+                        value={platformField.value || null}
+                        onChange={(value) =>
+                          platformField.onChange(String(value ?? "instagram"))
+                        }
+                      >
+                        <Label className={styles.platformLabel()}>
+                          <span aria-hidden>
+                            <SocialPlatformIcon platform={platform} />
+                          </span>
+                          <span className="sr-only">{platformName}</span>
+                        </Label>
+                        <Select.Trigger className={styles.platformTrigger()}>
+                          <Select.Value />
+                          <Select.Indicator />
+                        </Select.Trigger>
+                        <Select.Popover>
+                          <ListBox>
+                            {SOCIAL_PLATFORM_OPTIONS.map((option) => (
+                              <ListBox.Item
+                                key={option}
+                                id={option}
+                                textValue={t(`socialPlatforms.${option}`)}
+                              >
+                                <span className={styles.platformOption()}>
+                                  <SocialPlatformIcon platform={option} />
+                                  {t(`socialPlatforms.${option}`)}
+                                </span>
+                                <ListBox.ItemIndicator />
+                              </ListBox.Item>
+                            ))}
+                          </ListBox>
+                        </Select.Popover>
+                      </Select>
+                    );
+                  }}
                 />
                 <Controller
                   control={control}
@@ -198,7 +253,9 @@ export function OwnerClubsCreateContactSection({
           ))}
 
           <Button
-            size="md"
+            className={styles.addButton()}
+            fullWidth
+            size="lg"
             variant="outline"
             onPress={() => socials.append(createSocialDraft())}
           >

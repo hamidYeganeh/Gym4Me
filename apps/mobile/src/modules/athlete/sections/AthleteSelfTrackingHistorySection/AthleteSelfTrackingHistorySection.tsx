@@ -39,7 +39,7 @@ export function AthleteSelfTrackingHistorySection({
                 <Button
                   isDisabled={pending}
                   onPress={() => void onDelete(item.id)}
-                  size="sm"
+                  size="lg"
                   variant="ghost"
                 >
                   حذف

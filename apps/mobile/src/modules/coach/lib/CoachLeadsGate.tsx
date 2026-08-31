@@ -139,7 +139,7 @@ export function CoachLeadsGate() {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3 p-6 text-center" role="alert">
         <Typography type="body">{error}</Typography>
-        <Button onPress={() => void reload()} variant="secondary">
+        <Button size="lg" onPress={() => void reload()} variant="secondary">
           {t("retry")}
         </Button>
       </div>

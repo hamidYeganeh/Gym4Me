@@ -30,8 +30,11 @@ export const discoveryHomeHeroSectionVariants = tv({
       "dark:text-foreground/80",
     ].join(" "),
     cta: [
-      "h-12 w-fit rounded-2xl bg-accent px-5 font-bold text-accent-foreground",
+
+      "w-fit bg-accent font-bold text-accent-foreground",
+
       "shadow-none",
+
     ].join(" "),
   },
 });

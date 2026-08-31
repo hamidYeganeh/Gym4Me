@@ -7,7 +7,7 @@ export const coachClientsScreenStyles = {
   search: "w-full",
   groupCard:
     "overflow-hidden rounded-[24px] border-0 bg-surface",
-  row: "flex h-auto w-full items-center justify-start gap-3 rounded-none px-4 py-3.5 text-start font-normal",
+  row: "flex w-full items-center justify-start gap-3 text-start font-normal",
   avatar: "size-12 shrink-0 rounded-full object-cover",
   rowBody: "flex min-w-0 flex-1 flex-col gap-1",
   rowTop: "flex items-center justify-between gap-2",
@@ -19,8 +19,7 @@ export const coachClientsScreenStyles = {
     "flex flex-col gap-1 rounded-[20px] border border-warning/30 bg-warning/10 px-4 py-3 text-foreground",
   followUpAction: "flex justify-end px-4 pb-3",
   divider: "mx-4 h-px bg-border last:hidden",
-  empty:
-    "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center",
+  empty: "flex flex-col items-center gap-2 border-0 bg-surface text-center",
   emptyTitle: "text-foreground",
   emptyBody: "text-muted",
 } as const;

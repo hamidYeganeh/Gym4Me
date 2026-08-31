@@ -34,8 +34,11 @@ export const baseProfileHeroSectionVariants = tv({
       "bg-accent/15 text-accent",
     ].join(" "),
     avatarUpload: [
-      "absolute -bottom-0.5 -end-0.5 z-30 !size-8 min-h-8 min-w-8 rounded-full",
+
+      "absolute -bottom-0.5 -end-0.5 z-30 !size-8 min-w-8",
+
       "!bg-foreground !text-background shadow-sm",
+
     ].join(" "),
   },
 });

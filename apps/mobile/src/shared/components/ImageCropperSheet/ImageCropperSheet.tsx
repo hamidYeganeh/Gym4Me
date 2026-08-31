@@ -164,10 +164,10 @@ export function ImageCropperSheet({
             </div>
           </Drawer.Body>
           <Drawer.Footer className={styles.footer()}>
-            <Button fullWidth variant="secondary" onPress={onCancel}>
+            <Button fullWidth variant="secondary" onPress={onCancel} size="lg">
               {t("cancel")}
             </Button>
-            <Button fullWidth variant="primary" onPress={confirm}>
+            <Button fullWidth variant="primary" onPress={confirm} size="lg">
               {t("apply")}
             </Button>
           </Drawer.Footer>

@@ -77,7 +77,7 @@ export function OwnerAnalyticsScreen({
               key={period}
               className={styles.periodChip}
               onPress={() => setActivePeriod(period)}
-              size="sm"
+              size="lg"
               variant={activePeriod === period ? "primary" : "ghost"}
             >
               {t(PERIOD_LABEL_KEY[period])}

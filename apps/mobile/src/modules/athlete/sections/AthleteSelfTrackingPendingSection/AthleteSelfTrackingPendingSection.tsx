@@ -28,7 +28,7 @@ export function AthleteSelfTrackingPendingSection({
         <Button
           isDisabled={pending}
           onPress={() => void onFlushPending()}
-          size="sm"
+          size="lg"
           variant="secondary"
         >
           تلاش مجدد

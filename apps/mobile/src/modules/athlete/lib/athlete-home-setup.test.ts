@@ -24,6 +24,7 @@ function user(overrides: Partial<PublicUser> = {}): PublicUser {
     address: {
       apartment: null,
       city: null,
+      district: null,
       point: null,
       postalCode: null,
       provinceId: null,
@@ -118,6 +119,7 @@ describe("buildAthleteSetupTodos", () => {
         address: {
           apartment: null,
           city: "تهران",
+          district: null,
           point: null,
           postalCode: null,
           provinceId: "tehran",
@@ -143,6 +145,7 @@ describe("buildAthleteSetupTodos", () => {
         address: {
           apartment: null,
           city: "  ",
+          district: null,
           point: null,
           postalCode: null,
           provinceId: "tehran",

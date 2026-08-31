@@ -43,7 +43,7 @@ export function OwnerMembersImportSection({
         {importMessage ? (
           <Typography type="body-sm">{importMessage}</Typography>
         ) : null}
-        <Button
+        <Button size="lg"
           isDisabled={
             importPending ||
             importRows.length === 0 ||

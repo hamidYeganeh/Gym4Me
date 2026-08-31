@@ -69,7 +69,7 @@ export function AthleteWorkoutsScreen({
         ) : (
           <div className={styles.list()}>
             {plans.map((plan) => (
-              <Button
+              <Button size="lg"
                 className={styles.card()}
                 key={plan.id}
                 variant="ghost"

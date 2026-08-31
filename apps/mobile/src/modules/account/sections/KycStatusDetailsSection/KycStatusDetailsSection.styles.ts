@@ -25,8 +25,7 @@ export const kycStatusDetailsSectionVariants = tv({
       "rounded-2xl border border-danger/40 bg-danger/15 px-4 py-3 text-center text-sm font-semibold text-danger",
     spacer: "min-h-6 flex-1",
     actions: "flex w-full flex-col items-center gap-4 pb-2",
-    primary:
-      "min-h-14 w-full rounded-full text-base font-bold text-accent-foreground",
+    primary: "w-full text-base font-bold text-accent-foreground",
     primaryIcon: "ms-2 size-5",
   },
 });

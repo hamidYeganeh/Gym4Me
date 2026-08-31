@@ -21,7 +21,7 @@ export function DiscoveryHomeMapCtaSection({
       className={slots.root()}
       onPress={onPress}
       variant="ghost"
-    >
+     size="lg">
       <div aria-hidden className={slots.grid()} />
       <div aria-hidden className={slots.glow()} />
       <span aria-hidden className={slots.pin()}>

@@ -91,7 +91,7 @@ export function DiscoveryCoachesSlotsScheduleSection({
                     !isUnavailable && selectedSlotId === slot.id;
 
                   return (
-                    <Button
+                    <Button size="lg"
                       aria-disabled={isUnavailable || undefined}
                       aria-label={slot.timeLabel}
                       aria-pressed={isUnavailable ? undefined : isSelected}

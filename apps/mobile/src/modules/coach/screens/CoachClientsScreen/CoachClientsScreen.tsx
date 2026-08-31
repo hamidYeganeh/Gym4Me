@@ -137,7 +137,7 @@ export function CoachClientsScreen({
           <div className={styles.groupCard}>
             {filteredClients.map((client) => (
               <div key={client.id}>
-                <Button
+                <Button size="lg"
                   className={styles.row}
                   fullWidth
                   onPress={() => router.push(`/coach/clients/${client.id}`)}
@@ -192,7 +192,7 @@ export function CoachClientsScreen({
                       isDisabled={Boolean(followingUpId)}
                       isPending={followingUpId === client.id}
                       onPress={() => onFollowUp(client)}
-                      size="sm"
+                      size="lg"
                       variant="secondary"
                     >
                       {t("followUpAction")}

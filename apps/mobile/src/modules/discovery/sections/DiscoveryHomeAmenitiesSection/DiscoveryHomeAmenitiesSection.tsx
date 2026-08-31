@@ -26,7 +26,7 @@ export function DiscoveryHomeAmenitiesSection({
       title={t("amenitiesTitle")}
     >
       {amenities.map((amenity) => (
-        <Button
+        <Button size="lg"
           aria-label={amenity.name}
           className={slots.card()}
           key={amenity.id}

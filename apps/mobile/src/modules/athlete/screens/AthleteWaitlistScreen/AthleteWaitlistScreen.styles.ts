@@ -11,7 +11,6 @@ export const athleteWaitlistScreenVariants = tv({
     card: "flex flex-col gap-3 rounded-[24px] border-0 bg-surface p-4",
     meta: "text-muted",
     actions: "flex flex-wrap gap-2",
-    empty:
-      "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center",
+    empty: "flex flex-col items-center gap-2 border-0 bg-surface text-center",
   },
 });

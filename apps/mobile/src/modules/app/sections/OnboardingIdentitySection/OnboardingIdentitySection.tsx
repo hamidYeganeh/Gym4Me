@@ -139,7 +139,7 @@ export function OnboardingIdentitySection({
           </InputGroup>
         </TextField>
 
-        <Button
+        <Button size="lg"
           className={styles.trigger()}
           variant="ghost"
           onPress={() => {
@@ -223,7 +223,7 @@ export function OnboardingIdentitySection({
           className={styles.trigger()}
           variant="ghost"
           onPress={openProvince}
-        >
+         size="lg">
           <MapPin1 aria-hidden className={styles.triggerIcon()} size={20} />
           <span className={styles.triggerValue()}>
             {value.provinceName || labels.province}
@@ -235,7 +235,7 @@ export function OnboardingIdentitySection({
           className={styles.trigger()}
           variant="ghost"
           onPress={openAddress}
-        >
+         size="lg">
           <MapPin1 aria-hidden className={styles.triggerIcon()} size={20} />
           <span className={styles.triggerValue()}>
             {value.street || labels.street}
@@ -308,7 +308,7 @@ export function OnboardingIdentitySection({
             <Plus aria-hidden size={12} />
             <Chip.Label>+2</Chip.Label>
           </Chip>
-          <Button className={styles.editLink()} size="sm" variant="ghost">
+          <Button className={styles.editLink()} size="lg" variant="ghost">
             {labels.edit}
           </Button>
         </div>
@@ -414,7 +414,7 @@ export function OnboardingIdentitySection({
                   const selected =
                     (draftProvince?.id ?? value.provinceId) === item.id;
                   return (
-                    <Button
+                    <Button size="lg"
                       aria-selected={selected}
                       className={styles.wheelItem()}
                       data-selected={selected || undefined}

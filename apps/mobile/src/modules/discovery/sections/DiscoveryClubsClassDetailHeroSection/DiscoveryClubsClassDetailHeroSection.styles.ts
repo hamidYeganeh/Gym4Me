@@ -10,8 +10,8 @@ export const discoveryClubsClassDetailHeroSectionStyles = {
     "flex shrink-0 flex-col gap-2.5",
   ].join(" "),
   thumbButton: [
-    "relative !size-12 aspect-square overflow-hidden",
-    "rounded-radius border-2 bg-transparent p-0 shadow-none",
+    "relative aspect-square overflow-hidden",
+    "border-2 bg-transparent shadow-none",
     "transition-[border-color,opacity,transform] duration-fast ease-app",
   ].join(" "),
   thumbActive: "border-surface opacity-100",

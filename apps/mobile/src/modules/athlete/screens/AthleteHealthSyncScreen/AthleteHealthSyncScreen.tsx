@@ -105,7 +105,7 @@ export function AthleteHealthSyncScreen({
             </Typography>
           ) : null}
           <div className={styles.actions()}>
-            <Button
+            <Button size="lg"
               fullWidth
               isDisabled={pending}
               onPress={() => void onConnect()}
@@ -113,7 +113,7 @@ export function AthleteHealthSyncScreen({
             >
               اتصال / مجوز
             </Button>
-            <Button
+            <Button size="lg"
               fullWidth
               isDisabled={pending}
               onPress={() => void onSync()}
@@ -122,7 +122,7 @@ export function AthleteHealthSyncScreen({
               همگام‌سازی الان
             </Button>
             {needsRecovery && onRecoverQueue ? (
-              <Button
+              <Button size="lg"
                 fullWidth
                 isDisabled={pending}
                 onPress={() => void onRecoverQueue()}
@@ -132,7 +132,7 @@ export function AthleteHealthSyncScreen({
               </Button>
             ) : null}
             {active ? (
-              <Button
+              <Button size="lg"
                 fullWidth
                 isDisabled={pending}
                 onPress={() => void onDisconnect(active.provider)}
@@ -142,7 +142,7 @@ export function AthleteHealthSyncScreen({
               </Button>
             ) : null}
             {onOpenSettings ? (
-              <Button
+              <Button size="lg"
                 fullWidth
                 isDisabled={pending}
                 onPress={() => void onOpenSettings()}

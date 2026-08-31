@@ -84,7 +84,7 @@ export function AthleteHealthAssessmentScreen({
                 <Button
                   isDisabled={readOnly || pending}
                   onPress={() => onAnswer(question.id, "yes")}
-                  size="sm"
+                  size="lg"
                   variant={answers[question.id] === "yes" ? "primary" : "outline"}
                 >
                   {t("yes")}
@@ -92,7 +92,7 @@ export function AthleteHealthAssessmentScreen({
                 <Button
                   isDisabled={readOnly || pending}
                   onPress={() => onAnswer(question.id, "no")}
-                  size="sm"
+                  size="lg"
                   variant={answers[question.id] === "no" ? "primary" : "outline"}
                 >
                   {t("no")}
@@ -103,7 +103,7 @@ export function AthleteHealthAssessmentScreen({
         </div>
 
         {!readOnly ? (
-          <Button
+          <Button size="lg"
             fullWidth
             isDisabled={pending}
             onPress={() => void onSubmit()}

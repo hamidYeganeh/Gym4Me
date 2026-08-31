@@ -14,7 +14,7 @@ import {
   ONBOARDING_HEIGHT_CM_RANGE,
 } from "@/modules/app/lib/onboarding-data";
 import {
-  parseHeightUnit,
+  normalizeHeightUnit,
   type OnboardingHeightUnit,
   type OnboardingHeightUnitOption,
 } from "@/modules/app/lib/onboarding-units";
@@ -71,7 +71,7 @@ export function ProfileHeightScreen({
             .slice()
             .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
             .map((option) => {
-              const id = parseHeightUnit(option.value);
+              const id = normalizeHeightUnit(option.value);
               return id ? { id, label: option.name } : null;
             })
             .filter((option): option is OnboardingHeightUnitOption =>

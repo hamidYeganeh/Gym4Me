@@ -44,7 +44,7 @@ export function CoachMessagesScreen({
         {threads.length > 0 ? (
           <div className={styles.list()}>
             {threads.map((thread: CoachMessageThread) => (
-              <Button
+              <Button size="lg"
                 className={styles.item()}
                 key={thread.id}
                 variant="ghost"

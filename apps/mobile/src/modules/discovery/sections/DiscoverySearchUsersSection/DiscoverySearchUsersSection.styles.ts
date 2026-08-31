@@ -11,8 +11,8 @@ export const discoverySearchUsersSectionVariants = tv({
     ].join(" "),
     row: "flex w-full items-center gap-3 px-3.5 py-3",
     identity: [
-      "flex h-auto min-h-0 min-w-0 flex-1 items-center gap-3 rounded-[0.75rem]",
-      "px-0 py-0 text-start shadow-none",
+      "flex min-w-0 flex-1 items-center gap-3",
+      "text-start shadow-none",
       "hover:bg-transparent data-[hovered=true]:bg-transparent",
     ].join(" "),
     avatar: "size-12 shrink-0",
@@ -20,7 +20,7 @@ export const discoverySearchUsersSectionVariants = tv({
     copy: "flex min-w-0 flex-1 flex-col gap-0.5",
     name: "truncate text-foreground",
     joined: "truncate text-muted",
-    follow: "h-9 min-h-9 min-w-[5.75rem] shrink-0 rounded-full px-4",
+    follow: "min-w-[5.75rem] shrink-0",
     empty: "text-muted",
   },
 });

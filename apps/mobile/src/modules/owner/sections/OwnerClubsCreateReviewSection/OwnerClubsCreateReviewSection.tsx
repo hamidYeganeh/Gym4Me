@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
+import { DisclosureCard } from "@repo/ui/cards/DisclosureCard";
 import { FileItem, type FileItemStatus } from "@repo/ui/kit/FileItem";
 import { Uploader } from "@repo/ui/kit/Uploader";
 import { useTranslations } from "next-intl";
@@ -70,12 +71,27 @@ export function OwnerClubsCreateReviewSection({
       <div className={styles.sections()}>
         {sections.map((section) => {
           const hasFields = Boolean(section.fields?.length);
-          const hasChips = Boolean(section.chips?.length);
+          const hasCollections = Boolean(section.collections?.length);
           const hasList = Boolean(section.list?.length);
           const hasMedia = Boolean(section.media?.length);
           const hasHours = Boolean(section.hourGroups?.length);
           const isEmpty =
-            !hasFields && !hasChips && !hasList && !hasMedia && !hasHours;
+            !hasFields &&
+            !hasCollections &&
+            !hasList &&
+            !hasMedia &&
+            !hasHours;
+
+          if (hasCollections) {
+            return (
+              <DisclosureCard
+                closeLabel={t("catalogClose")}
+                collections={section.collections!}
+                formatItemsCount={(count) => t("catalogItemCount", { count })}
+                key={section.key}
+              />
+            );
+          }
 
           return (
             <div className={styles.block()} key={section.key}>
@@ -109,16 +125,6 @@ export function OwnerClubsCreateReviewSection({
                         <div aria-hidden className={styles.reviewDivider()} />
                       ) : null}
                     </div>
-                  ))}
-                </div>
-              ) : null}
-
-              {hasChips ? (
-                <div className={styles.chips()}>
-                  {section.chips!.map((chip) => (
-                    <span className={styles.chip()} key={chip}>
-                      {chip}
-                    </span>
                   ))}
                 </div>
               ) : null}

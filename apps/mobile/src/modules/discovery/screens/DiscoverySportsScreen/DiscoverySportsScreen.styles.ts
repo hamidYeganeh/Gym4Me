@@ -11,8 +11,7 @@ export const discoverySportsScreenStyles = {
   grid: "mx-auto grid w-full max-w-lg grid-cols-2 gap-2",
   card: "!h-[14rem] !w-full !rounded-[1.35rem]",
   cardFeatured: "!h-[14rem] !w-full !rounded-[1.35rem] col-span-2",
-  empty:
-    "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center",
+  empty: "flex flex-col items-center gap-2 border-0 bg-surface text-center",
   emptyTitle: "text-foreground",
   emptyBody: "text-muted",
 } as const;

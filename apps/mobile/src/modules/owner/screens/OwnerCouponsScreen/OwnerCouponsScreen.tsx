@@ -149,7 +149,7 @@ export function OwnerCouponsScreen({
                         isDisabled={Boolean(pendingCouponId)}
                         isPending={pendingCouponId === coupon.id}
                         onPress={() => onToggleStatus(coupon)}
-                        size="sm"
+                        size="lg"
                         variant="secondary"
                       >
                         {coupon.apiStatus === "active"

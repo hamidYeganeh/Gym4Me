@@ -68,7 +68,7 @@ export function AthleteSocialFeedScreen({
             <Typography className={styles.meta()} type="body-sm">
               {t("emptyBody")}
             </Typography>
-            <Button
+            <Button size="lg"
               onPress={() => router.push("/athlete/social/create")}
               variant="primary"
             >
@@ -79,7 +79,7 @@ export function AthleteSocialFeedScreen({
           <div className={styles.list()}>
             {posts.map((post) => (
               <article className={styles.card()} key={post.id}>
-                <Button
+                <Button size="lg"
                   className="flex w-full flex-col gap-3 text-start"
                   variant="ghost"
                   onPress={() => router.push(`/athlete/social/${post.id}`)}

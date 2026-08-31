@@ -26,7 +26,7 @@ export function DiscoveryHomeFeaturesSection({
       title={t("featuresTitle")}
     >
       {features.map((feature) => (
-        <Button
+        <Button size="lg"
           aria-label={feature.title}
           className={slots.slide()}
           key={feature.id}

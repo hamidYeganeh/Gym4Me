@@ -5,9 +5,7 @@ export const onboardingGenderSectionVariants = tv({
     root: "flex w-full max-w-sm flex-col items-center",
     grid: "grid w-full grid-cols-2 gap-3",
     card: [
-      "flex h-auto min-h-0 w-full flex-col items-center gap-3",
-      "rounded-[24px] px-6 py-4",
-      "border transition-[border-color,background-color,color,transform] duration-fast ease-app",
+      "flex w-full flex-col items-center gap-3 border transition-[border-color,background-color,color,transform] duration-fast ease-app",
       "data-[pressed=true]:scale-[0.98]",
     ],
     figure: [

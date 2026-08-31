@@ -117,11 +117,9 @@ export function AthleteBookingDetailActionsSection({
                 {BOOKING_CANCEL_REASON_KEYS.map((reasonKey) => {
                   const isSelected = cancelReasonKey === reasonKey;
                   return (
-                    <Button
+                    <Button size="lg"
                       aria-checked={isSelected}
-                      className={`${styles.cancelReason()} ${
-                        isSelected ? styles.cancelReasonSelected() : ""
-                      }`}
+                      className={`${styles.cancelReason()} ${ isSelected ? styles.cancelReasonSelected() : "" }`}
                       key={reasonKey}
                       variant="ghost"
                       onPress={() => setCancelReasonKey(reasonKey)}
@@ -168,10 +166,10 @@ export function AthleteBookingDetailActionsSection({
               isPending={isActing}
               onPress={onConfirmCancel}
               variant="danger"
-            >
+             size="lg">
               {t("confirmCancel")}
             </Button>
-            <Button
+            <Button size="lg"
               fullWidth
               onPress={() => setIsCancelConfirmOpen(false)}
               variant="ghost"

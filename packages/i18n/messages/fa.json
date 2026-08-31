@@ -1157,7 +1157,7 @@
       "stepContact": "تماس",
       "stepContactHint": "شماره‌ها و شبکه‌های اجتماعی را وارد کن.",
       "stepLocation": "موقعیت",
-      "stepLocationHint": "آدرس را بنویسید و روی نقشه مختصات باشگاه را مشخص کن.",
+      "stepLocationHint": "کشور، استان، شهر، محله، آدرس و مختصات باشگاه را مثل پروفایل مشخص کن.",
       "stepCategories": "دسته‌بندی",
       "stepCategoriesHint": "دسته‌بندی‌های باشگاه را انتخاب کن.",
       "stepSports": "رشته‌ها",
@@ -1183,10 +1183,25 @@
       "errorSocialIncomplete": "برای هر شبکه اجتماعی، پلتفرم و لینک را کامل کن یا آن را حذف کن.",
       "namePlaceholder": "مثلاً باشگاه آسمان",
       "descriptionPlaceholder": "چند جمله درباره امکانات و فضای باشگاه",
-      "phonePlaceholder": "۰۲۱۱۲۳۴۵۶۷۸",
+      "phonePlaceholder": "912 0000 000",
       "phoneLabelPlaceholder": "مثلاً پذیرش",
       "socialUrlPlaceholder": "https://…",
-      "addressPlaceholder": "شهر، خیابان، پلاک",
+      "country": "کشور",
+      "countryPlaceholder": "کشور را انتخاب کن",
+      "countryEmpty": "کشوری یافت نشد.",
+      "province": "استان",
+      "provincePlaceholder": "استان را انتخاب کن",
+      "provinceEmpty": "استانی یافت نشد.",
+      "provinceNeedsCountry": "اول کشور را انتخاب کن.",
+      "city": "شهر",
+      "cityPlaceholder": "شهر را انتخاب کن",
+      "cityEmpty": "شهری برای این استان یافت نشد.",
+      "cityNeedsProvince": "اول استان را انتخاب کن.",
+      "district": "محله",
+      "districtPlaceholder": "محله را انتخاب کن",
+      "districtEmpty": "محله‌ای برای این شهر یافت نشد.",
+      "districtNeedsCity": "اول شهر را انتخاب کن.",
+      "addressPlaceholder": "خیابان، پلاک، واحد",
       "mapHint": "روی نقشه بزن یا پین را بکش تا مختصات ثبت شود.",
       "mapZoomIn": "بزرگ‌نمایی",
       "mapZoomOut": "کوچک‌نمایی",
@@ -1198,6 +1213,8 @@
       "longitude": "طول جغرافیایی",
       "hoursMode": "حالت ساعات کاری",
       "reviewEmptyCatalog": "موردی انتخاب نشده است.",
+      "catalogItemCount": "{count} مورد",
+      "catalogClose": "بستن",
       "reviewEmptyPhones": "شماره‌ای وارد نشده است.",
       "reviewEmptySocials": "شبکه اجتماعی‌ای اضافه نشده است.",
       "reviewEmptyMedia": "تصویری بارگذاری نشده است.",
@@ -1526,6 +1543,7 @@
         "seoDescription": "توضیح SEO"
       },
       "actions": {
+        "view": "جزئیات",
         "create": "مقاله جدید",
         "createTitle": "ایجاد مقاله",
         "edit": "ویرایش",
@@ -2087,6 +2105,7 @@
         "code": "کد",
         "status": "وضعیت",
         "resource": "منبع",
+        "athlete": "رزروکننده",
         "club": "باشگاه",
         "startsAt": "شروع",
         "total": "مبلغ",
@@ -2101,6 +2120,38 @@
         "refundTitle": "استرداد وجه",
         "refundBody": "مبلغ رزرو به کیف پول کاربر برگردانده می‌شود.",
         "confirm": "تأیید"
+      },
+      "details": {
+        "title": "جزئیات رزرو",
+        "code": "کد رزرو",
+        "athlete": "رزروکننده",
+        "unknownAthlete": "کاربر نامشخص",
+        "phone": "موبایل",
+        "club": "باشگاه",
+        "resource": "منبع رزرو",
+        "startsAt": "شروع",
+        "endsAt": "پایان",
+        "source": "مبدأ ثبت",
+        "holder": "نوع مراجعه",
+        "attendees": "تعداد نفرات",
+        "createdAt": "زمان ثبت",
+        "amount": "مبلغ اولیه",
+        "discount": "تخفیف",
+        "total": "مبلغ نهایی",
+        "payment": "وضعیت پرداخت",
+        "paid": "پرداخت‌شده",
+        "unpaid": "پرداخت‌نشده",
+        "paymentRef": "شناسه پرداخت",
+        "coupon": "کد تخفیف",
+        "note": "یادداشت رزرو",
+        "cancellation": "اطلاعات لغو و بازپرداخت",
+        "cancelledAt": "زمان لغو",
+        "cancelledBy": "لغوشده توسط",
+        "refundAmount": "مبلغ بازپرداخت",
+        "feeAmount": "جریمه لغو",
+        "sourceValue": { "athlete": "کاربر", "desk": "پذیرش" },
+        "holderValue": { "member": "عضو", "guest": "مهمان" },
+        "actor": { "athlete": "کاربر", "coach": "مربی", "club": "باشگاه", "admin": "ادمین" }
       }
     },
     "Catalog": {
@@ -4046,6 +4097,9 @@
     "actionNoShow": "ثبت غیبت",
     "actionCancel": "لغو جلسه",
     "cancelConfirm": "با لغو این رزرو، {amount} تومان برای بازپرداخت ثبت می‌شود. ادامه می‌دهید؟",
+    "loadError": "دریافت رزروها ممکن نشد. اتصال را بررسی و دوباره تلاش کن.",
+    "actionError": "تغییر وضعیت رزرو انجام نشد. اطلاعات حفظ شده است؛ دوباره تلاش کن.",
+    "retry": "تلاش دوباره",
     "checkInHint": "کد ورود شاگرد: {code}",
     "accept": "پذیرش",
     "reject": "رد کردن",
@@ -5378,7 +5432,8 @@
     "openUserAria": "مشاهده {name}",
     "topicAria": "جست‌وجوی {topic}",
     "emptyTopics": "موضوعی پیدا نشد.",
-    "emptyUsers": "کاربری پیدا نشد."
+    "emptyUsers": "مربی‌ای پیدا نشد.",
+    "coachFallback": "مربی"
   },
   "DiscoverySports": {
     "pageTitle": "رشته‌ها",
@@ -6056,6 +6111,82 @@
     "submit": "ثبت رزرو",
     "listTitle": "رزروهای اخیر",
     "empty": "رزروی ثبت نشده است."
+  },
+  "OwnerBookings": {
+    "pageTitle": "مدیریت رزروهای باشگاه",
+    "title": "رزروهای باشگاه",
+    "subtitle": "رزروها و حضور اعضا و مهمان‌ها را از یک میز عملیاتی مدیریت کن.",
+    "back": "بازگشت",
+    "clubLabel": "شعبه",
+    "searchLabel": "جست‌وجوی رزرو",
+    "searchPlaceholder": "نام، موبایل، کد رزرو یا سانس",
+    "filtersLabel": "فیلتر رزروها",
+    "filter": {
+      "active": "جاری",
+      "past": "گذشته",
+      "cancelled": "لغوشده",
+      "all": "همه"
+    },
+    "loading": "در حال دریافت رزروها...",
+    "emptyTitle": "رزروی در این بخش نیست",
+    "emptyBody": "با تغییر فیلتر یا عبارت جست‌وجو، رزروهای دیگر را بررسی کن.",
+    "retry": "تلاش دوباره",
+    "listLabel": "فهرست رزروهای باشگاه",
+    "loadMore": "نمایش رزروهای بیشتر",
+    "resource": "سانس / منبع",
+    "date": "زمان رزرو",
+    "code": "کد رزرو",
+    "payment": "پرداخت",
+    "paid": "پرداخت‌شده",
+    "unpaid": "پرداخت‌نشده",
+    "holder": {
+      "member": "عضو",
+      "guest": "مهمان"
+    },
+    "status": {
+      "pending": "در انتظار",
+      "awaiting_payment": "در انتظار پرداخت",
+      "confirmed": "تأییدشده",
+      "checked_in": "واردشده",
+      "completed": "تکمیل‌شده",
+      "cancelled": "لغوشده",
+      "no_show": "عدم حضور",
+      "refund_requested": "درخواست بازپرداخت",
+      "refunded": "بازپرداخت‌شده",
+      "rejected": "ردشده"
+    },
+    "actions": {
+      "checkIn": "ثبت ورود",
+      "complete": "تکمیل جلسه",
+      "noShow": "عدم حضور",
+      "reschedule": "جابه‌جایی",
+      "cancel": "لغو رزرو"
+    },
+    "confirm": {
+      "no-show": {
+        "title": "ثبت عدم حضور",
+        "body": "عدم حضور {name} برای این رزرو ثبت شود؟"
+      },
+      "cancel": {
+        "title": "لغو رزرو",
+        "body": "رزرو {name} لغو شود؟ این عملیات ممکن است فرایند بازپرداخت را آغاز کند."
+      },
+      "check-in": {
+        "title": "ثبت ورود",
+        "body": "ورود {name} ثبت شود؟"
+      },
+      "complete": {
+        "title": "تکمیل جلسه",
+        "body": "جلسه {name} تکمیل شود؟"
+      }
+    },
+    "dismiss": "انصراف",
+    "confirmAction": "تأیید عملیات",
+    "rescheduleTitle": "جابه‌جایی رزرو",
+    "rescheduleBody": "یک سانس دارای ظرفیت را برای این رزرو انتخاب کن.",
+    "selectOccurrence": "انتخاب سانس جدید",
+    "occurrencesLoading": "در حال دریافت سانس‌های دارای ظرفیت...",
+    "noOccurrences": "در ۲۱ روز آینده سانس دارای ظرفیت پیدا نشد."
   },
   "OwnerFamilyMemberships": {
     "pageTitle": "عضویت خانوادگی",

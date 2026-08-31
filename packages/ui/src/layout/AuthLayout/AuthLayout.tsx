@@ -1,6 +1,5 @@
 "use client";
 
-import { Typography } from "@heroui/react/typography";
 import { useTheme } from "@repo/theme";
 import {
   BrandText,

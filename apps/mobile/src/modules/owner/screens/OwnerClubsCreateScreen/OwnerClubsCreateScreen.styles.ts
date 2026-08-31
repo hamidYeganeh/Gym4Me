@@ -18,8 +18,8 @@ export const ownerClubsCreateScreenVariants = tv({
     error: "text-sm text-danger",
     notice: "text-sm text-success",
     navRow: "w-full gap-3",
-    navBack: "h-14 flex-1",
-    navNext: "h-14 flex-[2]",
+    navBack: "flex-1",
+    navNext: "flex-[2]",
   },
 });
 

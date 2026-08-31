@@ -90,7 +90,7 @@ export function OwnerStaffScreen({
               const hiddenCount = member.grants.length - visibleGrants.length;
 
               return (
-                <Button
+                <Button size="lg"
                   key={member.id}
                   aria-expanded={isExpanded}
                   aria-label={t("toggleGrants", { name: member.name })}

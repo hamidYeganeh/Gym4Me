@@ -35,7 +35,10 @@ export type OnboardingMoodId =
   | "happy"
   | "overjoyed";
 
-export const ONBOARDING_STEPS: OnboardingStepId[] = [
+/** Steps kept in code but excluded from the live carousel. */
+export const ONBOARDING_HIDDEN_STEPS: OnboardingStepId[] = ["bloodType"];
+
+const ONBOARDING_STEPS_ALL: OnboardingStepId[] = [
   "name",
   "goals",
   "gender",
@@ -52,6 +55,10 @@ export const ONBOARDING_STEPS: OnboardingStepId[] = [
   "calories",
   "avatar",
 ];
+
+export const ONBOARDING_STEPS: OnboardingStepId[] = ONBOARDING_STEPS_ALL.filter(
+  (step) => !ONBOARDING_HIDDEN_STEPS.includes(step),
+);
 
 export const ONBOARDING_PHASES: OnboardingPhaseId[] = [
   "assessment",

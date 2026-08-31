@@ -16,7 +16,7 @@ export const ownerDebtsScreenVariants = tv({
     rowHint: "text-muted",
     rowValue: "shrink-0 text-sm font-medium text-foreground",
     divider: "mx-4 h-px bg-border",
-    empty: "rounded-2xl border border-dashed border-border px-4 py-8 text-center text-muted",
+    empty: "border border-dashed border-border text-center text-muted",
     rowActions: "flex shrink-0 flex-col gap-2",
   },
 });

@@ -5,8 +5,7 @@ export const onboardingDietSectionVariants = tv({
     root: "flex w-full max-w-md flex-col items-center",
     grid: "grid w-full grid-cols-2 gap-3",
     card: [
-      "flex h-auto min-h-[8.5rem] w-full min-w-0 flex-col items-start gap-3",
-      "rounded-[1.35rem] border bg-default/50 px-4 py-4 text-start",
+      "flex w-full min-w-0 flex-col items-start gap-3 border bg-default/50 text-start",
       "outline-none transition-[border-color,background-color,transform] duration-fast ease-app",
       "data-[pressed=true]:scale-[0.98]",
     ].join(" "),

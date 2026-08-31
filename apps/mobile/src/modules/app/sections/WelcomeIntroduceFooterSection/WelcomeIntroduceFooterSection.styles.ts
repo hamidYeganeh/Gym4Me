@@ -22,7 +22,7 @@ export const welcomeIntroduceFooterSectionVariants = tv({
     ],
     row: "flex items-center justify-between gap-4",
     navButton: [
-      "size-16 shrink-0 rounded-full border-0",
+      "shrink-0 border-0",
       "bg-foreground text-background",
       "shadow-none transition-transform duration-fast ease-app",
       "data-[hovered=true]:opacity-90 data-[pressed=true]:scale-95",

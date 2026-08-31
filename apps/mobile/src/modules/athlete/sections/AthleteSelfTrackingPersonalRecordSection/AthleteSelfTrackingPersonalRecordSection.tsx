@@ -67,7 +67,7 @@ export function AthleteSelfTrackingPersonalRecordSection({
             />
           </TextField>
         </div>
-        <Button
+        <Button size="lg"
           fullWidth
           isDisabled={pending || recordValue.trim() === ""}
           onPress={() => void onSubmit()}

@@ -26,6 +26,7 @@ export function OwnerClubsCreateWizardSection({
   t,
   control,
   setValue,
+  getValues,
   step,
   stepDirection,
   club,
@@ -75,7 +76,11 @@ export function OwnerClubsCreateWizardSection({
         ) : null}
 
         {step === 2 ? (
-          <OwnerClubsCreateLocationSection control={control} />
+          <OwnerClubsCreateLocationSection
+            control={control}
+            getValues={getValues}
+            setValue={setValue}
+          />
         ) : null}
 
         {step === 3 ? (

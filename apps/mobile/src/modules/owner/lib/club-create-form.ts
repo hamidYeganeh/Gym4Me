@@ -4,6 +4,19 @@ import type {
   RulePolicy,
   WeekdayStatus,
 } from "@repo/api";
+import { normalizeIranPhoneInput } from "@/modules/auth/lib/phone";
+
+function toClubPhoneNumber(input: string): string {
+  const trimmed = input.trim();
+  if (!trimmed) return "";
+  return (
+    normalizeIranPhoneInput(trimmed) ??
+    trimmed
+      .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
+      .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
+      .replace(/\D/g, "")
+  );
+}
 
 export const CLUB_CREATE_STEP_COUNT = 11;
 
@@ -50,6 +63,20 @@ export type ClubCreateCatalogSelectionDraft = {
 
 export type ClubCreateHoursMode = "unified" | "gender_split";
 
+export type ClubCreateLocationDraft = {
+  /** Country location node (e.g. Iran). */
+  countryId: string | null;
+  country: string;
+  provinceId: string | null;
+  province: string;
+  cityId: string | null;
+  city: string;
+  districtId: string | null;
+  district: string;
+  address: string;
+  point: { lat: number; lng: number } | null;
+};
+
 export type ClubCreateFormState = {
   name: string;
   description: string;
@@ -57,8 +84,7 @@ export type ClubCreateFormState = {
   coverFileName: string;
   phones: ClubCreatePhoneDraft[];
   socials: ClubCreateSocialDraft[];
-  address: string;
-  point: { lat: number; lng: number } | null;
+  location: ClubCreateLocationDraft;
   categories: ClubCreateCatalogSelectionDraft[];
   sports: ClubCreateCatalogSelectionDraft[];
   amenities: ClubCreateCatalogSelectionDraft[];
@@ -256,6 +282,21 @@ export function createSocialDraft(
   };
 }
 
+export function createEmptyClubCreateLocation(): ClubCreateLocationDraft {
+  return {
+    countryId: null,
+    country: "",
+    provinceId: null,
+    province: "",
+    cityId: null,
+    city: "",
+    districtId: null,
+    district: "",
+    address: "",
+    point: null,
+  };
+}
+
 export function createEmptyClubCreateForm(): ClubCreateFormState {
   return {
     name: "",
@@ -264,8 +305,7 @@ export function createEmptyClubCreateForm(): ClubCreateFormState {
     coverFileName: "",
     phones: [createPhoneDraft()],
     socials: [],
-    address: "",
-    point: null,
+    location: createEmptyClubCreateLocation(),
     categories: [],
     sports: [],
     amenities: [],
@@ -281,6 +321,12 @@ export function createEmptyClubCreateForm(): ClubCreateFormState {
 
 export function toggleIdInList(ids: string[], id: string): string[] {
   return ids.includes(id) ? ids.filter((item) => item !== id) : [...ids, id];
+}
+
+export function resultFromSettled<T>(
+  settled: PromiseSettledResult<{ result: T[] }>,
+): T[] {
+  return settled.status === "fulfilled" ? (settled.value.result ?? []) : [];
 }
 
 export function toggleCatalogSelection(
@@ -330,7 +376,7 @@ export function buildCreateClubPayload(
 
   const phones = form.phones
     .map((phone) => ({
-      number: phone.number.trim(),
+      number: toClubPhoneNumber(phone.number),
       label: phone.label.trim() || undefined,
     }))
     .filter((phone) => phone.number.length > 0);
@@ -353,14 +399,26 @@ export function buildCreateClubPayload(
       ? applyHoursMode(form.operatingHours, "gender_split")
       : applyHoursMode(form.operatingHours, "unified");
 
-  const address = form.address.trim();
+  const loc = form.location;
+  const address = loc.address.trim();
+  const locationId = loc.districtId ?? loc.cityId ?? undefined;
+  const composedAddress = [
+    loc.country.trim(),
+    loc.province.trim(),
+    loc.city.trim(),
+    loc.district.trim(),
+    address,
+  ]
+    .filter(Boolean)
+    .join("، ");
   const location =
-    address || form.point
+    composedAddress || loc.point || locationId
       ? {
-          address: address || "—",
-          point: form.point
-            ? { lat: form.point.lat, lng: form.point.lng }
+          address: composedAddress || address || "—",
+          point: loc.point
+            ? { lat: loc.point.lat, lng: loc.point.lng }
             : undefined,
+          locationId,
         }
       : undefined;
 

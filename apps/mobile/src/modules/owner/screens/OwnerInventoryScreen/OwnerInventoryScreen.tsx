@@ -148,7 +148,7 @@ export function OwnerInventoryScreen({
               isPending={isSubmitting}
               type="submit"
               variant="primary"
-            >
+             size="lg">
               {t("createSubmit")}
             </Button>
           </form>
@@ -195,7 +195,7 @@ export function OwnerInventoryScreen({
                           isPending={pendingId === item.id && item.condition !== condition}
                           key={condition}
                           onPress={() => onConditionChange(item, condition)}
-                          size="sm"
+                          size="lg"
                           variant={item.condition === condition ? "primary" : "secondary"}
                         >
                           {t(CONDITION_KEY[condition])}

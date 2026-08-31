@@ -15,7 +15,7 @@ export const ownerBroadcastScreenVariants = tv({
     rowHint: "text-muted",
     divider: "mx-4 h-px bg-border",
     formCard: "flex flex-col gap-3 rounded-[24px] border-0 bg-surface p-4",
-    select: "w-full rounded-xl border border-border bg-background px-3 py-2 text-sm",
-    empty: "rounded-2xl border border-dashed border-border px-4 py-8 text-center text-muted",
+    select: "w-full border border-border bg-background text-sm",
+    empty: "border border-dashed border-border text-center text-muted",
   },
 });

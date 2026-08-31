@@ -9,7 +9,7 @@ export const articlesListScreenVariants = tv({
     scroller:
       "-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
     list: "flex flex-col gap-4",
-    empty: "py-16 text-center text-muted",
+    empty: "text-center text-muted",
     loading: "py-16 text-center text-muted",
   },
 });

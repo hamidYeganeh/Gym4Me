@@ -88,7 +88,7 @@ export function AthletePassesScreen({
             <Button
               key={kind}
               onPress={() => onKindChange(kind)}
-              size="sm"
+              size="lg"
               variant={activeKind === kind ? "primary" : "outline"}
             >
               {kindLabel(t, kind)}
@@ -124,7 +124,7 @@ export function AthletePassesScreen({
                       <Button
                         isDisabled={pending}
                         onPress={() => void onClaim(offer.id)}
-                        size="sm"
+                        size="lg"
                         variant="primary"
                       >
                         {t("claim")}

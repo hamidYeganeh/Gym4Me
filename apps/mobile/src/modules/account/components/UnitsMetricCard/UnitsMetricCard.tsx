@@ -21,7 +21,7 @@ export function UnitsMetricCard({
       onPress={onPress}
       type="button"
       variant="ghost"
-    >
+     size="lg">
       <span aria-hidden className={styles.icon()}>
         {icon}
       </span>

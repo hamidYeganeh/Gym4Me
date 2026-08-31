@@ -19,7 +19,7 @@ export const onboardingIdentitySectionVariants = tv({
       "min-h-12 rounded-2xl border-0 bg-default px-4 !text-base text-foreground shadow-none",
     row: "grid grid-cols-2 gap-3",
     trigger:
-      "flex min-h-12 w-full items-center justify-between gap-2 rounded-2xl border-0 bg-default px-4 text-start text-sm text-foreground outline-none data-[hovered=true]:bg-default/80",
+      "flex w-full items-center justify-between gap-2 border-0 bg-default text-start text-sm text-foreground outline-none data-[hovered=true]:bg-default/80",
     triggerIcon: "size-5 shrink-0 text-muted",
     triggerValue: "min-w-0 flex-1 truncate text-foreground",
     chips: "flex flex-wrap items-center gap-2",
@@ -36,10 +36,9 @@ export const onboardingIdentitySectionVariants = tv({
     wheel:
       "mx-auto flex max-h-64 w-full max-w-xs flex-col gap-1 overflow-y-auto overscroll-contain py-2 [-webkit-overflow-scrolling:touch]",
     wheelItem:
-      "w-full rounded-2xl px-4 py-3 text-center text-base font-medium text-muted outline-none transition-colors data-[selected=true]:bg-accent/10 data-[selected=true]:font-semibold data-[selected=true]:text-accent data-[selected=true]:ring-1 data-[selected=true]:ring-accent",
+      "w-full text-center text-base font-medium text-muted outline-none transition-colors data-[selected=true]:bg-accent/10 data-[selected=true]:font-semibold data-[selected=true]:text-accent data-[selected=true]:ring-1 data-[selected=true]:ring-accent",
     mapShell: "relative h-72 w-full overflow-hidden rounded-2xl",
-    selectBtn:
-      "min-h-12 w-full rounded-[1.2rem] text-base font-bold text-accent-foreground",
+    selectBtn: "w-full text-base font-bold text-accent-foreground",
     selectIcon: "ms-2 size-5",
   },
 });

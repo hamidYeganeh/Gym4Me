@@ -8,7 +8,7 @@ export const discoveryCoachesSlotsScheduleSectionVariants = tv({
       "min-w-0 flex-1 text-[1.65rem] font-bold tracking-tight text-foreground",
     weekNav: "flex shrink-0 items-center gap-2",
     weekButton: [
-      "size-10 shrink-0 rounded-full border-0",
+      "shrink-0 border-0",
       "bg-foreground text-background shadow-none",
       "data-[hovered=true]:opacity-90 data-[pressed=true]:scale-95",
     ].join(" "),
@@ -19,8 +19,7 @@ export const discoveryCoachesSlotsScheduleSectionVariants = tv({
     slotsScroll: "min-w-0 w-full",
     slotsRow: "flex w-max flex-row gap-2.5 pe-1",
     slot: [
-      "inline-flex h-14 w-auto min-w-[5.5rem] shrink-0 items-center justify-center",
-      "rounded-[14px] border p-2",
+      "inline-flex w-auto min-w-[5.5rem] shrink-0 items-center justify-center border",
       "text-sm font-semibold tabular-nums leading-none shadow-none",
       "transition-[color,background-color,border-color,transform] duration-fast ease-app",
       "outline-none data-[pressed=true]:scale-[0.98]",

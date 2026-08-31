@@ -122,7 +122,7 @@ export function AthleteMetricsListSection({
           className={styles.viewButton}
           onPress={onViewPress}
           variant="ghost"
-        >
+         size="lg">
           <ListTwoSquare aria-hidden className={styles.viewIcon} size={16} />
           <span>{viewLabel}</span>
           <ChevronDown aria-hidden className={styles.chevron} size={14} />

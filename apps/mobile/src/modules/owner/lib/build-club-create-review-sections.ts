@@ -1,8 +1,11 @@
 import type { RefItem, SportNode } from "@repo/api";
+import type { DisclosureCardCollection } from "@repo/ui/cards/DisclosureCard";
 import {
+  createEmptyClubCreateLocation,
   hoursForAudience,
   SOCIAL_PLATFORM_OPTIONS,
   WEEKDAY_KEYS,
+  type ClubCreateCatalogSelectionDraft,
   type ClubCreateFormState,
 } from "@/modules/owner/lib/club-create-form";
 import type { OwnerClubsCreateReviewSectionBlock } from "@/modules/owner/sections/OwnerClubsCreateReviewSection";
@@ -24,14 +27,36 @@ export function buildClubCreateReviewSections({
   sports,
   t,
 }: BuildClubCreateReviewSectionsInput): OwnerClubsCreateReviewSectionBlock[] {
-  const categoryMap = new Map(categories.map((item) => [item.id, item.name]));
-  const amenityMap = new Map(amenities.map((item) => [item.id, item.name]));
-  const equipmentMap = new Map(equipment.map((item) => [item.id, item.name]));
-  const sportMap = new Map(sports.map((item) => [item.id, item.name]));
+  const mapCatalogCollection = (
+    key: string,
+    title: string,
+    selections: ClubCreateCatalogSelectionDraft[],
+    catalog: Array<{ id: string; name: string; icon?: string | null }>,
+    withQuantity = false,
+  ): DisclosureCardCollection => {
+    const catalogById = new Map(catalog.map((item) => [item.id, item]));
+    return {
+      id: key,
+      name: title,
+      emptyLabel: t("reviewEmptyCatalog"),
+      items: (selections ?? []).map((selection) => {
+        const item = catalogById.get(selection.id);
+        const quantityDetail =
+          withQuantity && selection.quantity
+            ? t("catalogQuantityValue", { count: selection.quantity })
+            : undefined;
+        const detail = selection.description.trim() || quantityDetail;
+        return {
+          id: selection.id,
+          name: item?.name ?? selection.id,
+          icon: item?.icon || "Sparkle1",
+          detail,
+        };
+      }),
+    };
+  };
 
-  const resolveNames = (ids: string[], map: Map<string, string>) =>
-    ids.map((id) => map.get(id) ?? id).filter(Boolean);
-
+  const loc = values.location ?? createEmptyClubCreateLocation();
   const genderLabel =
     values.genderPolicy === "male_only"
       ? t("genderMaleOnly")
@@ -163,57 +188,72 @@ export function buildClubCreateReviewSections({
       title: t("stepLocation"),
       fields: [
         {
+          key: "country",
+          label: t("country"),
+          value: loc.country.trim(),
+        },
+        {
+          key: "province",
+          label: t("province"),
+          value: loc.province.trim(),
+        },
+        {
+          key: "city",
+          label: t("city"),
+          value: loc.city.trim(),
+        },
+        {
+          key: "district",
+          label: t("district"),
+          value: loc.district.trim(),
+        },
+        {
           key: "address",
           label: t("address"),
-          value: (values.address ?? "").trim(),
+          value: loc.address.trim(),
         },
         {
           key: "lat",
           label: t("latitude"),
-          value: values.point ? values.point.lat.toFixed(6) : "",
+          value: loc.point ? loc.point.lat.toFixed(6) : "",
         },
         {
           key: "lng",
           label: t("longitude"),
-          value: values.point ? values.point.lng.toFixed(6) : "",
+          value: loc.point ? loc.point.lng.toFixed(6) : "",
         },
       ],
     },
     {
-      key: "categories",
-      title: t("stepCategories"),
-      chips: resolveNames(
-        values.categories.map((item) => item.id),
-        categoryMap,
-      ),
-      emptyLabel: t("reviewEmptyCatalog"),
-    },
-    {
-      key: "sports",
-      title: t("stepSports"),
-      chips: resolveNames(
-        values.sports.map((item) => item.id),
-        sportMap,
-      ),
-      emptyLabel: t("reviewEmptyCatalog"),
-    },
-    {
-      key: "amenities",
-      title: t("stepAmenities"),
-      chips: resolveNames(
-        values.amenities.map((item) => item.id),
-        amenityMap,
-      ),
-      emptyLabel: t("reviewEmptyCatalog"),
-    },
-    {
-      key: "equipment",
-      title: t("stepEquipment"),
-      chips: resolveNames(
-        values.equipment.map((item) => item.id),
-        equipmentMap,
-      ),
-      emptyLabel: t("reviewEmptyCatalog"),
+      key: "catalog",
+      title: t("stepReview"),
+      collections: [
+        mapCatalogCollection(
+          "categories",
+          t("stepCategories"),
+          values.categories ?? [],
+          categories,
+        ),
+        mapCatalogCollection(
+          "sports",
+          t("stepSports"),
+          values.sports ?? [],
+          sports,
+        ),
+        mapCatalogCollection(
+          "amenities",
+          t("stepAmenities"),
+          values.amenities ?? [],
+          amenities,
+        ),
+        mapCatalogCollection(
+          "equipment",
+          t("stepEquipment"),
+          values.equipment ?? [],
+          equipment,
+          true,
+        ),
+      ],
     },
     {
       key: "media",

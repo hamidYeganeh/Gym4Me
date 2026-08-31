@@ -12,7 +12,7 @@ export const discoveryHomeHeaderSectionVariants = tv({
     bar: "relative flex h-[72px] min-h-[72px] items-center justify-center px-screen",
     filterButton: [
       "absolute start-screen top-1/2 z-10 -translate-y-1/2",
-      "rounded-[0.875rem] text-foreground",
+      "text-foreground",
     ].join(" "),
     locationChip: [
       "h-9 gap-1.5 rounded-full bg-surface px-3.5",

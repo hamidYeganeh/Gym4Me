@@ -7,7 +7,7 @@ export const ownerStaffScreenStyles = {
   inviteRow: "flex",
   list: "flex flex-col gap-4",
   staffCard:
-    "h-auto w-full items-stretch justify-start gap-0 rounded-[24px] border-0 bg-surface p-4 text-start font-normal",
+    "w-full items-stretch justify-start gap-0 border-0 bg-surface text-start font-normal",
   staffBody: "flex w-full flex-col gap-3",
   staffTop: "flex items-center gap-3",
   avatar:
@@ -16,8 +16,7 @@ export const ownerStaffScreenStyles = {
   staffName: "truncate text-foreground",
   staffMeta: "truncate text-muted",
   grants: "flex flex-wrap items-center gap-2",
-  empty:
-    "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center",
+  empty: "flex flex-col items-center gap-2 border-0 bg-surface text-center",
   emptyTitle: "text-foreground",
   emptyBody: "text-muted",
 } as const;

@@ -73,7 +73,7 @@ export function AthleteQrCheckInScreen({
           <Typography className={styles.meta()} type="body-sm">
             {expiresAtLabel}
           </Typography>
-          <Button
+          <Button size="lg"
             isDisabled={pending || !onRefresh}
             onPress={() => void onRefresh?.()}
             variant="secondary"

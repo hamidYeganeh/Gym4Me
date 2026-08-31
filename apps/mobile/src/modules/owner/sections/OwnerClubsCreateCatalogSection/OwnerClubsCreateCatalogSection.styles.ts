@@ -6,8 +6,7 @@ export const ownerClubsCreateCatalogSectionVariants = tv({
     header: "flex items-start justify-between gap-4",
     title: "text-foreground",
     hint: "mt-1 text-muted",
-    empty:
-      "flex min-h-36 w-full flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-surface-secondary/40 text-sm font-semibold text-muted",
+    empty: "flex w-full flex-col items-center justify-center gap-2 border border-dashed border-border bg-surface-secondary/40 text-sm font-semibold text-muted",
     selectedList: "flex flex-col gap-2",
     selectedItem:
       "flex min-h-18 items-center gap-3 rounded-2xl border border-border/70 bg-surface-secondary/45 p-3",
@@ -21,7 +20,7 @@ export const ownerClubsCreateCatalogSectionVariants = tv({
       "border-t border-border/70 bg-surface px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3",
     optionList: "flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto pb-4",
     optionRow:
-      "flex min-h-16 w-full items-center gap-3 rounded-2xl px-3 data-[hovered=true]:bg-surface-secondary",
+      "flex w-full items-center gap-3 data-[hovered=true]:bg-surface-secondary",
     optionName: "min-w-0 flex-1 text-start font-semibold text-foreground",
     emptyResult: "py-12 text-center",
     editorBody: "flex flex-col gap-5 px-4 pb-6",

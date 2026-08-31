@@ -35,8 +35,7 @@ export const athleteBookingDetailScreenStyles = {
     "text-4xl font-bold tracking-[0.4em] text-accent [direction:ltr]",
   checkInHint: "text-muted",
   actions: "flex flex-col gap-3",
-  cancelConfirm:
-    "flex flex-col gap-3 rounded-[24px] border border-danger/30 bg-danger/10 p-5",
+  cancelConfirm: "flex flex-col gap-3 -[24px] border border-danger/30 bg-danger/10",
   cancelConfirmTitle: "text-foreground",
   cancelConfirmBody: "text-muted",
   cancelConfirmActions: "flex gap-3",
@@ -53,7 +52,6 @@ export const athleteBookingDetailScreenStyles = {
   cancelledNotice:
     "rounded-[24px] border-0 bg-surface px-5 py-4 text-center",
   cancelledNoticeText: "text-muted",
-  empty:
-    "flex flex-col items-center gap-2 rounded-[24px] border-0 bg-surface px-6 py-10 text-center",
+  empty: "flex flex-col items-center gap-2 border-0 bg-surface text-center",
   emptyTitle: "text-foreground",
 } as const;

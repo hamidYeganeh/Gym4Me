@@ -214,7 +214,7 @@ export function AthleteMembershipsScreen({
                           onPress={() => {
                             void openRenewal(membership);
                           }}
-                          size="sm"
+                          size="lg"
                           variant="primary"
                         >
                           {t("renew")}
@@ -274,7 +274,7 @@ export function AthleteMembershipsScreen({
                       onPress={() => {
                         void openRenewal(membership);
                       }}
-                      size="sm"
+                      size="lg"
                       variant="secondary"
                     >
                       {t("purchase")}
@@ -326,10 +326,10 @@ export function AthleteMembershipsScreen({
                 ) : null}
               </AlertDialog.Body>
               <AlertDialog.Footer>
-                <Button slot="close" variant="tertiary">
+                <Button slot="close" variant="tertiary" size="lg">
                   {t("renewCancel")}
                 </Button>
-                <Button
+                <Button size="lg"
                   isDisabled={!renewalPreview || renewalLoading}
                   isPending={pending}
                   onPress={() => {

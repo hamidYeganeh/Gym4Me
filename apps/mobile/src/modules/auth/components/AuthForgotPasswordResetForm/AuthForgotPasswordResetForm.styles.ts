@@ -9,9 +9,8 @@ export const authForgotPasswordResetFormVariants = tv({
     strengthBar: "h-1.5 rounded-full bg-separator",
     strengthBarActive: "h-1.5 rounded-full bg-accent",
     strengthMessage: "text-foreground/90",
-    submit:
-      "min-h-14 bg-accent text-base font-bold text-accent-foreground data-[hovered=true]:opacity-90",
-    submitIcon: "ms-2 size-5",
+    submit: "bg-accent text-base font-bold text-accent-foreground data-[hovered=true]:opacity-90",
+    submitIcon: "ms-2",
   },
 });
 

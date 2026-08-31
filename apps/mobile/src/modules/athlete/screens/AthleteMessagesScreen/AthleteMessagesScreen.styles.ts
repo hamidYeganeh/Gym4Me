@@ -9,13 +9,13 @@ export const athleteMessagesScreenVariants = tv({
     introTitle: "tracking-tight text-foreground",
     introSubtitle: "text-muted",
     list: "flex flex-col gap-2",
-    item: "flex w-full items-center gap-3 rounded-[1.25rem] border-0 bg-surface px-4 py-3 text-start",
+    item: "flex w-full items-center gap-3 border-0 bg-surface text-start",
     itemIcon:
       "flex size-10 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent",
     itemBody: "flex min-w-0 flex-1 flex-col gap-0.5",
     itemPreview: "truncate text-muted",
     itemMeta: "shrink-0 text-muted",
-    empty: "flex flex-col items-center gap-2 py-16 text-center",
+    empty: "flex flex-col items-center gap-2 text-center",
   },
 });
 

@@ -133,7 +133,7 @@ export function AthleteReferralScreen({
                 value={phone}
               />
             </TextField>
-            <Button
+            <Button size="lg"
               fullWidth
               isDisabled={pending || phone.trim().length < 8}
               onPress={() => {

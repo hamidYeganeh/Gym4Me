@@ -24,8 +24,7 @@ export const setPasswordScreenVariants = tv({
     error:
       "rounded-2xl border border-danger/40 bg-danger/15 px-4 py-3 text-center text-sm font-semibold text-danger",
     notice: "text-sm leading-6 text-muted",
-    submit:
-      "min-h-14 rounded-full text-base font-bold text-accent-foreground",
+    submit: "text-base font-bold text-accent-foreground",
     submitIcon: "ms-2 size-5",
   },
 });
