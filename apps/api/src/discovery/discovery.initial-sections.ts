@@ -25,6 +25,35 @@ export const INITIAL_DISCOVERY_HOME_SECTIONS: DiscoverySectionDefinition[] = [
     emptyBehavior: DiscoveryEmptyBehavior.HIDE,
   },
   {
+    id: 'popular-locations',
+    kind: DiscoverySectionKind.LOCATIONS,
+    content: {
+      title: 'مقاصد پرطرفدار',
+      subtitle: 'استان، شهر و محله‌های پرطرفدار برای تمرین',
+      action: { label: 'مشاهده همه', link: '/discovery/clubs' },
+    },
+    source: {
+      strategy: DiscoverySourceStrategy.FEATURED,
+      filters: {
+        locationKind: 'city',
+        target: 'clubs',
+        slugs: [
+          'tehran-city',
+          'isfahan-city',
+          'mashhad',
+          'shiraz',
+          'tabriz',
+          'karaj',
+          'qom',
+          'ahvaz',
+        ],
+      },
+      limit: 8,
+    },
+    presentation: { component: 'location_rail', layout: 'horizontal' },
+    emptyBehavior: DiscoveryEmptyBehavior.HIDE,
+  },
+  {
     id: 'recommended-clubs',
     kind: DiscoverySectionKind.CLUBS,
     content: {

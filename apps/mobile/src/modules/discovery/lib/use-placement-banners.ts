@@ -1,13 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type {
-  BannerAspectRatio,
-  BannerLinkKind,
-  BannerOverlayPlacement,
-  BannerPlacement,
-  BannerRadius,
-} from "@repo/api";
+import type { BannerAspectRatio, BannerLinkKind, BannerOverlayPlacement, BannerPlacement, BannerRadius } from "@repo/api";
 import { bannersApi, mediaFileUrl } from "@/shared/lib/api";
 
 export type PlacementBannerSlide = {
@@ -16,8 +10,6 @@ export type PlacementBannerSlide = {
   alt: string | null;
   linkKind: BannerLinkKind;
   linkUrl: string | null;
-  ratio: BannerAspectRatio;
-  radius: BannerRadius;
   gradient: boolean;
   title: {
     text: string;
@@ -29,17 +21,26 @@ export type PlacementBannerSlide = {
   } | null;
 };
 
-export type PlacementBannersState = {
+export type PlacementBanner = {
+  id: string;
+  slug: string;
+  label: string;
+  ratio: BannerAspectRatio;
+  radius: BannerRadius;
   slides: PlacementBannerSlide[];
+};
+
+export type PlacementBannersState = {
+  banners: PlacementBanner[];
   isLoading: boolean;
 };
 
-/** Active admin banners for one placement, flattened to carousel slides. */
+/** Active admin banners for one placement. */
 export function usePlacementBanners(
   placement: BannerPlacement,
 ): PlacementBannersState {
   const [state, setState] = useState<PlacementBannersState>({
-    slides: [],
+    banners: [],
     isLoading: true,
   });
 
@@ -51,30 +52,40 @@ export function usePlacementBanners(
         const banners = await bannersApi.list({ placement });
         if (cancelled) return;
 
-        const slides: PlacementBannerSlide[] = [];
-        for (const banner of banners) {
-          banner.slides.forEach((slide, index) => {
-            const imageUrl = mediaFileUrl(slide.mediaId);
-            if (!imageUrl) return;
-            slides.push({
-              id: `${banner.id}-${index}`,
-              imageUrl,
-              alt: slide.alt,
-              linkKind: slide.linkKind,
-              linkUrl: slide.linkUrl,
-              ratio: slide.ratio,
-              radius: slide.radius,
-              gradient: slide.gradient,
-              title: slide.title,
-              action: slide.action,
-            });
-          });
-        }
-
-        setState({ slides, isLoading: false });
+        setState({
+          banners: banners
+            .map((banner) => {
+              const slides: PlacementBannerSlide[] = [];
+              banner.slides.forEach((slide, index) => {
+                const imageUrl = mediaFileUrl(slide.mediaId);
+                if (!imageUrl) return;
+                slides.push({
+                  id: `${banner.slug}-${index}`,
+                  imageUrl,
+                  alt: slide.alt,
+                  linkKind: slide.linkKind,
+                  linkUrl: slide.linkUrl,
+                  gradient: slide.gradient,
+                  title: slide.title,
+                  action: slide.action,
+                });
+              });
+              if (slides.length === 0) return null;
+              return {
+                id: banner.id,
+                slug: banner.slug,
+                label: banner.label,
+                ratio: banner.ratio,
+                radius: banner.radius,
+                slides,
+              };
+            })
+            .filter((banner): banner is PlacementBanner => banner != null),
+          isLoading: false,
+        });
       } catch {
         if (cancelled) return;
-        setState({ slides: [], isLoading: false });
+        setState({ banners: [], isLoading: false });
       }
     })();
 

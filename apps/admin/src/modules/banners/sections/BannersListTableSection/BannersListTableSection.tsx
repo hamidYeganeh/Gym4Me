@@ -48,7 +48,7 @@ export function BannersListTableSection({
               <div className={styles.previewGroup()}>
                 {slides.slice(0, 3).map((slide, index) => (
                   <img
-                    alt={slide.alt ?? info.row.original.title ?? ""}
+                    alt={slide.alt ?? info.row.original.label ?? ""}
                     className={styles.previewImage()}
                     key={`${slide.mediaId}-${index}`}
                     loading="lazy"
@@ -64,13 +64,23 @@ export function BannersListTableSection({
             );
           },
         }),
-        columnHelper.accessor("title", {
-          header: t("columns.title"),
+        columnHelper.accessor("label", {
+          header: t("columns.label"),
           size: 220,
           enableSorting: false,
           cell: (info) => (
             <span className="block truncate font-medium">
-              {info.getValue() || "بدون عنوان"}
+              {info.getValue() || "—"}
+            </span>
+          ),
+        }),
+        columnHelper.accessor("slug", {
+          header: t("columns.slug"),
+          size: 180,
+          enableSorting: false,
+          cell: (info) => (
+            <span className="block truncate font-mono text-xs" dir="ltr">
+              {info.getValue()}
             </span>
           ),
         }),

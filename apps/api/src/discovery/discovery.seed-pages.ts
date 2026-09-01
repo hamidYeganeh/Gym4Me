@@ -42,6 +42,7 @@ const COMPONENTS: Record<DiscoverySectionKind, string> = {
   [DiscoverySectionKind.MEMBERSHIP_PLANS]: 'membership_plan_rail',
   [DiscoverySectionKind.BOOKABLE_OFFERS]: 'bookable_offer_rail',
   [DiscoverySectionKind.AMENITIES]: 'amenity_rail',
+  [DiscoverySectionKind.LOCATIONS]: 'location_rail',
   [DiscoverySectionKind.ARTICLES]: 'article_rail',
 };
 

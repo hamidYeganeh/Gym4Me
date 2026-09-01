@@ -7,10 +7,10 @@ import type {
   HomeSportItem,
 } from "../../lib/home-browse-data";
 import type { HomeSportCategoryItem } from "../../lib/sports-home";
-import type { PlacementBannerSlide } from "../../lib/use-placement-banners";
+import type { PlacementBanner } from "../../lib/use-placement-banners";
 
 export type DiscoveryClubsScreenProps = {
-  banners?: PlacementBannerSlide[];
+  banners?: PlacementBanner[];
   bannersLoading?: boolean;
   categories?: HomeClubCategoryItem[];
   categoriesLoading?: boolean;

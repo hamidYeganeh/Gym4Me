@@ -9,6 +9,7 @@ import {
   type DiscoveryClubCard,
   type DiscoveryCoach,
   type DiscoveryClass,
+  type DiscoveryLocationCard,
   type DiscoveryMembershipPlanCard,
   type DiscoverySlotCard,
   type DiscoverySpaceCard,
@@ -20,18 +21,18 @@ import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { useTranslations } from "next-intl";
 import { mediaFileUrl } from "@/shared/lib/api";
 import type { BrowseClub } from "../../lib/clubs-browse-data";
+import type { HomeLocationKind } from "../../lib/home-browse-data";
 import {
   formatArticleJalaliDate,
   type HomeEditorialArticle,
 } from "../../lib/articles-home";
-import type { PlacementBannerSlide } from "../../lib/use-placement-banners";
+import type { PlacementBanner } from "../../lib/use-placement-banners";
 import {
   mapSportCategoryNodesToHomeItems,
   mapSportNodesToHomeItems,
 } from "../../lib/sports-home";
 import { mapClubCategoryRefsToHomeItems } from "../../lib/club-categories-home";
 import { useDiscoveryFeed } from "../../lib/use-discovery-feed";
-import { useDiscoveryHomeCities } from "../../lib/use-discovery-home-cities";
 import { ConnectionErrorState } from "@/shared/components/ConnectionErrorState";
 import { useNetworkStatus } from "@/shared/hooks/useNetworkStatus";
 import type { ConnectionErrorKind } from "@/shared/lib/classify-connection-error";
@@ -54,29 +55,55 @@ import type { DiscoverySectionSheetTone } from "../../sections/DiscoverySectionR
 import { DiscoveryFeedSkeleton } from "./DiscoveryFeedSkeleton";
 import { discoveryHomeScreenStyles as styles } from "./DiscoveryHomeScreen.styles";
 
-function bannerSlides(
+function readLocationFilter(
   section: ResolvedDiscoverySection,
-): PlacementBannerSlide[] {
-  const slides: PlacementBannerSlide[] = [];
-  for (const banner of section.items as Banner[]) {
-    banner.slides.forEach((slide, index) => {
-      const imageUrl = mediaFileUrl(slide.mediaId);
-      if (!imageUrl) return;
-      slides.push({
-        id: `${banner.id}-${index}`,
-        imageUrl,
-        alt: slide.alt,
-        linkKind: slide.linkKind,
-        linkUrl: slide.linkUrl,
-        ratio: slide.ratio,
-        radius: slide.radius,
-        gradient: slide.gradient,
-        title: slide.title,
-        action: slide.action,
+  key: "locationKind" | "target",
+): string | undefined {
+  const value = section.source.filters?.[key];
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+function mapLocationCards(section: ResolvedDiscoverySection) {
+  return (section.items as DiscoveryLocationCard[]).map((item) => ({
+    id: item.id,
+    name: item.name,
+    slug: item.slug,
+    image: mediaFileUrl(item.coverMediaId) ?? PLACEHOLDER_IMAGE,
+    kind: item.kind,
+    count: item.count,
+  }));
+}
+
+function mapSectionBanners(section: ResolvedDiscoverySection): PlacementBanner[] {
+  return (section.items as Banner[])
+    .map((banner) => {
+      const slides = banner.slides.flatMap((slide, index) => {
+        const imageUrl = mediaFileUrl(slide.mediaId);
+        if (!imageUrl) return [];
+        return [
+          {
+            id: `${banner.slug}-${index}`,
+            imageUrl,
+            alt: slide.alt,
+            linkKind: slide.linkKind,
+            linkUrl: slide.linkUrl,
+            gradient: slide.gradient,
+            title: slide.title,
+            action: slide.action,
+          },
+        ];
       });
-    });
-  }
-  return slides;
+      if (slides.length === 0) return null;
+      return {
+        id: banner.id,
+        slug: banner.slug,
+        label: banner.label,
+        ratio: banner.ratio,
+        radius: banner.radius,
+        slides,
+      };
+    })
+    .filter((banner): banner is PlacementBanner => banner != null);
 }
 
 function clubCards(section: ResolvedDiscoverySection): BrowseClub[] {
@@ -265,7 +292,7 @@ function DynamicSection({ section }: { section: ResolvedDiscoverySection }) {
   const seeAllVariant = resolveDiscoveryActionButtonVariant(action?.variant);
   switch (section.kind) {
     case "banners":
-      return <DiscoveryHomeBannersSection banners={bannerSlides(section)} />;
+      return <DiscoveryHomeBannersSection banners={mapSectionBanners(section)} />;
     case "club_categories": {
       const refs = section.items as Array<RefItem & { count?: number }>;
       const counts = new Map(refs.map((item) => [item.id, item.count ?? 0]));
@@ -342,6 +369,24 @@ function DynamicSection({ section }: { section: ResolvedDiscoverySection }) {
       return catalogSection(section, slotItems(section), "schedule");
     case "amenities":
       return catalogSection(section, refItems(section, "amenitySlug"), "tile");
+    case "locations":
+      return (
+        <DiscoveryPopularLocationsSection
+          hint={section.content.subtitle}
+          kind={
+            (readLocationFilter(section, "locationKind") as HomeLocationKind) ??
+            "city"
+          }
+          locations={mapLocationCards(section)}
+          seeAllHref={actionHref}
+          seeAllLabel={seeAllLabel}
+          target={
+            (readLocationFilter(section, "target") as "clubs" | "coaches") ??
+            "clubs"
+          }
+          title={section.content.title}
+        />
+      );
     case "articles":
       return (
         <DiscoveryHomeArticlesSection
@@ -366,7 +411,6 @@ export function DiscoveryFeedHomeScreen() {
     lng: number;
   } | null>(null);
   const feed = useDiscoveryFeed(selectedLocation);
-  const cities = useDiscoveryHomeCities();
   const { isOnline } = useNetworkStatus();
 
   const errorKind: ConnectionErrorKind | null = !isOnline
@@ -380,19 +424,36 @@ export function DiscoveryFeedHomeScreen() {
     [feed.sections],
   );
 
-  const content = useMemo(
-    () =>
-      feed.sections.map((section) =>
+  const content = useMemo(() => {
+    let mapCtaInserted = false;
+
+    return feed.sections.flatMap((section) => {
+      const sectionNode =
         section.kind === "banners" ? (
           <div className={styles.banners} key={section.id}>
             <DynamicSection section={section} />
           </div>
         ) : (
           <DynamicSection key={section.id} section={section} />
-        ),
-      ),
-    [feed.sections],
-  );
+        );
+
+      if (section.kind !== "amenities" || mapCtaInserted) {
+        return [sectionNode];
+      }
+
+      mapCtaInserted = true;
+      return [
+        <DiscoveryLocationMapCtaSection
+          ctaLabel={t("mapCta")}
+          key="discovery-map-cta"
+          subtitle={t("mapSubtitle")}
+          title={t("mapTitle")}
+          onPress={() => router.push("/discovery/map")}
+        />,
+        sectionNode,
+      ];
+    });
+  }, [feed.sections, router, t]);
 
   return (
     <AppLayout
@@ -406,20 +467,6 @@ export function DiscoveryFeedHomeScreen() {
     >
       <div aria-busy={feed.isLoading} className={styles.content}>
         <div className={styles.sheets}>
-          <DiscoveryLocationMapCtaSection
-            ctaLabel={t("mapCta")}
-            subtitle={t("mapSubtitle")}
-            title={t("mapTitle")}
-            onPress={() => router.push("/discovery/map")}
-          />
-          <DiscoveryPopularLocationsSection
-            isLoading={cities.isLoading}
-            kind="city"
-            locations={cities.cities}
-            seeAllHref="/discovery/clubs"
-            title={t("popularLocationsTitle")}
-            hint={t("popularLocationsHint")}
-          />
           {feed.isLoading && feed.sections.length === 0 ? (
             <DiscoveryFeedSkeleton />
           ) : showConnectionError ? (

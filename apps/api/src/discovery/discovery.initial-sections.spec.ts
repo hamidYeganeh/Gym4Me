@@ -17,6 +17,7 @@ describe('initial discovery home sections', () => {
       DiscoverySectionKind.MEMBERSHIP_PLANS,
       DiscoverySectionKind.BOOKABLE_OFFERS,
       DiscoverySectionKind.AMENITIES,
+      DiscoverySectionKind.LOCATIONS,
     ]) {
       expect(kinds).toContain(kind);
     }

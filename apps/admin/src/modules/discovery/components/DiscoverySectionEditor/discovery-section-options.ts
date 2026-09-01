@@ -88,6 +88,11 @@ export const DISCOVERY_KIND_META: Record<
     description: "دوش، رختکن، پارکینگ، کمد، سونا و دسترسی‌پذیری",
     icon: "✦",
   },
+  locations: {
+    label: "مقاصد پرطرفدار",
+    description: "استان، شهر و محله‌های پرطرفدار برای کشف باشگاه یا مربی",
+    icon: "⌖",
+  },
   articles: {
     label: "مقالات",
     description: "آخرین محتوای آموزشی و مجله",
@@ -264,6 +269,13 @@ export const DISCOVERY_STRATEGIES: Record<
       value: "featured",
       label: "امکانات پرطرفدار",
       hint: "بر اساس تعداد باشگاه‌های ارائه‌دهنده",
+    },
+  ],
+  locations: [
+    {
+      value: "featured",
+      label: "مقاصد منتخب",
+      hint: "بر اساس اسلاگ‌های تعریف‌شده یا محبوبیت باشگاه‌ها",
     },
   ],
   articles: [

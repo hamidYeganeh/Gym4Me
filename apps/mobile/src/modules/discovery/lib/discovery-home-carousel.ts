@@ -37,3 +37,19 @@ export function chunkCarouselColumns<T>(
   }
   return columns;
 }
+
+/**
+ * Row-first chunks for a horizontal carousel
+ * (2 columns → items 1–2 in slide 1, 3–4 in slide 2, …).
+ */
+export function chunkCarouselRows<T>(
+  items: readonly T[],
+  columns: number,
+): T[][] {
+  if (columns < 1 || items.length === 0) return [];
+  const rows: T[][] = [];
+  for (let index = 0; index < items.length; index += columns) {
+    rows.push(items.slice(index, index + columns));
+  }
+  return rows;
+}

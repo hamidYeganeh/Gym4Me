@@ -24,8 +24,10 @@ export function BannersCreateScreen({ className }: BannersCreateScreenProps) {
     intent: FormSubmitIntent,
   ) => {
     await adminBanners.create({
-      title: values.title.trim(),
+      label: values.label.trim(),
       placement: values.placement,
+      ratio: values.ratio,
+      radius: values.radius,
       slides: values.slides,
       publishStatus: values.publishStatus,
       schedule: {

@@ -44,6 +44,7 @@ describe('discovery seed pages', () => {
       DiscoverySectionKind.MEMBERSHIP_PLANS,
       DiscoverySectionKind.BOOKABLE_OFFERS,
       DiscoverySectionKind.AMENITIES,
+      DiscoverySectionKind.LOCATIONS,
     ]) {
       expect(kinds).toContain(kind);
     }

@@ -21,8 +21,6 @@ export type BannerSlide = {
   linkKind: BannerLinkKind;
   linkUrl: string | null;
   alt: string | null;
-  ratio: BannerAspectRatio;
-  radius: BannerRadius;
   gradient: boolean;
   title: BannerSlideTitle | null;
   action: BannerSlideAction | null;
@@ -30,7 +28,11 @@ export type BannerSlide = {
 
 export type Banner = {
   id: string;
+  slug: string;
+  label: string;
   placement: BannerPlacement;
+  ratio: BannerAspectRatio;
+  radius: BannerRadius;
   slides: BannerSlide[];
 };
 

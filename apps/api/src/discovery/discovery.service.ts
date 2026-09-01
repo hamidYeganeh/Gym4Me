@@ -19,6 +19,7 @@ import {
   BannerPlacement,
   CoachSlotStatus,
   EntityStatus,
+  LocationKind,
   MembershipPlanKind,
   PublishStatus,
   RefType,
@@ -31,6 +32,10 @@ import {
   AthleteProfile,
   type AthleteProfileDocument,
 } from '../schemas/athlete-profile.schema';
+import {
+  mapBannerToPublic,
+  type LeanBanner,
+} from '../banners/banner.mapper';
 import { Banner, type BannerDocument } from '../schemas/banner.schema';
 import { Club, type ClubDocument } from '../schemas/club.schema';
 import {
@@ -49,6 +54,10 @@ import {
   CoachSlot,
   type CoachSlotDocument,
 } from '../schemas/coach-slot.schema';
+import {
+  Location,
+  type LocationDocument,
+} from '../schemas/location.schema';
 import { RefItem, type RefItemDocument } from '../schemas/ref-item.schema';
 import { Sport, type SportDocument } from '../schemas/sport.schema';
 import { Article, type ArticleDocument } from '../schemas/article.schema';
@@ -152,6 +161,8 @@ export class DiscoveryService {
     private readonly membershipPlanModel: Model<ClubMembershipPlanDocument>,
     @InjectModel(RefItem.name)
     private readonly refModel: Model<RefItemDocument>,
+    @InjectModel(Location.name)
+    private readonly locationModel: Model<LocationDocument>,
     @InjectModel(Sport.name)
     private readonly sportModel: Model<SportDocument>,
     @InjectModel(Article.name)
@@ -230,6 +241,7 @@ export class DiscoveryService {
       DiscoverySectionKind.MEMBERSHIP_PLANS,
       DiscoverySectionKind.BOOKABLE_OFFERS,
       DiscoverySectionKind.AMENITIES,
+      DiscoverySectionKind.LOCATIONS,
     ]);
     const additions = INITIAL_DISCOVERY_HOME_SECTIONS.filter(
       (section) =>
@@ -526,6 +538,8 @@ export class DiscoveryService {
         return this.resolveSlotCards(section, session, true);
       case DiscoverySectionKind.AMENITIES:
         return this.resolveRefFacet(section, RefType.AMENITY, 'amenities');
+      case DiscoverySectionKind.LOCATIONS:
+        return this.resolveLocations(section);
       case DiscoverySectionKind.ARTICLES:
         return this.resolveArticles(section);
       default:
@@ -564,21 +578,9 @@ export class DiscoveryService {
       .limit(section.source.limit)
       .lean();
     return {
-      items: banners.map((banner) => ({
-        id: banner._id.toString(),
-        placement: banner.placement,
-        slides: banner.slides.map((slide) => ({
-          mediaId: slide.mediaId.toString(),
-          linkKind: slide.linkKind,
-          linkUrl: slide.linkUrl ?? null,
-          alt: slide.alt ?? null,
-          ratio: slide.ratio,
-          radius: slide.radius,
-          gradient: slide.gradient,
-          title: slide.title ?? null,
-          action: slide.action ?? null,
-        })),
-      })),
+      items: (banners as LeanBanner[]).map((banner) =>
+        mapBannerToPublic(banner),
+      ),
     };
   }
 
@@ -1048,6 +1050,76 @@ export class DiscoveryService {
     };
   }
 
+  private async resolveLocations(
+    section: DiscoverySectionDefinition,
+  ): Promise<ResolvedSource> {
+    const locationKind = this.resolveLocationKindFilter(section);
+    const featuredSlugs = this.stringArrayFilter(section, 'slugs');
+    const clubs = await this.clubModel
+      .find(DISCOVERY_VISIBLE_CLUB_MATCH)
+      .select('location.locationId location.ancestors')
+      .lean();
+    const countById = new Map<string, number>();
+    for (const club of clubs) {
+      const ids = new Set<string>();
+      if (club.location?.locationId) {
+        ids.add(club.location.locationId.toString());
+      }
+      for (const ancestor of club.location?.ancestors ?? []) {
+        ids.add(ancestor.toString());
+      }
+      for (const id of ids) {
+        countById.set(id, (countById.get(id) ?? 0) + 1);
+      }
+    }
+
+    const filter: QueryFilter<LocationDocument> = {
+      kind: locationKind,
+      isActive: true,
+    };
+    if (featuredSlugs?.length) {
+      filter.slug = { $in: featuredSlugs };
+    }
+
+    const locations = await this.locationModel
+      .find(filter)
+      .sort({ order: 1, name: 1 })
+      .limit(Math.max(section.source.limit * 3, section.source.limit))
+      .lean();
+
+    const kindLabel = this.locationKindLabel(locationKind);
+    let ordered = locations;
+    if (featuredSlugs?.length) {
+      const bySlug = new Map(locations.map((item) => [item.slug, item]));
+      const curated = featuredSlugs
+        .map((slug) => bySlug.get(slug))
+        .filter((item): item is (typeof locations)[number] => item != null);
+      const curatedIds = new Set(curated.map((item) => item._id.toString()));
+      ordered = [
+        ...curated,
+        ...locations.filter((item) => !curatedIds.has(item._id.toString())),
+      ];
+    } else if (section.source.strategy === DiscoverySourceStrategy.FEATURED) {
+      ordered = [...locations].sort(
+        (left, right) =>
+          (countById.get(right._id.toString()) ?? 0) -
+          (countById.get(left._id.toString()) ?? 0),
+      );
+    }
+
+    return {
+      items: ordered.slice(0, section.source.limit).map((item) => ({
+        id: item._id.toString(),
+        name: item.name,
+        slug: item.slug,
+        kind: kindLabel,
+        coverMediaId: item.coverMediaId?.toString() ?? null,
+        count: countById.get(item._id.toString()) ?? 0,
+      })),
+      totalCount: ordered.length,
+    };
+  }
+
   private async resolveRefFacet(
     section: DiscoverySectionDefinition,
     type: RefType,
@@ -1259,6 +1331,7 @@ export class DiscoveryService {
         [DiscoverySectionKind.MEMBERSHIP_PLANS]: 'membership_plan_rail',
         [DiscoverySectionKind.BOOKABLE_OFFERS]: 'bookable_offer_rail',
         [DiscoverySectionKind.AMENITIES]: 'amenity_rail',
+        [DiscoverySectionKind.LOCATIONS]: 'location_rail',
         [DiscoverySectionKind.ARTICLES]: 'article_rail',
       };
       if (section.presentation.component !== renderers[section.kind]) {
@@ -1346,6 +1419,7 @@ export class DiscoveryService {
         DiscoverySourceStrategy.LEAST_CROWDED,
       ],
       [DiscoverySectionKind.AMENITIES]: [DiscoverySourceStrategy.FEATURED],
+      [DiscoverySectionKind.LOCATIONS]: [DiscoverySourceStrategy.FEATURED],
       [DiscoverySectionKind.ARTICLES]: [DiscoverySourceStrategy.LATEST],
     };
     if (!allowed[kind].includes(strategy)) {
@@ -1361,6 +1435,45 @@ export class DiscoveryService {
   ): string | undefined {
     const value = section.source.filters?.[key];
     return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+  }
+
+  private stringArrayFilter(
+    section: DiscoverySectionDefinition,
+    key: string,
+  ): string[] | undefined {
+    const value = section.source.filters?.[key];
+    if (!Array.isArray(value)) return undefined;
+    const items = value
+      .filter((item): item is string => typeof item === 'string')
+      .map((item) => item.trim())
+      .filter(Boolean);
+    return items.length > 0 ? items : undefined;
+  }
+
+  private resolveLocationKindFilter(
+    section: DiscoverySectionDefinition,
+  ): LocationKind {
+    switch (this.stringFilter(section, 'locationKind')) {
+      case 'province':
+        return LocationKind.PROVINCE;
+      case 'district':
+        return LocationKind.DISTRICT;
+      default:
+        return LocationKind.CITY;
+    }
+  }
+
+  private locationKindLabel(
+    kind: LocationKind,
+  ): 'province' | 'city' | 'district' {
+    switch (kind) {
+      case LocationKind.PROVINCE:
+        return 'province';
+      case LocationKind.DISTRICT:
+        return 'district';
+      default:
+        return 'city';
+    }
   }
 
   private numberFilter(

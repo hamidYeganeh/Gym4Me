@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -25,6 +26,7 @@ import {
   createSearchFilter,
   resolveListSort,
 } from '../common/utils/list-query.util';
+import { slugify } from '../common/utils/slug.util';
 import { MediaService } from '../media/media.service';
 import { Banner, BannerDocument } from '../schemas/banner.schema';
 import {
@@ -41,8 +43,6 @@ type LeanBannerSlide = {
   linkKind: string;
   linkUrl?: string;
   alt?: string;
-  ratio?: string;
-  radius?: string;
   gradient?: boolean;
   title?: { text: string; placement?: string };
   action?: { label: string; placement?: string };
@@ -50,8 +50,13 @@ type LeanBannerSlide = {
 
 type LeanBanner = {
   _id: Types.ObjectId;
-  title: string;
+  label?: string;
+  /** @deprecated Legacy admin label — read-only fallback. */
+  title?: string;
+  slug?: string;
   placement: string;
+  ratio?: string;
+  radius?: string;
   slides: LeanBannerSlide[];
   publishStatus: string;
   schedule?: { startsAt?: Date; endsAt?: Date };
@@ -59,6 +64,11 @@ type LeanBanner = {
   updatedBy?: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
+};
+
+type BannerFrame = {
+  ratio: BannerAspectRatio;
+  radius: BannerRadius;
 };
 
 @Injectable()
@@ -103,7 +113,9 @@ export class BannersService {
   async adminList(query: AdminListBannersQueryDto) {
     const filter: QueryFilter<BannerDocument> = {
       ...createSearchFilter(query.search, [
+        'label',
         'title',
+        'slug',
         'slides.alt',
         'slides.linkUrl',
         'slides.title.text',
@@ -119,7 +131,8 @@ export class BannersService {
     const sort = resolveListSort(
       query,
       {
-        title: 'title',
+        label: 'label',
+        title: 'label',
         placement: 'placement',
         publishStatus: 'publishStatus',
         order: 'order',
@@ -156,10 +169,19 @@ export class BannersService {
   async create(dto: CreateBannerDto, adminId: string, request: Request) {
     await this.assertSlides(dto.slides);
     const schedule = this.normalizeSchedule(dto.schedule);
+    const frame = this.resolveFrame(dto.ratio, dto.radius);
+    const label = dto.label.trim();
+    const slug = await this.uniqueSlug(
+      slugify(label) || 'banner',
+      dto.placement,
+    );
 
     const item = await this.bannerModel.create({
-      title: dto.title?.trim() ?? '',
+      label,
+      slug,
       placement: dto.placement,
+      ratio: frame.ratio,
+      radius: frame.radius,
       slides: dto.slides.map((slide) => this.toSlide(slide)),
       publishStatus: dto.publishStatus ?? PublishStatus.DRAFT,
       schedule,
@@ -184,18 +206,54 @@ export class BannersService {
     request: Request,
   ) {
     const item = await this.findBanner(id);
+    const currentFrame = this.resolveFrameFromDoc(item.toObject());
 
     if (dto.slides !== undefined) {
       await this.assertSlides(dto.slides);
       item.slides = dto.slides.map((slide) => this.toSlide(slide));
     }
-    if (dto.title !== undefined) item.title = dto.title;
+    if (dto.label !== undefined) item.label = dto.label.trim();
     if (dto.placement !== undefined) item.placement = dto.placement;
+    if (dto.ratio !== undefined) item.ratio = dto.ratio;
+    if (dto.radius !== undefined) item.radius = dto.radius;
     if (dto.publishStatus !== undefined) item.publishStatus = dto.publishStatus;
     if (dto.schedule !== undefined) {
       item.schedule = this.normalizeSchedule(dto.schedule);
     }
     if (dto.order !== undefined) item.order = dto.order;
+
+    if (!item.slug) {
+      item.slug = await this.uniqueSlug(
+        slugify(this.resolveLabel(item.toObject())) || 'banner',
+        item.placement,
+        item._id.toString(),
+      );
+    }
+
+    if (dto.placement !== undefined && item.slug) {
+      const slugConflict = await this.bannerModel
+        .findOne({
+          placement: item.placement,
+          slug: item.slug,
+          _id: { $ne: item._id },
+        })
+        .select('_id')
+        .lean();
+      if (slugConflict) {
+        throw new BadRequestException(
+          'Banner slug already exists for this placement',
+        );
+      }
+    }
+
+    if (dto.ratio !== undefined || dto.radius !== undefined) {
+      const frame = this.resolveFrame(
+        item.ratio ?? currentFrame.ratio,
+        item.radius ?? currentFrame.radius,
+      );
+      item.ratio = frame.ratio;
+      item.radius = frame.radius;
+    }
 
     item.updatedBy = new Types.ObjectId(adminId);
     await item.save();
@@ -274,8 +332,6 @@ export class BannersService {
       linkUrl:
         linkKind === BannerLinkKind.NONE ? undefined : slide.linkUrl?.trim(),
       alt: slide.alt?.trim() || undefined,
-      ratio: slide.ratio ?? BannerAspectRatio.RATIO_16_9,
-      radius: slide.radius ?? BannerRadius.SURFACE,
       gradient: slide.gradient ?? false,
       title: titleText
         ? {
@@ -307,14 +363,66 @@ export class BannersService {
     return { startsAt, endsAt };
   }
 
+  private resolveLabel(doc: LeanBanner) {
+    return doc.label?.trim() || doc.title?.trim() || '';
+  }
+
+  private resolveFrame(
+    ratio?: BannerAspectRatio,
+    radius?: BannerRadius,
+  ): BannerFrame {
+    return {
+      ratio: ratio ?? BannerAspectRatio.RATIO_16_9,
+      radius: radius ?? BannerRadius.SURFACE,
+    };
+  }
+
+  private resolveFrameFromDoc(doc: LeanBanner): BannerFrame {
+    return this.resolveFrame(
+      (doc.ratio as BannerAspectRatio | undefined) ??
+        BannerAspectRatio.RATIO_16_9,
+      (doc.radius as BannerRadius | undefined) ?? BannerRadius.SURFACE,
+    );
+  }
+
+  private resolveSlug(doc: LeanBanner) {
+    return doc.slug?.trim() || doc._id.toString();
+  }
+
+  private async uniqueSlug(
+    base: string,
+    placement: BannerPlacement,
+    excludeId?: string,
+  ) {
+    const slug = slugify(base) || 'banner';
+    let candidate = slug;
+    let index = 0;
+
+    while (true) {
+      const existing = await this.bannerModel
+        .findOne({
+          placement,
+          slug: candidate,
+          ...(excludeId
+            ? { _id: { $ne: new Types.ObjectId(excludeId) } }
+            : {}),
+        })
+        .select('_id')
+        .lean();
+      if (!existing) return candidate;
+      candidate = `${slug}-${++index}`;
+      if (index > 50) {
+        throw new ConflictException('Could not allocate unique banner slug');
+      }
+    }
+  }
+
   private toPublicSlide(slide: LeanBannerSlide) {
     return {
       mediaId: slide.mediaId.toString(),
       linkKind: slide.linkKind as BannerLinkKind,
       linkUrl: slide.linkUrl ?? null,
       alt: slide.alt ?? null,
-      ratio: (slide.ratio ?? BannerAspectRatio.RATIO_16_9) as BannerAspectRatio,
-      radius: (slide.radius ?? BannerRadius.SURFACE) as BannerRadius,
       gradient: slide.gradient ?? false,
       title: slide.title?.text
         ? {
@@ -334,9 +442,14 @@ export class BannersService {
   }
 
   private toPublic(doc: LeanBanner) {
+    const frame = this.resolveFrameFromDoc(doc);
     return {
       id: doc._id.toString(),
+      slug: this.resolveSlug(doc),
+      label: this.resolveLabel(doc),
       placement: doc.placement as BannerPlacement,
+      ratio: frame.ratio,
+      radius: frame.radius,
       slides: doc.slides.map((slide) => this.toPublicSlide(slide)),
     };
   }
@@ -344,7 +457,6 @@ export class BannersService {
   private toAdmin(doc: LeanBanner) {
     return {
       ...this.toPublic(doc),
-      title: doc.title,
       publishStatus: doc.publishStatus as PublishStatus,
       schedule: {
         startsAt: doc.schedule?.startsAt?.toISOString() ?? null,

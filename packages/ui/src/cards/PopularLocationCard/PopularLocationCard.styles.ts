@@ -3,13 +3,14 @@ import { tv } from "tailwind-variants";
 export const popularLocationCardVariants = tv({
   slots: {
     root: [
-      "relative flex w-full min-w-0 items-center gap-3 rounded-[20px]",
+      "relative flex w-max max-w-none shrink-0 flex-row items-center gap-3 rounded-[20px]",
       "bg-transparent text-start text-foreground",
     ].join(" "),
-    media: "relative size-[4.5rem] shrink-0 overflow-hidden rounded-[20px] bg-surface-tertiary",
+    media:
+      "relative size-[4.5rem] shrink-0 overflow-hidden rounded-[20px] bg-surface-tertiary",
     image:
       "pointer-events-none absolute inset-0 size-full object-cover select-none",
-    body: "flex min-w-0 flex-1 flex-col gap-0.5",
+    body: "flex min-w-[6.5rem] flex-1 flex-col justify-center gap-0.5",
     eyebrow: "truncate text-muted",
     name: "truncate leading-tight tracking-tight text-foreground",
     count: "truncate text-muted",

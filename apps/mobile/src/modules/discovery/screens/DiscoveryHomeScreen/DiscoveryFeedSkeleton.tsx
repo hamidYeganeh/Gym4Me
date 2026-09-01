@@ -1,8 +1,11 @@
+import { useRouter } from "@/shared/lib/app-router";
+import { useTranslations } from "next-intl";
 import { DiscoveryHomeArticlesSection } from "../../sections/DiscoveryHomeArticlesSection";
 import { DiscoveryHomeBannersSection } from "../../sections/DiscoveryHomeBannersSection";
 import { DiscoveryHomeClubCategoriesSection } from "../../sections/DiscoveryHomeClubCategoriesSection";
 import { DiscoveryHomeClubsRailSection } from "../../sections/DiscoveryHomeClubsRailSection";
 import { DiscoveryHomeCatalogRailSkeleton } from "../../sections/DiscoveryHomeCatalogRailSection";
+import { DiscoveryLocationMapCtaSection } from "../../sections/DiscoveryLocationMapCtaSection";
 import { DiscoveryHomeSportCategoriesSection } from "../../sections/DiscoveryHomeSportCategoriesSection";
 import { DiscoveryHomeSportsSection } from "../../sections/DiscoveryHomeSportsSection";
 import { discoveryHomeScreenStyles as styles } from "./DiscoveryHomeScreen.styles";
@@ -14,6 +17,9 @@ type DiscoveryFeedSkeletonProps = {
 export function DiscoveryFeedSkeleton({
   mode = "initial",
 }: DiscoveryFeedSkeletonProps) {
+  const t = useTranslations("DiscoveryHome");
+  const router = useRouter();
+
   if (mode === "more") {
     return (
       <>
@@ -21,6 +27,12 @@ export function DiscoveryFeedSkeleton({
           hint="نزدیک‌ترین گزینه‌ها با ظرفیت باقی‌مانده"
           title="همین حالا قابل رزرو"
           variant="schedule"
+        />
+        <DiscoveryLocationMapCtaSection
+          ctaLabel={t("mapCta")}
+          subtitle={t("mapSubtitle")}
+          title={t("mapTitle")}
+          onPress={() => router.push("/discovery/map")}
         />
         <DiscoveryHomeCatalogRailSkeleton
           hint="دوش، رختکن، پارکینگ، کمد، سونا و بیشتر"

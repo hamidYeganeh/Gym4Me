@@ -5,17 +5,15 @@ import {
   PopularLocationCardSkeleton,
 } from "@repo/ui/cards/PopularLocationCard";
 import { PLACEHOLDER_IMAGE } from "@repo/ui/common";
-import { Button } from "@heroui/react/button";
-import { Typography } from "@heroui/react/typography";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/shared/lib/app-router";
 
 import type { HomeLocationKind } from "../../lib/home-browse-data";
-import { discoverySectionRailVariants } from "../DiscoverySectionRail/DiscoverySectionRail.styles";
+import { DiscoverySectionRail } from "../DiscoverySectionRail";
 import { discoveryPopularLocationsSectionVariants } from "./DiscoveryPopularLocationsSection.styles";
 import type { DiscoveryPopularLocationsSectionProps } from "./DiscoveryPopularLocationsSection.types";
 
-const LOCATION_SKELETON_COUNT = 6;
+const LOCATION_SKELETON_COUNT = 4;
 const DEFAULT_MAX_ITEMS = 8;
 
 type LocationCopyKeys = {
@@ -98,11 +96,6 @@ export function DiscoveryPopularLocationsSection({
   const tClubs = useTranslations("DiscoveryClubs");
   const tCoaches = useTranslations("DiscoveryCoaches");
   const router = useRouter();
-  const railSlots = discoverySectionRailVariants({
-    accent: false,
-    sheet: true,
-    tone: "surface",
-  });
   const slots = discoveryPopularLocationsSectionVariants();
   const copy =
     target === "coaches"
@@ -125,66 +118,48 @@ export function DiscoveryPopularLocationsSection({
   };
 
   return (
-    <section aria-label={resolvedAriaLabel} className={railSlots.root()}>
-      <div className={railSlots.header()}>
-        <div className={railSlots.titleBlock()}>
-          <Typography className={railSlots.title()} type="h3" weight="bold">
-            {resolvedTitle}
-          </Typography>
-          {resolvedHint ? (
-            <Typography className={railSlots.hint()} type="body-xs">
-              {resolvedHint}
-            </Typography>
-          ) : null}
-        </div>
-        {seeAllHref ? (
-          <Button
-            className={railSlots.seeAll()}
-            size="lg"
-            variant="ghost"
-            onPress={() => router.push(seeAllHref)}
-          >
-            {seeAllLabel ?? tHome("seeAll")}
-          </Button>
-        ) : null}
-      </div>
+    <DiscoverySectionRail
+      accent={false}
+      ariaLabel={resolvedAriaLabel}
+      hint={resolvedHint}
+      onSeeAll={seeAllHref ? () => router.push(seeAllHref) : undefined}
+      seeAllLabel={seeAllHref ? (seeAllLabel ?? tHome("seeAll")) : undefined}
+      sheet
+      slideClassName={slots.slide()}
+      spaceBetween={16}
+      title={resolvedTitle}
+      tone="surface"
+    >
+      {isLoading
+        ? Array.from({ length: LOCATION_SKELETON_COUNT }, (_, index) => (
+            <PopularLocationCardSkeleton key={`popular-location-skeleton-${index}`} />
+          ))
+        : visibleLocations.map((location) => {
+            const itemKind = resolveKind(location, kind);
+            const itemCopy =
+              target === "coaches"
+                ? COACH_LOCATION_COPY[itemKind]
+                : CLUB_LOCATION_COPY[itemKind];
 
-      <div className={slots.grid()}>
-        {isLoading
-          ? Array.from({ length: LOCATION_SKELETON_COUNT }, (_, index) => (
-              <PopularLocationCardSkeleton
-                className={slots.item()}
-                key={`popular-location-skeleton-${index}`}
+            return (
+              <PopularLocationCard
+                actionLabel={tTarget(itemCopy.viewKey, { name: location.name })}
+                countLabel={
+                  location.count != null
+                    ? tHome("clubCount", {
+                        count: location.count.toLocaleString("fa-IR"),
+                      })
+                    : undefined
+                }
+                eyebrow={tHome(itemCopy.eyebrowKey)}
+                image={location.image || PLACEHOLDER_IMAGE}
+                imageAlt={location.name}
+                key={location.id}
+                name={location.name}
+                onPress={() => openLocation(location.id)}
               />
-            ))
-          : visibleLocations.map((location) => {
-              const itemKind = resolveKind(location, kind);
-              const itemCopy =
-                target === "coaches"
-                  ? COACH_LOCATION_COPY[itemKind]
-                  : CLUB_LOCATION_COPY[itemKind];
-
-              return (
-                <PopularLocationCard
-                  actionLabel={tTarget(itemCopy.viewKey, { name: location.name })}
-                  className={slots.item()}
-                  countLabel={
-                    location.count != null
-                      ? tHome("clubCount", {
-                          count: location.count.toLocaleString("fa-IR"),
-                        })
-                      : undefined
-                  }
-                  eyebrow={tHome(itemCopy.eyebrowKey)}
-                  image={location.image || PLACEHOLDER_IMAGE}
-                  imageAlt={location.name}
-                  key={location.id}
-                  name={location.name}
-                  onPress={() => openLocation(location.id)}
-                />
-              );
-            })}
-      </div>
-    </section>
+            );
+          })}
+    </DiscoverySectionRail>
   );
 }

@@ -15,10 +15,8 @@ import type {
 import { Uploader } from "@repo/ui/kit/Uploader";
 import { mediaApi } from "@/shared/lib/api";
 import {
-  BANNER_ASPECT_RATIOS,
   BANNER_LINK_KINDS,
   BANNER_OVERLAY_PLACEMENTS,
-  BANNER_RADII,
 } from "../../lib/banner-constants";
 import { bannerSlidesFieldVariants } from "./BannerSlidesField.styles";
 import type { BannerSlidesFieldProps } from "./BannerSlidesField.types";
@@ -32,8 +30,6 @@ const IMAGE_ACCEPT = {
 const DEFAULT_SLIDE: Omit<BannerSlideInput, "mediaId"> = {
   linkKind: "none",
   gradient: false,
-  ratio: "16/9",
-  radius: "surface",
 };
 
 const MAX_SLIDES = 10;
@@ -78,6 +74,8 @@ export function BannerSlidesField({
   value,
   onChange,
   labels,
+  frameRatio,
+  frameRadius,
   disabled,
 }: BannerSlidesFieldProps) {
   const styles = bannerSlidesFieldVariants();
@@ -131,8 +129,8 @@ export function BannerSlidesField({
               <div className={styles.slideHeader()}>
                 <div
                   className={`${styles.preview()} ${previewRatioClass(
-                    slide.ratio ?? "16/9",
-                  )} ${previewRadiusClass(slide.radius ?? "surface")}`}
+                    frameRatio,
+                  )} ${previewRadiusClass(frameRadius)}`}
                 >
                   <img
                     alt={slide.alt ?? ""}
@@ -249,56 +247,6 @@ export function BannerSlidesField({
                       </Switch.Control>
                     </Switch.Content>
                   </Switch>
-                </div>
-
-                <div className={styles.field()}>
-                  <Label>{labels.ratioLabel}</Label>
-                  <div className={styles.chips()}>
-                    {BANNER_ASPECT_RATIOS.map((ratio) => (
-                      <Button
-                        isDisabled={disabled}
-                        key={ratio}
-                        size="sm"
-                        variant={
-                          (slide.ratio ?? "16/9") === ratio
-                            ? "primary"
-                            : "secondary"
-                        }
-                        onPress={() =>
-                          patchSlide(index, {
-                            ratio: ratio as BannerAspectRatio,
-                          })
-                        }
-                      >
-                        {labels.ratios[ratio]}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className={styles.field()}>
-                  <Label>{labels.radiusLabel}</Label>
-                  <div className={styles.chips()}>
-                    {BANNER_RADII.map((radius) => (
-                      <Button
-                        isDisabled={disabled}
-                        key={radius}
-                        size="sm"
-                        variant={
-                          (slide.radius ?? "surface") === radius
-                            ? "primary"
-                            : "secondary"
-                        }
-                        onPress={() =>
-                          patchSlide(index, {
-                            radius: radius as BannerRadius,
-                          })
-                        }
-                      >
-                        {labels.radii[radius]}
-                      </Button>
-                    ))}
-                  </div>
                 </div>
 
                 <TextField

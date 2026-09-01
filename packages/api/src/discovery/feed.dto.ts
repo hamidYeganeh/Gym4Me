@@ -15,6 +15,7 @@ export type DiscoverySectionKind =
   | "membership_plans"
   | "bookable_offers"
   | "amenities"
+  | "locations"
   | "articles";
 
 export type DiscoverySourceStrategy =
@@ -185,8 +186,18 @@ export type DiscoveryMembershipPlanCard = {
   entriesTotal: number | null;
 };
 
+export type DiscoveryLocationCard = {
+  id: string;
+  name: string;
+  slug: string;
+  kind: "province" | "city" | "district";
+  coverMediaId: string | null;
+  count: number;
+};
+
 export type DiscoverySectionItem =
   | Banner
+  | DiscoveryLocationCard
   | RefItem
   | SportNode
   | DiscoveryClubCard

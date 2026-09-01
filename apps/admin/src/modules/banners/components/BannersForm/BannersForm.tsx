@@ -13,7 +13,10 @@ import { AdminDatePicker, AdminFormActions } from "@/shared/components";
 import { resolveFormSubmitIntent } from "@/shared/lib/form-submit-intent";
 import { BannerSlidesField } from "../BannerSlidesField";
 import {
+  BANNER_ASPECT_RATIOS,
   BANNER_PLACEMENTS,
+  BANNER_RADII,
+  BANNER_RATIO_I18N_KEYS,
   PUBLISH_STATUSES,
 } from "../../lib/banner-constants";
 import {
@@ -84,7 +87,7 @@ export function BannersForm({
     <form className={styles.form({ className })} onSubmit={handleSubmit}>
       <Controller
         control={form.control}
-        name="title"
+        name="label"
         render={({ field, fieldState }) => (
           <TextField
             isInvalid={fieldState.invalid}
@@ -93,12 +96,19 @@ export function BannersForm({
             onBlur={field.onBlur}
             onChange={field.onChange}
           >
-            <Label>{t("fields.title")} (اختیاری)</Label>
-            <Input placeholder={t("fields.titleHint")} ref={field.ref} />
+            <Label>{t("fields.label")}</Label>
+            <Input placeholder={t("fields.labelHint")} ref={field.ref} />
             <FieldError>{fieldState.error?.message}</FieldError>
           </TextField>
         )}
       />
+
+      {isEdit && initialValues?.slug ? (
+        <TextField isReadOnly name="slug" value={initialValues.slug}>
+          <Label>{t("fields.slug")}</Label>
+          <Input dir="ltr" readOnly value={initialValues.slug} />
+        </TextField>
+      ) : null}
 
       <Controller
         control={form.control}
@@ -125,11 +135,59 @@ export function BannersForm({
 
       <Controller
         control={form.control}
+        name="ratio"
+        render={({ field }) => (
+          <div className={styles.field()}>
+            <Label>{t("fields.ratio")}</Label>
+            <div className={styles.chips()}>
+              {BANNER_ASPECT_RATIOS.map((value) => (
+                <Button
+                  key={value}
+                  size="sm"
+                  type="button"
+                  variant={field.value === value ? "primary" : "secondary"}
+                  onPress={() => field.onChange(value)}
+                >
+                  {t(`ratios.${BANNER_RATIO_I18N_KEYS[value]}`)}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+      />
+
+      <Controller
+        control={form.control}
+        name="radius"
+        render={({ field }) => (
+          <div className={styles.field()}>
+            <Label>{t("fields.radius")}</Label>
+            <div className={styles.chips()}>
+              {BANNER_RADII.map((value) => (
+                <Button
+                  key={value}
+                  size="sm"
+                  type="button"
+                  variant={field.value === value ? "primary" : "secondary"}
+                  onPress={() => field.onChange(value)}
+                >
+                  {t(`radii.${value}`)}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+      />
+
+      <Controller
+        control={form.control}
         name="slides"
         render={({ field, fieldState }) => (
           <div className={styles.field()}>
             <BannerSlidesField
               disabled={form.formState.isSubmitting}
+              frameRadius={form.watch("radius")}
+              frameRatio={form.watch("ratio")}
               labels={{
                 label: t("fields.slides"),
                 hint: t("fields.slidesHint"),

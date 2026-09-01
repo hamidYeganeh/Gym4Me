@@ -41,6 +41,13 @@ export const BANNER_ASPECT_RATIOS: BannerAspectRatio[] = [
   "1/1",
 ];
 
+export const BANNER_RATIO_I18N_KEYS: Record<BannerAspectRatio, string> = {
+  "16/9": "16x9",
+  "2/1": "2x1",
+  "4/3": "4x3",
+  "1/1": "1x1",
+};
+
 export const BANNER_RADII: BannerRadius[] = [
   "none",
   "sm",

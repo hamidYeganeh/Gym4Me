@@ -1,6 +1,6 @@
-import type { PlacementBannerSlide } from "../../lib/use-placement-banners";
+import type { PlacementBanner } from "../../lib/use-placement-banners";
 
 export type DiscoveryHomeBannersSectionProps = {
-  banners: PlacementBannerSlide[];
+  banners: PlacementBanner[];
   isLoading?: boolean;
 };

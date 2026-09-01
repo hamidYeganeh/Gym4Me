@@ -37,5 +37,7 @@ export type BannerSlidesFieldProps = {
   value: BannerSlideInput[];
   onChange: (slides: BannerSlideInput[]) => void;
   labels: BannerSlidesFieldLabels;
+  frameRatio: BannerAspectRatio;
+  frameRadius: BannerRadius;
   disabled?: boolean;
 };

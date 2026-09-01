@@ -15,8 +15,11 @@ import type {
 
 export type AdminBanner = {
   id: string;
-  title: string;
+  slug: string;
+  label: string;
   placement: BannerPlacement;
+  ratio: BannerAspectRatio;
+  radius: BannerRadius;
   slides: BannerSlide[];
   publishStatus: PublishStatus;
   schedule: {
@@ -33,8 +36,6 @@ export type BannerSlideInput = {
   linkKind?: BannerLinkKind;
   linkUrl?: string;
   alt?: string;
-  ratio?: BannerAspectRatio;
-  radius?: BannerRadius;
   gradient?: boolean;
   title?: BannerSlideTitle;
   action?: BannerSlideAction;
@@ -46,8 +47,10 @@ export type BannerScheduleInput = {
 };
 
 export type CreateBannerInput = {
-  title?: string;
+  label: string;
   placement: BannerPlacement;
+  ratio?: BannerAspectRatio;
+  radius?: BannerRadius;
   slides: BannerSlideInput[];
   publishStatus?: PublishStatus;
   schedule?: BannerScheduleInput;
@@ -55,8 +58,10 @@ export type CreateBannerInput = {
 };
 
 export type UpdateBannerInput = {
-  title?: string;
+  label?: string;
   placement?: BannerPlacement;
+  ratio?: BannerAspectRatio;
+  radius?: BannerRadius;
   slides?: BannerSlideInput[];
   publishStatus?: PublishStatus;
   schedule?: BannerScheduleInput;
@@ -64,6 +69,7 @@ export type UpdateBannerInput = {
 };
 
 export type AdminBannersSortBy =
+  | "label"
   | "title"
   | "placement"
   | "publishStatus"

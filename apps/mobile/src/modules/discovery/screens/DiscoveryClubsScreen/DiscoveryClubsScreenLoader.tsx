@@ -76,7 +76,7 @@ export function DiscoveryClubsScreenLoader() {
       articlesLoading={articles.isLoading}
       classes={classes.classes.slice(0, 10)}
       classesLoading={classes.isLoading}
-      banners={banners.slides}
+      banners={banners.banners}
       bannersLoading={banners.isLoading}
       categories={categories.categories}
       categoriesLoading={categories.isLoading}

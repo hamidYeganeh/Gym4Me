@@ -22,6 +22,7 @@ import {
   DiscoveryPageRevisionSchema,
   DiscoveryPageSchema,
 } from '../schemas/discovery-page.schema';
+import { Location, LocationSchema } from '../schemas/location.schema';
 import { RefItem, RefItemSchema } from '../schemas/ref-item.schema';
 import { Sport, SportSchema } from '../schemas/sport.schema';
 import { User, UserSchema } from '../schemas/user.schema';
@@ -49,6 +50,7 @@ import { DiscoveryService } from './discovery.service';
         name: ClubMembershipPlan.name,
         schema: ClubMembershipPlanSchema,
       },
+      { name: Location.name, schema: LocationSchema },
       { name: RefItem.name, schema: RefItemSchema },
       { name: Sport.name, schema: SportSchema },
       { name: Article.name, schema: ArticleSchema },

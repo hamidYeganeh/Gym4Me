@@ -71,6 +71,7 @@ export type {
   DiscoveryEmptyBehavior,
   DiscoveryFeedQuery,
   DiscoveryFeedResponse,
+  DiscoveryLocationCard,
   DiscoveryMembershipPlanCard,
   DiscoverySectionAction,
   DiscoverySectionDefinition,

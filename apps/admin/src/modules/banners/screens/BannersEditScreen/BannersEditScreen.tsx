@@ -64,8 +64,10 @@ export function BannersEditScreen({ className }: BannersEditScreenProps) {
   ) => {
     if (!banner) return;
     await adminBanners.update(banner.id, {
-      title: values.title.trim(),
+      label: values.label.trim(),
       placement: values.placement,
+      ratio: values.ratio,
+      radius: values.radius,
       slides: values.slides,
       publishStatus: values.publishStatus,
       schedule: {
@@ -82,7 +84,7 @@ export function BannersEditScreen({ className }: BannersEditScreenProps) {
     <AdminShell
       activeNavId="banners"
       breadcrumbs={[
-        { label: banner?.title || t("actions.edit") },
+        { label: banner?.label || t("actions.edit") },
         { label: t("actions.edit") },
       ]}
       className={className}

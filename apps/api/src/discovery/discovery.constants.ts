@@ -12,6 +12,7 @@ export enum DiscoverySectionKind {
   MEMBERSHIP_PLANS = 'membership_plans',
   BOOKABLE_OFFERS = 'bookable_offers',
   AMENITIES = 'amenities',
+  LOCATIONS = 'locations',
   ARTICLES = 'articles',
 }
 

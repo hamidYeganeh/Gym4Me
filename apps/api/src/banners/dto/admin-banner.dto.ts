@@ -67,14 +67,6 @@ export class BannerSlideDto {
   alt?: string;
 
   @IsOptional()
-  @IsEnum(BannerAspectRatio)
-  ratio?: BannerAspectRatio;
-
-  @IsOptional()
-  @IsEnum(BannerRadius)
-  radius?: BannerRadius;
-
-  @IsOptional()
   @IsBoolean()
   gradient?: boolean;
 
@@ -100,13 +92,21 @@ export class BannerScheduleDto {
 }
 
 export class CreateBannerDto {
-  @IsOptional()
   @IsString()
+  @MinLength(1)
   @MaxLength(200)
-  title?: string;
+  label!: string;
 
   @IsEnum(BannerPlacement)
   placement!: BannerPlacement;
+
+  @IsOptional()
+  @IsEnum(BannerAspectRatio)
+  ratio?: BannerAspectRatio;
+
+  @IsOptional()
+  @IsEnum(BannerRadius)
+  radius?: BannerRadius;
 
   @IsArray()
   @ArrayMinSize(1)
@@ -133,12 +133,21 @@ export class CreateBannerDto {
 export class UpdateBannerDto {
   @IsOptional()
   @IsString()
+  @MinLength(1)
   @MaxLength(200)
-  title?: string;
+  label?: string;
 
   @IsOptional()
   @IsEnum(BannerPlacement)
   placement?: BannerPlacement;
+
+  @IsOptional()
+  @IsEnum(BannerAspectRatio)
+  ratio?: BannerAspectRatio;
+
+  @IsOptional()
+  @IsEnum(BannerRadius)
+  radius?: BannerRadius;
 
   @IsOptional()
   @IsArray()

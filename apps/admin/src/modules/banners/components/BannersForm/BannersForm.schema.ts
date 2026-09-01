@@ -1,12 +1,16 @@
 import { z } from "zod";
 import type {
   AdminBanner,
+  BannerAspectRatio,
   BannerPlacement,
+  BannerRadius,
   BannerSlideInput,
   PublishStatus,
 } from "@repo/api";
 import {
+  BANNER_ASPECT_RATIOS,
   BANNER_PLACEMENTS,
+  BANNER_RADII,
   PUBLISH_STATUSES,
 } from "../../lib/banner-constants";
 
@@ -24,12 +28,24 @@ const publishStatusSchema = z.custom<PublishStatus>(
   (value) =>
     typeof value === "string" && (PUBLISH_STATUSES as string[]).includes(value),
 );
+const ratioSchema = z.custom<BannerAspectRatio>(
+  (value) =>
+    typeof value === "string" &&
+    (BANNER_ASPECT_RATIOS as string[]).includes(value),
+);
+const radiusSchema = z.custom<BannerRadius>(
+  (value) =>
+    typeof value === "string" && (BANNER_RADII as string[]).includes(value),
+);
 
 export function createBannersFormSchema(messages: BannersFormMessages) {
   return z
     .object({
-      title: z.string().trim().max(200),
+      label: z.string().trim().min(1, messages.required).max(200),
+      slug: z.string().trim().max(120).optional(),
       placement: placementSchema,
+      ratio: ratioSchema,
+      radius: radiusSchema,
       slides: z
         .array(z.custom<BannerSlideInput>())
         .min(1, messages.slidesRequired)
@@ -64,8 +80,11 @@ export type BannersFormValues = z.infer<
 >;
 
 export const bannersFormDefaults: BannersFormValues = {
-  title: "",
+  label: "",
+  slug: "",
   placement: "discovery_home",
+  ratio: "16/9",
+  radius: "surface",
   slides: [],
   publishStatus: "draft",
   startsAt: "",
@@ -89,15 +108,16 @@ export function fromLocalInputValue(value: string) {
 
 export function bannerToFormValues(banner: AdminBanner): BannersFormValues {
   return {
-    title: banner.title,
+    label: banner.label,
+    slug: banner.slug,
     placement: banner.placement,
+    ratio: banner.ratio,
+    radius: banner.radius,
     slides: banner.slides.map((slide) => ({
       mediaId: slide.mediaId,
       linkKind: slide.linkKind,
       linkUrl: slide.linkUrl ?? undefined,
       alt: slide.alt ?? undefined,
-      ratio: slide.ratio,
-      radius: slide.radius,
       gradient: slide.gradient,
       title: slide.title ?? undefined,
       action: slide.action ?? undefined,
