@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "./load-env.js";
 import { z } from "zod";
 
 const envBoolean = z.preprocess((value) => {

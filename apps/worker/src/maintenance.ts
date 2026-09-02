@@ -1,4 +1,4 @@
-import { objectIdFrom, type DatabaseModels } from "@gym4me/api-server/database";
+import { objectIdFrom, type DatabaseModels } from "backend/database";
 
 async function expirePayments(models: DatabaseModels, now: Date) {
   for (;;) {

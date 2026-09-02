@@ -69,7 +69,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Unit tests with coverage artifact
-        run: npm run test:cov --workspace=api -- --runInBand
+        run: npm run test:cov --workspace=backend -- --runInBand
       - name: Upload coverage
         if: always()
         uses: actions/upload-artifact@v7
@@ -126,10 +126,10 @@ jobs:
           docker compose logs mongo redis
           exit 1
       - name: Seed isolated integration database
-        run: npm run db:seed:all --workspace=api
+        run: npm run db:seed:all --workspace=backend
       - name: Build and start API
         run: |
-          npm run build --workspace=api
+          npm run build --workspace=backend
           node apps/api/dist/main.js > "$API_LOG_FILE" 2>&1 &
           echo $! > /tmp/gym4me-api-ci.pid
           for attempt in {1..36}; do
@@ -141,7 +141,7 @@ jobs:
           tail -n 300 "$API_LOG_FILE"
           exit 1
       - name: API e2e test
-        run: npm run test:e2e --workspace=api -- --runInBand
+        run: npm run test:e2e --workspace=backend -- --runInBand
       - name: OpenAPI contract smoke
         run: |
           curl --fail --silent http://127.0.0.1:8088/docs/swagger-json -o /tmp/gym4me-openapi.json
@@ -179,7 +179,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        workspace: [api, admin, website, mobile]
+        workspace: [backend, admin, website, mobile]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -192,4 +192,4 @@ jobs:
         if: matrix.workspace == 'mobile' || matrix.workspace == 'website'
       - name: Build workspace
         run: npm run build --workspace=${{ matrix.workspace }}
-        if: matrix.workspace == 'api' || matrix.workspace == 'admin'
+        if: matrix.workspace == 'backend' || matrix.workspace == 'admin'

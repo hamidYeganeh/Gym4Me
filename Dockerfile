@@ -4,7 +4,7 @@ COPY package.json package-lock.json tsconfig.base.json ./
 COPY apps ./apps
 COPY packages ./packages
 RUN npm ci
-RUN npm run build -w @gym4me/api-server -w @gym4me/worker
+RUN npm run build -w backend -w @gym4me/worker
 RUN npm prune --omit=dev
 
 FROM node:22-bookworm-slim AS runtime

@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "predev": "npm run build:database -w @gym4me/api-server",
+    "predev": "npm run build:database -w backend",
     "dev": "tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
@@ -12,7 +12,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@gym4me/api-server": "0.1.0",
+    "backend": "0.1.0",
     "dotenv": "latest",
     "mongoose": "latest"
   },

@@ -114,7 +114,7 @@ Run from a machine that can reach Mongo with the API workspace checked out:
 
 ```bash
 # Requires MONGODB_URI pointing at the target DB
-ALLOW_DEMO_SEED=true npm run db:seed:all -w api
+ALLOW_DEMO_SEED=true npm run db:seed:all -w backend
 ```
 
 Demo password defaults to `Gym4Me!123` (override with `SEED_DEMO_PASSWORD`).

@@ -1,4 +1,4 @@
-import type { DatabaseModels } from "@gym4me/api-server/database";
+import type { DatabaseModels } from "backend/database";
 import { sendPush } from "./push-provider.js";
 
 type Models = DatabaseModels;

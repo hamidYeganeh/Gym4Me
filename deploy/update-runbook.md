@@ -75,8 +75,8 @@ npm run build --workspace=mobile
 npm run build --workspace=admin
 
 # API
-npm run build --workspace=api
-npm test --workspace=api
+npm run build --workspace=backend
+npm test --workspace=backend
 ```
 
 Shared package changes under `packages/` may affect multiple applications. When in

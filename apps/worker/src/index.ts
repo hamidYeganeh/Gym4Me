@@ -1,5 +1,5 @@
-import "dotenv/config";
-import { connectDatabase, disconnectDatabase, registerModels } from "@gym4me/api-server/database";
+import "./load-env.js";
+import { connectDatabase, disconnectDatabase, registerModels } from "backend/database";
 import {
   ensureNotificationTemplates,
   processNotificationJob,

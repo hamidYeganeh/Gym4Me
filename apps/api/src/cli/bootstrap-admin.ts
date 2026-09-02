@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "../config/load-env.js";
 import { hash } from "@node-rs/argon2";
 import { connectDatabase, disconnectDatabase, registerModels } from "../database/index.js";
 

@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "../config/load-env.js";
 import { connectDatabase, disconnectDatabase, registerModels } from "./index.js";
 
 const uri = process.env.MONGODB_URI;
