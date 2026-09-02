@@ -36,6 +36,17 @@ export type CoachConsultationPricing = {
   remote: number | null;
 };
 
+/** A current-catalog offering that can enter the sliced booking checkout. */
+export type DiscoveryCoachBookingOption = {
+  branchId: string;
+  offeringId: string;
+  resourceId: string;
+  durationMinutes: number;
+  name: string;
+  serviceMode: "in_person" | "online" | "hybrid";
+  price: number;
+};
+
 export type DiscoveryCoach = {
   id: string;
   userId: string;
@@ -57,6 +68,7 @@ export type DiscoveryCoach = {
   sportIds: string[];
   coachTypes: CoachType[];
   clubs?: DiscoveryCoachClub[];
+  bookingOptions?: DiscoveryCoachBookingOption[];
   createdAt: string;
   updatedAt: string;
 };

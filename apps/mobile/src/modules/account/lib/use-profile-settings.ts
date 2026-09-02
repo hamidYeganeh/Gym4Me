@@ -236,7 +236,7 @@ export function useProfileSettings(
     setError(null);
     setNotice(null);
     void mediaApi
-      .upload(file)
+      .upload(file, file.name, { purpose: "avatar", visibility: "public" })
       .then((asset) =>
         accountProfile.updateMe({ avatar: { mediaId: asset.id } }),
       )

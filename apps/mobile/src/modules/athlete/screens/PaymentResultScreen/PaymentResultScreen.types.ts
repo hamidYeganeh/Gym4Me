@@ -1,4 +1,4 @@
-export type PaymentResultStatus = "success" | "failed";
+export type PaymentResultStatus = "success" | "failed" | "cancelled";
 
 export type PaymentResultScreenProps = {
   /** Falls back to reading the `status` search param when omitted. */

@@ -109,7 +109,10 @@ export function RoleRequestWizardScreen({
     });
     setError(null);
     try {
-      const uploaded = await mediaApi.upload(file);
+      const uploaded = await mediaApi.upload(file, file.name, {
+        purpose: "verification",
+        visibility: "private",
+      });
       setDocumentId(uploaded.id);
       setDocumentUpload({
         fileName: file.name,
@@ -136,7 +139,10 @@ export function RoleRequestWizardScreen({
     setUploading(true);
     setError(null);
     try {
-      const uploaded = await mediaApi.upload(file);
+      const uploaded = await mediaApi.upload(file, file.name, {
+        purpose: "verification",
+        visibility: "private",
+      });
       setDocumentId(uploaded.id);
       setNotice(t("documentUploaded"));
     } catch (err) {

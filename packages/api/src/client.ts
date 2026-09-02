@@ -204,7 +204,8 @@ export class ApiClient {
   }
 
   private async send(path: string, options: RequestOptions): Promise<Response> {
-    const url = this.buildUrl(path, options.query, options.versionNeutral);
+    const method = this.resolveMethod(options);
+    const url = this.buildUrl(path, options.query, options.versionNeutral, method);
     const headers = new Headers(options.headers);
     if (!headers.has("Accept")) {
       headers.set("Accept", "application/json");
@@ -229,7 +230,7 @@ export class ApiClient {
     }
 
     return this.fetchImpl(url, {
-      method: this.resolveMethod(options),
+      method,
       headers,
       body,
       signal: options.signal,
@@ -250,7 +251,7 @@ export class ApiClient {
           method: "POST",
           public: true,
           silent: true,
-          body: { refreshToken: current.refreshToken },
+          body: { refresh_token: current.refreshToken },
         });
 
         if (!response.ok) {
@@ -258,7 +259,25 @@ export class ApiClient {
           return null;
         }
 
-        const pair = (await response.json()) as TokenPair;
+        const payload = (await response.json()) as {
+          data?: { access_token?: string; refresh_token?: string };
+          accessToken?: string;
+          refreshToken?: string;
+        };
+        const source = (payload.data ?? payload) as {
+          accessToken?: string;
+          refreshToken?: string;
+          access_token?: string;
+          refresh_token?: string;
+        };
+        const pair: TokenPair = {
+          accessToken: source.accessToken ?? source.access_token ?? "",
+          refreshToken: source.refreshToken ?? source.refresh_token ?? "",
+        };
+        if (!pair.accessToken || !pair.refreshToken) {
+          await this.storage?.set(null);
+          return null;
+        }
         await this.storage?.set({
           ...current,
           accessToken: pair.accessToken,
@@ -277,8 +296,10 @@ export class ApiClient {
     path: string,
     query?: RequestOptions["query"],
     versionNeutral?: boolean,
+    method: HttpMethod = "GET",
   ): string {
-    const normalized = path.startsWith("/") ? path : `/${path}`;
+    const original = path.startsWith("/") ? path : `/${path}`;
+    const normalized = this.compatibilityPath(original, method);
     const base = versionNeutral
       ? this.baseUrl.replace(/\/v\d+$/, "")
       : this.baseUrl;
@@ -287,12 +308,42 @@ export class ApiClient {
       for (const [key, value] of Object.entries(query)) {
         if (value === undefined || value === null) continue;
         url.searchParams.set(
-          key,
+          key === "page_size" ? "limit" : key,
           Array.isArray(value) ? value.join(",") : String(value),
         );
       }
     }
     return url.toString();
+  }
+
+  /** Translate app-v1 routes that have direct equivalents in the current API. */
+  private compatibilityPath(path: string, method: HttpMethod): string {
+    const exact: Record<string, string> = {
+      "/account/finance/wallet": "/finance/wallet/me",
+      "/account/finance/wallet/overview": "/finance/wallet/me",
+      "/account/finance/payments": "/finance/payments/me",
+      "/account/finance/invoices": "/finance/invoices/me",
+      "/account/memberships": "/memberships/me",
+      "/account/notifications": "/notifications/me",
+      "/account/notifications/preferences": "/notifications/preferences/me",
+      "/account/notifications/read-all": "/notifications/me/read-all",
+      "/account/devices": "/notifications/devices/me",
+      "/account/waitlists/mine": "/bookings/waitlist/me",
+      "/account/waitlists/join": "/bookings/waitlist",
+      "/discovery/clubs": "/catalog/branches",
+      "/discovery/coaches": "/catalog/coaches",
+      "/admin/users": "/admin/access/users",
+    };
+    if (path === "/account/bookings" && method === "GET") return "/bookings/me";
+    if (exact[path]) return exact[path];
+    return path
+      .replace(/^\/account\/notifications\/([^/]+)\/read$/, "/notifications/$1/read")
+      .replace(/^\/account\/bookings\/([^/]+)\/cancellation-preview$/, "/bookings/$1/cancellation-preview")
+      .replace(/^\/account\/bookings\/([^/]+)\/cancel$/, "/bookings/$1/cancel")
+      .replace(/^\/account\/bookings\/([^/]+)$/, "/bookings/$1")
+      .replace(/^\/discovery\/clubs\/([^/]+)$/, "/catalog/branches/$1")
+      .replace(/^\/discovery\/coaches\/([^/]+)$/, "/catalog/coaches/$1")
+      .replace(/^\/admin\/users\/([^/]+)$/, "/admin/access/users/$1");
   }
 
   private async parseResponse<T>(
@@ -324,7 +375,19 @@ export class ApiClient {
     }
 
     if (!response.ok) {
-      this.raiseError(response, (data as ApiErrorBody | null) ?? null, options);
+      const nested =
+        data && typeof data === "object" && "error" in data
+          ? (data as { error?: unknown }).error
+          : null;
+      const errorBody =
+        nested && typeof nested === "object"
+          ? {
+              statusCode: response.status,
+              code: "code" in nested ? String(nested.code) : undefined,
+              message: "message" in nested ? String(nested.message) : undefined,
+            }
+          : ((data as ApiErrorBody | null) ?? null);
+      this.raiseError(response, errorBody, options);
     }
 
     this.emitNotice(
@@ -336,6 +399,71 @@ export class ApiClient {
         silent: options.silent,
       }),
     );
+
+    if (
+      data &&
+      typeof data === "object" &&
+      "data" in data &&
+      "meta" in data
+    ) {
+      const envelope = data as {
+        data: T;
+        meta?: {
+          pagination?: {
+            page?: number;
+            limit?: number;
+            total?: number;
+            pages?: number;
+            [key: string]: unknown;
+          };
+        };
+      };
+      const pagination = envelope.meta?.pagination;
+      if (pagination && Array.isArray(envelope.data)) {
+        const page = pagination.page ?? 1;
+        const pageSize = pagination.limit ?? envelope.data.length;
+        const count = pagination.total ?? envelope.data.length;
+        return {
+          result: envelope.data,
+          pagination: {
+            page,
+            page_size: pageSize,
+            count,
+            total: count,
+            prev: page > 1 ? page - 1 : null,
+            next: page * pageSize < count ? page + 1 : null,
+            ...(pagination.unread !== undefined ? { unread: pagination.unread } : {}),
+          },
+        } as T;
+      }
+      if (
+        envelope.data &&
+        typeof envelope.data === "object" &&
+        "items" in envelope.data &&
+        Array.isArray((envelope.data as { items?: unknown }).items)
+      ) {
+        const collection = envelope.data as { items: unknown[]; total?: number };
+        const requestedPage = Number(options.query?.page ?? 1);
+        const requestedPageSize = Number(
+          options.query?.page_size ?? options.query?.limit ?? collection.items.length,
+        );
+        const page = pagination?.page ?? requestedPage;
+        const pageSize = pagination?.limit ?? requestedPageSize;
+        const count = collection.total ?? collection.items.length;
+        return {
+          result: collection.items,
+          pagination: {
+            page,
+            page_size: pageSize,
+            count,
+            total: count,
+            prev: page > 1 ? page - 1 : null,
+            next: page * pageSize < count ? page + 1 : null,
+          },
+        } as T;
+      }
+      return envelope.data;
+    }
 
     return data as T;
   }

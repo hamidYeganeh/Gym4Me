@@ -15,6 +15,7 @@ import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { accountRoles } from "@/shared/lib/api";
+import { getBusinessPanelUrl } from "@/shared/lib/env";
 import { roleHomePath } from "@/shared/lib/role-routes";
 import { useAuth } from "@/shared/providers/AuthProvider";
 import { roleApplyScreenVariants } from "./RoleApplyScreen.styles";
@@ -84,6 +85,10 @@ export function RoleApplyScreen({
     setError(null);
     setPendingRole(role);
     try {
+      if (role === "club_owner") {
+        window.location.assign(getBusinessPanelUrl());
+        return;
+      }
       const session = await switchRole(role);
       router.replace(roleHomePath(session.activeRole));
     } catch (err) {

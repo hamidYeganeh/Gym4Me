@@ -119,7 +119,6 @@ export function DiscoveryLocationSection({
           navigateWithSelection();
           closeSheets();
         }}
-        isOpen={sheet === "district"}
         onSelect={(option) => {
           selectDistrict(option);
           navigateWithSelection();

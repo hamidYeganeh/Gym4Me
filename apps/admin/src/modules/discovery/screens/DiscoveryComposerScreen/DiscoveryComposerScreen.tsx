@@ -65,6 +65,7 @@ const COMPONENTS: Record<DiscoverySectionKind, string> = {
   membership_plans: "membership_plan_rail",
   bookable_offers: "bookable_offer_rail",
   amenities: "amenity_rail",
+  locations: "location_rail",
   articles: "article_rail",
 };
 

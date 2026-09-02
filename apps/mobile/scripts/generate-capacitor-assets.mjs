@@ -14,7 +14,6 @@
 import { mkdir, readFile, writeFile, copyFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { spawnSync } from "node:child_process";
 import sharp from "sharp";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -257,32 +256,9 @@ async function main() {
   });
 
   console.log("→ Source PNGs ready in assets/");
-  console.log("→ Running capacitor-assets generate...");
-
-  const result = spawnSync(
-    "npx",
-    [
-      "capacitor-assets",
-      "generate",
-      "--ios",
-      "--android",
-      "--assetPath",
-      "assets",
-      "--iconBackgroundColor",
-      BRAND.accent,
-      "--iconBackgroundColorDark",
-      BRAND.accent,
-      "--splashBackgroundColor",
-      BRAND.accent,
-      "--splashBackgroundColorDark",
-      BRAND.accent,
-    ],
-    { cwd: ROOT, stdio: "inherit", shell: process.platform === "win32" },
-  );
-
-  if (result.status !== 0) {
-    process.exit(result.status ?? 1);
-  }
+  // Native icon catalogs are committed and updated by the explicit copies
+  // below. The old @capacitor/assets dependency bundled vulnerable archive and
+  // image processors, so release asset generation no longer executes it.
 
   // Align Android launcher + splash colors / Android 12 icons with brand
   const resDir = path.join(ROOT, "android/app/src/main/res");

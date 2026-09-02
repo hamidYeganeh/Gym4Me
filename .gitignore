@@ -17,11 +17,14 @@ node_modules
 # Frontend apps may commit public mode defaults (no secrets).
 !apps/admin/.env.development
 !apps/admin/.env.production
+!apps/business-panel/.env.development
+!apps/business-panel/.env.production
 !apps/mobile/.env.development
 !apps/mobile/.env.production
 !apps/website/.env.development
 !apps/website/.env.production
 !apps/admin/.env.local.example
+!apps/business-panel/.env.local.example
 !apps/mobile/.env.local.example
 !apps/website/.env.local.example
 
@@ -50,6 +53,11 @@ yarn-error.log*
 # Prisma generated client
 apps/api/src/generated/
 
+# Local scratch / generated artifacts (not part of the monorepo)
+output/
+tmp/
+dump.rdb
+
 # Misc
 .DS_Store
 *.pem
@@ -57,3 +65,4 @@ apps/api/src/generated/
 *.keystore
 !**/debug.keystore
 apps/mobile/android/app/google-services.json
+**/.secrets/

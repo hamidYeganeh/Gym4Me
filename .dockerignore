@@ -24,6 +24,7 @@ yarn-error.log*
 **/*.keystore
 !**/*debug.keystore
 **/*.pem
+**/.secrets
 
 # Build outputs
 **/.next

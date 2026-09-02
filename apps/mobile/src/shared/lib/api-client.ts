@@ -1,6 +1,7 @@
 import { ACCOUNT_SESSION_KEY } from "@repo/api/storage";
 import { createAccountAuthApi } from "@repo/api/auth";
 import { createApiClient } from "@repo/api/client";
+import { createApiClient as createV2ApiClient } from "@repo/api/v2";
 import { getApiBaseUrl } from "./env";
 import { roleAppPath } from "./role-routes";
 import { createSecureSessionStorage } from "./secure-session-storage";
@@ -40,6 +41,12 @@ export const apiClient = createApiClient({
       navigateFromApi(kycPath);
     }
   },
+});
+
+/** New P0/P1 API client. It shares the same securely persisted account session. */
+export const v2ApiClient = createV2ApiClient({
+  baseUrl: getApiBaseUrl(),
+  getAccessToken: () => accountSessionStorage.get()?.accessToken ?? null,
 });
 
 export const accountAuth = createAccountAuthApi(apiClient);

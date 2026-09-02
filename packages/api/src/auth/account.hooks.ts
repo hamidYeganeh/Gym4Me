@@ -183,7 +183,7 @@ export function useAccountForgotPasswordConfirm(
 }
 
 export function useAccountResetPassword(
-  options?: UseMutationOptions<AuthSession, Error, ResetPasswordInput>,
+  options?: UseMutationOptions<void, Error, ResetPasswordInput>,
 ) {
   const api = useAccountAuthApi();
   const { onSuccess, ...rest } = options ?? {};

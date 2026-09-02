@@ -17,6 +17,7 @@ import type {
 } from "./PaymentResultScreen.types";
 import { useRouter } from "@/shared/lib/app-router";
 import { isDiscoveryDemoId } from "@/shared/lib/api";
+import { isPaymentReturnPath } from "@/shared/lib/payment-return";
 
 const RESULT_ICON_SIZE = 48;
 
@@ -27,15 +28,29 @@ export function PaymentResultScreen({
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const rawStatus = searchParams.get("status");
   const status: PaymentResultStatus =
-    searchParams.get("status") === "failed" ? "failed" : defaultStatus;
+    rawStatus === "failed" || rawStatus === "cancelled" ? rawStatus : defaultStatus;
   const invoiceId = searchParams.get("invoice");
   const invoice =
     invoiceId && isDiscoveryDemoId(invoiceId)
       ? getInvoice(invoiceId)
       : undefined;
   const reference = searchParams.get("reference") ?? invoiceId ?? "—";
+  const rawReturnPath = searchParams.get("returnPath") ?? "";
+  const returnPath = isPaymentReturnPath(rawReturnPath) ? rawReturnPath : "/athlete/bookings";
   const isSuccess = status === "success";
+  const isCancelled = status === "cancelled";
+  const title = isSuccess
+    ? t("successTitle")
+    : isCancelled
+      ? t("cancelledTitle")
+      : t("failedTitle");
+  const description = isSuccess
+    ? t("successBody")
+    : isCancelled
+      ? t("cancelledBody")
+      : t("failedBody");
 
   return (
     <AppLayout
@@ -44,7 +59,7 @@ export function PaymentResultScreen({
     >
       <div className={styles.content}>
         <EmptyState
-          description={isSuccess ? t("successBody") : t("failedBody")}
+          description={description}
           icon={
             isSuccess ? (
               <CheckCircle size={RESULT_ICON_SIZE} />
@@ -54,10 +69,10 @@ export function PaymentResultScreen({
           }
           layout="icon"
           primaryAction={{
-            label: isSuccess ? t("viewBookings") : t("retry"),
+            label: isSuccess || isCancelled ? t("viewBookings") : t("retry"),
             endContent: isSuccess ? <ArrowRight size={18} /> : undefined,
             onPress: () =>
-              isSuccess ? router.push("/athlete/bookings") : router.back(),
+              isSuccess || isCancelled ? router.push(returnPath) : router.back(),
           }}
           secondaryAction={{
             label: isSuccess ? t("seeInvoice") : t("backHome"),
@@ -71,7 +86,7 @@ export function PaymentResultScreen({
                 : router.push("/athlete"),
           }}
           status={isSuccess ? "success" : "danger"}
-          title={isSuccess ? t("successTitle") : t("failedTitle")}
+          title={title}
         />
 
         {isSuccess ? (

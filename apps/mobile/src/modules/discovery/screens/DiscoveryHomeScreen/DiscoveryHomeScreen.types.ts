@@ -3,10 +3,10 @@ import type { HomeClubCategoryItem } from "../../lib/club-categories-home";
 import type { BrowseClub } from "../../lib/clubs-browse-data";
 import type { HomeLocationItem, HomeSportItem } from "../../lib/home-browse-data";
 import type { HomeSportCategoryItem } from "../../lib/sports-home";
-import type { PlacementBannerSlide } from "../../lib/use-placement-banners";
+import type { PlacementBanner } from "../../lib/use-placement-banners";
 
 export type DiscoveryHomeScreenProps = {
-  banners?: PlacementBannerSlide[];
+  banners?: PlacementBanner[];
   bannersLoading?: boolean;
   categories?: HomeClubCategoryItem[];
   categoriesLoading?: boolean;

@@ -1,106 +1,45 @@
 services:
-  mongo:
-    image: mongo:7
-    container_name: gym4me-mongo
-    restart: unless-stopped
-    command: ["--replSet", "rs0", "--bind_ip_all"]
+  mongodb:
+    image: mongo:latest
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     ports:
-      - "127.0.0.1:27018:27017"
+      - "27017:27017"
     volumes:
-      - gym4me_mongodata:/data/db
+      - gym4me_mongodb_data:/data/db
     healthcheck:
-      test: |
-        mongosh --quiet --eval "try { rs.status().ok } catch (e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'localhost:27017'}]}).ok }"
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
       interval: 5s
-      timeout: 10s
-      retries: 12
+      timeout: 5s
+      retries: 20
+
+  mongodb-init:
+    image: mongo:latest
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: "no"
+    entrypoint:
+      [
+        "mongosh",
+        "--host",
+        "mongodb:27017",
+        "--quiet",
+        "--eval",
+        "try { rs.status() } catch (e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongodb:27017'}]}) }",
+      ]
 
   redis:
-    image: redis:7-alpine
-    container_name: gym4me-redis
-    restart: unless-stopped
+    image: redis:latest
     ports:
-      - "127.0.0.1:6380:6379"
+      - "6379:6379"
     volumes:
-      - gym4me_redisdata:/data
-
-  api:
-    build:
-      context: .
-      dockerfile: apps/api/Dockerfile
-    container_name: gym4me-api
-    restart: unless-stopped
-    depends_on:
-      mongo:
-        condition: service_healthy
-      redis:
-        condition: service_started
-    ports:
-      - "8088:8088"
-    environment:
-      NODE_ENV: ${NODE_ENV:-development}
-      PORT: "8088"
-      MONGODB_URI: mongodb://mongo:27017/gym4me?replicaSet=rs0&directConnection=true
-      REDIS_URL: redis://redis:6379
-      # Required — no weak defaults. Set in root .env (see .env.example).
-      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?JWT_ACCESS_SECRET is required}
-      JWT_PASSWORD_RESET_SECRET: ${JWT_PASSWORD_RESET_SECRET:?JWT_PASSWORD_RESET_SECRET is required}
-      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-900s}
-      JWT_REFRESH_TTL_DAYS: ${JWT_REFRESH_TTL_DAYS:-30}
-      BOOKING_PAYMENT_TTL_MINUTES: ${BOOKING_PAYMENT_TTL_MINUTES:-15}
-      REFERRAL_REWARD_AMOUNT: ${REFERRAL_REWARD_AMOUNT:-50000}
-      CORS_ORIGINS: ${CORS_ORIGINS:-}
-      API_BASE_URL: ${API_BASE_URL:-http://localhost:8088}
-      ENABLE_SWAGGER: ${ENABLE_SWAGGER:-false}
-      DEBUG_MODE: ${DEBUG_MODE:-false}
-      SMS_PROVIDER: ${SMS_PROVIDER:-mock}
-      KAVENEGAR_API_KEY: ${KAVENEGAR_API_KEY:-}
-      KAVENEGAR_OTP_TEMPLATE: ${KAVENEGAR_OTP_TEMPLATE:-verify}
-      KAVENEGAR_INVITE_TEMPLATE: ${KAVENEGAR_INVITE_TEMPLATE:-}
-      KAVENEGAR_SENDER: ${KAVENEGAR_SENDER:-}
-      PAYMENT_PROVIDER: ${PAYMENT_PROVIDER:-mock}
-      ZARINPAL_MERCHANT_ID: ${ZARINPAL_MERCHANT_ID:-}
-      ZARINPAL_SANDBOX: ${ZARINPAL_SANDBOX:-true}
-      PUSH_PROVIDER: ${PUSH_PROVIDER:-mock}
-      FCM_SERVICE_ACCOUNT: ${FCM_SERVICE_ACCOUNT:-}
-      KYC_PROVIDER: ${KYC_PROVIDER:-mock}
-      FINNOTECH_BASE_URL: ${FINNOTECH_BASE_URL:-https://api.finnotech.ir}
-      FINNOTECH_CLIENT_ID: ${FINNOTECH_CLIENT_ID:-}
-      FINNOTECH_CLIENT_SECRET: ${FINNOTECH_CLIENT_SECRET:-}
-      FINNOTECH_CLIENT_NATIONAL_ID: ${FINNOTECH_CLIENT_NATIONAL_ID:-}
-      SUPPORT_PHONE: ${SUPPORT_PHONE:-}
-      SUPPORT_EMAIL: ${SUPPORT_EMAIL:-}
-      SUPPORT_TELEGRAM: ${SUPPORT_TELEGRAM:-}
-      SUPPORT_WORKING_HOURS: ${SUPPORT_WORKING_HOURS:-}
-      UPLOAD_DIR: /app/uploads
-    volumes:
-      - gym4me_uploads:/app/uploads
-
-  # One-shot Android release builder (profile: android)
-  # First create signing locally: npm run mobile:android:keystore
-  # Then:
-  #   docker compose --profile android run --rm \
-  #     -v "$PWD/apps/mobile/android/key.properties:/secrets/key.properties:ro" \
-  #     -v "$PWD/apps/mobile/android/upload-keystore.jks:/secrets/upload-keystore.jks:ro" \
-  #     android-release aab
-  # Or pass GYM4ME_UPLOAD_* env vars pointing at an absolute storeFile path mounted into the container.
-  android-release:
-    profiles: ["android"]
-    build:
-      context: .
-      dockerfile: docker/android-release.Dockerfile
-    volumes:
-      - ./apps/mobile/artifacts:/workspace/apps/mobile/artifacts
-    environment:
-      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8088/api/v1}
-      GYM4ME_VERSION_CODE: ${GYM4ME_VERSION_CODE:-1}
-      GYM4ME_VERSION_NAME: ${GYM4ME_VERSION_NAME:-1.0}
-      GYM4ME_UPLOAD_STORE_FILE: ${GYM4ME_UPLOAD_STORE_FILE:-}
-      GYM4ME_UPLOAD_STORE_PASSWORD: ${GYM4ME_UPLOAD_STORE_PASSWORD:-}
-      GYM4ME_UPLOAD_KEY_ALIAS: ${GYM4ME_UPLOAD_KEY_ALIAS:-}
-      GYM4ME_UPLOAD_KEY_PASSWORD: ${GYM4ME_UPLOAD_KEY_PASSWORD:-}
+      - gym4me_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
 volumes:
-  gym4me_mongodata:
-  gym4me_redisdata:
-  gym4me_uploads:
+  gym4me_mongodb_data:
+  gym4me_redis_data:

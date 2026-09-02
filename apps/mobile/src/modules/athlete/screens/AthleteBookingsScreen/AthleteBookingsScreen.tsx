@@ -118,13 +118,13 @@ export function AthleteBookingsScreen({
                   isVerified={booking.coach?.verification === "verified"}
                   onCancel={
                     manageable
-                      ? () => router.push(`/athlete/bookings/${booking.id}`)
+                      ? () => router.push(`/athlete/booking/detail?bookingId=${encodeURIComponent(booking.id)}`)
                       : undefined
                   }
-                  onPress={() => router.push(`/athlete/bookings/${booking.id}`)}
+                  onPress={() => router.push(`/athlete/booking/detail?bookingId=${encodeURIComponent(booking.id)}`)}
                   onReschedule={
                     manageable
-                      ? () => router.push(`/athlete/bookings/${booking.id}`)
+                      ? () => router.push(`/athlete/booking/detail?bookingId=${encodeURIComponent(booking.id)}`)
                       : undefined
                   }
                   rating={booking.coach?.rating}

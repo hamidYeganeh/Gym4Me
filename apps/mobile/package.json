@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --port 8081",
-    "build": "next build --webpack",
+    "build": "next build --webpack && node scripts/verify-static-export.mjs",
     "start": "next start --port 8081",
     "lint": "eslint",
     "test": "jest --config ./jest.config.cjs --runInBand",
@@ -73,7 +73,6 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^7.6.8",
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*",
@@ -84,7 +83,7 @@
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.3.1",
-    "sharp": "^0.34.5",
+    "sharp": "^0.35.3",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

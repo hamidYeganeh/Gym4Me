@@ -57,7 +57,7 @@ export function AthleteBookingDetailActionsSection({
         <Button
           fullWidth
           onPress={() =>
-            router.push(`/athlete/bookings/${booking.id}/reschedule`)
+            router.push(`/athlete/booking/reschedule?bookingId=${encodeURIComponent(booking.id)}`)
           }
           size="lg"
           variant="secondary"

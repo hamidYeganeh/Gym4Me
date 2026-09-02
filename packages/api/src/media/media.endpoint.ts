@@ -1,6 +1,7 @@
-/** Media upload / resolve helpers (`/media`). */
+/** Media upload / resolve helpers backed by the current asset service. */
 export const mediaEndpoints = {
-  root: "/media",
-  byId: (id: string) => `/media/${id}`,
-  file: (id: string) => `/media/${id}/file`,
+  root: "/uploads",
+  byId: (id: string) => `/uploads/${id}`,
+  privateFile: (id: string) => `/uploads/${id}/content`,
+  publicFile: (id: string) => `/catalog/assets/${id}/content`,
 } as const;

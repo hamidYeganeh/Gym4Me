@@ -12,85 +12,103 @@
 .default,
 [data-theme="light"],
 [data-theme="default"] {
+  color-scheme: light;
+
   /* Theme Colors (Light Mode) */
-  --accent: oklch(87.44% 0.2457 148.29);
-  --accent-foreground: oklch(15% 0.03 148.29);
-  --background: oklch(97.02% 0 148.29);
-  --border: oklch(90% 0 148.29);
-  --danger: oklch(65.32% 0.2328 13.07);
+  --accent: oklch(91.89% 0.2222 128.79);
+  --accent-foreground: oklch(22.38% 0.0578 127.12);
+  --background: oklch(97.02% 0.0117 273.85);
+  --border: oklch(90% 0.0117 273.85);
+  --danger: oklch(65.32% 0.2382 28.14);
   --danger-foreground: oklch(99.11% 0 0);
-  --default: oklch(94% 0 148.29);
-  --default-foreground: oklch(21.03% 0.0059 148.29);
-  --field-background: oklch(100% 0 148.29);
+  --default: oklch(94% 0.0117 273.85);
+  --default-foreground: oklch(21.03% 0.0059 273.85);
+  --field-background: oklch(100% 0.0059 273.85);
   --field-border: transparent;
-  --field-foreground: oklch(21.03% 0 148.29);
-  --field-placeholder: oklch(55.17% 0 148.29);
-  --focus: oklch(87.44% 0.2457 148.29);
-  --foreground: oklch(21.03% 0 148.29);
-  --muted: oklch(55.17% 0 148.29);
-  --overlay: oklch(100% 0 148.29);
-  --overlay-foreground: oklch(21.03% 0 148.29);
-  --scrollbar: oklch(87.1% 0 148.29);
-  --segment: oklch(100% 0 148.29);
-  --segment-foreground: oklch(21.03% 0 148.29);
-  --separator: oklch(92% 0 148.29);
-  --success: oklch(73.29% 0.1935 138.14);
-  --success-foreground: oklch(21.03% 0.0059 138.14);
-  --surface: oklch(100% 0 148.29);
-  --surface-foreground: oklch(21.03% 0 148.29);
-  --surface-secondary: oklch(95.24% 0 148.29);
-  --surface-secondary-foreground: oklch(21.03% 0 148.29);
-  --surface-tertiary: oklch(93.73% 0 148.29);
-  --surface-tertiary-foreground: oklch(21.03% 0 148.29);
-  --warning: oklch(78.19% 0.1585 59.66);
-  --warning-foreground: oklch(21.03% 0.0059 59.66);
+  --field-foreground: oklch(21.03% 0.0117 273.85);
+  --field-placeholder: oklch(55.17% 0.0234 273.85);
+  --focus: var(--accent);
+  --foreground: oklch(21.03% 0.0117 273.85);
+  --muted: oklch(55.17% 0.0234 273.85);
+  --overlay: oklch(100% 0.0035 273.85);
+  --overlay-foreground: oklch(21.03% 0.0117 273.85);
+  --scrollbar: oklch(87.1% 0.0117 273.85);
+  --segment: oklch(100% 0.0117 273.85);
+  --segment-foreground: oklch(21.03% 0.0117 273.85);
+  --separator: oklch(92% 0.0117 273.85);
+  --success: oklch(73.29% 0.198 153.21);
+  --success-foreground: oklch(21.03% 0.0059 153.21);
+  --surface: oklch(100% 0.0059 273.85);
+  --surface-foreground: oklch(21.03% 0.0117 273.85);
+  --surface-secondary: oklch(95.24% 0.0094 273.85);
+  --surface-secondary-foreground: oklch(21.03% 0.0117 273.85);
+  --surface-tertiary: oklch(93.73% 0.0094 273.85);
+  --surface-tertiary-foreground: oklch(21.03% 0.0117 273.85);
+  --warning: oklch(78.19% 0.1622 74.73);
+  --warning-foreground: oklch(21.03% 0.0059 74.73);
+  --info: oklch(72% 0.14 245);
 
   /* Border Radius */
-  --radius: 0.5rem;
-  --field-radius: 0.75rem;
+  --radius: 1rem;
+  --radius-full: 9999px;
+  --field-radius: var(--radius);
 
   /* Single-line field height — Input + InputGroup (not TextArea) */
   --field-height: 3.5rem;
 
-  /* Font Family — load IRANSansX via @repo/fonts in the app layout */
-  --font-sans: var(--font-iran-sans-x);
+  /* Font */
+  --font-dots: 4;
+  --font-sans: var(--font-iran-sans-x), -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
 }
 
 .dark,
 [data-theme="dark"] {
   color-scheme: dark;
+
   /* Theme Colors (Dark Mode) */
-  --accent: oklch(87.414% 0.24723 148.054);
-  --accent-foreground: oklch(15% 0.03 148.29);
-  --background: oklch(12% 0 148.29);
-  --border: oklch(28% 0 148.29);
-  --danger: oklch(59.4% 0.1967 11.96);
+  --accent: oklch(91.89% 0.2222 128.79);
+  --accent-foreground: oklch(22.38% 0.0578 127.12);
+  --background: oklch(12% 0.0117 273.85);
+  --border: oklch(28% 0.0117 273.85);
+  --danger: oklch(59.4% 0.2013 27.03);
   --danger-foreground: oklch(99.11% 0 0);
-  --default: oklch(27.4% 0 148.29);
+  --default: oklch(27.4% 0.0117 273.85);
   --default-foreground: oklch(99.11% 0 0);
-  --field-background: oklch(21.03% 0 148.29);
+  --field-background: oklch(21.03% 0.0234 273.85);
   --field-border: transparent;
-  --field-foreground: oklch(99.11% 0 148.29);
-  --field-placeholder: oklch(70.5% 0 148.29);
-  --focus: oklch(87.44% 0.2457 148.29);
-  --foreground: oklch(99.11% 0 148.29);
-  --muted: oklch(70.5% 0 148.29);
-  --overlay: oklch(21.03% 0 148.29);
-  --overlay-foreground: oklch(99.11% 0 148.29);
-  --scrollbar: oklch(70.5% 0 148.29);
-  --segment: oklch(39.64% 0 148.29);
-  --segment-foreground: oklch(99.11% 0 148.29);
-  --separator: oklch(25% 0 148.29);
-  --success: oklch(73.29% 0.1935 138.14);
-  --success-foreground: oklch(21.03% 0.0059 138.14);
-  --surface: oklch(21.03% 0 148.29);
-  --surface-foreground: oklch(99.11% 0 148.29);
-  --surface-secondary: oklch(25.7% 0 148.29);
-  --surface-secondary-foreground: oklch(99.11% 0 148.29);
-  --surface-tertiary: oklch(27.21% 0 148.29);
-  --surface-tertiary-foreground: oklch(99.11% 0 148.29);
-  --warning: oklch(82.03% 0.1388 63.67);
-  --warning-foreground: oklch(21.03% 0.0059 63.67);
+  --field-foreground: oklch(99.11% 0.0117 273.85);
+  --field-placeholder: oklch(70.5% 0.0234 273.85);
+  --focus: var(--accent);
+  --foreground: oklch(99.11% 0.0117 273.85);
+  --muted: oklch(70.5% 0.0234 273.85);
+  --overlay: oklch(21.03% 0.0234 273.85);
+  --overlay-foreground: oklch(99.11% 0.0117 273.85);
+  --scrollbar: oklch(70.5% 0.0117 273.85);
+  --segment: oklch(39.64% 0.0117 273.85);
+  --segment-foreground: oklch(99.11% 0.0117 273.85);
+  --separator: oklch(25% 0.0117 273.85);
+  --success: oklch(73.29% 0.198 153.21);
+  --success-foreground: oklch(21.03% 0.0059 153.21);
+  --surface: oklch(21.03% 0.0234 273.85);
+  --surface-foreground: oklch(99.11% 0.0117 273.85);
+  --surface-secondary: oklch(25.7% 0.0175 273.85);
+  --surface-secondary-foreground: oklch(99.11% 0.0117 273.85);
+  --surface-tertiary: oklch(27.21% 0.0175 273.85);
+  --surface-tertiary-foreground: oklch(99.11% 0.0117 273.85);
+  --warning: oklch(82.03% 0.142 78.74);
+  --warning-foreground: oklch(21.03% 0.0059 78.74);
+  --info: oklch(72% 0.14 245);
+
+  /* Border Radius */
+  --radius: 1rem;
+  --radius-full: 9999px;
+  --field-radius: var(--radius);
+
+  /* Font */
+  --font-dots: 4;
+  --font-sans: var(--font-iran-sans-x), -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
 }
 
 /*

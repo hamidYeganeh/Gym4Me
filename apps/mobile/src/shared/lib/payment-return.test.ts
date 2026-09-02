@@ -35,4 +35,12 @@ describe("native payment return", () => {
     ).toBeNull();
     expect(isPaymentReturnPath("/admin/users")).toBe(false);
   });
+
+  it("accepts a static-export-safe booking detail callback", () => {
+    expect(
+      isPaymentReturnPath(
+        "/athlete/booking/detail?bookingId=507f1f77bcf86cd799439011",
+      ),
+    ).toBe(true);
+  });
 });

@@ -9,7 +9,6 @@ import {
   prepareOfflineCheckin,
   purgeExpiredOfflineCheckinState,
   queueOfflineBookingCheckin,
-  resetOfflineCheckinState,
   syncOfflineCheckins,
 } from "./offline-checkin-queue";
 

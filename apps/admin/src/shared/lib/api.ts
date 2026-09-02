@@ -26,6 +26,8 @@ import { createAccountProfileApi } from "@repo/api/account";
 import { createAppConfigApi } from "@repo/api/app-config";
 import { createMediaApi } from "@repo/api/media";
 import { apiClient } from "./api-client";
+import { createApiClient as createV2ApiClient, adminAccessApi, auditApi, commerceApi, financeApi, membershipsApi, notificationsApi, organizationsApi, supplyApi, verificationsApi } from "@repo/api/v2";
+import { getApiBaseUrl } from "./env";
 
 export { adminAuth, apiClient } from "./api-client";
 
@@ -55,3 +57,5 @@ export const adminNotificationTemplates =
   createAdminNotificationTemplatesApi(apiClient);
 export const adminAppConfig = createAppConfigApi(apiClient);
 export const mediaApi = createMediaApi(apiClient);
+export const adminV2Client = createV2ApiClient({ baseUrl: getApiBaseUrl(), getAccessToken: () => apiClient.getSession()?.accessToken ?? null });
+export { adminAccessApi, auditApi, commerceApi, financeApi, membershipsApi, notificationsApi, organizationsApi, supplyApi, verificationsApi };

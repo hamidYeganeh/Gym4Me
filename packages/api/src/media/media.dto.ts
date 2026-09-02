@@ -12,7 +12,15 @@ export type MediaAsset = {
   hash: string | null;
   originalName: string | null;
   visibility: 'public' | 'private';
-  purpose: 'general' | 'progress_photo' | 'social_post' | 'meal_adherence';
+  purpose:
+    | 'general'
+    | 'avatar'
+    | 'verification'
+    | 'club_gallery'
+    | 'advertising_creative'
+    | 'progress_photo'
+    | 'social_post'
+    | 'meal_adherence';
   scanStatus: MediaScanStatus;
   url: string;
   createdAt: string;
@@ -20,5 +28,13 @@ export type MediaAsset = {
 
 export type MediaUploadOptions = {
   visibility?: 'public' | 'private';
-  purpose?: 'general' | 'progress_photo' | 'social_post' | 'meal_adherence';
+  purpose?:
+    | 'general'
+    | 'avatar'
+    | 'verification'
+    | 'club_gallery'
+    | 'advertising_creative'
+    | 'progress_photo'
+    | 'social_post'
+    | 'meal_adherence';
 };

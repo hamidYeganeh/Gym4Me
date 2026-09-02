@@ -58,7 +58,7 @@ export type ClubCardProps = Omit<
   /** Primary CTA label (e.g. `"VIEW DETAILS"`). Hidden for `listing`. */
   actionLabel?: string;
   /** Called when the primary CTA is pressed. */
-  onAction?: ButtonProps["onPress"];
+  onAction?: () => void;
   /** Called when the share control is pressed (`horizontal` only). */
   onShare?: ButtonProps["onPress"];
   /** Called when the favorite control is pressed (`horizontal` only). */

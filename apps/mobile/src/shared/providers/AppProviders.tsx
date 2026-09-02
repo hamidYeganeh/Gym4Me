@@ -4,6 +4,8 @@ import type { ReactNode } from "react";
 import { MediaImageProvider } from "@repo/ui/common/MediaImage";
 import { Toaster } from "@repo/ui/kit/Toast";
 import { apiClient } from "@/shared/lib/api-client";
+import { ApiProvider } from "@repo/api/v2";
+import { v2ApiClient } from "@/shared/lib/api-client";
 import { ApiToastBridge } from "./ApiToastBridge";
 import { ApiNavigationBridge } from "./ApiNavigationBridge";
 import { AuthProvider } from "./AuthProvider";
@@ -20,16 +22,18 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <MediaImageProvider adapter={NextMediaImageAdapter}>
       <AppConfigProvider>
         <AuthProvider>
-          <Toaster placement="top">
-            <ApiToastBridge client={apiClient} />
-            <ApiNavigationBridge />
-            <DevicePermissionsProvider>
-              <PushNotificationsProvider />
-              <PaymentReturnProvider />
-              <ExitAppProvider />
-              <NetworkOfflineProvider>{children}</NetworkOfflineProvider>
-            </DevicePermissionsProvider>
-          </Toaster>
+          <ApiProvider client={v2ApiClient}>
+            <Toaster placement="top">
+              <ApiToastBridge client={apiClient} />
+              <ApiNavigationBridge />
+              <DevicePermissionsProvider>
+                <PushNotificationsProvider />
+                <PaymentReturnProvider />
+                <ExitAppProvider />
+                <NetworkOfflineProvider>{children}</NetworkOfflineProvider>
+              </DevicePermissionsProvider>
+            </Toaster>
+          </ApiProvider>
         </AuthProvider>
       </AppConfigProvider>
     </MediaImageProvider>

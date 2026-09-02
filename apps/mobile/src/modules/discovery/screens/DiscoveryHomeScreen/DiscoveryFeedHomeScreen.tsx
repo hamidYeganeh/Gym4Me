@@ -425,9 +425,9 @@ export function DiscoveryFeedHomeScreen() {
   );
 
   const content = useMemo(() => {
-    let mapCtaInserted = false;
+    const mapCtaIndex = feed.sections.findIndex((section) => section.kind === "amenities");
 
-    return feed.sections.flatMap((section) => {
+    return feed.sections.flatMap((section, index) => {
       const sectionNode =
         section.kind === "banners" ? (
           <div className={styles.banners} key={section.id}>
@@ -437,11 +437,10 @@ export function DiscoveryFeedHomeScreen() {
           <DynamicSection key={section.id} section={section} />
         );
 
-      if (section.kind !== "amenities" || mapCtaInserted) {
+      if (index !== mapCtaIndex) {
         return [sectionNode];
       }
 
-      mapCtaInserted = true;
       return [
         <DiscoveryLocationMapCtaSection
           ctaLabel={t("mapCta")}

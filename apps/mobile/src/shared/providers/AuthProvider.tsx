@@ -227,6 +227,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       "@/shared/lib/workout-plan-cache"
     );
     await clearWorkoutPlanCache();
+    const { clearBookingCheckoutDraft } = await import(
+      "@/shared/lib/booking-checkout-draft"
+    );
+    clearBookingCheckoutDraft();
     const { clearOfflineCheckinQueues } = await import(
       "@/modules/owner/lib/offline-checkin-queue"
     );

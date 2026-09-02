@@ -276,7 +276,7 @@ export function AthleteWorkoutDetailSessionSection({
                   value={sessionNote}
                 />
               </TextField>
-              <Button size="lg"
+              <Button
                 isDisabled={
                   pending ||
                   (painScore.trim() !== "" &&

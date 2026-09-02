@@ -219,7 +219,10 @@ export function useOwnerClubsCreate() {
     setNotice(null);
     setIsSubmitting(true);
     try {
-      const uploaded = await mediaApi.upload(file);
+      const uploaded = await mediaApi.upload(file, file.name, {
+        purpose: "club_gallery",
+        visibility: "public",
+      });
       const next = await accountClubs.submit(club.id, {
         documentMediaIds: [uploaded.id],
       });

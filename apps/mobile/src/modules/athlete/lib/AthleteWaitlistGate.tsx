@@ -98,12 +98,12 @@ export function AthleteWaitlistGate() {
         if (booking.status === "awaiting_payment") {
           const payment = await accountBookings.pay(
             booking.id,
-            getPaymentCallbackUrl(`/athlete/bookings/${booking.id}`),
+            getPaymentCallbackUrl(`/athlete/booking/detail?bookingId=${encodeURIComponent(booking.id)}`),
           );
           window.location.assign(payment.redirectUrl);
           return;
         }
-        router.replace(`/athlete/bookings/${booking.id}`);
+        router.replace(`/athlete/booking/detail?bookingId=${encodeURIComponent(booking.id)}`);
       } catch {
         setError("mutation");
       } finally {

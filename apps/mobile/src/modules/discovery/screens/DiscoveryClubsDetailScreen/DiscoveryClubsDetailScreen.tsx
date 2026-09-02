@@ -48,7 +48,9 @@ export function DiscoveryClubsDetailScreen({
     club.subscriptions.find((plan) => plan.id === selectedSubscriptionId) ??
     club.subscriptions[0];
   const rating = getClubRating(club.reviews);
-  const reserveHref = `/discovery/clubs/${club.id}/reserve`;
+  const reserveHref = isDiscoveryApiId(club.id)
+    ? `/athlete/booking/service?branchId=${encodeURIComponent(club.id)}`
+    : `/discovery/clubs/${club.id}/reserve`;
   const canPurchaseMembership =
     isDiscoveryApiId(club.id) && Boolean(selectedPlan?.id);
 

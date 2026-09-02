@@ -4,6 +4,8 @@ export const ownerClubsCreateCatalogSectionVariants = tv({
   slots: {
     root: "flex flex-col gap-5 rounded-[24px] bg-surface p-5",
     header: "flex items-start justify-between gap-4",
+    headerCopy: "min-w-0 flex-1",
+    addButton: "shrink-0 sm:w-auto",
     title: "text-foreground",
     hint: "mt-1 text-muted",
     empty: "flex w-full flex-col items-center justify-center gap-2 border border-dashed border-border bg-surface-secondary/40 text-sm font-semibold text-muted",

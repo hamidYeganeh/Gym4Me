@@ -156,6 +156,13 @@ export type CoachDetail = {
   priceSuffix: string;
   isFavorite?: boolean;
   isVerified?: boolean;
+  bookingOptions?: Array<{
+    branchId: string;
+    offeringId: string;
+    resourceId: string;
+    durationMinutes: number;
+    name: string;
+  }>;
 };
 
 const PORTRAIT = "/demo/coach-portrait.png";

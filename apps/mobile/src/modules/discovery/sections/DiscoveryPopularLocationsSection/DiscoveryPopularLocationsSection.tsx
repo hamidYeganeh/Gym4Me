@@ -29,9 +29,7 @@ type LocationCopyKeys = {
   viewKey: "viewProvince" | "viewCityClubs" | "viewDistrict" | "viewCityCoaches";
 };
 
-const CLUB_LOCATION_COPY: Record<HomeLocationKind, Omit<LocationCopyKeys, "eyebrowKey">> & {
-  eyebrowKey: LocationCopyKeys["eyebrowKey"];
-} = {
+const CLUB_LOCATION_COPY: Record<HomeLocationKind, LocationCopyKeys> = {
   province: {
     titleKey: "provincesTitle",
     hintKey: "provincesHint",

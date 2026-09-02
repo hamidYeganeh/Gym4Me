@@ -4,6 +4,7 @@ import { Button } from "@heroui/react/button";
 import { Spinner } from "@heroui/react/spinner";
 import { Typography } from "@heroui/react/typography";
 import { ApiError, type Booking } from "@repo/api";
+import { supplyApi, useApiClient, type AvailabilitySlot } from "@repo/api/v2";
 import { ChevronLeft } from "@repo/icons/ChevronLeft";
 import { ChevronRight } from "@repo/icons/ChevronRight";
 import { CoachAvailabilitySlots } from "@repo/ui/cards/CoachAvailabilitySlots";
@@ -12,9 +13,9 @@ import { AppLayout } from "@repo/ui/layout/AppLayout";
 import { SecondaryPageHeader } from "@repo/ui/layout/SecondaryPageHeader";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/shared/lib/app-router";
+import { useSearchParams } from "next/navigation";
 
 import { useEffect, useMemo, useState } from "react";
-import { useCoachSlotsWeek } from "@/shared/hooks/useCoachSlotsWeek";
 import { accountBookings } from "@/shared/lib/api";
 import { formatJalaliDateTime } from "@/shared/lib/booking-view";
 import {
@@ -34,6 +35,9 @@ export function AthleteBookingRescheduleScreen({
 }: AthleteBookingRescheduleScreenProps) {
   const t = useTranslations("AthleteBookingReschedule");
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const client = useApiClient();
+  const resolvedBookingId = bookingId ?? searchParams.get("bookingId") ?? "";
 
   const [booking, setBooking] = useState<Booking | null>(null);
   const [isLoadingBooking, setIsLoadingBooking] = useState(true);
@@ -44,16 +48,14 @@ export function AthleteBookingRescheduleScreen({
   const [anchor, setAnchor] = useState(today);
   const range = weekRangeContaining(anchor);
 
-  const week = useCoachSlotsWeek(booking?.coachUserId ?? "", range.from, {
-    enabled: Boolean(booking),
-  });
-
-  const [selectedSlotId, setSelectedSlotId] = useState<string | undefined>();
+  const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
+  const [selectedStartsAt, setSelectedStartsAt] = useState<string | undefined>();
 
   useEffect(() => {
     let cancelled = false;
     accountBookings
-      .get(bookingId)
+      .get(resolvedBookingId)
       .then((result) => {
         if (!cancelled) setBooking(result);
       })
@@ -66,35 +68,68 @@ export function AthleteBookingRescheduleScreen({
     return () => {
       cancelled = true;
     };
-  }, [bookingId, t]);
+  }, [resolvedBookingId, t]);
+
+  useEffect(() => {
+    if (!booking?.resource.refId) return;
+    let cancelled = false;
+    const from = new Date(`${range.from}T00:00:00+03:30`);
+    const to = new Date(`${addDaysIso(range.to, 1)}T00:00:00+03:30`);
+    const durationMinutes = Math.max(
+      1,
+      Math.round((new Date(booking.endsAt).getTime() - new Date(booking.startsAt).getTime()) / 60_000),
+    );
+    setSlotsLoading(true);
+    supplyApi
+      .slots(
+        client,
+        booking.resource.refId,
+        {
+          from: from.toISOString(),
+          to: to.toISOString(),
+          duration_minutes: durationMinutes,
+          participants: booking.attendeeCount,
+          exclude_booking_id: booking.id,
+        },
+        true,
+      )
+      .then((result) => {
+        if (!cancelled) setSlots(result.slots);
+      })
+      .catch(() => {
+        if (!cancelled) setSlots([]);
+      })
+      .finally(() => {
+        if (!cancelled) setSlotsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [booking, client, range.from, range.to]);
 
   const selectedSlot = useMemo(() => {
-    for (const day of week.days) {
-      const slot = day.slots.find(
-        (entry) => entry.id === selectedSlotId && entry.status === "available",
-      );
-      if (slot) return slot;
-    }
-    return null;
-  }, [selectedSlotId, week.days]);
+    return slots.find((entry) => entry.startAt === selectedStartsAt && entry.status === "available") ?? null;
+  }, [selectedStartsAt, slots]);
 
   const availabilityDays = useMemo(
-    () =>
-      week.days
-        .filter((day) => day.slots.length > 0)
-        .map((day) => ({
-          id: day.id,
+    () => {
+      const grouped = new Map<string, AvailabilitySlot[]>();
+      for (const slot of slots) grouped.set(slot.localDate, [...(grouped.get(slot.localDate) ?? []), slot]);
+      return [...grouped.entries()]
+        .map(([date, daySlots]) => ({
+          id: date,
           label:
-            day.date === today
+            date === today
               ? t("today")
-              : `${t(`weekday.${weekdayKey(weekdaySat0(day.date))}`)} ${formatJalaliDateShort(day.date)}`,
-          slots: day.slots.map((slot) => ({
-            id: slot.id,
-            timeLabel: slot.timeLabel,
-            status: slot.status,
+              : `${t(`weekday.${weekdayKey(weekdaySat0(date))}`)} ${formatJalaliDateShort(date)}`,
+          slots: daySlots.map((slot) => ({
+            id: slot.startAt,
+            timeLabel: new Intl.DateTimeFormat("fa-IR", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Tehran" }).format(new Date(slot.startAt)),
+            status: slot.status === "available" ? "available" as const : "unavailable" as const,
           })),
-        })),
-    [t, today, week.days],
+        }));
+    },
+    [slots, t, today],
   );
 
   const onConfirm = async () => {
@@ -102,10 +137,8 @@ export function AthleteBookingRescheduleScreen({
     setIsSubmitting(true);
     setError(null);
     try {
-      await accountBookings.reschedule(booking.id, {
-        slotId: selectedSlot.id,
-      });
-      router.replace(`/athlete/bookings/${booking.id}`);
+      await accountBookings.reschedule(booking.id, { startsAt: selectedSlot.startAt });
+      router.replace(`/athlete/booking/detail?bookingId=${encodeURIComponent(booking.id)}`);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : t("submitError"));
       setIsSubmitting(false);
@@ -197,15 +230,15 @@ export function AthleteBookingRescheduleScreen({
           <CoachAvailabilitySlots
             availableLabel={t("slotAvailable")}
             days={availabilityDays}
-            onSlotPress={(slot) => setSelectedSlotId(slot.id)}
-            selectedSlotId={selectedSlotId}
+            onSlotPress={(slot) => setSelectedStartsAt(slot.id)}
+            selectedSlotId={selectedStartsAt}
             title={t("slotsTitle")}
             unavailableLabel={t("slotUnavailable")}
           />
         ) : (
           <div className={styles.emptySlots}>
             <Typography type="body-sm">
-              {week.isLoading ? t("slotsLoading") : t("slotsEmpty")}
+              {slotsLoading ? t("slotsLoading") : t("slotsEmpty")}
             </Typography>
           </div>
         )}
@@ -221,8 +254,8 @@ export function AthleteBookingRescheduleScreen({
         <Typography className={styles.summary} type="body-sm">
           {selectedSlot
             ? t("selectedSummary", {
-                date: formatJalaliDateShort(selectedSlot.date),
-                time: selectedSlot.timeLabel,
+                date: formatJalaliDateShort(selectedSlot.localDate),
+                time: new Intl.DateTimeFormat("fa-IR", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Tehran" }).format(new Date(selectedSlot.startAt)),
               })
             : t("selectPrompt")}
         </Typography>

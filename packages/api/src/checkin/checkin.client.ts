@@ -20,8 +20,18 @@ import type {
 
 export function createAccountCheckinApi(client: ApiClient) {
   return {
-    listMine(query: ListCheckInsQuery = {}) {
-      return client.request<CheckInsPage>(ep.mine, { query });
+    async listMine(query: ListCheckInsQuery = {}) {
+      const rows = await client.request<any[]>("/access/check-ins/me", { query });
+      const result = rows.map((item) => ({
+        id: String(item._id ?? item.id ?? ""),
+        clubId: String(item.branchId ?? ""),
+        userId: item.userId ? String(item.userId) : undefined,
+        bookingId: item.bookingId ? String(item.bookingId) : undefined,
+        method: item.method ?? "qr",
+        occurredAt: String(item.checkedInAt ?? item.createdAt),
+        createdAt: String(item.createdAt ?? item.checkedInAt),
+      } as CheckIn));
+      return { result, pagination: { page: 1, page_size: result.length, count: result.length, total: result.length, prev: null, next: null } } as CheckInsPage;
     },
 
     listClub(clubId: string, query: ListCheckInsQuery = {}) {

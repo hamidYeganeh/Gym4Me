@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": [
+    "src/database/**/*.ts",
+    "src/common/enums/**/*.ts",
+    "src/modules/**/models/**/*.ts",
+    "src/modules/**/enums/**/*.ts"
+  ],
+  "exclude": ["src/database/database.module.ts"]
+}

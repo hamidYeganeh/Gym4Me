@@ -46,8 +46,9 @@ Even a frontend-only deployment requires all mandatory API variables, including:
 - `JWT_ACCESS_SECRET`;
 - `JWT_PASSWORD_RESET_SECRET`;
 - `KAVENEGAR_API_KEY`;
-- `ZARINPAL_MERCHANT_ID`;
-- `FCM_SERVICE_ACCOUNT`;
+- `KAVENEGAR_API_KEY` و نام templateهای تراکنشی؛
+- `FCM_PROJECT_ID`، `FCM_CLIENT_EMAIL` و `FCM_PRIVATE_KEY`؛
+- برای iOS: `APNS_TEAM_ID`، `APNS_KEY_ID` و `APNS_PRIVATE_KEY`؛
 - `CORS_ORIGINS` and the four public URL variables.
 
 ## 1. Prepare and test the change locally
@@ -414,7 +415,7 @@ Distribute Android and iOS artifacts through their normal signed release channel
 Example:
 
 ```text
-required variable FCM_SERVICE_ACCOUNT is missing a value
+FCM_PROJECT_ID is missing a value
 ```
 
 Complete `.env.production` with the real production value. Do not deploy the API with

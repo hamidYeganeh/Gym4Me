@@ -1,195 +1,159 @@
 services:
-  # Optional self-hosted Mongo (default production uses Atlas via MONGODB_URI).
-  # Start with: docker compose --env-file .env.production -f docker-compose.production.yml --profile local-mongo up -d
-  mongo:
-    profiles: ["local-mongo"]
-    image: mongo:7
-    restart: unless-stopped
-    command: ["--replSet", "rs0", "--bind_ip_all"]
-    volumes:
-      - gym4me_mongodata:/data/db
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          'mongosh --quiet --eval "try { rs.status().ok } catch (e) { rs.initiate({_id:''rs0'',members:[{_id:0,host:''mongo:27017''}]}).ok }"',
-        ]
-      interval: 5s
-      timeout: 10s
-      retries: 20
-      start_period: 10s
-    networks:
-      - backend
-
-  redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-    command: ["redis-server", "--appendonly", "yes"]
-    volumes:
-      - gym4me_redisdata:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-    networks:
-      - backend
-
   api:
     build:
       context: .
-      dockerfile: apps/api/Dockerfile
+      target: api
     restart: unless-stopped
+    env_file: ${GYM4ME_ENV_FILE:-.env.production}
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017/gym4me?replicaSet=rs0
+      REDIS_URL: redis://redis:6379
+      UPLOAD_STORAGE_PATH: /app/var/uploads
+    ports:
+      - "127.0.0.1:4000:4000"
+    volumes:
+      - gym4me_uploads:/app/var/uploads
     depends_on:
+      mongodb-init:
+        condition: service_completed_successfully
       redis:
         condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:4000/api/v1/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+
+  worker:
+    build:
+      context: .
+      target: worker
+    restart: unless-stopped
+    env_file: ${GYM4ME_ENV_FILE:-.env.production}
     environment:
-      NODE_ENV: production
-      PORT: "8088"
-      # Atlas (production default) or local-mongo profile: mongodb://mongo:27017/gym4me?replicaSet=rs0
-      MONGODB_URI: ${MONGODB_URI:?MONGODB_URI is required}
+      MONGODB_URI: mongodb://mongodb:27017/gym4me?replicaSet=rs0
       REDIS_URL: redis://redis:6379
-      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?JWT_ACCESS_SECRET is required}
-      JWT_PASSWORD_RESET_SECRET: ${JWT_PASSWORD_RESET_SECRET:?JWT_PASSWORD_RESET_SECRET is required}
-      OFFLINE_CHECKIN_SIGNING_SECRET: ${OFFLINE_CHECKIN_SIGNING_SECRET:?OFFLINE_CHECKIN_SIGNING_SECRET is required}
-      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-900s}
-      JWT_REFRESH_TTL_DAYS: ${JWT_REFRESH_TTL_DAYS:-30}
-      BOOKING_PAYMENT_TTL_MINUTES: ${BOOKING_PAYMENT_TTL_MINUTES:-15}
-      BOOKING_COACH_APPROVAL_TTL_MINUTES: ${BOOKING_COACH_APPROVAL_TTL_MINUTES:-1440}
-      REFERRAL_REWARD_AMOUNT: ${REFERRAL_REWARD_AMOUNT:-50000}
-      CORS_ORIGINS: ${CORS_ORIGINS:?CORS_ORIGINS is required}
-      API_BASE_URL: ${API_PUBLIC_URL:?API_PUBLIC_URL is required}
-      ENABLE_SWAGGER: ${ENABLE_SWAGGER:-false}
-      DEBUG_MODE: ${DEBUG_MODE:-false}
-      SMS_PROVIDER: ${SMS_PROVIDER:-kavenegar}
-      KAVENEGAR_API_KEY: ${KAVENEGAR_API_KEY:?KAVENEGAR_API_KEY is required}
-      KAVENEGAR_OTP_TEMPLATE: ${KAVENEGAR_OTP_TEMPLATE:-verify}
-      KAVENEGAR_INVITE_TEMPLATE: ${KAVENEGAR_INVITE_TEMPLATE:-}
-      KAVENEGAR_SENDER: ${KAVENEGAR_SENDER:-}
-      PAYMENT_PROVIDER: ${PAYMENT_PROVIDER:-mock}
-      ALLOW_MOCK_PAYMENT_IN_PRODUCTION: ${ALLOW_MOCK_PAYMENT_IN_PRODUCTION:-false}
-      ZARINPAL_MERCHANT_ID: ${ZARINPAL_MERCHANT_ID:-}
-      ZARINPAL_SANDBOX: ${ZARINPAL_SANDBOX:-false}
-      PUSH_PROVIDER: ${PUSH_PROVIDER:-fcm}
-      FCM_SERVICE_ACCOUNT: ${FCM_SERVICE_ACCOUNT:?FCM_SERVICE_ACCOUNT is required}
-      KYC_PROVIDER: ${KYC_PROVIDER:-mock}
-      FINNOTECH_BASE_URL: ${FINNOTECH_BASE_URL:-https://api.finnotech.ir}
-      FINNOTECH_CLIENT_ID: ${FINNOTECH_CLIENT_ID:-}
-      FINNOTECH_CLIENT_SECRET: ${FINNOTECH_CLIENT_SECRET:-}
-      FINNOTECH_CLIENT_NATIONAL_ID: ${FINNOTECH_CLIENT_NATIONAL_ID:-}
-      SUPPORT_PHONE: ${SUPPORT_PHONE:-}
-      SUPPORT_EMAIL: ${SUPPORT_EMAIL:-}
-      SUPPORT_TELEGRAM: ${SUPPORT_TELEGRAM:-}
-      SUPPORT_WORKING_HOURS: ${SUPPORT_WORKING_HOURS:-}
-      UPLOAD_DIR: /app/uploads
+      FCM_SERVICE_ACCOUNT_FILE: /run/secrets/firebase-push-service-account.json
+      APNS_ENABLED: ${APNS_ENABLED:-false}
     volumes:
-      - gym4me_uploads:/app/uploads
+      - ${FCM_SERVICE_ACCOUNT_FILE_HOST:-./apps/worker/.secrets/firebase-push-service-account.json}:/run/secrets/firebase-push-service-account.json:ro
+    depends_on:
+      mongodb-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
     healthcheck:
       test:
         [
           "CMD",
           "node",
           "-e",
-          "fetch('http://127.0.0.1:8088/api/v1/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+          "fetch('http://127.0.0.1:4001/health/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
         ]
-      interval: 10s
+      interval: 15s
       timeout: 5s
-      retries: 10
+      retries: 5
       start_period: 20s
-    networks:
-      - backend
-      - frontend
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
 
-  website:
-    build:
-      context: .
-      dockerfile: apps/website/Dockerfile
-      args:
-        NEXT_PUBLIC_API_BASE_URL: ${API_PUBLIC_URL:?API_PUBLIC_URL is required}/api/v1
-        NEXT_PUBLIC_SITE_URL: ${WEBSITE_URL:?WEBSITE_URL is required}
+  mongodb:
+    image: mongo:8.0
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     restart: unless-stopped
-    environment:
-      NODE_ENV: production
-      INTERNAL_API_BASE_URL: http://api:8088/api/v1
-      NEXT_PUBLIC_API_BASE_URL: ${API_PUBLIC_URL:?API_PUBLIC_URL is required}/api/v1
-      NEXT_PUBLIC_SITE_URL: ${WEBSITE_URL:?WEBSITE_URL is required}
+    volumes:
+      - gym4me_mongodb_data:/data/db
     healthcheck:
-      test:
-        [
-          "CMD",
-          "node",
-          "-e",
-          "fetch('http://127.0.0.1:8080').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
-        ]
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    security_opt: ["no-new-privileges:true"]
+
+  mongodb-init:
+    image: mongo:8.0
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: "no"
+    entrypoint:
+      [
+        "mongosh",
+        "--host",
+        "mongodb:27017",
+        "--quiet",
+        "--eval",
+        "try { rs.status() } catch (e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongodb:27017'}]}) }",
+      ]
+    security_opt: ["no-new-privileges:true"]
+
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    restart: unless-stopped
+    volumes:
+      - gym4me_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 20s
-    networks:
-      - frontend
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
 
-  mobile:
-    build:
-      context: .
-      dockerfile: apps/mobile/Dockerfile
-      args:
-        NEXT_PUBLIC_API_BASE_URL: ${API_PUBLIC_URL:?API_PUBLIC_URL is required}/api/v1
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    profiles: ["monitoring"]
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-    networks:
-      - frontend
-
-  admin:
-    build:
-      context: .
-      dockerfile: apps/admin/Dockerfile
-      args:
-        VITE_API_BASE_URL: ${API_PUBLIC_URL:?API_PUBLIC_URL is required}/api/v1
-        VITE_BASE_PATH: /
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-    networks:
-      - frontend
-
-  gateway:
-    image: nginx:1.28-alpine
-    restart: unless-stopped
+    command:
+      [
+        "--config.file=/etc/prometheus/prometheus.yml",
+        "--storage.tsdb.path=/prometheus",
+        "--storage.tsdb.retention.time=30d",
+      ]
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - ./ops/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./ops/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - ./secrets/metrics_token:/run/secrets/metrics_token:ro
+      - gym4me_prometheus_data:/prometheus
     depends_on:
       api:
         condition: service_healthy
-      website:
+      worker:
         condition: service_healthy
-      mobile:
-        condition: service_healthy
-      admin:
-        condition: service_healthy
-    ports:
-      - "80:80"
-    volumes:
-      - ./deploy/gateway.nginx.conf:/etc/nginx/conf.d/default.conf:ro
-    healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-    networks:
-      - frontend
+    security_opt: ["no-new-privileges:true"]
 
-networks:
-  # Not internal: API must reach MongoDB Atlas (and other outbound providers).
-  # Local mongo/redis stay unpublished (no host ports).
-  backend:
-  frontend:
+  grafana:
+    image: grafana/grafana:12.1.0
+    profiles: ["monitoring"]
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-change-before-enabling-monitoring}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SERVER_HTTP_ADDR: 0.0.0.0
+    ports:
+      - "127.0.0.1:3003:3000"
+    volumes:
+      - gym4me_grafana_data:/var/lib/grafana
+      - ./ops/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on: [prometheus]
+    security_opt: ["no-new-privileges:true"]
 
 volumes:
-  gym4me_mongodata:
-  gym4me_redisdata:
+  gym4me_mongodb_data:
+  gym4me_redis_data:
   gym4me_uploads:
+  gym4me_prometheus_data:
+  gym4me_grafana_data:

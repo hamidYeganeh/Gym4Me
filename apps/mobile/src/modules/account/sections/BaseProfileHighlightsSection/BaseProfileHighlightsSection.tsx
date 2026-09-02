@@ -2,36 +2,21 @@ import { TextWithBrand } from "@repo/ui/kit/LineShadowText";
 import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import { ChevronRight } from "@repo/icons/ChevronRight";
-import { Fire1 } from "@repo/icons/Fire1";
-import { AchievementTag } from "@repo/ui/cards/AchievementTag";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useRouter } from "@/shared/lib/app-router";
 
-import {
-  ACHIEVEMENT_TAG_COLORS,
-  ACHIEVEMENT_TAG_VARIANTS,
-} from "../AchievementsGridSection/AchievementsGridSection.types";
 import { baseProfileHighlightsSectionVariants } from "./BaseProfileHighlightsSection.styles";
 import type { BaseProfileHighlightsSectionProps } from "./BaseProfileHighlightsSection.types";
 
 const INVITE_SRC = "/profile/invite-friends.jpg";
-const PREVIEW_COUNT = 4;
-
 export function BaseProfileHighlightsSection({
   inviteHref,
-  streakHref,
-  streakDays,
-  achievementsHref,
-  achievements,
-  achievementsTotal,
   className,
 }: BaseProfileHighlightsSectionProps) {
   const t = useTranslations("Mobile.Profile");
   const styles = baseProfileHighlightsSectionVariants();
   const router = useRouter();
-  const preview = achievements.slice(0, PREVIEW_COUNT);
-
   return (
     <div className={styles.root({ className })}>
       {inviteHref ? (

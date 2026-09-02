@@ -87,7 +87,10 @@ export function CoachProfileEditScreen({
     setNotice(null);
     setIsSubmitting(true);
     try {
-      const uploaded = await mediaApi.upload(file);
+      const uploaded = await mediaApi.upload(file, file.name, {
+        purpose: "verification",
+        visibility: "private",
+      });
       const next = await accountProfile.submitCoachVerification({
         documentMediaIds: [uploaded.id],
       });

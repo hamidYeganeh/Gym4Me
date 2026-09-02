@@ -53,7 +53,7 @@ export function useAthleteBookingDetail({
     void runAction(async () => {
       const payment = await accountBookings.pay(
         booking.id,
-        getPaymentCallbackUrl(`/athlete/bookings/${booking.id}`),
+        getPaymentCallbackUrl(`/athlete/booking/detail?bookingId=${encodeURIComponent(booking.id)}`),
       );
       window.location.assign(payment.redirectUrl);
     });

@@ -1,106 +1,105 @@
 # Gym4Me
 
-Monorepo for the Gym4Me platform — Iranian clubs, coaches, athletes, and ops.
+زیرساخت نسخه تجاری اول اکوسیستم Gym4Me. این مخزن یک Monorepo شامل API، Worker، اپ موبایل ورزشکار/مربی، پنل باشگاه و پنل ادمین است.
 
-Discovery home is composed from typed, admin-published sections through a
-revision-pinned Redis feed; mobile loads up to eight sections per page and can
-personalize eligible sections from the active athlete profile.
-Installed section kinds also cover coaches, classes, spaces, live slots,
-equipment, membership plans, capacity-backed bookable offers, and amenities.
+## وضعیت فعلی
 
-Paid athlete club-membership and owner platform-subscription purchases use
-persisted, idempotent gateway checkouts. Provider verification happens before
-the Mongo transaction that activates entitlement and captures the immutable
-Payment/Ledger/Outbox records; browser callback loss is recovered by leased
-reconciliation workers. Native Capacitor payments return through a public API
-callback broker and an allowlisted `com.gym4me.app://payment-return` deep link;
-the app never submits a WebView-local origin to the PSP.
+- معماری Modular Monolith و مرز دامنه‌ها تعریف شده است.
+- مدل‌های دامنه‌ای MongoDB/Mongoose در `packages/database` قرار دارند.
+- API شامل Account/Auth، RBAC، سازمان/باشگاه، Coach، Supply، Booking، Membership، Finance، Advertising، Verification، Review، Notification و Upload است.
+- اپ موبایل Next.js برای Static Export و Capacitor آماده شده است.
+- هر سه UI به SDK/API جدید متصل‌اند و دامنه‌های P0/P1 تکمیل شده‌اند. وضعیت دقیق و گیت‌های محیطی انتشار در `docs/IMPLEMENTATION_STATUS.md` ثبت می‌شود.
 
-## Apps
+## ساختار مخزن
 
-| App     | Path           | Port | Role                             |
-| ------- | -------------- | ---- | -------------------------------- |
-| API     | `apps/api`     | 8088 | NestJS + MongoDB source of truth |
-| Mobile  | `apps/mobile`  | 8081 | Multi-role Next + Capacitor app  |
-| Admin   | `apps/admin`   | 8082 | Vite ops panel                   |
-| Website | `apps/website` | 8080 | Public / SEO marketing           |
+```text
+apps/
+  api/             NestJS REST API (Fastify adapter)
+  worker/          پردازش Outbox و کارهای پس‌زمینه
+  mobile/          Next.js + Capacitor (Athlete/Coach)
+  business-panel/  پنل باشگاه و پرسنل
+  admin/           پنل مدیریت پلتفرم
+packages/
+  api/             کلاینت مشترک API و TanStack Query بر اساس دامنه
+  ui/              کامپوننت‌ها و الگوهای UI مشترک
+  theme/           توکن‌ها و استایل مشترک
+docs/               مستندات محصول، معماری، API و داده
+```
 
-## Packages
+## اجرای محلی
 
-| Package                                                      | Purpose                                    |
-| ------------------------------------------------------------ | ------------------------------------------ |
-| `@repo/api`                                                  | Typed HTTP client, DTOs, React Query hooks |
-| `@repo/ui`                                                   | Shared product UI (HeroUI + icons)         |
-| `@repo/theme` / `@repo/icons` / `@repo/fonts` / `@repo/i18n` | Design system + copy                       |
-
-## Product docs
-
-Authoritative sequencing and scope live under [`docs/product/`](./docs/product/):
-
-- [`cursor-implementation-master-plan.md`](./docs/product/cursor-implementation-master-plan.md) — executable completion backlog for Cursor
-- [`architecture-completion-guardrails.md`](./docs/product/architecture-completion-guardrails.md) — architecture and quality guardrails
-- [`phases.md`](./docs/product/phases.md) — delivery gates
-- [`checklist.md`](./docs/product/checklist.md) — implementation status
-- [`decisions.md`](./docs/product/decisions.md) — locked product/architecture decisions
-- [`scenarios.md`](./docs/product/scenarios.md) — end-to-end scenarios
-
-## Local development
+پیش‌نیازها: Node.js، Docker و npm.
 
 ```bash
+cp .env.example .env
 npm install
-npm run docker:up          # mongo + redis
-cp apps/api/.env.example apps/api/.env   # if needed
-npm run db:seed:all -w api
-# Discovery pages only (does not overwrite admin-authored pages):
-npm run db:seed:discovery -w api
-
-# Default: API + mobile only (lighter on RAM)
-npm run dev
-
-# Or start apps individually:
+docker compose up -d mongodb mongodb-init redis
+npm run db:indexes
+npm run db:seed
 npm run dev:api
-npm run dev:mobile
-npm run dev:admin
-npm run dev:website
-
-# All four apps at once (heavy — avoid on low-RAM machines):
-npm run dev:all
 ```
 
-MongoDB must run as a replica set because booking, payment/Ledger, membership,
-and check-in mutations use transactions. The provided Docker setup initializes
-the local single-node `rs0` replica set automatically.
-
-Production offline reception also requires a distinct, random
-`OFFLINE_CHECKIN_SIGNING_SECRET` (at least 32 characters). Capacitor stores the
-signed eligibility snapshot and pending attendance rows in native secure
-storage; unsigned offline rows are not accepted by the API.
-
-Frontend API base URLs come from each app’s `.env.development` / `.env.production`
-(must include `/api/v1`). Defaults: LAN `http://192.168.3.106:8088/api/v1` in
-development, `https://api.gym4me.ir/api/v1` in production. Copy
-`.env.local.example` → `.env.local` to override on your machine.
-
-Default demo password: `Gym4Me!123`  
-Seeded phones: admin `09121111111`, owners `0912200000x`, coaches `0912300000x`, athletes `0912400000x`.
-
-## Quality gates
+ساخت اولین Super Admin، بدون رمز پیش‌فرض:
 
 ```bash
-npm run check-types
-npm run lint
-npm run build -w api
-npm run build -w mobile
-npm run build -w admin
-npm run build -w website
-
-# Against a running API (DEBUG_MODE=true, seeded):
-bash apps/api/test/smoke-flows.sh
-bash apps/api/test/integrity-flows.sh
-bash apps/api/test/smoke-booking.sh
-bash apps/api/test/smoke-membership.sh
+BOOTSTRAP_ADMIN_MOBILE=+989xxxxxxxxx \
+BOOTSTRAP_ADMIN_PASSWORD='a-strong-password' \
+npm run admin:bootstrap
 ```
 
-## Phase rule
+Swagger در حالت توسعه:
 
-A phase is closed only when API + `@repo/api` client + consuming UI (mobile/admin/website as required) and the phase scenario suite all pass. Schema-only or mock UI does not count.
+```text
+http://localhost:4000/docs
+```
+
+Health check:
+
+```text
+GET http://localhost:4000/api/v1/health
+```
+
+## اپ موبایل و Capacitor
+
+```bash
+npm run build -w mobile
+npm run cap:sync -w mobile
+```
+
+خروجی وب موبایل در `apps/mobile/out` ساخته می‌شود و Capacitor همین پوشه را با `webDir: "out"` مصرف می‌کند.
+رجیستری Push با `@capacitor/push-notifications` فعال است. Worker با `PUSH_PROVIDER=direct` مستقیماً FCM/APNs را پشتیبانی می‌کند و با `PUSH_PROVIDER=webhook` نیز می‌تواند از gateway بیرونی استفاده کند.
+
+ساخت APK دیباگ Android:
+
+```bash
+npm run android:apk -w mobile
+```
+
+خروجی در `apps/mobile/artifacts/android/Gym4Me-debug.apk` قرار می‌گیرد. ساخت iOS archive به نصب Xcode کامل و CocoaPods سالم نیاز دارد.
+
+## دسترسی به API در اپ‌ها
+
+اپ موبایل، پنل کسب‌وکار و پنل ادمین از `@repo/api` استفاده می‌کنند. مسیر جدید توسعه از exportهای `@repo/api/v2` و ماژول‌های `features/*` استفاده می‌کند. SDK قدیمی فقط برای مهاجرت تدریجی نگهداری می‌شود و نباید برای صفحه جدید استفاده شود.
+
+```tsx
+import { useProfileQuery } from "@repo/api/v2";
+
+const profile = useProfileQuery({ enabled: Boolean(accessToken) });
+```
+
+آدرس پایه در هر اپ از `NEXT_PUBLIC_API_URL` خوانده می‌شود. برای درخواست‌های جدید، URL یا `fetch` مستقیم داخل اپ تعریف نکنید؛ تابع API، query key و hook مربوط را در دامنه مناسب داخل `packages/api/src/features` اضافه کنید.
+
+پنل کسب‌وکار پس از ورود، Organization و Scope را از Access Context می‌گیرد و نشست v2 را در storage همان اپ نگه می‌دارد. اپ موبایل و پنل ادمین نیز مسیرهای P0/P1 را از همین قرارداد مصرف می‌کنند.
+
+## مستندات
+
+- [نیازمندی‌های محصول](docs/PRODUCT_REQUIREMENTS.md)
+- [معماری سیستم](docs/ARCHITECTURE.md)
+- [مرجع API](docs/API.md)
+- [مدل داده و داینامیک‌سازی](docs/DATA_MODEL.md)
+- [RBAC و Scope](docs/RBAC.md)
+- [راهنمای توسعه](docs/DEVELOPMENT.md)
+- [تصمیم‌های معماری](docs/DECISIONS.md)
+- [وضعیت پیاده‌سازی](docs/IMPLEMENTATION_STATUS.md)
+- [راهنمای Production و عملیات](docs/PRODUCTION_RUNBOOK.md)
+- [راهبرد تست](docs/TEST_STRATEGY.md)

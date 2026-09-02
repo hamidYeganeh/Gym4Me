@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { RoleAppNavigation } from "@/shared/components/RoleAppNavigation";
+import { BusinessPanelRedirect } from "@/shared/components/BusinessPanelRedirect";
 
-export default function OwnerLayout({ children }: { children: ReactNode }) {
-  return <RoleAppNavigation role="owner">{children}</RoleAppNavigation>;
+export default function OwnerLayout(_props: { children: ReactNode }) {
+  return <BusinessPanelRedirect />;
 }

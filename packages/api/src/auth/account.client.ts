@@ -14,9 +14,19 @@ import type {
   SwitchRoleInput,
 } from "./account.dto";
 import { authAccountEndpoints as ep } from "./account.endpoint";
+import { createLegacySession, legacyTokenPair } from "./session-adapter";
 
 function asSession(data: AuthSession): AuthSession {
   return data;
+}
+
+function asOtpRequested(data: any): OtpRequested {
+  return {
+    expiresInSeconds: Number(data?.expiresInSeconds ?? data?.expires_in ?? 120),
+    ...(data?.debugCode || data?.debug_code
+      ? { debugCode: String(data.debugCode ?? data.debug_code) }
+      : {}),
+  };
 }
 
 /** Account auth — mobile / multi-role app (`/account/auth`). */
@@ -24,44 +34,44 @@ export function createAccountAuthApi(client: ApiClient) {
   client.configureRefresh(ep.refresh);
 
   return {
-    requestOtp(input: RequestOtpInput) {
-      return client.request<OtpRequested>(ep.otp, {
+    async requestOtp(input: RequestOtpInput) {
+      const result = await client.request<any>(ep.otp, {
         method: "POST",
         public: true,
-        body: input,
+        body: { mobile: input.phone, purpose: "LOGIN" },
       });
+      return asOtpRequested(result);
     },
 
     async confirmOtp(input: ConfirmOtpInput) {
-      const session = asSession(
-        await client.request<AuthSession>(ep.otpConfirm, {
+      const result = await client.request<any>(ep.otpConfirm, {
           method: "POST",
           public: true,
-          body: input,
-        }),
-      );
+          body: { mobile: input.phone, code: input.code, purpose: "LOGIN" },
+        });
+      const session = asSession(await createLegacySession(client, result, "athlete"));
       await client.setSession(session);
       return session;
     },
 
     async login(input: LoginInput) {
-      const session = asSession(
-        await client.request<AuthSession>(ep.login, {
+      const result = await client.request<any>(ep.login, {
           method: "POST",
           public: true,
-          body: input,
-        }),
-      );
+          body: { mobile: input.phone, password: input.password },
+        });
+      const session = asSession(await createLegacySession(client, result));
       await client.setSession(session);
       return session;
     },
 
     async refresh(refreshToken: string) {
-      const pair = await client.request<TokenPair>(ep.refresh, {
+      const result = await client.request<any>(ep.refresh, {
         method: "POST",
         public: true,
-        body: { refreshToken },
+        body: { refresh_token: refreshToken },
       });
+      const pair: TokenPair = legacyTokenPair(result);
       const current = client.getSession();
       if (current) {
         await client.setSession({ ...current, ...pair });
@@ -70,64 +80,74 @@ export function createAccountAuthApi(client: ApiClient) {
     },
 
     async switchRole(input: SwitchRoleInput) {
-      const session = asSession(
-        await client.request<AuthSession>(ep.switchRole, {
-          method: "POST",
-          body: {
-            role: input.role,
-            refreshToken:
-              input.refreshToken ?? client.getSession()?.refreshToken,
-          },
-        }),
-      );
+      const contexts = await client.request<any>("/account/access-context");
+      const assignment = (contexts.assignments ?? []).find((item: any) => {
+        const code = String(item.role_code ?? "");
+        return code === input.role || (input.role === "admin" && code.includes("admin"));
+      });
+      if (!assignment) throw new Error(`No access context is available for role ${input.role}.`);
+      const activated = await client.request<any>(ep.switchRole, {
+        method: "POST",
+        body: {
+          role_id: assignment.role_id,
+          scope_type: assignment.scope_type,
+          ...(assignment.scope_id ? { scope_id: assignment.scope_id } : {}),
+        },
+      });
+      const current = client.getSession();
+      if (!current) throw new Error("Cannot switch role without an active session.");
+      const session = asSession({
+        ...current,
+        accessToken: activated.access_token,
+        activeRole: input.role,
+      });
       await client.setSession(session);
       return session;
     },
 
     async logout(input: LogoutInput = {}) {
       try {
-        await client.request<{ ok: true }>(ep.logout, {
+        await client.request<{ ok: true }>(input.all ? ep.logoutAll : ep.logout, {
           method: "POST",
-          body: {
-            refreshToken:
-              input.refreshToken ?? client.getSession()?.refreshToken,
-            all: input.all,
-          },
         });
       } finally {
         await client.setSession(null);
       }
     },
 
-    forgotPassword(input: ForgotPasswordInput) {
-      return client.request<OtpRequested>(ep.forgotPassword, {
+    async forgotPassword(input: ForgotPasswordInput) {
+      const result = await client.request<any>(ep.forgotPassword, {
         method: "POST",
         public: true,
-        body: input,
+        body: { mobile: input.phone },
       });
+      return asOtpRequested(result);
     },
 
-    forgotPasswordConfirm(input: ForgotPasswordConfirmInput) {
-      return client.request<ForgotPasswordConfirmed>(ep.forgotPasswordConfirm, {
+    async forgotPasswordConfirm(input: ForgotPasswordConfirmInput) {
+      const result = await client.request<any>(ep.forgotPasswordConfirm, {
         method: "POST",
         public: true,
-        body: input,
+        body: { mobile: input.phone, code: input.code },
       });
+      return { resetToken: String(result.resetToken ?? result.reset_token ?? "") } satisfies ForgotPasswordConfirmed;
     },
 
-    resetPassword(input: ResetPasswordInput) {
-      return client.request<AuthSession>(ep.forgotPasswordReset, {
+    async resetPassword(input: ResetPasswordInput): Promise<void> {
+      await client.request(ep.forgotPasswordReset, {
         method: "POST",
         public: true,
-        body: input,
+        body: { reset_token: input.resetToken, new_password: input.password },
       });
+      await client.setSession(null);
     },
 
-    setPassword(input: SetPasswordInput) {
-      return client.request<{ ok: true }>(ep.setPassword, {
+    async setPassword(input: SetPasswordInput) {
+      await client.request(ep.setPassword, {
         method: "POST",
-        body: input,
+        body: { new_password: input.password },
       });
+      return { ok: true as const };
     },
 
     getSession() {

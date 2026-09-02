@@ -180,6 +180,8 @@ export type RescheduleBookingInput = {
   slotId?: string;
   /** Club bookings: target occurrence date (YYYY-MM-DD). */
   date?: string;
+  /** Exact ISO start returned by the new availability API. */
+  startsAt?: string;
 };
 
 export type CancelBookingSeriesInput = {

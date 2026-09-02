@@ -20,7 +20,7 @@ import { getBooking, type AthleteBooking } from "./bookings-data";
 import { useRouter } from "@/shared/lib/app-router";
 
 type Props = {
-  bookingId: string;
+  bookingId?: string;
 };
 
 /**
@@ -33,12 +33,13 @@ export function AthleteBookingDetailGate({ bookingId }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isAuthenticated, isReady } = useAuth();
+  const resolvedBookingId = bookingId ?? searchParams.get("bookingId") ?? "";
 
-  const isApi = isDiscoveryApiId(bookingId);
-  const isDemo = isDiscoveryDemoId(bookingId);
+  const isApi = isDiscoveryApiId(resolvedBookingId);
+  const isDemo = isDiscoveryDemoId(resolvedBookingId);
   const mockBooking = useMemo(
-    () => (isDemo ? getBooking(bookingId) : undefined),
-    [bookingId, isDemo],
+    () => (isDemo ? getBooking(resolvedBookingId) : undefined),
+    [resolvedBookingId, isDemo],
   );
 
   const copy = useMemo<AthleteBookingCopy>(
@@ -75,17 +76,17 @@ export function AthleteBookingDetailGate({ bookingId }: Props) {
     const load = async () => {
       try {
         if (authority && (gatewayStatus === "OK" || gatewayStatus === "NOK")) {
-          const verified = await accountBookings.verifyPayment(bookingId, {
+          const verified = await accountBookings.verifyPayment(resolvedBookingId, {
             authority,
             status: gatewayStatus,
           });
           if (cancelled) return;
           applyApiBooking(verified);
           // Drop gateway params so refresh/back doesn't re-verify.
-          router.replace(`/athlete/bookings/${bookingId}`);
+          router.replace(`/athlete/booking/detail?bookingId=${encodeURIComponent(resolvedBookingId)}`);
           return;
         }
-        const fetched = await accountBookings.get(bookingId);
+        const fetched = await accountBookings.get(resolvedBookingId);
         if (!cancelled) applyApiBooking(fetched);
       } catch {
         if (!cancelled) setBooking(undefined);
@@ -100,7 +101,7 @@ export function AthleteBookingDetailGate({ bookingId }: Props) {
     };
   }, [
     applyApiBooking,
-    bookingId,
+    resolvedBookingId,
     isApi,
     isAuthenticated,
     isReady,

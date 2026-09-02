@@ -21,7 +21,7 @@ export function SettingsNavGroupSection({
       <div className={base.groupCard()}>
         {rows.map((row, index) => {
           const isDisabled = Boolean(row.isDisabled) || !row.onPress;
-          const styles = settingsNavGroupSectionVariants({ isDisabled });
+          const styles = settingsNavGroupSectionVariants();
           const content = (
             <>
               <span aria-hidden className={styles.rowIcon()}>

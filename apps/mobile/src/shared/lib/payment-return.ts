@@ -5,6 +5,7 @@ const PAYMENT_RETURN_PATHS = [
   /^\/athlete\/wallet$/,
   /^\/athlete\/memberships$/,
   /^\/athlete\/bookings\/[a-f\d]{24}$/i,
+  /^\/athlete\/booking\/detail\?bookingId=[a-f\d]{24}$/i,
   /^\/owner\/subscription$/,
 ];
 

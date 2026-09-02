@@ -1,54 +1,64 @@
-import { VersioningType } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
-import { mkdirSync } from 'fs';
-import helmet from 'helmet';
-import { AppModule } from './app.module';
-import { ApiMessageKeyFilter } from './common/filters/api-message-key.filter';
-import { ApiMessageKeyInterceptor } from './common/interceptors/api-message-key.interceptor';
-import {
-  assertSecurityConfig,
-  resolveCorsOrigin,
-} from './common/utils/security-config.util';
-import { createAppValidationPipe } from './common/utils/validation-exception.util';
-import { setupSwagger, SWAGGER_PATH } from './swagger';
+import "reflect-metadata";
+import type { IncomingMessage } from "node:http";
+import helmet from "@fastify/helmet";
+import multipart from "@fastify/multipart";
+import { NestFactory } from "@nestjs/core";
+import { FastifyAdapter, type NestFastifyApplication } from "@nestjs/platform-fastify";
+import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import { AppModule } from "./app.module.js";
+import { appConfig } from "./config/app.config.js";
+import { observeHttp } from "./observability/metrics.js";
 
-async function bootstrap() {
-  assertSecurityConfig();
-
-  mkdirSync(process.env.UPLOAD_DIR || './uploads', { recursive: true });
-
-  const app = await NestFactory.create(AppModule);
-
-  app.use(
-    helmet({
-      // Media/SVG are not served inline as active documents; keep CSP off for API JSON.
-      contentSecurityPolicy: false,
-      crossOriginResourcePolicy: { policy: 'cross-origin' },
-    }),
+const config = appConfig();
+const allowedOrigins = new Set(
+  config.CORS_ALLOWED_ORIGINS.split(",")
+    .map((value) => value.trim())
+    .filter(Boolean),
+);
+const app = await NestFactory.create<NestFastifyApplication>(
+  AppModule,
+  new FastifyAdapter({
+    trustProxy: config.TRUST_PROXY,
+    bodyLimit: config.REQUEST_BODY_LIMIT_BYTES,
+    genReqId: (request: IncomingMessage) =>
+      typeof request.headers["x-request-id"] === "string" &&
+      /^[a-zA-Z0-9._:-]{8,128}$/.test(request.headers["x-request-id"])
+        ? request.headers["x-request-id"]
+        : crypto.randomUUID(),
+  }),
+);
+await app.register(helmet, {
+  contentSecurityPolicy: false,
+  crossOriginResourcePolicy: { policy: "same-site" },
+});
+await app.register(multipart, {
+  limits: { files: 1, fileSize: 15 * 1024 * 1024, fields: 10 },
+});
+app.enableCors({
+  origin: (origin, callback) => callback(null, !origin || allowedOrigins.has(origin)),
+  credentials: true,
+  methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+});
+app.setGlobalPrefix("api/v1");
+const fastify = app.getHttpAdapter().getInstance();
+fastify.addHook("onRequest", async (request: any) => {
+  request.metricsStartedAt = process.hrtime.bigint();
+});
+fastify.addHook("onResponse", async (request: any, reply: any) => {
+  const started = request.metricsStartedAt as bigint | undefined;
+  observeHttp(
+    request.method,
+    request.routeOptions?.url ?? request.url,
+    reply.statusCode,
+    started ? Number(process.hrtime.bigint() - started) / 1e9 : 0,
   );
-
-  app.setGlobalPrefix('api');
-  app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
-  app.enableCors({
-    origin: resolveCorsOrigin(),
-    credentials: true,
-  });
-  app.useGlobalPipes(createAppValidationPipe());
-  app.useGlobalFilters(new ApiMessageKeyFilter());
-  app.useGlobalInterceptors(new ApiMessageKeyInterceptor());
-  app.enableShutdownHooks();
-
-  const enableSwagger =
-    String(process.env.ENABLE_SWAGGER ?? '').toLowerCase() === 'true' ||
-    (process.env.NODE_ENV ?? 'development').toLowerCase() !== 'production';
-  if (enableSwagger) {
-    setupSwagger(app);
-  }
-
-  const port = process.env.PORT ?? 8088;
-  await app.listen(port);
-  if (enableSwagger) {
-    console.log(`Swagger UI: http://localhost:${port}/${SWAGGER_PATH}`);
-  }
+});
+if (config.SWAGGER_ENABLED ?? config.NODE_ENV !== "production") {
+  const document = SwaggerModule.createDocument(
+    app,
+    new DocumentBuilder().setTitle("Gym4Me API").setVersion("1.0.0").addBearerAuth().build(),
+  );
+  SwaggerModule.setup("docs", app, document);
 }
-void bootstrap();
+app.enableShutdownHooks();
+await app.listen(config.API_PORT, config.API_HOST);

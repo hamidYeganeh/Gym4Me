@@ -1,0 +1,92 @@
+import { audit, createSchema, customData, mixed, objectId, status } from "../../../database/mongoose.js";
+
+export const metaModels = {
+  EntityTypeDefinition: createSchema({
+    code: { type: String, unique: true },
+    module: String,
+    storageCollection: String,
+    labels: mixed,
+    schemaVersion: { type: Number, default: 1 },
+    capabilities: mixed,
+    settings: mixed,
+    status,
+    ...audit,
+  }),
+  FieldGroupDefinition: createSchema({
+    entityTypeId: { type: objectId, ref: "EntityTypeDefinition", index: true },
+    code: String,
+    labels: mixed,
+    descriptions: mixed,
+    layoutConfig: mixed,
+    displayOrder: Number,
+    status,
+    ...audit,
+  }),
+  FieldDefinition: createSchema({
+    entityTypeId: { type: objectId, ref: "EntityTypeDefinition", index: true },
+    fieldGroupId: { type: objectId, ref: "FieldGroupDefinition" },
+    key: String,
+    labels: mixed,
+    dataType: String,
+    required: Boolean,
+    defaultValue: mixed,
+    rules: mixed,
+    display: mixed,
+    search: mixed,
+    options: [mixed],
+    status,
+    ...audit,
+  }),
+  FormDefinition: createSchema({
+    code: { type: String, unique: true },
+    entityTypeId: { type: objectId, ref: "EntityTypeDefinition" },
+    labels: mixed,
+    sections: [mixed],
+    status,
+    ...audit,
+  }),
+  WorkflowDefinition: createSchema({
+    code: { type: String, unique: true },
+    entityTypeId: { type: objectId, ref: "EntityTypeDefinition" },
+    states: [mixed],
+    transitions: [mixed],
+    status,
+    ...audit,
+  }),
+  Taxonomy: createSchema({
+    code: { type: String, unique: true },
+    labels: mixed,
+    hierarchical: Boolean,
+    settings: mixed,
+    status,
+    ...audit,
+  }),
+  TaxonomyTerm: createSchema({
+    taxonomyId: { type: objectId, ref: "Taxonomy", index: true },
+    parentId: { type: objectId, ref: "TaxonomyTerm" },
+    code: String,
+    labels: mixed,
+    path: [String],
+    displayOrder: Number,
+    customData,
+    status,
+    ...audit,
+  }),
+  FeatureFlag: createSchema({
+    code: { type: String, unique: true },
+    rules: mixed,
+    status,
+    ...audit,
+  }),
+  SystemSetting: createSchema({
+    key: { type: String, unique: true },
+    value: mixed,
+    scope: mixed,
+    status,
+    ...audit,
+  }),
+} as const;
+
+metaModels.FieldGroupDefinition.index({ entityTypeId: 1, code: 1 }, { unique: true });
+metaModels.FieldDefinition.index({ entityTypeId: 1, key: 1 }, { unique: true });
+metaModels.TaxonomyTerm.index({ taxonomyId: 1, code: 1 }, { unique: true });

@@ -1,4 +1,5 @@
 import { Chip } from "@heroui/react/chip";
+import { Button } from "@heroui/react/button";
 import { Typography } from "@heroui/react/typography";
 import { athleteBookingDetailSummarySectionVariants } from "./AthleteBookingDetailSummarySection.styles";
 import type { AthleteBookingDetailSummarySectionProps } from "./AthleteBookingDetailSummarySection.types";
@@ -10,6 +11,8 @@ export function AthleteBookingDetailSummarySection({
   showCheckIn,
   detailRows,
   t,
+  isApiBooking,
+  router,
 }: AthleteBookingDetailSummarySectionProps) {
   const styles = athleteBookingDetailSummarySectionVariants();
 
@@ -65,7 +68,17 @@ export function AthleteBookingDetailSummarySection({
           >
             {t("checkInTitle")}
           </Typography>
-          <span className={styles.checkInCode()}>{booking.checkInCode}</span>
+          {isApiBooking ? (
+            <Button
+              onPress={() => router.push(`/athlete/qr-check-in?bookingId=${encodeURIComponent(booking.id)}`)}
+              size="lg"
+              variant="primary"
+            >
+              {t("openCheckInCode")}
+            </Button>
+          ) : (
+            <span className={styles.checkInCode()}>{booking.checkInCode}</span>
+          )}
           <Typography className={styles.checkInHint()} type="body-sm">
             {t("checkInHint")}
           </Typography>

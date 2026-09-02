@@ -9,6 +9,7 @@ import {
 import { roleAppPath } from "@/shared/lib/role-routes";
 import { useAuth } from "./AuthProvider";
 import { useRouter } from "@/shared/lib/app-router";
+import { parsePushAction } from "@/shared/lib/push-action";
 
 /**
  * Native push registration lifecycle:
@@ -60,8 +61,9 @@ export function PushNotificationsProvider() {
       listenerHandles.push(
         await PushNotifications.addListener(
           "pushNotificationActionPerformed",
-          () => {
-            router.push(roleAppPath(activeRole, "notifications"));
+          ({ notification }) => {
+            const action = parsePushAction(notification.data?.action);
+            router.push(action ?? roleAppPath(activeRole, "notifications"));
           },
         ),
       );

@@ -22,11 +22,12 @@ export function LoopingWords({
   const [index, setIndex] = useState(0);
 
   const safeWords = words.filter((word) => word.trim().length > 0);
+  const wordsSignature = safeWords.join("\u0000");
   const currentWord = safeWords[index] ?? safeWords[0];
 
   useEffect(() => {
     setIndex(0);
-  }, [safeWords.join("\u0000")]);
+  }, [wordsSignature]);
 
   useEffect(() => {
     if (reduceMotion || safeWords.length <= 1) return;

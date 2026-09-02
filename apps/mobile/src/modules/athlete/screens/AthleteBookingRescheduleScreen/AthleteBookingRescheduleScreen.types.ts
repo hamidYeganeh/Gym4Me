@@ -1,3 +1,3 @@
 export type AthleteBookingRescheduleScreenProps = {
-  bookingId: string;
+  bookingId?: string;
 };

@@ -136,7 +136,7 @@ export function OwnerCheckInDeskGate() {
       cancelled = true;
       window.removeEventListener("online", handleOnline);
     };
-  }, [clubId, refreshQueueState, refreshReconciliations, user?.id]);
+  }, [clubId, refreshQueueState, refreshReconciliations, t, user?.id]);
 
   const handleRecoverQueue = useCallback(async () => {
     if (!clubId || !user?.id) return;

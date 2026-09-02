@@ -31,7 +31,16 @@ export function DiscoveryCoachesDetailScreen({
       ? Math.min(...coach.consultationTypes.map((option) => option.price))
       : null;
 
-  const reserveHref = `/discovery/coaches/${coach.id}/reserve`;
+  const booking = coach.bookingOptions?.[0];
+  const reserveHref = booking
+    ? `/athlete/booking/time?${new URLSearchParams({
+        branchId: booking.branchId,
+        offeringId: booking.offeringId,
+        resourceId: booking.resourceId,
+        duration: String(booking.durationMinutes),
+        name: booking.name,
+      }).toString()}`
+    : `/discovery/coaches/${coach.id}/reserve`;
 
   const priceSuffix =
     selectedPackage?.planNameKey === "packageMonthly"

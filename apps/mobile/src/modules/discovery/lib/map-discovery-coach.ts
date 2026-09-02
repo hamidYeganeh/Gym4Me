@@ -194,7 +194,28 @@ export function mapDiscoveryCoachToDetail(coach: DiscoveryCoach): CoachDetail {
       title: type,
       subtitle: "",
     })),
-    consultationTypes: [],
+    consultationTypes: [
+      ...(coach.pricing.consultation.inPerson !== null
+        ? [{
+            id: "in-person",
+            kind: "in-person" as const,
+            titleKey: "consultationInPerson" as const,
+            status: "available" as const,
+            statusKey: "consultationAvailableToday" as const,
+            price: coach.pricing.consultation.inPerson,
+          }]
+        : []),
+      ...(coach.pricing.consultation.remote !== null
+        ? [{
+            id: "remote",
+            kind: "remote" as const,
+            titleKey: "consultationRemote" as const,
+            status: "available" as const,
+            statusKey: "consultationAvailableToday" as const,
+            price: coach.pricing.consultation.remote,
+          }]
+        : []),
+    ],
     packages: [],
     availabilityDays: [],
     clubs,
@@ -203,5 +224,6 @@ export function mapDiscoveryCoachToDetail(coach: DiscoveryCoach): CoachDetail {
     pricePrefix: "از",
     priceSuffix: "تومان",
     isVerified: coach.verification.status === "approved",
+    bookingOptions: coach.bookingOptions,
   };
 }

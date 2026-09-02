@@ -1,0 +1,27 @@
+groups:
+  - name: gym4me-production
+    rules:
+      - alert: Gym4MeTargetDown
+        expr: up{job=~"gym4me-.*"} == 0
+        for: 2m
+        labels: { severity: critical }
+        annotations:
+          summary: "{{ $labels.job }} is unavailable"
+      - alert: Gym4MeApiHighErrorRate
+        expr: sum(rate(gym4me_http_requests_total{status=~"5.."}[5m])) / clamp_min(sum(rate(gym4me_http_requests_total[5m])), 0.001) > 0.02
+        for: 5m
+        labels: { severity: critical }
+        annotations:
+          summary: "API 5xx rate is above 2%"
+      - alert: Gym4MeApiHighAverageLatency
+        expr: sum(rate(gym4me_http_request_duration_seconds_sum[5m])) / clamp_min(sum(rate(gym4me_http_request_duration_seconds_count[5m])), 0.001) > 0.75
+        for: 10m
+        labels: { severity: warning }
+        annotations:
+          summary: "API average latency is above 750ms"
+      - alert: Gym4MeWorkerLoopErrors
+        expr: increase(gym4me_worker_loop_errors_total[10m]) > 3
+        for: 2m
+        labels: { severity: critical }
+        annotations:
+          summary: "Worker has repeated loop failures"
